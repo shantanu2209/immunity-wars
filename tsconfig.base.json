@@ -18,12 +18,26 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
 
-    // DEFERRED DECISION — noUncheckedIndexedAccess.
-    // This flag makes `ORGANS[key]` typed as possibly-undefined, which catches a real class
-    // of bug in a rules engine full of Record lookups. It is deliberately OFF for now:
-    // turning it on would add substantial friction to the Task B port of 1,769 lines of
-    // JavaScript, and that is a decision to take on its own merits rather than inherit by
-    // accident. Revisit at the start of Task B.
+    // SCHEDULED CHANGE — noUncheckedIndexedAccess. Decided by Shantanu, 4 Aug 2026.
+    //
+    // This flag types `ORGANS[key]` as possibly-undefined, which catches a real class of
+    // bug in a rules engine built on Record lookups. It stays OFF for the Task B port and
+    // is turned ON as an isolated, single-purpose commit at the END of Task B.
+    //
+    // Why that order, and not simply on from the start: flipping it mid-port would mean
+    // hundreds of pre-existing lookups failing to compile all at once, while the pressure
+    // is to get the port working. The path of least resistance under that pressure is to
+    // scatter `!` (non-null assertion) until it compiles — which silences the compiler
+    // without handling anything, and leaves the codebase worse off than never enabling it.
+    //
+    // CONDITION ON ENABLING IT: `!` is not an acceptable way to satisfy this flag. If a
+    // lookup can miss, handle the miss. Turning the flag on after the port produces a
+    // clean, reviewable list of exactly which lookups carry real risk — which is the
+    // point of the exercise.
+    //
+    // Enforced mechanically: @typescript-eslint/no-non-null-assertion is an error in
+    // packages/engine (see eslint.config.js), so `!` is unavailable as an escape hatch
+    // before the question is ever asked.
     "noUncheckedIndexedAccess": false,
 
     // Module hygiene. isolatedModules and verbatimModuleSyntax keep every file

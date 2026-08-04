@@ -45,6 +45,19 @@ export default tseslint.config(
     files: ['packages/engine/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
+
+      // `!` asserts "this is never null or undefined" and switches the compiler off for
+      // that expression. It is wrong exactly when it matters: the lookup that actually
+      // can miss.
+      //
+      // This is load-bearing for the noUncheckedIndexedAccess decision recorded in
+      // tsconfig.base.json. That flag is enabled at the end of Task B, and the condition
+      // attached to it is that `!` may not be used to satisfy it. Banning it now, while
+      // the engine is still empty, means the escape hatch is already closed when the
+      // flag is flipped — nobody has to remember the rule under deadline pressure.
+      //
+      // If a lookup can miss, handle the miss.
+      '@typescript-eslint/no-non-null-assertion': 'error',
     },
   },
 

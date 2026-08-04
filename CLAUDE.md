@@ -62,6 +62,11 @@ tools/legacy/       Original .js/.html. READ-ONLY reference. Never edit.
 ## Conventions
 
 - TypeScript `strict: true`. No `any` in `engine`. Keep types boring — no clever generics.
+- **`noUncheckedIndexedAccess` is OFF for the Task B port, and is turned ON as an isolated
+  commit at the END of Task B.** When enabling it, `!` (non-null assertion) is NOT an
+  acceptable way to make a lookup compile — if a lookup can miss, handle the miss. `!` is
+  already a lint error in `engine`, so the escape hatch is closed. Rationale in
+  `tsconfig.base.json`.
 - Zod at every trust boundary: network messages, content pack loading, saved games.
   Types are compile-time only and do nothing for malformed runtime input.
 - Every game state and network message carries `rulesVersion`.

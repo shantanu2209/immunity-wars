@@ -56,7 +56,6 @@ are not trustworthy at the end of Phase 1, everything after it is guesswork.
 - No UI rewrite (Phase 2)
 - No new server (Phase 3)
 - No Capacitor packaging (Phase 4)
-- No new game rules, balance changes or content
 - No new game rules, balance changes or content — **no exceptions.** (v1.0 carved out the
   brain-branch correction; that change was already applied in July, so there is nothing left
   to except. §4 is now about measuring its unvalidated effect, not making a change.)
