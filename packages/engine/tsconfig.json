@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+
+    // PURITY, ENFORCED BY THE COMPILER.
+    //
+    // CLAUDE.md: "Pure rules. No DOM, no Node APIs, no I/O."
+    //
+    // "lib" is inherited as ES2022 only, with no "DOM" entry, so document, window,
+    // fetch and localStorage do not exist as far as this package is concerned.
+    // "types": [] removes @types/node, so process, Buffer, fs and __dirname do not
+    // exist either. Referencing any of them is a compile error, not a review note.
+    //
+    // dependency-cruiser covers the other half — cross-package imports. Neither check
+    // subsumes the other: the compiler catches ambient globals that are never imported,
+    // dependency-cruiser catches imports the compiler is happy to resolve.
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

@@ -1,0 +1,20 @@
+# Read-only reference material — CLAUDE.md forbids editing these.
+tools/legacy/
+
+# Generated / vendored
+node_modules/
+dist/
+.turbo/
+coverage/
+pnpm-lock.yaml
+
+# Verbatim legal text — must not be reflowed.
+LICENSE
+
+# Prose is not code.
+#
+# Prettier has opinions about Markdown — *emphasis* becomes _emphasis_, table cells get
+# padded, paragraphs get rewrapped. Applied to CLAUDE.md, the README or the phase briefs,
+# that rewrites documents somebody actually wrote, produces large diffs that hide real
+# edits, and fights the author over style. Formatting is for code.
+*.md

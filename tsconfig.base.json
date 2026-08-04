@@ -1,0 +1,41 @@
+{
+  // Shared compiler settings. Every package extends this file, so strictness cannot be
+  // quietly weakened in one corner of the monorepo without the change being visible here.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+
+    // Non-negotiable per docs/PHASE1_BRIEF.md §5 and CLAUDE.md.
+    "strict": true,
+
+    // Cheap extra safety with no authoring cost.
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+
+    // DEFERRED DECISION — noUncheckedIndexedAccess.
+    // This flag makes `ORGANS[key]` typed as possibly-undefined, which catches a real class
+    // of bug in a rules engine full of Record lookups. It is deliberately OFF for now:
+    // turning it on would add substantial friction to the Task B port of 1,769 lines of
+    // JavaScript, and that is a decision to take on its own merits rather than inherit by
+    // accident. Revisit at the start of Task B.
+    "noUncheckedIndexedAccess": false,
+
+    // Module hygiene. isolatedModules and verbatimModuleSyntax keep every file
+    // independently transpilable, which is what Vite and esbuild assume.
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  }
+}

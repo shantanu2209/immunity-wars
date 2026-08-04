@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version)",
+      "Bash(npm --version)",
+      "Bash(node -e ' *)",
+      "Bash(git config *)",
+      "Bash(git --version)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm test *)",
+      "Bash(../../node_modules/.bin/eslint . -f json)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const r=JSON.parse\\(s\\);console.log\\('file count:',r.length\\);r.forEach\\(f=>console.log\\(' -',f.filePath.split\\(/[\\\\\\\\\\\\\\\\/]/\\).slice\\(-3\\).join\\('/'\\),'| messages:',f.messages.length\\)\\)}\\)\")",
+      "Bash(pnpm boundaries *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node_modules/.bin/tsc --showConfig -p packages/engine/tsconfig.json)",
+      "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\).on\\('end',\\(\\)=>{const c=JSON.parse\\(s\\);console.log\\('types:',JSON.stringify\\(c.compilerOptions.types\\)\\);console.log\\('lib:',JSON.stringify\\(c.compilerOptions.lib\\)\\);console.log\\('typeRoots:',JSON.stringify\\(c.compilerOptions.typeRoots\\)\\)}\\)\")",
+      "Bash(../../node_modules/.bin/tsc --noEmit -p tsconfig.json)",
+      "Bash(echo \"with types:[] -> exit $?\")",
+      "Bash(../../node_modules/.bin/tsc --noEmit --types \"\" --lib ES2022 --strict --moduleResolution bundler --module ESNext src/__p.ts)",
+      "Bash(echo \"explicit flags -> exit $?\")",
+      "Bash(../../node_modules/.bin/tsc --noEmit -p tsconfig.json --listFiles)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm format:check)",
+      "Bash(git checkout *)"
+    ]
+  }
+}

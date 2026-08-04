@@ -1,0 +1,18 @@
+# Workspace members.
+#
+# tools/legacy/ is deliberately NOT a workspace member. It has its own package.json
+# (the old LAN server, with its own ws/qrcode/jsdom dependencies) but it is read-only
+# reference material, not part of the build. Including it would install and typecheck
+# code we have committed never to edit.
+
+packages:
+  - 'packages/*'
+
+# pnpm blocks dependency install scripts unless they are allow-listed, because a
+# postinstall script is arbitrary code execution at install time. esbuild is allowed
+# because Vitest depends on it and its postinstall step links the platform binary;
+# without it, the test runner cannot start.
+#
+# Anything added here should be a build-tool binary with an understood reason.
+allowBuilds:
+  esbuild: true

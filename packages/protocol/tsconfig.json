@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+
+    // No Node and no DOM. Content packs are plain validated data and protocol is
+    // plain message types; neither should ever reach for a filesystem or a browser.
+    // Loading them from disk or network is the caller's job, at the trust boundary.
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

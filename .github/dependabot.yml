@@ -18,24 +18,24 @@ updates:
     groups:
       dev-tooling:
         patterns:
-          - "@types/*"
-          - "typescript"
-          - "typescript-eslint"
-          - "eslint*"
-          - "prettier"
-          - "vitest"
-          - "@vitest/*"
-          - "turbo"
-          - "dependency-cruiser"
+          - '@types/*'
+          - 'typescript'
+          - 'typescript-eslint'
+          - 'eslint*'
+          - 'prettier'
+          - 'vitest'
+          - '@vitest/*'
+          - 'turbo'
+          - 'dependency-cruiser'
         update-types:
           - minor
           - patch
     commit-message:
-      prefix: "chore(deps)"
+      prefix: 'chore(deps)'
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
     commit-message:
-      prefix: "chore(ci)"
+      prefix: 'chore(ci)'
