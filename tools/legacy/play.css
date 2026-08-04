@@ -1,0 +1,167 @@
+/* ===== IMMUNITY WARS — mobile PLAY screen (Stage 2 prototype) ===== */
+:root{
+  --bg:#0c0710;--panel:#150d1b;--panel2:#1c1226;--line:rgba(255,255,255,.12);--line2:rgba(255,255,255,.22);
+  --faint:#9a86ad;--txt:#f2e9f7;--good:#2dd47a;--amber:#f0a020;--red:#ff3b47;--ap:#c084fc;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(120% 80% at 50% -5%, #1a1022 0%, var(--bg) 55%);color:var(--txt);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;overflow:hidden}
+.play{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ---------- TOP: status + captain phase button ---------- */
+.top{flex:0 0 auto;padding:8px 10px 0}
+.topRow{display:flex;align-items:center;gap:8px}
+.tstatus{display:flex;align-items:center;gap:7px;font-family:ui-monospace,monospace;font-weight:800;font-size:12.5px}
+.tstatus .turn small{color:var(--faint);font-weight:600}
+.tstatus .phase{border:1px solid var(--line2);border-radius:999px;padding:2px 9px}
+.tstatus .ob{color:var(--red);border:1px solid var(--red);border-radius:999px;padding:2px 8px;font-size:11px}
+.tstatus .ob.mop{color:var(--good);border-color:var(--good)}
+.phasebtn{margin-left:auto;background:linear-gradient(180deg,#7c3aed,#6d28d9);color:#fff;border:0;border-radius:11px;
+  padding:9px 14px;font-weight:800;font-size:13.5px;cursor:pointer;box-shadow:0 6px 16px -8px #7c3aed;white-space:nowrap}
+.phasebtn:active{transform:translateY(1px)}
+.phasebtn.wait{background:transparent;color:var(--faint);border:1px dashed var(--line2);box-shadow:none;font-weight:600;font-size:12px}
+.roleToggle{background:transparent;border:1px solid var(--line);color:var(--faint);border-radius:999px;
+  padding:5px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
+.alert{margin-top:6px;background:rgba(255,59,71,.12);border:1px solid rgba(255,59,71,.5);color:#ffb3b8;
+  border-radius:9px;padding:5px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.alert:empty{display:none}
+
+/* ---------- MIDDLE: left rail | body | right rail ---------- */
+.mid{flex:1 1 auto;display:flex;min-height:0;gap:2px;padding:6px 4px}
+
+/* body */
+.stage{flex:1 1 auto;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+.bodybox{position:relative;width:min(100%, calc((100vh - 168px) * 0.5));margin:auto;line-height:0}
+.bodybox .body{display:block;width:100%;height:auto;filter:drop-shadow(0 0 16px rgba(125,211,252,.12))}
+.mk{position:absolute;transform:translate(-50%,-50%);border:0;background:transparent;cursor:pointer;padding:0;
+  display:flex;flex-direction:column;align-items:center;z-index:5}
+.organ img{width:34px;height:34px;border-radius:50%;background:rgba(10,6,14,.7);border:2px solid var(--oc);
+  object-fit:contain;padding:4px;transition:box-shadow .25s}
+.organ.recessed img{opacity:.7;border-style:dashed}
+.entry .dot{width:16px;height:16px;border-radius:50%;border:2px dashed var(--ec);
+  background:radial-gradient(circle,var(--ec) 0%,transparent 72%);transition:box-shadow .25s}
+.hub .core{width:44px;height:44px;border-radius:50%;position:relative;
+  background:radial-gradient(circle,rgba(230,57,75,.5) 0%,rgba(230,57,75,.13) 52%,transparent 70%);
+  border:2px solid #e6394b;box-shadow:0 0 14px -3px #e6394b}
+.hub .core::after{content:"";position:absolute;inset:15px;border-radius:50%;background:#e6394b}
+/* threat halos — identity stays on the inner ring, threat is the outer glow */
+.t-amber.organ img,.t-amber.entry .dot{box-shadow:0 0 0 3px var(--amber),0 0 12px 1px rgba(240,160,32,.55)}
+.t-red.organ img,.t-red.entry .dot{box-shadow:0 0 0 3px var(--red),0 0 16px 2px rgba(255,59,71,.7);animation:pulse 1.3s ease-in-out infinite}
+.t-amber.hub .core{box-shadow:0 0 0 3px var(--amber),0 0 14px 1px rgba(240,160,32,.5)}
+.t-red.hub .core{box-shadow:0 0 0 3px var(--red),0 0 16px 2px rgba(255,59,71,.7);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--red),0 0 8px 1px rgba(255,59,71,.5)}50%{box-shadow:0 0 0 5px var(--red),0 0 20px 3px rgba(255,59,71,.85)}}
+.mk.flash::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px solid #fff;animation:flash .9s ease-out 2}
+@keyframes flash{0%{opacity:1;transform:scale(.8)}100%{opacity:0;transform:scale(1.5)}}
+
+/* ---------- LEFT RAIL: pathogens (collapsed pips) ---------- */
+.lrail{flex:0 0 40px;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:2px;overflow:hidden}
+.lrail .rlabel{font-size:8.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:800;writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:2px}
+.lpip{width:30px;height:30px;border-radius:50%;border:2px solid;background:rgba(10,6,14,.8);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;position:relative;padding:0}
+.lpip img{width:20px;height:20px;object-fit:contain}
+.lpip.t-red{border-color:var(--red);box-shadow:0 0 8px -2px var(--red);animation:pulse2 1.4s infinite}
+.lpip.t-amber{border-color:var(--amber);box-shadow:0 0 6px -2px var(--amber)}
+@keyframes pulse2{0%,100%{box-shadow:0 0 6px -2px var(--red)}50%{box-shadow:0 0 12px 0 var(--red)}}
+.lcount{margin-top:auto;font-size:10px;color:var(--faint);font-family:ui-monospace,monospace}
+
+/* ---------- RIGHT RAIL: your controllables ---------- */
+.rrail{flex:0 0 54px;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:2px;overflow:hidden}
+.rrail .rlabel{font-size:8.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;font-weight:800;writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:2px}
+.ctok{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--panel);cursor:pointer;
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px}
+.ctok img{width:26px;height:26px;object-fit:contain}
+.ctok .cn{font-size:7.5px;color:var(--faint);line-height:1;max-width:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctok .sdot{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;border:2px solid var(--bg)}
+.ctok .sdot.ready{background:var(--good)}
+.ctok .sdot.acted{background:var(--amber)}
+.ctok .sdot.spent{background:#6b6472}
+.ctok.sel{outline:2px solid #fff;outline-offset:1px}
+.ctok.spent{opacity:.5}
+
+/* ---------- BOTTOM: AP + micro-arsenal + log tick ---------- */
+.bottom{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid var(--line);background:rgba(12,7,16,.6)}
+.ap{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:var(--ap);font-family:ui-monospace,monospace}
+.ap .pips{display:flex;gap:3px}
+.ap .pips i{width:9px;height:9px;border-radius:50%;background:rgba(192,132,252,.2)}
+.ap .pips i.on{background:var(--ap)}
+.arsenal{display:flex;gap:4px;border:1px solid var(--line);border-radius:10px;padding:5px 7px;background:transparent;cursor:pointer}
+.arsenal .ac{width:22px;text-align:center;font-size:8.5px;font-weight:800;font-family:ui-monospace,monospace;
+  border-radius:5px;padding:2px 0;color:#5b5563;border:1px solid transparent}
+.arsenal .ac.have{color:#0c0710}
+.arsenal .ac.threat{border-color:currentColor}
+.arsenal .ac .n{display:block;font-size:8px}
+.logtick{flex:1 1 auto;min-width:0;border:1px solid var(--line);border-radius:10px;padding:6px 9px;background:transparent;
+  cursor:pointer;text-align:left;color:var(--faint);font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.logtick b{color:var(--txt)}
+
+/* ---------- floating chat ---------- */
+.chatBubble{position:absolute;right:14px;bottom:66px;width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+  background:linear-gradient(180deg,#7c3aed,#6d28d9);color:#fff;font-size:20px;box-shadow:0 8px 20px -6px #7c3aed;z-index:30;
+  display:flex;align-items:center;justify-content:center}
+.chatBubble .badge{position:absolute;top:-2px;right:-2px;background:var(--red);color:#fff;font-size:9px;font-weight:800;
+  border-radius:999px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+
+/* ---------- overlays (left panel, drawers, chat sheet) ---------- */
+.ovl{position:absolute;inset:0;z-index:40;pointer-events:none}
+.scrim{position:absolute;inset:0;background:rgba(4,2,8,.55);opacity:0;transition:.2s;pointer-events:none}
+.scrim.on{opacity:1;pointer-events:auto}
+
+.lpanel{position:absolute;left:0;top:0;bottom:0;width:82%;max-width:340px;background:var(--panel);border-right:1px solid var(--line2);
+  transform:translateX(-102%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;pointer-events:auto}
+.lpanel.on{transform:translateX(0)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:74%;background:var(--panel);border-top:1px solid var(--line2);
+  border-radius:16px 16px 0 0;transform:translateY(102%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;pointer-events:auto}
+.sheet.on{transform:translateY(0)}
+.phead{display:flex;align-items:center;gap:8px;padding:12px 14px 8px;font-weight:800;font-size:14px;flex:0 0 auto}
+.phead .x{margin-left:auto;background:transparent;border:0;color:var(--faint);font-size:20px;cursor:pointer;line-height:1}
+.pbody{overflow-y:auto;padding:0 12px 14px;min-height:0}
+
+/* pathogen list rows */
+.prow{width:100%;display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-left-width:4px;border-radius:11px;
+  padding:8px 10px;margin-bottom:7px;background:rgba(255,255,255,.02);cursor:pointer;text-align:left}
+.prow img{width:30px;height:30px;object-fit:contain;flex:0 0 auto}
+.prow .pm{flex:1;min-width:0}
+.prow .pm .pn{font-size:14px;font-weight:800;color:var(--txt)}
+.prow .pm .pw{font-size:11px;color:var(--faint)}
+.prow .fam{font-size:10px;font-weight:800;font-family:ui-monospace,monospace;border:1px solid;border-radius:6px;padding:1px 5px}
+.prow .st{font-size:10px;font-weight:800;font-family:ui-monospace,monospace;white-space:nowrap}
+/* pathogen card */
+.pcard{border:1px solid var(--line2);border-radius:12px;padding:11px 12px;margin-top:4px;background:var(--panel2)}
+.pcard .ct{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.pcard .cfam{font-size:10px;font-weight:800;font-family:ui-monospace,monospace;border:1px solid;border-radius:6px;padding:1px 6px}
+.pcard .row{font-size:12px;color:var(--faint);margin-top:7px;line-height:1.45}
+.pcard .row b{color:var(--txt)}
+
+/* drawers content */
+.abgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.abcell{border:1px solid var(--line);border-radius:10px;padding:8px}
+.abcell.hot{border-color:currentColor}
+.abcell .at{font-size:11px;font-weight:800;font-family:ui-monospace,monospace}
+.abcell .aname{font-size:10px;color:var(--faint);margin:2px 0 5px}
+.abcell .apips{display:flex;gap:3px;flex-wrap:wrap}
+.abcell .apips i{width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.12)}
+.dsub{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:800;margin:14px 0 7px}
+.vrow{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.vrow .vn{font-size:12.5px;font-weight:700;flex:0 0 35%}
+.vrow .vbar{flex:1;height:7px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
+.vrow .vbar>div{height:100%;background:var(--ap)}
+.vrow .vp{font-size:10px;color:var(--faint);font-family:ui-monospace,monospace}
+.vimm{display:flex;gap:6px;flex-wrap:wrap}
+.vimm .chip{font-size:11px;color:var(--good);border:1px solid var(--good);border-radius:999px;padding:2px 9px;font-weight:700}
+.logrow{font-size:12px;padding:6px 2px;border-bottom:1px solid var(--line);color:var(--faint);line-height:1.4}
+.logrow b.tt{color:var(--ap);font-family:ui-monospace,monospace;margin-right:6px}
+.logrow.good{color:#a7e8c4}.logrow.bad{color:#ffb3b8}
+
+/* chat */
+.msg{margin-bottom:8px;font-size:13px}
+.msg .who{font-weight:800;font-size:11px;margin-bottom:1px}
+.msg .b{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 9px;display:inline-block;max-width:85%}
+.chatIn{display:flex;gap:7px;padding:10px 12px;border-top:1px solid var(--line);flex:0 0 auto}
+.chatIn input{flex:1;background:var(--panel2);border:1px solid var(--line2);border-radius:999px;padding:8px 12px;color:var(--txt);font-size:13px}
+.chatIn button{background:var(--ap);border:0;border-radius:999px;color:#160a22;font-weight:800;padding:0 14px;cursor:pointer}
+
+.toast{position:absolute;left:50%;bottom:70px;transform:translateX(-50%) translateY(16px);opacity:0;z-index:50;
+  background:rgba(12,7,16,.97);border:1px solid var(--line2);border-radius:11px;padding:8px 14px;font-size:12.5px;
+  max-width:86%;text-align:center;transition:.22s;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}

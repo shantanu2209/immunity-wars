@@ -1,0 +1,30 @@
+THE IMMUNITY WARS — complete source bundle (18 July 2026)
+Add ALL of these to the Claude Project. This is everything needed to continue.
+
+CORE SOURCES (edit these; rebuild both builds after any change):
+  v2_engine.js        authoritative rules engine — ALL game rules live here
+  v2_ui.html          UI template (board + mobile panels). Markers: /*__ENGINE__*/  /*__ART__*/
+  art_data.js         base64 icon art (const ART={cell,path,organ})
+
+BUILD + VERIFY TOOLING:
+  build_client.js     builds public/index.html (LAN client) from the sources
+  parity_check.js     confirms the two builds are in sync — RUN PERIODICALLY
+  e2e_server_test.js  end-to-end server test (needs `ws`)
+
+SERVER BUILD:
+  server.js           LAN host (WebSocket authority). 14 seats (7 cells + 7 residents)
+  client_shell.js     client shell: networking, lobby, allocation, chat
+  client_render.js    client render: gate/lobby/allocation/chat/FAQ
+  client_side.js      owner-restricted control panels + network-aware phase
+  client.css          client styles
+  package.json        deps (ws, qrcode)
+  public/index.html   the BUILT client (rebuilt by build_client.js; do not hand-edit)
+
+DELIVERED PLAYABLE BUILD:
+  immunity-wars-v2.html   current plain single-device build (open to play/test)
+
+TO REBUILD (run inside this folder):
+  node build_client.js     -> public/index.html
+  node parity_check.js     -> confirm both builds in sync
+  # plain HTML: read v2_ui.html, strip module.exports from v2_engine.js,
+  #   replace /*__ENGINE__*/ with the engine and /*__ART__*/ with art_data.js

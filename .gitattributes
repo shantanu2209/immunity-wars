@@ -1,0 +1,39 @@
+# Normalise line endings.
+#
+# Development happens on Windows (CRLF) and CI runs on Linux (LF). Without this,
+# whole files appear modified when nothing has actually changed, which makes
+# "diff the old and new engine states" — the core method of the Task B port —
+# unreliable. Text is stored LF in the repository and checked out natively.
+
+* text=auto
+
+# Explicitly text, always LF in the repo
+*.ts     text eol=lf
+*.tsx    text eol=lf
+*.js     text eol=lf
+*.cjs    text eol=lf
+*.mjs    text eol=lf
+*.json   text eol=lf
+*.jsonc  text eol=lf
+*.md     text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.svg    text eol=lf
+*.txt    text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+.nvmrc         text eol=lf
+
+# Explicitly binary — never touch these
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.ico    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.pdf    binary

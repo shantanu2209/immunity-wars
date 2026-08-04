@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Test / coverage output
+coverage/
+.nyc_output/
+*.lcov
+
+# Environment and secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite
+.vite/
+
+# Playwright (Phase 2+)
+playwright-report/
+test-results/

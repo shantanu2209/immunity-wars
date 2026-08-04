@@ -1,0 +1,92 @@
+/* ===== MOBILE HOME (live) — scoped under .mbPlay / .mbDrawerOv to avoid clashes ===== */
+.mbPlay{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% -5%, #1a1022 0%, #0c0710 55%);color:#f2e9f7;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.mbPlay .mbTop{flex:0 0 auto;padding:8px 10px 0;display:flex;align-items:center;gap:8px}
+.mbPlay .mbStatus{display:flex;align-items:center;gap:7px;font-family:ui-monospace,monospace;font-weight:800;font-size:12.5px}
+.mbPlay .mbStatus .turn small{color:#9a86ad;font-weight:600}
+.mbPlay .mbStatus .phase{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:2px 9px}
+.mbPlay .mbStatus .ob{color:#ff3b47;border:1px solid #ff3b47;border-radius:999px;padding:2px 8px;font-size:11px}
+.mbPlay .mbStatus .ob.mop{color:#2dd47a;border-color:#2dd47a}
+.mbPlay .mbPhase{margin-left:auto;background:linear-gradient(180deg,#7c3aed,#6d28d9);color:#fff;border:0;border-radius:11px;
+  padding:9px 13px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 6px 16px -8px #7c3aed;white-space:nowrap}
+.mbPlay .mbPhase:active{transform:translateY(1px)}
+.mbPlay .mbPhase.wait{background:transparent;color:#9a86ad;border:1px dashed rgba(255,255,255,.22);box-shadow:none;font-weight:600;font-size:11.5px}
+.mbAlert{margin:6px 10px 0;background:rgba(255,59,71,.12);border:1px solid rgba(255,59,71,.5);color:#ffb3b8;
+  border-radius:9px;padding:5px 10px;font-size:12px;font-weight:700}
+.mbPlay .mbMid{flex:1 1 auto;display:flex;min-height:0;gap:2px;padding:6px 4px}
+.mbPlay .mmstage{flex:1 1 auto;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+.mbPlay .mmbox{position:relative;width:min(100%, calc((100vh - 172px) * 0.5));margin:auto;line-height:0}
+.mbPlay .mmbox .mmbody{display:block;width:100%;height:auto;filter:drop-shadow(0 0 16px rgba(125,211,252,.12))}
+.mbPlay .mmk{position:absolute;transform:translate(-50%,-50%);border:0;background:transparent;cursor:pointer;padding:0;z-index:5}
+.mbPlay .mmorgan img{width:34px;height:34px;border-radius:50%;background:rgba(10,6,14,.7);border:2px solid var(--oc);object-fit:contain;padding:4px;transition:box-shadow .25s}
+.mbPlay .mmorgan.recessed img{opacity:.7;border-style:dashed}
+.mbPlay .mmentry .mmdot{width:16px;height:16px;border-radius:50%;border:2px dashed var(--ec);background:radial-gradient(circle,var(--ec) 0%,transparent 72%);transition:box-shadow .25s}
+.mbPlay .mmhub .mmcore{width:44px;height:44px;border-radius:50%;position:relative;background:radial-gradient(circle,rgba(230,57,75,.5) 0%,rgba(230,57,75,.13) 52%,transparent 70%);border:2px solid #e6394b;box-shadow:0 0 14px -3px #e6394b}
+.mbPlay .mmhub .mmcore::after{content:"";position:absolute;inset:15px;border-radius:50%;background:#e6394b}
+.mbPlay .t-amber.mmorgan img,.mbPlay .t-amber.mmentry .mmdot{box-shadow:0 0 0 3px #f0a020,0 0 12px 1px rgba(240,160,32,.55)}
+.mbPlay .t-red.mmorgan img,.mbPlay .t-red.mmentry .mmdot{box-shadow:0 0 0 3px #ff3b47,0 0 16px 2px rgba(255,59,71,.7);animation:mbpulse 1.3s ease-in-out infinite}
+.mbPlay .t-amber.mmhub .mmcore{box-shadow:0 0 0 3px #f0a020,0 0 14px 1px rgba(240,160,32,.5)}
+.mbPlay .t-red.mmhub .mmcore{box-shadow:0 0 0 3px #ff3b47,0 0 16px 2px rgba(255,59,71,.7);animation:mbpulse 1.3s ease-in-out infinite}
+@keyframes mbpulse{0%,100%{box-shadow:0 0 0 3px #ff3b47,0 0 8px 1px rgba(255,59,71,.5)}50%{box-shadow:0 0 0 5px #ff3b47,0 0 20px 3px rgba(255,59,71,.85)}}
+.mbPlay .mmk.mmflash::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:2px solid #fff;animation:mbflash .75s ease-out 2}
+@keyframes mbflash{0%{opacity:1;transform:scale(.8)}100%{opacity:0;transform:scale(1.5)}}
+.mbPlay .lrail{flex:0 0 40px;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:2px;overflow:hidden}
+.mbPlay .rrail{flex:0 0 54px;display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:2px;overflow:hidden}
+.mbPlay .rlabel{font-size:8.5px;color:#9a86ad;text-transform:uppercase;letter-spacing:.05em;font-weight:800;writing-mode:vertical-rl;transform:rotate(180deg)}
+.mbPlay .rl0{color:#6b6472;font-size:12px}
+.mbPlay .lpip{width:30px;height:30px;border-radius:50%;border:2px solid #555;background:rgba(10,6,14,.8);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mbPlay .lpip img{width:20px;height:20px;object-fit:contain}
+.mbPlay .lpip.t-red{border-color:#ff3b47;box-shadow:0 0 8px -2px #ff3b47;animation:mbpip 1.4s infinite}
+.mbPlay .lpip.t-amber{border-color:#f0a020;box-shadow:0 0 6px -2px #f0a020}
+@keyframes mbpip{0%,100%{box-shadow:0 0 6px -2px #ff3b47}50%{box-shadow:0 0 12px 0 #ff3b47}}
+.mbPlay .lcount{margin-top:auto;font-size:10px;color:#9a86ad;font-family:ui-monospace,monospace}
+.mbPlay .ctok{width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:#150d1b;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;padding:2px}
+.mbPlay .ctok img{width:26px;height:26px;object-fit:contain}
+.mbPlay .ctok .sdot{position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;border:2px solid #0c0710}
+.mbPlay .ctok .sdot.ready{background:#2dd47a}
+.mbPlay .ctok .sdot.spent{background:#6b6472}
+.mbPlay .ctok.spent{opacity:.5}
+.mbPlay .mbBottom{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid rgba(255,255,255,.12);background:rgba(12,7,16,.6)}
+.mbPlay .ap{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;color:#c084fc;font-family:ui-monospace,monospace}
+.mbPlay .ap .pips{display:flex;gap:3px}
+.mbPlay .ap .pips i{width:9px;height:9px;border-radius:50%;background:rgba(192,132,252,.2)}
+.mbPlay .ap .pips i.on{background:#c084fc}
+.mbPlay .arsenal{display:flex;gap:4px;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:5px 7px;background:transparent;cursor:pointer}
+.mbPlay .arsenal .ac{width:22px;text-align:center;font-size:8.5px;font-weight:800;font-family:ui-monospace,monospace;border-radius:5px;padding:2px 0;border:1px solid transparent}
+.mbPlay .arsenal .ac .n{display:block;font-size:8px}
+.mbPlay .logtick{flex:1 1 auto;min-width:0;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 9px;background:transparent;cursor:pointer;text-align:left;color:#9a86ad;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.mbDrawerOv{position:fixed;inset:0;z-index:60}
+.mbDrawerOv .mbScrim{position:absolute;inset:0;background:rgba(4,2,8,.55)}
+.mbDrawerOv .mbSheet{position:absolute;left:0;right:0;bottom:0;max-height:74%;background:#150d1b;border-top:1px solid rgba(255,255,255,.22);border-radius:16px 16px 0 0;display:flex;flex-direction:column;color:#f2e9f7}
+.mbDrawerOv .phead{display:flex;align-items:center;padding:12px 14px 8px;font-weight:800;font-size:14px}
+.mbDrawerOv .phead .x{margin-left:auto;background:transparent;border:0;color:#9a86ad;font-size:20px;cursor:pointer}
+.mbDrawerOv .pbody{overflow-y:auto;padding:0 12px 16px;min-height:0}
+.mbDrawerOv .dsub{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#9a86ad;font-weight:800;margin:12px 0 7px}
+.mbDrawerOv .abgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mbDrawerOv .abcell{border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px}
+.mbDrawerOv .abcell .at{font-size:11px;font-weight:800;font-family:ui-monospace,monospace}
+.mbDrawerOv .abcell .apips{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
+.mbDrawerOv .abcell .apips i{width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.12)}
+.mbDrawerOv .vrow{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.mbDrawerOv .vrow .vn{font-size:12.5px;font-weight:700;flex:0 0 35%}
+.mbDrawerOv .vrow .vbar{flex:1;height:7px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
+.mbDrawerOv .vrow .vbar>div{height:100%;background:#c084fc}
+.mbDrawerOv .vrow .vp{font-size:10px;color:#9a86ad;font-family:ui-monospace,monospace}
+.mbDrawerOv .vimm{display:flex;gap:6px;flex-wrap:wrap}
+.mbDrawerOv .vimm .chip{font-size:11px;color:#2dd47a;border:1px solid #2dd47a;border-radius:999px;padding:2px 9px;font-weight:700}
+.mbDrawerOv .logrow{font-size:12px;padding:6px 2px;border-bottom:1px solid rgba(255,255,255,.12);color:#9a86ad;line-height:1.4}
+.mbDrawerOv .logrow b.tt{color:#c084fc;font-family:ui-monospace,monospace;margin-right:6px}
+.mbDrawerOv .logrow.good{color:#a7e8c4}.mbDrawerOv .logrow.bad{color:#ffb3b8}
+
+/* non-captain: same phase button, greyed and non-actioning (taps show a message) */
+.mbPlay .mbPhase.disabled{background:#241b33;color:#6b5b82;border:1px solid #3a2c47;cursor:not-allowed;box-shadow:none;opacity:.85}
+.mbPlay .mbPhase.disabled:active{transform:none}
+
+/* systemic target picker rows */
+.mbTargetRow{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:#1a1226;border:1px solid #3a2c47;border-radius:11px;padding:11px 13px;margin-bottom:8px;cursor:pointer;color:inherit}
+.mbTargetRow:hover{border-color:#7c5cf0;background:#20182e}
+.mbTargetRow:active{transform:translateY(1px)}
+.mbtName{font-size:14.5px;font-weight:800;color:#f2e9f7}
+.mbtMeta{font-size:11px;color:#9a86ad;text-transform:capitalize}
+.mbtEmpty{font-size:12.5px;color:#9a86ad;line-height:1.5;padding:6px 2px}

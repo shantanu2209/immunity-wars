@@ -1,0 +1,16 @@
+{
+  "name": "immunity-wars-lan",
+  "version": "0.2.0",
+  "description": "The Immunity Wars - LAN multiplayer (one authoritative game shared live across every device)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "ws": "^8.21.1"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
