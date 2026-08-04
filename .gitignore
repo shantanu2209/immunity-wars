@@ -24,6 +24,10 @@ coverage/
 *.key
 secrets.json
 
+# Claude Code — machine-local tool permissions, not project configuration.
+# CLAUDE.md at the repo root IS shared and is committed; this file is not.
+.claude/settings.local.json
+
 # Editors
 .vscode/*
 !.vscode/extensions.json
