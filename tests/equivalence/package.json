@@ -11,6 +11,9 @@
     "test": "vitest run",
     "build": "echo \"no build output\""
   },
+  "dependencies": {
+    "@immunity-wars/engine": "workspace:*"
+  },
   "devDependencies": {
     "vitest": "^2.1.8"
   }

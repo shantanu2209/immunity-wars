@@ -23,6 +23,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 10 | Stale assertion label in `feedback_0723_test.js` | Low | Fix the label only when porting |
 | 11 | Assorted dead code | Low | Port as-is |
 | 12 | Four bot-needed internals are unexported | Low | Rig reimplements them |
+| 13 | Pathogen X exists only via two lookup misses | **B7 risk** | Pinned by test before the flag is flipped |
 
 ---
 
@@ -387,3 +388,32 @@ its job is to produce long legal action sequences, and the recorded sequence is 
 replayed. Fidelity to `simulate()`'s own bot matters only for the `simulate()` equivalence
 check at B6, and there both engines run their *own* internal bot, so no reproduction is
 needed.
+
+---
+
+## 13. Pathogen X works by falling through two lookup misses
+
+Found at the B1 checkpoint, by a consistency check that failed for the right reason.
+
+`Pathogen X` is the only card in `DECK_MASTER` with **no `TROPISM` entry and no `FAMILY`
+entry**. Both absences are load-bearing:
+
+| Lookup | Result | Effect |
+|---|---|---|
+| `TROPISM["Pathogen X"]` | `undefined` | `rollOrgan` hits `if (list === "any" \|\| !list) list = g.organList.slice()` and the novel pathogen becomes a **generalist that can target any organ in play** |
+| `FAMILY["Pathogen X"]` | `undefined` | Unreachable in practice — `famOf` short-circuits on `iv.novel` and returns the `X` pool before it consults `FAMILY` at all |
+
+The tropism behaviour is almost certainly intended: a germ the body has never met should be
+able to go anywhere. But it is **implicit**, achieved by omission rather than by writing
+`"Pathogen X": "any"`, and nothing in the source says so.
+
+**Why this matters more than it looks.** `noUncheckedIndexedAccess` (B7) will flag both of
+these lookups, and the obvious "fix" — treating a missing tropism as an error, or defaulting
+it to a single organ — would silently change what Pathogen X does. The `FAMILY` miss is worse:
+it is currently unreachable, so a wrong fix there would pass every test until some future
+change dropped the `novel` flag, at which point the novel pathogen would quietly become an
+ordinary `EXB` bacterium.
+
+**Disposition:** port as-is, and both misses are now pinned by tests in
+`tests/equivalence/src/data.test.ts` so B7 has to make the decision deliberately rather than
+by accident.
