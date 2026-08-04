@@ -1,0 +1,41 @@
+# Dependabot — automated dependency update pull requests.
+#
+# This is the file half of the brief's "enable secret scanning and Dependabot" requirement.
+# The alerting half is a repository setting on github.com and must be switched on there:
+#   Settings -> Code security -> Dependabot alerts, and Secret scanning.
+#
+# Grouped updates keep the PR volume low; this is a two-person project and a flood of
+# single-dependency PRs would be noise rather than safety.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dev-tooling:
+        patterns:
+          - "@types/*"
+          - "typescript"
+          - "typescript-eslint"
+          - "eslint*"
+          - "prettier"
+          - "vitest"
+          - "@vitest/*"
+          - "turbo"
+          - "dependency-cruiser"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
