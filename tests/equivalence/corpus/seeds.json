@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "note": "The corpus is defined by SEEDS, not by committed action logs. Logs regenerate deterministically from the legacy engine at test time, so this file stays small while the corpus stays byte-identical on every machine and on CI. Tier membership lives here rather than in a workflow YAML so that what runs where is reviewable in a diff.",
+  "tiers": {
+    "per-push": "Runs on every push and PR. Budget: under 5 minutes.",
+    "nightly": "Full corpus plus coverage instrumentation. Budget: under 45 minutes."
+  },
+  "batches": [
+    {
+      "id": "bot-per-push",
+      "generator": "bot",
+      "tier": "per-push",
+      "seedBase": 100000,
+      "count": 200,
+      "difficulties": ["training", "normal", "hard"],
+      "maxTurns": 200,
+      "comment": "600 full-length recorded bot games. Measured at 37.4 ms/game legacy-vs-legacy."
+    },
+    {
+      "id": "bot-nightly",
+      "generator": "bot",
+      "tier": "nightly",
+      "seedBase": 100000,
+      "count": 2000,
+      "difficulties": ["training", "normal", "hard"],
+      "maxTurns": 200,
+      "comment": "6000 games. Superset of bot-per-push: the same seedBase means the per-push seeds are re-run nightly rather than a disjoint set being tested."
+    },
+    {
+      "id": "smoke",
+      "generator": "bot",
+      "tier": "per-push",
+      "seedBase": 900000,
+      "count": 10,
+      "difficulties": ["training", "normal", "hard"],
+      "maxTurns": 12,
+      "comment": "Short games used by the negative-control tests, where the point is to exercise the rig rather than the engine."
+    }
+  ],
+  "pinned": [
+    {
+      "comment": "Any seed that has ever produced a real divergence gets pinned here permanently, as a regression guard, regardless of which tier found it. Empty until the port exists and the first divergence is found."
+    }
+  ]
+}

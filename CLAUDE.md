@@ -91,12 +91,22 @@ tools/legacy/       Original .js/.html. READ-ONLY reference. Never edit.
 
 ## Known issues
 
-- **Balance baseline is UNVALIDATED.** The Brain branch was shortened from 4 steps to 3 on
-  ~27 July 2026, in both the physical board and `v2_engine.js`. This is a rule change, not a
-  cosmetic one: the Brain went from hardest-to-reach organ to as reachable as the others, and
-  it has only 2 integrity. There is no record that the balance simulation was re-run afterwards.
-  **The historical figures (Training 79 / Normal 51 / Hard 19) therefore describe a game that no
-  longer exists.** Treat them as history, not as targets. Measure the real numbers in Task E.
+- **Training 79 / Normal 51 / Hard 19 are OBSOLETE.** They date from **6 July 2026** and
+  predate organs, resident macrophages, crisis events, rare events, malaria staging, worms,
+  toxins, antivenom, Pathogen X, memory and vaccines, lymphatic hops, hard-mode division and
+  production caps. They are a baseline for a **substantially simpler game** — not, as this file
+  and `docs/PHASE1_BRIEF.md` §4 previously said, a pre-brain-fix baseline. The brain branch
+  change is a minor part of the difference. Never use them as targets, sanity checks or
+  comparison points. Details in `docs/FINDINGS.md` #2.
+
+- **The game is NOT broken — but the reference bot is far behind it.** Shantanu and Kartik win
+  essentially every game on Normal and roughly 7 in 10 on Hard. `simulate()`'s bot wins 0.2%
+  on Normal and 0.0% on Hard. That gap is a **bot-capability signal, not a difficulty signal**:
+  the bot never emits 8 of the engine's 27 actions, never moves the Neutrophil (so it can never
+  NET), and never repositions a resident macrophage (so all seven are inert). It plays about
+  six of the game's fourteen seats. Full audit in `docs/FINDINGS.md` §1. Building a competent
+  bot is a **Phase 2** decision — it is dual-use, since online play needs AI to fill dropped
+  seats. **Do not tune the game to the bot's numbers.**
 
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.
@@ -104,9 +114,20 @@ tools/legacy/       Original .js/.html. READ-ONLY reference. Never edit.
 
 ## Balance targets
 
-**Not yet established.** Task E measures the current win rates for Training / Normal / Hard.
-CI tolerance bands are set from that measurement, never from the historical figures above.
+**There is no win-rate target, and CI must not gate on one.** A bot win rate pinned at 0.0%
+cannot fall, so it is incapable of failing usefully. Human play is the only source of truth
+about difficulty, and by that measure the game is already well balanced (see Known issues).
 
-If the measured numbers turn out to be poor game design, that is a design conversation with
-Shantanu and Kartik — it is NOT fixed by adjusting knobs until a number looks familiar.
-Report what you measure.
+Task E instead establishes a **continuous metric panel that detects ENGINE CHANGE, not
+difficulty** — `avgTurnsSurvived`, `trunkKillPct`, `avgAntibodiesMade`, `avgOrgansDamaged`,
+each measured with its cross-seed noise band, failing the build only when two or more breach
+±3 sd together. Candidates, measured variance and rationale in `docs/FINDINGS.md`
+§ "Task E metrics".
+
+Any win rate that is reported is always **"win rate under the reference bot, vN, at N games
+per difficulty"** — never "the win rate". The bot cannot measure difficulty and we do not
+pretend otherwise, least of all to funders.
+
+If a measurement ever suggests poor game design, that is a design conversation with Shantanu
+and Kartik — it is NOT fixed by adjusting knobs until a number looks familiar. Report what you
+measure.

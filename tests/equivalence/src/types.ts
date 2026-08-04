@@ -1,0 +1,98 @@
+/**
+ * Minimal structural types for the legacy engine.
+ *
+ * These describe only what the RIG needs to touch — the bot reads a handful of fields to
+ * decide a move, and the comparator treats everything else as opaque JSON. This is
+ * deliberately NOT an attempt to type the game state properly; that is Task B3's job, done
+ * against the real engine rather than guessed at from the outside.
+ */
+
+export interface Invader {
+  id: string;
+  type: string;
+  disease: string;
+  zone: string;
+  step: number;
+  tagged?: boolean;
+  hp?: number;
+  stage?: string | null;
+  lane?: string | null;
+  organ?: string | null;
+  novel?: boolean;
+  inMac?: boolean;
+  lodged?: boolean;
+  remembered?: boolean;
+}
+
+export interface Cell {
+  zone: string;
+  lane: string | null;
+  organ: string | null;
+  step: number;
+  alive?: boolean;
+  freeEngulf?: boolean;
+}
+
+export interface MoveDestination {
+  zone: string;
+  lane?: string;
+  organ?: string;
+  step?: number;
+}
+
+export interface GameState {
+  phase: string;
+  turn: number;
+  ap: number;
+  difficulty: string;
+  won: boolean;
+  lost: unknown;
+  invaders: Invader[];
+  cells: Record<string, Cell>;
+  organList: string[];
+  ab: Record<string, number>;
+  seen: Record<string, boolean>;
+  memory: Record<string, boolean>;
+  free?: Record<string, number>;
+  novelSeen: boolean;
+  cloneFound: boolean;
+}
+
+/**
+ * An action as handed to applyAction. The index signature is honest: the legacy engine reads
+ * a different set of fields per action kind and validates none of them up front.
+ */
+export interface Action {
+  action: string;
+  [key: string]: unknown;
+}
+
+export interface ActionResult {
+  ok: boolean;
+  error?: string;
+  frames?: unknown[];
+}
+
+/** The 67-export surface, narrowed to what the rig calls. */
+export interface Engine {
+  newGame(cfg: Record<string, unknown>): GameState;
+  applyAction(g: GameState, a: Action): ActionResult;
+  viewState(g: GameState): unknown;
+  simulate(difficulty: string, n: number, flags?: unknown): Record<string, unknown>;
+
+  distToOrgan(g: GameState, iv: Invader): number;
+  macrophageEatable(g: GameState): Invader[];
+  residentEatable(g: GameState, organ: string): Invader[];
+  nkTargets(g: GameState): Invader[];
+  snipeTargets(g: GameState): Invader[];
+  netTargets(g: GameState): Invader[];
+  wormStrikeable(g: GameState, cellKey: string): Invader[];
+  moveDestinations(g: GameState, cellKey: string): MoveDestination[];
+  attackable(iv: Invader): boolean;
+  helperLicensed(g: GameState): boolean;
+  capFam(g: GameState, family: string): number;
+  famOf(iv: Invader): string;
+  branchLen(organ: string): number;
+
+  [key: string]: unknown;
+}

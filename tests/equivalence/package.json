@@ -1,0 +1,17 @@
+{
+  "name": "@immunity-wars/equivalence",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Task B equivalence rig: proves the ported engine behaves identically to tools/legacy/v2_engine.js",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

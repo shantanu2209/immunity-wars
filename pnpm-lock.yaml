@@ -55,6 +55,12 @@ importers:
 
   packages/ui: {}
 
+  tests/equivalence:
+    devDependencies:
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(supports-color@7.2.0)
+
 packages:
 
   '@esbuild/aix-ppc64@0.21.5':

@@ -51,6 +51,21 @@ For comparison, everything current says `branch:3`:
 | `tools/legacy/immunity-wars-v2.html` | 4 Aug 2026 | `3` ✅ delivered playable build |
 | `tools/legacy/ImmunityWars-SinglePlayer.html` | 4 Aug 2026 | `3` ✅ |
 
+## `spec_test.js` is broken by this move, and stays broken
+
+`tools/legacy/spec_test.js` reads `__dirname + "/spectator.html"`. That file now lives here,
+so the path no longer resolves and the suite cannot run.
+
+**Leave it broken. Do not repoint it at `stale/spectator.html`.** If it were repointed it
+would assert against a `branch:4` build — rules that no longer exist — and a green suite
+asserting obsolete rules is worse than a suite that does not run.
+
+It is unusable as a port oracle either way: it tests DOM rendering against a whole built
+HTML file, with the engine's behaviour incidental. See `docs/FINDINGS.md` #7 and
+`docs/TASK_B_PLAN.md` §2.
+
+---
+
 ## Where to look instead
 
 - **The rules:** `tools/legacy/v2_engine.js` — the authoritative source. During Phase 1 this

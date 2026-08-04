@@ -1,0 +1,12 @@
+{
+  // The equivalence rig is test infrastructure, not shipped code. Unlike packages/engine it
+  // IS allowed Node APIs: it reads tools/legacy/v2_engine.js off disk and evaluates it, and
+  // it swaps the global Math.random. That is exactly why it lives here rather than inside
+  // the engine package — see the comment in pnpm-workspace.yaml.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"]
+}

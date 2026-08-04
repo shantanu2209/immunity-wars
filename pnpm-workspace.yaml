@@ -7,6 +7,12 @@
 
 packages:
   - 'packages/*'
+  # Test suites that cannot live inside a package. The equivalence rig loads the legacy
+  # CommonJS engine off disk and swaps the global Math.random, so it needs Node APIs —
+  # which packages/engine forbids by design (tsconfig "types": [], plus the
+  # engine-no-node-builtins dependency-cruiser rule). Keeping it here preserves that
+  # purity guarantee instead of poking a hole in it for the sake of a test.
+  - 'tests/*'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed
