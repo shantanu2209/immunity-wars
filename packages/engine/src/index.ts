@@ -98,6 +98,18 @@ export { branchLen, famOf } from './primitives.js';
 
 export { setKnobs } from './knobs.js';
 
+/** B3 — state construction, the Force tool, and the crisis-event machinery. */
+export {
+  applyEvent,
+  forceInjectCard,
+  forceInjectType,
+  makeInvader,
+  newGame,
+  respectWormCap,
+} from './construct.js';
+
+export { pushUndo, undo, viewState } from './view.js';
+
 /**
  * B2 — the pure query layer, under the names legacy publishes.
  *

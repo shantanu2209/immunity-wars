@@ -131,6 +131,12 @@ export interface Engine {
   famOf(iv: Invader): string;
   branchLen(organ: string): number;
   makeInvader(g: GameState, card: Record<string, unknown>): Invader;
+  respectWormCap(g: GameState, card: unknown): unknown;
+  forceInjectCard(g: GameState, dz: string): Invader | null;
+  forceInjectType(g: GameState, type: string): Invader;
+  applyEvent(g: GameState, key: string): void;
+  pushUndo(g: GameState): void;
+  undo(g: GameState): unknown;
   DECK_MASTER: { dz: string; type: string; lane: string }[];
 
   [key: string]: unknown;

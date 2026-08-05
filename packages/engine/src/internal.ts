@@ -33,3 +33,5 @@ export {
 export { cap1, clone, d6, lymphPartners, organsFor, resetUid, shuffle, uid } from './primitives.js';
 
 export { knobs, resetKnobs } from './knobs.js';
+
+export { fireTurnStart, noteWorm, pushLog, rollOrgan, scheduleEvents } from './construct.js';
