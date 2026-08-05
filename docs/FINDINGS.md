@@ -30,6 +30,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 17 | Brain `branch:3` restored one turn of Eosinophil slack | **Method** | Why the B5 scenarios exist |
 | 18 | Degranulate costs half the Brain to use | **Design** | Report only |
 | 19 | The lytic-cycle array spread is defensive, not load-bearing | Low | Comment at the site |
+| 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | Port as-is; fix in Phase 3 |
 
 ---
 
@@ -489,6 +490,59 @@ by accident.
 
 ---
 
+### What B7 actually did about it: NOTHING, and that is the finding
+
+`noUncheckedIndexedAccess` was enabled at B7 expecting it to force this decision into the open.
+**It did not flag this lookup at all.** The reason is worth stating plainly, because it is a
+limit of the tool rather than an oversight:
+
+```ts
+return iv.novel ? 'X' : (FAMILY[iv.disease] ?? 'EXB');
+```
+
+That `?? 'EXB'` is **mandatory** — legacy has `|| "EXB"` and a bug-for-bug port must reproduce
+it. So the fallback that makes the port *correct* is the same fallback that makes the compiler
+*silent*. Deleting it does produce an error —
+
+```
+TS2322: Type 'FamilyKey | undefined' is not assignable to type 'AbPoolKey'
+```
+
+— which is the only way to see the lookup at all, and doing so would break equivalence.
+
+**The danger here is not an unhandled miss. It is a HANDLED miss whose handling is wrong for
+exactly one card.** No type system will ever say so, because from the compiler's point of view
+`?? 'EXB'` is a complete and correct answer. It is only wrong because Pathogen X is not a
+bacterium.
+
+### The consequence, pinned by test
+
+`tests/equivalence/src/pathogen-x.test.ts` demonstrates what is actually at stake, rather than
+asserting the lookup shape:
+
+| | `famOf` | Player holding 3 EXB antibodies, no clone found |
+|---|---|---|
+| `novel: true` | `X` | **Blocked** — *"This antigen is BRAND NEW… Run CLONAL SELECTION"* |
+| flag lost | `EXB` | **Destroyed outright.** Clonal selection never happens |
+
+Pathogen X exists to teach clonal selection: a germ your body has never met, against which no
+antibody you own fits, so you must spend AP searching millions of receptors before you can make
+anything. Lose the `novel` flag anywhere along the path — `makeInvader`, the draw, the
+co-infection event, a future content loader, a JSON round-trip that drops a `false`-y field —
+and an EXB antibody you happened to be holding for an unrelated bacterium simply kills it. The
+card still appears; the lesson silently does not.
+
+**Every existing test would still pass.** That is why the consequence is pinned rather than the
+mechanism.
+
+**Disposition: unchanged, and deliberately so.** The fix is one line in `content` — add
+`"Pathogen X": "EXB"`… which would be *wrong*, or a dedicated sentinel, which is a design
+decision about what a novel antigen's class even means. It is Task C's problem, where the
+tables move behind a Zod loader and the schema can require every `DECK_MASTER.dz` to have a
+`FAMILY` entry or an explicit, documented exemption.
+
+---
+
 ## 14. The three worm safeguards — all verified, all holding
 
 Shantanu asked for these to be verified rather than assumed, on the grounds that this project
@@ -725,3 +779,49 @@ reasoning is a comment at the site in `packages/engine/src/spread.ts` rather tha
 
 This is the same shape as #14: a property that currently holds for a reason nobody wrote down.
 The difference is that this one is cheap to keep true, so it is kept rather than pinned.
+
+---
+
+## 20. `returnAP` does not validate its pid, and can write NaN into the AP budget
+
+**Found by the compiler at B7**, not by any test — which is the entire argument for enabling
+`noUncheckedIndexedAccess`.
+
+`allocateAP` validates its target:
+
+```js
+if(!g.players || !g.players.includes(to)) return err("Unknown player.");
+```
+
+`returnAP` has no equivalent check. An unknown or stale pid therefore reaches the arithmetic
+with no entry in `g.apBudget`, and the guard lets it through whenever `amount` is 0:
+
+```js
+if((g.apBudget[from]||0) < amt) return err("You don't have that much AP to return.");
+//  (undefined || 0) < 0   is   false   -> falls through
+g.apBudget[from] -= amt;   // undefined - 0  ->  NaN
+```
+
+Verified against legacy:
+
+```
+returnAP{pid:'ghost', amount:0}  ->  {ok:true}
+apBudget after                   ->  {P1:4, P2:0, ghost:NaN}
+```
+
+### Why this is not purely theoretical
+
+`apBudget` is exposed through `viewState()`, so the NaN reaches every client and renders. And
+pids in multiplayer come from the **relay**, not from trusted local code — a reconnecting player
+with a regenerated pid, or a stale client retrying a `returnAP` after the turn moved on, is
+exactly how an unrecognised pid arrives.
+
+The damage is contained rather than catastrophic: `apAvail()` reads
+`g.apBudget[pid] ? ... : 0`, and NaN is falsy, so it yields 0 rather than propagating. The
+visible symptom would be a garbage AP value in the UI for a player nobody recognises.
+
+**Disposition: ported as-is, and pinned by comment at the site.** The fix is a one-line
+`players.includes(from)` guard to match `allocateAP`, but it changes behaviour and therefore
+belongs to Phase 3, when the new relay is built and the multiplayer path is being reworked
+anyway. Zod validation at the network boundary (`docs/PHASE1_BRIEF.md` §6, seam 7) would also
+catch it, which is the better place for it.
