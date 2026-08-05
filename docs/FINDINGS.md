@@ -98,6 +98,14 @@ inside the macrophage) are all ineligible types. **A resident must be moved off 
 
 So of the game's 14 seats (7 cells + 7 residents), the bot meaningfully plays **six**.
 
+**Corroborated independently at B6.** Porting `simulate()` exposed a second consequence: the
+bot's NET check counts `invadersWith(neutrophil)` rather than `netTargets`, which are different
+predicates — but replacing one with the other diverges on **zero games**, because the guard
+`n.zone !== 'hub'` short-circuits first and the count is never evaluated. Static confirmation
+from the source: the bot issues `move` for the helper only, and reaches `goTo()` for `tcell`,
+`nk`, `eosinophil` and `macrophage` — the Neutrophil appears in exactly one line of the whole
+bot, the NET attempt itself. The seat is not merely underused; it is unreachable.
+
 ### 1.3 Mechanics the bot cannot respond to
 
 | Mechanic | What the bot does |

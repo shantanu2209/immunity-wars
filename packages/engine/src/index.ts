@@ -115,6 +115,9 @@ export { applyAction } from './actions.js';
 
 /** B5 — turn resolution and the rare-event machinery. */
 export { fireRare, resolveSpread } from './spread.js';
+
+/** B6 — the balance simulator. Read the header of simulate.ts before quoting any number. */
+export { simulate } from './simulate.js';
 export type { Action, ActionResult } from './state.js';
 
 /**
