@@ -166,14 +166,15 @@ describe('Q1: two worms at the Brain on Hard — is there a reachable line of pl
     try {
       const g = legacy.newGame({ difficulty: 'hard', science: false }) as GameState;
       expect(g.ap, 'Hard turn budget').toBe(4);
-      expect(
-        (legacy as unknown as { ORGANS: Record<string, { branch: number; integrity: number }> })
-          .ORGANS.brain.branch,
-      ).toBe(3);
-      expect(
-        (legacy as unknown as { ORGANS: Record<string, { branch: number; integrity: number }> })
-          .ORGANS.brain.integrity,
-      ).toBe(2);
+      const organs = (
+        legacy as unknown as {
+          ORGANS: Record<string, { branch: number; integrity: number } | undefined>;
+        }
+      ).ORGANS;
+      const brainDef = organs.brain;
+      expect(brainDef, 'the Brain is in play').toBeDefined();
+      expect(brainDef?.branch).toBe(3);
+      expect(brainDef?.integrity).toBe(2);
     } finally {
       restoreRng();
     }

@@ -387,7 +387,8 @@ export function resolveSpread(g: GameState): Frame[] {
         iv.age = (iv.age || 0) + 1;
         if ((iv.age || 0) >= TOXIN_AFTER && !iv.emitted) {
           iv.emitted = true;
-          const tname = TOXIN_MAKERS[iv.disease] as string;
+          // The filter above is `TOXIN_MAKERS[iv.disease]` truthy, so this cannot miss.
+          const tname = TOXIN_MAKERS[iv.disease] ?? '';
           g.invaders.push({
             id: uid(),
             type: 'toxin',
@@ -569,7 +570,19 @@ export function resolveSpread(g: GameState): Frame[] {
   // addition below is `undefined + 1` for those, exactly as legacy's `++` is.
   arrivals.forEach((iv) => {
     const k = tally(iv);
-    g.stats.arrivals[k] = (g.stats.arrivals[k] as number) + 1;
+    // THE LOOKUP MISSES, ON PURPOSE. docs/FINDINGS.md #3.
+    //
+    // `arrivals` is initialised with four keys — virus, hidden, bacteriaTagged, bacteriaUntagged
+    // — but `tally` returns the RAW invader type for everything else, so worm/toxin/venom/
+    // fungus/malaria/parasite index a key that does not exist. Legacy's `++` then evaluates
+    // `undefined + 1` and stores NaN, permanently.
+    //
+    // This is the case noUncheckedIndexedAccess exists to surface, and the temptation is to
+    // "fix" it here with `?? 0`. That would be a behaviour change inside Task B. The NaN is
+    // reproduced explicitly instead, so it reads as a decision rather than an oversight, and
+    // the corpus keeps proving the port matches. The fix lands as its own commit, after.
+    const seen = g.stats.arrivals[k];
+    g.stats.arrivals[k] = seen === undefined ? NaN : seen + 1;
   });
 
   // 4) Resident macrophages are player-controlled and no longer engulf automatically.
@@ -655,7 +668,9 @@ export function resolveSpread(g: GameState): Frame[] {
   // 5) ORGAN DAMAGE
   arrivals.forEach((iv) => {
     const k = tally(iv);
-    g.stats.gotThrough[k] = (g.stats.gotThrough[k] as number) + 1;
+    // Same deliberate miss as `arrivals` above — docs/FINDINGS.md #3.
+    const through = g.stats.gotThrough[k];
+    g.stats.gotThrough[k] = through === undefined ? NaN : through + 1;
     const org = g.organs[iv.organ as string];
     if (!org) return;
     org.hp = Math.max(0, org.hp - 1);
@@ -719,7 +734,10 @@ export function resolveSpread(g: GameState): Frame[] {
     const pools = [...FAM_KEYS, 'X'].filter((f) => (g.ab[f] ?? 0) > 0);
     if (pools.length) {
       const f = pools.sort((a, b) => (g.ab[b] ?? 0) - (g.ab[a] ?? 0))[0] as string;
-      g.ab[f] -= 1;
+      // `pools` was filtered on (g.ab[f] ?? 0) > 0, so this pool is present and positive. Read
+      // it rather than re-index and hope.
+      const leaked = g.ab[f] ?? 0;
+      g.ab[f] = leaked - 1;
       pushLog(g, `Damaged kidneys leaked a <b>${f}</b> antibody into the urine.`, 'bad');
     }
   }

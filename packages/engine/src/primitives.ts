@@ -16,9 +16,19 @@ import type { AbPoolKey, Difficulty, OrganKey, RouteKey } from './types.js';
 export function shuffle<T>(a: T[]): T[] {
   for (let i = a.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
-    const ai = a[i];
-    a[i] = a[j];
-    a[j] = ai;
+    // Both indices are in range by construction: i runs from length-1 down to 1, and j is drawn
+    // from [0, i]. The compiler cannot express that, so the swap is guarded with `in` rather
+    // than asserted away.
+    //
+    // `in` and not `!== undefined` on purpose: an array holding a genuine `undefined` VALUE must
+    // still swap, exactly as legacy does. Only a HOLE — which Fisher-Yates over a dense array
+    // cannot produce — would skip, and the engine never shuffles a sparse array.
+    if (i in a && j in a) {
+      const ai = a[i] as T;
+      const aj = a[j] as T;
+      a[i] = aj;
+      a[j] = ai;
+    }
   }
   return a;
 }

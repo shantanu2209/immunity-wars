@@ -97,9 +97,20 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         return err('You can only return AP during the allocation phase.');
       const from = a.pid as string;
       const amt = Math.max(0, (a.amount as number) | 0);
-      if ((g.apBudget[from] || 0) < amt) return err("You don't have that much AP to return.");
+      const fromBudget = g.apBudget[from];
+      if ((fromBudget || 0) < amt) return err("You don't have that much AP to return.");
       if (from === g.captain) return err("The captain's AP is already the unallocated pool.");
-      g.apBudget[from] -= amt;
+      // THIS LOOKUP GENUINELY MISSES, and the miss is a bug being preserved.
+      //
+      // returnAP does not validate that `from` is a player — allocateAP does, but this does
+      // not. So an unknown or stale pid reaches here with fromBudget === undefined. The guard
+      // above passes whenever amt === 0, because (undefined || 0) < 0 is false, and legacy then
+      // evaluates `undefined - 0` and writes NaN into the budget map.
+      //
+      // Verified against legacy: returnAP{pid:'ghost', amount:0} yields apBudget.ghost === NaN.
+      // Reproduced deliberately — docs/FINDINGS.md #20. Written as an explicit NaN rather than
+      // left as an accident of arithmetic, so the next reader sees it is intended-as-ported.
+      g.apBudget[from] = fromBudget === undefined ? NaN : fromBudget - amt;
       g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;
       return ok();
     }
@@ -370,7 +381,8 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           'This antigen is BRAND NEW — no antibody you own fits it. Run CLONAL SELECTION to find the matching B-cell clone.',
         );
       }
-      if ((g.ab[f] ?? 0) < 1) {
+      const held = g.ab[f] ?? 0;
+      if (held < 1) {
         return err(
           `You have no ${f} antibodies. Antibodies are SPECIFIC — an antibody for another class will not fit ${iv.disease}.`,
         );
@@ -385,7 +397,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         // NOTE: unreachable in play — the only variant card is a parasite, which `ok2` already
         // rejected above. docs/FINDINGS.md #4. Ported exactly, including that this branch
         // spends AP even for a remembered pathogen, where the success path below would not.
-        g.ab[f] -= 1;
+        g.ab[f] = held - 1;
         spendAP(g, g._actingPid, apCost);
         pushLog(
           g,
@@ -394,7 +406,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         );
         return ok();
       }
-      g.ab[f] -= 1;
+      g.ab[f] = held - 1;
       killInvader(g, iv, 'antibody');
       if (wasRemembered) {
         pushLog(
@@ -534,12 +546,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (f === 'X' && !g.cloneFound) {
         return err('Brand-new antigen — no antibody fits it yet. Run CLONAL SELECTION first.');
       }
-      if ((g.ab[f] ?? 0) <= 0) {
+      const heldForTag = g.ab[f] ?? 0;
+      if (heldForTag <= 0) {
         return err(
           `You have no ${f} antibodies. Antibodies are SPECIFIC — the wrong class will not stick to ${iv.disease}.`,
         );
       }
-      g.ab[f] -= 1;
+      g.ab[f] = heldForTag - 1;
       iv.tagged = true;
       if (memoryHit(g, iv.disease)) {
         pushLog(g, `Memory antibodies coated ${iv.disease} instantly — free.`, 'good');

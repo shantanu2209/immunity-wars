@@ -33,8 +33,12 @@ export function spendAP(g: GameState, pid: string | null | undefined, n?: number
 
 /** A free action granted by the Helper T-Cell is consumed before any AP is. */
 export function spend(g: GameState, ck: string | null | undefined): void {
-  if (ck && g.free && (g.free[ck] ?? 0) > 0) {
-    g.free[ck] -= 1;
+  // Read the free-action count ONCE. The guard is what establishes the key is present, so
+  // reusing its value is the handling — re-indexing afterwards is what created a lookup the
+  // compiler could not prove.
+  const free = ck && g.free ? (g.free[ck] ?? 0) : 0;
+  if (ck && g.free && free > 0) {
+    g.free[ck] = free - 1;
     return;
   }
   spendAP(g, g._actingPid, 1);
