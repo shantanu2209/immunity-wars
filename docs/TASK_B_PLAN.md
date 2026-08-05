@@ -130,6 +130,21 @@ dengue ADE · all 7 rare events (forced via `fireRare`) · all 9 crisis events (
 saturation · hard-mode lymphatic spread · attrition loss at `maxTurn + GRACE_CLEAR` ·
 organ convalescence and hard-mode compensation · neutrophil and eosinophil regeneration.
 
+Three of these are **not** equivalence checks but reachability questions the aggregate metrics
+cannot answer. They are scripted here because B5 is the first point at which deep game states
+become reachable, and because each one is a standing safety property somebody currently
+believes holds:
+
+| Scenario | Question | Why it needs a scenario |
+|---|---|---|
+| **Two worms lodged at the Brain, Hard, `branch:3`** | Does a reachable line of play exist? | This is the dead end the brain lane was shortened to remove. A ~2% scenario that always loses is invisible to every metric in the panel — see [`FINDINGS.md`](FINDINGS.md) #2. Measured cost is 8 AP per worm at `branch:3` against a 4 AP/turn budget, so the answer is not obvious either way |
+| **A worm on a route under hard-mode lymphatic spread** | Can a worm ever be cloned? | "Worms do not multiply" holds today because `makeInvader` always places them at `zone:"branch"`, **not** because the spread path type-checks them. It is the one duplication path guarded by placement rather than by intent — [`FINDINGS.md`](FINDINGS.md) #14 |
+| **A resident macrophage left on step 0 for a whole game** | Can its free engulf ever fire? | Measured 0/37,828 organ-turns. Pinning it as a scenario means any future change that makes residents useful shows up as a deliberate decision — [`FINDINGS.md`](FINDINGS.md) #5 |
+
+Note what the first two have in common: **the two-worms case is a reachability question, so a
+"passes" result means the scenario could not be constructed, not that the game is safe.** The
+scenario must report which it was.
+
 **(d) Round-trip.** After every action: `undo`-then-replay, and
 `JSON.parse(JSON.stringify(g))`-then-continue. Both engines must agree. This is also what
 covers the `undo` stack independently of the per-action hash.

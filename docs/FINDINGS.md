@@ -24,6 +24,8 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 11 | Assorted dead code | Low | Port as-is |
 | 12 | Four bot-needed internals are unexported | Low | Rig reimplements them |
 | 13 | Pathogen X exists only via two lookup misses | **B7 risk** | Pinned by test before the flag is flipped |
+| 14 | The three worm safeguards all hold | **Verified** | No action; one bypass documented |
+| 15 | The Heart has the shortest branch on the board | **Design** | Report only |
 
 ---
 
@@ -134,27 +136,54 @@ pre-27-July game" — understated it: the brain branch change is a minor part of
 They must not be used as targets, as a sanity check, or as a comparison point. `CLAUDE.md` is
 updated to match.
 
-### The brain `branch:3 → 4` experiment
+### The brain `branch:3 → 4` experiment — measured the average, did NOT measure the tail
 
 Run as a scratch experiment on a mutated in-memory copy (never committed, never written to
-`tools/legacy`), 10 batches × 100 games per difficulty, identical seeds in both arms:
+`tools/legacy`), 10 batches × 100 games per difficulty, identical seeds in both arms.
 
-**No metric moved beyond 2 standard deviations, at any difficulty.** Win rate, loss turn,
-organ hits, kills, invaders left, organs damaged, antibodies made — every delta was inside the
-noise band.
+**Result on the aggregate: no metric moved beyond 2 standard deviations, at any difficulty.**
+Win rate, loss turn, organ hits, kills, invaders left, organs damaged, antibodies made — every
+delta was inside the noise band. It does shift *which* organ fails first (the Brain's share of
+first failures drops 28% → 20% on Training, 20% → 16% on Hard), but another organ simply fails
+instead, so timing and outcome are unchanged.
 
-It does change *which* organ fails first — the Brain's share of first failures drops from
-28% → 20% (Training) and 20% → 16% (Hard) — but another organ simply fails instead, so
-timing and outcome are unchanged.
+**This must NOT be recorded as "no effect, closed."** The measurement did not test what the
+change was for.
 
-Two honest caveats:
+**What the change was actually for.** Shantanu shortened the lane to remove an *unwinnable
+state*: two worms lodged at the Brain on Hard, where 4 AP is not enough to coat them and get
+the Eosinophil into position before the organ falls. A guaranteed loss with no counterplay.
 
-- This says the brain change is **irrelevant to the bot's 0% gap**. It cannot speak to human
-  play, and a bot playing 6 of 14 seats may well be insensitive to changes a competent player
-  would feel.
+**Aggregate metrics are structurally incapable of detecting that.** A scenario that occurs in
+~2% of games and always loses moves a mean by ~2% of one metric — far inside the noise bands
+measured above. The experiment answered "does this change the average?" (no) when the question
+was "does this remove a dead end?" (unmeasured).
+
+**One measurement that does bear on the rationale.** The Eosinophil's travel cost from the
+bloodstream hub to organ tissue (step 0), on Hard, where the budget is 4 AP per turn:
+
+| | Travel | Full kill sequence for one lodged worm |
+|---|---|---|
+| `branch:3` | **4 AP** | 4 travel + 1 produce + 1 coat + 2 degranulate = **8 AP** (2.00 turns) |
+| `branch:4` | **5 AP** | 5 travel + 1 produce + 1 coat + 2 degranulate = **9 AP** (2.25 turns) |
+
+At `branch:4` the travel *alone* (5 AP) exceeds a full turn's budget on Hard, so the Eosinophil
+cannot reach the Brain in one turn no matter what else is sacrificed. At `branch:3` it costs
+exactly one turn's AP. That is a threshold effect, not a gradual one, and it is invisible to
+every metric in the panel above.
+
+**The correct record: no effect on the average; the tail case the change targeted was not
+measured.** Whether a reachable line of play now exists is added as a B5 scripted scenario
+(`docs/TASK_B_PLAN.md` §1.4c).
+
+Two further notes worth keeping:
+
 - The equivalence rig **does** detect `branch:3 → 4` immediately, as a per-action state
-  divergence. That contrast is worth keeping: **per-action equivalence is far more sensitive
-  than aggregate balance metrics**, which is exactly why Task B gates on the former.
+  divergence. **Per-action equivalence is far more sensitive than aggregate balance metrics** —
+  which is exactly why Task B gates on the former, and why the metric panel is layered behind
+  it rather than instead of it.
+- The bot plays 6 of 14 seats, so its insensitivity to a rule change is weak evidence about
+  human play in either direction.
 
 ---
 
@@ -278,11 +307,35 @@ Measured: **0 eatable targets across 37,828 organ-turns.**
 A resident must first be repositioned with `resmove` (1 AP) onto a branch step where invaders
 are actually marching. That is a legal and presumably intended line of play — Shantanu and
 Kartik win regularly, so human players are evidently doing it — but the default position is
-strictly inert, and nothing in the game says so.
+strictly inert.
 
-**Disposition: report only.** Whether residents should start on a patrol step, or whether the
-UI should say that a parked resident cannot act, is a design conversation with Kartik. The
-port reproduces the behaviour exactly.
+### It is a gap in the PHYSICAL game too, not only the app
+
+Checked against `docs/Immunity_Wars_Rulebook_v3_1.docx`, `Immunity_Wars_Quick_Reference_v3.docx`
+and `Immunity_Wars_Study_Packet_v3_1.docx`.
+
+Every rule involved is stated correctly and individually. It is the *combination* that is never
+drawn out, and three separate surfaces imply the opposite:
+
+| Source | Text | Problem |
+|---|---|---|
+| Rulebook, setup | "Place one resident macrophage token in each of the seven **organ boxes**." | Starts it on the one space where it can never act |
+| Rulebook, action table | Engulf — free, once per turn — "Destroy one virus or coated bacterium **on its space**." | True, but on the starting space the set of eligible targets is permanently empty |
+| Rulebook, strategy tips | "…tells you how many turns you have and which resident macrophage is **already in position**." | The opposite of true. It is not in position; it is on the one space that cannot work |
+| Study packet | "They are the local police force, **already in position before anything arrives**." | Reinforces the same wrong mental model, in the teaching material |
+| App tooltip (`v2_ui.html`) | "Patrols the {Organ} only; never leaves. **Eats one virus or tagged bacterium here each turn.**" | States as fact something that never happens from the default position |
+
+The app does eventually tell you — but only *after* a failed tap: *"Nothing here this resident
+can engulf. Move it onto a virus or a tagged bacterium in its own organ."* A player learns this
+by bouncing off it, and a player at a table with the printed board never learns it at all.
+
+**Nowhere in any of the five surfaces is it stated that the resident must be moved off the
+organ box before its free engulf can ever do anything.**
+
+**Disposition: report only, and it is a design conversation, not a bug fix.** Several shapes it
+could take — the resident could start on branch step 1; Patrol could be free for the first step;
+or the rulebook could simply say it. That is Kartik's call. The port reproduces the current
+behaviour exactly.
 
 ---
 
@@ -417,3 +470,71 @@ ordinary `EXB` bacterium.
 **Disposition:** port as-is, and both misses are now pinned by tests in
 `tests/equivalence/src/data.test.ts` so B7 has to make the decision deliberately rather than
 by accident.
+
+---
+
+## 14. The three worm safeguards — all verified, all holding
+
+Shantanu asked for these to be verified rather than assumed, on the grounds that this project
+has already found one silently disabled guard. All three hold.
+
+| Safeguard | Verdict | Enforced by | Evidence |
+|---|---|---|---|
+| Never more than one worm spawns in a turn | **HOLDS** | `WORM_MAX_PER_TURN = 1` and `g.wormsThisTurn`, checked in `wormAllowed()` and applied by `respectWormCap()` | max observed 1, across 1,200 games (573 of which contained a worm) |
+| Worms do not multiply inside the body | **HOLDS** | Type gates on every duplication path | 0 worm ids unaccounted for by a spawn, across 1,200 games |
+| Never more than two worms in a whole game | **HOLDS** | `WORM_MAX_PER_GAME = 2` and `g.wormsSpawned` | max observed 2, same 1,200 games |
+
+**Why "worms do not multiply" holds, structurally.** There are exactly three places the engine
+duplicates an existing invader, and a worm can reach none of them:
+
+| Duplication path | Gate | Can a worm reach it? |
+|---|---|---|
+| Bacterial division | `iv.type === "bacteria"` | No — type gate |
+| Lytic burst | operates on `type === "hidden"` | No — type gate |
+| Hard-mode lymphatic spread | `iv.zone === "route"` | **No** — `makeInvader` always places a worm at `zone:"branch"`, at every difficulty. Measured: a worm was observed on a route **0 times** in 900 games |
+
+The third is the only one not protected by an explicit type check, so it is the one worth
+recording: worms are safe from it by placement, not by intent. If a future change ever let a
+worm start or travel on a route, hard-mode lymphatic spread would clone it and the safeguard
+would fail silently. Worth a scripted scenario at B5.
+
+**Every spawn path is guarded.** The infection draw, the reinfection draw, and the
+`coInfection` crisis event all route through `respectWormCap()` before `makeInvader()`, and all
+call `noteWorm()` afterwards. The rare events that inject invaders directly (`tbReactivation`,
+`postFluPneumonia`, `shingles`, `malariaRelapse`) create bacteria, hidden viruses and malaria —
+never worms.
+
+**One bypass, by design, with a wrinkle.** `forceInjectType()` and `forceInjectCard()` ignore
+the caps deliberately — they are the testing tool, and `docs/FINDINGS.md` treats that as
+intended. The wrinkle is that they also **do not increment `wormsSpawned`**, so a forced worm is
+invisible to the accounting: after forcing three worms, a fourth can still arrive naturally.
+Harmless for a test tool, but it means "worms in play" and "worms spawned" can disagree, and
+anything that ever reads `wormsSpawned` as a count of worms present would be wrong.
+
+---
+
+## 15. The Heart has the shortest branch on the board, and fails first most often
+
+| Organ | Branch length | Integrity | Share of first organ failures (bot, 400 games/difficulty) |
+|---|---|---|---|
+| **Heart** | **2** | 3 | **25% Normal · 34% Hard** — the most common on both |
+| Brain | 3 | **2** | 18% Normal · 20% Hard |
+| Every other organ | 3 | 3 | 7–18% |
+
+The Heart is the only organ with a 2-step branch. Every other organ, including the Brain, is 3.
+That means an invader turning down the Heart branch reaches tissue **one full turn sooner** than
+anywhere else, and a defending cell needs one less AP to get there but has one less turn to
+decide to.
+
+This is consistent and large: the Heart is the most common first-failure organ at every
+difficulty the bot plays, ahead of the Brain, which has the lowest integrity on the board.
+
+**This is a design question for Kartik, not a defect.** Is the Heart intended to be the most
+fragile organ in play? There is a defensible reading either way — endocarditis and rheumatic
+fever are genuinely fast and genuinely devastating, and the Heart being close to the
+bloodstream is anatomically honest. But the rulebook's own strategy section warns players about
+the *Brain* ("Watch the Brain. It has only 2 integrity") and says nothing about the Heart,
+which suggests the Heart's fragility may not be deliberate.
+
+**Report only. Nothing changed.** Note the interaction with finding #2: the Brain's branch was
+shortened from 4 to 3 to open up counterplay, and the Heart has been at 2 throughout.
