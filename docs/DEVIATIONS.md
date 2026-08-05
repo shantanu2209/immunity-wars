@@ -128,6 +128,54 @@ corpus evidence.
 exactly these two paths from the comparison hash, so the corpus stays meaningful. That list is a
 liability and is kept short — everything on it is a place the corpus has stopped watching.
 
+## 4. `returnAP` validates its pid, so it can no longer write NaN into the AP budget
+
+**Legacy behaviour.** `allocateAP` checks its target is a real player. `returnAP` does not. An
+unknown or stale pid therefore reached the arithmetic with no budget entry, and the guard let it
+through whenever `amount` was 0:
+
+```js
+if((g.apBudget[from]||0) < amt) return err("You don't have that much AP to return.");
+//  (undefined || 0) < 0  is  false   -> falls through
+g.apBudget[from] -= amt;                //  undefined - 0  ->  NaN
+```
+
+**Port behaviour.** The same check `allocateAP` has always had, down to the error string:
+
+```ts
+if (!g.players || !g.players.includes(from)) return err('Unknown player.');
+```
+
+**Why this one was fixed and not merely recorded.** It is reachable in shipped multiplayer,
+where pids arrive from the **relay** rather than from trusted local code — a reconnecting client
+with a regenerated pid, or a stale client retrying after the turn moved on. The NaN lands in
+`apBudget`, which `viewState()` broadcasts to every client. Recorded as
+[`FINDINGS.md`](FINDINGS.md) #20.
+
+**Evidence that the change is confined.** The equivalence corpus is single-player, so it never
+issues `returnAP` — its silence is not evidence. `tests/equivalence/src/returnap.test.ts`
+supplies the missing half: eight legal allocation sequences × 5 seeds compared against legacy
+byte for byte, covering give-and-take-back, return-everything, **return-zero for a real player**
+(the exact shape that used to poison the map), return-more-than-held, captain-returns-to-self,
+out-of-phase, and through to `confirmAllocation`. All identical.
+
+Exactly one path differs:
+
+| | legacy | port |
+|---|---|---|
+| `returnAP{pid:'ghost', amount:0}` | `{ok:true}`, `apBudget.ghost = NaN` | `{ok:false, error:'Unknown player.'}`, no entry |
+| `returnAP{pid:'ghost', amount:3}` | already refused | refused, different string |
+| `allocateAP{toPid:'ghost'}` | refused | **unchanged** |
+
+The non-zero case was already refused by the old guard, so the behavioural change is narrower
+than "unknown pids are now rejected" — only the zero-amount case changes outcome. The error
+*string* changes on both, from "You don't have that much AP to return." to "Unknown player.",
+which is the one legacy already used for the same condition in `allocateAP`.
+
+**Decided by:** Shantanu — fix it, own commit, after the #3 fix, with evidence.
+**Test:** `tests/equivalence/src/returnap.test.ts`, four cases including an explicit assertion
+that `allocateAP` is untouched.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

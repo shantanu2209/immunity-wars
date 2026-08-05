@@ -30,7 +30,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 17 | Brain `branch:3` restored one turn of Eosinophil slack | **Method** | Why the B5 scenarios exist |
 | 18 | Degranulate costs half the Brain to use | **Design** | Report only |
 | 19 | The lytic-cycle array spread is defensive, not load-bearing | Low | Comment at the site |
-| 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | Port as-is; fix in Phase 3 |
+| 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | **FIXED** — [`DEVIATIONS.md`](DEVIATIONS.md) #4 |
 
 ---
 
@@ -820,8 +820,21 @@ The damage is contained rather than catastrophic: `apAvail()` reads
 `g.apBudget[pid] ? ... : 0`, and NaN is falsy, so it yields 0 rather than propagating. The
 visible symptom would be a garbage AP value in the UI for a player nobody recognises.
 
-**Disposition: ported as-is, and pinned by comment at the site.** The fix is a one-line
-`players.includes(from)` guard to match `allocateAP`, but it changes behaviour and therefore
-belongs to Phase 3, when the new relay is built and the multiplayer path is being reworked
-anyway. Zod validation at the network boundary (`docs/PHASE1_BRIEF.md` §6, seam 7) would also
-catch it, which is the better place for it.
+### It shipped, people played it, and no test found it — the compiler did
+
+This bug is in `tools/legacy/v2_engine.js`, which is the engine inside every build that has been
+played: `immunity-wars-v2.html`, `public/index.html`, the LAN server. It has been reachable in
+multiplayer the whole time.
+
+Fourteen legacy test suites did not catch it. Neither did the equivalence corpus, and the corpus
+*could not have* — it is single-player and never issues `returnAP`. It was found by
+`noUncheckedIndexedAccess` pointing at `g.apBudget[from] -= amt` and asking what happens when
+that lookup misses.
+
+That is the entire argument for the flag, made concrete: it does not find bugs by running the
+code, so it is not limited to the paths the tests happen to reach.
+
+**Disposition: FIXED** — [`DEVIATIONS.md`](DEVIATIONS.md) #4. Originally deferred to Phase 3;
+Shantanu called it as reachable-in-shipped-code and therefore worth fixing now, with confined-
+change evidence. Zod validation at the network boundary (`docs/PHASE1_BRIEF.md` §6, seam 7)
+remains the better long-term home for the check, and this fix does not remove the need for it.

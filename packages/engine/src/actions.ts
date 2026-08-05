@@ -97,20 +97,20 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         return err('You can only return AP during the allocation phase.');
       const from = a.pid as string;
       const amt = Math.max(0, (a.amount as number) | 0);
-      const fromBudget = g.apBudget[from];
-      if ((fromBudget || 0) < amt) return err("You don't have that much AP to return.");
+      // FIXED — docs/DEVIATIONS.md #4, was docs/FINDINGS.md #20.
+      //
+      // Legacy validates the pid in allocateAP but NOT here, so an unknown or stale pid reached
+      // the arithmetic with no budget entry. With amount 0 the guard `(undefined || 0) < 0` is
+      // false and lets it through, and `undefined - 0` wrote NaN into the budget map — which
+      // viewState then exposes to every client. In multiplayer the pids come from the relay, so
+      // a reconnecting client with a regenerated pid is exactly how one arrives.
+      //
+      // The check mirrors allocateAP's, down to the error string, so the two are symmetric.
+      if (!g.players || !g.players.includes(from)) return err('Unknown player.');
+      const fromBudget = g.apBudget[from] ?? 0;
+      if (fromBudget < amt) return err("You don't have that much AP to return.");
       if (from === g.captain) return err("The captain's AP is already the unallocated pool.");
-      // THIS LOOKUP GENUINELY MISSES, and the miss is a bug being preserved.
-      //
-      // returnAP does not validate that `from` is a player — allocateAP does, but this does
-      // not. So an unknown or stale pid reaches here with fromBudget === undefined. The guard
-      // above passes whenever amt === 0, because (undefined || 0) < 0 is false, and legacy then
-      // evaluates `undefined - 0` and writes NaN into the budget map.
-      //
-      // Verified against legacy: returnAP{pid:'ghost', amount:0} yields apBudget.ghost === NaN.
-      // Reproduced deliberately — docs/FINDINGS.md #20. Written as an explicit NaN rather than
-      // left as an accident of arithmetic, so the next reader sees it is intended-as-ported.
-      g.apBudget[from] = fromBudget === undefined ? NaN : fromBudget - amt;
+      g.apBudget[from] = fromBudget - amt;
       g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;
       return ok();
     }
