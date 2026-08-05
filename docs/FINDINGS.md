@@ -27,7 +27,9 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 14 | The three worm safeguards all hold | **Verified** | No action; one bypass documented |
 | 15 | The Heart has the shortest branch on the board | **Design** | Report only |
 | 16 | `forceInject*` bypasses the worm caps AND the accounting | Low (dev-only) | Report only |
-| 17 | Brain `branch:4` crosses a hard THRESHOLD on Hard | **Method** | Why the B5 scenarios exist |
+| 17 | Brain `branch:3` restored one turn of Eosinophil slack | **Method** | Why the B5 scenarios exist |
+| 18 | Degranulate costs half the Brain to use | **Design** | Report only |
+| 19 | The lytic-cycle array spread is defensive, not load-bearing | Low | Comment at the site |
 
 ---
 
@@ -152,9 +154,13 @@ instead, so timing and outcome are unchanged.
 **This must NOT be recorded as "no effect, closed."** The measurement did not test what the
 change was for.
 
-**What the change was actually for.** Shantanu shortened the lane to remove an *unwinnable
-state*: two worms lodged at the Brain on Hard, where 4 AP is not enough to coat them and get
-the Eosinophil into position before the organ falls. A guaranteed loss with no counterplay.
+**What the change was actually for.** Shantanu shortened the lane because of the two-worms-at-
+the-Brain case on Hard: 4 AP is not much with which to coat two worms and get the Eosinophil
+into position before the organ falls.
+
+**B5 measured it, and the precise claim is narrower than "unwinnable".** The state is survivable
+at `branch:4` on an otherwise quiet board; what `branch:3` restores is **one turn of Eosinophil
+slack**, which is what lets you survive it while anything else is also demanding AP. See #17.
 
 **Aggregate metrics are structurally incapable of detecting that.** A scenario that occurs in
 ~2% of games and always loses moves a mean by ~2% of one metric — far inside the noise bands
@@ -570,7 +576,7 @@ call in each function — but that changes behaviour, so not during Task B.
 
 ---
 
-## 17. The brain lane change crosses a hard THRESHOLD that no aggregate metric can see
+## 17. The brain lane change restored one turn of slack — and no aggregate metric could see it
 
 The clearest evidence yet for why the B5 scripted scenarios exist alongside the statistical
 corpus, so it is recorded as its own finding rather than left buried inside #2.
@@ -583,21 +589,44 @@ on Hard, where the entire turn budget is **4 AP**:
 | `branch:3` | **4 AP** | 1 | 1 | 2 | **8 AP** | 2.00 |
 | `branch:4` | **5 AP** | 1 | 1 | 2 | **9 AP** | 2.25 |
 
-**Why this is a threshold and not a gradient.** At `branch:4` the travel *alone* costs 5 AP
-against a 4 AP budget. The Eosinophil cannot reach the Brain in a single turn **no matter what
-else is sacrificed** — there is no line of play, at any skill level, that gets it there in one
-turn. At `branch:3` it costs exactly one full turn's AP. The change moves the cost across a
-budget boundary; it does not merely reduce it by 20%.
+**What the change actually did — corrected at B5, and the smaller claim is the true one.**
 
-**What the statistics said about the same change: nothing.** 10 batches x 100 games per
+> `branch:3` restored **one turn of Eosinophil slack**. It did NOT convert an unwinnable state
+> into a winnable one.
+
+This is stated precisely because Kartik may be asked it by a judge, and the accurate version is
+the defensible one. Earlier drafts of this file said the change "removes an unwinnable state".
+That was too strong, and B5 measured the difference.
+
+**Why the correction.** The B5 reachability scenario builds the state directly — two Tapeworms
+lodged at the Brain on Hard — and finds a **line of play that saves the Brain at full integrity**
+(`tests/equivalence/src/reachability.test.ts`, "ANSWER: a line EXISTS at branch:3"). The line
+turns on a fact that is easy to miss: both worms lodge at branch step 0, so they occupy the SAME
+space, and one Eosinophil positioned there can strike both without moving again.
+
+Run the same arithmetic at `branch:4` and the state is *still* survivable on an otherwise quiet
+board — it just costs a turn more, because travel becomes 5 AP against a 4 AP budget and cannot
+be done in one turn no matter what else is sacrificed.
+
+**So what `branch:3` buys is surviving that state WHILE SOMETHING ELSE IS ALSO HAPPENING** — which
+is the real game, and is exactly the margin an isolated scenario cannot measure and an aggregate
+metric cannot see either.
+
+| | Eosinophil travel, hub → Brain tissue | Turns at Hard's 4 AP |
+|---|---|---|
+| `branch:3` | **4 AP** | 1 — the whole budget, but it fits |
+| `branch:4` | **5 AP** | 2 — cannot be done in one turn at any skill level |
+
+**What the statistics said about the same change: nothing.** 10 batches × 100 games per
 difficulty, identical seeds in both arms, ten metrics — **no metric moved beyond 2 standard
 deviations at any difficulty.** Not win rate, not loss turn, not organ hits, not organs damaged.
 
 **Why the metrics could not have seen it.** The scenario is rare — only Tapeworm has Brain
-tropism among the seven worm cards, and the caps allow at most two worms per game — and its
-outcome is binary: a guaranteed loss with no counterplay. A rare, always-losing scenario moves a
-mean by roughly its own frequency, which lands well inside the noise band of every metric
-measured. **A metric panel averages over exactly the tail it needs to detect.**
+tropism among the seven worm cards, and the caps allow at most two worms per game — and the
+quantity that changed is a *margin*, not an outcome. A shift in how much slack a rare state
+leaves you moves a mean by far less than its own frequency, which is already inside the noise
+band of every metric measured. **A metric panel averages over exactly the tail it needs to
+detect.**
 
 ### The methodological point
 
@@ -614,3 +643,77 @@ question that motivated it.
 **Consequence for reporting.** When Task E's metric panel comes back green, the correct
 statement is "no broad shift detected" — never "the change was safe". Those two differ by
 exactly this finding.
+
+---
+
+## 18. Degranulate costs half the Brain to use, so it may never be worth using there
+
+Found while building the B5 reachability proof for #17.
+
+`degranulate` deals 3 damage — enough to kill a 3-HP worm outright — and then:
+
+> the granule blast also burned the **{Organ}** — integrity −1
+
+**The Brain has 2 integrity, the lowest on the board.** So degranulating to save the Brain
+immediately costs half the Brain. Against two lodged worms it is close to self-defeating: you
+spend one of your two points of Brain integrity to remove one of the two threats to it.
+
+The measured alternative is strictly better there. An Eosinophil *strike* is 2 damage for 1 AP
+and does **no** organ damage, so two strikes (2 AP) kill a 3-HP worm without touching the organ,
+versus degranulate's 3 damage for 2 AP plus 1 integrity. Degranulate's only advantage — killing
+in a single action — is worth less than a point of Brain.
+
+### This is not a bug, and the biology is right
+
+Eosinophil degranulation genuinely damages host tissue. That is why parasitic infections cause
+chronic inflammation and scarring, and the rulebook already teaches it:
+
+> Eosinophil granules are indiscriminate poison. Killing a parasite inside tissue damages that
+> tissue — which is why degranulating should feel like a decision rather than a free hit.
+
+The mechanic is doing exactly what it was designed to do. The question is narrower.
+
+### The design question for Kartik
+
+**Given the Brain has only 2 integrity, is degranulate ever the right play there — and is that
+intended?** Three readings, all defensible:
+
+1. *Intended and good.* The Brain is meant to be the organ where your most powerful tool is
+   unavailable. That is a strong, memorable lesson about immune privilege.
+2. *Intended but invisible.* Players may never work out that strike-twice beats degranulate at
+   the Brain, in which case the lesson is not being taught, only enforced.
+3. *Unintended.* The organ-damage rule was written for 3-integrity organs and the Brain's 2 was
+   set separately, so the interaction may simply never have been considered together.
+
+**Report only. Nothing changed.** Related: #15 (the Heart's 2-step branch) is the same shape —
+two individually sound numbers interacting in a way that may not have been designed.
+
+---
+
+## 19. The lytic-cycle array spread is defensive, not load-bearing
+
+A negative control that correctly found nothing, recorded because "we tried to break it and
+could not" is a result rather than a non-event.
+
+`resolveSpread` snapshots the invader list before the lytic cycle:
+
+```js
+const pre = [...g.invaders];
+```
+
+Replacing that with a plain alias (`const pre = g.invaders`) diverged on **zero games** across
+the full corpus. The reason is that the only mutation to `g.invaders` between the two uses of
+`pre` is a **reassignment** —
+
+```js
+g.invaders = g.invaders.filter(x => !burst.has(x.id));
+```
+
+— which detaches the alias anyway, so `pre` keeps pointing at the pre-burst array either way.
+
+**It becomes load-bearing the moment anything in that phase mutates the array in place**
+(`splice`, or `push` without a preceding reassignment). The copy therefore stays, and the
+reasoning is a comment at the site in `packages/engine/src/spread.ts` rather than folklore.
+
+This is the same shape as #14: a property that currently holds for a reason nobody wrote down.
+The difference is that this one is cheap to keep true, so it is kept rather than pinned.

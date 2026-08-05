@@ -149,7 +149,7 @@ believes holds:
 
 | Scenario | Question | Why it needs a scenario |
 |---|---|---|
-| **Two worms lodged at the Brain, Hard, `branch:3`** | Does a reachable line of play exist? | This is the dead end the brain lane was shortened to remove. A ~2% scenario that always loses is invisible to every metric in the panel — see [`FINDINGS.md`](FINDINGS.md) #2. Measured cost is 8 AP per worm at `branch:3` against a 4 AP/turn budget, so the answer is not obvious either way |
+| **Two worms lodged at the Brain, Hard, `branch:3`** | Does a reachable line of play exist? | **ANSWERED at B5: yes, constructively.** Both worms lodge on the same space, so one Eosinophil strikes both. The correction that came out of it matters more than the answer: `branch:3` restored **one turn of slack**, it did not make an unwinnable state winnable — see [`FINDINGS.md`](FINDINGS.md) #17 |
 | **A worm on a route under hard-mode lymphatic spread** | Can a worm ever be cloned? | "Worms do not multiply" holds today because `makeInvader` always places them at `zone:"branch"`, **not** because the spread path type-checks them. It is the one duplication path guarded by placement rather than by intent — [`FINDINGS.md`](FINDINGS.md) #14 |
 | **A resident macrophage left on step 0 for a whole game** | Can its free engulf ever fire? | Measured 0/37,828 organ-turns. Pinning it as a scenario means any future change that makes residents useful shows up as a deliberate decision — [`FINDINGS.md`](FINDINGS.md) #5 |
 
