@@ -15,6 +15,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as port from '@immunity-wars/engine';
+import * as internal from '@immunity-wars/engine/internal';
 
 import { canonical } from './hash.js';
 import { loadLegacy } from './engine.js';
@@ -141,38 +142,38 @@ describe('B1: primitives match legacy', () => {
 
   it('organsFor returns the difficulty set, and honours an override', () => {
     for (const d of ['training', 'normal', 'hard'] as const) {
-      expect(port.organsFor(d)).toEqual(port.ORGAN_SETS[d]);
+      expect(internal.organsFor(d)).toEqual(port.ORGAN_SETS[d]);
     }
-    expect(port.organsFor('normal', ['brain'])).toEqual(['brain']);
+    expect(internal.organsFor('normal', ['brain'])).toEqual(['brain']);
   });
 
   it('lymphPartners groups mucosal and skin routes, and isolates blood', () => {
-    expect(port.lymphPartners('nose')).toEqual(['gut', 'contact']);
-    expect(port.lymphPartners('gut')).toEqual(['nose', 'contact']);
-    expect(port.lymphPartners('contact')).toEqual(['nose', 'gut']);
-    expect(port.lymphPartners('wound')).toEqual(['bite']);
-    expect(port.lymphPartners('bite')).toEqual(['wound']);
+    expect(internal.lymphPartners('nose')).toEqual(['gut', 'contact']);
+    expect(internal.lymphPartners('gut')).toEqual(['nose', 'contact']);
+    expect(internal.lymphPartners('contact')).toEqual(['nose', 'gut']);
+    expect(internal.lymphPartners('wound')).toEqual(['bite']);
+    expect(internal.lymphPartners('bite')).toEqual(['wound']);
     // A needle goes straight into the bloodstream, bypassing the tissues entirely.
-    expect(port.lymphPartners('blood')).toEqual([]);
+    expect(internal.lymphPartners('blood')).toEqual([]);
   });
 
   it('cap1 capitalises without throwing on empty input', () => {
-    expect(port.cap1('eosinophil')).toBe('Eosinophil');
-    expect(port.cap1('')).toBe('');
+    expect(internal.cap1('eosinophil')).toBe('Eosinophil');
+    expect(internal.cap1('')).toBe('');
   });
 
   it('clone is JSON-lossy in the same ways legacy is', () => {
     // Not incidental. The stats counters really do go NaN (docs/FINDINGS.md #3), and a
     // "better" clone would change observable behaviour.
-    expect(port.clone({ a: NaN })).toEqual({ a: null });
-    expect(port.clone({ a: undefined })).toEqual({});
+    expect(internal.clone({ a: NaN })).toEqual({ a: null });
+    expect(internal.clone({ a: undefined })).toEqual({});
   });
 
   it('uid counts up and resetUid restarts it, so ids are stable per game', () => {
-    port.resetUid();
-    expect([port.uid(), port.uid(), port.uid()]).toEqual(['i1', 'i2', 'i3']);
-    port.resetUid();
-    expect(port.uid()).toBe('i1');
+    internal.resetUid();
+    expect([internal.uid(), internal.uid(), internal.uid()]).toEqual(['i1', 'i2', 'i3']);
+    internal.resetUid();
+    expect(internal.uid()).toBe('i1');
   });
 });
 
@@ -198,7 +199,7 @@ describe('B1: primitives consume randomness the way legacy does', () => {
 
   it('d6 draws exactly once and stays in 1..6', () => {
     for (let i = 0; i < 200; i += 1) {
-      const { value, draws } = withCountedRandom(() => port.d6());
+      const { value, draws } = withCountedRandom(() => internal.d6());
       expect(draws).toBe(1);
       expect(value).toBeGreaterThanOrEqual(1);
       expect(value).toBeLessThanOrEqual(6);
@@ -208,7 +209,7 @@ describe('B1: primitives consume randomness the way legacy does', () => {
   it('shuffle draws exactly n-1 times and keeps every element', () => {
     for (const n of [0, 1, 2, 5, 97]) {
       const input = Array.from({ length: n }, (_, i) => i);
-      const { value, draws } = withCountedRandom(() => port.shuffle([...input]));
+      const { value, draws } = withCountedRandom(() => internal.shuffle([...input]));
       expect(draws, `n=${n}`).toBe(Math.max(0, n - 1));
       expect([...value].sort((a, b) => a - b)).toEqual(input);
     }

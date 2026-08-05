@@ -94,15 +94,58 @@ export {
   WORM_MAX_PER_TURN,
 } from './data/tuning.js';
 
+export { branchLen, famOf } from './primitives.js';
+
+export { setKnobs } from './knobs.js';
+
+/**
+ * B2 — the pure query layer, under the names legacy publishes.
+ *
+ * The package root is held to EXACTLY legacy's 67 exports: docs/PHASE1_BRIEF.md §5 makes the
+ * public API the contract, so the port must not quietly widen it. Helpers legacy keeps private
+ * (samePlace, placeDist, apFor, …) are reachable at '@immunity-wars/engine/internal' instead,
+ * which is also where the rig has to go for them — see docs/FINDINGS.md #12.
+ */
 export {
-  branchLen,
-  cap1,
-  clone,
-  d6,
-  famOf,
-  lymphPartners,
-  organsFor,
-  resetUid,
-  shuffle,
-  uid,
-} from './primitives.js';
+  abMatch,
+  antivenomTargets,
+  anyNeutralisable,
+  anyTaggable,
+  attackable,
+  canNeutralise,
+  canProduceFam,
+  canTag,
+  capFam,
+  distToOrgan,
+  helperInBlood,
+  helperLicensed,
+  helperWith,
+  hivActive,
+  invSpeed,
+  lymphBlocked,
+  macDisabled,
+  macrophageEatable,
+  moveDestinations,
+  netTargets,
+  neutrophilReadyTurn,
+  nkTargets,
+  productionBreakdown,
+  rateFor,
+  rateForFam,
+  residentEatable,
+  snipeTargets,
+  wormAllowed,
+  wormStrikeable,
+} from './queries.js';
+
+export type {
+  Cell,
+  GameState,
+  Invader,
+  MoveDestination,
+  Organ,
+  Placed,
+  ProductionBreakdown,
+  Resident,
+  Zone,
+} from './state.js';

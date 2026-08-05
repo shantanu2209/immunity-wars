@@ -22,6 +22,15 @@ export interface Invader {
   inMac?: boolean;
   lodged?: boolean;
   remembered?: boolean;
+  maxhp?: number;
+  embed?: number;
+  age?: number;
+  ade?: boolean;
+  killsHelper?: boolean;
+  blocksLymph?: boolean;
+  hidesInMac?: boolean;
+  wormClock?: number;
+  drain?: number;
 }
 
 export interface Cell {
@@ -40,6 +49,22 @@ export interface MoveDestination {
   step?: number;
 }
 
+export interface Organ {
+  key?: string;
+  hp: number;
+  max: number;
+  clear: number;
+  failed?: boolean;
+  compensated?: boolean;
+}
+
+export interface Resident {
+  organ: string;
+  step: number;
+  ate: boolean;
+  infectedBy?: string | null;
+}
+
 export interface GameState {
   phase: string;
   turn: number;
@@ -56,6 +81,17 @@ export interface GameState {
   free?: Record<string, number>;
   novelSeen: boolean;
   cloneFound: boolean;
+  organs: Record<string, Organ>;
+  residents: Record<string, Resident>;
+  suppress: { neutrophil: number; tcell: number };
+  fx: { capTurns: number; noProduce: boolean; apMod: number; skipMarch: boolean };
+  presentations: number;
+  made: Record<string, number>;
+  wormsSpawned: number;
+  wormsThisTurn: number;
+  antivenom: number;
+  maxTurn: number;
+  [key: string]: unknown;
 }
 
 /**
@@ -76,6 +112,7 @@ export interface ActionResult {
 /** The 67-export surface, narrowed to what the rig calls. */
 export interface Engine {
   newGame(cfg: Record<string, unknown>): GameState;
+  setKnobs(k: Record<string, unknown>): void;
   applyAction(g: GameState, a: Action): ActionResult;
   viewState(g: GameState): unknown;
   simulate(difficulty: string, n: number, flags?: unknown): Record<string, unknown>;
