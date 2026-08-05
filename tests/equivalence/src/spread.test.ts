@@ -18,7 +18,7 @@ import * as port from '@immunity-wars/engine';
 import { batch } from './corpus.js';
 import { loadLegacy } from './engine.js';
 import { canonical } from './hash.js';
-import { checkGame, record, type EngineFactory } from './rig.js';
+import { checkGame, normalise, record, type EngineFactory } from './rig.js';
 import { installRng, restoreRng } from './rng.js';
 import { shrink } from './shrink.js';
 import type { Engine, GameState } from './types.js';
@@ -105,7 +105,7 @@ function scenario(
               ]) {
                 const r = E.applyAction(g, a);
                 results.push(canonical(r));
-                states.push(canonical(g));
+                states.push(canonical(normalise(g)));
                 if (g.won || g.lost) break;
               }
               if (g.won || g.lost) break;
@@ -662,7 +662,7 @@ describe('B5 scenarios — worm caps and the novel pathogen', () => {
             E.applyAction(g, { action: 'draw' });
             E.applyAction(g, { action: 'beginCommand' });
             E.applyAction(g, { action: 'endCommand' });
-            out.push(canonical(g));
+            out.push(canonical(normalise(g)));
             if (g.won || g.lost) break;
           }
           return out;
@@ -706,9 +706,9 @@ describe('B5 scenarios — worm caps and the novel pathogen', () => {
             E.applyAction(g, { action: 'clonalSelection' });
             E.applyAction(g, { action: 'produce', family: 'X' });
             E.applyAction(g, { action: 'neutralise', invaderId: 'px' });
-            out.push(canonical(g));
+            out.push(canonical(normalise(g)));
             E.applyAction(g, { action: 'endCommand' });
-            out.push(canonical(g));
+            out.push(canonical(normalise(g)));
             if (g.won || g.lost) break;
           }
           return out;
@@ -759,7 +759,7 @@ describe('B5 scenarios — rare events', () => {
               }),
             ] as never;
             E.fireRare(g, key);
-            const out = [canonical(g)];
+            const out = [canonical(normalise(g))];
             for (let t = 0; t < 5; t += 1) {
               for (const a of [
                 { action: 'draw' },
@@ -767,7 +767,7 @@ describe('B5 scenarios — rare events', () => {
                 { action: 'endCommand' },
               ]) {
                 E.applyAction(g, a);
-                out.push(canonical(g));
+                out.push(canonical(normalise(g)));
                 if (g.won || g.lost) break;
               }
               if (g.won || g.lost) break;
@@ -894,7 +894,7 @@ describe('B5 scenarios — rare events', () => {
             E.applyAction(g, { action: 'draw' });
             E.applyAction(g, { action: 'beginCommand' });
             E.applyAction(g, { action: 'endCommand' });
-            return { state: canonical(g), fired: g.rare.fired };
+            return { state: canonical(normalise(g)), fired: g.rare.fired };
           } finally {
             restoreRng();
           }

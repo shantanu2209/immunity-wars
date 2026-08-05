@@ -570,19 +570,11 @@ export function resolveSpread(g: GameState): Frame[] {
   // addition below is `undefined + 1` for those, exactly as legacy's `++` is.
   arrivals.forEach((iv) => {
     const k = tally(iv);
-    // THE LOOKUP MISSES, ON PURPOSE. docs/FINDINGS.md #3.
-    //
-    // `arrivals` is initialised with four keys — virus, hidden, bacteriaTagged, bacteriaUntagged
-    // — but `tally` returns the RAW invader type for everything else, so worm/toxin/venom/
-    // fungus/malaria/parasite index a key that does not exist. Legacy's `++` then evaluates
-    // `undefined + 1` and stores NaN, permanently.
-    //
-    // This is the case noUncheckedIndexedAccess exists to surface, and the temptation is to
-    // "fix" it here with `?? 0`. That would be a behaviour change inside Task B. The NaN is
-    // reproduced explicitly instead, so it reads as a decision rather than an oversight, and
-    // the corpus keeps proving the port matches. The fix lands as its own commit, after.
-    const seen = g.stats.arrivals[k];
-    g.stats.arrivals[k] = seen === undefined ? NaN : seen + 1;
+    // FIXED — docs/FINDINGS.md #3. Was `undefined + 1` -> NaN for every non-bacterial type,
+    // because `arrivals` is initialised with only four keys while `tally` returns the raw
+    // invader type. Ported bug-for-bug through B1-B7 and corrected here, on its own, once
+    // equivalence had been proven.
+    g.stats.arrivals[k] = (g.stats.arrivals[k] ?? 0) + 1;
   });
 
   // 4) Resident macrophages are player-controlled and no longer engulf automatically.
@@ -668,9 +660,8 @@ export function resolveSpread(g: GameState): Frame[] {
   // 5) ORGAN DAMAGE
   arrivals.forEach((iv) => {
     const k = tally(iv);
-    // Same deliberate miss as `arrivals` above — docs/FINDINGS.md #3.
-    const through = g.stats.gotThrough[k];
-    g.stats.gotThrough[k] = through === undefined ? NaN : through + 1;
+    // FIXED alongside `arrivals` above — docs/FINDINGS.md #3.
+    g.stats.gotThrough[k] = (g.stats.gotThrough[k] ?? 0) + 1;
     const org = g.organs[iv.organ as string];
     if (!org) return;
     org.hp = Math.max(0, org.hp - 1);

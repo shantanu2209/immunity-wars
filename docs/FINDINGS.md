@@ -13,7 +13,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 |---|---|---|---|
 | 1 | The reference bot has fallen far behind the game | **Phase 2 decision input** | Capability audit below; build a competent bot in Phase 2 |
 | 2 | Training 79 / Normal 51 / Hard 19 are obsolete | **Reporting** | Marked obsolete here and in `CLAUDE.md` |
-| 3 | `stats.arrivals` / `stats.gotThrough` go `NaN` | Medium | Port bug-for-bug, fix after equivalence |
+| 3 | `stats.arrivals` / `stats.gotThrough` go `NaN` | Medium | **FIXED** after equivalence — [`DEVIATIONS.md`](DEVIATIONS.md) #3 |
 | 4 | Antigenic variation is unreachable | **Design** | Port dead; conversation with Kartik |
 | 5 | Resident macrophages cannot act from their start position | **Design** | Report only |
 | 6 | No standalone balance-sim harness exists | **Reporting** | Caveat must reach the grant write-up |

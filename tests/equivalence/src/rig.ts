@@ -37,6 +37,42 @@ function newGameFor(E: Engine, difficulty: string): GameState {
 }
 
 /**
+ * DELIBERATE DIVERGENCES — paths the port is KNOWN to differ from legacy on.
+ *
+ * Task B proved equivalence. Fixes applied afterwards necessarily break it, and the corpus would
+ * otherwise be permanently red and therefore useless. Each entry here corresponds to an entry in
+ * docs/DEVIATIONS.md and was landed only after `confined-change.ts` demonstrated that NOTHING
+ * outside the listed paths moved.
+ *
+ * This list is a liability, not a convenience: everything on it is a place the corpus has
+ * stopped watching. It stays short, and nothing joins it without confined-change evidence.
+ */
+const DELIBERATE_DIVERGENCES: readonly string[] = [
+  // DEVIATIONS.md #3 — the NaN-accumulating arrival counters (was FINDINGS.md #3).
+  'stats.arrivals',
+  'stats.gotThrough',
+];
+
+/**
+ * Strip the deliberately-divergent paths before hashing.
+ *
+ * Deletes rather than zeroes, so a path that stops existing is still visible as a shape change
+ * everywhere else in the state.
+ */
+export function normalise(g: GameState): GameState {
+  const copy = JSON.parse(JSON.stringify(g)) as GameState & {
+    stats?: Record<string, unknown>;
+  };
+  if (copy.stats) {
+    for (const path of DELIBERATE_DIVERGENCES) {
+      const leaf = path.split('.')[1];
+      if (leaf) delete copy.stats[leaf];
+    }
+  }
+  return copy;
+}
+
+/**
  * Drive the bot against one engine and record everything it did.
  *
  * The bot only ever sees THIS engine. The action list it produces becomes a fixed artefact,
@@ -61,7 +97,11 @@ export function record(
       (a) => {
         const r = E.applyAction(g, a);
         actions.push(a);
-        steps.push({ stateHash: hashValue(g), draws: drawCount(), resultHash: hashValue(r) });
+        steps.push({
+          stateHash: hashValue(normalise(g)),
+          draws: drawCount(),
+          resultHash: hashValue(r),
+        });
         return r;
       },
       maxTurns,
@@ -92,7 +132,11 @@ export function replay(
     const steps: Step[] = [];
     for (const a of actions) {
       const r = E.applyAction(g, a);
-      steps.push({ stateHash: hashValue(g), draws: drawCount(), resultHash: hashValue(r) });
+      steps.push({
+        stateHash: hashValue(normalise(g)),
+        draws: drawCount(),
+        resultHash: hashValue(r),
+      });
     }
     return steps;
   } finally {

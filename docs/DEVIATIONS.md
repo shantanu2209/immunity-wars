@@ -81,5 +81,54 @@ functions. No consumer can observe the difference.
 
 ---
 
-*No further deviations recorded. Entries are appended as they are decided, never
-retroactively edited — if a decision is reversed, add a new entry saying so.*
+## 3. `stats.arrivals` and `stats.gotThrough` no longer accumulate NaN
+
+**Legacy behaviour.** Both counters are initialised with four keys —
+`virus`, `hidden`, `bacteriaTagged`, `bacteriaUntagged` — but indexed by `tally()`, which
+returns the RAW invader type for everything non-bacterial. So `arrivals.worm`, `arrivals.toxin`,
+`arrivals.venom`, `arrivals.fungus`, `arrivals.malaria` and `arrivals.parasite` are created by
+`undefined + 1` and are **NaN for the rest of the game**. Recorded as
+[`FINDINGS.md`](FINDINGS.md) #3.
+
+**Port behaviour.** `(g.stats.arrivals[k] ?? 0) + 1`.
+
+**Why this was not done during the port.** It is a behaviour change, and a bug-for-bug port is
+what makes the equivalence proof mean anything. It was carried through B1–B7 unchanged, and
+landed only after the full corpus was clean.
+
+**Evidence that the change is confined.** `tests/equivalence/confined-change.ts` runs the corpus
+and records every JSON path that differs. Over 1,500 games:
+
+```
+games identical to legacy : 445
+games that changed        : 1055
+
+PATHS THAT CHANGED (allowed):
+    467x  stats.arrivals.worm        411x  stats.arrivals.venom
+    411x  stats.gotThrough.venom     383x  stats.arrivals.fungus
+    383x  stats.gotThrough.fungus    356x  stats.arrivals.toxin
+    356x  stats.gotThrough.toxin     129x  stats.arrivals.parasite
+    115x  stats.gotThrough.parasite   26x  stats.arrivals.malaria
+
+CHANGE IS CONFINED
+```
+
+**Nothing outside those two counters moved** — not a single organ, cell, invader, log line or
+die roll. Note `arrivals.worm` appears but `gotThrough.worm` does not, which is itself a
+consistency check: worms are spliced out of `arrivals` when they lodge, before `gotThrough` is
+counted.
+
+**Blast radius: none in play.** `viewState()` does not expose `stats`, so no UI ever saw the
+NaN. The counters exist for balance measurement, which makes this a prerequisite for Task E
+rather than a gameplay change.
+
+**Decided by:** Shantanu — port bug-for-bug, then fix after equivalence, as its own commit with
+corpus evidence.
+**Test:** the rig's `DELIBERATE_DIVERGENCES` list in `tests/equivalence/src/rig.ts` excludes
+exactly these two paths from the comparison hash, so the corpus stays meaningful. That list is a
+liability and is kept short — everything on it is a place the corpus has stopped watching.
+
+---
+
+*Entries are appended as they are decided, never retroactively edited — if a decision is
+reversed, add a new entry saying so.*

@@ -19,6 +19,7 @@ import * as port from '@immunity-wars/engine';
 import { loadLegacy } from './engine.js';
 import { canonical } from './hash.js';
 import { drawCount, installRng, restoreRng } from './rng.js';
+import { normalise } from './rig.js';
 import type { Action, Engine, GameState } from './types.js';
 
 const legacy = loadLegacy();
@@ -166,7 +167,7 @@ function fuzzSplit(split: Split, seeds: number, actionsPerGame: number): Diverge
           chosen.push(a);
           const res = legacy.applyAction(gl, a);
           legacySteps.push({
-            state: canonical(gl),
+            state: canonical(normalise(gl)),
             draws: drawCount(),
             result: canonical(res),
           });
@@ -189,7 +190,7 @@ function fuzzSplit(split: Split, seeds: number, actionsPerGame: number): Diverge
           const res = port.applyAction(gp as never, a as never);
           const want = legacySteps[i];
           if (!want) continue;
-          const gotState = canonical(gp);
+          const gotState = canonical(normalise(gp));
           const gotDraws = drawCount();
           const gotResult = canonical(res);
           if (gotDraws !== want.draws) {
@@ -358,6 +359,6 @@ describe('B4 — endCommand, once B5 landed', () => {
     expect(rp.ok).toBe(true);
     expect(rp.frames?.length, 'frame count is part of the compared result').toBe(rl.frames?.length);
     expect(canonical(rp)).toBe(canonical(rl));
-    expect(canonical(gp)).toBe(canonical(gl));
+    expect(canonical(normalise(gp as never))).toBe(canonical(normalise(gl)));
   });
 });
