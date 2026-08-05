@@ -262,6 +262,24 @@ export interface GameState {
   _actingPid?: string | null;
 }
 
+/**
+ * An action as handed to applyAction.
+ *
+ * The index signature is honest rather than lazy: legacy reads a different set of fields per
+ * action kind and validates none of them up front, so a typed union here would describe a
+ * stricter engine than the one being ported.
+ */
+export interface Action {
+  action: string;
+  [key: string]: unknown;
+}
+
+export interface ActionResult {
+  ok: boolean;
+  error?: string;
+  frames?: unknown[];
+}
+
 /** A destination returned by moveDestinations. */
 export interface MoveDestination {
   zone: Zone;

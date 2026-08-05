@@ -110,6 +110,10 @@ export {
 
 export { pushUndo, undo, viewState } from './view.js';
 
+/** B4 — the action space. */
+export { applyAction } from './actions.js';
+export type { Action, ActionResult } from './state.js';
+
 /**
  * B2 — the pure query layer, under the names legacy publishes.
  *

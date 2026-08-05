@@ -71,6 +71,18 @@ deck: shuffle(DECK_MASTER.filter(...)),     // :614  ← draws second
 subsequent die roll shifts. A structural comparison would let it slide until the divergence
 happened to change something visible; a draw-count comparison catches it on action one.
 
+**This was confirmed at B3, on the real port.** The mistake is not hypothetical — declaring
+`deck` before `rare` is how anyone would naturally write it. Injecting exactly that reorder
+failed all four `newGame` tests immediately, on the draw count.
+
+Had the rig compared state alone, that state would have looked **perfectly correct at turn 1**
+— same organs, same cells, same everything — and the port would have carried a silently
+desynchronised RNG stream into B5, surfacing as an unexplained mid-game divergence hundreds of
+actions deep. The draw-count comparison converted an expensive B5 bug into an immediate B3 test
+failure with an exact cause.
+
+Cost of the mechanism: one integer per action. It has now paid for itself once.
+
 ### 1.3 What "identical" means — three levels, every action
 
 | Level | Check | Catches |

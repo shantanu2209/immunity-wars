@@ -124,6 +124,7 @@ export interface Engine {
   snipeTargets(g: GameState): Invader[];
   netTargets(g: GameState): Invader[];
   wormStrikeable(g: GameState, cellKey: string): Invader[];
+  antivenomTargets(g: GameState): Invader[];
   moveDestinations(g: GameState, cellKey: string): MoveDestination[];
   attackable(iv: Invader): boolean;
   helperLicensed(g: GameState): boolean;
