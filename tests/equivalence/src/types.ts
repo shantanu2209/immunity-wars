@@ -130,6 +130,8 @@ export interface Engine {
   capFam(g: GameState, family: string): number;
   famOf(iv: Invader): string;
   branchLen(organ: string): number;
+  makeInvader(g: GameState, card: Record<string, unknown>): Invader;
+  DECK_MASTER: { dz: string; type: string; lane: string }[];
 
   [key: string]: unknown;
 }

@@ -26,6 +26,8 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 13 | Pathogen X exists only via two lookup misses | **B7 risk** | Pinned by test before the flag is flipped |
 | 14 | The three worm safeguards all hold | **Verified** | No action; one bypass documented |
 | 15 | The Heart has the shortest branch on the board | **Design** | Report only |
+| 16 | `forceInject*` bypasses the worm caps AND the accounting | Low (dev-only) | Report only |
+| 17 | Brain `branch:4` crosses a hard THRESHOLD on Hard | **Method** | Why the B5 scenarios exist |
 
 ---
 
@@ -538,3 +540,77 @@ which suggests the Heart's fragility may not be deliberate.
 
 **Report only. Nothing changed.** Note the interaction with finding #2: the Brain's branch was
 shortened from 4 to 3 to open up counterplay, and the Heart has been at 2 throughout.
+
+---
+
+## 16. `forceInject*` bypasses the worm caps, and also the accounting
+
+`forceInjectType()` and `forceInjectCard()` deliberately ignore `respectWormCap()` — they are
+the director's testing tool, the bypass is intended, stated in the source comment, and covered
+by an existing legacy test ("Force still injects a worm past the cap").
+
+The part that is **not** intended, and is documented nowhere, is that they also never call
+`noteWorm()`. So a forced worm does not increment `g.wormsSpawned` or `g.wormsThisTurn`.
+
+Two consequences:
+
+- **Forced worms are invisible to the cap.** Force three worms into a game and a fourth can
+  still arrive naturally, because the counter still reads 0. The bypass is therefore wider than
+  "ignores the cap once" — it leaves the cap mis-calibrated for the rest of that game.
+- **`wormsSpawned` is not a count of worms.** Anything reading it as one is wrong in any game
+  where the director tool was used. Nothing does today.
+
+**Why record a dev-only path at all.** It is exactly the shape that makes a future measurement
+quietly wrong: a Task E run or a playtest capture taken from a session where someone forced a
+worm would carry worm statistics that disagree with the board, with nothing flagging it. The
+cost of knowing is one paragraph; the cost of not knowing is an unexplained number months later.
+
+**Disposition: report only.** Ported as-is. If it is ever fixed the fix is one `noteWorm(g)`
+call in each function — but that changes behaviour, so not during Task B.
+
+---
+
+## 17. The brain lane change crosses a hard THRESHOLD that no aggregate metric can see
+
+The clearest evidence yet for why the B5 scripted scenarios exist alongside the statistical
+corpus, so it is recorded as its own finding rather than left buried inside #2.
+
+**The measurement.** Eosinophil travel from the bloodstream hub to organ tissue (branch step 0),
+on Hard, where the entire turn budget is **4 AP**:
+
+| | Travel | Produce | Coat | Degranulate | Total | Turns at 4 AP |
+|---|---|---|---|---|---|---|
+| `branch:3` | **4 AP** | 1 | 1 | 2 | **8 AP** | 2.00 |
+| `branch:4` | **5 AP** | 1 | 1 | 2 | **9 AP** | 2.25 |
+
+**Why this is a threshold and not a gradient.** At `branch:4` the travel *alone* costs 5 AP
+against a 4 AP budget. The Eosinophil cannot reach the Brain in a single turn **no matter what
+else is sacrificed** — there is no line of play, at any skill level, that gets it there in one
+turn. At `branch:3` it costs exactly one full turn's AP. The change moves the cost across a
+budget boundary; it does not merely reduce it by 20%.
+
+**What the statistics said about the same change: nothing.** 10 batches x 100 games per
+difficulty, identical seeds in both arms, ten metrics — **no metric moved beyond 2 standard
+deviations at any difficulty.** Not win rate, not loss turn, not organ hits, not organs damaged.
+
+**Why the metrics could not have seen it.** The scenario is rare — only Tapeworm has Brain
+tropism among the seven worm cards, and the caps allow at most two worms per game — and its
+outcome is binary: a guaranteed loss with no counterplay. A rare, always-losing scenario moves a
+mean by roughly its own frequency, which lands well inside the noise band of every metric
+measured. **A metric panel averages over exactly the tail it needs to detect.**
+
+### The methodological point
+
+| Layer | Detects | Blind to |
+|---|---|---|
+| Per-action equivalence corpus | Any state divergence, immediately — it catches `branch:3 -> 4` on the first affected action | Anything about *design*; it only says the two engines agree |
+| Metric panel (Task E) | Broad shifts in how games go — the average game getting harder or easier | Rare binary outcomes; threshold effects; anything below the noise band |
+| **Scripted scenarios (B5)** | **Reachability. Whether a specific bad state has a way out** | Anything nobody thought to script |
+
+None of the three subsumes the others, and this finding is the concrete case: the equivalence
+rig detects the change, the metric panel cannot, and only a scripted scenario can answer the
+question that motivated it.
+
+**Consequence for reporting.** When Task E's metric panel comes back green, the correct
+statement is "no broad shift detected" — never "the change was safe". Those two differ by
+exactly this finding.
