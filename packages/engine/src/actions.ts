@@ -725,7 +725,7 @@ function actionDraw(g: GameState, a: Action): ActionResult {
   // POST-WINDOW: if the body is already clear that is a win right now. Otherwise mark the draw
   // done with a sentinel so the player can still enter command phase and mop up.
   if (nSpawn === 0 && g.turn > g.maxTurn) {
-    if ((g as unknown as { everInfected?: boolean }).everInfected && g.invaders.length === 0) {
+    if (g.everInfected && g.invaders.length === 0) {
       g.won = true;
       pushLog(g, `Every infection faced and the body is completely clear — you win!`, 'good');
       return { ok: true, frames: [{ label: 'Victory', dice: null, view: viewState(g) }] };
@@ -780,7 +780,7 @@ function actionDraw(g: GameState, a: Action): ActionResult {
         ? `<b>${c.dz}</b> entered via the ${ROUTES[c.lane].name} and is burrowing into the ${ORGANS[iv.organ as OrganKey].name}. Coat it, then the Eosinophil strikes.`
         : `Infection: <b>${c.dz}</b> entered via the ${ROUTES[c.lane].name}.`;
     g.invaders.push(iv);
-    (g as unknown as { everInfected: boolean }).everInfected = true;
+    g.everInfected = true;
     if (k === 0) g.drawn = c;
     g.drawnList?.push(c);
     g.seen[c.dz] = true;

@@ -329,13 +329,35 @@ describe('B4 — error strings are byte-identical', () => {
   });
 });
 
-describe('B4 — endCommand is honestly unported', () => {
-  it('throws rather than returning a stub that would silently compare nothing', () => {
-    const g = port.newGame({ difficulty: 'normal', science: false });
-    port.applyAction(g as never, { action: 'draw' } as never);
-    port.applyAction(g as never, { action: 'beginCommand' } as never);
-    expect(() => port.applyAction(g as never, { action: 'endCommand' } as never)).toThrow(
-      /not ported until B5/,
-    );
+describe('B4 — endCommand, once B5 landed', () => {
+  // This test previously asserted that endCommand THREW, because resolveSpread was deliberately
+  // unported and a stub returning ok() would have let all four B4 checkpoints pass while
+  // comparing nothing. B5 replaced the stub, so the assertion inverted — which is the signal
+  // the scaffolding was designed to give.
+  it('resolves a turn and returns frames, matching legacy', () => {
+    installRng(123456);
+    const gl = legacy.newGame({ difficulty: 'normal', science: false });
+    legacy.applyAction(gl, { action: 'draw' });
+    legacy.applyAction(gl, { action: 'beginCommand' });
+    const rl = legacy.applyAction(gl, { action: 'endCommand' }) as {
+      ok: boolean;
+      frames?: unknown[];
+    };
+    restoreRng();
+
+    installRng(123456);
+    const gp = port.newGame({ difficulty: 'normal', science: false });
+    port.applyAction(gp as never, { action: 'draw' } as never);
+    port.applyAction(gp as never, { action: 'beginCommand' } as never);
+    const rp = port.applyAction(gp as never, { action: 'endCommand' } as never) as {
+      ok: boolean;
+      frames?: unknown[];
+    };
+    restoreRng();
+
+    expect(rp.ok).toBe(true);
+    expect(rp.frames?.length, 'frame count is part of the compared result').toBe(rl.frames?.length);
+    expect(canonical(rp)).toBe(canonical(rl));
+    expect(canonical(gp)).toBe(canonical(gl));
   });
 });

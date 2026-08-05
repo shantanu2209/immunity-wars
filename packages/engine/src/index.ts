@@ -112,6 +112,9 @@ export { pushUndo, undo, viewState } from './view.js';
 
 /** B4 — the action space. */
 export { applyAction } from './actions.js';
+
+/** B5 — turn resolution and the rare-event machinery. */
+export { fireRare, resolveSpread } from './spread.js';
 export type { Action, ActionResult } from './state.js';
 
 /**

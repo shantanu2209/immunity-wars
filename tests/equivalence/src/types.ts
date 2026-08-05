@@ -91,6 +91,16 @@ export interface GameState {
   wormsThisTurn: number;
   antivenom: number;
   maxTurn: number;
+  everInfected?: boolean;
+  flags: Record<string, boolean>;
+  log: { t: number; msg: string; kind: string }[];
+  rare: {
+    armed: boolean;
+    fired: string | null;
+    seen: Record<string, boolean>;
+    malariaLiver: boolean;
+    killedThisTurn: number;
+  };
   [key: string]: unknown;
 }
 
@@ -136,6 +146,8 @@ export interface Engine {
   forceInjectCard(g: GameState, dz: string): Invader | null;
   forceInjectType(g: GameState, type: string): Invader;
   applyEvent(g: GameState, key: string): void;
+  fireRare(g: GameState, key: string): boolean;
+  resolveSpread(g: GameState): unknown[];
   pushUndo(g: GameState): void;
   undo(g: GameState): unknown;
   DECK_MASTER: { dz: string; type: string; lane: string }[];

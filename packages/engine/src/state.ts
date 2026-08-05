@@ -254,6 +254,8 @@ export interface GameState {
   apPool: number;
 
   /* Added during play rather than at construction. */
+  /** Set the first time anything infects the body. The win check requires it. */
+  everInfected?: boolean;
   novelTurn?: number;
   drawnList?: unknown[];
   rareBanner?: RareBanner | null;

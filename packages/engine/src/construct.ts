@@ -123,7 +123,7 @@ export function applyEvent(g: GameState, key: string): void {
       }
       const iv = makeInvader(g, c as unknown as Card);
       g.invaders.push(iv);
-      (g as unknown as { everInfected: boolean }).everInfected = true;
+      g.everInfected = true;
       g.seen[c.dz] = true;
       if (iv.type === 'worm') noteWorm(g);
       if ((c as unknown as Card).novel) {
@@ -281,7 +281,7 @@ export function forceInjectType(g: GameState, type: string): Invader {
     ({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
   const iv = makeInvader(g, card as Card);
   g.invaders.push(iv);
-  (g as unknown as { everInfected: boolean }).everInfected = true;
+  g.everInfected = true;
   g.seen[(card as Card).dz] = true;
   if ((card as Card).novel) {
     g.novelSeen = true;
@@ -296,7 +296,7 @@ export function forceInjectCard(g: GameState, dz: string): Invader | null {
   if (!card) return null;
   const iv = makeInvader(g, card as Card);
   g.invaders.push(iv);
-  (g as unknown as { everInfected: boolean }).everInfected = true;
+  g.everInfected = true;
   g.seen[(card as Card).dz] = true;
   if ((card as Card).novel) {
     g.novelSeen = true;
