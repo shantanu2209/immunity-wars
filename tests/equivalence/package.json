@@ -12,6 +12,7 @@
     "build": "echo \"no build output\""
   },
   "dependencies": {
+    "@immunity-wars/content": "workspace:*",
     "@immunity-wars/engine": "workspace:*"
   },
   "devDependencies": {

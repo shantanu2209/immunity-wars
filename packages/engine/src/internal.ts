@@ -18,7 +18,7 @@
  * Add to this list one name at a time, on demonstrated need — never in bulk.
  */
 
-export { ALL_ORGANS } from './data/board.js';
+export { ALL_ORGANS } from '@immunity-wars/content';
 
 export {
   abTotal,

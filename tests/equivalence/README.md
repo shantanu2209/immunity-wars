@@ -69,7 +69,7 @@ pnpm coverage:gaps          # classify what is still uncovered
 
 ---
 
-## Three things that will bite you
+## Four things that will bite you
 
 **1. `DELIBERATE_DIVERGENCES` in `src/rig.ts` is a liability, not a convenience.**
 Every path on it is a place the corpus has **stopped watching**. It currently holds
@@ -98,6 +98,34 @@ nothing is a result worth recording (see FINDINGS #19).
 silently. At B7 `noUncheckedIndexedAccess` reported 8 problems when the real number was 10 —
 casts written during B5 had hidden the two most interesting lookups from the flag that existed to
 find them. When a strictness check comes back clean, check whether you disabled it earlier.
+
+**4. An invariant that is not an import-graph property cannot be enforced by dependency-cruiser
+— and assuming it can is how a rule becomes documented-but-false.**
+
+This is the general lesson behind eight separate instances in this project, and it was found the
+eighth time at C1. The boundary invariant is *content contains no logic, engine contains no data*.
+Three of its four directions are edges on the import graph and `.dependency-cruiser.cjs` enforces
+them. The fourth is not: **a data table re-declared inside `packages/engine` imports nothing, so
+it casts no edge at all and dependency-cruiser is structurally blind to it.** A cruiser rule alone
+would have looked like enforcement and been none.
+
+That half is a test instead — `src/exports.test.ts` asserts every data export of the engine is the
+**same object** as content's. `toBe`, not `toEqual`, and the distinction is the entire mechanism:
+
+| | deep JSON copy of `ORGANS`, re-declared in the engine |
+|---|---|
+| `data.test.ts` value comparison | **passes** |
+| `data.test.ts` key-order comparison via `canonical()` | **passes** |
+| `exports.test.ts` identity comparison | **fails** |
+
+Verified by injecting exactly that mutation, per rule 2 above. The tables spent all of Task B
+inside `packages/engine`, so drifting back is the specific mistake to expect here.
+
+**Before writing a boundary rule, ask what shape the invariant is.** If violating it would not
+add or remove an import, dependency-cruiser will pass and prove nothing, and the claim in the
+docs will outlive the check that was supposed to back it. `CLAUDE.md` and
+[`docs/PHASE1_BRIEF.md`](../../docs/PHASE1_BRIEF.md) §2 now name **which** of the two mechanisms
+enforces each half, rather than saying "enforced in CI" and leaving the reader to assume.
 
 ---
 

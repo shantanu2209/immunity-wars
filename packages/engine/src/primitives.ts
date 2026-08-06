@@ -8,8 +8,15 @@
  * See docs/TASK_B_PLAN.md §1.1.
  */
 
-import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ORGAN_SETS, ROUTES, ROUTE_KEYS } from './data/board.js';
-import { FAMILY } from './data/families.js';
+import {
+  FAMILY,
+  LYMPH_GROUP,
+  LYMPH_STEP,
+  ORGAN_SETS,
+  ORGANS,
+  ROUTE_KEYS,
+  ROUTES,
+} from '@immunity-wars/content';
 import type { AbPoolKey, Difficulty, OrganKey, RouteKey } from './types.js';
 
 /** In-place Fisher-Yates, returning the same array. Consumes one draw per element but the last. */

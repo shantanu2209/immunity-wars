@@ -6,9 +6,7 @@
  * every one of those paths depends on the side effects here happening in this exact order.
  */
 
-import { ORGANS, RESIDENT_NAME } from './data/board.js';
-import { CNAME } from './data/tuning.js';
-import { ROUTES } from './data/board.js';
+import { CNAME, ORGANS, RESIDENT_NAME, ROUTES } from '@immunity-wars/content';
 import { cap1 } from './primitives.js';
 import { pushLog } from './construct.js';
 import type { GameState, Invader, MoveDestination } from './state.js';

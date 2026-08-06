@@ -10,27 +10,31 @@
  * rather than the code quietly improving it.
  */
 
-import { LYMPH_STEP, ROUTES, ROUTE_KEYS } from './data/board.js';
 import {
   AB_CAP_FAM,
   AB_CAP_FAM_BY_DIFF,
   AFFINITY_AT,
   ANTIBODY_CAP,
   ANTIBODY_RATE,
+  FAM_KEYS,
+  FAST_DISEASE,
+  INV_SPEED,
+  LYMPH_STEP,
   NEUTROPHIL_REGEN,
   NEUTROPHIL_REGEN_HELPED,
   NK_RANGE,
+  NOT_ALIVE,
   PRESENT_TIER_BY_DIFF,
   RATE_CAP_BY_DIFF,
+  ROUTE_KEYS,
+  ROUTES,
   SNIPE_RANGE,
   SNIPE_RANGE_BY_DIFF,
   SPAWN_TABLE,
   SPEED,
   WORM_MAX_PER_GAME,
   WORM_MAX_PER_TURN,
-} from './data/tuning.js';
-import { FAST_DISEASE, INV_SPEED, NOT_ALIVE } from './data/invaders.js';
-import { FAM_KEYS } from './data/families.js';
+} from '@immunity-wars/content';
 import { knobs } from './knobs.js';
 import { branchLen, d6, famOf, lymphPartners } from './primitives.js';
 import type {

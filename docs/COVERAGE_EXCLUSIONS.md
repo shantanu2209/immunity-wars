@@ -21,18 +21,18 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### actions.ts
 
-- `89` `const pool = g.apBudget[g.captain as string] || 0; // unallocated AP sits with the captain`
-- `110` `const fromBudget = g.apBudget[from] ?? 0;`
-- `114` `g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;`
-- `289` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
-- `290` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
-- `291` `g.ab[f] = (g.ab[f] ?? 0) + made;`
-- `292` `g.made[f] = (g.made[f] ?? 0) + 1;`
-- `334` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `384` `const held = g.ab[f] ?? 0;`
-- `445` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `549` `const heldForTag = g.ab[f] ?? 0;`
-- `786` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
+- `93` `const pool = g.apBudget[g.captain as string] || 0; // unallocated AP sits with the captain`
+- `114` `const fromBudget = g.apBudget[from] ?? 0;`
+- `118` `g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;`
+- `293` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
+- `294` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
+- `295` `g.ab[f] = (g.ab[f] ?? 0) + made;`
+- `296` `g.made[f] = (g.made[f] ?? 0) + 1;`
+- `338` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `388` `const held = g.ab[f] ?? 0;`
+- `449` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `553` `const heldForTag = g.ab[f] ?? 0;`
+- `790` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
 
 ### ap.ts
 
@@ -41,58 +41,58 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### construct.ts
 
-- `99` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `103` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `108` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
-- `193` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
-- `198` `return (alt ?? null) as Card | null;`
-- `231` `hp: INV_HP[c.type] || 1,`
-- `232` `maxhp: INV_HP[c.type] || 1,`
-- `279` `.find((c) => c.type === type) ??`
-- `280` `DECK_MASTER.find((c) => c.type === type) ??`
-- `295` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
-- `295` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `110` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `114` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
+- `204` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
+- `209` `return (alt ?? null) as Card | null;`
+- `242` `hp: INV_HP[c.type] || 1,`
+- `243` `maxhp: INV_HP[c.type] || 1,`
+- `290` `.find((c) => c.type === type) ??`
+- `291` `DECK_MASTER.find((c) => c.type === type) ??`
+- `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
-- `30` `g.presentations += n || 1;`
-- `34` `iv.hp = (iv.hp ?? 0) - dmg;`
-- `35` `if ((iv.hp ?? 0) <= 0) {`
+- `28` `g.presentations += n || 1;`
+- `32` `iv.hp = (iv.hp ?? 0) - dmg;`
+- `33` `if ((iv.hp ?? 0) <= 0) {`
 
 ### primitives.ts
 
-- `82` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
+- `89` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
 
 ### queries.ts
 
-- `77` `const toHub = (p: Placed): number => (p.zone === 'hub' ? 0 : (p.step ?? 0));`
-- `80` `if (a.zone === 'route' && a.lane === b.lane) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
-- `80` `if (a.zone === 'route' && a.lane === b.lane) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
-- `81` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
-- `81` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
-- `153` `return INV_SPEED[iv.type] || 1;`
-- `199` `if (g.fx) ap += g.fx.apMod ?? 0;`
-- `205` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `244` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
-- `245` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `245` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `248` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
-- `255` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) r += 1;`
-- `276` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
-- `277` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `277` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `297` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
-- `308` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
-- `315` `const have = g.ab[f] ?? 0;`
-- `317` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `380` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
-- `384` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `401` `(iv.type === 'parasite' && iv.tagged && !iv.inMac && (iv.hp ?? 0) <= 1) ||`
-- `416` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
-- `616` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
-- `617` `return t[d6() - 1] ?? 1;`
-- `635` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
-- `635` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `81` `const toHub = (p: Placed): number => (p.zone === 'hub' ? 0 : (p.step ?? 0));`
+- `84` `if (a.zone === 'route' && a.lane === b.lane) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
+- `84` `if (a.zone === 'route' && a.lane === b.lane) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
+- `85` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
+- `85` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
+- `157` `return INV_SPEED[iv.type] || 1;`
+- `203` `if (g.fx) ap += g.fx.apMod ?? 0;`
+- `209` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `248` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
+- `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `252` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
+- `259` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) r += 1;`
+- `280` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
+- `281` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `281` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `301` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
+- `312` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
+- `319` `const have = g.ab[f] ?? 0;`
+- `321` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `384` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
+- `388` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
+- `405` `(iv.type === 'parasite' && iv.tagged && !iv.inMac && (iv.hp ?? 0) <= 1) ||`
+- `420` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
+- `620` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
+- `621` `return t[d6() - 1] ?? 1;`
+- `639` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `639` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
 
 ### simulate.ts
 
@@ -106,24 +106,24 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### spread.ts
 
-- `152` `const live = g.organList.filter((o) => (g.organs[o]?.hp ?? 0) > 0);`
-- `255` ``${iv.zone}:${iv.lane || ''}:${iv.organ || ''}:${iv.step}`;`
-- `265` `const room = (): boolean => (count[k] || 0) < SPACE_CAP;`
-- `274` `count[k] = (count[k] || 0) + 1;`
-- `280` `count[k] = (count[k] || 0) + 1;`
-- `288` `count[k] = (count[k] || 0) + 1;`
-- `388` `if ((iv.age || 0) >= TOXIN_AFTER && !iv.emitted) {`
-- `391` `const tname = TOXIN_MAKERS[iv.disease] ?? '';`
-- `420` `.filter((iv) => iv.type === 'malaria' && iv.stage === 'liver' && (iv.embed ?? 0) > 0)`
-- `422` `iv.embed = (iv.embed ?? 0) - 1;`
-- `423` `if ((iv.embed ?? 0) <= 0) burst.push(iv);`
-- `460` `if ((iv.wormClock ?? 0) <= 0) {`
-- `526` `if (iv.type === 'malaria' && iv.stage === 'liver' && (iv.embed ?? 0) > 0) return;`
-- `693` `const failed = g.organList.find((o) => (g.organs[o]?.hp ?? 1) <= 0);`
-- `725` `const pools = [...FAM_KEYS, 'X'].filter((f) => (g.ab[f] ?? 0) > 0);`
-- `727` `const f = pools.sort((a, b) => (g.ab[b] ?? 0) - (g.ab[a] ?? 0))[0] as string;`
-- `727` `const f = pools.sort((a, b) => (g.ab[b] ?? 0) - (g.ab[a] ?? 0))[0] as string;`
-- `730` `const leaked = g.ab[f] ?? 0;`
+- `154` `const live = g.organList.filter((o) => (g.organs[o]?.hp ?? 0) > 0);`
+- `257` ``${iv.zone}:${iv.lane || ''}:${iv.organ || ''}:${iv.step}`;`
+- `267` `const room = (): boolean => (count[k] || 0) < SPACE_CAP;`
+- `276` `count[k] = (count[k] || 0) + 1;`
+- `282` `count[k] = (count[k] || 0) + 1;`
+- `290` `count[k] = (count[k] || 0) + 1;`
+- `390` `if ((iv.age || 0) >= TOXIN_AFTER && !iv.emitted) {`
+- `393` `const tname = TOXIN_MAKERS[iv.disease] ?? '';`
+- `422` `.filter((iv) => iv.type === 'malaria' && iv.stage === 'liver' && (iv.embed ?? 0) > 0)`
+- `424` `iv.embed = (iv.embed ?? 0) - 1;`
+- `425` `if ((iv.embed ?? 0) <= 0) burst.push(iv);`
+- `462` `if ((iv.wormClock ?? 0) <= 0) {`
+- `528` `if (iv.type === 'malaria' && iv.stage === 'liver' && (iv.embed ?? 0) > 0) return;`
+- `695` `const failed = g.organList.find((o) => (g.organs[o]?.hp ?? 1) <= 0);`
+- `727` `const pools = [...FAM_KEYS, 'X'].filter((f) => (g.ab[f] ?? 0) > 0);`
+- `729` `const f = pools.sort((a, b) => (g.ab[b] ?? 0) - (g.ab[a] ?? 0))[0] as string;`
+- `729` `const f = pools.sort((a, b) => (g.ab[b] ?? 0) - (g.ab[a] ?? 0))[0] as string;`
+- `732` `const leaked = g.ab[f] ?? 0;`
 
 ### view.ts
 
@@ -146,7 +146,7 @@ weaker than a demonstration and is labelled so deliberately.
 
 Each carries the demonstration that established it.
 
-### actions.ts:370
+### actions.ts:374
 
 ```
 if (iv.type === 'malaria' && iv.stage === 'liver') {
@@ -154,7 +154,7 @@ if (iv.type === 'malaria' && iv.stage === 'liver') {
 
 unreachable: the ok2 type gate three lines earlier rejects malaria unless stage is blood or sporozoite, so a liver-stage malaria never arrives here. Demonstrated: applyAction returns 'Antibodies cannot neutralise that.'
 
-### actions.ts:373
+### actions.ts:377
 
 ```
 if (iv.inMac) {
@@ -162,7 +162,7 @@ if (iv.inMac) {
 
 unreachable in neutralise: inMac is only ever set on a hidesInMac card, and the sole such card (Kala-azar) is a parasite, which ok2 rejects first
 
-### actions.ts:396
+### actions.ts:400
 
 ```
 if (iv.variant && d6() <= 3) {
@@ -170,7 +170,7 @@ if (iv.variant && d6() <= 3) {
 
 unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
 
-### actions.ts:396
+### actions.ts:400
 
 ```
 if (iv.variant && d6() <= 3) {
@@ -178,7 +178,7 @@ if (iv.variant && d6() <= 3) {
 
 unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
 
-### actions.ts:546
+### actions.ts:550
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -186,7 +186,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:546
+### actions.ts:550
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -194,7 +194,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:778
+### actions.ts:782
 
 ```
 c = DECK_MASTER.find((x) => x.dz === dz) || null;
@@ -202,7 +202,7 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
-### actions.ts:800
+### actions.ts:804
 
 ```
 if (c.novel) {
@@ -218,7 +218,7 @@ export function apOwnerOf(g: GameState, a: Action | null | undefined): string | 
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
-### construct.ts:64
+### construct.ts:75
 
 ```
 while (slots.includes(t)) t += 1;
@@ -226,7 +226,7 @@ while (slots.includes(t)) t += 1;
 
 the collision loop never runs: the three quartile slots are 4,8,11 / 5,10,15 / 8,15,23 at the three difficulties, which never collide
 
-### queries.ts:574
+### queries.ts:578
 
 ```
 if (ns === 0) out.push({ zone: 'hub', lymph: true });
@@ -234,7 +234,7 @@ if (ns === 0) out.push({ zone: 'hub', lymph: true });
 
 unreachable: ns === 0 needs extra === LYMPH_STEP (3), and extra runs to sp-1, so it needs speed >= 4. The fastest cell is speed 2, or 3 with a primed helper
 
-### queries.ts:218
+### queries.ts:222
 
 ```
 export function abTotal(g: GameState): number {
@@ -242,7 +242,7 @@ export function abTotal(g: GameState): number {
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
-### queries.ts:222
+### queries.ts:226
 
 ```
 export function hasAb(g: GameState, iv: Invader): boolean {
@@ -250,7 +250,7 @@ export function hasAb(g: GameState, iv: Invader): boolean {
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
-### spread.ts:459
+### spread.ts:461
 
 ```
 iv.wormClock = (iv.wormClock || WORM_DAMAGE_EVERY) - 1;
@@ -258,7 +258,7 @@ iv.wormClock = (iv.wormClock || WORM_DAMAGE_EVERY) - 1;
 
 the || fallback is unreachable: a lodged worm always carries a non-zero clock, set at makeInvader or at lodging and reset on every bite. Demonstrated over 300 games
 
-### spread.ts:462
+### spread.ts:464
 
 ```
 const org = iv.organ ? g.organs[iv.organ] : undefined;
@@ -266,7 +266,7 @@ const org = iv.organ ? g.organs[iv.organ] : undefined;
 
 the undefined arm is unreachable: makeInvader always assigns an organ before a worm can lodge. Demonstrated over 300 games
 
-### spread.ts:531
+### spread.ts:533
 
 ```
 if (arrivals.includes(iv)) break;

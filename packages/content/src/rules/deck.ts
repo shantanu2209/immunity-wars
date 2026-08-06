@@ -1,12 +1,16 @@
 /**
  * The infection deck.
  *
- * TASK B1 — transcribed from tools/legacy/v2_engine.js with values and key order taken from
- * the running module, so this file is equal to legacy by construction rather than by careful
- * retyping. packages/engine/src/data/data.test.ts proves it, entry by entry.
+ * Transcribed from tools/legacy/v2_engine.js at B1 with values and key order taken from the
+ * running module, so this file is equal to legacy by construction rather than by careful
+ * retyping. tests/equivalence/src/data.test.ts proves it, entry by entry, key order included.
  *
- * These tables move to packages/content/ in Task C, behind a Zod loader. They live here for
- * Task B so the port has exactly one moving part at a time.
+ * TASK C1 — moved here from packages/engine/src/data/ with the values untouched. Still
+ * TypeScript: C2 converts these to JSON behind a Zod loader. Two commits rather than one, so
+ * that if the corpus goes red it says WHICH mechanism broke — the move or the serialisation.
+ *
+ * KEY ORDER IS LOAD-BEARING. TROPISM's order feeds rollOrgan, FAM_KEYS' order feeds the kidney
+ * antibody leak. Do not sort, normalise, or rebuild these from a schema default.
  */
 
 import type { Card } from '../types.js';

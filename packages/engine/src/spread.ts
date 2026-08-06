@@ -14,20 +14,22 @@
  *     Hard-mode division pushes the guaranteed copy BEFORE rolling the d6 for a second.
  */
 
-import { LYMPH_STEP, ORGANS, RESIDENT_NAME } from './data/board.js';
-import { RARE } from './data/events.js';
-import { FAM_KEYS } from './data/families.js';
-import { TOXIN_MAKERS } from './data/invaders.js';
 import {
   BURST_ON,
+  FAM_KEYS,
   GRACE_CLEAR,
   HEAL_AFTER,
   INFECT_ON,
+  LYMPH_STEP,
   MALARIA_LIVER_TURNS,
+  ORGANS,
+  RARE,
+  RESIDENT_NAME,
   SPACE_CAP,
   TOXIN_AFTER,
+  TOXIN_MAKERS,
   WORM_DAMAGE_EVERY,
-} from './data/tuning.js';
+} from '@immunity-wars/content';
 import { fireTurnStart, pushLog, rollOrgan } from './construct.js';
 import { branchLen, clone, d6, famOf, lymphPartners, uid } from './primitives.js';
 import {

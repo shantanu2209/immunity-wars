@@ -57,7 +57,20 @@ packages/server/    Relay.
 tools/legacy/       Original .js/.html. READ-ONLY reference. Never edit.
 ```
 
-`engine` may import `content` types only. CI fails on any other cross-import.
+**The boundary invariant: content contains no logic, engine contains no data.**
+`engine` → `content` is intended and unrestricted. `content` → anything is forbidden.
+
+Enforced in two places, because neither can see the other's half:
+- `.dependency-cruiser.cjs` — the import-graph directions (`pnpm boundaries`)
+- `tests/equivalence/src/exports.test.ts` — that every data export of the engine is the *same
+  object* as content's, by identity. A table re-declared inside `engine` imports nothing, so it
+  casts no edge on the graph and dependency-cruiser is structurally blind to it.
+
+*Corrected 6 Aug 2026.* This previously read "engine may import content types only. CI fails on
+any other cross-import." CI did not — no such rule existed — and the rule could not hold anyway:
+legacy publishes `ORGANS`, `DECK_MASTER`, `TROPISM` and 19 other tables as part of its 67-export
+public API, so a types-only engine would have to stop publishing the values and break the
+contract Task B was measured against.
 
 ## Conventions
 

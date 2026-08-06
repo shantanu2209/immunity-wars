@@ -1,10 +1,26 @@
 /**
  * Dependency boundary rules.
  *
- * Enforces docs/PHASE1_BRIEF.md §2: "engine may import content types only. engine must
- * never import ui, app, server, or any DOM/Node API."
+ * THE INVARIANT: content contains no logic, the engine contains no data.
  *
- * This is one half of the purity guarantee. The other half is in packages/engine/tsconfig.json,
+ * docs/PHASE1_BRIEF.md §2 and CLAUDE.md used to say "engine may import content TYPES only",
+ * and claimed CI enforced it. CI did not — there was no such rule here — and the rule could not
+ * have held anyway: legacy publishes ORGANS, DECK_MASTER, TROPISM and 19 other tables as part
+ * of its 67-export public API, so an engine that could see only the types would have to stop
+ * publishing the values and break the contract Task B was measured against. Both documents are
+ * corrected to the invariant above rather than left asserting something nothing checks.
+ *
+ * So: `engine -> content` is INTENDED and unrestricted. Its converse is not, and neither is
+ * data drifting back into the engine.
+ *
+ * WHAT THIS FILE CAN AND CANNOT DO. Three of the four directions are import-graph shaped and
+ * are enforced below. "The engine contains no data" is NOT an import-graph property — a table
+ * re-declared inside packages/engine imports nothing and would be invisible here. That half is
+ * enforced by tests/equivalence/src/exports.test.ts, which asserts every data export of the
+ * engine is the SAME OBJECT as content's, by identity. A re-declared copy fails it.
+ * Neither check subsumes the other, and saying so is cheaper than discovering it later.
+ *
+ * The purity guarantee has a second half in packages/engine/tsconfig.json,
  * which sets lib to ES2022 (no DOM) and types to [] (no @types/node). Neither check subsumes
  * the other:
  *
@@ -45,7 +61,10 @@ module.exports = {
       severity: 'error',
       comment:
         'Content is validated data, not behaviour. It must not import the engine, the UI, ' +
-        'the app or the server. CLAUDE.md: "No game logic in UI, server, or content."',
+        'the app or the server. CLAUDE.md: "No game logic in UI, server, or content." ' +
+        'Note the asymmetry is deliberate: engine -> content is intended and unrestricted, ' +
+        'content -> engine is forbidden. Content that reached into the engine could encode a ' +
+        'rule, which is the thing this whole boundary exists to prevent.',
       from: { path: '^packages/content' },
       to: { path: '^packages/(engine|ui|app|server)' },
     },

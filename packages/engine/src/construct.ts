@@ -16,13 +16,24 @@
  * not to be tidied.
  */
 
-import { LYMPH_STEP, ORGANS, RESIDENT_NAME, ROUTES } from './data/board.js';
-import { DECK_MASTER } from './data/deck.js';
-import { BAD_POOL, EVENTS, GOOD_POOL } from './data/events.js';
-import { FAM_KEYS } from './data/families.js';
-import { INV_HP } from './data/invaders.js';
-import { TROPISM } from './data/tropism.js';
-import { DIFF, FLAGS, GRACE_CLEAR, MALARIA_LIVER_TURNS, WORM_DAMAGE_EVERY } from './data/tuning.js';
+import {
+  BAD_POOL,
+  DECK_MASTER,
+  DIFF,
+  EVENTS,
+  FAM_KEYS,
+  FLAGS,
+  GOOD_POOL,
+  GRACE_CLEAR,
+  INV_HP,
+  LYMPH_STEP,
+  MALARIA_LIVER_TURNS,
+  ORGANS,
+  RESIDENT_NAME,
+  ROUTES,
+  TROPISM,
+  WORM_DAMAGE_EVERY,
+} from '@immunity-wars/content';
 import { knobs } from './knobs.js';
 import { branchLen, organsFor, resetUid, shuffle, uid } from './primitives.js';
 import { capFam, wormAllowed } from './queries.js';

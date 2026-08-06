@@ -86,9 +86,21 @@ immunity-wars/
 └─ .github/workflows/
 ```
 
-**Dependency rule, enforced in CI:** `engine` may import `content` types only.
+**Dependency rule, enforced in CI:** *content contains no logic, engine contains no data.*
+`engine` → `content` is intended and unrestricted; `content` → anything is forbidden.
 `engine` must never import `ui`, `app`, `server`, or any DOM/Node API.
-Use `eslint-plugin-boundaries` or `dependency-cruiser` to fail the build on violation.
+`dependency-cruiser` fails the build on the import-graph half; `exports.test.ts` fails it on the
+half a graph cannot see — a data table re-declared *inside* `engine` imports nothing.
+
+> ⚠️ **Corrected 6 Aug 2026, at Task C1.** v1.3 said `engine` may import `content` **types only**,
+> and that CI enforced it. **Neither was true.** No such rule existed in `.dependency-cruiser.cjs`
+> — the claim was vacuously satisfied only because `engine` imported nothing from `content` at
+> all — and the rule is unsatisfiable as written: §5 makes legacy's 67 exports the contract, and
+> 22 of those 67 **are data tables**. An engine restricted to content's types would have to stop
+> publishing `ORGANS`, `DECK_MASTER` and `TROPISM`, breaking the very surface Task B proved.
+>
+> This is the ninth documented-but-unenforced claim found in this project. The response each
+> time is the same: make it true or make it accurate, never leave it standing.
 
 ---
 

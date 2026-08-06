@@ -56,20 +56,30 @@ export type {
   RouteKey,
 } from './types.js';
 
-export { ORGANS, ORGAN_SETS, RESIDENT_NAME, ROUTES } from './data/board.js';
-export { DECK_MASTER } from './data/deck.js';
-export { EVENTS, RARE } from './data/events.js';
-export { FAMILIES, FAMILY, FAM_KEYS } from './data/families.js';
-export { FAST_DISEASE, INV_HP, INV_SPEED, NOT_ALIVE, TOXIN_MAKERS } from './data/invaders.js';
-export { TROPISM } from './data/tropism.js';
 export {
   ANTIVENOM_ORDER,
   CELL_KEYS,
   CLONE_COST,
+  DECK_MASTER,
   DIFF,
+  EVENTS,
+  FAM_KEYS,
+  FAMILIES,
+  FAMILY,
+  FAST_DISEASE,
   FLAGS,
+  INV_HP,
+  INV_SPEED,
+  NOT_ALIVE,
+  ORGAN_SETS,
+  ORGANS,
+  RARE,
+  RESIDENT_NAME,
+  ROUTES,
+  TOXIN_MAKERS,
+  TROPISM,
   VACCINE_COST,
-} from './data/tuning.js';
+} from '@immunity-wars/content';
 
 export { branchLen, famOf } from './primitives.js';
 

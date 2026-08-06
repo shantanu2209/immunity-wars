@@ -63,6 +63,9 @@ importers:
 
   tests/equivalence:
     dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@immunity-wars/engine':
         specifier: workspace:*
         version: link:../../packages/engine

@@ -27,6 +27,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import * as content from '@immunity-wars/content';
 import * as port from '@immunity-wars/engine';
 
 import { loadLegacy } from './engine.js';
@@ -75,5 +76,72 @@ describe('the engine root publishes exactly legacy resolved surface', () => {
     // deleted, and this is what says so.
     for (const n of SCAFFOLD_EXEMPTIONS)
       expect(portNames.has(n), `${n} is exempted but absent`).toBe(true);
+  });
+});
+
+/**
+ * TASK C1 — "the engine contains no data", the half dependency-cruiser cannot see.
+ *
+ * The boundary invariant is: content contains no logic, engine contains no data. Three of its
+ * four directions are import-graph properties and .dependency-cruiser.cjs enforces them. This
+ * one is not: a table RE-DECLARED inside packages/engine imports nothing, so it casts no edge
+ * on the graph and dependency-cruiser is structurally blind to it.
+ *
+ * Identity — `toBe`, not `toEqual` — is what closes that. A copy-pasted table would still be
+ * deeply equal to content's and would pass every value test in data.test.ts, including the
+ * key-order comparison. It would fail this one on the first assertion, because it would be a
+ * different object.
+ *
+ * That failure mode is not hypothetical for this project: the data tables spent all of Task B
+ * inside packages/engine, and the whole of C1 is moving them out. Something that drifts back is
+ * exactly the shape of mistake to expect.
+ */
+describe('C1: every data export of the engine IS content, by identity', () => {
+  /** The 22 tables legacy publishes. Same list data.test.ts proves against legacy. */
+  const DATA_EXPORTS = [
+    'ORGANS',
+    'ORGAN_SETS',
+    'ROUTES',
+    'TROPISM',
+    'DECK_MASTER',
+    'FAMILIES',
+    'FAM_KEYS',
+    'FAMILY',
+    'EVENTS',
+    'RARE',
+    'INV_HP',
+    'INV_SPEED',
+    'FAST_DISEASE',
+    'NOT_ALIVE',
+    'TOXIN_MAKERS',
+    'RESIDENT_NAME',
+    'CELL_KEYS',
+    'DIFF',
+    'FLAGS',
+    'VACCINE_COST',
+    'CLONE_COST',
+    'ANTIVENOM_ORDER',
+  ] as const;
+
+  const at = (m: unknown, k: string): unknown => (m as Record<string, unknown>)[k];
+
+  for (const name of DATA_EXPORTS) {
+    it(`${name} is re-exported from content, not re-declared`, () => {
+      expect(at(content, name), `${name} is missing from @immunity-wars/content`).toBeDefined();
+      // Scalars (VACCINE_COST, CLONE_COST, ANTIVENOM_ORDER) compare by value; that is all
+      // identity means for a number, and a re-declared 5 is genuinely indistinguishable.
+      // The tables are objects, where toBe is a real constraint.
+      expect(at(port, name)).toBe(at(content, name));
+    });
+  }
+
+  it('covers every data export the engine publishes, with none missed', () => {
+    // Guards the list above from going stale: if a 23rd data table is ever published, this
+    // fails rather than letting it slip past unchecked.
+    const publishedData = [...portNames]
+      .filter((n) => typeof at(port, n) !== 'function')
+      .filter((n) => n !== 'PACKAGE_NAME')
+      .sort();
+    expect(publishedData).toEqual([...DATA_EXPORTS].sort());
   });
 });

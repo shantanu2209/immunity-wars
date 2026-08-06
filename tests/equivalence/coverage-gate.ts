@@ -21,6 +21,27 @@
  * And it is SELF-POLICING: if an excluded arm ever becomes covered, it was not dead, and the
  * gate fails telling you to remove it.
  *
+ * TWO MEASUREMENT FOOTGUNS, both found at C1, both worth knowing before you read a number here.
+ *
+ * 1. CLEAN `coverage/` FIRST. Every tier writes to the same directory, so running
+ *    `pnpm coverage:generators` and then this gate reports the WRONG tier's numbers, partly
+ *    merged. At C1 that manufactured a phantom extra arm in actions.ts that vanished on a clean
+ *    run. Always: `rm -rf coverage && pnpm coverage:all` (or the tier you mean), then the gate.
+ *
+ * 2. THE V8 PROVIDER'S ARM COUNT WOBBLES BY ±1 WITH SOURCE OFFSETS. It derives branches from
+ *    V8 block-coverage ranges rather than from the AST, so purely cosmetic edits can change how
+ *    a range splits. At C1, merging four import statements into one — no control-flow change
+ *    whatsoever — added one COVERED arm at `samePlace`'s `if (a.zone === 'route')`. Nothing was
+ *    removed and no uncovered arm appeared.
+ *
+ *    That it was cosmetic is not an assumption: the 6,000-game equivalence corpus was byte-
+ *    identical across the same change, which is direct evidence the engine's control flow did
+ *    not move. The arm count did. So the corpus is the authority on behaviour and this gate is
+ *    the authority on test reach, and a ±1 wobble here is measurement noise rather than signal.
+ *
+ *    Consequence for anyone about to press on the margin: headroom is currently ~6 arms, which
+ *    means ~6 ± 1. Do not read a one-arm move as a regression, and do not spend the last arm.
+ *
  * Two categories are NOT excluded, deliberately:
  *   - MULTIPLAYER arms stay in the denominator. They are reachable; Phase 3 must cover them.
  *   - BOT-CONDITIONAL arms stay in the denominator. They become reachable when Phase 2 builds

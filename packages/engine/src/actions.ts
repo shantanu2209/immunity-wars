@@ -13,19 +13,23 @@
  *   B4d  residents
  */
 
-import { LYMPH_GROUP, LYMPH_STEP, ORGANS, RESIDENT_NAME, ROUTES } from './data/board.js';
-import { DECK_MASTER } from './data/deck.js';
-import { FAM_KEYS } from './data/families.js';
 import {
+  AFFINITY_AT,
   ANTIVENOM_ORDER,
   CLONE_COST,
+  DECK_MASTER,
   EOSINOPHIL_REGEN,
+  FAM_KEYS,
+  LYMPH_GROUP,
+  LYMPH_STEP,
   NEUTROPHIL_REGEN,
   NK_HITS,
+  ORGANS,
   REINFECT_PC,
+  RESIDENT_NAME,
+  ROUTES,
   VACCINE_COST,
-  AFFINITY_AT,
-} from './data/tuning.js';
+} from '@immunity-wars/content';
 import { apNow, hasFree, spend, spendAP } from './ap.js';
 import { makeInvader, noteWorm, pushLog, respectWormCap } from './construct.js';
 import { cname, killInvader, hurtInvader, placeName, present } from './effects.js';

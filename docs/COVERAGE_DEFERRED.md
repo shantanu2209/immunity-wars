@@ -10,18 +10,17 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (10 arms)
+## Phase 3 — multiplayer (9 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
 
-- `actions.ts:85` `if (a.pid !== g.captain) return err('Only the captain allocates Action Points.');`
-- `actions.ts:90` `if (amt > pool) return err('Not enough unallocated AP.');`
-- `actions.ts:119` `if (a.pid !== g.captain) return err('Only the captain can confirm allocation.');`
-- `actions.ts:154` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
-- `actions.ts:164` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
-- `actions.ts:164` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
-- `actions.ts:165` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:89` `if (a.pid !== g.captain) return err('Only the captain allocates Action Points.');`
+- `actions.ts:94` `if (amt > pool) return err('Not enough unallocated AP.');`
+- `actions.ts:123` `if (a.pid !== g.captain) return err('Only the captain can confirm allocation.');`
+- `actions.ts:158` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
+- `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
+- `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
 - `ap.ts:29` `}`
 - `ap.ts:40` `if (ck && g.free && free > 0) {`
 - `ap.ts:53` `return g.multiplayer ? apAvail(g, g._actingPid) : g.ap;`
@@ -42,49 +41,50 @@ good enough to measure difficulty would reach them.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:258` `if (!target) return false;`
 
-## Uncategorised — still open (42 arms)
+## Uncategorised — still open (43 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `actions.ts:217` `if (!c) return err('Illegal move.');`
-- `actions.ts:236` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:247` `if (!to) return err('No lymphatic link from this route.');`
-- `actions.ts:266` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:305` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:333` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:335` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:446` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:476` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:528` ``<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disea`
-- `actions.ts:593` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:598` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:601` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
-- `actions.ts:623` `if (n.zone === 'hub') return err('Move onto a swarm first.');`
-- `actions.ts:687` ``The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ`
-- `actions.ts:702` ``The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,`
-- `construct.ts:91` `if (!e) return;`
-- `construct.ts:115` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
-- `construct.ts:129` `if ((c as unknown as Card).novel) {`
-- `construct.ts:153` `default:`
-- `construct.ts:204` `if (i >= 0) {`
-- `construct.ts:286` `if ((card as Card).novel) {`
-- `construct.ts:296` `if (!card) return null;`
-- `construct.ts:301` `if ((card as Card).novel) {`
-- `effects.ts:67` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
-- `queries.ts:174` `if (!helper || !target) return false;`
-- `queries.ts:270` `if (!g.flags.dendritic) {`
-- `queries.ts:361` `if (!attackable(iv)) return false;`
-- `queries.ts:375` `if (!attackable(iv)) return false;`
-- `queries.ts:393` `if (!m) return [];`
-- `queries.ts:415` `if (!t) return [];`
-- `queries.ts:427` `if (iv.zone === 'branch') return iv.step <= R;`
-- `queries.ts:455` `if (!n) return [];`
-- `queries.ts:462` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
-- `queries.ts:478` `if (!c) return [];`
-- `spread.ts:64` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
-- `spread.ts:67` `if (!e) return false;`
-- `spread.ts:164` `default:`
-- `spread.ts:624` `if (!r) return;`
-- `spread.ts:666` `if (!org) return;`
-- `spread.ts:742` `if (!org) return;`
+- `actions.ts:169` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:221` `if (!c) return err('Illegal move.');`
+- `actions.ts:240` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:251` `if (!to) return err('No lymphatic link from this route.');`
+- `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:309` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:337` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:450` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:480` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:532` ``<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disea`
+- `actions.ts:597` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:602` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:605` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
+- `actions.ts:627` `if (n.zone === 'hub') return err('Move onto a swarm first.');`
+- `actions.ts:691` ``The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ`
+- `actions.ts:706` ``The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,`
+- `construct.ts:102` `if (!e) return;`
+- `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
+- `construct.ts:140` `if ((c as unknown as Card).novel) {`
+- `construct.ts:164` `default:`
+- `construct.ts:215` `if (i >= 0) {`
+- `construct.ts:297` `if ((card as Card).novel) {`
+- `construct.ts:307` `if (!card) return null;`
+- `construct.ts:312` `if ((card as Card).novel) {`
+- `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
+- `queries.ts:178` `if (!helper || !target) return false;`
+- `queries.ts:274` `if (!g.flags.dendritic) {`
+- `queries.ts:365` `if (!attackable(iv)) return false;`
+- `queries.ts:379` `if (!attackable(iv)) return false;`
+- `queries.ts:397` `if (!m) return [];`
+- `queries.ts:419` `if (!t) return [];`
+- `queries.ts:431` `if (iv.zone === 'branch') return iv.step <= R;`
+- `queries.ts:459` `if (!n) return [];`
+- `queries.ts:466` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
+- `queries.ts:482` `if (!c) return [];`
+- `spread.ts:66` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
+- `spread.ts:69` `if (!e) return false;`
+- `spread.ts:166` `default:`
+- `spread.ts:626` `if (!r) return;`
+- `spread.ts:668` `if (!org) return;`
+- `spread.ts:744` `if (!org) return;`
 - `view.ts:50` `if (!u) return err('Nothing to undo.');`
