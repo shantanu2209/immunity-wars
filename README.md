@@ -10,6 +10,8 @@ interdependence is the point — it is what makes the cooperation genuine rather
 The game exists as a printed board and as a digital version. This repository is the digital one,
 currently being rebuilt as an offline-capable app for web, Android and iOS.
 
+Where this is going: [ROADMAP.md](ROADMAP.md).
+
 ---
 
 ## Why it exists
