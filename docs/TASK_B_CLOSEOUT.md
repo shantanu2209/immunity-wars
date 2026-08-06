@@ -267,10 +267,10 @@ Item 1 is complete. The other two are the loose ends.
 
 1. **Coverage is done** — measured, the reachable gap closed, the gate restated and passing at
    95.46% of coverable arms. Two deferred lists go with it, inherited by Phase 2 and Phase 3.
-2. **Task C inherits two things by design.** The 22 data tables move out behind a Zod loader —
-   and that loader is the right place to require every `DECK_MASTER.dz` to have a `FAMILY` entry
-   or a documented exemption, which is finding #13's real fix. The i18n extraction takes the
-   frozen error strings, which have been held byte-identical throughout precisely for this.
+2. **Task C has a written handoff:** [`TASK_C_HANDOFF.md`](TASK_C_HANDOFF.md). It covers the cut
+   line B1 deliberately left in `packages/engine/src/data/`, the four things that break silently
+   (key order, `viewState` field order, the frozen error strings, and the corpus as the acceptance
+   test for the move), and what the Zod schema should catch.
 3. **Multiplayer coverage is a genuine gap.** Not a Task B failure — the corpus was scoped
    single-player — but Phase 3 should not assume the allocation phase is as well tested as the
    rest of the engine. It is not.

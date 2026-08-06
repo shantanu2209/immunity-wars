@@ -42,7 +42,8 @@ Phase 6  The classroom layer
 **What you get:** nothing visibly different, and a codebase where a mistake announces itself
 instead of waiting to be discovered.
 
-**Outstanding before C:** the ≥95% coverage measurement the plan required and never ran.
+**Coverage gate:** met at 95.46% of coverable arms, with exclusions enumerated and self-policing.
+Two deferred lists carry into Phases 2 and 3.
 
 ---
 
