@@ -27,21 +27,29 @@
 import type {
   Card,
   CellKey,
+  CellLabel,
   Difficulty,
   DifficultyDef,
+  DiseaseInfo,
+  DiseaseStats,
   EventDef,
   FamilyDef,
   FamilyKey,
   Flags,
+  InvaderLabel,
   InvaderType,
   OrganDef,
   OrganKey,
+  Point,
   RareDef,
+  Region,
+  RegionBox,
+  RegionKey,
   RouteDef,
   RouteKey,
 } from './types.js';
 
-import { RulesPackS } from './schema.js';
+import { BoardPackS, RulesPackS } from './schema.js';
 
 import boardJson from './rules/board.json';
 import deckJson from './rules/deck.json';
@@ -51,6 +59,11 @@ import invadersJson from './rules/invaders.json';
 import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
+
+import geometryJson from './board/geometry.json';
+import regionsJson from './board/regions.json';
+import diseasesJson from './diseases/diseases.json';
+import labelsJson from './labels/labels.json';
 
 /**
  * Assembled, validated, and returned UNCHANGED.
@@ -76,7 +89,20 @@ function parseRules(): Record<string, unknown> {
   return raw;
 }
 
-const pack = parseRules();
+/** Same contract as parseRules: validate, then return the ORIGINAL. See the header. */
+function parseBoard(): Record<string, unknown> {
+  const raw: Record<string, unknown> = {
+    ...packJson,
+    ...geometryJson,
+    ...regionsJson,
+    ...diseasesJson,
+    ...labelsJson,
+  };
+  BoardPackS.parse(raw);
+  return raw;
+}
+
+const pack = { ...parseRules(), ...parseBoard() };
 
 /** The pack stamp. Every state and network message carries rulesVersion (BRIEF §3, seam 7). */
 export const PACK_ID = pack['packId'] as string;
@@ -164,3 +190,65 @@ export const REINFECT_PC = pack['REINFECT_PC'] as number;
 export const VACCINE_COST = pack['VACCINE_COST'] as number;
 export const CLONE_COST = pack['CLONE_COST'] as number;
 export const MEMORY_BOOST = pack['MEMORY_BOOST'] as number;
+
+/* ================================================================== *
+ * TASK C3 — the board pack: geometry, regions, disease text, labels
+ * ================================================================== */
+
+/**
+ * `geometry.json` IS THE SINGLE SOURCE FOR BOARD COORDINATES. Read this before editing one.
+ *
+ * docs/PHASE1_BRIEF.md §3: it is the source for the on-screen SVG board **and** for the printed
+ * A2 artwork. CLAUDE.md states it as a hard rule — "Board geometry has one source:
+ * packages/content/board/geometry.json. Never hardcode coordinates elsewhere."
+ *
+ * WHAT CONSUMES IT
+ *   today    nothing — the legacy UI still carries its own copy, and Task C is extraction only
+ *   Phase 2  the React/SVG board renders from it (BRIEF §5, "SVG board generated from
+ *            content/board/geometry.json"), and the legacy copy is deleted at that point
+ *   Phase 2  THE PRINTED A2 BOARD MUST BE GENERATED FROM IT TOO. This is the half that is easy
+ *            to skip, and skipping it re-opens exactly the drift the file exists to close: a
+ *            coordinate corrected on screen and not on the paper the game is actually played on.
+ *
+ * The drift is not hypothetical for this project. The brain-branch change (docs/FINDINGS.md #2,
+ * #17) had to be applied by hand in two places, and there is no record of the balance simulation
+ * being re-run afterwards. One source is the structural fix for that class of problem; a second
+ * copy anywhere brings it straight back.
+ *
+ * The schema's parity check enforces the part a comment cannot: the number of drawn branch and
+ * route steps must equal the lengths in `rules/board.json`. Geometry and rules can disagree
+ * loudly now, and only loudly.
+ */
+
+/* --- geometry --- */
+export const VW = pack['VW'] as number;
+export const VH = pack['VH'] as number;
+export const HUB = pack['HUB'] as Point;
+export const ORGAN_POS = pack['ORGAN_POS'] as Record<OrganKey, Point>;
+export const CHIP_POS = pack['CHIP_POS'] as Record<OrganKey, Point>;
+export const BRANCH = pack['BRANCH'] as Record<OrganKey, Record<string, Point>>;
+export const ROUTE = pack['ROUTE'] as Record<RouteKey, Record<string, Point>>;
+export const ENTRY = pack['ENTRY'] as Record<RouteKey, Point & { t: string }>;
+
+/* --- regions (the phone-size zoom targets) --- */
+export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;
+export const REGION_BOX = pack['REGION_BOX'] as Record<RegionKey, RegionBox>;
+export const REGION_LABEL = pack['REGION_LABEL'] as Record<RegionKey, string>;
+
+/* --- disease text and stat blocks --- */
+export const FACT = pack['FACT'] as Record<string, string>;
+export const DZINFO = pack['DZINFO'] as Record<string, DiseaseInfo>;
+/** Legacy calls this `S`; docs/PHASE1_BRIEF.md §3 renames it DZSTATS on extraction. */
+export const DZSTATS = pack['DZSTATS'] as Record<string, DiseaseStats>;
+
+/* --- labels and glyphs --- */
+export const UM = pack['UM'] as Record<CellKey, CellLabel>;
+export const UI_ = pack['UI_'] as Record<InvaderType, InvaderLabel>;
+/**
+ * Byte-identical to RESIDENT_NAME in the rules pack, and that is asserted rather than assumed —
+ * see the parity test in load.test.ts. Two copies exist because legacy has two; Phase 2 collapses
+ * them when the UI stops reading its own.
+ */
+export const RNAME = pack['RNAME'] as Record<OrganKey, string>;
+export const RGLYPH = pack['RGLYPH'] as Record<OrganKey, string>;
+export const ORGAN_ART = pack['ORGAN_ART'] as Record<OrganKey, string>;

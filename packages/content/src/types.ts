@@ -111,6 +111,72 @@ export interface RareDef {
  * — see docs/FINDINGS.md #8 — and are kept because they are part of the state shape viewState()
  * exposes. Pruning them is Phase 2 work, once a UI exists that would read them.
  */
+/* ================================================================== *
+ * TASK C3 — board geometry, regions, disease text, labels
+ *
+ * Extracted from tools/legacy/v2_ui.html. These describe how the board is DRAWN and how
+ * diseases and cells are LABELLED — presentation content, not rules. The engine does not
+ * import any of it; Phase 2's SVG board and card sheets do.
+ * ================================================================== */
+
+export interface Point {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** The seven zoom targets: six entry lanes plus the core. Not the same set as OrganKey. */
+export type RegionKey = 'nose' | 'gut' | 'contact' | 'wound' | 'bite' | 'blood' | 'core';
+
+export interface Region {
+  readonly cx: number;
+  readonly cy: number;
+  readonly scale: number;
+}
+
+export interface RegionBox {
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+}
+
+/** d=discovered · c=causes · w=found · p=prevent · r=treat */
+export interface DiseaseInfo {
+  readonly d: string;
+  readonly c: string;
+  readonly w: string;
+  readonly p: string;
+  readonly r: string;
+}
+
+/**
+ * The card's stat block: four 1–5 ratings and a rarity label.
+ *
+ * A fixed-length tuple rather than an array, because the positions are meaningful and a
+ * five-element array of mixed types is exactly the shape that rots into guesswork.
+ */
+export type DiseaseStats = readonly [
+  contagious: number,
+  severity: number,
+  spread: number,
+  persistence: number,
+  rarity: 'Common' | 'Rare' | 'Legendary',
+];
+
+/** n=name · r=role blurb · g=glyph */
+export interface CellLabel {
+  readonly n: string;
+  readonly r: string;
+  readonly g: string;
+}
+
+/** n=name · c=CSS colour variable · g=glyph */
+export interface InvaderLabel {
+  readonly n: string;
+  readonly c: string;
+  readonly g: string;
+}
+
 export interface Flags {
   readonly organs: boolean;
   readonly residents: boolean;

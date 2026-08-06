@@ -43,9 +43,17 @@ export type {
   OrganDef,
   OrganKey,
   OrganKind,
+  Point,
   RareDef,
+  Region,
+  RegionBox,
+  RegionKey,
   RouteDef,
   RouteKey,
+  CellLabel,
+  DiseaseInfo,
+  DiseaseStats,
+  InvaderLabel,
 } from './types.js';
 
 export {
@@ -112,4 +120,27 @@ export {
   WORM_DAMAGE_EVERY,
   WORM_MAX_PER_GAME,
   WORM_MAX_PER_TURN,
+} from './load.js';
+
+/* --- TASK C3: the board pack — geometry, regions, disease text, labels --- */
+export {
+  BRANCH,
+  CHIP_POS,
+  DZINFO,
+  DZSTATS,
+  ENTRY,
+  FACT,
+  HUB,
+  ORGAN_ART,
+  ORGAN_POS,
+  REGION_BOX,
+  REGION_LABEL,
+  REGIONS,
+  RGLYPH,
+  RNAME,
+  ROUTE,
+  UI_,
+  UM,
+  VH,
+  VW,
 } from './load.js';

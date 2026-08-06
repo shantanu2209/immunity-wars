@@ -1,0 +1,1522 @@
+{
+  "FACT": {
+    "Influenza": "Flu mutates fast — last year's antibodies may not fit.",
+    "Common cold": "Over 100 strains; no lasting immunity.",
+    "COVID-19": "Can inflame the heart muscle (myocarditis) as well as the lungs.",
+    "RSV": "Mild in adults, dangerous for babies.",
+    "Chickenpox": "Hides in nerves for decades — returns as shingles.",
+    "Glandular fever": "Hides inside your own B-cells; risks spleen rupture.",
+    "Tuberculosis": "Can lie dormant in the lungs for years.",
+    "Whooping cough": "Violent coughing fits; DPT vaccine prevents it.",
+    "Dengue": "Crashes the marrow's platelet supply.",
+    "Chikungunya": "Mosquito virus; joint pain, sometimes myocarditis.",
+    "Japanese encephalitis": "Mosquito-borne brain infection; vaccine-preventable.",
+    "Yellow fever": "Attacks the liver — hence the jaundice.",
+    "Rabies": "Creeps inside nerves where antibodies can't follow.",
+    "Lyme disease": "Tick bite; can cause Lyme carditis in the heart.",
+    "Plague": "Flea bites — the historical Black Death.",
+    "Tetanus": "A toxin that locks muscles ('lockjaw').",
+    "MRSA": "A superbug — in the blood it can seed ANY organ, including heart valves.",
+    "Cellulitis": "Staph/Strep skin infection; can settle on heart valves.",
+    "Leptospirosis": "Enters through cuts in floodwater — a monsoon risk.",
+    "Gas gangrene": "Destroys deep tissue fast; a surgical emergency.",
+    "Cold sore": "Retreats into nerves to hide from antibodies.",
+    "Typhoid": "Unclean water; hits liver and spleen.",
+    "Cholera": "Dehydration wrecks the kidneys.",
+    "Dysentery": "Bloody diarrhoea from dirty water.",
+    "Food poisoning": "Some E. coli damage the kidneys (HUS).",
+    "Rotavirus": "A top cause of child diarrhoea — vaccine-preventable.",
+    "Hepatitis A": "A liver virus from contaminated food or water.",
+    "Hepatitis E": "Waterborne liver virus.",
+    "Norovirus": "The 'winter vomiting' bug.",
+    "Polio": "Enters via the gut, attacks nerves."
+  },
+  "DZINFO": {
+    "Influenza": {
+      "d": "Virus isolated 1933; the 1918 pandemic killed ~50 million.",
+      "c": "Fever, aches, cough; can lead to pneumonia and myocarditis.",
+      "w": "Worldwide, in yearly winter waves.",
+      "p": "Annual flu vaccine — it changes because the virus mutates fast.",
+      "r": "Rest, fluids; antivirals for high-risk patients."
+    },
+    "Common cold": {
+      "d": "Rhinovirus identified in the 1950s.",
+      "c": "Runny nose, sore throat, sneezing.",
+      "w": "Everywhere, all year.",
+      "p": "Handwashing. No vaccine — over 100 strains.",
+      "r": "No cure; it passes in about a week."
+    },
+    "COVID-19": {
+      "d": "SARS-CoV-2 identified in Wuhan, China, December 2019.",
+      "c": "Cough, fever, loss of smell; pneumonia and myocarditis in severe cases.",
+      "w": "Worldwide pandemic from 2020.",
+      "p": "Vaccination, ventilation, masks during outbreaks.",
+      "r": "Supportive care; antivirals for those at risk."
+    },
+    "RSV": {
+      "d": "Respiratory syncytial virus, discovered 1956.",
+      "c": "Cold-like illness; bronchiolitis and pneumonia in babies.",
+      "w": "Worldwide, seasonal.",
+      "p": "Monoclonal antibodies and a maternal vaccine for infants.",
+      "r": "Supportive care; oxygen if severe."
+    },
+    "Measles": {
+      "d": "Vaccine by John Enders, 1963. One of the most contagious viruses known.",
+      "c": "Rash and fever — and IMMUNE AMNESIA: it wipes out your existing immune memory, leaving you open to diseases you had already beaten.",
+      "w": "Worldwide; resurges wherever vaccination drops.",
+      "p": "MMR vaccine — two doses.",
+      "r": "No antiviral; vitamin A and supportive care. Prevention is everything."
+    },
+    "Mumps": {
+      "d": "Described by Hippocrates; vaccine 1967.",
+      "c": "Swollen salivary glands; can inflame the brain and testes.",
+      "w": "Worldwide.",
+      "p": "MMR vaccine.",
+      "r": "Supportive care only."
+    },
+    "Rubella": {
+      "d": "Link to birth defects found by Norman Gregg, 1941.",
+      "c": "Mild rash in children — but devastating to an unborn baby.",
+      "w": "Worldwide.",
+      "p": "MMR vaccine, especially before pregnancy.",
+      "r": "No cure; prevention protects the next generation."
+    },
+    "Smallpox": {
+      "d": "Jenner's cowpox vaccine, 1796 — the first vaccine ever made.",
+      "c": "Disfiguring pustules; killed around 30% of those infected.",
+      "w": "NOWHERE. Declared eradicated in 1980 — the only human disease ever wiped out.",
+      "p": "Vaccination — the campaign that ended it.",
+      "r": "None needed. This card is a trophy: proof that immunology WINS."
+    },
+    "Nipah": {
+      "d": "Identified in Malaysia 1998; outbreaks in Kerala, India (2018, 2023).",
+      "c": "Brain inflammation; fatal in 40-75% of cases.",
+      "w": "South and Southeast Asia; spread by fruit bats.",
+      "p": "Avoid raw date-palm sap; isolate cases.",
+      "r": "No specific cure — supportive care."
+    },
+    "Hand-foot-and-mouth": {
+      "d": "Coxsackievirus, 1950s.",
+      "c": "Blisters on hands, feet and mouth; usually mild in children.",
+      "w": "Worldwide; common in schools.",
+      "p": "Handwashing.",
+      "r": "Self-limiting."
+    },
+    "Chickenpox": {
+      "d": "Varicella-zoster; vaccine developed in the 1970s.",
+      "c": "Itchy blisters — then HIDES IN YOUR NERVES for decades and can return as shingles.",
+      "w": "Worldwide.",
+      "p": "Varicella vaccine.",
+      "r": "Antivirals if severe."
+    },
+    "Glandular fever": {
+      "d": "Epstein-Barr virus, discovered 1964.",
+      "c": "Fever, sore throat, extreme fatigue, swollen spleen (rupture risk).",
+      "w": "Worldwide; common in teenagers.",
+      "p": "No vaccine.",
+      "r": "Rest. Avoid contact sport while the spleen is swollen."
+    },
+    "Cytomegalovirus": {
+      "d": "Isolated 1956.",
+      "c": "Harmless in healthy people — it just hides for life. Dangerous to babies and the immunosuppressed.",
+      "w": "Most adults worldwide carry it.",
+      "p": "Hygiene; no vaccine yet.",
+      "r": "Antivirals only when it reactivates."
+    },
+    "Tuberculosis": {
+      "d": "Bacterium found by Robert Koch, 1882.",
+      "c": "Chronic cough, weight loss, night sweats. Can lie dormant for YEARS.",
+      "w": "Worldwide — India carries the largest burden of any country.",
+      "p": "BCG vaccine; treating active cases; ventilation.",
+      "r": "6+ months of combination antibiotics. Not finishing the course breeds resistance."
+    },
+    "Whooping cough": {
+      "d": "Bordetella pertussis, identified 1906.",
+      "c": "Violent coughing fits with a 'whoop'; deadly in babies.",
+      "w": "Worldwide; returns where vaccination falls.",
+      "p": "DPT vaccine.",
+      "r": "Antibiotics, given early."
+    },
+    "Meningitis": {
+      "d": "Meningococcus identified 1887.",
+      "c": "Infects the lining of the brain. Can kill a healthy person within HOURS.",
+      "w": "Worldwide; the African 'meningitis belt' worst.",
+      "p": "Meningococcal vaccine.",
+      "r": "Emergency antibiotics — every hour counts."
+    },
+    "Pneumonia": {
+      "d": "Streptococcus pneumoniae, identified 1881.",
+      "c": "Fills the lungs with fluid. The single biggest infectious killer of children worldwide.",
+      "w": "Everywhere.",
+      "p": "Pneumococcal vaccine; flu vaccine; clean cooking fuel.",
+      "r": "Antibiotics and oxygen."
+    },
+    "Strep throat": {
+      "d": "Group A Streptococcus.",
+      "c": "Sore throat — but if ignored, the antibodies you make against it can attack YOUR OWN HEART VALVES (rheumatic fever).",
+      "w": "Worldwide; rheumatic heart disease is a major problem in India.",
+      "p": "Treat sore throats properly.",
+      "r": "Antibiotics — which are given mainly to prevent the heart damage."
+    },
+    "Leprosy": {
+      "d": "Bacterium found by Gerhard Hansen, 1873 — the first bacterium ever linked to human disease.",
+      "c": "Attacks the nerves. Numbness means injuries go unnoticed, and THAT causes the deformity — not the germ eating the flesh, as people wrongly believe.",
+      "w": "India records a large share of the world's new cases.",
+      "p": "IT IS NOT SPREAD BY TOUCH. It spreads by droplets, after months of close contact, and about 95% of people are naturally immune to it. It enters through the NOSE, which is why it is in the Nose lane and not the Contact lane. The belief that a handshake spreads leprosy is a myth that exiled people to colonies for centuries.",
+      "r": "Completely curable with multi-drug therapy — free worldwide since 1995."
+    },
+    "Legionnaires' disease": {
+      "d": "Named after a 1976 outbreak at an American Legion convention.",
+      "c": "Severe pneumonia from bacteria in air-conditioning and water systems.",
+      "w": "Worldwide, in buildings with poorly maintained water systems.",
+      "p": "Maintain cooling towers and water tanks.",
+      "r": "Antibiotics."
+    },
+    "Diphtheria": {
+      "d": "Antitoxin by von Behring, 1890 — winning the FIRST Nobel Prize in Medicine.",
+      "c": "A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed — it poisons you directly.",
+      "w": "Worldwide where vaccination lapses; outbreaks still occur in India.",
+      "p": "DPT vaccine.",
+      "r": "ANTITOXIN — antibodies. No cell can eat a toxin."
+    },
+    "Mucormycosis": {
+      "d": "'Black fungus' — surged across India in 2021 among COVID patients.",
+      "c": "Invades nose and sinuses, then the eye and BRAIN. Often fatal.",
+      "w": "Worldwide, but it strikes the immunocompromised — diabetics, steroid patients.",
+      "p": "Control diabetes; use steroids carefully.",
+      "r": "Antifungals and surgery. A pure OPPORTUNIST — it only wins when your defences are already down."
+    },
+    "Aspergillosis": {
+      "d": "Aspergillus mould, described 1729.",
+      "c": "A mould you breathe in daily — harmless, unless your defences are weak.",
+      "w": "Everywhere: soil, dust, damp buildings.",
+      "p": "Avoid dust if immunocompromised.",
+      "r": "Antifungals. Neutrophils are the key defence — which is why neutropenia invites it in."
+    },
+    "Cryptococcus": {
+      "d": "Described 1894; a leading killer in AIDS.",
+      "c": "Fungal meningitis — it invades the BRAIN.",
+      "w": "Worldwide, in soil and pigeon droppings.",
+      "p": "Hard to avoid; the real defence is a working immune system.",
+      "r": "Antifungals. Mostly attacks people with HIV."
+    },
+    "Pneumocystis pneumonia": {
+      "d": "Recognised in the 1980s as the disease that revealed AIDS.",
+      "c": "A fungus that only causes pneumonia when helper T-cells are destroyed.",
+      "w": "Worldwide, in the severely immunosuppressed.",
+      "p": "Preventive antibiotics for at-risk patients.",
+      "r": "Antibiotics/antifungals. It is a signpost of a collapsed immune system."
+    },
+    "Dengue": {
+      "d": "Four different serotypes — this matters enormously.",
+      "c": "High fever, severe joint pain, crashing platelets (marrow).",
+      "w": "Tropics; a major monsoon disease across India.",
+      "p": "Aedes mosquito control — it bites in DAYTIME. Remove standing water.",
+      "r": "No cure; fluids. Never give aspirin. A SECOND dengue infection can be far worse (ADE)."
+    },
+    "Chikungunya": {
+      "d": "First described in Tanzania, 1952 — the name means 'to become contorted'.",
+      "c": "Fever and severe joint pain that can last months.",
+      "w": "Africa, Asia, the Americas; common in India.",
+      "p": "Aedes mosquito control.",
+      "r": "No antiviral; pain relief."
+    },
+    "Japanese encephalitis": {
+      "d": "Virus isolated in Japan, 1935.",
+      "c": "Brain inflammation; often leaves permanent damage.",
+      "w": "Rural Asia including India; pigs and birds are the reservoir.",
+      "p": "JE vaccine; mosquito control.",
+      "r": "No cure — supportive care only."
+    },
+    "Yellow fever": {
+      "d": "Shown to be mosquito-borne by Walter Reed, 1900.",
+      "c": "Fever, liver failure and jaundice (the 'yellow'), bleeding.",
+      "w": "Africa and South America.",
+      "p": "One highly effective, lifelong vaccine.",
+      "r": "Supportive care."
+    },
+    "Zika": {
+      "d": "Identified 1947; caused a global emergency in 2015-16.",
+      "c": "Mild in adults — but causes severe brain defects in unborn babies.",
+      "w": "Tropics.",
+      "p": "Mosquito control; protect pregnancies.",
+      "r": "No specific treatment."
+    },
+    "West Nile fever": {
+      "d": "Isolated in Uganda, 1937.",
+      "c": "Usually mild; occasionally causes brain inflammation.",
+      "w": "Africa, Europe, Americas, Asia.",
+      "p": "Mosquito control.",
+      "r": "Supportive care."
+    },
+    "Rabies": {
+      "d": "Vaccine by Louis Pasteur, 1885.",
+      "c": "Creeps up your NERVES to the brain, where antibodies cannot follow. Almost 100% fatal once symptoms begin.",
+      "w": "Worldwide; dogs are the main source in India.",
+      "p": "Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY.",
+      "r": "Post-exposure vaccine works BEFORE symptoms start. After that, nothing does."
+    },
+    "HIV": {
+      "d": "Identified 1983 by Montagnier and Barré-Sinoussi (Nobel Prize).",
+      "c": "It destroys HELPER T-CELLS — the commanders of your immune system. Without them, ordinary germs become lethal.",
+      "w": "Worldwide; ~39 million people live with HIV. Spread by unprotected sex, shared needles, and infected blood.",
+      "p": "Condoms; never share needles; screened blood; PrEP medication. It is NOT spread by mosquitoes, sharing food, or touching — a myth worth killing.",
+      "r": "Antiretroviral therapy: not a cure, but people now live full lives, and treatment makes them unable to pass it on. Attacking the immune system itself is why HIV is so dangerous."
+    },
+    "Hepatitis B": {
+      "d": "Discovered by Baruch Blumberg, 1965 (Nobel Prize). First anti-cancer vaccine.",
+      "c": "Attacks the liver; can persist for life and cause liver cancer.",
+      "w": "Worldwide; ~250 million chronic carriers.",
+      "p": "Hepatitis B vaccine — given at birth in India.",
+      "r": "Antivirals control it; the vaccine prevents it."
+    },
+    "Hepatitis C": {
+      "d": "Identified 1989; Nobel Prize 2020.",
+      "c": "Silently scars the liver for decades — cirrhosis and cancer.",
+      "w": "Worldwide.",
+      "p": "No vaccine yet; screened blood and clean needles.",
+      "r": "CURABLE since 2014 with direct-acting antivirals — one of medicine's great wins."
+    },
+    "Chagas disease": {
+      "d": "Discovered by Carlos Chagas, 1909 — he found the parasite, the vector and the disease.",
+      "c": "A parasite that HIDES INSIDE HEART MUSCLE for decades, then destroys it.",
+      "w": "Latin America.",
+      "p": "Control the 'kissing bug'; improve housing.",
+      "r": "Drugs work early; once the heart is damaged, it is irreversible."
+    },
+    "Lyme disease": {
+      "d": "Identified in Lyme, Connecticut, 1975.",
+      "c": "Bull's-eye rash; can attack the heart (Lyme carditis) and nerves.",
+      "w": "North America, Europe, parts of Asia — from tick bites.",
+      "p": "Cover skin in woods; remove ticks quickly.",
+      "r": "Antibiotics — very effective if caught early."
+    },
+    "Plague": {
+      "d": "Yersinia pestis — the Black Death killed a third of Europe (1347-51).",
+      "c": "Swollen lymph nodes ('buboes'); the lung form spreads person to person and kills fast.",
+      "w": "Rare now; pockets in Africa, Asia, the Americas.",
+      "p": "Rodent and flea control.",
+      "r": "Curable with prompt antibiotics."
+    },
+    "Scrub typhus": {
+      "d": "Recognised in Asia; a major cause of fever in India.",
+      "c": "Fever with a black scab at the mite bite; can cause pneumonia and brain inflammation.",
+      "w": "The 'tsutsugamushi triangle' — including India.",
+      "p": "Avoid mite-infested scrub; protective clothing.",
+      "r": "Doxycycline — cheap and highly effective."
+    },
+    "Malaria": {
+      "d": "Ronald Ross proved mosquitoes carry it — in Secunderabad, INDIA, 1897. Nobel Prize.",
+      "c": "Bite → LIVER (hides inside liver cells) → bursts into blood → fever cycles, anaemia, cerebral malaria.",
+      "w": "Tropics; still a major disease in India.",
+      "p": "Nets, repellents, draining standing water.",
+      "r": "Antimalarials. P. vivax needs a SECOND drug to clear the liver — or it relapses months later."
+    },
+    "Malaria (blood)": {
+      "d": "The blood stage — merozoites bursting out of the liver.",
+      "c": "Invades red blood cells; causes the classic fever cycles.",
+      "w": "Tropics.",
+      "p": "Mosquito control.",
+      "r": "NOW antibodies and phagocytes can reach it. This is the stage you can actually fight."
+    },
+    "Kala-azar": {
+      "d": "Visceral leishmaniasis. Sir Upendranath Brahmachari developed the first cure — in India, 1920.",
+      "c": "HIDES INSIDE YOUR MACROPHAGES — it turns your own defender cell into its home. Destroys the spleen; fatal untreated.",
+      "w": "Bihar, India, has historically carried a large share of the world's cases.",
+      "p": "Sandfly control; indoor spraying.",
+      "r": "Liposomal amphotericin B. India has driven cases down dramatically."
+    },
+    "Sleeping sickness": {
+      "d": "African trypanosomiasis; the parasite was found in 1901.",
+      "c": "ANTIGENIC VARIATION — it keeps changing its coat, so your antibodies never quite fit. Eventually invades the brain.",
+      "w": "Sub-Saharan Africa; spread by the tsetse fly.",
+      "p": "Vector control.",
+      "r": "Drugs exist, and cases have collapsed. Its trick — changing disguise — is why a vaccine is so hard."
+    },
+    "Filariasis": {
+      "d": "Elephantiasis; the worm was found by Patrick Manson, 1877.",
+      "c": "Adult worms BLOCK YOUR LYMPHATIC VESSELS — fluid cannot drain, and limbs swell enormously.",
+      "w": "Tropics; India has run one of the world's largest elimination programmes.",
+      "p": "Mass drug administration; mosquito control.",
+      "r": "Antiparasitic drugs kill the worms; the swelling is often permanent."
+    },
+    "Snake venom": {
+      "d": "Antivenom invented by Albert Calmette, 1895 — using antibodies from horses.",
+      "c": "Not alive, not a germ — a mix of toxic proteins. Attacks heart, kidneys and nerves.",
+      "w": "India has the world's highest snakebite death toll — roughly 58,000 a year.",
+      "p": "Boots and a torch after dark; never reach blindly into grass.",
+      "r": "ANTIVENOM — borrowed antibodies. PASSIVE immunity: instant, but temporary."
+    },
+    "Russell's viper venom": {
+      "d": "One of India's 'Big Four' snakes.",
+      "c": "Destroys blood clotting and shreds the KIDNEYS — a leading cause of snakebite death in India.",
+      "w": "Across the Indian subcontinent.",
+      "p": "Boots; clear rubble near homes; torch at night.",
+      "r": "Antivenom, urgently. Dialysis may be needed for the kidneys."
+    },
+    "Red scorpion sting": {
+      "d": "Indian red scorpion — among the most lethal scorpions in the world.",
+      "c": "Venom floods the body with adrenaline; the HEART and LUNGS fail.",
+      "w": "Western and southern India; a major cause of child deaths in some districts.",
+      "p": "Shake out shoes; seal home floors.",
+      "r": "The drug prazosin transformed survival — an Indian medical breakthrough."
+    },
+    "Tetanus": {
+      "d": "Toxin isolated 1890 by Kitasato and von Behring.",
+      "c": "Its TOXIN locks the muscles rigid — 'lockjaw'. Not contagious at all.",
+      "w": "Soil and rusty metal, worldwide.",
+      "p": "Tetanus vaccine and boosters; clean wounds.",
+      "r": "Antitoxin and intensive care. Only antibodies can neutralise a toxin."
+    },
+    "MRSA": {
+      "d": "Methicillin-resistant Staph aureus, first seen 1961.",
+      "c": "Skin abscesses — and in the blood it can seed ANY organ, including heart valves.",
+      "w": "Worldwide, especially hospitals.",
+      "p": "Hand hygiene; careful antibiotic use.",
+      "r": "Only a few antibiotics still work. The classic superbug."
+    },
+    "Cellulitis": {
+      "d": "Caused by Streptococcus or Staphylococcus.",
+      "c": "Hot, red, spreading skin infection; can reach blood, bone and heart valves.",
+      "w": "Worldwide.",
+      "p": "Clean and cover cuts.",
+      "r": "Antibiotics."
+    },
+    "Leptospirosis": {
+      "d": "Bacterium identified 1907.",
+      "c": "Fever, then kidney and liver failure (Weil's disease).",
+      "w": "Tropics; a monsoon and flood disease in India.",
+      "p": "Avoid wading in floodwater with open cuts; rodent control.",
+      "r": "Antibiotics, early."
+    },
+    "Gas gangrene": {
+      "d": "Clostridium perfringens — notorious in the trenches of WWI.",
+      "c": "Destroys tissue fast, producing gas; its toxins poison the kidneys.",
+      "w": "Worldwide, in deep dirty wounds.",
+      "p": "Clean deep wounds promptly.",
+      "r": "Surgery plus antibiotics — a true emergency."
+    },
+    "Syphilis": {
+      "d": "Bacterium found 1905; the first 'magic bullet' drug (Salvarsan) targeted it.",
+      "c": "Progresses over years to attack the brain and heart. Can pass to an unborn baby.",
+      "w": "Worldwide; rising again.",
+      "p": "Safe practices; screening in pregnancy.",
+      "r": "Penicillin — still completely effective after 80 years."
+    },
+    "Brucellosis": {
+      "d": "Traced to goat's milk by David Bruce, 1887.",
+      "c": "Undulating fever; settles in the spleen, liver and bones.",
+      "w": "Worldwide, from unpasteurised milk and infected livestock.",
+      "p": "Pasteurise milk; vaccinate animals.",
+      "r": "Long courses of antibiotics."
+    },
+    "Cold sore": {
+      "d": "Herpes simplex virus; known since antiquity.",
+      "c": "Blisters on the lip — then retreats into your NERVES to hide from antibodies.",
+      "w": "Worldwide; most adults carry it.",
+      "p": "Avoid contact during an outbreak.",
+      "r": "Antivirals shorten attacks. It is never fully cleared."
+    },
+    "Human papillomavirus": {
+      "d": "Link to cervical cancer proven by Harald zur Hausen (Nobel Prize, 2008).",
+      "c": "Hides inside cells for years and can turn them cancerous. It causes almost ALL cervical cancer.",
+      "w": "Worldwide; most adults meet it at some point.",
+      "p": "The HPV VACCINE — the first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure.",
+      "r": "No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts."
+    },
+    "Ebola": {
+      "d": "First outbreak near the Ebola River, 1976.",
+      "c": "Massive internal bleeding; liver and spleen collapse. Kills up to 90%.",
+      "w": "Central and West Africa.",
+      "p": "Isolation, protective equipment — and now a working vaccine.",
+      "r": "Antibody treatments and supportive care; survival has improved greatly."
+    },
+    "Anthrax": {
+      "d": "Robert Koch used it in 1876 to PROVE germs cause disease. Pasteur vaccinated sheep in 1881.",
+      "c": "Its TOXIN kills cells directly; the inhaled form is nearly always fatal.",
+      "w": "Soil worldwide; affects livestock handlers.",
+      "p": "Vaccinate livestock; handle hides carefully.",
+      "r": "Antibiotics plus ANTITOXIN — the toxin must be neutralised separately."
+    },
+    "Hookworm": {
+      "d": "Linked to anaemia by Arthur Looss, 1898 — he infected himself by accident.",
+      "c": "Burrows in through BARE SKIN, travels to the gut, and drinks your blood — causing anaemia.",
+      "w": "Warm damp soil where people walk barefoot.",
+      "p": "Wear shoes; sanitation.",
+      "r": "Deworming tablets plus iron."
+    },
+    "Schistosomiasis": {
+      "d": "Worm found by Theodor Bilharz, 1851.",
+      "c": "Larvae penetrate skin in fresh water; adult worms scar the liver and bladder.",
+      "w": "Africa, Middle East, parts of Asia.",
+      "p": "Avoid infested fresh water; snail control.",
+      "r": "Praziquantel — a single effective drug."
+    },
+    "Guinea worm": {
+      "d": "Ancient — possibly the 'fiery serpent' of the Bible.",
+      "c": "A metre-long worm slowly emerges through the skin.",
+      "w": "ALMOST ERADICATED — from 3.5 million cases in 1986 to a handful today.",
+      "p": "Filter drinking water. No drug, no vaccine — just clean water.",
+      "r": "Wind the worm out slowly. Proof that prevention alone can defeat a disease."
+    },
+    "Histoplasmosis": {
+      "d": "Described 1906.",
+      "c": "A fungus from soil with bird or bat droppings; attacks the lungs and spleen.",
+      "w": "Worldwide, including river valleys of India.",
+      "p": "Avoid dusty caves and bird roosts.",
+      "r": "Antifungals; often self-limiting in healthy people."
+    },
+    "Typhoid": {
+      "d": "Salmonella Typhi; 'Typhoid Mary' spread it while healthy herself.",
+      "c": "Prolonged high fever; infects the liver, spleen and gut.",
+      "w": "Where sanitation is poor — common in South Asia.",
+      "p": "Clean water; typhoid conjugate vaccine.",
+      "r": "Antibiotics — but drug-resistant typhoid is spreading in India and Pakistan."
+    },
+    "Cholera": {
+      "d": "John Snow traced it to a London water pump in 1854 — the birth of epidemiology.",
+      "c": "Its TOXIN forces the gut to pour out litres of water. Dehydration kills within hours.",
+      "w": "Outbreaks wherever water is contaminated.",
+      "p": "Clean water and sanitation; oral vaccine.",
+      "r": "Oral rehydration salts (ORS) — simple, cheap, and one of the great lifesavers."
+    },
+    "Dysentery": {
+      "d": "Shigella, identified by Kiyoshi Shiga, 1897.",
+      "c": "Bloody diarrhoea; can damage the kidneys.",
+      "w": "Where hygiene is poor.",
+      "p": "Handwashing, clean water.",
+      "r": "Rehydration; antibiotics when severe."
+    },
+    "Food poisoning": {
+      "d": "E. coli described by Theodor Escherich, 1885.",
+      "c": "Cramps and diarrhoea; some strains harm the kidneys.",
+      "w": "Worldwide.",
+      "p": "Cook food properly; wash hands.",
+      "r": "Usually self-limiting; rehydration."
+    },
+    "Listeria": {
+      "d": "Named after Joseph Lister, 1940.",
+      "c": "Survives refrigeration; crosses into the BRAIN and the placenta.",
+      "w": "Soft cheeses, deli meats; worldwide.",
+      "p": "Avoid unpasteurised dairy in pregnancy.",
+      "r": "Antibiotics."
+    },
+    "Stomach ulcer (H. pylori)": {
+      "d": "Barry Marshall DRANK the bacteria in 1984 to prove they cause ulcers. He won the Nobel Prize.",
+      "c": "Burrows into the stomach lining; causes ulcers and stomach cancer.",
+      "w": "Perhaps half the world carries it.",
+      "p": "Hygiene and clean water.",
+      "r": "Antibiotics CURE it — ulcers were once thought to be caused by stress."
+    },
+    "Rotavirus": {
+      "d": "Discovered 1973.",
+      "c": "Severe diarrhoea and dehydration in young children.",
+      "w": "Worldwide; a leading killer of children before vaccines.",
+      "p": "Rotavirus vaccine — now in India's immunisation programme.",
+      "r": "Oral rehydration."
+    },
+    "Hepatitis A": {
+      "d": "Virus identified 1973.",
+      "c": "Liver inflammation and jaundice; no chronic form.",
+      "w": "Where sanitation is poor.",
+      "p": "Vaccine; clean food and water.",
+      "r": "Rest; recovery is usually complete."
+    },
+    "Hepatitis E": {
+      "d": "Recognised after outbreaks in INDIA in the 1970s-80s.",
+      "c": "Liver inflammation; especially dangerous in pregnancy.",
+      "w": "Waterborne; common in South Asia.",
+      "p": "Clean water.",
+      "r": "Supportive care."
+    },
+    "Norovirus": {
+      "d": "Traced to an outbreak in Norwalk, Ohio, 1968.",
+      "c": "Sudden violent vomiting and diarrhoea; astonishingly contagious.",
+      "w": "Worldwide — famous on cruise ships and in schools.",
+      "p": "Handwashing (alcohol gel works poorly here).",
+      "r": "Rehydration; passes in a couple of days."
+    },
+    "Polio": {
+      "d": "Vaccines by Salk (1955) and Sabin (oral, 1961).",
+      "c": "Enters through the gut; destroys nerve cells and paralyses.",
+      "w": "Nearly eradicated — INDIA was declared polio-free in 2014.",
+      "p": "Oral polio vaccine — one of the great public-health triumphs.",
+      "r": "No cure for the paralysis. Prevention is everything."
+    },
+    "Botulism": {
+      "d": "Toxin identified 1895. The most poisonous substance known to science.",
+      "c": "Not alive. Paralyses every muscle, including breathing. A few nanograms can kill.",
+      "w": "Improperly canned or preserved food.",
+      "p": "Proper canning; never feed honey to infants.",
+      "r": "ANTITOXIN. (In tiny doses this same toxin is Botox.)"
+    },
+    "Shiga toxin (E. coli O157)": {
+      "d": "Named after Kiyoshi Shiga.",
+      "c": "Not alive. Destroys the KIDNEYS (haemolytic uraemic syndrome), especially in children.",
+      "w": "Undercooked beef, unpasteurised milk.",
+      "p": "Cook meat thoroughly.",
+      "r": "Supportive care and dialysis. Antibiotics can make it WORSE by releasing more toxin."
+    },
+    "Roundworm": {
+      "d": "Ascaris lumbricoides — grows up to 35 cm long.",
+      "c": "Larvae migrate THROUGH THE LUNGS, then return to the gut. Can block the intestines.",
+      "w": "Where sanitation is poor — one of the commonest infections on Earth.",
+      "p": "Sanitation; deworming programmes.",
+      "r": "Deworming tablets. Too big for any cell to swallow."
+    },
+    "Tapeworm": {
+      "d": "Neurocysticercosis recognised as a major cause of epilepsy.",
+      "c": "Larvae form cysts IN THE BRAIN — a leading cause of adult-onset epilepsy in India.",
+      "w": "Where pigs are raised with poor sanitation.",
+      "p": "Cook pork thoroughly; sanitation; handwashing.",
+      "r": "Antiparasitic drugs plus anti-seizure medicine."
+    },
+    "Whipworm": {
+      "d": "Trichuris trichiura.",
+      "c": "Burrows into the gut wall; causes chronic blood loss and anaemia in children.",
+      "w": "Warm, humid regions worldwide.",
+      "p": "Sanitation; handwashing.",
+      "r": "Deworming tablets."
+    },
+    "Amoebiasis": {
+      "d": "Entamoeba histolytica — the species name means 'tissue-dissolving'.",
+      "c": "Eats through the gut wall and forms a LIVER ABSCESS.",
+      "w": "Common in India and other tropical regions.",
+      "p": "Clean water; wash vegetables.",
+      "r": "Metronidazole; the abscess may need draining."
+    },
+    "Giardia": {
+      "d": "Seen by Antonie van Leeuwenhoek in 1681 — in his own stool.",
+      "c": "Coats the gut and blocks absorption. You eat, but you starve — draining your energy.",
+      "w": "Worldwide; 'beaver fever' from streams and unclean water.",
+      "p": "Filter or boil water.",
+      "r": "Antiparasitic drugs."
+    },
+    "Toxoplasmosis": {
+      "d": "Identified 1908.",
+      "c": "Forms silent CYSTS IN THE BRAIN and hides there for life. Dangerous to unborn babies and to people with AIDS.",
+      "w": "Worldwide — from undercooked meat and cat faeces.",
+      "p": "Cook meat; pregnant women should avoid cat litter.",
+      "r": "Drugs only when it reactivates."
+    },
+    "Candida": {
+      "d": "A yeast that lives on almost everyone, harmlessly.",
+      "c": "Normally kept in check by your immune system and your other microbes — but if either falls, it invades ANY organ.",
+      "w": "Everywhere. It is already on you right now.",
+      "p": "Careful antibiotic use — killing your good bacteria lets Candida bloom.",
+      "r": "Antifungals. The classic OPPORTUNIST."
+    },
+    "Scabies": {
+      "d": "The mite was seen under a microscope in 1687 — making scabies one of the FIRST diseases ever proven to have a specific cause.",
+      "c": "A mite that burrows into your skin and lays eggs. The unbearable itch is an ALLERGIC reaction to it — your own immune system causing the misery.",
+      "w": "Worldwide; ~200 million people at any moment. Spreads by prolonged skin-to-skin contact and shared bedding.",
+      "p": "Treat the whole household at once, and wash all bedding.",
+      "r": "Permethrin cream or ivermectin. Cheap and curable — but it keeps coming back if only one person is treated."
+    },
+    "Ringworm": {
+      "d": "Not a worm at all — a FUNGUS. The name comes from the ring-shaped rash.",
+      "c": "A fungus digesting the keratin in your skin, hair and nails.",
+      "w": "Everywhere. Spreads by touch, shared towels, and from animals.",
+      "p": "Do not share towels or combs; keep skin dry.",
+      "r": "Antifungal cream. The commonest fungal infection on Earth — and one of the most misnamed."
+    },
+    "Impetigo": {
+      "d": "Streptococcus or Staphylococcus on the skin.",
+      "c": "Golden crusted sores, mainly in children. Highly contagious by touch. Can lead to kidney damage.",
+      "w": "Worldwide; common where it is hot and crowded.",
+      "p": "Wash hands and cuts; do not share towels.",
+      "r": "Antibiotic cream or tablets."
+    },
+    "Trachoma": {
+      "d": "Chlamydia trachomatis — the SAME species that causes the sexually transmitted infection, arriving by a completely different route.",
+      "c": "Repeated infection scars the eyelid until the lashes turn INWARD and scrape the eye. Blindness comes slowly, over years.",
+      "w": "The world's leading INFECTIOUS cause of blindness. India has fought a long campaign against it.",
+      "p": "Face-washing and clean water — the 'SAFE' strategy. Flies spread it between children's eyes.",
+      "r": "A single dose of azithromycin. Surgery for the eyelid. **A disease of poverty, cured by soap and water.**"
+    },
+    "Conjunctivitis": {
+      "d": "Adenovirus — 'pink eye'.",
+      "c": "Red, weeping, gritty eyes. Astonishingly contagious: rub your eye, touch a door handle, and the next person has it.",
+      "w": "Worldwide; sweeps through schools.",
+      "p": "Wash hands. Do not share towels or pillows.",
+      "r": "Usually clears itself. A NAKED virus — no envelope, so it survives on surfaces for days and hand-gel works poorly on it."
+    },
+    "Molluscum contagiosum": {
+      "d": "A poxvirus — a distant cousin of smallpox.",
+      "c": "Small pearly bumps, spread by skin contact and shared towels. Harmless but stubborn.",
+      "w": "Worldwide; common in children.",
+      "p": "Do not share towels; cover the bumps.",
+      "r": "Usually clears on its own — but it can take a year. Your immune system gets there eventually."
+    },
+    "Endocarditis": {
+      "d": "Infection of the heart valves — described by William Osler, 1885.",
+      "c": "Bacteria in the bloodstream settle on a HEART VALVE and build a colony there, where blood flow shields them from your immune cells.",
+      "w": "Worldwide. A risk after dental work, IV drug use, or a contaminated line — and after rheumatic fever has damaged a valve.",
+      "p": "Treat bloodstream infections early; look after damaged valves.",
+      "r": "Weeks of intravenous antibiotics; sometimes surgery to replace the valve."
+    },
+    "Gonorrhoea": {
+      "d": "Bacterium found by Albert Neisser, 1879.",
+      "c": "Infects the reproductive tract; can spread to joints and heart valves. Often causes NO symptoms — so it spreads silently.",
+      "w": "Worldwide; about 82 million new cases a year.",
+      "p": "Condoms; testing and treating partners.",
+      "r": "Antibiotics — but it has now defeated almost every antibiotic we have. The WHO lists it as a PRIORITY superbug. This is antibiotic resistance happening in real time."
+    },
+    "Chlamydia": {
+      "d": "Chlamydia trachomatis — the same species that causes trachoma, the leading infectious cause of blindness.",
+      "c": "An INTRACELLULAR bacterium — it lives inside your cells, where antibodies struggle to reach. Usually silent; can cause infertility.",
+      "w": "The commonest bacterial STI in the world.",
+      "p": "Condoms; routine screening.",
+      "r": "Antibiotics. Easy to cure — but only if you know you have it."
+    },
+    "Genital herpes": {
+      "d": "Herpes simplex virus type 2.",
+      "c": "Like a cold sore, it retreats into your NERVES and hides there for life. Antibodies cannot follow it in.",
+      "w": "Worldwide; extremely common.",
+      "p": "Condoms reduce but do not eliminate the risk.",
+      "r": "Antivirals control outbreaks. It is never cleared — a lifelong passenger."
+    },
+    "Trichomoniasis": {
+      "d": "A single-celled protozoan parasite, described 1836.",
+      "c": "The commonest curable STI on Earth. Often silent.",
+      "w": "Worldwide — around 156 million cases a year.",
+      "p": "Condoms; treating partners.",
+      "r": "A single course of metronidazole cures it."
+    },
+    "Hepatitis D": {
+      "d": "Identified 1977 — the strangest virus in this deck.",
+      "c": "It is INCOMPLETE. It cannot infect you on its own: it can ONLY survive if Hepatitis B is already there, because it borrows Hep B's outer coat. A virus that parasitises another virus.",
+      "w": "Wherever Hepatitis B is; the most severe form of viral hepatitis.",
+      "p": "The Hepatitis B vaccine ALSO prevents Hepatitis D — block the host and the passenger cannot land.",
+      "r": "Hard to treat. Prevention through the Hep B vaccine is the real answer."
+    },
+    "Transfusion malaria": {
+      "d": "Malaria delivered straight into the bloodstream by transfused blood.",
+      "c": "It SKIPS the mosquito and skips the tissues. It goes directly to the liver.",
+      "w": "Anywhere blood is not properly screened.",
+      "p": "Screening donated blood — which is why blood banks test every unit.",
+      "r": "Antimalarials. This is why safe transfusion is a public-health issue, not just a hospital one."
+    },
+    "Catheter sepsis": {
+      "d": "A fungal bloodstream infection from a drip line or catheter.",
+      "c": "Candida travelling up a plastic tube straight into your blood, bypassing every barrier you have.",
+      "w": "Hospitals worldwide — one of the commonest hospital-acquired infections.",
+      "p": "Sterile technique; remove lines as soon as they are not needed.",
+      "r": "Antifungals. A reminder that medicine itself can open a door."
+    },
+    "Cannula infection": {
+      "d": "Bacteria entering through a drip needle.",
+      "c": "Staph from the skin, pushed straight into the bloodstream by a needle. Can seed the heart valves.",
+      "w": "Hospitals worldwide.",
+      "p": "Clean the skin; change the line; wash hands.",
+      "r": "Antibiotics — and remove the line."
+    },
+    "Tetanus toxin": {
+      "d": "Isolated 1890.",
+      "c": "Not alive. Locks the muscles rigid. It does not reproduce — it simply poisons.",
+      "w": "Released by tetanus bacteria in a wound.",
+      "p": "Tetanus vaccine trains you to make ANTITOXIN.",
+      "r": "Only antibodies can neutralise it. No cell can eat a toxin."
+    },
+    "Cholera toxin": {
+      "d": "The reason cholera kills.",
+      "c": "Not alive. Forces gut cells to pump out water; the kidneys fail from dehydration.",
+      "w": "Released by cholera bacteria.",
+      "p": "Clean water.",
+      "r": "Rehydration; antibodies neutralise the toxin."
+    },
+    "Clostridial toxin": {
+      "d": "The toxin of gas gangrene.",
+      "c": "Not alive. Destroys tissue and poisons the kidneys and liver.",
+      "w": "Deep dirty wounds.",
+      "p": "Clean wounds promptly.",
+      "r": "Antitoxin, surgery, antibiotics."
+    },
+    "Diphtheria toxin": {
+      "d": "The toxin von Behring made the first antitoxin against.",
+      "c": "Not alive. Poisons the HEART muscle directly.",
+      "w": "Released by diphtheria bacteria.",
+      "p": "DPT vaccine.",
+      "r": "Antitoxin — antibodies, urgently."
+    },
+    "Shingles": {
+      "d": "Recognised as reactivated chickenpox, 1953.",
+      "c": "The chickenpox virus hid in your nerves for decades and re-emerged.",
+      "w": "Anyone who has had chickenpox.",
+      "p": "Shingles vaccine.",
+      "r": "Antivirals. Proof that some viruses never truly leave."
+    },
+    "Dengue (ADE)": {
+      "d": "Antibody-dependent enhancement, described in the 1970s.",
+      "c": "Your antibodies from a PREVIOUS dengue do not neutralise this serotype — they HELP it into your cells.",
+      "w": "Tropics.",
+      "p": "Mosquito control. This is exactly why a dengue vaccine is so hard to make.",
+      "r": "Antibodies will NOT work here. Use cells."
+    },
+    "Malaria (relapse)": {
+      "d": "Hypnozoites described 1982.",
+      "c": "A dormant form of P. vivax slept in your liver and woke months later — from nothing.",
+      "w": "Wherever P. vivax occurs, including India.",
+      "p": "Finish the full course of primaquine to clear the liver.",
+      "r": "A second drug is needed specifically for the liver forms."
+    },
+    "Tuberculosis (reactivated)": {
+      "d": "Latency has been known since the 19th century.",
+      "c": "TB you thought you had beaten was only sleeping. It woke when your defences fell.",
+      "w": "About a quarter of the world carries latent TB.",
+      "p": "Treat latent TB in high-risk people.",
+      "r": "Months of combination antibiotics."
+    },
+    "Pneumococcal pneumonia": {
+      "d": "Streptococcus pneumoniae, 1881.",
+      "c": "Moves into lungs stripped bare by influenza. This — not the flu itself — killed most victims in 1918.",
+      "w": "Worldwide.",
+      "p": "Pneumococcal and flu vaccines.",
+      "r": "Antibiotics."
+    }
+  },
+  "DZSTATS": {
+    "Influenza": [
+      5,
+      3,
+      4,
+      4,
+      "Common"
+    ],
+    "Common cold": [
+      5,
+      1,
+      4,
+      3,
+      "Common"
+    ],
+    "COVID-19": [
+      5,
+      4,
+      4,
+      4,
+      "Legendary"
+    ],
+    "RSV": [
+      4,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Measles": [
+      5,
+      4,
+      4,
+      5,
+      "Legendary"
+    ],
+    "Mumps": [
+      4,
+      2,
+      3,
+      2,
+      "Common"
+    ],
+    "Rubella": [
+      4,
+      2,
+      3,
+      3,
+      "Common"
+    ],
+    "Smallpox": [
+      5,
+      5,
+      4,
+      4,
+      "Legendary"
+    ],
+    "Nipah": [
+      2,
+      5,
+      3,
+      4,
+      "Legendary"
+    ],
+    "Hand-foot-and-mouth": [
+      5,
+      1,
+      4,
+      1,
+      "Common"
+    ],
+    "Chickenpox": [
+      5,
+      2,
+      3,
+      5,
+      "Rare"
+    ],
+    "Glandular fever": [
+      3,
+      3,
+      2,
+      5,
+      "Rare"
+    ],
+    "Cytomegalovirus": [
+      3,
+      2,
+      2,
+      5,
+      "Common"
+    ],
+    "Tuberculosis": [
+      3,
+      5,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Whooping cough": [
+      5,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Meningitis": [
+      3,
+      5,
+      5,
+      3,
+      "Legendary"
+    ],
+    "Pneumonia": [
+      4,
+      5,
+      4,
+      2,
+      "Rare"
+    ],
+    "Strep throat": [
+      4,
+      2,
+      3,
+      5,
+      "Rare"
+    ],
+    "Leprosy": [
+      1,
+      3,
+      1,
+      4,
+      "Rare"
+    ],
+    "Legionnaires' disease": [
+      1,
+      4,
+      3,
+      2,
+      "Common"
+    ],
+    "Diphtheria": [
+      3,
+      5,
+      4,
+      3,
+      "Legendary"
+    ],
+    "Mucormycosis": [
+      1,
+      5,
+      3,
+      4,
+      "Legendary"
+    ],
+    "Aspergillosis": [
+      2,
+      4,
+      2,
+      3,
+      "Rare"
+    ],
+    "Cryptococcus": [
+      1,
+      5,
+      2,
+      4,
+      "Rare"
+    ],
+    "Pneumocystis pneumonia": [
+      1,
+      4,
+      2,
+      3,
+      "Rare"
+    ],
+    "Dengue": [
+      3,
+      4,
+      3,
+      3,
+      "Rare"
+    ],
+    "Chikungunya": [
+      3,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Japanese encephalitis": [
+      2,
+      5,
+      3,
+      4,
+      "Rare"
+    ],
+    "Yellow fever": [
+      3,
+      5,
+      3,
+      3,
+      "Rare"
+    ],
+    "Zika": [
+      3,
+      3,
+      3,
+      4,
+      "Rare"
+    ],
+    "West Nile fever": [
+      2,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Rabies": [
+      1,
+      5,
+      2,
+      5,
+      "Legendary"
+    ],
+    "HIV": [
+      2,
+      5,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Hepatitis B": [
+      3,
+      4,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Hepatitis C": [
+      2,
+      4,
+      1,
+      5,
+      "Rare"
+    ],
+    "Chagas disease": [
+      1,
+      4,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Lyme disease": [
+      1,
+      3,
+      2,
+      4,
+      "Common"
+    ],
+    "Plague": [
+      4,
+      5,
+      4,
+      3,
+      "Legendary"
+    ],
+    "Scrub typhus": [
+      1,
+      4,
+      3,
+      2,
+      "Rare"
+    ],
+    "Malaria": [
+      3,
+      5,
+      3,
+      5,
+      "Legendary"
+    ],
+    "Malaria (blood)": [
+      2,
+      4,
+      3,
+      3,
+      "Rare"
+    ],
+    "Kala-azar": [
+      2,
+      5,
+      2,
+      5,
+      "Legendary"
+    ],
+    "Sleeping sickness": [
+      1,
+      5,
+      2,
+      5,
+      "Legendary"
+    ],
+    "Filariasis": [
+      2,
+      4,
+      1,
+      4,
+      "Legendary"
+    ],
+    "Snake venom": [
+      1,
+      5,
+      5,
+      1,
+      "Legendary"
+    ],
+    "Russell's viper venom": [
+      1,
+      5,
+      5,
+      1,
+      "Legendary"
+    ],
+    "Red scorpion sting": [
+      1,
+      4,
+      5,
+      1,
+      "Rare"
+    ],
+    "Tetanus": [
+      1,
+      5,
+      3,
+      3,
+      "Rare"
+    ],
+    "MRSA": [
+      3,
+      4,
+      3,
+      5,
+      "Legendary"
+    ],
+    "Cellulitis": [
+      2,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Leptospirosis": [
+      2,
+      4,
+      3,
+      2,
+      "Common"
+    ],
+    "Gas gangrene": [
+      1,
+      5,
+      5,
+      2,
+      "Rare"
+    ],
+    "Syphilis": [
+      3,
+      4,
+      1,
+      5,
+      "Rare"
+    ],
+    "Brucellosis": [
+      2,
+      3,
+      1,
+      3,
+      "Common"
+    ],
+    "Cold sore": [
+      4,
+      1,
+      2,
+      5,
+      "Common"
+    ],
+    "Human papillomavirus": [
+      5,
+      4,
+      1,
+      5,
+      "Rare"
+    ],
+    "Ebola": [
+      3,
+      5,
+      4,
+      3,
+      "Legendary"
+    ],
+    "Anthrax": [
+      1,
+      5,
+      4,
+      3,
+      "Legendary"
+    ],
+    "Hookworm": [
+      3,
+      3,
+      1,
+      3,
+      "Rare"
+    ],
+    "Schistosomiasis": [
+      3,
+      4,
+      1,
+      4,
+      "Rare"
+    ],
+    "Guinea worm": [
+      2,
+      3,
+      1,
+      2,
+      "Rare"
+    ],
+    "Histoplasmosis": [
+      1,
+      3,
+      2,
+      3,
+      "Common"
+    ],
+    "Typhoid": [
+      3,
+      4,
+      2,
+      4,
+      "Rare"
+    ],
+    "Cholera": [
+      4,
+      5,
+      5,
+      2,
+      "Legendary"
+    ],
+    "Dysentery": [
+      4,
+      3,
+      4,
+      2,
+      "Common"
+    ],
+    "Food poisoning": [
+      3,
+      2,
+      4,
+      2,
+      "Common"
+    ],
+    "Listeria": [
+      2,
+      4,
+      2,
+      4,
+      "Rare"
+    ],
+    "Stomach ulcer (H. pylori)": [
+      3,
+      2,
+      1,
+      4,
+      "Common"
+    ],
+    "Rotavirus": [
+      5,
+      3,
+      4,
+      2,
+      "Common"
+    ],
+    "Hepatitis A": [
+      3,
+      2,
+      2,
+      2,
+      "Common"
+    ],
+    "Hepatitis E": [
+      3,
+      3,
+      2,
+      2,
+      "Common"
+    ],
+    "Norovirus": [
+      5,
+      2,
+      5,
+      3,
+      "Rare"
+    ],
+    "Polio": [
+      4,
+      5,
+      3,
+      4,
+      "Legendary"
+    ],
+    "Botulism": [
+      1,
+      5,
+      5,
+      3,
+      "Legendary"
+    ],
+    "Shiga toxin (E. coli O157)": [
+      2,
+      5,
+      4,
+      3,
+      "Rare"
+    ],
+    "Roundworm": [
+      4,
+      3,
+      1,
+      3,
+      "Rare"
+    ],
+    "Tapeworm": [
+      3,
+      5,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Whipworm": [
+      3,
+      2,
+      1,
+      2,
+      "Common"
+    ],
+    "Amoebiasis": [
+      3,
+      4,
+      2,
+      4,
+      "Rare"
+    ],
+    "Giardia": [
+      4,
+      2,
+      2,
+      3,
+      "Common"
+    ],
+    "Toxoplasmosis": [
+      4,
+      3,
+      1,
+      5,
+      "Rare"
+    ],
+    "Candida": [
+      2,
+      4,
+      2,
+      4,
+      "Rare"
+    ],
+    "Scabies": [
+      5,
+      2,
+      2,
+      3,
+      "Common"
+    ],
+    "Ringworm": [
+      4,
+      1,
+      2,
+      2,
+      "Common"
+    ],
+    "Impetigo": [
+      4,
+      2,
+      3,
+      2,
+      "Common"
+    ],
+    "Trachoma": [
+      3,
+      4,
+      1,
+      4,
+      "Legendary"
+    ],
+    "Conjunctivitis": [
+      5,
+      1,
+      4,
+      2,
+      "Common"
+    ],
+    "Molluscum contagiosum": [
+      4,
+      1,
+      1,
+      3,
+      "Common"
+    ],
+    "Endocarditis": [
+      1,
+      5,
+      2,
+      5,
+      "Legendary"
+    ],
+    "Gonorrhoea": [
+      4,
+      3,
+      3,
+      5,
+      "Legendary"
+    ],
+    "Chlamydia": [
+      5,
+      3,
+      2,
+      5,
+      "Rare"
+    ],
+    "Genital herpes": [
+      4,
+      2,
+      2,
+      5,
+      "Rare"
+    ],
+    "Trichomoniasis": [
+      4,
+      2,
+      2,
+      3,
+      "Common"
+    ],
+    "Hepatitis D": [
+      2,
+      5,
+      2,
+      5,
+      "Legendary"
+    ],
+    "Transfusion malaria": [
+      1,
+      5,
+      4,
+      4,
+      "Rare"
+    ],
+    "Catheter sepsis": [
+      1,
+      4,
+      3,
+      3,
+      "Rare"
+    ],
+    "Cannula infection": [
+      2,
+      3,
+      3,
+      2,
+      "Common"
+    ],
+    "Tetanus toxin": [
+      1,
+      5,
+      5,
+      2,
+      "Rare"
+    ],
+    "Cholera toxin": [
+      1,
+      4,
+      5,
+      2,
+      "Rare"
+    ],
+    "Clostridial toxin": [
+      1,
+      5,
+      5,
+      2,
+      "Rare"
+    ],
+    "Diphtheria toxin": [
+      1,
+      5,
+      5,
+      2,
+      "Rare"
+    ],
+    "Shingles": [
+      2,
+      3,
+      2,
+      5,
+      "Rare"
+    ],
+    "Dengue (ADE)": [
+      3,
+      5,
+      5,
+      5,
+      "Legendary"
+    ],
+    "Malaria (relapse)": [
+      2,
+      4,
+      2,
+      5,
+      "Legendary"
+    ],
+    "Tuberculosis (reactivated)": [
+      3,
+      5,
+      1,
+      5,
+      "Legendary"
+    ],
+    "Pneumococcal pneumonia": [
+      3,
+      4,
+      3,
+      2,
+      "Rare"
+    ]
+  }
+}

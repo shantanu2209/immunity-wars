@@ -17,7 +17,7 @@
 import { describe, expect, it } from 'vitest';
 
 import * as pack from './load.js';
-import { RulesPackS } from './schema.js';
+import { BoardPackS, boardPackSchema, RulesPackS } from './schema.js';
 
 import boardJson from './rules/board.json';
 import deckJson from './rules/deck.json';
@@ -27,6 +27,11 @@ import invadersJson from './rules/invaders.json';
 import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
+
+import geometryJson from './board/geometry.json';
+import regionsJson from './board/regions.json';
+import diseasesJson from './diseases/diseases.json';
+import labelsJson from './labels/labels.json';
 
 /** A deep, mutable copy of exactly what load.ts assembles. */
 const rawPack = (): Record<string, unknown> =>
@@ -189,5 +194,166 @@ describe('a malformed pack is rejected', () => {
     // Guards the negative suite from the failure it exists to prevent: if rawPack() produced
     // something invalid, every case above would "pass" while testing nothing at all.
     expect(() => RulesPackS.parse(rawPack())).not.toThrow();
+  });
+});
+
+/**
+ * THE BOARD PACK — geometry, and the cross-checks that are the point of C3.
+ *
+ * `geometry.json` is the single source for the on-screen SVG board and the printed A2 artwork.
+ * These are what stop it drifting from the rules it draws.
+ */
+describe('the board pack', () => {
+  const rawBoard = (): Record<string, unknown> =>
+    JSON.parse(
+      JSON.stringify({
+        ...packJson,
+        ...geometryJson,
+        ...regionsJson,
+        ...diseasesJson,
+        ...labelsJson,
+      }),
+    ) as Record<string, unknown>;
+
+  const corruptBoard = (fn: (p: Record<string, unknown>) => void): (() => unknown) => {
+    const p = rawBoard();
+    fn(p);
+    return () => BoardPackS.parse(p);
+  };
+
+  it('validates as it ships', () => {
+    expect(() => BoardPackS.parse(rawBoard())).not.toThrow();
+  });
+
+  /**
+   * PHYSICAL/DIGITAL PARITY. CLAUDE.md makes this a hard rule, and until C3 nothing enforced it:
+   * the printed board and the app were two independent copies of the same numbers.
+   *
+   * The Heart is the case that makes it real. It is the ONLY organ with a 2-step branch
+   * (docs/FINDINGS.md #15), so it is precisely the one a future edit gets right in one file and
+   * wrong in the other.
+   */
+  it('rejects geometry that draws more branch steps than the rules allow', () => {
+    expect(
+      corruptBoard((p) => {
+        const branch = p['BRANCH'] as Record<string, Record<string, unknown>>;
+        branch['heart']!['3'] = { x: 100, y: 100 }; // Heart is branch 2, not 3
+      }),
+    ).toThrow(/branch/i);
+  });
+
+  it('rejects geometry that draws fewer branch steps than the rules allow', () => {
+    expect(
+      corruptBoard((p) => {
+        const branch = p['BRANCH'] as Record<string, Record<string, unknown>>;
+        delete branch['brain']!['3']; // Brain is branch 3 — the number this project exists to protect
+      }),
+    ).toThrow(/branch/i);
+  });
+
+  it('rejects a route drawn with the wrong number of steps', () => {
+    expect(
+      corruptBoard((p) => {
+        const route = p['ROUTE'] as Record<string, Record<string, unknown>>;
+        delete route['blood']!['3']; // Blood is length 3 — short on purpose, a needle bypasses tissue
+      }),
+    ).toThrow(/route/i);
+  });
+
+  it('rejects a coordinate outside the viewBox', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['ORGAN_POS'] as Record<string, Record<string, number>>)['heart']!['x'] = 99999;
+      }),
+    ).toThrow(/viewBox/);
+  });
+
+  it('rejects a negative coordinate', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['HUB'] as Record<string, number>)['y'] = -1;
+      }),
+    ).toThrow(/viewBox/);
+  });
+
+  it('rejects a step key that is not a positive integer', () => {
+    expect(
+      corruptBoard((p) => {
+        const branch = p['BRANCH'] as Record<string, Record<string, unknown>>;
+        branch['brain']!['lymph'] = { x: 10, y: 10 };
+      }),
+    ).toThrow();
+  });
+
+  it('rejects an unknown region', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['REGIONS'] as Record<string, unknown>)['pancreas'] = { cx: 1, cy: 1, scale: 1 };
+      }),
+    ).toThrow();
+  });
+
+  it('rejects a disease stat outside 1..5', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['DZSTATS'] as Record<string, unknown[]>)['Influenza']![0] = 9;
+      }),
+    ).toThrow();
+  });
+
+  it('rejects an unknown rarity label', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['DZSTATS'] as Record<string, unknown[]>)['Influenza']![4] = 'Mythic';
+      }),
+    ).toThrow();
+  });
+
+  it('rejects a DZINFO entry missing one of its five fields', () => {
+    expect(
+      corruptBoard((p) => {
+        delete (p['DZINFO'] as Record<string, Record<string, unknown>>)['Influenza']!['p'];
+      }),
+    ).toThrow();
+  });
+
+  /**
+   * The organ/route EXISTENCE drift, as opposed to the step-count drift above.
+   *
+   * These use the injected form so the rules side can be doctored. That injection exists
+   * precisely so these two arms are reachable from a test instead of being dead defensive code
+   * — see the note on `boardPackSchema` in schema.ts.
+   */
+  it('rejects geometry drawing a branch for an organ the rules do not list', () => {
+    const rulesMissingBrain = { heart: { branch: 2 }, lungs: { branch: 3 } };
+    const schema = boardPackSchema(rulesMissingBrain, {
+      nose: { len: 5 },
+      gut: { len: 5 },
+      contact: { len: 5 },
+      wound: { len: 5 },
+      bite: { len: 5 },
+      blood: { len: 3 },
+    });
+    expect(() => schema.parse(rawBoard())).toThrow(/does not list as an organ/);
+  });
+
+  it('rejects geometry drawing a route the rules do not list', () => {
+    const schema = boardPackSchema(
+      {
+        heart: { branch: 2 },
+        lungs: { branch: 3 },
+        liver: { branch: 3 },
+        marrow: { branch: 3 },
+        brain: { branch: 3 },
+        spleen: { branch: 3 },
+        kidneys: { branch: 3 },
+      },
+      { nose: { len: 5 } },
+    );
+    expect(() => schema.parse(rawBoard())).toThrow(/does not list as a route/);
+  });
+
+  it('the board corruption helper does not itself invalidate the pack', () => {
+    expect(() => BoardPackS.parse(rawBoard())).not.toThrow();
   });
 });

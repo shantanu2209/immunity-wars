@@ -38,6 +38,23 @@
 
 import { z } from 'zod';
 
+/**
+ * The rules tables the geometry parity check reads.
+ *
+ * Imported as raw JSON rather than from load.ts, so schema.ts stays free of module cycles and
+ * the check compares the FILES rather than two views of the same loaded object.
+ *
+ * DECLARED HERE, AT THE TOP, AND THAT MATTERS. These are default parameter values for
+ * boardPackSchema(), which is CALLED at module scope further down. Declared after that call they
+ * sit in the temporal dead zone and every import of this package throws
+ * `Cannot access 'ORGANS_FOR_PARITY' before initialization`. `tsc --noEmit` does NOT catch it —
+ * it was green while the module was unloadable — so the guard is placement plus this note.
+ */
+import boardRulesJson from './rules/board.json';
+
+const ORGANS_FOR_PARITY = boardRulesJson.ORGANS as Record<string, { branch: number }>;
+const ROUTES_FOR_PARITY = boardRulesJson.ROUTES as Record<string, { len: number }>;
+
 /* ------------------------------------------------------------------ *
  * Key vocabularies — closed sets, mirroring the unions in types.ts
  * ------------------------------------------------------------------ */
@@ -300,3 +317,194 @@ export const RulesPackS = z.strictObject({
   ...TropismS.shape,
   ...TuningS.shape,
 });
+
+/* ================================================================== *
+ * TASK C3 — board geometry, regions, disease text, labels
+ *
+ * Extracted from tools/legacy/v2_ui.html. Same rules as above: validator
+ * never constructor, strictObject everywhere, no `.default()`.
+ * ================================================================== */
+
+const Point = z.strictObject({ x: z.number(), y: z.number() });
+
+/** Step keys are the strings "1", "2", … — the one place in the content with numeric keys. */
+const stepKey = z.string().regex(/^[1-9]\d*$/, 'step keys must be positive integers as strings');
+
+export const GeometryS = z.strictObject({
+  VW: z.number().positive(),
+  VH: z.number().positive(),
+  HUB: Point,
+  ORGAN_POS: byOrgan(Point),
+  CHIP_POS: byOrgan(Point),
+  BRANCH: byOrgan(z.record(stepKey, Point)),
+  ROUTE: byRoute(z.record(stepKey, Point)),
+  ENTRY: byRoute(z.strictObject({ x: z.number(), y: z.number(), t: z.string() })),
+});
+
+const RegionKeyS = z.enum(['nose', 'gut', 'contact', 'wound', 'bite', 'blood', 'core']);
+
+export const RegionsS = z.strictObject({
+  REGIONS: z.record(
+    RegionKeyS,
+    z.strictObject({ cx: z.number(), cy: z.number(), scale: z.number().positive() }),
+  ),
+  REGION_BOX: z.record(
+    RegionKeyS,
+    z.strictObject({
+      x: z.number(),
+      y: z.number(),
+      w: z.number().positive(),
+      h: z.number().positive(),
+    }),
+  ),
+  REGION_LABEL: z.record(RegionKeyS, z.string().min(1)),
+});
+
+export const DiseasesS = z.strictObject({
+  /** One-line hook shown on the card. Only a subset of diseases carry one. */
+  FACT: z.record(z.string(), z.string().min(1)),
+  /** d=discovered c=causes w=found p=prevent r=treat */
+  DZINFO: z.record(
+    z.string(),
+    z.strictObject({
+      d: z.string(),
+      c: z.string(),
+      w: z.string(),
+      p: z.string(),
+      r: z.string(),
+    }),
+  ),
+  /** [contagious, severity, spread, persistence, rarity-label] — the card's stat block. */
+  DZSTATS: z.record(
+    z.string(),
+    z.tuple([
+      z.number().int().min(1).max(5),
+      z.number().int().min(1).max(5),
+      z.number().int().min(1).max(5),
+      z.number().int().min(1).max(5),
+      z.enum(['Common', 'Rare', 'Legendary']),
+    ]),
+  ),
+});
+
+export const LabelsS = z.strictObject({
+  UM: z.record(CellKeyS, z.strictObject({ n: z.string(), r: z.string(), g: z.string().min(1) })),
+  UI_: z.record(
+    InvaderTypeS,
+    z.strictObject({ n: z.string(), c: z.string(), g: z.string().min(1) }),
+  ),
+  RNAME: byOrgan(z.string().min(1)),
+  RGLYPH: byOrgan(z.string().min(1)),
+  ORGAN_ART: byOrgan(z.string().min(1)),
+});
+
+/**
+ * THE BOARD PACK, with the cross-checks that are the entire point of C3.
+ *
+ * `superRefine` rather than a plain `refine`, so every violation is reported with its own path
+ * instead of the first one aborting the rest. It runs AFTER shape validation and returns
+ * nothing, so — like everything else here — it cannot rebuild a table.
+ *
+ * These checks are what make `geometry.json` a SINGLE SOURCE rather than merely a moved file.
+ * Geometry and rules can now only disagree loudly. Before C3 they could disagree silently, and
+ * the printed A2 board and the app were two independent copies of the same numbers.
+ */
+export function boardPackSchema(
+  organs: Record<string, { branch: number }> = ORGANS_FOR_PARITY,
+  routes: Record<string, { len: number }> = ROUTES_FOR_PARITY,
+) {
+  return z
+    .strictObject({
+      ...PackStampS.shape,
+      ...GeometryS.shape,
+      ...RegionsS.shape,
+      ...DiseasesS.shape,
+      ...LabelsS.shape,
+    })
+    .superRefine((p, ctx) => {
+      /* Every drawn point must be inside the viewBox. Catches a transposed or mistyped coordinate. */
+      const inBox = (pt: { x: number; y: number }, where: string): void => {
+        if (pt.x < 0 || pt.x > p.VW || pt.y < 0 || pt.y > p.VH) {
+          ctx.addIssue({
+            code: 'custom',
+            path: where.split('.'),
+            message: `point (${pt.x}, ${pt.y}) is outside the ${p.VW}x${p.VH} viewBox`,
+          });
+        }
+      };
+      inBox(p.HUB, 'HUB');
+      for (const [o, pt] of Object.entries(p.ORGAN_POS)) inBox(pt, `ORGAN_POS.${o}`);
+      for (const [o, pt] of Object.entries(p.CHIP_POS)) inBox(pt, `CHIP_POS.${o}`);
+      for (const [o, steps] of Object.entries(p.BRANCH)) {
+        for (const [s, pt] of Object.entries(steps)) inBox(pt, `BRANCH.${o}.${s}`);
+      }
+      for (const [r, steps] of Object.entries(p.ROUTE)) {
+        for (const [s, pt] of Object.entries(steps)) inBox(pt, `ROUTE.${r}.${s}`);
+      }
+      for (const [r, e] of Object.entries(p.ENTRY)) inBox(e, `ENTRY.${r}`);
+
+      /**
+       * PHYSICAL/DIGITAL PARITY, enforced rather than remembered (CLAUDE.md hard rule).
+       *
+       * The number of drawn steps on a branch must equal the branch length the RULES give that
+       * organ, and likewise for routes. The Heart's 2-step branch (docs/FINDINGS.md #15) is the
+       * case that makes this real: it is the only organ that differs, so it is exactly the one a
+       * future edit would get wrong in one file and not the other.
+       */
+      for (const [o, steps] of Object.entries(p.BRANCH)) {
+        const def = organs[o];
+        if (!def) {
+          // NOT a defensive arm: this fires when geometry.json and rules/board.json disagree
+          // about which ORGANS EXIST, which is a different drift from a wrong step count and is
+          // exactly what one source is supposed to make impossible.
+          ctx.addIssue({
+            code: 'custom',
+            path: ['BRANCH', o],
+            message: `geometry draws a branch for "${o}", which rules/board.json does not list as an organ`,
+          });
+          continue;
+        }
+        const drawn = Object.keys(steps).length;
+        if (drawn !== def.branch) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['BRANCH', o],
+            message: `geometry draws ${drawn} branch steps but the rules give ${o} branch ${def.branch}`,
+          });
+        }
+      }
+      for (const [r, steps] of Object.entries(p.ROUTE)) {
+        const def = routes[r];
+        if (!def) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ROUTE', r],
+            message: `geometry draws a route "${r}", which rules/board.json does not list as a route`,
+          });
+          continue;
+        }
+        const drawn = Object.keys(steps).length;
+        if (drawn !== def.len) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ROUTE', r],
+            message: `geometry draws ${drawn} route steps but the rules give ${r} length ${def.len}`,
+          });
+        }
+      }
+    });
+}
+
+/**
+ * The board pack, bound to the real rules tables.
+ *
+ * `boardPackSchema` takes them as parameters rather than closing over the import, for one
+ * reason: it makes the "rules and geometry disagree about which organs exist" arm REACHABLE
+ * FROM A TEST. The first draft indexed the rules table with `?? {}`, which the coverage gate
+ * correctly excluded as a dead defensive arm — two more entries on a list that is explicitly a
+ * liability, guarding a state the schema had already made impossible. That is the pattern of
+ * docs/FINDINGS.md #22, and writing a new instance of it during the schema work that exists to
+ * FIND it would have been the wrong direction. Injecting the tables turns two dead arms into
+ * two live, tested checks.
+ */
+export const BoardPackS = boardPackSchema();

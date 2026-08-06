@@ -236,6 +236,25 @@ Define the interface, implement exactly one implementation. **Do not build the v
 | 5 | `HelpProvider.ask()` | Local retrieval over curated corpus | On-device Gemma / cloud |
 | 6 | `Entitlements` object | Hardcoded | Fetched |
 | 7 | Content packs + `rulesVersion` on every state and message | Bundled packs | Downloadable packs |
+
+> **Seam 7, note added at Task C2 — the pack version check is DEFERRED, not forgotten.**
+>
+> `packages/content/src/schema.ts` validates the pack stamp `{ packId, packVersion, rulesVersion }`
+> for **shape only**. It deliberately does **not** check `rulesVersion` against an expected value.
+>
+> The bundled pack ships in the same commit as the engine that reads it, so such a check would
+> compare a constant against a constant — a guard against a state this repository cannot produce,
+> which is exactly the pattern [`FINDINGS.md`](FINDINGS.md) #22 names and #21 and #13 are
+> instances of. Adding one during the schema work that exists to *find* that pattern would have
+> been perverse, and it would have been an untestable branch arm besides.
+>
+> **Whoever builds the downloadable-pack loader owns this check.** That is the first point at
+> which a pack can genuinely disagree with the engine reading it — a pack fetched at runtime, a
+> cached pack from an older app version, a pack authored against different rules. At that point
+> the check is real, testable, and necessary. Until then it is theatre.
+>
+> The same reasoning applies to any other "does the pack match the app" validation: it belongs
+> where the two can actually differ.
 | 8 | `Storage` and `Telemetry` ports | IndexedDB; telemetry no-op with real call sites | Cloud sync; anonymous aggregate |
 
 **Seam 1 is load-bearing: single-player must go through it too.** One code path, not a fork.
