@@ -11,7 +11,14 @@
  *
  * Putting them here keeps the public contract exact while still making them reachable, instead
  * of the alternative — widening the public API for the convenience of a test.
+ *
+ * That alternative is not hypothetical: 38 data tables and tuning constants had leaked onto the
+ * root by B7 for exactly that reason. They are back to being module-local; ALL_ORGANS is the
+ * only one anything outside the engine ever reached, so it is the only one that lands here.
+ * Add to this list one name at a time, on demonstrated need — never in bulk.
  */
+
+export { ALL_ORGANS } from './data/board.js';
 
 export {
   abTotal,

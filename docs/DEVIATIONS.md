@@ -76,8 +76,24 @@ bindings outright, so this is not optional.
 functions. No consumer can observe the difference.
 
 **Decided by:** forced by the language; recorded for completeness.
-**Test:** `port exports exactly the 67 names legacy resolves to` — compares
-`Object.keys()` of both modules as sets.
+**Test:** `tests/equivalence/src/exports.test.ts`, `"legacy's module.exports resolves to 67
+unique names"` and the two set-comparison cases either side of it.
+
+> **Correction, 6 Aug 2026 (Task C prerequisite).** This entry previously cited a test named
+> *"port exports exactly the 67 names legacy resolves to"*. **No such test existed**, and the
+> claim it was standing in for was false: the root published **106** runtime names — legacy's 67
+> plus 38 module-private data tables and tuning constants, plus the Task A `PACKAGE_NAME`
+> scaffold marker. Nothing was missing, so no consumer had broken; the surface had silently
+> widened because nothing measured it.
+>
+> Closed by making the claim true rather than by weakening it: the 38 are module-local again,
+> `ALL_ORGANS` — the only one anything outside the engine reached — moved to
+> `@immunity-wars/engine/internal`, and `exports.test.ts` now asserts **set equality** in both
+> directions with `PACKAGE_NAME` as the single named exemption. A superset test was rejected
+> because it would pass on both the broken and the correct state.
+>
+> Per this file's own rule, entries are not retroactively edited — so the original claim is
+> quoted above rather than deleted, and this note is the amendment.
 
 ---
 

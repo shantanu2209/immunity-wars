@@ -12,9 +12,27 @@
  *   B6 simulate + knobs
  *   B7 noUncheckedIndexedAccess
  *
- * The data tables below are re-exported to match the legacy public API exactly. They move to
- * packages/content/ in Task C, behind a Zod loader; keeping them here for Task B means the
- * port has exactly one moving part at a time.
+ * THE PUBLIC SURFACE IS EXACTLY LEGACY'S 67 RUNTIME EXPORTS, plus PACKAGE_NAME.
+ *
+ * docs/PHASE1_BRIEF.md §5 makes the public API the contract. That was asserted here in prose
+ * from B1 onward and was NOT true: the root published 106 names — legacy's 67 plus 38 data
+ * tables and tuning constants legacy keeps module-private, plus PACKAGE_NAME. Nothing was
+ * missing, so no consumer broke; the surface had simply widened, unmeasured, because there was
+ * no test behind the claim. tests/equivalence/src/exports.test.ts is now that test.
+ *
+ * The 38 are not lost — they are ordinary module-local imports inside the engine. Exactly one
+ * was ever reached from outside (ALL_ORGANS, by data.test.ts) and it now lives at
+ * '@immunity-wars/engine/internal', which exists for precisely this case. Anything else that
+ * turns out to be needed gets added there deliberately, one name at a time.
+ *
+ * PACKAGE_NAME is the Task A scaffold marker carried by all six packages. It is the ONE
+ * documented exemption and exports.test.ts names it explicitly rather than tolerating it.
+ *
+ * The contract is over RUNTIME exports — `export type` is erased and cannot be observed by a
+ * consumer, so the type exports below are not part of it.
+ *
+ * The data tables below move to packages/content/ in Task C, behind a Zod loader; keeping them
+ * here for Task B means the port has exactly one moving part at a time.
  */
 
 export const PACKAGE_NAME = '@immunity-wars/engine';
@@ -38,60 +56,19 @@ export type {
   RouteKey,
 } from './types.js';
 
-export {
-  ALL_ORGANS,
-  LYMPH_GROUP,
-  LYMPH_STEP,
-  ORGANS,
-  ORGAN_SETS,
-  PAIR,
-  RESIDENT_NAME,
-  ROUTES,
-  ROUTE_KEYS,
-} from './data/board.js';
+export { ORGANS, ORGAN_SETS, RESIDENT_NAME, ROUTES } from './data/board.js';
 export { DECK_MASTER } from './data/deck.js';
-export { BAD_POOL, EVENTS, GOOD_POOL, RARE } from './data/events.js';
+export { EVENTS, RARE } from './data/events.js';
 export { FAMILIES, FAMILY, FAM_KEYS } from './data/families.js';
 export { FAST_DISEASE, INV_HP, INV_SPEED, NOT_ALIVE, TOXIN_MAKERS } from './data/invaders.js';
 export { TROPISM } from './data/tropism.js';
 export {
-  AB_CAP_FAM,
-  AB_CAP_FAM_BY_DIFF,
-  AFFINITY_AT,
-  ANTIBODY_CAP,
-  ANTIBODY_RATE,
-  ANTIVENOM_CHARGES,
   ANTIVENOM_ORDER,
-  BURST_ON,
   CELL_KEYS,
   CLONE_COST,
-  CNAME,
   DIFF,
-  EOSINOPHIL_REGEN,
   FLAGS,
-  GRACE_CLEAR,
-  HEAL_AFTER,
-  INFECT_ON,
-  MALARIA_LIVER_TURNS,
-  MEMORY_BOOST,
-  NEUTROPHIL_REGEN,
-  NEUTROPHIL_REGEN_HELPED,
-  NK_HITS,
-  NK_RANGE,
-  PRESENT_TIER,
-  PRESENT_TIER_BY_DIFF,
-  RATE_CAP_BY_DIFF,
-  REINFECT_PC,
-  SNIPE_RANGE,
-  SNIPE_RANGE_BY_DIFF,
-  SPACE_CAP,
-  SPAWN_TABLE,
-  SPEED,
-  TOXIN_AFTER,
   VACCINE_COST,
-  WORM_DAMAGE_EVERY,
-  WORM_MAX_PER_GAME,
-  WORM_MAX_PER_TURN,
 } from './data/tuning.js';
 
 export { branchLen, famOf } from './primitives.js';
@@ -123,10 +100,8 @@ export type { Action, ActionResult } from './state.js';
 /**
  * B2 — the pure query layer, under the names legacy publishes.
  *
- * The package root is held to EXACTLY legacy's 67 exports: docs/PHASE1_BRIEF.md §5 makes the
- * public API the contract, so the port must not quietly widen it. Helpers legacy keeps private
- * (samePlace, placeDist, apFor, …) are reachable at '@immunity-wars/engine/internal' instead,
- * which is also where the rig has to go for them — see docs/FINDINGS.md #12.
+ * Helpers legacy keeps private (samePlace, placeDist, apFor, …) are reachable at
+ * '@immunity-wars/engine/internal' instead — see docs/FINDINGS.md #12 and the header above.
  */
 export {
   abMatch,

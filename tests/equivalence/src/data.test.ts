@@ -121,7 +121,9 @@ describe('B1: the tables cover exactly the keys the types promise', () => {
 
 describe('B1: primitives match legacy', () => {
   it('branchLen agrees for every organ', () => {
-    for (const o of port.ALL_ORGANS) {
+    // ALL_ORGANS is not one of legacy's 67 exports, so it is reached through /internal rather
+    // than the root — see exports.test.ts and the header of packages/engine/src/index.ts.
+    for (const o of internal.ALL_ORGANS) {
       expect(port.branchLen(o)).toBe(legacy.branchLen(o));
     }
   });
