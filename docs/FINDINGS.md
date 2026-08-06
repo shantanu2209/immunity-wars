@@ -33,6 +33,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | **FIXED** — [`DEVIATIONS.md`](DEVIATIONS.md) #4 |
 | 21 | `tag`'s novel-antigen guard can never fire | Low | Port as-is; found by coverage |
 | **22** | **PATTERN: guards against states the content makes impossible** | **Design + Task C** | Schema work should watch for it |
+| **23** | **`Diphtheria toxin` is content the engine can never produce — #22 in mirror** | **Task C** | Report only; C4's reachability report must find it unaided |
 
 ---
 
@@ -938,3 +939,78 @@ things worth building into that schema:
 bacterium, a virus with antigenic variation — is a design conversation with Kartik, and a
 genuinely interesting one: each unreachable guard is a piece of immunology the engine already
 models but the deck never asks it to demonstrate.
+
+**#23 is this same finding pointing the other way.** See below.
+
+---
+
+## 23. `Diphtheria toxin` is content the engine can never produce
+
+Found at the Task C planning stage, while measuring whether the `?? 'EXB'` fallback in `famOf`
+would become unreachable once a schema required every `DECK_MASTER.dz` to have a `FAMILY` entry.
+It would not — and the measurement turned up this instead.
+
+`'Diphtheria toxin'` carries a full pair of content entries:
+
+```js
+FAMILY["Diphtheria toxin"]  = "TOX"
+TROPISM["Diphtheria toxin"] = ["heart"]
+```
+
+**Nothing can create it.** It appears in `tools/legacy/v2_engine.js` exactly **twice** — those two
+table entries, and nowhere else. There is no card, no rare event, and no emission path:
+
+| Could it arrive? | No, because |
+|---|---|
+| Drawn as a card | Not in `DECK_MASTER`. The deck's Diphtheria card is `{dz:"Diphtheria", type:"toxin"}` — the disease *is* the toxin |
+| Emitted by a toxin-maker | `TOXIN_MAKERS` has three entries: Tetanus → *Tetanus toxin*, Cholera → *Cholera toxin*, Gas gangrene → *Clostridial toxin*. Diphtheria is not among them, and could not be: it is already type `toxin`, and only `bacteria` emit |
+| Injected by a rare event | The four injecting rare events create bacteria, hidden viruses and malaria. None creates a toxin |
+
+So the row is inert. Nothing reads it, nothing writes it, and no game can contain it.
+
+### Why record a dead table row at all
+
+Because it is **[#22](#22-pattern--the-engine-guards-against-states-the-content-design-makes-impossible)
+in mirror image, and the root cause is the same one.**
+
+| | Direction | Example |
+|---|---|---|
+| **#22** | The **engine** defends against states the **content** cannot produce | `tag` refuses a novel bacterium; no novel bacterium exists |
+| **#23** | The **content** declares a pathogen the **engine** cannot produce | `Diphtheria toxin` has a family and a tropism; nothing mints it |
+
+**One cause: nothing checks the two directions against each other.** The engine's beliefs about
+what content is possible, and the content's beliefs about what the engine will ask for, are both
+inferred and neither is written down. #22 said so about the first direction. This is the second,
+and it was found the same way — by a consistency check run for a different reason.
+
+### The measurement that surfaced it
+
+```
+FAMILY has 106 entries; DECK_MASTER has 97 cards.
+10 FAMILY entries have no deck card.
+```
+
+Nine of the ten are legitimate — the engine mints them at runtime: `Tetanus toxin`,
+`Cholera toxin`, `Clostridial toxin` (from `TOXIN_MAKERS`), `Malaria (blood)` (a bursting
+liver stage), and `Shingles`, `Dengue (ADE)`, `Malaria (relapse)`,
+`Tuberculosis (reactivated)`, `Pneumococcal pneumonia` (from rare events).
+
+`Diphtheria toxin` is the tenth, and the only one with no producer.
+
+**This is also why the `?? 'EXB'` fallback in `famOf` is NOT an instance of #22 and is being
+kept.** A schema over `DECK_MASTER` cannot make that fallback dead, because nine of the disease
+names the engine actually handles are not cards at all — and legacy's `EXB` answer for a wholly
+unknown disease is pinned by `tests/equivalence/src/data.test.ts`. It is documented behaviour
+for an unknown input, not a guard against an impossible one.
+
+### Disposition
+
+**Report only. Nothing changed.** Whether the row should be deleted, or Diphtheria should emit
+a separate toxin the way Tetanus and Cholera do, is a design question for Kartik — and the
+second reading is the interesting one, because diphtheria toxin genuinely *is* a separate
+secreted protein and is what the antitoxin treats, which is exactly the lesson the TOX class
+teaches elsewhere.
+
+**Task C acceptance criterion:** C4's `(type, flag)` reachability report must name
+`Diphtheria toxin` **without being told about it**. It is a known-answer test for the generator.
+If the generator misses it, the generator is wrong and the rest of its output cannot be trusted.
