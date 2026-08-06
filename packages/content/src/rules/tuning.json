@@ -1,0 +1,155 @@
+{
+  "CELL_KEYS": [
+    "macrophage",
+    "neutrophil",
+    "bcell",
+    "tcell",
+    "helper",
+    "nk",
+    "eosinophil"
+  ],
+  "SPEED": {
+    "macrophage": 1,
+    "neutrophil": 2,
+    "bcell": 1,
+    "tcell": 1,
+    "helper": 1,
+    "nk": 2,
+    "eosinophil": 1
+  },
+  "CNAME": {
+    "macrophage": "Monocyte",
+    "neutrophil": "Neutrophil",
+    "bcell": "B-Cell",
+    "tcell": "Killer T-Cell",
+    "helper": "Helper T-Cell",
+    "nk": "NK Cell"
+  },
+  "DIFF": {
+    "training": {
+      "ap": 6,
+      "turns": 15,
+      "spawn": "dice"
+    },
+    "normal": {
+      "ap": 5,
+      "turns": 20,
+      "spawn": "dice"
+    },
+    "hard": {
+      "ap": 4,
+      "turns": 30,
+      "spawn": "dice"
+    }
+  },
+  "SPAWN_TABLE": {
+    "training": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      2
+    ],
+    "normal": [
+      1,
+      1,
+      1,
+      1,
+      2,
+      2
+    ],
+    "hard": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      3
+    ]
+  },
+  "FLAGS": {
+    "organs": true,
+    "residents": true,
+    "residentMove": true,
+    "primeResident": true,
+    "lymph": true,
+    "crisisEvents": true,
+    "heartOrgan": true,
+    "dendritic": true,
+    "helperT": true,
+    "nkCell": true,
+    "complement": true,
+    "toxins": true,
+    "fungus": true,
+    "worms": true,
+    "malaria": true,
+    "eosinophil": true,
+    "rareEvents": true,
+    "specials": true,
+    "tierB": true
+  },
+  "NK_RANGE": 1,
+  "NK_HITS": 3,
+  "ANTIBODY_RATE": 2,
+  "ANTIBODY_CAP": 4,
+  "AB_CAP_FAM_BY_DIFF": {
+    "training": 5,
+    "normal": 4,
+    "hard": 3
+  },
+  "AB_CAP_FAM": 3,
+  "AFFINITY_AT": 4,
+  "PRESENT_TIER_BY_DIFF": {
+    "training": [
+      0,
+      1,
+      3
+    ],
+    "normal": [
+      0,
+      3,
+      7
+    ],
+    "hard": [
+      0,
+      5,
+      12
+    ]
+  },
+  "PRESENT_TIER": [
+    0,
+    1,
+    4
+  ],
+  "RATE_CAP_BY_DIFF": {
+    "training": 3,
+    "normal": 3,
+    "hard": 2
+  },
+  "INFECT_ON": 2,
+  "BURST_ON": 2,
+  "SNIPE_RANGE": 3,
+  "SNIPE_RANGE_BY_DIFF": {
+    "training": 3,
+    "normal": 2,
+    "hard": 2
+  },
+  "NEUTROPHIL_REGEN": 4,
+  "NEUTROPHIL_REGEN_HELPED": 2,
+  "EOSINOPHIL_REGEN": 4,
+  "TOXIN_AFTER": 3,
+  "MALARIA_LIVER_TURNS": 3,
+  "ANTIVENOM_CHARGES": 2,
+  "ANTIVENOM_ORDER": 4,
+  "WORM_MAX_PER_GAME": 2,
+  "WORM_MAX_PER_TURN": 1,
+  "WORM_DAMAGE_EVERY": 3,
+  "HEAL_AFTER": 2,
+  "GRACE_CLEAR": 15,
+  "SPACE_CAP": 8,
+  "REINFECT_PC": 0.25,
+  "VACCINE_COST": 5,
+  "CLONE_COST": 3,
+  "MEMORY_BOOST": 3
+}

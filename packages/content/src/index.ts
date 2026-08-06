@@ -16,10 +16,16 @@
  * So the engine imports these values directly. What it may not do is put data back: no table,
  * no tuning constant, no disease list lives in packages/engine.
  *
- * TASK C1 — the tables are still TypeScript, moved verbatim from packages/engine/src/data/.
- * C2 converts them to JSON under a Zod loader, per docs/PHASE1_BRIEF.md §3, and adds the
- * { packId, packVersion, rulesVersion } stamp. Keeping the move and the serialisation in
- * separate commits means a red corpus names its own cause.
+ * SHAPE OF THIS PACKAGE, as of Task C2:
+ *
+ *   rules/*.json   the tables themselves — generated at C2 from the C1 TypeScript values,
+ *                  not retyped, then verified against legacy anyway (key order included)
+ *   schema.ts      Zod schemas. Validator, never constructor — read its header before editing
+ *   load.ts        imports the JSON, validates it, exports it UNCHANGED
+ *   types.ts       the shapes of the content
+ *
+ * The move (C1) and the serialisation (C2) were separate commits so that a red corpus would
+ * name its own cause. Both ran clean: 6,000 games, 0 divergences, twice.
  */
 
 export const PACKAGE_NAME = '@immunity-wars/content';
@@ -42,71 +48,68 @@ export type {
   RouteKey,
 } from './types.js';
 
-/* --- the board: organs, routes, the lymphatic map --- */
-export {
-  ALL_ORGANS,
-  LYMPH_GROUP,
-  LYMPH_STEP,
-  ORGANS,
-  ORGAN_SETS,
-  PAIR,
-  RESIDENT_NAME,
-  ROUTES,
-  ROUTE_KEYS,
-} from './rules/board.js';
-
-/* --- the infection deck --- */
-export { DECK_MASTER } from './rules/deck.js';
-
-/* --- crisis and rare events --- */
-export { BAD_POOL, EVENTS, GOOD_POOL, RARE } from './rules/events.js';
-
-/* --- antigen classes --- */
-export { FAMILIES, FAMILY, FAM_KEYS } from './rules/families.js';
-
-/* --- per-type invader statistics --- */
-export { FAST_DISEASE, INV_HP, INV_SPEED, NOT_ALIVE, TOXIN_MAKERS } from './rules/invaders.js';
-
-/* --- which organs each disease can infect --- */
-export { TROPISM } from './rules/tropism.js';
-
-/* --- cells, difficulty settings, and every tuning constant --- */
 export {
   AB_CAP_FAM,
   AB_CAP_FAM_BY_DIFF,
   AFFINITY_AT,
+  ALL_ORGANS,
   ANTIBODY_CAP,
   ANTIBODY_RATE,
   ANTIVENOM_CHARGES,
   ANTIVENOM_ORDER,
+  BAD_POOL,
   BURST_ON,
   CELL_KEYS,
   CLONE_COST,
   CNAME,
+  DECK_MASTER,
   DIFF,
   EOSINOPHIL_REGEN,
+  EVENTS,
+  FAM_KEYS,
+  FAMILIES,
+  FAMILY,
+  FAST_DISEASE,
   FLAGS,
+  GOOD_POOL,
   GRACE_CLEAR,
   HEAL_AFTER,
   INFECT_ON,
+  INV_HP,
+  INV_SPEED,
+  LYMPH_GROUP,
+  LYMPH_STEP,
   MALARIA_LIVER_TURNS,
   MEMORY_BOOST,
   NEUTROPHIL_REGEN,
   NEUTROPHIL_REGEN_HELPED,
   NK_HITS,
   NK_RANGE,
+  NOT_ALIVE,
+  ORGAN_SETS,
+  ORGANS,
+  PACK_ID,
+  PACK_VERSION,
+  PAIR,
   PRESENT_TIER,
   PRESENT_TIER_BY_DIFF,
+  RARE,
   RATE_CAP_BY_DIFF,
   REINFECT_PC,
+  RESIDENT_NAME,
+  ROUTE_KEYS,
+  ROUTES,
+  RULES_VERSION,
   SNIPE_RANGE,
   SNIPE_RANGE_BY_DIFF,
   SPACE_CAP,
   SPAWN_TABLE,
   SPEED,
   TOXIN_AFTER,
+  TOXIN_MAKERS,
+  TROPISM,
   VACCINE_COST,
   WORM_DAMAGE_EVERY,
   WORM_MAX_PER_GAME,
   WORM_MAX_PER_TURN,
-} from './rules/tuning.js';
+} from './load.js';

@@ -1,0 +1,156 @@
+{
+  "ORGANS": {
+    "heart": {
+      "name": "Heart",
+      "kind": "vital",
+      "integrity": 3,
+      "branch": 2,
+      "effect": "-1 Action Point (weak pump)",
+      "bio": "The heart itself can be infected — Staph on the valves (endocarditis), Lyme carditis, viral myocarditis. Germs only passing through the bloodstream do NOT infect it; only germs that target heart tissue do."
+    },
+    "lungs": {
+      "name": "Lungs",
+      "kind": "vital",
+      "integrity": 3,
+      "branch": 3,
+      "effect": "-1 Action Point",
+      "bio": "Damaged lungs mean poor gas exchange — the whole body weakens."
+    },
+    "liver": {
+      "name": "Liver",
+      "kind": "defence",
+      "integrity": 3,
+      "branch": 3,
+      "effect": "Antibody storage capped at 2 per class",
+      "bio": "The liver makes many defence proteins; damage it and antibody supply falls."
+    },
+    "marrow": {
+      "name": "Bone Marrow",
+      "kind": "defence",
+      "integrity": 3,
+      "branch": 3,
+      "effect": "Neutrophil cannot regenerate",
+      "bio": "All immune cells are made in the marrow."
+    },
+    "brain": {
+      "name": "Brain",
+      "kind": "vital",
+      "integrity": 2,
+      "branch": 3,
+      "effect": "None — but fragile & slow to defend",
+      "bio": "Immune privilege: the blood-brain barrier keeps immune cells out, so it is hard to defend and cannot take much damage."
+    },
+    "spleen": {
+      "name": "Spleen",
+      "kind": "defence",
+      "integrity": 3,
+      "branch": 3,
+      "effect": "Bacteria divide on 1–3",
+      "bio": "The spleen filters encapsulated bacteria from the blood — without it, bacterial infection runs wild."
+    },
+    "kidneys": {
+      "name": "Kidneys",
+      "kind": "vital",
+      "integrity": 3,
+      "branch": 3,
+      "effect": "Lose 1 antibody each turn",
+      "bio": "Damaged kidneys leak antibodies into the urine — a real cause of secondary immunodeficiency."
+    }
+  },
+  "ALL_ORGANS": [
+    "heart",
+    "lungs",
+    "liver",
+    "marrow",
+    "brain",
+    "spleen",
+    "kidneys"
+  ],
+  "ORGAN_SETS": {
+    "training": [
+      "heart",
+      "lungs",
+      "liver",
+      "marrow",
+      "brain",
+      "spleen",
+      "kidneys"
+    ],
+    "normal": [
+      "heart",
+      "lungs",
+      "liver",
+      "marrow",
+      "brain",
+      "spleen",
+      "kidneys"
+    ],
+    "hard": [
+      "heart",
+      "lungs",
+      "liver",
+      "marrow",
+      "brain",
+      "spleen",
+      "kidneys"
+    ]
+  },
+  "ROUTES": {
+    "nose": {
+      "name": "Nose",
+      "len": 5
+    },
+    "gut": {
+      "name": "Gut",
+      "len": 5
+    },
+    "contact": {
+      "name": "Contact",
+      "len": 5
+    },
+    "wound": {
+      "name": "Wound",
+      "len": 5
+    },
+    "bite": {
+      "name": "Bite",
+      "len": 5
+    },
+    "blood": {
+      "name": "Blood",
+      "len": 3
+    }
+  },
+  "ROUTE_KEYS": [
+    "nose",
+    "gut",
+    "contact",
+    "wound",
+    "bite",
+    "blood"
+  ],
+  "LYMPH_GROUP": {
+    "nose": "mucosal",
+    "gut": "mucosal",
+    "contact": "mucosal",
+    "wound": "skin",
+    "bite": "skin",
+    "blood": null
+  },
+  "PAIR": {
+    "nose": "gut",
+    "gut": "nose",
+    "bite": "wound",
+    "wound": "bite"
+  },
+  "LYMPH_STEP": 3,
+  "RESIDENT_NAME": {
+    "heart": "Cardiac macrophage",
+    "lungs": "Alveolar macrophage",
+    "liver": "Kupffer cell",
+    "brain": "Microglia",
+    "marrow": "Marrow macrophage",
+    "spleen": "Splenic macrophage",
+    "kidneys": "Renal macrophage"
+  }
+}

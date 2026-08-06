@@ -1,0 +1,42 @@
+{
+  "INV_HP": {
+    "virus": 1,
+    "hidden": 1,
+    "bacteria": 1,
+    "toxin": 1,
+    "venom": 1,
+    "fungus": 2,
+    "worm": 3,
+    "malaria": 1,
+    "parasite": 2
+  },
+  "INV_SPEED": {
+    "virus": 1,
+    "hidden": 1,
+    "bacteria": 1,
+    "toxin": 2,
+    "venom": 2,
+    "fungus": 1,
+    "worm": 1,
+    "malaria": 1,
+    "parasite": 1
+  },
+  "FAST_DISEASE": {
+    "Meningitis": 3,
+    "Gas gangrene": 3,
+    "Cholera": 2,
+    "Plague": 2,
+    "Ebola": 2,
+    "Catheter sepsis": 2,
+    "Endocarditis": 2
+  },
+  "NOT_ALIVE": [
+    "toxin",
+    "venom"
+  ],
+  "TOXIN_MAKERS": {
+    "Tetanus": "Tetanus toxin",
+    "Cholera": "Cholera toxin",
+    "Gas gangrene": "Clostridial toxin"
+  }
+}

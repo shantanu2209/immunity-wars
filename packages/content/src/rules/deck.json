@@ -1,0 +1,498 @@
+{
+  "DECK_MASTER": [
+    {
+      "dz": "Influenza",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Common cold",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "COVID-19",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "RSV",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Measles",
+      "type": "virus",
+      "lane": "nose",
+      "amnesia": true
+    },
+    {
+      "dz": "Mumps",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Rubella",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Smallpox",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Nipah",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Hand-foot-and-mouth",
+      "type": "virus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Chickenpox",
+      "type": "hidden",
+      "lane": "nose"
+    },
+    {
+      "dz": "Glandular fever",
+      "type": "hidden",
+      "lane": "nose"
+    },
+    {
+      "dz": "Cytomegalovirus",
+      "type": "hidden",
+      "lane": "nose"
+    },
+    {
+      "dz": "Tuberculosis",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Whooping cough",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Meningitis",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Pneumonia",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Strep throat",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Leprosy",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Legionnaires' disease",
+      "type": "bacteria",
+      "lane": "nose"
+    },
+    {
+      "dz": "Diphtheria",
+      "type": "toxin",
+      "lane": "nose"
+    },
+    {
+      "dz": "Mucormycosis",
+      "type": "fungus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Aspergillosis",
+      "type": "fungus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Cryptococcus",
+      "type": "fungus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Pneumocystis pneumonia",
+      "type": "fungus",
+      "lane": "nose"
+    },
+    {
+      "dz": "Dengue",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "Chikungunya",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "Japanese encephalitis",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "Yellow fever",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "Zika",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "West Nile fever",
+      "type": "virus",
+      "lane": "bite"
+    },
+    {
+      "dz": "Rabies",
+      "type": "hidden",
+      "lane": "bite"
+    },
+    {
+      "dz": "Chagas disease",
+      "type": "hidden",
+      "lane": "bite"
+    },
+    {
+      "dz": "Lyme disease",
+      "type": "bacteria",
+      "lane": "bite"
+    },
+    {
+      "dz": "Plague",
+      "type": "bacteria",
+      "lane": "bite"
+    },
+    {
+      "dz": "Scrub typhus",
+      "type": "bacteria",
+      "lane": "bite"
+    },
+    {
+      "dz": "Malaria",
+      "type": "malaria",
+      "lane": "bite"
+    },
+    {
+      "dz": "Kala-azar",
+      "type": "parasite",
+      "lane": "bite",
+      "hidesInMac": true
+    },
+    {
+      "dz": "Sleeping sickness",
+      "type": "parasite",
+      "lane": "bite",
+      "variant": true
+    },
+    {
+      "dz": "Filariasis",
+      "type": "worm",
+      "lane": "bite",
+      "blocksLymph": true
+    },
+    {
+      "dz": "Snake venom",
+      "type": "venom",
+      "lane": "bite"
+    },
+    {
+      "dz": "Russell's viper venom",
+      "type": "venom",
+      "lane": "bite"
+    },
+    {
+      "dz": "Red scorpion sting",
+      "type": "venom",
+      "lane": "bite"
+    },
+    {
+      "dz": "Tetanus",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "MRSA",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "Cellulitis",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "Leptospirosis",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "Gas gangrene",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "Brucellosis",
+      "type": "bacteria",
+      "lane": "wound"
+    },
+    {
+      "dz": "Cold sore",
+      "type": "hidden",
+      "lane": "wound"
+    },
+    {
+      "dz": "Ebola",
+      "type": "virus",
+      "lane": "wound"
+    },
+    {
+      "dz": "Anthrax",
+      "type": "toxin",
+      "lane": "wound"
+    },
+    {
+      "dz": "Hookworm",
+      "type": "worm",
+      "lane": "wound"
+    },
+    {
+      "dz": "Schistosomiasis",
+      "type": "worm",
+      "lane": "wound"
+    },
+    {
+      "dz": "Guinea worm",
+      "type": "worm",
+      "lane": "wound"
+    },
+    {
+      "dz": "Histoplasmosis",
+      "type": "fungus",
+      "lane": "wound"
+    },
+    {
+      "dz": "Typhoid",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Cholera",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Dysentery",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Food poisoning",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Listeria",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Stomach ulcer (H. pylori)",
+      "type": "bacteria",
+      "lane": "gut"
+    },
+    {
+      "dz": "Rotavirus",
+      "type": "virus",
+      "lane": "gut"
+    },
+    {
+      "dz": "Hepatitis A",
+      "type": "virus",
+      "lane": "gut"
+    },
+    {
+      "dz": "Hepatitis E",
+      "type": "virus",
+      "lane": "gut"
+    },
+    {
+      "dz": "Norovirus",
+      "type": "virus",
+      "lane": "gut"
+    },
+    {
+      "dz": "Polio",
+      "type": "virus",
+      "lane": "gut"
+    },
+    {
+      "dz": "Botulism",
+      "type": "toxin",
+      "lane": "gut"
+    },
+    {
+      "dz": "Shiga toxin (E. coli O157)",
+      "type": "toxin",
+      "lane": "gut"
+    },
+    {
+      "dz": "Roundworm",
+      "type": "worm",
+      "lane": "gut"
+    },
+    {
+      "dz": "Tapeworm",
+      "type": "worm",
+      "lane": "gut"
+    },
+    {
+      "dz": "Whipworm",
+      "type": "worm",
+      "lane": "gut"
+    },
+    {
+      "dz": "Amoebiasis",
+      "type": "parasite",
+      "lane": "gut",
+      "forced": "liver"
+    },
+    {
+      "dz": "Giardia",
+      "type": "parasite",
+      "lane": "gut",
+      "drain": 1
+    },
+    {
+      "dz": "Toxoplasmosis",
+      "type": "hidden",
+      "lane": "gut"
+    },
+    {
+      "dz": "Candida",
+      "type": "fungus",
+      "lane": "gut"
+    },
+    {
+      "dz": "HIV",
+      "type": "hidden",
+      "lane": "contact",
+      "killsHelper": true
+    },
+    {
+      "dz": "Syphilis",
+      "type": "bacteria",
+      "lane": "contact"
+    },
+    {
+      "dz": "Human papillomavirus",
+      "type": "hidden",
+      "lane": "contact"
+    },
+    {
+      "dz": "Gonorrhoea",
+      "type": "bacteria",
+      "lane": "contact"
+    },
+    {
+      "dz": "Chlamydia",
+      "type": "bacteria",
+      "lane": "contact"
+    },
+    {
+      "dz": "Genital herpes",
+      "type": "hidden",
+      "lane": "contact"
+    },
+    {
+      "dz": "Trichomoniasis",
+      "type": "parasite",
+      "lane": "contact"
+    },
+    {
+      "dz": "Scabies",
+      "type": "parasite",
+      "lane": "contact"
+    },
+    {
+      "dz": "Ringworm",
+      "type": "fungus",
+      "lane": "contact"
+    },
+    {
+      "dz": "Impetigo",
+      "type": "bacteria",
+      "lane": "contact"
+    },
+    {
+      "dz": "Trachoma",
+      "type": "bacteria",
+      "lane": "contact"
+    },
+    {
+      "dz": "Conjunctivitis",
+      "type": "virus",
+      "lane": "contact"
+    },
+    {
+      "dz": "Molluscum contagiosum",
+      "type": "virus",
+      "lane": "contact"
+    },
+    {
+      "dz": "Hepatitis B",
+      "type": "hidden",
+      "lane": "blood"
+    },
+    {
+      "dz": "Hepatitis C",
+      "type": "hidden",
+      "lane": "blood"
+    },
+    {
+      "dz": "Hepatitis D",
+      "type": "hidden",
+      "lane": "blood",
+      "needsHepB": true
+    },
+    {
+      "dz": "Transfusion malaria",
+      "type": "malaria",
+      "lane": "blood"
+    },
+    {
+      "dz": "Catheter sepsis",
+      "type": "fungus",
+      "lane": "blood"
+    },
+    {
+      "dz": "Cannula infection",
+      "type": "bacteria",
+      "lane": "blood"
+    },
+    {
+      "dz": "Endocarditis",
+      "type": "bacteria",
+      "lane": "blood"
+    },
+    {
+      "dz": "Pathogen X",
+      "type": "virus",
+      "lane": "nose",
+      "novel": true
+    }
+  ]
+}
