@@ -32,6 +32,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 19 | The lytic-cycle array spread is defensive, not load-bearing | Low | Comment at the site |
 | 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | **FIXED** — [`DEVIATIONS.md`](DEVIATIONS.md) #4 |
 | 21 | `tag`'s novel-antigen guard can never fire | Low | Port as-is; found by coverage |
+| **22** | **PATTERN: guards against states the content makes impossible** | **Design + Task C** | Schema work should watch for it |
 
 ---
 
@@ -444,11 +445,14 @@ reintroduce `branch:4`.
   `capFor()` still computes a cap for it.
 - **`apOwnerOf`** (`:844`) — defined and never called, in legacy or the port.
 
-**Confirmed by coverage measurement, not by reading.** `abTotal`, `hasAb` and `apOwnerOf` are
-three of the five functions the whole 199-test suite never executes. Grepping legacy finds
-exactly one reference to each — the definition. They are exported (`abTotal` and `hasAb` are
-not; `apOwnerOf` is not either) and simply unreachable. See §"Coverage" in
-[`TASK_B_CLOSEOUT.md`](TASK_B_CLOSEOUT.md).
+**Confirmed dead in LEGACY too, by measurement rather than by reading.** `abTotal`, `hasAb` and
+`apOwnerOf` are three of the five functions the entire test suite never executes, and grepping
+`tools/legacy/v2_engine.js` finds **exactly one reference to each — the definition**. None of
+the three is in `module.exports`, so they are not merely unused by the port: they are
+unreachable from anywhere, and have been for as long as the file has existed.
+
+They are excluded from the coverage denominator under rule B, with that grep as the
+demonstration — see [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md).
 - **Duplicated exports** — `macrophageEatable`, `snipeTargets` and `rateForFam` each appear
   twice in `module.exports` (`:1767`). 70 entries, 67 unique. Harmless in JS; the port
   exports each once.
@@ -871,3 +875,66 @@ and removing it would be a behaviour change. Recorded because it is the third in
 same pattern, and the pattern is worth naming: **the engine carries defensive branches for
 pathogen shapes the content tables do not contain.** Task C's Zod schema is where content and
 code can finally be checked against each other.
+
+---
+
+## 22. PATTERN — the engine guards against states the content design makes impossible
+
+Three separate findings turned out to be one thing, and naming it is more useful than the three
+of them separately.
+
+| # | Guard | Why it can never fire |
+|---|---|---|
+| **4** | `neutralise`'s antigenic-variation roll | The only `variant:true` card is Sleeping sickness, a **parasite** — and `neutralise` rejects parasites two lines earlier |
+| **13** | `famOf`'s `FAMILY` lookup for Pathogen X | Pathogen X is absent from `FAMILY`, but `famOf` short-circuits on `iv.novel` first, so the fallback is never consulted for it |
+| **21** | `tag`'s brand-new-antigen refusal | `f === 'X'` needs `iv.novel`, but `tag` only accepts bacteria / worm / parasite and the only novel card is a **virus** |
+
+And the coverage measurement found three more of exactly the same shape:
+
+| Guard | Why it can never fire |
+|---|---|
+| `neutralise`'s malaria-in-liver refusal | The `ok2` type gate rejects liver-stage malaria first |
+| `neutralise`'s `inMac` refusal | Only Kala-azar sets `inMac`, and it is a parasite, rejected by `ok2` first |
+| `draw`'s `if (c.novel)` | `newGame` filters novel cards out of the deck entirely; the novel pathogen is injected on its own turn |
+
+**Six guards, one cause.** In every case the code defends against a combination of `type` and
+some flag that the **content tables cannot produce**. The rule is written correctly and
+generally; the deck simply contains no card that satisfies it.
+
+### Why this is not obviously wrong
+
+Each guard is correct *as a rule*. If a novel bacterium were added tomorrow, `tag`'s refusal
+would start firing and would be right to. Defensive breadth in a rules engine is not a defect,
+and deleting these would make the engine more fragile to content changes, not less.
+
+### Why it should still be known
+
+Three consequences, in increasing order of importance:
+
+1. **Coverage cannot reach 100%,** and never will while the pattern persists. This is roughly
+   half the reason the original ≥95%-of-all-arms gate was unreachable
+   ([`TASK_B_CLOSEOUT.md`](TASK_B_CLOSEOUT.md) §4).
+2. **A guard that never fires is never tested,** so nobody knows whether it is right. #13 is the
+   proof: its handling is *wrong* for the one card it concerns, and no test could have said so
+   because the path is unreachable.
+3. **The content tables and the code disagree about what is possible, and nothing checks.** The
+   engine believes a novel bacterium could exist. `DECK_MASTER` says otherwise. Neither
+   statement is written down; both are inferred.
+
+### What Task C should do about it
+
+Task C moves the tables to `packages/content/` behind a Zod loader, which is the first point
+where content and code can be checked against each other rather than assumed compatible. Two
+things worth building into that schema:
+
+- **Require every `DECK_MASTER.dz` to have a `FAMILY` entry, or an explicit documented
+  exemption.** That is #13's real fix — enforcement at the boundary rather than a fallback that
+  guesses `EXB`.
+- **Emit the reachable `(type, flag)` combinations the deck actually contains,** so a guard
+  against an impossible combination is visible at build time instead of being discovered by a
+  coverage run months later.
+
+**Report only. Nothing changed.** Whether any of these guards should become reachable — a novel
+bacterium, a virus with antigenic variation — is a design conversation with Kartik, and a
+genuinely interesting one: each unreachable guard is a piece of immunology the engine already
+models but the deck never asks it to demonstrate.

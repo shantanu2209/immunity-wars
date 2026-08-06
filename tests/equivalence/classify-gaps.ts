@@ -13,11 +13,7 @@
 import { execSync } from 'node:child_process';
 
 type Bucket =
-  | 'defensive-fallback'
-  | 'multiplayer-only'
-  | 'error-guard'
-  | 'bot-conditional'
-  | 'needs-review';
+  'defensive-fallback' | 'multiplayer-only' | 'error-guard' | 'bot-conditional' | 'needs-review';
 
 interface Gap {
   file: string;

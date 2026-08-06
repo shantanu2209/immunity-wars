@@ -67,7 +67,9 @@ for (const c of cases) {
     const bucket = allowed ? insideCounts : outside;
     bucket.set(d.path, (bucket.get(d.path) ?? 0) + 1);
     if (!allowed && examples.length < 5) {
-      examples.push(`  seed ${c.seed} ${c.difficulty}: ${d.path}  legacy=${d.legacy}  port=${d.candidate}`);
+      examples.push(
+        `  seed ${c.seed} ${c.difficulty}: ${d.path}  legacy=${d.legacy}  port=${d.candidate}`,
+      );
     }
   }
 }
@@ -90,5 +92,7 @@ if (outside.size) {
 }
 
 console.log('');
-console.log(outside.size === 0 ? 'CHANGE IS CONFINED' : `NOT CONFINED — ${outside.size} unexpected paths`);
+console.log(
+  outside.size === 0 ? 'CHANGE IS CONFINED' : `NOT CONFINED — ${outside.size} unexpected paths`,
+);
 process.exit(outside.size === 0 ? 0 : 1);
