@@ -34,6 +34,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 21 | `tag`'s novel-antigen guard can never fire | Low | Port as-is; found by coverage |
 | **22** | **PATTERN: guards against states the content makes impossible** | **Design + Task C** | Schema work should watch for it |
 | **23** | **`Diphtheria toxin` is content the engine can never produce — #22 in mirror** | **Task C** | Report only; C4's reachability report must find it unaided |
+| **24** | **VARIANT OF THE PATTERN: a measuring instrument wrong where nobody was looking** | **Method** | **FIXED** at C1; the lesson is the finding |
 
 ---
 
@@ -1014,3 +1015,89 @@ teaches elsewhere.
 **Task C acceptance criterion:** C4's `(type, flag)` reachability report must name
 `Diphtheria toxin` **without being told about it**. It is a known-answer test for the generator.
 If the generator misses it, the generator is wrong and the rest of its output cannot be trusted.
+
+---
+
+## 24. A MEASURING INSTRUMENT that was wrong in a region nobody was looking at
+
+Found at C1, by auditing a classifier after it drifted — not by anything failing.
+
+This is a **distinct variant of [#22](#22-pattern--the-engine-guards-against-states-the-content-design-makes-impossible)**,
+and the difference is what makes it worth its own entry.
+
+| | What is wrong | Why nobody noticed |
+|---|---|---|
+| **#22** | A **guard in the product** that can never fire | The path is unreachable, so no test can exercise it |
+| **#24** | A **rule in the measuring instrument** that is wrong | The inputs it is wrong about never arrive at the output |
+
+#22 is untested code. **#24 is an untested *test*** — and that is harder, because nothing
+prompts you to check an instrument that is reporting plausible numbers.
+
+### What it was
+
+`coverage-gate.ts` sorts uncovered arms into the lists each phase inherits.
+`docs/COVERAGE_DEFERRED.md`'s Phase 3 section **is the multiplayer to-do Phase 3 starts from**.
+The classifier ended with:
+
+```ts
+(a.short === 'actions.ts' && a.line >= 82 && a.line <= 165)
+```
+
+Line numbers. At C1 an import merge shifted `if (g.phase !== 'command')` from 165 to 169 and it
+silently left the multiplayer bucket. That drift is what prompted the audit.
+
+### What the audit found — the actual finding
+
+Old and new rules compared on **all 1,526 arms**, not just the ones that reach the output:
+
+```
+uncovered arms      170
+old -> multiplayer   15
+new -> multiplayer   15      NO disagreement on any UNCOVERED arm
+disagreements        13      EVERY ONE a COVERED arm
+```
+
+**The published list was never wrong. The rule that produced it was wrong about 13 arms the
+entire time**, and would have misfiled every one of them the moment it became uncovered:
+
+- `case 'draw':`
+- `if (a.action === 'undo') return undo(g)`
+- `if (g.phase === 'command' && UNDOABLE.has(a.action)) pushUndo(g)`
+- `if (g.phase !== 'infection' || !g.drawn) return err('Draw first.')`
+
+None is remotely multiplayer. They qualified for one reason: they sat between lines 82 and 165.
+**Coverage was hiding the defect.** Being covered kept them out of the deferred list, so the
+wrong classification never surfaced — the instrument was broken in exactly the region its output
+never reached.
+
+### Why this is the hard case
+
+A wrong answer nobody can see is indistinguishable from a right answer until the conditions
+change. Here the condition is *"one of those 13 arms stops being covered"* — which is an ordinary
+thing to happen, and at that moment Phase 3 would silently inherit a to-do item that is not
+theirs, with the gate still green and still self-policing about everything else.
+
+The three defences this project already uses would each have missed it:
+
+| Defence | Why it misses this |
+|---|---|
+| The equivalence corpus | Measures the engine. This is a defect in the *rig* |
+| The gate's own self-policing | Checks that exclusions are still dead, not that classifications are right |
+| A green test run | The classifier has no test; its output is a generated document |
+
+### Disposition
+
+**FIXED at C1.** The classifier keys on lexical containment in a `g.multiplayer` block, derived
+from the AST on every run, plus a case-insensitive vocabulary test. It cannot drift with line
+numbers because it no longer reads them.
+
+**The transferable lesson, which is why this is recorded rather than just fixed:**
+
+> When an instrument is found to be wrong, do not only fix the case that exposed it — **audit
+> the region its output never reaches.** A rule that is wrong about inputs nobody currently
+> looks at is wrong; it is merely not yet visible. Compare old and new over the FULL input set,
+> not over the outputs that happened to differ.
+
+Related: [#14](#14-the-three-worm-safeguards--all-verified-all-holding), where the worm safeguard
+holds by *placement* rather than by intent — a property true for a reason nobody wrote down. The
+classifier was the same shape: correct output for a reason that had nothing to do with the rule.
