@@ -68,3 +68,6 @@ test-results/
 # To publish them, resolve the content licence first (docs/LICENSES.md), then remove this rule
 # in the same commit that records the decision.
 docs/*.docx
+
+# Coverage output
+coverage/

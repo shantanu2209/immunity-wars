@@ -1,8 +1,18 @@
 # Task B — closeout
 
-**Status:** complete. **Date:** 5 August 2026.
+**Status:** **NOT COMPLETE — the coverage gate fails.** **Date:** 5 August 2026 (revised).
 One document to know where things stand. Everything below links to the register that holds the
 detail; nothing here needs another file to be understood.
+
+> **Revision note.** The first version of this document declared Task B complete and filed the
+> coverage gate under "should happen before Task C, not blocking". That was wrong. §1.5 of
+> [`TASK_B_PLAN.md`](TASK_B_PLAN.md) makes ≥95% line **and** branch coverage from the
+> equivalence corpus the gate, and it had never been measured. It has now been measured and it
+> **fails**. See §4.
+>
+> This is the same failure this project has caught four times inside individual tests — a check
+> that appears to have passed because nobody measured the thing that would have said otherwise.
+> It applies to the task as a whole, not only to its tests.
 
 ---
 
@@ -56,9 +66,9 @@ This section matters more than the one above.
 | **That the game is well designed** | It compares two engines. It says nothing about whether the rules are good | Human play — [`FINDINGS.md`](FINDINGS.md) §0 |
 | **Anything about multiplayer** | The corpus is single-player. `allocateAP`/`returnAP`/`confirmAllocation` appear only in B4's fuzzer and one targeted suite | B4 phase split; `returnap.test.ts`. **Genuine gap** — Phase 3 |
 | **Anything about the UI** | No renderer exists yet. `viewState`'s *shape* is pinned; nothing consumes it | Task G harness; Phase 2 |
-| **Coverage of what the bot cannot reach** | The reference bot plays ~6 of 14 seats and never emits 8 of 27 actions | Fuzzer + 28 synthetic state mutations. **Partly mitigated** |
+| **Coverage of what the bot cannot reach** | The reference bot plays ~6 of 14 seats and never emits 8 of 27 actions | Fuzzer + 28 synthetic mutations, worth **+14 points of line coverage** over the bot games alone (§4.1). Quantified, no longer "partly mitigated" |
 | **That deliberately-diverged paths still match** | `stats.arrivals` and `stats.gotThrough` are excluded from the comparison hash | Nothing. This is a real blind spot, deliberately created — §5 |
-| **The ≥95% coverage gate from the plan** | Never measured. `c8` was not wired up | **Outstanding.** Should be done before Task F closes CI |
+| **The ≥95% coverage gate** | **Measured, and it FAILS** — 86.89% branches at the loosest reading | §4. Blocking |
 | **That legacy itself is correct** | Bug-for-bug means the port reproduces legacy's bugs faithfully | 20 findings recorded; 2 fixed |
 
 **One number to be careful with.** Any win rate from `simulate()` is *"win rate under the
@@ -68,7 +78,96 @@ difficulty signal ([`FINDINGS.md`](FINDINGS.md) §1).
 
 ---
 
-## 4. Deviations from legacy — the complete list
+## 4. Coverage — the gate, and why it fails
+
+`pnpm coverage:corpus` · `pnpm coverage:generators` · `pnpm coverage:all` · `pnpm coverage:gaps`
+
+**The gate** ([`TASK_B_PLAN.md`](TASK_B_PLAN.md) §1.5): ≥95% line **and** branch coverage of
+`packages/engine/` **from the equivalence corpus alone**, with every uncovered branch either
+given a scripted scenario or listed as unreachable with a reason.
+
+### 4.1 Measured, three tiers
+
+Which tests produce the number is the whole point, so it is reported three ways. Type-only
+files (`state.ts`, `types.ts`) emit no runtime code and are excluded; including them would drag
+the figure down for no reason.
+
+| Tier | What runs | Lines | Branches | Gate |
+|---|---|---|---|---|
+| **1. Corpus alone** | the 600 recorded bot games | **72.95%** | **74.71%** | ✗ fails both |
+| **2. The four generators** | bot games + fuzz + scenarios + query corpus | **87.21%** | **84.32%** | ✗ fails both |
+| **3. Whole suite** | all 199 tests | **95.68%** | **86.89%** | ✗ fails branches |
+
+**The gate fails at every tier.** Even reading it as loosely as possible — the whole suite,
+which is *not* what the gate says — branch coverage is 86.89% against a 95% target.
+
+The tier 1 → tier 2 jump is the fuzzer and the scenarios earning their place: +14 points of line
+coverage that the recorded games alone do not touch. That is finding #1 made quantitative — the
+bot plays ~6 of 14 seats, and roughly a seventh of the engine is unreachable through it.
+
+### 4.2 Every uncovered branch, classified
+
+195 uncovered branch arms and 5 uncovered functions at the loosest tier. Classified by explicit
+rule in `tests/equivalence/classify-gaps.ts` rather than by eye, because a hand-sorted list of
+200 items is neither reviewable nor reproducible.
+
+| Bucket | Count | % | Classification |
+|---|---|---|---|
+| **Defensive fallback** | 90 | 45.0% | **Unreachable, with reason** — see 4.3 |
+| **Error guard** | 39 | 19.5% | **Reachable, not covered** → needs scenarios |
+| **Multiplayer-only** | 17 | 8.5% | **Phase 3** — the corpus is single-player by scope |
+| **Bot-conditional** | 9 | 4.5% | Inside `simulate()`'s bot; reachable only through its heuristics |
+| **Needs individual review** | 45 | 22.5% | Mixed; the notable ones are in 4.4 |
+
+### 4.3 The uncomfortable interaction: B7 lowered branch coverage
+
+**45% of the uncovered branch arms are `??` and `||` fallbacks, and most were introduced by
+enabling `noUncheckedIndexedAccess`.**
+
+The flag required handling every lookup that *could* miss. In the majority of cases the
+surrounding guard has already made the miss impossible — so the handler is correct, required,
+and **provably dead**. Every one of those adds an uncoverable branch arm.
+
+Excluding them, branch coverage is **92.48%**. Still short of 95%, but the gap is 2.5 points
+rather than 8.
+
+This is worth stating plainly because it cuts against a natural reading: the flag made the code
+safer and the metric worse, simultaneously. Neither figure is wrong. **A 95% branch target may
+simply be the wrong shape for a codebase that has just been made defensively exhaustive**, and
+that is a decision to take rather than a number to chase.
+
+### 4.4 What the classification found
+
+Three things worth acting on, none of them coverage percentages:
+
+- **Three functions the entire 199-test suite never executes**, and legacy contains exactly one
+  reference to each — the definition. `apOwnerOf`, `abTotal`, `hasAb` are dead in legacy too.
+  Added to [`FINDINGS.md`](FINDINGS.md) #11, confirmed by measurement rather than by reading.
+- **`tag`'s novel-antigen guard can never fire** — `f === 'X'` needs `iv.novel`, but `tag` only
+  accepts bacteria/worm/parasite and the only novel card is a virus. Third instance of the same
+  pattern as #4 and #13: defensive branches for pathogen shapes the content tables cannot
+  produce. Recorded as [`FINDINGS.md`](FINDINGS.md) #21.
+- **39 error guards are reachable but unprovoked.** These are the honest gap — rejection paths
+  the fuzzer's action shapes happen not to hit. They need scenarios, and **no scenarios have
+  been added**: the list comes first, as instructed.
+
+### 4.5 The decision
+
+Three options, and this is Shantanu's call, not mine:
+
+1. **Close the gap.** Add scenarios for the 39 error guards and the reachable half of the
+   needs-review bucket. Would plausibly reach ~95% branches excluding defensive arms; would not
+   reach 95% raw, because the defensive arms cannot be covered at all.
+2. **Restate the gate** to exclude provably-dead defensive arms, and hold 95% against the
+   remainder — currently 92.48%, so still work to do, but a target that can actually be met.
+3. **Accept with reasons**, recording that raw branch coverage is 86.89% and why.
+
+**Option 1 alone cannot reach the gate as literally written.** That is the useful thing the
+measurement produced, and it would not have been visible from a percentage on its own.
+
+---
+
+## 5. Deviations from legacy — the complete list
 
 Four. Everything else is byte-identical. Full detail in [`DEVIATIONS.md`](DEVIATIONS.md).
 
@@ -84,7 +183,7 @@ confined-change evidence showing precisely which paths moved and that nothing el
 
 ---
 
-## 5. The one blind spot we created on purpose
+## 6. The one blind spot we created on purpose
 
 `tests/equivalence/src/rig.ts` holds a `DELIBERATE_DIVERGENCES` list. It currently contains
 `stats.arrivals` and `stats.gotThrough`, excluded from the comparison hash so the corpus stays
@@ -97,7 +196,7 @@ it proves.
 
 ---
 
-## 6. The findings queue
+## 7. The findings queue
 
 20 findings. Each is classified below by **who owns the decision**, which is the thing that
 determines what happens next. Full detail in [`FINDINGS.md`](FINDINGS.md).
@@ -146,7 +245,7 @@ These are about the game, not the code. Nothing has been changed.
 
 ---
 
-## 7. Reachability questions — answered
+## 8. Reachability questions — answered
 
 Three questions neither the corpus nor a metric panel can answer, asked at B5.
 
@@ -158,12 +257,13 @@ Three questions neither the corpus nor a metric panel can answer, asked at B5.
 
 ---
 
-## 8. What should happen before Task C
+## 9. What should happen before Task C
 
-Not blocking, but they are the loose ends.
+Item 1 is blocking. The other two are the loose ends.
 
-1. **Wire up coverage.** The plan's ≥95% line/branch gate was never measured. It is the number
-   that turns "6,000 games" into a claim about completeness rather than volume.
+1. **Decide what to do about coverage** (§4.5). It is measured, it fails, and the three options
+   are close the gap / restate the gate / accept with reasons. Task B cannot be called complete
+   until that decision is taken and recorded.
 2. **Task C inherits two things by design.** The 22 data tables move out behind a Zod loader —
    and that loader is the right place to require every `DECK_MASTER.dz` to have a `FAMILY` entry
    or a documented exemption, which is finding #13's real fix. The i18n extraction takes the
@@ -174,7 +274,7 @@ Not blocking, but they are the loose ends.
 
 ---
 
-## 9. Working practices this task established
+## 10. Working practices this task established
 
 Recorded because they earned their place, not as process for its own sake.
 

@@ -31,6 +31,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 18 | Degranulate costs half the Brain to use | **Design** | Report only |
 | 19 | The lytic-cycle array spread is defensive, not load-bearing | Low | Comment at the site |
 | 20 | `returnAP` does not validate its pid, and writes NaN | **Server-facing** | **FIXED** — [`DEVIATIONS.md`](DEVIATIONS.md) #4 |
+| 21 | `tag`'s novel-antigen guard can never fire | Low | Port as-is; found by coverage |
 
 ---
 
@@ -441,6 +442,13 @@ reintroduce `branch:4`.
 - **`abTotal`, `hasAb`, `capFor`, `g.antibodies`** — Tier-A leftovers from before per-family
   antibody pools. `g.antibodies` never leaves `0`, but `viewState()` still ships it and
   `capFor()` still computes a cap for it.
+- **`apOwnerOf`** (`:844`) — defined and never called, in legacy or the port.
+
+**Confirmed by coverage measurement, not by reading.** `abTotal`, `hasAb` and `apOwnerOf` are
+three of the five functions the whole 199-test suite never executes. Grepping legacy finds
+exactly one reference to each — the definition. They are exported (`abTotal` and `hasAb` are
+not; `apOwnerOf` is not either) and simply unreachable. See §"Coverage" in
+[`TASK_B_CLOSEOUT.md`](TASK_B_CLOSEOUT.md).
 - **Duplicated exports** — `macrophageEatable`, `snipeTargets` and `rateForFam` each appear
   twice in `module.exports` (`:1767`). 70 entries, 67 unique. Harmless in JS; the port
   exports each once.
@@ -838,3 +846,28 @@ code, so it is not limited to the paths the tests happen to reach.
 Shantanu called it as reachable-in-shipped-code and therefore worth fixing now, with confined-
 change evidence. Zod validation at the network boundary (`docs/PHASE1_BRIEF.md` §6, seam 7)
 remains the better long-term home for the check, and this fix does not remove the need for it.
+
+---
+
+## 21. The `tag` action's novel-antigen guard can never fire
+
+Found by the B-gate coverage measurement, in the same family as #4 (antigenic variation) and
+#13 (Pathogen X's missing FAMILY entry): defensive code for a case the deck cannot produce.
+
+`tag` refuses an uncoated pathogen when the player has not yet found the novel clone:
+
+```js
+if(f==="X" && !g.cloneFound) return err("Brand-new antigen — no antibody fits it yet. Run CLONAL SELECTION first.");
+```
+
+But `f === 'X'` requires `iv.novel`, and `tag` only accepts `bacteria`, `worm` or `parasite`
+two lines earlier. **The only card in `DECK_MASTER` carrying `novel` is Pathogen X, which is a
+`virus`** — so a novel invader can never reach this line at all.
+
+The equivalent guard in `neutralise` *is* live, because `neutralise` accepts viruses.
+
+**Disposition: port as-is.** It costs nothing, it is correct if a novel bacterium is ever added,
+and removing it would be a behaviour change. Recorded because it is the third instance of the
+same pattern, and the pattern is worth naming: **the engine carries defensive branches for
+pathogen shapes the content tables do not contain.** Task C's Zod schema is where content and
+code can finally be checked against each other.
