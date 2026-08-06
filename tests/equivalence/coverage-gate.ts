@@ -42,6 +42,20 @@
  *    Consequence for anyone about to press on the margin: headroom is currently ~6 arms, which
  *    means ~6 ± 1. Do not read a one-arm move as a regression, and do not spend the last arm.
  *
+ * THE GENERAL RULE BEHIND BOTH, worth more than either incident:
+ *
+ *   TWO INSTRUMENTS, ONE AUTHORITY EACH. The equivalence corpus is the authority on BEHAVIOUR.
+ *   This gate is the authority on TEST REACH. WHEN THEY DISAGREE ABOUT WHETHER SOMETHING
+ *   CHANGED, THE CORPUS WINS.
+ *
+ * That is what settled the C1 wobble. The corpus was byte-identical across the change, so
+ * control flow provably did not move — while the arm count did. Only one of those can be
+ * measuring what it claims to, and it is not the one derived from block-coverage ranges.
+ *
+ * Use it in that direction only. A clean gate says nothing about behaviour, and a clean corpus
+ * says nothing about whether the tests reach anything: 6,000 identical games would still be
+ * 6,000 identical games if half the engine were never entered.
+ *
  * Two categories are NOT excluded, deliberately:
  *   - MULTIPLAYER arms stay in the denominator. They are reachable; Phase 3 must cover them.
  *   - BOT-CONDITIONAL arms stay in the denominator. They become reachable when Phase 2 builds
@@ -53,6 +67,8 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { relative } from 'node:path';
+
+import ts from 'typescript';
 
 const TARGET = 95;
 const MAX_EXCLUSIONS = 120;
@@ -350,10 +366,71 @@ for (const e of excluded.filter((x) => x.rule === 'B')) {
 writeFileSync('docs/COVERAGE_EXCLUSIONS.md', lines.join('\n') + '\n');
 
 /* --- the DEFERRED lists: reachable, uncovered, and deliberately NOT excluded --- */
+
+/**
+ * WHICH UNCOVERED ARMS ARE MULTIPLAYER — keyed on meaning, not on position.
+ *
+ * This used to end with `a.short === 'actions.ts' && a.line >= 82 && a.line <= 165`, and at C1
+ * it drifted: merging four import statements pushed `if (g.phase !== 'command')` from line 165
+ * to 169, and it silently left the multiplayer bucket. Nothing broke that time, but
+ * COVERAGE_DEFERRED.md is the list PHASE 3 INHERITS AS ITS MULTIPLAYER TO-DO. Arms leaking out
+ * of it means Phase 3 starts from a list that is short by an unknown amount, and nothing says so.
+ *
+ * Same shape as the worm safeguard in docs/FINDINGS.md #14, which holds by PLACEMENT rather than
+ * by intent: a property that is true for a reason nobody wrote down. The fix is to say the thing
+ * out loud.
+ *
+ * An arm is multiplayer if either is true, and both mean what they say:
+ *
+ *   1. It sits lexically inside a block guarded by `g.multiplayer`. Computed from the AST on
+ *      every run, so it re-derives when code moves and cannot go stale. Brace-counting was
+ *      rejected — the allocation pushLog contains `${pool === 1 ? '' : 's'}`, whose braces live
+ *      inside a template literal and would desynchronise a naive scan.
+ *   2. Its own source text names a multiplayer concept. Case-INSENSITIVE, which the old regex
+ *      was not: the `<b>Allocation phase.</b> Captain has ...` log line spells it `Captain` and
+ *      was matched only by the positional clause it is now free of.
+ *
+ * `ap.ts` is multiplayer wholesale — it is the per-player AP budget and nothing else.
+ */
+const MP_VOCAB = /multiplayer|captain|apBudget|apPool|allocat/i;
+
+/** Line ranges of every `if (g.multiplayer) { … }` block, by file, from the AST. */
+function multiplayerRegions(file: string): { from: number; to: number }[] {
+  const text = readFileSync(file, 'utf8');
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.ES2022, true);
+  const out: { from: number; to: number }[] = [];
+  const lineOf = (pos: number): number => sf.getLineAndCharacterOfPosition(pos).line + 1;
+
+  const guardsOnMultiplayer = (e: ts.Expression): boolean =>
+    /^g\.multiplayer$/.test(e.getText(sf).trim());
+
+  const visit = (n: ts.Node): void => {
+    if (ts.isIfStatement(n) && guardsOnMultiplayer(n.expression)) {
+      out.push({
+        from: lineOf(n.thenStatement.getStart(sf)),
+        to: lineOf(n.thenStatement.getEnd()),
+      });
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
+}
+
+const regionCache = new Map<string, { from: number; to: number }[]>();
+const regionsFor = (file: string): { from: number; to: number }[] => {
+  let r = regionCache.get(file);
+  if (!r) {
+    r = multiplayerRegions(file);
+    regionCache.set(file, r);
+  }
+  return r;
+};
+
 const isMultiplayer = (a: Arm): boolean =>
   a.short === 'ap.ts' ||
-  /captain|apBudget|multiplayer|apPool/.test(a.text) ||
-  (a.short === 'actions.ts' && a.line >= 82 && a.line <= 165);
+  MP_VOCAB.test(a.text) ||
+  regionsFor(a.file).some((r) => a.line >= r.from && a.line <= r.to);
 
 const deferredMp = stillUncovered.filter(isMultiplayer);
 const deferredBot = stillUncovered.filter((a) => a.short === 'simulate.ts' && !isMultiplayer(a));
