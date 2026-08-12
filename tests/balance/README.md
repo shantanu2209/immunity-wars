@@ -27,9 +27,15 @@ stated here because it generalises past any one of them:
 | **This suite, E0a** | The fidelity check **cannot** see the one difference the two bots really have. Asserted as `0`, with the reason ([sensitivity table](#e0a--bot-fidelity)) |
 | **This suite, the panel** | The metric panel **cannot** see brain `branch:3 → 4` ([`FINDINGS.md`](../../docs/FINDINGS.md) #17). To be pinned the same way at E2 |
 
-And the standing rule it sits on, unchanged from the property suite:
+And the two standing rules it sits on, from the property suite:
 
 > ### A check that has never failed is not known to work.
+>
+> ### A control that fires is not enough — measure how STRONGLY it fires, against WHAT.
+
+The second was added at E0a and lives with the four-kinds table in
+[`../property/README.md`](../property/README.md), which is where the negative-control rule is
+kept. The case that earned it is [below](#how-hard-is-that-check-to-fool--measured-at-50-seeds--3).
 
 ---
 
@@ -139,7 +145,28 @@ npx tsx tests/balance/fidelity.ts 50        # a subset
 | | |
 |---|---|
 | **E0a** bot fidelity | **done** — `reference-bot v1`, with its sensitivity floor and blind spot measured |
-| E0b engine-as-parameter | done — `src/play.ts` takes the engine, never imports it for measurement |
-| E0c vacuity guards | partial — asserted in E0a; the panel and size runners inherit it |
-| E1 state size | not started |
+| E0b engine-as-parameter | done — `src/play.ts` and `SizeSampler` take the engine; a control proves it |
+| E0c vacuity guards | done for E0a and E1; E2 inherits |
+| **E1** state size | **done** — [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §1–8 |
 | E2 metric panel | not started |
+
+### E1 — state size
+
+Results are in the closeout. What lives here is the method:
+
+- `src/size.ts` — the sampler. Three counts per payload (`chars` for the brief, `utf8` and `gzip`
+  for the wire), per-field decomposition, and the **churn** measure that the full-state-vs-deltas
+  decision actually turns on.
+- `src/size-collect.ts` — **two passes**. The reference bot gives the *distribution*; the property
+  suite's runner gives the *envelope*, because it is the only generator that reaches the 8 actions
+  the bot never emits. It is reused through the invariant interface rather than reimplemented, so
+  there is still one generator in this repository.
+- `src/size-envelope.ts` — the constructed bounds. **Carries `FINDINGS.md` #16 at the point of
+  use:** `forceInject*` bypasses the worm accounting, so only the SIZE of those states may be read.
+- `src/size.test.ts` — the controls, including the `FINDINGS.md` #28 one: mutate the engine's
+  `viewState` to drop a field and require the sampler to notice both the missing field and the
+  size drop. A sampler reading a module-level import would pass silently without it.
+
+The census found two fields no generator ever fills, and the interesting one is
+[`FINDINGS.md`](../../docs/FINDINGS.md) #29 — a Helper T-Cell mechanic the engine models and
+nothing ever triggers.

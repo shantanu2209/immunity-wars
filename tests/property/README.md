@@ -146,6 +146,28 @@ fire, and the reason turned out to be structural rather than a mistake in the sa
 The corollary is the uncomfortable one: a control aimed at the wrong kind of check **passes** as
 soon as you make it fire somehow, and then certifies an invariant nobody has actually falsified.
 
+### And the second half of that rule, added at Task E
+
+> ### A control that fires is not enough — measure how STRONGLY it fires, against WHAT.
+>
+> A mutation caught in 1 game of 150 is a lucky pass wearing a working control's clothes.
+> **Report the sensitivity floor alongside any claim the control supports.**
+
+Found at Task E0a, and the case that earned it is worth the two lines. The bot-fidelity check's
+first control was green — and green on a mutation that diverged on **1 game in 150**. Nothing
+about the pass said so. Changing the question from *can it fire* to *how strongly, against what*
+produced a measured table instead of a binary, and the table said something the binary could not:
+the comparator is strong against changes to *what the bot does* and weak against changes to *how
+much AP it spends*. **That is what forced the published claim down to the smaller true one** —
+agreement on outcomes across 3,000 games, not identity of the two procedures.
+
+The table, and the blind spot it exposed, are in
+[`../balance/README.md`](../balance/README.md), "How hard is that check to fool?".
+
+Note how this composes with the four kinds above. The four-kinds rule stops you writing a control
+that **cannot** fire. This one stops you trusting a control that **barely** does. Both failures
+look identical from the outside: a green test and a claim nobody has falsified.
+
 ---
 
 ## Five things learned building the negative controls

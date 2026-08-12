@@ -39,6 +39,10 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **26** | **`rulesVersion` is documented on every state and message, and is on neither** | **Phase 3** | Recorded, not fixed — the protocol becomes real in Phase 3 |
 | **27** | **Antibodies EXCEED the per-family cap in legal play — the brief's invariant is false** | **Task D** | Invariant rewritten before it was written; measurement below |
 | **28** | **C5b AGAIN: checks that ran the port's machinery whatever engine produced the state** | **Method** | **FIXED** at Task D; found by a control that would not fire |
+| **29** | **`g.free` — "free actions granted by the Helper T-Cell" — is never granted by anything** | **Design** | Report only; Kartik's call |
+| **30** | **#24 AGAIN: the coverage gate files a NON-multiplayer arm into Phase 3, via a whole-FILE blanket rule** | **Method** | Report only — the gate is an instrument; #24 is what happens when one is changed carelessly |
+| **31** | **`endCommand` returns a BURST of full states — the brief's size measurement is one frame of it** | **Task E / Phase 3** | `PHASE1_BRIEF.md` §5 corrected; both numbers reported |
+| **32** | **A control that fires is not enough — measure how STRONGLY, against WHAT** | **Method** | Rule added to `tests/property/README.md` beside the four-kinds table |
 
 ---
 
@@ -1344,3 +1348,188 @@ everywhere". `pushUndo` is the engine's *behaviour* and must come from the engin
 **Disposition: FIXED at Task D.** The transferable part is that the C5b question — *what did an
 import quietly substitute for the thing I meant to test?* — is now worth asking of every checker in
 this repository, not only of generators with top-level side effects.
+
+---
+
+## 29. `g.free` — the Helper T-Cell's free actions — is never granted by anything
+
+Found at Task E1, by the field-population census: a sweep of every `viewState` key asking which
+generator ever puts a value in it. `free` was one of two that neither did.
+
+The engine names the mechanic in its own comment (`v2_engine.js:612`):
+
+```js
+free:{},               // free actions granted by the Helper T-Cell this turn
+```
+
+**Nothing ever grants one.** There are exactly three writes to `g.free` in the engine, and none of
+them is a grant:
+
+| Where | What it does |
+|---|---|
+| `v2_engine.js:612` / `construct.ts:392` | initialises it to `{}` |
+| `v2_engine.js:1591` / `spread.ts:812` | resets it to `{}` at the turn boundary |
+| `v2_engine.js:857` / `ap.ts:41` | **decrements** `g.free[ck]` — inside the branch that requires it to already be `> 0` |
+
+There is no `g.free[x] = n` anywhere. So `hasFree()` is permanently false, `spend()`'s free branch
+is permanently dead, and `canAct()`'s second clause never changes an answer.
+
+**Measured, not only read.** `free` was empty in **all 57,723 states** sampled at E1 — the
+reference bot across 600 games, plus the property suite's generator, which reaches the 8 actions
+the bot never emits. The reading and the measurement agree.
+
+### Why this deserves Kartik's attention rather than a shrug
+
+It is the same shape as [#4](#4-the-antigenic-variation-mechanic-can-never-fire), which this file
+calls its highest-value finding: **a piece of designed immunology the code models and the game
+never demonstrates.** Contact-dependent help is the real thing — a Helper T-Cell licensing another
+cell to act is most of what CD4⁺ cells do, and it is why losing them to HIV is catastrophic. The
+engine has a slot for it, wired through `spend`, `hasFree`, `canAct`, the undo snapshot and
+`viewState`. The slot is empty.
+
+The Helper is not inert: `helperLicensed()` is live and gates antibody production. What is dead is
+specifically the *free action* pool the comment describes.
+
+**Disposition: report only, nothing changed.** Whether the Helper should grant a free action, and
+to which cell, is a design conversation with Kartik. Related:
+[#8](#8-seven-flags-entries-are-never-read) and [#11](#11-assorted-dead-code) — `g.antibodies`,
+the other field the census found empty, is already recorded there.
+
+---
+
+## 30. #24 again — the coverage gate files a NON-multiplayer arm into Phase 3, by a whole-FILE rule
+
+Found while checking whether [#29](#29-gfree--the-helper-t-cells-free-actions--is-never-granted-by-anything)
+was already known. It is, sort of, and that is the problem.
+
+`ap.ts:40` — the dead free-action branch — **is** on the gate's uncovered list. It is filed under
+`docs/COVERAGE_DEFERRED.md`'s **Phase 3 — multiplayer** section, whose header reads:
+
+> The equivalence corpus is single-player by scope, so the allocation phase and the per-player AP
+> plumbing are barely exercised. **Phase 3 builds the new relay and must cover these.**
+
+**Phase 3 cannot cover it.** The arm is uncovered because nothing grants a free action at any
+player count, and no relay changes that. Phase 3 inherits a task it has no way to discharge, and
+the one arm in that file recording a dead *game mechanic* is disguised as routine plumbing.
+
+### The cause, and why this is #24 rather than merely similar
+
+`coverage-gate.ts`:
+
+```ts
+const isMultiplayer = (a: Arm): boolean =>
+  a.short === 'ap.ts' ||                 // <- this
+  MP_VOCAB.test(a.text) ||
+  regionsFor(a.file).some((r) => a.line >= r.from && a.line <= r.to);
+```
+
+justified by the comment directly above it:
+
+> `ap.ts` is multiplayer wholesale — it is the per-player AP budget and nothing else.
+
+**That sentence is false.** `ap.ts` also holds `spend()` and `hasFree()`, which are the Helper
+T-Cell's free-action pool and have nothing to do with multiplayer.
+
+Verified that the blanket clause is the *only* thing filing this arm: its source text contains no
+`MP_VOCAB` term, and the AST scan matches `if (g.multiplayer)` blocks — the guard here is
+`if (!g.multiplayer)`, which it correctly does not match. Delete the file clause and the arm moves
+to the honest-remaining-gap bucket, where it belongs.
+
+| | [#24](#24-a-measuring-instrument-that-was-wrong-in-a-region-nobody-was-looking-at) | This |
+|---|---|---|
+| The wrong rule | `a.short === 'actions.ts' && a.line >= 82 && a.line <= 165` | `a.short === 'ap.ts'` |
+| Classifies by | position within a file | **which file it is in** |
+| Status | Fixed at C1 | **not fixed** |
+
+**C1's audit could not have caught it.** That audit compared the old and new rules across all
+1,526 arms — but *both* rules contained the `a.short === 'ap.ts'` clause, so it sat in the shared
+part of the comparison. #24's transferable lesson was to audit the region an instrument's output
+never reaches; the blind spot this time is the region where two versions of the rule **agree**. A
+diff cannot see a defect both sides share — the same thing the equivalence corpus is blind to, one
+level up.
+
+### Disposition
+
+**Report only, and deliberately.** #24 closes with "the gate is a measuring instrument, and #24 is
+what happens when one is changed without care", and #25 left rule A's churn check as a decision for
+Shantanu rather than a unilateral change. The same applies: it is a one-line deletion whose effect
+is to move an arm between two generated lists, and it should be made with those lists regenerated
+and read — not folded into Task E because Task E happened to notice.
+
+**What must not happen is Phase 3 starting from a list that says a dead mechanic is their job.**
+
+---
+
+## 31. `endCommand` returns a BURST of full states, not one
+
+Found at Task E planning, reading `resolveSpread` to establish what a relay would actually send.
+
+`PHASE1_BRIEF.md` §5 asked for `JSON.stringify(viewState(g)).length` on one mid-game state, to
+decide whether a Phase 3 relay can broadcast full state or must send deltas. **That measures one
+frame of a burst.**
+
+`resolveSpread` has **20 `snap()` sites**, each pushing a frame that carries a complete
+`viewState(g)`, and `applyAction` returns the array (`actions.ts:170`):
+
+```ts
+return { ok: true, frames: resolveSpread(g) };
+```
+
+The frames are not redundant — they are the spread animated step by step, which is how a UI shows
+the player what happened during the infection phase. So the realistic per-turn broadcast is
+`frames.length × stateSize`.
+
+**Measured at E1**, reference bot v1, 200 seeds × 3 difficulties, 7,071 bursts:
+
+| | frames/burst (mean · p90 · max) | burst gzip (p50 · p99 · max) |
+|---|---|---|
+| Training | 3.9 · 5 · 8 | 2.2 · 3.5 · 4.0 KiB |
+| Normal | 5.1 · 7 · 9 | 2.7 · 4.4 · 5.2 KiB |
+| Hard | 5.7 · 8 · 10 | 3.0 · **20.1** · **25.6** KiB |
+
+**The tail lives in the burst, not in the state.** A single Hard state is 2.0 KiB gzipped at the
+median and 3.4 KiB at its largest; a Hard *burst* reaches 25.6 KiB. Sizing a protocol from the
+single-state figure understates the worst case by roughly 8×.
+
+**Disposition:** nothing changed — this is a measurement, and the frames are behaviour the port
+preserves exactly. `PHASE1_BRIEF.md` §5 is corrected to specify both numbers. Whether Phase 3
+forwards every frame, or sends one state plus a replayable dice log, is a protocol decision this
+now informs rather than guesses.
+
+---
+
+## 32. A control that fires is not enough — measure how strongly, against what
+
+Found at Task E0a, and recorded because it strengthens the rule this project relies on most.
+
+The standing rule was *"a check that has never failed is not known to work."* E0a's first negative
+control satisfied it: the bot-fidelity comparison was made to fail against a deliberately mutated
+bot, and it failed. **It failed on 1 game in 150.** Nothing in the green pass said so.
+
+Changing the question from *can it fire* to *how strongly, against what* produced a table instead
+of a boolean, at 50 seeds × 3 difficulties:
+
+```
+  0/150  (  0.0%)  unmutated legacy                         <- baseline
+144/150  ( 96.0%)  threats sorted FURTHEST-first
+ 50/150  ( 33.3%)  memoryKill step removed
+ 44/150  ( 29.3%)  NK step removed
+  1/150  (  0.7%)  vaccinate 2 AP instead of 1              <- the sensitivity FLOOR
+  0/150  (  0.0%)  NET check: invadersWith -> netTargets    <- DEMONSTRATED BLIND SPOT
+```
+
+The table says what no pass/fail could: the comparator is strong against changes to *what the bot
+does* and weak against changes to *how much AP it spends*, because it compares outcomes rather than
+behaviour. **That is what forced E0a's published claim down to the smaller true one** — agreement
+on outcomes across 3,000 games, not identity of the two procedures.
+
+> **A mutation caught in 1 game of 150 is a lucky pass wearing a working control's clothes.
+> Report the sensitivity floor alongside any claim the control supports.**
+
+It composes with Task D's rule rather than replacing it. The four-kinds rule stops you writing a
+control that **cannot** fire; this one stops you trusting a control that **barely** does. From the
+outside both failures look identical: a green test and a claim nobody has falsified.
+
+**Disposition:** rule added to `tests/property/README.md` beside the four-kinds table, where the
+negative-control rule lives, and cross-referenced from `tests/balance/README.md`, which holds the
+table and the blind-spot row.

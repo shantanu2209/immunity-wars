@@ -15,7 +15,8 @@
   "dependencies": {
     "@immunity-wars/content": "workspace:*",
     "@immunity-wars/engine": "workspace:*",
-    "@immunity-wars/equivalence": "workspace:*"
+    "@immunity-wars/equivalence": "workspace:*",
+    "@immunity-wars/property": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^2.1.8"

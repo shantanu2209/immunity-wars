@@ -5,6 +5,11 @@
   "description": "Task D property/invariant suite: generative legal play, checked against invariants the engine does not enforce",
   "license": "Apache-2.0",
   "type": "module",
+  "comment:exports": "Task E's state-size instrument needs the ENVELOPE of the projection — which fields ever carry a value — and this runner is the only generator that reaches the 8 actions the reference bot never emits (net, resengulf, resmove, hop, recall, antivenom, orderAntivenom, undo). Exporting it beats reimplementing injectExtra inside tests/balance, which is how two generators drift apart and stop agreeing about what a legal game is. Same reasoning as the equivalence package's exports map, which this follows.",
+  "exports": {
+    "./runner": "./src/runner.ts",
+    "./invariants": "./src/invariants.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",

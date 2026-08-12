@@ -76,6 +76,9 @@ importers:
       '@immunity-wars/equivalence':
         specifier: workspace:*
         version: link:../equivalence
+      '@immunity-wars/property':
+        specifier: workspace:*
+        version: link:../property
     devDependencies:
       vitest:
         specifier: ^2.1.8
