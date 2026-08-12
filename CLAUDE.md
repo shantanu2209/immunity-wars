@@ -88,8 +88,29 @@ contract Task B was measured against.
 
 ## How to work here
 
+- **A check that has never failed is not known to work.** Not "probably works" — *not known*.
+  Every new check gets a negative control that makes it fire on purpose, before it is trusted.
+  This has been true ~10 times here and **zero times has the check turned out to be fine**. The
+  worst case was Task C5b: nineteen green tests proving nothing, because the test imported its
+  own generator, which regenerated the catalogue at import time — so every mutation was erased
+  before it was checked. **A test that regenerates its own oracle cannot fail.** Full list of
+  instances and the four instrument blind spots: `tests/equivalence/README.md`, "Read this first".
+
+- **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
+  does this make later work faster or safer, or is it completeness for its own sake? Build the
+  first kind freely — the negative-control rule qualifies, because it catches a *class* of error
+  and so compounds. **Flag the second in `docs/FINDINGS.md` and keep going; do not build it.**
+  Say what a proposed addition makes cheaper or safer later and it will usually be approved.
+  What this exists to prevent is good ideas accumulating one at a time without anyone asking
+  what they are for. *Agreed 12 Aug 2026, after a session where several unasked-for additions
+  were good and still cost more than they returned.*
+
 - **Simulate before building.** Validate a design in a standalone model before touching
-  production code. Never commit on an unvalidated design assumption.
+  production code. Never commit on an unvalidated design assumption. Task C2 is the case that
+  earned this: measuring Zod's behaviour first showed that `z.object` **rebuilds objects in
+  schema key order** and `z.record` with a key enum rebuilds in enum order — so the more
+  strongly typed spelling was the unsafe one, and the natural schema would have silently
+  desynchronised `TROPISM`, which feeds `rollOrgan`.
 - **Behaviour preservation is testable — so test it.** When porting, run old and new engines
   on identical action sequences and diff the states. Demonstrate equivalence; don't assert it.
 - **One strong idea at a time.** Discuss significant changes before rewriting. Explain the
