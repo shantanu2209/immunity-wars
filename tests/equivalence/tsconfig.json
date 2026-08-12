@@ -8,5 +8,11 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"]
+  // The root-level scripts are listed alongside src/. They were outside `pnpm typecheck`
+  // entirely — nine files, including the coverage gate, the confined-change checker and the
+  // three report generators. Those are MEASURING INSTRUMENTS, and an instrument nobody
+  // typechecks is the same class of problem as a generator that regenerates its own oracle
+  // (docs/FINDINGS.md #24 and the C5b entry in README.md): the failure is silent and it is in
+  // the thing you were trusting to tell you about everything else.
+  "include": ["src/**/*.ts", "*.ts"]
 }

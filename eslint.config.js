@@ -62,6 +62,27 @@ export default tseslint.config(
   },
 
   {
+    files: ['**/*.ts'],
+    rules: {
+      // ENABLED SO AN EXISTING DISABLE COMMENT BECOMES LOAD-BEARING.
+      //
+      // `no-eval` is not part of eslint:recommended, so it was never on — which made the
+      // `eslint-disable-next-line no-eval` in tests/equivalence/src/legacy-ui.ts a dead
+      // directive suppressing a rule that was not running. It reported as an unused-directive
+      // warning and read, to anyone skimming, as though eval were being guarded. It was not.
+      //
+      // Deleting the directive would have been the smaller change and the worse one: the repo
+      // would then have an unguarded `eval` and nothing to stop a second one. Turning the rule
+      // on instead makes the single documented use explicit and every future one an error.
+      //
+      // That one use is `legacyUiTable()`, which evaluates a table initialiser lifted out of
+      // tools/legacy/v2_ui.html — a read-only file in this repository, the same trust boundary
+      // engine.ts already sits on, and the thing that makes the legacy UI usable as an oracle.
+      'no-eval': 'error',
+    },
+  },
+
+  {
     // Build scripts run on Node and are allowed to say so.
     files: ['scripts/**/*.mjs'],
     languageOptions: {

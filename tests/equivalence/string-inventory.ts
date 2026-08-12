@@ -244,7 +244,12 @@ function uiProse(): { prose: Prose[]; ambiguous: Prose[]; dropped: Map<string, n
   const prose: Prose[] = [];
   const ambiguous: Prose[] = [];
   const dropped = new Map<string, number>();
-  const drop = (why: string): void => dropped.set(why, (dropped.get(why) ?? 0) + 1);
+  // Block body, not a concise one. `(): void => map.set(...)` returns the Map and TS2322s on the
+  // annotation — harmless at runtime, which is exactly why it survived until this file was
+  // brought inside `pnpm typecheck`.
+  const drop = (why: string): void => {
+    dropped.set(why, (dropped.get(why) ?? 0) + 1);
+  };
   const seen = new Set<string>();
 
   /**
