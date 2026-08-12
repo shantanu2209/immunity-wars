@@ -170,6 +170,49 @@ look identical from the outside: a green test and a claim nobody has falsified.
 
 ---
 
+## The third rule: a diff cannot see a defect both sides share
+
+Added at Task E1, from [`FINDINGS.md`](../../docs/FINDINGS.md) #30. It is the most general thing
+this project has found, and it is the reason this suite exists at all — stated once, properly.
+
+> ### An audit that compares two versions is blind to anything both versions get wrong.
+>
+> **Comparison finds divergence, never shared error.**
+>
+> Whenever a check is a diff — old rule vs new rule, port vs legacy, before vs after — ask what a
+> shared defect would look like, **because nothing in the comparison will tell you.**
+
+The same blindness has now appeared at three levels of this repository, which is what makes it a
+law rather than an anecdote:
+
+| Level | The diff | What it cannot see |
+|---|---|---|
+| **The product** | Equivalence corpus: port vs legacy, 6,000 games | A bug **both engines share.** A bug-for-bug port is green on it — which is precisely why this suite was built |
+| **The instrument** | C1's classifier audit: old rule vs new rule, over all 1,526 arms | A clause **both rules contain.** `a.short === 'ap.ts'` sat in the shared half, so the audit ran and could not report it |
+| **The control** | A negative control: engine vs mutated engine | A defect the mutation **does not touch.** The four-kinds rule and the sensitivity floor are the two ways this shows up |
+
+The middle row is the sharp one: **it is the product's blind spot reappearing inside the tool that
+audits the tool.** C1 fixed a misclassifying rule and audited the fix the obvious way — compare old
+and new across the full input set, which is more rigour than most fixes get. It still could not
+see the clause both versions carried, because that clause produced no disagreement to find.
+
+### What to do instead, when a check is a diff
+
+Nothing here says stop diffing. Diffs are the cheapest strong evidence available and this project
+runs three of them. The rule is what has to sit **beside** one:
+
+- **State what a shared defect would look like**, in the check's own file, before trusting it.
+  Every instrument here now carries a "structurally cannot see" line for this reason.
+- **Reach the same answer a second way, from a different direction.** The property suite exists
+  because it asks whether a rule is *true*, where the corpus only asks whether two engines
+  *agree*. #30 was found the same way — by a census that asked which fields carry values, not by
+  any comparison.
+- **Check the shared part explicitly.** In C1's case that would have meant reading the surviving
+  clauses and their justifying comments, not only the diff. The comment above `a.short === 'ap.ts'`
+  asserted `ap.ts` "is the per-player AP budget and nothing else", and it was false in writing.
+
+---
+
 ## Five things learned building the negative controls
 
 Each was found by a control that **would not fire**, which is the controls working.

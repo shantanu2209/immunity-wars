@@ -76,10 +76,36 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 - Private rooms by invite code. **No strangers, no public matchmaking** — that decision holds
 - Reconnection, and AI takeover when someone drops mid-game
 - Protocol versioning so an old client can never desynchronise a new server
-- The measured decision from Task E: full-state broadcast or deltas
 - **Multiplayer test coverage** — Task B's corpus was single-player and this is a known gap
 
 **What you get:** a game you can play with a cousin in another city.
+
+### The Task E measurement inverts the question this phase was going to ask
+
+Phase 1 expected to hand Phase 3 a full-state-versus-deltas decision. Measured, that is not the
+decision. Details and conditions: [`docs/TASK_E_CLOSEOUT.md`](docs/TASK_E_CLOSEOUT.md).
+
+| What we assumed | What the measurement says |
+|---|---|
+| The state might be too big to broadcast whole | **Compressed, it is small.** Every measured state gzips under 3.5 KiB; even a constructed 200-invader state is 1.8 KiB. A JSON array of near-identical invader records is close to ideal input for a dictionary coder |
+| Deltas are the lever if it is too big | **Deltas buy about 2×** on something already small — 45–49% of the bytes. An optimisation, not a necessity |
+| The size to design around is one state | **The tail is in the BURST, not the state.** `endCommand` returns up to 10 frames, each a full projection. Largest single state 3.4 KiB gzipped; largest burst **25.6 KiB** |
+
+**So the Phase 3 lever is FEWER FRAMES, not smaller ones.** The question worth engineering is
+whether every spread frame has to cross the wire, or whether one state plus a replayable dice log
+lets the client reconstruct the animation locally. That is a much cheaper change than a delta
+protocol and it targets the actual tail.
+
+**And compression is the load-bearing assumption, not deltas.** A transport without
+permessage-deflate changes this conclusion — not the numbers, the conclusion. Check it before
+choosing a host.
+
+> ⚠️ **Every figure above is a FLOOR.** They were measured under the reference bot, which dies at
+> turn 8.6 of a legal 45-turn Hard game and so never reaches the late game, where the state is
+> largest. They are also single-player, so the projection's six multiplayer fields are empty
+> throughout — in a measurement whose whole purpose is sizing a multiplayer broadcast. A late-game
+> multiplayer state is bigger by an amount nothing here measured. Read them as "at least this
+> big", never "about this big".
 
 ---
 

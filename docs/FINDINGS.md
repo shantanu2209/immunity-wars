@@ -39,8 +39,8 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **26** | **`rulesVersion` is documented on every state and message, and is on neither** | **Phase 3** | Recorded, not fixed — the protocol becomes real in Phase 3 |
 | **27** | **Antibodies EXCEED the per-family cap in legal play — the brief's invariant is false** | **Task D** | Invariant rewritten before it was written; measurement below |
 | **28** | **C5b AGAIN: checks that ran the port's machinery whatever engine produced the state** | **Method** | **FIXED** at Task D; found by a control that would not fire |
-| **29** | **`g.free` — "free actions granted by the Helper T-Cell" — is never granted by anything** | **Design** | Report only; Kartik's call |
-| **30** | **#24 AGAIN: the coverage gate files a NON-multiplayer arm into Phase 3, via a whole-FILE blanket rule** | **Method** | Report only — the gate is an instrument; #24 is what happens when one is changed carelessly |
+| **29** | **`g.free` — the Helper T-Cell free-action pool is never granted — THIRD instance of the #4 pattern** | **Design** | Report only; design question for Kartik |
+| **30** | **#24 AGAIN: the coverage gate filed a NON-multiplayer arm into Phase 3, via a whole-FILE blanket rule** | **Method** | **FIXED** at Task E1 on Shantanu's call; churn reported |
 | **31** | **`endCommand` returns a BURST of full states — the brief's size measurement is one frame of it** | **Task E / Phase 3** | `PHASE1_BRIEF.md` §5 corrected; both numbers reported |
 | **32** | **A control that fires is not enough — measure how STRONGLY, against WHAT** | **Method** | Rule added to `tests/property/README.md` beside the four-kinds table |
 
@@ -1378,22 +1378,47 @@ is permanently dead, and `canAct()`'s second clause never changes an answer.
 reference bot across 600 games, plus the property suite's generator, which reaches the 8 actions
 the bot never emits. The reading and the measurement agree.
 
-### Why this deserves Kartik's attention rather than a shrug
+### This is the THIRD instance of the #4 pattern, and that is how it should be classified
 
-It is the same shape as [#4](#4-the-antigenic-variation-mechanic-can-never-fire), which this file
-calls its highest-value finding: **a piece of designed immunology the code models and the game
-never demonstrates.** Contact-dependent help is the real thing — a Helper T-Cell licensing another
-cell to act is most of what CD4⁺ cells do, and it is why losing them to HIV is catastrophic. The
-engine has a slot for it, wired through `spend`, `hasFree`, `canAct`, the undo snapshot and
-`viewState`. The slot is empty.
+Not "dead code". The pattern named at [#4](#4-the-antigenic-variation-mechanic-can-never-fire) is
+**designed immunology that the code models and the game never demonstrates** — and #4 is the
+finding this file calls its highest-value one.
 
-The Helper is not inert: `helperLicensed()` is live and gates antibody production. What is dead is
-specifically the *free action* pool the comment describes.
+| # | The mechanic | Why it never reaches the table |
+|---|---|---|
+| **4** | Antigenic variation — why sleeping sickness has no vaccine | The only `variant:true` card is a parasite, and `neutralise` rejects parasites two lines earlier |
+| **23** | `Diphtheria toxin` as a separate secreted protein | Full `FAMILY` and `TROPISM` entries; nothing mints it |
+| **29** | **Contact-dependent help — the Helper T-Cell granting a free action** | The pool is initialised, reset and decremented. Nothing ever grants |
 
-**Disposition: report only, nothing changed.** Whether the Helper should grant a free action, and
-to which cell, is a design conversation with Kartik. Related:
-[#8](#8-seven-flags-entries-are-never-read) and [#11](#11-assorted-dead-code) — `g.antibodies`,
-the other field the census found empty, is already recorded there.
+Distinct from [#22](#22-pattern--the-engine-guards-against-states-the-content-design-makes-impossible),
+whose six guards defend against states the content cannot produce. Those are *defensive breadth*
+and are arguably correct as written. These three are *teaching content that does not run*.
+
+### Note for Kartik
+
+**The biology is right and the plumbing is incomplete** — which is the good version of this
+problem, because the design work is already done.
+
+Contact-dependent help is most of what CD4⁺ T-cells actually do. They are called helpers because
+they license other cells rather than kill anything themselves:
+
+- **Licensing a macrophage** to destroy what it has already eaten. A macrophage can engulf
+  *Mycobacterium tuberculosis* and still fail to kill it; it takes a helper's signal (IFN-γ) to
+  finish the job. That is why TB reactivates when CD4⁺ counts fall.
+- **Giving a B-cell permission to class-switch** — to stop making the first, rough antibody and
+  start making the right one for the job.
+
+Both are "you may now act", which is exactly what a **free action** is in game terms. The engine
+already has the slot, wired through `spend`, `hasFree`, `canAct`, the undo snapshot and
+`viewState`. Nothing grants one.
+
+The Helper is not inert — `helperLicensed()` is live and gates antibody production, so one half of
+contact-dependent help is modelled. What is missing is the *free action* half the comment names.
+
+**Disposition: report only, nothing changed. Design question for Kartik**, and an unusually
+tractable one: whether the Helper should grant a free action, to which cell, and at what range.
+Related: [#8](#8-seven-flags-entries-are-never-read) and [#11](#11-assorted-dead-code) —
+`g.antibodies`, the other field the census found empty, is already recorded there.
 
 ---
 
@@ -1448,15 +1473,46 @@ never reaches; the blind spot this time is the region where two versions of the 
 diff cannot see a defect both sides share — the same thing the equivalence corpus is blind to, one
 level up.
 
-### Disposition
+### Disposition — **FIXED**, on Shantanu's call, 12 Aug 2026
 
-**Report only, and deliberately.** #24 closes with "the gate is a measuring instrument, and #24 is
-what happens when one is changed without care", and #25 left rule A's churn check as a decision for
-Shantanu rather than a unilateral change. The same applies: it is a one-line deletion whose effect
-is to move an arm between two generated lists, and it should be made with those lists regenerated
-and read — not folded into Task E because Task E happened to notice.
+Reported first rather than fixed unilaterally, because #24 closes with "the gate is a measuring
+instrument, and #24 is what happens when one is changed without care". Shantanu's ruling: leaving
+it means Phase 3 inherits a list saying a dead mechanic is their job, which is worse. Fixed in its
+own commit, with the churn reported.
 
-**What must not happen is Phase 3 starting from a list that says a dead mechanic is their job.**
+**What the file rule was hiding: exactly one arm.** The lists were regenerated from a clean
+coverage run before and after, and the whole diff is:
+
+```
+Phase 3 — multiplayer      9 -> 8 arms      ap.ts:40 leaves
+Uncategorised, still open 42 -> 43 arms     ap.ts:40 arrives
+```
+
+`ap.ts:29` and `ap.ts:53` stayed in Phase 3, correctly. That was worth checking rather than
+assuming: **deleting the file rule alone would have misfiled `ap.ts:29` the other way.** V8
+attributes the else-arm of `if (!g.multiplayer) { …; return }` to the guard's closing brace, and
+that arm genuinely is the multiplayer path — but its source text is `}`, which matches no
+vocabulary and sits inside no `if (g.multiplayer)` block. Removing one positional rule by relying
+on another would have been no improvement.
+
+So the fix is two changes, not one:
+
+| | |
+|---|---|
+| **Removed** | `a.short === 'ap.ts'` — classification by which file an arm is in |
+| **Added** | AST clause: an arm after a **terminating** `if (!g.multiplayer) { … return }`, within the same function, is multiplayer. Everything past such a guard is reachable only when `g.multiplayer` is true |
+
+**Demonstrated, not asserted.** With the new clause disabled, `ap.ts:29` drops out of Phase 3 into
+Uncategorised — so the clause is load-bearing rather than decorative.
+
+### Still open, and it is #24's original gap
+
+**The classifier has no test.** #24 said so — "the classifier has no test; its output is a
+generated document" — and that is still true after this fix. Both #24 and #30 were found by
+someone reading the rule for an unrelated reason, which is not a mechanism. A unit test over
+`multiplayerRegions` with known inputs would catch a third recurrence; extracting it from a script
+that reads coverage and writes docs on import is a refactor of an instrument, and that is a
+deliberate act too. **Flagged, not built.**
 
 ---
 

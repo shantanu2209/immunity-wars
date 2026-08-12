@@ -497,21 +497,50 @@ if (nowAbsent.length) {
  * by intent: a property that is true for a reason nobody wrote down. The fix is to say the thing
  * out loud.
  *
- * An arm is multiplayer if either is true, and both mean what they say:
+ * An arm is multiplayer if any of these is true, and all of them mean what they say:
  *
  *   1. It sits lexically inside a block guarded by `g.multiplayer`. Computed from the AST on
  *      every run, so it re-derives when code moves and cannot go stale. Brace-counting was
  *      rejected — the allocation pushLog contains `${pool === 1 ? '' : 's'}`, whose braces live
  *      inside a template literal and would desynchronise a naive scan.
- *   2. Its own source text names a multiplayer concept. Case-INSENSITIVE, which the old regex
+ *   2. It sits after a TERMINATING `if (!g.multiplayer) { … return }` guard, in the same
+ *      function. Everything past such a guard is reachable only when `g.multiplayer` is true, so
+ *      it is the multiplayer path stated by early return rather than by nesting. Added at E1 —
+ *      see below.
+ *   3. Its own source text names a multiplayer concept. Case-INSENSITIVE, which the old regex
  *      was not: the `<b>Allocation phase.</b> Captain has ...` log line spells it `Captain` and
  *      was matched only by the positional clause it is now free of.
  *
- * `ap.ts` is multiplayer wholesale — it is the per-player AP budget and nothing else.
+ * ⚠️ CORRECTED AT TASK E1 — docs/FINDINGS.md #30. This rule used to begin:
+ *
+ *     a.short === 'ap.ts' ||
+ *
+ * justified by the comment *"`ap.ts` is multiplayer wholesale — it is the per-player AP budget
+ * and nothing else."* **That sentence was false.** `ap.ts` also holds `spend()` and `hasFree()`,
+ * which are the Helper T-Cell's free-action pool and have nothing to do with multiplayer. So
+ * `ap.ts:40` — a branch that is dead because NOTHING EVER GRANTS A FREE ACTION at any player
+ * count (docs/FINDINGS.md #29) — was filed into the list Phase 3 inherits as its to-do, where no
+ * relay could ever discharge it.
+ *
+ * It is the same defect C1 fixed one clause to the right: classification by POSITION rather than
+ * by meaning. A line range became a file name and survived, because **C1's audit compared the old
+ * and new rules across all 1,526 arms and this clause was in both of them.** A diff cannot see a
+ * defect both sides share — the general law is in tests/property/README.md.
+ *
+ * Clause 2 exists because deleting the file rule alone would have misfiled `ap.ts:29` the other
+ * way: V8 attributes the else-arm of `if (!g.multiplayer) { …; return }` to the closing brace,
+ * and that arm genuinely IS the multiplayer path. Removing one positional rule by adding another
+ * would have been no improvement; clause 2 is derived from the AST and says what it means.
  */
 const MP_VOCAB = /multiplayer|captain|apBudget|apPool|allocat/i;
 
-/** Line ranges of every `if (g.multiplayer) { … }` block, by file, from the AST. */
+/**
+ * Multiplayer line ranges in a file, from the AST. Two shapes, both meaning "only reachable when
+ * `g.multiplayer`":
+ *
+ *   `if (g.multiplayer) { HERE }`
+ *   `if (!g.multiplayer) { … return }  HERE-to-end-of-function`
+ */
 function multiplayerRegions(file: string): { from: number; to: number }[] {
   const text = readFileSync(file, 'utf8');
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.ES2022, true);
@@ -521,12 +550,49 @@ function multiplayerRegions(file: string): { from: number; to: number }[] {
   const guardsOnMultiplayer = (e: ts.Expression): boolean =>
     /^g\.multiplayer$/.test(e.getText(sf).trim());
 
+  const guardsOnNotMultiplayer = (e: ts.Expression): boolean =>
+    ts.isPrefixUnaryExpression(e) &&
+    e.operator === ts.SyntaxKind.ExclamationToken &&
+    /^g\.multiplayer$/.test(e.operand.getText(sf).trim());
+
+  /** Does this statement definitely leave the function? Only then is "everything after" guarded. */
+  const terminates = (s: ts.Statement): boolean => {
+    if (ts.isReturnStatement(s) || ts.isThrowStatement(s)) return true;
+    if (ts.isBlock(s)) {
+      const last = s.statements[s.statements.length - 1];
+      return last ? terminates(last) : false;
+    }
+    return false;
+  };
+
+  const enclosingBody = (n: ts.Node): ts.Node | null => {
+    for (let p: ts.Node | undefined = n.parent; p; p = p.parent) {
+      if (
+        ts.isFunctionDeclaration(p) ||
+        ts.isFunctionExpression(p) ||
+        ts.isArrowFunction(p) ||
+        ts.isMethodDeclaration(p)
+      ) {
+        return p.body ?? null;
+      }
+    }
+    return null;
+  };
+
   const visit = (n: ts.Node): void => {
-    if (ts.isIfStatement(n) && guardsOnMultiplayer(n.expression)) {
-      out.push({
-        from: lineOf(n.thenStatement.getStart(sf)),
-        to: lineOf(n.thenStatement.getEnd()),
-      });
+    if (ts.isIfStatement(n)) {
+      if (guardsOnMultiplayer(n.expression)) {
+        out.push({
+          from: lineOf(n.thenStatement.getStart(sf)),
+          to: lineOf(n.thenStatement.getEnd()),
+        });
+      } else if (guardsOnNotMultiplayer(n.expression) && !n.elseStatement && terminates(n.thenStatement)) {
+        const body = enclosingBody(n);
+        if (body) {
+          // From the guard's closing brace inclusive: V8 attributes the implicit else-arm there.
+          out.push({ from: lineOf(n.getEnd()), to: lineOf(body.getEnd()) });
+        }
+      }
     }
     ts.forEachChild(n, visit);
   };
@@ -545,9 +611,7 @@ const regionsFor = (file: string): { from: number; to: number }[] => {
 };
 
 const isMultiplayer = (a: Arm): boolean =>
-  a.short === 'ap.ts' ||
-  MP_VOCAB.test(a.text) ||
-  regionsFor(a.file).some((r) => a.line >= r.from && a.line <= r.to);
+  MP_VOCAB.test(a.text) || regionsFor(a.file).some((r) => a.line >= r.from && a.line <= r.to);
 
 const deferredMp = stillUncovered.filter(isMultiplayer);
 const deferredBot = stillUncovered.filter((a) => a.short === 'simulate.ts' && !isMultiplayer(a));

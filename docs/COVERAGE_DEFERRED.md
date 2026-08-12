@@ -10,7 +10,7 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (9 arms)
+## Phase 3 — multiplayer (8 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
@@ -22,7 +22,6 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 - `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
 - `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
 - `ap.ts:29` `}`
-- `ap.ts:40` `if (ck && g.free && free > 0) {`
 - `ap.ts:53` `return g.multiplayer ? apAvail(g, g._actingPid) : g.ap;`
 
 ## Phase 2 — reachable once a competent bot exists (9 arms)
@@ -41,7 +40,7 @@ good enough to measure difficulty would reach them.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:258` `if (!target) return false;`
 
-## Uncategorised — still open (42 arms)
+## Uncategorised — still open (43 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
@@ -62,6 +61,7 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:627` `if (n.zone === 'hub') return err('Move onto a swarm first.');`
 - `actions.ts:691` ``The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ`
 - `actions.ts:706` ``The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,`
+- `ap.ts:40` `if (ck && g.free && free > 0) {`
 - `construct.ts:102` `if (!e) return;`
 - `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `construct.ts:140` `if ((c as unknown as Card).novel) {`
