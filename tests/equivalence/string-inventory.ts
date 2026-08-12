@@ -337,6 +337,7 @@ function report(): string {
   const selects = eng.filter((e) => e.hasSelect);
   const plurals = eng.filter((e) => e.hasPlural);
 
+  const hardCount = new Set([...selects, ...plurals]).size;
   const tableStrings = tables.reduce((s, t) => s + t.strings, 0);
   const diseaseStrings = tables
     .filter((t) => t.namespace === '**diseases**')
@@ -403,15 +404,20 @@ function report(): string {
     '',
     '### The ICU-hard cases — the only ones, enumerated',
     '',
-    `**${selects.length} need \`select\`** (a ternary inside an interpolation) and`,
-    `**${plurals.length} needs \`plural\`**. Everything else is a straight substitution.`,
+    `**${hardCount} sites**, of which **${plurals.length} needs \`plural\`** and the rest need`,
+    '`select` (a ternary inside an interpolation). Everything else is a straight substitution.',
+    '',
+    'Counted as SITES, not as rules. The plural case also contains a ternary, so adding "selects"',
+    'and "plurals" would report 9 for what is 8 sites — an earlier draft of this line did exactly',
+    'that.',
     '',
     'Each of these gets **its own named test** rather than riding in the bulk comparison.',
     '',
     '| # | site | kind | source |',
     '|---|---|---|---|',
   );
-  const hard = [...selects, ...plurals.filter((p) => !selects.includes(p))].sort((a, b) =>
+  const hardList = [...selects, ...plurals.filter((p) => !selects.includes(p))];
+  const hard = hardList.sort((a, b) =>
     a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file),
   );
   hard.forEach((h, i) => {

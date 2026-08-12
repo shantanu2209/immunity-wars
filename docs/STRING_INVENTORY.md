@@ -55,8 +55,12 @@ formats wrongly. Leg 3 of the drift test exists for exactly that failure.
 
 ### The ICU-hard cases — the only ones, enumerated
 
-**8 need `select`** (a ternary inside an interpolation) and
-**1 needs `plural`**. Everything else is a straight substitution.
+**8 sites**, of which **1 needs `plural`** and the rest need
+`select` (a ternary inside an interpolation). Everything else is a straight substitution.
+
+Counted as SITES, not as rules. The plural case also contains a ternary, so adding "selects"
+and "plurals" would report 9 for what is 8 sites — an earlier draft of this line did exactly
+that.
 
 Each of these gets **its own named test** rather than riding in the bulk comparison.
 

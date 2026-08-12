@@ -95,6 +95,42 @@ that test should change to assert the new behaviour — and the change belongs i
 
 ---
 
+## 3a. What Task C did NOT do with i18n, and why Phase 2 is the right place
+
+**Done in Phase 1 (C5b):** the **engine** catalogue — 164 `err()` and `pushLog()` strings —
+plus the two STATIC legs of the drift test: completeness (every call site has a catalogue entry
+and vice versa) and byte fidelity (each entry equals its source, with interpolations normalised
+to placeholders).
+
+**Deferred to Phase 2:** the runtime render check (leg 3) and the **UI** catalogue (709 strings,
+of which 666 are the `diseases` namespace).
+
+**This is not "deferred for scope". They get BETTER in Phase 2, and doing them now would be
+slower overall.**
+
+| | Why Phase 2 is the right place |
+|---|---|
+| **Leg 3 — runtime render** | It proves `format(catalogue[key], args)` reproduces the rendered bytes. Until React renders a catalogue there is no formatter in the product to validate against, so the check would be validating a *test harness's* formatter — proving the test agrees with itself. |
+| **The 9 ICU-hard cases** | 8 `select` and 1 `plural`, enumerated by site in [`STRING_INVENTORY.md`](STRING_INVENTORY.md). ICU authoring for a nested ternary has real choices in it (escaping `{` inside HTML, argument naming, plural categories for Hindi). Committing to a spelling with no consumer means revising it when the consumer arrives — twice the work, and the first version is unvalidated. |
+| **The UI catalogue** | Same reason, at 709× the scale. Also: `content/src/diseases/diseases.json` **already holds this text as validated content** with a test proving it still matches `v2_ui.html`, so the drift the catalogues exist to prevent is already prevented for the largest part of the surface. |
+
+**What this phase does buy Phase 2**, so the deferral costs nothing:
+
+- [`STRING_INVENTORY.md`](STRING_INVENTORY.md) — every string counted, not estimated, with the
+  46 genuinely ambiguous ones enumerated for a human, and the 9 ICU-hard sites named
+- `tests/equivalence/src/legacy-ui.ts` — parses named tables out of `v2_ui.html` with the
+  TypeScript compiler, which is what leg 1 of the UI catalogue needs
+- The engine catalogue and its two static legs, as the pattern to copy
+
+**The `diseases` namespace is a COMMISSIONING split, not a safety one.** 666 strings, `DZINFO`
+alone being 530 fields of discovered / causes / found / prevent / treat. It is not UI chrome; it
+is Kartik's written science, and a mistranslated "prevent" line is misinformation about a real
+disease in a product aimed at schoolchildren. It needs a subject-matter translator. Keeping it
+as its own namespace is what lets the Hindi edition — a committed grant deliverable — be scoped
+and costed honestly rather than hidden inside one large number.
+
+---
+
 ## 4. Do not lose these
 
 | Thing | Where | Why it matters |
