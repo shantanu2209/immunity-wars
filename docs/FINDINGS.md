@@ -23,7 +23,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | 10 | Stale assertion label in `feedback_0723_test.js` | Low | Fix the label only when porting |
 | 11 | Assorted dead code | Low | Port as-is |
 | 12 | Four bot-needed internals are unexported | Low | Rig reimplements them |
-| 13 | Pathogen X exists only via two lookup misses | **B7 risk** | Pinned by test before the flag is flipped |
+| 13 | Pathogen X exists only via two lookup misses | **B7 risk** | **FIXED** at Task C4 — [`DEVIATIONS.md`](DEVIATIONS.md) #5 |
 | 14 | The three worm safeguards all hold | **Verified** | No action; one bypass documented |
 | 15 | The Heart has the shortest branch on the board | **Design** | Report only |
 | 16 | `forceInject*` bypasses the worm caps AND the accounting | Low (dev-only) | Report only |

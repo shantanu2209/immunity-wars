@@ -194,5 +194,97 @@ that `allocateAP` is untouched.
 
 ---
 
+## 5. `famOf` classes a novel antigen by DECLARATION, not by a lookup miss
+
+**Legacy behaviour.**
+
+```js
+return iv.novel ? 'X' : (FAMILY[iv.disease] || "EXB");
+```
+
+`Pathogen X` is the only card in `DECK_MASTER` with no `FAMILY` entry, so the **`novel` flag was
+the only thing** keeping it out of the `EXB` antibody pool. Lose the flag anywhere — a JSON round
+trip dropping a falsy field, a content loader, a future refactor — and the novel pathogen became
+an ordinary extracellular bacterium. An `EXB` antibody the player happened to be holding for
+something unrelated would destroy it outright, clonal selection would never happen, and the card
+would still appear while the lesson it exists to teach silently did not.
+
+**Every test still passed**, and `noUncheckedIndexedAccess` was silent, because the miss was
+**handled** and its handling was wrong for exactly one card. Recorded at length as
+[`FINDINGS.md`](FINDINGS.md) #13.
+
+**Port behaviour.** The content declares the exemption, and the schema requires it:
+
+```ts
+// packages/content/src/rules/families.json
+"NOVEL_ANTIGENS": ["Pathogen X"]
+
+// packages/engine/src/primitives.ts
+if (iv.novel || NOVEL_ANTIGENS.has(iv.disease)) return 'X';
+return FAMILY[iv.disease] ?? 'EXB';
+```
+
+`RulesPackS` now fails the build if any card has neither a `FAMILY` entry nor a `NOVEL_ANTIGENS`
+exemption — and equally if a disease has both, or is exempted without being a card.
+
+**Why not `"Pathogen X": "EXB"` in FAMILY.** Because it would be false. Pathogen X is not an
+extracellular bacterium. A novel antigen has no class *by definition* — that is the entire point
+of the card — and inventing a seventh class would make the other six mean less. `FAMILY` is
+therefore left **byte-identical to legacy**, which is also why the 22-table comparison in
+`data.test.ts` still passes unchanged.
+
+**Why the `?? 'EXB'` fallback stays.** It is not a guard against an impossible state
+([`FINDINGS.md`](FINDINGS.md) #22). It is legacy's documented answer for an unknown disease, it
+is pinned by `data.test.ts`, and it is genuinely reachable: the engine mints **nine disease names
+that are not cards at all** — three toxins from `TOXIN_MAKERS`, a bursting liver-stage malaria,
+and five rare-event pathogens — so a schema scoped to `DECK_MASTER` could not make it dead even
+in principle. Listed in [`CONTENT_REACHABILITY.md`](CONTENT_REACHABILITY.md) §5 and §6.
+
+### Evidence — and read the two halves in the right order
+
+**The corpus result is a VACUOUS PASS, and that was predicted before it was run.**
+
+```
+CONFINED-CHANGE CHECK — 1500 games
+allowed to differ: stats.arrivals, stats.gotThrough
+games identical to legacy : 445
+games that changed        : 1055
+CHANGE IS CONFINED
+```
+
+Those figures are **byte-identical to deviation #3's**, path counts included, which is the actual
+content of the result: this change contributed **exactly zero** additional divergence. In real
+play Pathogen X always carries `novel: true`, set by `makeInvader` from the card, so the modified
+branch is never taken.
+
+**So the corpus proves "no side effect on reachable play" and NOTHING MORE.** It does not prove
+the fix works. It could not — the path it fixes is one the corpus cannot reach, which is the same
+reason the defect survived Task B in the first place. Anyone citing this run as evidence the fix
+is correct has misread it.
+
+**The load-bearing evidence is the direct test.** `tests/equivalence/src/pathogen-x.test.ts` was
+rewritten from pinning the defect to asserting the correction, and demonstrates the consequence
+rather than the mechanism: with the `novel` flag **deliberately stripped**, a player holding 3
+EXB antibodies is refused with *"BRAND NEW … run CLONAL SELECTION"*, where legacy on the same
+state classes it `EXB` and destroys it. Both arms are run, so the difference is shown rather than
+described.
+
+> **Note for the next deviation.** `confined-change.ts` compares raw states and does **not** apply
+> the rig's `normalise()`, so its allow-list must include **every previously accepted deviation**,
+> not just the new one. Run with only `famOf` allowed it reports `NOT CONFINED — 10 unexpected
+> paths`, all of them deviation #3's counters. That is the tool working correctly and the
+> invocation being wrong.
+
+**Decided by:** Shantanu — fix it at the content boundary rather than with a fallback that
+guesses; own commit, after the extraction was green, with the vacuous-pass caveat stated up
+front rather than discovered afterwards.
+**Test:** `tests/equivalence/src/pathogen-x.test.ts` (8 cases, including both arms of the
+flag-stripped experiment), plus five schema-rejection cases in
+`packages/content/src/load.test.ts`.
+**Related:** [`FINDINGS.md`](FINDINGS.md) #13 (the defect), #22 (the pattern),
+#23 (the mirror), [`CONTENT_REACHABILITY.md`](CONTENT_REACHABILITY.md) (the generated evidence).
+
+---
+
 *Entries are appended as they are decided, never retroactively edited — if a decision is
 reversed, add a new entry saying so.*

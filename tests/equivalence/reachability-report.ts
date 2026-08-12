@@ -167,16 +167,39 @@ function report(): string {
   /* --- §4: cards with no FAMILY entry --- */
   const noFamily = content.DECK_MASTER.filter((c) => !(c.dz in content.FAMILY)).map((c) => c.dz);
   const noTropism = content.DECK_MASTER.filter((c) => !(c.dz in content.TROPISM)).map((c) => c.dz);
+  const unexempted = noFamily.filter((d) => !content.NOVEL_ANTIGENS.has(d));
   L.push(
     '',
     '## 4. Cards missing a FAMILY or TROPISM entry',
     '',
-    "A card with no `FAMILY` entry falls through `famOf`'s `?? 'EXB'` fallback and is treated as",
-    'an extracellular bacterium. For Pathogen X that is wrong, and it is only not happening',
-    'because `famOf` short-circuits on `novel` first — [`FINDINGS.md`](FINDINGS.md) #13.',
+    "A card with no `FAMILY` entry and no declared exemption would fall through `famOf`'s",
+    "`?? 'EXB'` fallback and be treated as an extracellular bacterium. For a NOVEL antigen that",
+    'is wrong: no existing antibody class fits a germ the body has never met, which is the',
+    'entire lesson the card carries.',
+    '',
+    'Until Task C4 that was held only by `famOf` short-circuiting on the `novel` FLAG, so losing',
+    'the flag anywhere would have silently reclassified the pathogen with every test still',
+    'passing — [`FINDINGS.md`](FINDINGS.md) #13. It is now declared and schema-enforced:',
+    '[`DEVIATIONS.md`](DEVIATIONS.md) #5.',
     '',
     `- no FAMILY entry: ${noFamily.length ? noFamily.map((d) => `**${d}**`).join(', ') : '_none_'}`,
     `- no TROPISM entry: ${noTropism.length ? noTropism.map((d) => `**${d}**`).join(', ') : '_none_'}`,
+    '',
+    'A card may have no `FAMILY` entry only if it is DECLARED in `NOVEL_ANTIGENS`, which the',
+    'schema enforces — [`DEVIATIONS.md`](DEVIATIONS.md) #5. Current exemptions, and why:',
+    '',
+    '| exempted card | reason |',
+    '|---|---|',
+    ...[...content.NOVEL_ANTIGENS].map(
+      (d) =>
+        `| **${d}** | a novel antigen has no class by definition — that is what the card teaches |`,
+    ),
+    '',
+    unexempted.length
+      ? `⚠️ **UNDECLARED and unexempted: ${unexempted.map((d) => `**${d}**`).join(', ')}** — ` +
+          `these fall through \`famOf\`'s \`?? 'EXB'\` fallback and are silently treated as ` +
+          `extracellular bacteria.`
+      : '_No card is missing a class without a declared reason._',
   );
 
   /* --- §5: the toxin emission chain, since it is the least obvious producer --- */

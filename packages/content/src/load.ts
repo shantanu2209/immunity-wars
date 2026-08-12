@@ -133,6 +133,15 @@ export const RARE = pack['RARE'] as Record<string, RareDef>;
 export const FAMILIES = pack['FAMILIES'] as Record<FamilyKey, FamilyDef>;
 export const FAM_KEYS = pack['FAM_KEYS'] as readonly FamilyKey[];
 export const FAMILY = pack['FAMILY'] as Record<string, FamilyKey>;
+/**
+ * Diseases with NO antigen class, by declaration rather than by omission.
+ *
+ * A Set for the same reason NOT_ALIVE is one: `famOf` consults it on every invader. The schema
+ * guarantees every entry is a real card and that none also has a FAMILY entry.
+ *
+ * docs/DEVIATIONS.md #5 / docs/FINDINGS.md #13.
+ */
+export const NOVEL_ANTIGENS: ReadonlySet<string> = new Set(pack['NOVEL_ANTIGENS'] as string[]);
 
 /* --- invaders --- */
 export const INV_HP = pack['INV_HP'] as Record<InvaderType, number>;

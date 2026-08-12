@@ -186,6 +186,18 @@ export const FamiliesS = z.strictObject({
   FAMILIES: z.record(FamilyKeyS, FamilyDefS),
   FAM_KEYS: z.array(FamilyKeyS),
   FAMILY: z.record(z.string(), FamilyKeyS),
+  /**
+   * Diseases DELIBERATELY absent from FAMILY because they have no antigen class.
+   *
+   * This is the declared exemption docs/TASK_C_HANDOFF.md §3 asks for, and it is the fix for
+   * docs/FINDINGS.md #13. `FAMILY` stays byte-identical to legacy — the exemption is a separate
+   * table rather than a `FAMILY` entry, because there is no honest value to put there: Pathogen
+   * X is not `EXB`, and inventing a seventh class for it would make the six mean less.
+   *
+   * A novel antigen is one the body has never met, so by definition no existing antibody class
+   * fits it. That is the lesson the card exists to teach.
+   */
+  NOVEL_ANTIGENS: z.array(z.string().min(1)),
 });
 
 /* ------------------------------------------------------------------ *
@@ -306,17 +318,63 @@ export const PackStampS = z.strictObject({
   rulesVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
 });
 
-/** The whole pack, assembled. `strictObject` so an unknown table is an error, not a shrug. */
-export const RulesPackS = z.strictObject({
-  ...PackStampS.shape,
-  ...BoardS.shape,
-  ...DeckS.shape,
-  ...EventsS.shape,
-  ...FamiliesS.shape,
-  ...InvadersS.shape,
-  ...TropismS.shape,
-  ...TuningS.shape,
-});
+/**
+ * The whole pack, assembled. `strictObject` so an unknown table is an error, not a shrug.
+ *
+ * THE COMPLETENESS CHECK IS A BEHAVIOUR CHANGE, not schema tidying — docs/DEVIATIONS.md #5.
+ *
+ * Every card must have a `FAMILY` entry or an explicit `NOVEL_ANTIGENS` exemption. Before this,
+ * Pathogen X had neither: it reached the `X` antibody pool only because `famOf` short-circuits
+ * on `iv.novel` before consulting `FAMILY` at all. Lose that flag anywhere — a loader, a JSON
+ * round trip dropping a falsy field, a future refactor — and the novel pathogen silently became
+ * an ordinary `EXB` bacterium, killable by an antibody held for something else, and the
+ * clonal-selection lesson stopped being taught with nothing failing.
+ *
+ * docs/FINDINGS.md #13 records that at length. This is the boundary enforcing it instead of a
+ * fallback guessing.
+ */
+export const RulesPackS = z
+  .strictObject({
+    ...PackStampS.shape,
+    ...BoardS.shape,
+    ...DeckS.shape,
+    ...EventsS.shape,
+    ...FamiliesS.shape,
+    ...InvadersS.shape,
+    ...TropismS.shape,
+    ...TuningS.shape,
+  })
+  .superRefine((p, ctx) => {
+    const exempt = new Set(p.NOVEL_ANTIGENS);
+    for (const card of p.DECK_MASTER) {
+      if (card.dz in p.FAMILY || exempt.has(card.dz)) continue;
+      ctx.addIssue({
+        code: 'custom',
+        path: ['FAMILY', card.dz],
+        message:
+          `card "${card.dz}" has no FAMILY entry and is not listed in NOVEL_ANTIGENS. ` +
+          `Every card needs an antigen class, or an explicit exemption saying why it has none.`,
+      });
+    }
+    /* An exemption for a card that does not exist is a licence nobody is using. */
+    const deck = new Set(p.DECK_MASTER.map((c) => c.dz));
+    for (const dz of p.NOVEL_ANTIGENS) {
+      if (!deck.has(dz)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['NOVEL_ANTIGENS'],
+          message: `"${dz}" is exempted from FAMILY but is not a card in the deck`,
+        });
+      }
+      if (dz in p.FAMILY) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['NOVEL_ANTIGENS'],
+          message: `"${dz}" is exempted from FAMILY but ALSO has a FAMILY entry — pick one`,
+        });
+      }
+    }
+  });
 
 /* ================================================================== *
  * TASK C3 — board geometry, regions, disease text, labels

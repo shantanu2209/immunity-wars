@@ -190,6 +190,54 @@ describe('a malformed pack is rejected', () => {
     expect(corrupt(mutate)).toThrow();
   });
 
+  /**
+   * THE COMPLETENESS CHECK — docs/DEVIATIONS.md #5, fixing docs/FINDINGS.md #13.
+   *
+   * Every card needs a FAMILY entry or an explicit NOVEL_ANTIGENS exemption. These are the arms
+   * that make that real rather than aspirational.
+   */
+  it('rejects a card with no FAMILY entry and no exemption', () => {
+    expect(
+      corrupt((p) => {
+        (p['DECK_MASTER'] as Record<string, unknown>[]).push({
+          dz: 'Mystery Plague',
+          type: 'bacteria',
+          lane: 'nose',
+        });
+      }),
+    ).toThrow(/no FAMILY entry and is not listed in NOVEL_ANTIGENS/);
+  });
+
+  it('rejects removing a FAMILY entry that a card depends on', () => {
+    expect(
+      corrupt((p) => {
+        delete (p['FAMILY'] as Record<string, unknown>)['Influenza'];
+      }),
+    ).toThrow(/no FAMILY entry/);
+  });
+
+  it('rejects an exemption for a card that is not in the deck', () => {
+    expect(
+      corrupt((p) => {
+        (p['NOVEL_ANTIGENS'] as string[]).push('Pathogen Y');
+      }),
+    ).toThrow(/is not a card in the deck/);
+  });
+
+  it('rejects a disease that is BOTH exempted and classed — pick one', () => {
+    expect(
+      corrupt((p) => {
+        (p['FAMILY'] as Record<string, unknown>)['Pathogen X'] = 'EXB';
+      }),
+    ).toThrow(/ALSO has a FAMILY entry/);
+  });
+
+  it('accepts the shipped pack, where Pathogen X is exempted and nothing else is', () => {
+    const p = rawPack();
+    expect(p['NOVEL_ANTIGENS']).toEqual(['Pathogen X']);
+    expect(() => RulesPackS.parse(p)).not.toThrow();
+  });
+
   it('the corruption helper does not itself invalidate the pack', () => {
     // Guards the negative suite from the failure it exists to prevent: if rawPack() produced
     // something invalid, every case above would "pass" while testing nothing at all.

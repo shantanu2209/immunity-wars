@@ -87,13 +87,19 @@ describe('B1: the tables cover exactly the keys the types promise', () => {
     expect(missing).toEqual(['Pathogen X']);
   });
 
-  it('Pathogen X reaches the X antibody pool via its novel flag, not via FAMILY', () => {
-    // famOf short-circuits on `novel` before it ever consults FAMILY, so the missing FAMILY
-    // entry is unreachable rather than merely harmless.
+  it('Pathogen X reaches the X antibody pool by DECLARATION, not by a lookup miss', () => {
+    // CHANGED AT C4 — docs/DEVIATIONS.md #5, fixing docs/FINDINGS.md #13.
+    //
+    // This assertion used to read `expect(port.famOf({ disease: 'Pathogen X' })).toBe('EXB')`
+    // and PINNED the defect: famOf short-circuited on `novel`, so the missing FAMILY entry was
+    // unreachable, and losing the flag anywhere would have turned the novel pathogen into an
+    // ordinary EXB bacterium with every test still passing.
+    //
+    // The content now declares the exemption, so the pool no longer depends on the flag.
     expect(port.famOf({ disease: 'Pathogen X', novel: true })).toBe('X');
-    // But if the novel flag were ever lost, the EXB fallback would silently take over — which
-    // is precisely the class of miss B7 has to handle without a non-null assertion.
-    expect(port.famOf({ disease: 'Pathogen X' })).toBe('EXB');
+    expect(port.famOf({ disease: 'Pathogen X' })).toBe('X');
+    // FAMILY itself is untouched, which is why the 22-table comparison above still holds.
+    expect('Pathogen X' in port.FAMILY).toBe(false);
   });
 
   it('every TROPISM target names a real organ', () => {
@@ -128,14 +134,20 @@ describe('B1: primitives match legacy', () => {
     }
   });
 
-  it('famOf agrees for every deck card, and for a novel pathogen', () => {
+  it('famOf agrees with legacy for every deck card EXCEPT the one declared deviation', () => {
+    // Pathogen X is excluded by name rather than by a blanket tolerance, so a SECOND divergence
+    // would still fail here. docs/DEVIATIONS.md #5 is the whole list, and it has one entry.
     for (const c of port.DECK_MASTER) {
+      if (c.dz === 'Pathogen X') continue;
       const iv = { disease: c.dz, novel: false };
       expect(port.famOf(iv), c.dz).toBe(
         legacy.famOf({ ...iv, id: '', type: c.type, zone: 'hub', step: 0 }),
       );
     }
     expect(port.famOf({ disease: 'Pathogen X', novel: true })).toBe('X');
+    // The deviation, stated here too so this file is honest on its own:
+    expect(port.famOf({ disease: 'Pathogen X' })).toBe('X');
+    expect(legacy.famOf({ disease: 'Pathogen X' } as never)).toBe('EXB');
   });
 
   it('famOf falls back to EXB for an unknown disease, as legacy does', () => {

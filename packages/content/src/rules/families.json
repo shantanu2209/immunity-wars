@@ -152,5 +152,8 @@
     "Conjunctivitis": "NAK",
     "Molluscum contagiosum": "ENV",
     "Endocarditis": "EXB"
-  }
+  },
+  "NOVEL_ANTIGENS": [
+    "Pathogen X"
+  ]
 }

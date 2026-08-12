@@ -94,6 +94,7 @@ export {
   NK_HITS,
   NK_RANGE,
   NOT_ALIVE,
+  NOVEL_ANTIGENS,
   ORGAN_SETS,
   ORGANS,
   PACK_ID,
