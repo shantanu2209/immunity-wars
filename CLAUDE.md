@@ -156,10 +156,25 @@ cannot fall, so it is incapable of failing usefully. Human play is the only sour
 about difficulty, and by that measure the game is already well balanced (see Known issues).
 
 Task E instead establishes a **continuous metric panel that detects ENGINE CHANGE, not
-difficulty** — `avgTurnsSurvived`, `trunkKillPct`, `avgAntibodiesMade`, `avgOrgansDamaged`,
-each measured with its cross-seed noise band, failing the build only when two or more breach
-±3 sd together. Candidates, measured variance and rationale in `docs/FINDINGS.md`
-§ "Task E metrics".
+difficulty** — `avgTurnsSurvived`, `trunkKillPct`, `avgAntibodiesMade`, `avgOrgansDamaged`.
+Measured bands live in `tests/balance/bands.json`; the rule is:
+
+> Compare the **mean of one arm** of 20 × 100 games against the band. **FAIL when two or more
+> metrics are past ±3 sd(arm), OR when any one is past ±6 sd(arm).** `sd(arm)` is **measured
+> from 8 independent arms** — never recomputed as `sd(batch)/√batches`, which understates it by
+> up to 1.5×.
+
+*Corrected 12 Aug 2026, at Task E2.* This previously said "failing the build only when two or
+more breach ±3 sd together", quoting `docs/FINDINGS.md` § "Task E metrics". Built exactly as
+written, that gate detected **neither an Action Point removed from every turn nor the Brain
+losing half its integrity**. All three parts — the band, how its width is obtained, and the
+failure rule — were corrected by measurement. Full record: `docs/FINDINGS.md` #34, and #33 for
+the seed-independence defect found alongside it.
+
+**The panel does not fail on brain `branch:3 → 4`, and this is pinned as a demonstrated blind
+spot** rather than left in prose (`tests/balance/src/metrics-control.test.ts`). It is not blind
+to it either — that change moves one metric by 3.2σ — so the accurate statement is the
+gate-level one. `docs/FINDINGS.md` #34.4 corrects #17's wording accordingly.
 
 Any win rate that is reported is always **"win rate under the reference bot, vN, at N games
 per difficulty"** — never "the win rate". The bot cannot measure difficulty and we do not

@@ -1,6 +1,6 @@
 # Task E — closeout
 
-**Status: E0a and E1 complete. E2 (the metric panel) outstanding.**
+**Status: E0a, E1 and E2 complete.** Wiring any of it into CI is Task F.
 Plan: [`TASK_E_PLAN.md`](TASK_E_PLAN.md) · Method: [`tests/balance/README.md`](../tests/balance/README.md)
 
 ---
@@ -203,12 +203,92 @@ exactly.
 
 ---
 
-## 10. Outstanding
+## 10. E2 — the metric panel
 
-**E2 — the four-metric panel** (`avgTurnsSurvived`, `trunkKillPct`, `avgAntibodiesMade`,
-`avgOrgansDamaged`), its ±3 sd bands measured twice on disjoint seed ranges, and its two negative
-controls: a mutation that must move it, and brain `branch:3 → 4`, which
-[`FINDINGS.md`](FINDINGS.md) #17 says it cannot see and which will be pinned executably as a
-demonstrated blind spot.
+Detects **engine change**, not difficulty. Bands in
+[`tests/balance/bands.json`](../tests/balance/bands.json), calibrated from **8 independent arms of
+20 × 100 games** per difficulty, plus a **held-out arm** never used to build them.
 
-**Not Task E's:** wiring any of it into CI, which is Task F.
+| | mean | sd(arm) | sd/mean | band ±3σ |
+|---|---|---|---|---|
+| **Training** | | | | |
+| `avgTurnsSurvived` | 15.6479 | 0.1035 | 0.7% | [15.3373, 15.9585] |
+| `trunkKillPct` | 0.8963 | 0.0033 | 0.4% | [0.8864, 0.9061] |
+| `avgAntibodiesMade` | 20.4801 | 0.1115 | 0.5% | [20.1454, 20.8147] |
+| `avgOrgansDamaged` | 0.9994 | 0.0289 | 2.9% | [0.9127, 1.0862] |
+| **Normal** | | | | |
+| `avgTurnsSurvived` | 11.0888 | 0.0496 | 0.4% | [10.9399, 11.2377] |
+| `trunkKillPct` | 0.9781 | 0.0016 | 0.2% | [0.9731, 0.9830] |
+| `avgAntibodiesMade` | 19.4781 | 0.0775 | 0.4% | [19.2457, 19.7104] |
+| `avgOrgansDamaged` | 2.0912 | 0.0259 | 1.2% | [2.0137, 2.1688] |
+| **Hard** | | | | |
+| `avgTurnsSurvived` | 8.8607 | 0.0379 | 0.4% | [8.7472, 8.9743] |
+| `trunkKillPct` | 0.9696 | 0.0020 | 0.2% | [0.9637, 0.9756] |
+| `avgAntibodiesMade` | 15.0633 | 0.0674 | 0.4% | [14.8610, 15.2656] |
+| `avgOrgansDamaged` | 2.3013 | 0.0169 | 0.7% | [2.2507, 2.3519] |
+
+> **FAIL when two or more metrics are past ±3 sd(arm), OR when any one is past ±6 sd(arm).**
+
+**Held-out arm: passes on all three difficulties**, worst excursion 2.0σ. A band checked only
+against the data that built it has not been checked.
+
+**Reported, never gated** — `winRateUnderReferenceBot`, at 2,000 games on the held-out arm:
+Training **0.5375**, Normal **0.0015**, Hard **0.0000**. Zero unfinished games anywhere. This is
+not a difficulty measurement; humans win essentially every Normal game
+([`FINDINGS.md`](FINDINGS.md) #1).
+
+### 10.1 The proposed design did not work, and all three parts were corrected
+
+[`FINDINGS.md`](FINDINGS.md) #34, in full. Built exactly as § "Task E metrics" specified, the gate
+detected **neither an Action Point removed from every turn nor the Brain losing half its
+integrity**. The corrections, each forced by a control aimed at a change whose answer was known:
+
+1. the band is ±3 sd of the **arm mean**, not of one 100-game batch;
+2. its width is **measured from 8 independent arms**, not derived as sd/√batches — which
+   understates the true spread by up to **1.5×**;
+3. the rule gained **"or any one metric past ±6σ"**, because on Normal the AP change moves one
+   metric by 14σ and no others.
+
+### 10.2 What the panel catches, and what it does not
+
+| change | breaches @3σ | loudest | verdict |
+|---|---|---|---|
+| AP −1 per turn, Normal | 1 | 14.1σ | **FAIL** |
+| AP −1 per turn, Hard | 2 | 38.0σ | **FAIL** |
+| brain integrity 2 → 1, Normal | 3 | 4.8σ | **FAIL** |
+| brain integrity 2 → 1, Hard | 3 | 5.8σ | **FAIL** |
+| **brain `branch:3 → 4`** | 1 | 3.2σ | **pass — the blind spot** |
+
+The last row is pinned executably in `metrics-control.test.ts`, with a failure message telling a
+future reader not to "fix" it.
+
+**And it corrects [`FINDINGS.md`](FINDINGS.md) #17.** That finding says of `branch:3 → 4` that "no
+metric moved beyond 2 standard deviations", measured at 1,000 games against a batch-derived null.
+At 2,000 games with a calibrated null, `avgTurnsSurvived` moves **+3.2σ**. The panel still does not
+fail — one metric, under 6σ — so the gate-level claim holds and the "nothing moved" claim does not.
+#34.4 carries the correction.
+
+### 10.3 A defect in the harness, found by a check built for it
+
+[`FINDINGS.md`](FINDINGS.md) #33. Seeds were `0x51de + i * 7919`, and mulberry32's whole state is
+its seed, so **linearly-spaced seeds produce correlated games**. Two disjoint arms disagreed by
+4.3 sd; the batch spread was simultaneously inflated by 64%. Both harms are invisible in a green,
+perfectly reproducible run.
+
+Fixed to splitmix32, and the schedule is named in every band's provenance. **E0a and every negative
+control were unaffected** — they are paired comparisons, so the correlation cancels — and E1 was
+re-run on the corrected schedule with nothing moving (censoring 51.9/31.8/19.4% vs 51.9/32.4/19.2%,
+largest state 57.1 vs 57.0 KiB).
+
+> *"Deterministic and reproducible" is not the same as "independent."* Every figure from the old
+> schedule was exactly repeatable, and the band it produced was still wrong.
+
+---
+
+## 11. Outstanding
+
+**Not Task E's:** wiring any of this into CI, which is Task F — along with the suite manifest
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §7's seven-suite table still has no counterpart for.
+
+**For Kartik, from E1:** [`FINDINGS.md`](FINDINGS.md) #29 — the Helper T-Cell's free-action pool,
+which the engine models and nothing ever grants. Third instance of the #4 pattern.

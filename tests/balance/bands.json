@@ -1,0 +1,210 @@
+{
+  "note": "Detects ENGINE CHANGE, not difficulty. A green panel means \"no broad shift detected\", never \"the change was safe\". Every figure is conditional on the generator named below. The panel does NOT fail on brain branch:3->4 (docs/FINDINGS.md #17 and #34) — a demonstrated blind spot, pinned in src/metrics-control.test.ts.",
+  "generator": "reference bot",
+  "generatorVersion": "v1",
+  "sigma": 3,
+  "loudSigma": 6,
+  "rule": "Compare the MEAN of one arm of 20x100 games against these bands. FAIL when two or more metrics are past ±3 sd(arm), OR when any one is past ±6. sd(arm) is MEASURED from 8 independent arms — do not recompute it as sd(batch)/sqrt(batches), which understates it by up to 1.5x (src/panel.ts).",
+  "engineRev": "6ec2ff4",
+  "measuredAt": "2026-08-12T12:26:44.713Z",
+  "difficulties": {
+    "training": {
+      "provenance": {
+        "generator": "reference bot",
+        "generatorVersion": "v1",
+        "difficulty": "training",
+        "gamesPerBatch": 100,
+        "batches": 20,
+        "seedIndexFrom": 0,
+        "seedIndexTo": 15999,
+        "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
+        "packId": "immunity-wars-core",
+        "packVersion": "1.0.0",
+        "rulesVersion": "3.1.0"
+      },
+      "arms": 8,
+      "bands": [
+        {
+          "metric": "avgTurnsSurvived",
+          "mean": 15.6479375,
+          "sdArm": 0.10353482419663762,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 15.337333027410086,
+          "hi": 15.958541972589913,
+          "rsd": 0.006616515703532023
+        },
+        {
+          "metric": "trunkKillPct",
+          "mean": 0.8962639905995529,
+          "sdArm": 0.0032879037490879523,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 0.886400279352289,
+          "hi": 0.9061277018468167,
+          "rsd": 0.0036684545887964545
+        },
+        {
+          "metric": "avgAntibodiesMade",
+          "mean": 20.4800625,
+          "sdArm": 0.11154513420264368,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 20.14542709739207,
+          "hi": 20.81469790260793,
+          "rsd": 0.005446523134518935
+        },
+        {
+          "metric": "avgOrgansDamaged",
+          "mean": 0.9994375000000001,
+          "sdArm": 0.028905557424135565,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 0.9127208277275933,
+          "hi": 1.0861541722724068,
+          "rsd": 0.028921825951233132
+        }
+      ],
+      "reportedNotGated": {
+        "winRateUnderReferenceBot": 0.5375,
+        "unfinishedGames": 0
+      }
+    },
+    "normal": {
+      "provenance": {
+        "generator": "reference bot",
+        "generatorVersion": "v1",
+        "difficulty": "normal",
+        "gamesPerBatch": 100,
+        "batches": 20,
+        "seedIndexFrom": 0,
+        "seedIndexTo": 15999,
+        "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
+        "packId": "immunity-wars-core",
+        "packVersion": "1.0.0",
+        "rulesVersion": "3.1.0"
+      },
+      "arms": 8,
+      "bands": [
+        {
+          "metric": "avgTurnsSurvived",
+          "mean": 11.088812499999998,
+          "sdArm": 0.04962425782100592,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 10.93993972653698,
+          "hi": 11.237685273463015,
+          "rsd": 0.004475164299243578
+        },
+        {
+          "metric": "trunkKillPct",
+          "mean": 0.9780574491346772,
+          "sdArm": 0.0016366948952797724,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 0.9731473644488379,
+          "hi": 0.9829675338205165,
+          "rsd": 0.0016734138641117816
+        },
+        {
+          "metric": "avgAntibodiesMade",
+          "mean": 19.4780625,
+          "sdArm": 0.07746217394868987,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 19.24567597815393,
+          "hi": 19.71044902184607,
+          "rsd": 0.003976893181685287
+        },
+        {
+          "metric": "avgOrgansDamaged",
+          "mean": 2.0912499999999996,
+          "sdArm": 0.025858129420800437,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 2.0136756117375985,
+          "hi": 2.1688243882624008,
+          "rsd": 0.012364915443299674
+        }
+      ],
+      "reportedNotGated": {
+        "winRateUnderReferenceBot": 0.0015,
+        "unfinishedGames": 0
+      }
+    },
+    "hard": {
+      "provenance": {
+        "generator": "reference bot",
+        "generatorVersion": "v1",
+        "difficulty": "hard",
+        "gamesPerBatch": 100,
+        "batches": 20,
+        "seedIndexFrom": 0,
+        "seedIndexTo": 15999,
+        "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
+        "packId": "immunity-wars-core",
+        "packVersion": "1.0.0",
+        "rulesVersion": "3.1.0"
+      },
+      "arms": 8,
+      "bands": [
+        {
+          "metric": "avgTurnsSurvived",
+          "mean": 8.86075,
+          "sdArm": 0.0378540429997724,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 8.747187871000682,
+          "hi": 8.974312128999317,
+          "rsd": 0.0042721037157997235
+        },
+        {
+          "metric": "trunkKillPct",
+          "mean": 0.9696393149654616,
+          "sdArm": 0.0019818022910996556,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 0.9636939080921627,
+          "hi": 0.9755847218387605,
+          "rsd": 0.002043855133050424
+        },
+        {
+          "metric": "avgAntibodiesMade",
+          "mean": 15.0633125,
+          "sdArm": 0.06743723934147915,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 14.861000781975562,
+          "hi": 15.265624218024438,
+          "rsd": 0.004476919624516795
+        },
+        {
+          "metric": "avgOrgansDamaged",
+          "mean": 2.3013125,
+          "sdArm": 0.016871229737548482,
+          "arms": 8,
+          "batches": 20,
+          "gamesPerBatch": 100,
+          "lo": 2.2506988107873545,
+          "hi": 2.3519261892126453,
+          "rsd": 0.007331133749783432
+        }
+      ],
+      "reportedNotGated": {
+        "winRateUnderReferenceBot": 0,
+        "unfinishedGames": 0
+      }
+    }
+  }
+}

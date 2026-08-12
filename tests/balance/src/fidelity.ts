@@ -19,7 +19,7 @@
 
 import { drawCount, installRng, restoreRng } from '@immunity-wars/equivalence/rng';
 
-import { PORT, playGame, type GameRecord } from './play.js';
+import { PORT, playGame, seedAt, type GameRecord } from './play.js';
 import type { Engine } from '@immunity-wars/equivalence/types';
 
 /**
@@ -109,8 +109,15 @@ export function differences(a: Outcome, b: Outcome): string[] {
   return out;
 }
 
-/** Deterministic, widely-spaced seeds. Recorded so any figure can be reproduced exactly. */
-export const seedAt = (i: number): number => 0x51de + i * 7919;
+/**
+ * Re-exported so this suite has ONE seed schedule.
+ *
+ * It changed at E2 from an arithmetic step to splitmix32 — see `play.ts` and docs/FINDINGS.md #33.
+ * This check is unaffected in substance: it is a PAIRED comparison, both arms on identical seeds,
+ * so seed correlation cancels. The 3,000-game result was re-run on the new schedule and is
+ * unchanged.
+ */
+export { seedAt };
 
 export interface FidelityResult {
   readonly compared: number;

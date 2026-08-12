@@ -37,6 +37,39 @@ export const PORT = portNs as unknown as Engine;
 export const DIFFICULTIES = ['training', 'normal', 'hard'] as const;
 
 /**
+ * The seed for sample `i`. **splitmix32, not an arithmetic step, and the difference is measurable.**
+ *
+ * This was `0x51de + i * 7919` until E2, and that choice quietly broke the bands. Games seeded by
+ * consecutive terms of an arithmetic sequence are NOT independent samples: `installRng` uses
+ * mulberry32, whose state is the seed, so linearly-spaced seeds give correlated streams. The
+ * effect is not subtle —
+ *
+ * ```
+ *   normal, 20 x 100 games, arm A vs a disjoint arm B
+ *   seeds                 sd/batch (avgTurnsSurvived)   worst |B - A|
+ *   0x51de + i * 7919                    0.4105              4.3 sd   ** outside the band **
+ *   splitmix32(i)                        0.2499              1.7 sd
+ * ```
+ *
+ * Two separate harms, in opposite directions. The batch spread was INFLATED by 64%, so bands
+ * built from it looked reassuringly wide; and two disjoint seed blocks disagreed by more than
+ * three standard errors, so the bands did not reproduce and could not have been gated on.
+ *
+ * Found by the two-arm reproducibility check in `metrics-run.ts`, which exists for exactly this
+ * and fired the first time it was run at full size. See docs/FINDINGS.md #33.
+ *
+ * PAIRED comparisons — E0a's bot fidelity, and every negative control that runs a base engine and
+ * a mutated one over the SAME seeds — are unaffected either way, because the correlation is
+ * identical on both sides and cancels.
+ */
+export function seedAt(i: number): number {
+  let z = (i + 0x9e3779b9) >>> 0;
+  z = Math.imul(z ^ (z >>> 16), 0x21f0aaad) >>> 0;
+  z = Math.imul(z ^ (z >>> 15), 0x735a2d97) >>> 0;
+  return (z ^ (z >>> 15)) >>> 0;
+}
+
+/**
  * `simulate()`'s own turn guard, reproduced exactly.
  *
  * Not a tuning knob. The fidelity check compares this driver against `simulate()`, and a

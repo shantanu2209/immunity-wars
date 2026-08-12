@@ -25,7 +25,7 @@ stated here because it generalises past any one of them:
 | Equivalence corpus | `normalise()` round-trips both engines through JSON, so anything JSON destroys is destroyed identically and the hashes still match — which is *why* the property suite's `viewstate-round-trip` exists |
 | Property suite | Five negative controls that would not fire, classified into a rule about which KIND of corruption can falsify which kind of check |
 | **This suite, E0a** | The fidelity check **cannot** see the one difference the two bots really have. Asserted as `0`, with the reason ([sensitivity table](#e0a--bot-fidelity)) |
-| **This suite, the panel** | The metric panel **cannot** see brain `branch:3 → 4` ([`FINDINGS.md`](../../docs/FINDINGS.md) #17). To be pinned the same way at E2 |
+| **This suite, the panel** | The metric panel does not FAIL on brain `branch:3 → 4`. Pinned at E2 as `failed === false` — and *not* as "nothing moved", because at 2,000 games one metric moves 3.2σ ([`FINDINGS.md`](../../docs/FINDINGS.md) #34.4 corrects #17) |
 
 And the two standing rules it sits on, from the property suite:
 
@@ -134,9 +134,13 @@ expressions stop being interchangeable. The test says so in its failure message.
 
 ```bash
 pnpm test                                   # the fast tier, inside pnpm verify
-npx tsx tests/balance/fidelity.ts           # E0a deep run — 1000 seeds x 3
-npx tsx tests/balance/fidelity.ts 50        # a subset
+npx tsx tests/balance/fidelity.ts           # E0a — bot fidelity, 1000 seeds x 3   (~25s)
+npx tsx tests/balance/size-run.ts           # E1  — state size, 200 seeds x 3      (~30s)
+npx tsx tests/balance/metrics-run.ts        # E2  — calibrate bands, 54,000 games  (~4min)
 ```
+
+Seeds are `splitmix32(index)` — **deterministic, and deliberately not an arithmetic step**
+([`FINDINGS.md`](../../docs/FINDINGS.md) #33). Every figure is reproducible exactly.
 
 ---
 
@@ -148,7 +152,7 @@ npx tsx tests/balance/fidelity.ts 50        # a subset
 | E0b engine-as-parameter | done — `src/play.ts` and `SizeSampler` take the engine; a control proves it |
 | E0c vacuity guards | done for E0a and E1; E2 inherits |
 | **E1** state size | **done** — [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §1–8 |
-| E2 metric panel | not started |
+| **E2** metric panel | **done** — bands in [`bands.json`](bands.json); closeout §10 |
 
 ### E1 — state size
 
@@ -170,3 +174,30 @@ Results are in the closeout. What lives here is the method:
 The census found two fields no generator ever fills, and the interesting one is
 [`FINDINGS.md`](../../docs/FINDINGS.md) #29 — a Helper T-Cell mechanic the engine models and
 nothing ever triggers.
+
+### E2 — the metric panel
+
+Bands in [`bands.json`](bands.json); results in the closeout §10. The method, and the two things
+worth knowing before trusting a number from it:
+
+- `src/metrics.ts` — metric definitions, fixed before measuring, and `calibrate()`, which measures
+  the null from **K independent arms** rather than deriving it from batch spread.
+- `src/panel.ts` — the bands and the failure rule. **Its header is the record of a design that had
+  to be corrected three times**, each time by a control aimed at a change whose answer was known.
+- `src/metrics-control.test.ts` — the controls, including the demonstrated blind spot.
+- `src/reporting.test.ts` — the qualifier constraint, with the control that strips the label.
+
+**Two results here are about this suite rather than about the game**, and both were found by
+checks written for exactly them:
+
+> **The proposed gate detected nothing.** Built as `FINDINGS.md` § "Task E metrics" specified — ±3
+> sd of a 100-game batch, two of four — it missed an Action Point removed from every turn and the
+> Brain losing half its integrity. [`FINDINGS.md`](../../docs/FINDINGS.md) #34.
+
+> **"Deterministic and reproducible" is not the same as "independent."** Seeds spaced by a fixed
+> step produced correlated games; two disjoint arms disagreed by 4.3 sd while the batch spread was
+> inflated by 64%. Every figure was exactly repeatable and the band was still wrong.
+> [`FINDINGS.md`](../../docs/FINDINGS.md) #33.
+
+Both are the reason the deep runner ships a **held-out arm**: a band checked only against the data
+that built it has not been checked.

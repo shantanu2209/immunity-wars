@@ -43,6 +43,8 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **30** | **#24 AGAIN: the coverage gate filed a NON-multiplayer arm into Phase 3, via a whole-FILE blanket rule** | **Method** | **FIXED** at Task E1 on Shantanu's call; churn reported |
 | **31** | **`endCommand` returns a BURST of full states — the brief's size measurement is one frame of it** | **Task E / Phase 3** | `PHASE1_BRIEF.md` §5 corrected; both numbers reported |
 | **32** | **A control that fires is not enough — measure how STRONGLY, against WHAT** | **Method** | Rule added to `tests/property/README.md` beside the four-kinds table |
+| **33** | **Linearly-spaced seeds are not independent samples — the harness's own bands were wrong** | **Method** | **FIXED** at E2; found by the reproducibility check that exists for it |
+| **34** | **The Task E metric-panel design in this file does not work as proposed, measured three ways** | **Task E** | **CORRECTED** at E2; the panel now detects an Action Point, and #17's blind spot is narrower than stated |
 
 ---
 
@@ -238,6 +240,15 @@ and it would give false confidence. Measured across 20 batches × 100 games per 
 `avgAntibodiesMade`, `avgOrgansDamaged` — at ±3 sd of a 100-game batch, requiring **two or
 more** to breach before failing the build. One metric drifting is noise; two moving together
 is a real engine change. Keep `winRate` as a *reported* number, never as a gate.
+
+> ⚠️ **The four metrics were right. The band and the rule were not — see [#34](#34-the-metric-panel-design-proposed-in-this-file-does-not-work-measured-three-ways),
+> corrected at E2.** Implemented exactly as written above, this gate detected neither an Action
+> Point removed from every turn nor the Brain losing half its integrity. Three corrections, each
+> forced by measurement: the band is ±3 sd of the **arm mean**, not of one batch; its width is
+> **measured from K independent arms**, not derived as sd/√batches, which understates it by up to
+> 1.5×; and the failure rule gained a second arm, **any one metric past ±6σ**, because on Normal
+> the AP change moves one metric by 14σ and none other. The table above is still the reason these
+> four were chosen; it is not the specification of the gate.
 
 **Frame these as detecting ENGINE CHANGE, not as measuring difficulty.** The bot cannot
 measure difficulty — finding #1 is the proof — and the metric names should not imply
@@ -1589,3 +1600,123 @@ outside both failures look identical: a green test and a claim nobody has falsif
 **Disposition:** rule added to `tests/property/README.md` beside the four-kinds table, where the
 negative-control rule lives, and cross-referenced from `tests/balance/README.md`, which holds the
 table and the blind-spot row.
+
+---
+
+## 33. Linearly-spaced seeds are not independent samples
+
+Found at E2, by the two-arm reproducibility check in `metrics-run.ts` — a check written for exactly
+this and firing the first time it ran at full size.
+
+The balance harness seeded game `i` with `0x51de + i * 7919`. `installRng` uses **mulberry32,
+whose entire state is the seed**, so seeds drawn from an arithmetic sequence produce correlated
+streams. Games that look like independent samples are not.
+
+**Measured**, Normal, 20 × 100 games, one arm against a disjoint second arm:
+
+| seed schedule | sd/batch (`avgTurnsSurvived`) | worst \|arm B − arm A\| |
+|---|---|---|
+| `0x51de + i * 7919` | 0.4105 | **4.3 sd — outside the band** |
+| `splitmix32(i)` | 0.2499 | 1.7 sd |
+
+**Two harms, pointing opposite ways.** The batch spread was *inflated* by 64%, so bands built from
+it looked reassuringly wide — while two disjoint seed blocks disagreed by more than three standard
+errors, so the bands did not reproduce and could not have been gated on. A gate built on them
+would have failed builds on seeds.
+
+### What it does and does not touch
+
+| | Affected? | Why |
+|---|---|---|
+| E0a bot fidelity | **No** | PAIRED — both arms on identical seeds, so the correlation is on both sides and cancels. Re-run on the new schedule: still 3,000/3,000 identical |
+| Every negative control | **No** | Same reason: base engine and mutant run the same seeds |
+| E1 state size | **No, measured** | Re-run on the new schedule; censoring 51.9/31.8/19.4% vs 51.9/32.4/19.2%, largest state 57.1 vs 57.0 KiB, churn 44.7/46.4/48.8% vs 45.3/46.2/48.6%. Nothing moved |
+| **E2 bands** | **Yes** | Unpaired by construction — the whole point is comparing a fresh run against a stored band |
+
+**Disposition: FIXED at E2.** `seedAt` is splitmix32; provenance records the schedule by name, so
+a future run cannot silently use a different one and compare against these bands.
+
+**The transferable part:** *"deterministic and reproducible" is not the same as "independent".* The
+old schedule was both deterministic and reproducible, and every figure derived from it was exactly
+repeatable — and the band it produced was still wrong. Nothing about a green, reproducible run
+would ever have said so. It took a check that deliberately compared two independent samples.
+
+---
+
+## 34. The metric-panel design proposed in this file does not work, measured three ways
+
+The recommendation in [§ "Task E metrics"](#task-e-metrics--what-a-build-gate-can-actually-be-built-on)
+was written from variance data, before anything was built on it. Implemented at E2 and then made
+to face known engine changes, all three of its parts turned out to need correcting. Recorded in
+full because the panel is what CI will gate on, and because two of the corrections were found only
+by a control aimed at a change whose answer was already known.
+
+### 34.1 "±3 sd of a 100-game batch" detects nothing
+
+| arms of 20 × 100 = 2,000 games | ±3 sd of one batch | calibrated band |
+|---|---|---|
+| AP −1 per turn, Normal | 0 of 4 | 1 of 4 |
+| AP −1 per turn, Hard | 1 of 4 | 2 of 4 |
+| brain integrity 2 → 1, Normal | 0 of 4 | 3 of 4 |
+| brain integrity 2 → 1, Hard | 0 of 4 | 3 of 4 |
+
+The sd across batches measures how much **one** batch of 100 games bounces. CI does not run one
+batch; it runs the suite. Judging a 2,000-game aggregate by a one-batch band throws away the √20
+the aggregate earned. **A gate that cannot notice a 20% cut to the game's central resource is a
+gate incapable of failing usefully** — the same objection §1 raises against win rate, which is
+what this panel exists to replace.
+
+### 34.2 The band's width must be MEASURED, not derived
+
+`sd(batch)/√batches` assumes batches are independent samples of the arm mean. Checked against 8
+independent arms of 2,000 games:
+
+| metric, Normal | true sd(arm) | derived sd/√20 | ratio |
+|---|---|---|---|
+| `avgTurnsSurvived` | 0.0952 | 0.0632 | **1.51×** |
+| `trunkKillPct` | 0.0015 | 0.0013 | 1.16× |
+| `avgAntibodiesMade` | 0.1028 | 0.1120 | 0.92× |
+| `avgOrgansDamaged` | 0.0232 | 0.0218 | 1.07× |
+
+A band 1.5× too narrow fails builds on seeds. The panel now calibrates from K independent arms and
+the shipped bands carry `arms` in their provenance; a run of fewer than three arms is rejected as
+not a null distribution at all.
+
+### 34.3 "Two or more breach" misses a change that moves one metric very loudly
+
+With a calibrated null, removing an Action Point per turn on Normal moves **one** metric — by
+**14σ**. Under 2-of-4 alone, that build passes. So the rule gained a second arm:
+
+> **FAIL when two or more metrics are past ±3σ, OR when any one is past ±6σ.**
+
+| change | breaches @3σ | loudest | verdict |
+|---|---|---|---|
+| AP −1, Normal | 1 | 14.1σ | **FAIL** (6σ arm) |
+| AP −1, Hard | 2 | 38.0σ | **FAIL** |
+| brain integrity 2 → 1, Normal | 3 | 4.8σ | **FAIL** |
+| brain integrity 2 → 1, Hard | 3 | 5.8σ | **FAIL** |
+| brain `branch:3 → 4` | 1 | 3.2σ | pass — the blind spot |
+
+3σ on a single metric is ~0.3% per metric per run, which is a coin-flip CI gate; 6σ is not.
+
+### 34.4 ⚠️ And #17's blind spot is narrower than #17 states
+
+[#17](#17-the-brain-lane-change-restored-one-turn-of-slack--and-no-aggregate-metric-could-see-it)
+says of brain `branch:3 → 4`: *"no metric moved beyond 2 standard deviations at any difficulty."*
+That was measured at 10 × 100 = 1,000 games against a null estimated from batch spread.
+
+**At 2,000 games with a calibrated null, `avgTurnsSurvived` moves +3.2σ on both Normal and Hard.**
+
+What survives is the **gate-level** claim, and only that: the panel does not FAIL, because one
+metric under 6σ is not a failure. "No metric moved" is no longer the right sentence.
+
+This is why `metrics-control.test.ts` asserts `failed === false` and not `breaches.length === 0`.
+The stronger assertion would have gone red at the shipped sample size, and the temptation would
+then have been to shrink the sample until the test passed — fitting the measurement to the claim.
+
+**The honest statement, for anything downstream including the grant write-up:** the panel does not
+fail on `branch:3 → 4`, and it is not blind to it either. It is a coarse net that this change slips
+through, which is exactly what #17 says a metric panel is for and against.
+
+**Disposition: CORRECTED at E2.** The § "Task E metrics" recommendation carries a pointer here.
+Nothing about the engine changed; what changed is the instrument built on top of it.
