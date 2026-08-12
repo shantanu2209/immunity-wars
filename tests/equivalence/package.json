@@ -5,6 +5,16 @@
   "description": "Task B equivalence rig: proves the ported engine behaves identically to tools/legacy/v2_engine.js",
   "license": "Apache-2.0",
   "type": "module",
+  "comment:exports": "The rig modules other suites reuse. Task D's property suite needs the sequence generator, the seeded RNG, the order-sensitive comparator and the shrinker; Task E's balance harness needs the same four. Exporting them beats copying them into each suite, which is how two generators drift apart and stop agreeing about what a legal game is. Deliberately NOT exported: rig.ts (its normalise() strips the DELIBERATE_DIVERGENCES and is meaningful only for legacy-vs-port comparison) and states.ts (its augmented states are deliberately incoherent — see the property suite's README).",
+  "exports": {
+    "./bot": "./src/bot.ts",
+    "./hash": "./src/hash.ts",
+    "./rng": "./src/rng.ts",
+    "./shrink": "./src/shrink.ts",
+    "./diff": "./src/diff.ts",
+    "./engine": "./src/engine.ts",
+    "./types": "./src/types.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",

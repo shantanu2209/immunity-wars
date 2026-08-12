@@ -1,0 +1,23 @@
+{
+  "name": "@immunity-wars/property",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Task D property/invariant suite: generative legal play, checked against invariants the engine does not enforce",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "@immunity-wars/engine": "workspace:*",
+    "@immunity-wars/equivalence": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^3.23.2",
+    "vitest": "^2.1.8"
+  }
+}

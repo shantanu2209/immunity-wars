@@ -1,0 +1,15 @@
+{
+  // Same reasoning as tests/equivalence/tsconfig.json: this is test infrastructure, not shipped
+  // code, and it reuses the equivalence rig's modules — which read the legacy engine off disk
+  // and swap the global Math.random. Node types are allowed here for that reason and for no
+  // other; nothing in packages/engine gains them.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  // `full-run.ts` is listed explicitly. A bare "src/**/*.ts" would leave the on-demand runner
+  // outside `pnpm typecheck` entirely — which is where the ≥10,000-game tier lives, so it is
+  // exactly the file a type error could sit in unnoticed until someone runs it by hand.
+  "include": ["src/**/*.ts", "full-run.ts"]
+}

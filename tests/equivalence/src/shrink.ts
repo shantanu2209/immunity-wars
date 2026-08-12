@@ -50,27 +50,37 @@ function stillDiverges(
 }
 
 /**
- * Delta debugging (ddmin) over the action list.
+ * Delta debugging (ddmin) over an action list, against an arbitrary failure predicate.
+ *
+ * Lifted out of `shrinkActions` at Task D so the property suite can reuse it. There are exactly
+ * two predicates in this repository and they ask different questions:
+ *
+ *   stillDiverges   — do these TWO engines disagree on this sequence?     (the corpus)
+ *   stillViolates   — does ONE engine break an invariant on it?           (the property suite)
+ *
+ * The reduction is identical either way, and so is the soundness argument in this file's header:
+ * a reduced list is a different-but-legal game, and reductions that stop reproducing are simply
+ * discarded. Writing a second ddmin for the property suite would have meant two minimisers that
+ * could drift apart in what counts as a smaller case, and two failure-report formats for what is
+ * the same kind of failure.
  *
  * `budget` caps the number of candidate replays so a shrink cannot itself become the slow
  * part of a CI run. Hitting the budget yields a partially-shrunk case, which is still far
  * more useful than the raw one.
  */
-export function shrinkActions(
-  legacy: EngineFactory,
-  candidate: EngineFactory,
-  seed: number,
-  difficulty: string,
+export function ddmin(
   actions: readonly Action[],
+  stillFails: (candidate: readonly Action[]) => boolean,
   budget = 400,
 ): readonly Action[] {
   let best = actions.slice(0, actions.length);
   let spent = 0;
 
   const test = (candidateList: readonly Action[]): boolean => {
+    if (candidateList.length === 0) return false;
     if (spent >= budget) return false;
     spent += 1;
-    return stillDiverges(legacy, candidate, seed, difficulty, candidateList);
+    return stillFails(candidateList);
   };
 
   // Cheap first pass: truncate the tail. Everything after the first divergence is noise.
@@ -104,6 +114,22 @@ export function shrinkActions(
   }
 
   return best;
+}
+
+/** ddmin with the two-engine divergence predicate. The corpus's caller. */
+export function shrinkActions(
+  legacy: EngineFactory,
+  candidate: EngineFactory,
+  seed: number,
+  difficulty: string,
+  actions: readonly Action[],
+  budget = 400,
+): readonly Action[] {
+  return ddmin(
+    actions,
+    (list) => stillDiverges(legacy, candidate, seed, difficulty, list),
+    budget,
+  );
 }
 
 export interface ShrunkReport {

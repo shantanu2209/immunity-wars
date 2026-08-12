@@ -82,7 +82,10 @@ contract Task B was measured against.
   `tsconfig.base.json`.
 - Zod at every trust boundary: network messages, content pack loading, saved games.
   Types are compile-time only and do nothing for malformed runtime input.
-- Every game state and network message carries `rulesVersion`.
+- **`rulesVersion` is on the content pack only — NOT on game state, NOT on network messages.**
+  This line previously asserted that every state and message carries it. Neither does, and
+  `packages/protocol` is a 20-line scaffold. Phase 3 owns making it true, alongside seam 7's
+  deferred pack check — see `docs/FINDINGS.md` #26. *Corrected 12 Aug 2026, at Task D.*
 - All player-visible strings go in i18n catalogues. Never hardcode UI text — a Hindi edition
   is a committed grant deliverable and retrofitting is expensive.
 

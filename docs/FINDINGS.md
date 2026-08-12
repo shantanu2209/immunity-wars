@@ -36,6 +36,9 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **23** | **`Diphtheria toxin` is content the engine can never produce — #22 in mirror** | **Task C** | Report only; C4's reachability report must find it unaided |
 | **24** | **VARIANT OF THE PATTERN: a measuring instrument wrong where nobody was looking** | **Method** | **FIXED** at C1; the lesson is the finding |
 | **25** | **An arm ASSUMED dead and excluded turned out to be live — exclusion lists decay both ways** | **Method** | Rule A re-test proposed; decision for Shantanu |
+| **26** | **`rulesVersion` is documented on every state and message, and is on neither** | **Phase 3** | Recorded, not fixed — the protocol becomes real in Phase 3 |
+| **27** | **Antibodies EXCEED the per-family cap in legal play — the brief's invariant is false** | **Task D** | Invariant rewritten before it was written; measurement below |
+| **28** | **C5b AGAIN: checks that ran the port's machinery whatever engine produced the state** | **Method** | **FIXED** at Task D; found by a control that would not fire |
 
 ---
 
@@ -1184,3 +1187,160 @@ proof of death.
 **Disposition: report only; the churn check is a decision, not a change made unilaterally.** The
 gate is a measuring instrument, and [#24](#24-a-measuring-instrument-that-was-wrong-in-a-region-nobody-was-looking-at)
 is what happens when one is changed without care.
+
+---
+
+## 26. `rulesVersion` is documented on every state and message, and is on neither
+
+Found at Task D planning, by grepping to confirm a rule before relying on it.
+
+[`CLAUDE.md`](../CLAUDE.md) states, under Conventions:
+
+> Every game state and network message carries `rulesVersion`.
+
+**Neither carries it.** `rulesVersion` appears in `packages/content` and nowhere else:
+
+| Where it is | Where the claim says it is |
+|---|---|
+| `packages/content/src/rules/pack.json` — the pack stamp | `GameState` — **no such field** |
+| `packages/content/src/schema.ts:318` — validated as a string | `packages/protocol` — **20 lines total, a scaffold** |
+| `packages/content/src/load.ts:110` — re-exported as `RULES_VERSION` | |
+
+`load.ts:110`'s own comment reads *"Every state and network message carries rulesVersion (BRIEF
+§3, seam 7)"* — sitting directly above the one place that does carry it, describing two places
+that do not.
+
+**This is the ninth documented-but-unenforced claim in this project**, and the same shape as the
+`engine`-imports-`content`-types-only rule corrected at C1: a sentence that reads as a
+description of the code and is actually a description of an intention.
+
+### Why it is recorded and not fixed
+
+The claim becomes true and testable at the point where a state or a message can genuinely
+disagree with the engine reading it — a saved game reloaded by a newer build, or a relay message
+crossing between two clients on different versions. `packages/protocol` is a 20-line scaffold and
+`packages/server` is empty; Phase 3 is where both become real. Stamping a field now would be a
+constant compared against a constant, which is exactly the pattern #22 names and which
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §6 already declined once, deliberately, for the pack version
+check.
+
+**Disposition: report only, Shantanu's call, 12 Aug 2026.** Phase 3 owns it, alongside seam 7's
+deferred pack check — they are the same decision arriving at the same moment. What must not
+happen is the sentence staying in `CLAUDE.md` as though it described the code.
+
+---
+
+## 27. Antibodies exceed the per-family cap in ordinary legal play
+
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §7 lists, among the property-suite invariants:
+
+> Antibodies never exceed the per-family cap
+
+**Measured before writing it, and it is false.** 400 seeds × 3 difficulties, reference bot,
+30 turns, checking all seven pools after every action against `capFam` at that moment:
+
+```
+games            1200
+states checked   113,344
+pool checks      793,408
+over-cap states  12,803
+games affected   288 / 1200        (training 89, normal 99, hard 100 of 400 each)
+worst excess     3 over cap        e.g. ICB 5/2 on Training
+cause            liver damage 12,803   capTurns 0   unexplained 0
+over the UNDAMAGED cap for the difficulty: 0
+```
+
+The cause tally covers **all 12,803** over-cap states, not the retained samples — classifying
+from the subset that reaches the report is [#24](#24-a-measuring-instrument-that-was-wrong-in-a-region-nobody-was-looking-at)'s
+exact error.
+
+### Why it happens, and why it is not a bug
+
+`capFam` is **dynamic** (`queries.ts:208`). It returns 5 / 4 / 3 by difficulty, then clamps to 2
+if the liver is damaged, and to 2 during `fx.capTurns`. Nothing reduces an existing store when
+the liver takes damage. So a player who legally produced 5 ICB antibodies on Training, and whose
+liver is then damaged by an arriving pathogen, holds 5 against a cap of 2 — without having done
+anything the engine would refuse.
+
+**The biology is right, and this is the part worth keeping.** A damaged liver cannot *synthesise*
+antibody at the same rate; it does not destroy antibody already circulating. The engine models
+exactly that:
+
+| Mechanism | Effect on existing stores | Why |
+|---|---|---|
+| Liver damage → `capFam` clamps to 2 | **Left alone** | Reduced synthesis capacity. Circulating antibody persists |
+| `antibodyShortage` crisis → `capTurns = 3` | **Clamped to 2** (`construct.ts:119`) | A shortage consumes what you have; that is what a shortage is |
+
+Two different clamps because they are two different events. That distinction is defensible and
+Kartik should know it is there — it is the kind of thing a judge asks about.
+
+### The two invariants that ARE true, and replace the brief's one
+
+Measured across the same 793,408 pool checks, **zero violations of either**:
+
+1. **`ab[f]` never exceeds the difficulty's undamaged cap** — `AB_CAP_FAM_BY_DIFF[difficulty]`.
+   The standing ceiling. Falsifiable by an affinity-maturation overshoot (`rateForFam` can exceed
+   the rate ceiling on Training), by `passiveAntibodies` topping up past it, or by a future
+   difficulty whose cap is read from the wrong table.
+2. **`produce` never raises `ab[f]` above `capFam(g, f)` as measured at the moment of the write.**
+   This is the real "cap is respected" claim — checked at the write rather than over the state,
+   which is what makes it survive the cap moving underneath a legal store.
+
+The brief's wording conflated the two, and asserting it as written would have gone red on 24% of
+games. **Recorded because the near miss is the finding:** an invariant that looks obviously true,
+is stated in the spec, and is false — caught only because the plan required measuring it before
+writing it rather than writing it and weakening it when it went red.
+
+
+---
+
+## 28. The C5b shape again — a check that ran the wrong engine's machinery
+
+Found at Task D, by a negative control that **would not fire**. Not by anything failing.
+
+Three of the eight property invariants are about an engine's own machinery rather than about the
+contents of a state: `undo-round-trip` (does `pushUndo` then `undo` restore?), `viewstate-round-trip`
+(does the projection survive JSON?), and `production-respects-cap` (does `produce` clamp?).
+
+All three called the **ported engine's** functions, from a module-level import:
+
+```ts
+const port = portNs as unknown as { pushUndo: ...; viewState: ...; capFam: ... };
+// ...
+port.pushUndo(g);
+port.undo(g);
+```
+
+The runner, meanwhile, can be pointed at a different engine — that is how the wrong-engine negative
+controls work. So when a deliberately-broken engine produced the states, **the invariant checked
+them with a correct implementation** and reported nothing. A control designed to prove the check
+could fail instead proved it could not.
+
+### Why this is the same failure as C5b, not merely similar
+
+| | Task C5b | This |
+|---|---|---|
+| The test | imported its own generator | imported its own engine |
+| The import | regenerated the oracle before the check read it | supplied a *correct* implementation to judge a *broken* one |
+| Visible at the import site? | No — `import { thing } from './generator.js'` looks inert | No — `port.pushUndo(g)` looks like exactly what it should be |
+| Result | 19 green tests that could not fail | 3 invariants that could not fail against the case they existed for |
+
+**One root cause: a module-level import silently substituted for the thing under test.** In both
+cases the substitution is invisible where it happens and only shows up when something is
+deliberately broken and the check stays quiet.
+
+### The fix, and the line it draws
+
+Invariants now receive a `Ctx` carrying **the engine that produced this state**. But not everything
+moved: board geometry is still read from `@immunity-wars/content`, deliberately.
+
+> An invariant that asks the engine under test for its own expected value is checking the engine
+> against itself, and cannot fail.
+
+That is the distinction the fix has to get right, and it is not "use the injected engine
+everywhere". `pushUndo` is the engine's *behaviour* and must come from the engine under test.
+`branchLen` is the *expected value* and must not.
+
+**Disposition: FIXED at Task D.** The transferable part is that the C5b question — *what did an
+import quietly substitute for the thing I meant to test?* — is now worth asking of every checker in
+this repository, not only of generators with top-level side effects.

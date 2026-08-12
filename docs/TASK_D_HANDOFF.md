@@ -89,11 +89,11 @@ the test imported its own generator and the import regenerated the oracle. See
 `tests/equivalence/README.md`, "Read this first", for the list and the four instrument blind
 spots (corpus / gate / dependency-cruiser / `tsc`).
 
-> **A latent instance of exactly that trap, not fixed, flagged per rule 2.**
-> `tests/equivalence/reachability-report.ts` and `string-inventory.ts` both run their generator
-> at module top level, as `i18n-extract.ts` did. Neither is imported by a test today, so neither
-> is broken. **The moment a test imports one for a helper, that test silently becomes unable to
-> fail.** The fix is the four-line `executedDirectly` guard already in `i18n-extract.ts`.
+> **~~A latent instance of exactly that trap, not fixed, flagged per rule 2.~~ CLOSED.**
+> `tests/equivalence/reachability-report.ts` and `string-inventory.ts` both ran their generator
+> at module top level, as `i18n-extract.ts` did. **Both now carry the `executedDirectly` guard**
+> — commit `70466c5`, 12 Aug 2026, which landed after this handoff was written. Struck through
+> rather than deleted so the flag and its closure stay legible together.
 
 **2. Build what the task specifies; for anything beyond it the test is PURPOSE, not cost.** Does
 it make later work faster or safer, or is it completeness for its own sake? Flag the second in
