@@ -1,0 +1,23 @@
+{
+  "name": "@immunity-wars/balance",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Task E measurements: serialised state size, and the continuous metric panel that detects engine change",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:why-here": "PHASE1_BRIEF.md v1.3 §2 described tools/balance-sim/ as an 'existing simulation harness, promoted to a test'. There is no such harness (docs/FINDINGS.md #6): the simulator is simulate() inside the engine with its bot inlined in the same function body, and it cannot be promoted — it returns seven aggregates, exposes nothing per game, and extending it would be an engine change that breaks the B6 equivalence check. So the harness is built here, driving the engine from OUTSIDE through the same `engine` parameter tests/property/src/runner.ts uses. The brief is corrected rather than left standing.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "@immunity-wars/engine": "workspace:*",
+    "@immunity-wars/equivalence": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

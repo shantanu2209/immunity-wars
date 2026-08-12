@@ -1,0 +1,15 @@
+{
+  // Same reasoning as tests/equivalence/tsconfig.json and tests/property/tsconfig.json: this is
+  // test infrastructure, not shipped code, and it reuses the equivalence rig's modules — which
+  // read the legacy engine off disk and swap the global Math.random. Node types are allowed here
+  // for that reason and no other; nothing in packages/engine gains them.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  // Root-level scripts are listed alongside src/, for the reason spelled out in the equivalence
+  // tsconfig: these are MEASURING INSTRUMENTS, and an instrument nobody typechecks is the same
+  // class of problem as a generator that regenerates its own oracle.
+  "include": ["src/**/*.ts", "*.ts"]
+}

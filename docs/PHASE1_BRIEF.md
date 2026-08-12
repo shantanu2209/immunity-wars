@@ -77,14 +77,31 @@ immunity-wars/
 │  └─ server/          # Relay (EMPTY in Phase 1 — scaffold only)
 ├─ tools/
 │  ├─ art-pipeline/    # Deterministic icon normalisation → WebP (Phase 2)
-│  ├─ balance-sim/     # Existing simulation harness, promoted to a test
+│  ├─ balance-sim/     # EMPTY. See the correction below
 │  └─ legacy/          # Current .js/.html files, read-only reference during migration
 ├─ tests/
 │  ├─ property/        # fast-check invariant tests
-│  ├─ balance/         # Win-rate regression with tolerance bands
+│  ├─ balance/         # The metric panel — NOT win-rate bands. See §4 and the correction below
 │  └─ e2e/             # Playwright (Phase 2+)
 └─ .github/workflows/
 ```
+
+> ⚠️ **Corrected 12 Aug 2026, at Task E.** v1.3 described `tools/balance-sim/` as the "existing
+> simulation harness, promoted to a test". **There is no such harness and never was**
+> ([`FINDINGS.md`](FINDINGS.md) #6): the simulator is `simulate()` inside the engine, with its
+> decision bot inlined in the same function body, and the directory has been empty since Task A.
+> `simulate()` cannot be promoted, either — it returns seven aggregates, exposes no per-game
+> figures, and extending it would be an engine change that breaks the B6 equivalence check.
+>
+> The harness is therefore **built at Task E, in `tests/balance/`**, driving the engine from
+> outside through the `engine` parameter the property runner already uses. `tools/balance-sim/`
+> stays empty.
+>
+> `tests/balance/` also does not hold "win-rate regression with tolerance bands". §4 already
+> forbids gating on a win rate; what lives there is the metric panel.
+>
+> This would have been the tenth documented-but-false claim in this project had it been left
+> standing. The response is the same as the other nine: make it true or make it accurate.
 
 **Dependency rule, enforced in CI:** *content contains no logic, engine contains no data.*
 `engine` → `content` is intended and unrestricted; `content` → anything is forbidden.
@@ -208,6 +225,26 @@ Keep types boring: no clever generics, `unknown` at every trust boundary.
   **This determines whether the server can keep broadcasting full state or must send deltas,
   and it drives the hosting choice.** Report it explicitly.
 - Baseline balance win rates, for §4.
+
+> ⚠️ **Corrected 12 Aug 2026, at Task E planning. The first bullet specifies the wrong
+> measurement — one frame of a burst.**
+>
+> `endCommand` does not return a state. It returns a `Frame[]`, and **each frame carries a full
+> `viewState(g)`** — `resolveSpread` has 20 `snap()` sites (`packages/engine/src/spread.ts`,
+> returned at `actions.ts:170`). The frames exist so a UI can animate the spread step by step, so
+> they are not obviously droppable.
+>
+> **The quantity the full-state-vs-deltas decision turns on is `frames.length × stateSize`**, not
+> one state. Task E reports the brief's number exactly as specified *and* the frame burst, and the
+> burst is the one the Phase 3 decision is made on.
+>
+> Two further departures from the bullet as written, both in [`TASK_E_PLAN.md`](TASK_E_PLAN.md):
+> a single "representative" state is replaced by the full distribution with percentile ranks, and
+> **every figure is a floor** — the reference bot dies at turn 8.8 of a 45-turn Hard game, so the
+> corpus contains almost no late-game states, which is where the state is largest.
+>
+> The second bullet stands only in the sense §4 already narrows it: the baseline is the metric
+> panel. A win rate is reported, never gated, and never without its generator.
 
 **Task F — CI and dashboard.** Per §8.
 
