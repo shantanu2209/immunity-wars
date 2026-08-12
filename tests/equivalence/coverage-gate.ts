@@ -268,6 +268,96 @@ for (const a of arms) {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * RULE-A CHURN — the one point where rule A can be cheaply falsified.
+ *
+ * docs/FINDINGS.md #25. Rule B carries a per-arm demonstration and the gate FAILS if a
+ * demonstrated-dead arm becomes covered. Rule A carries only a class argument covering 95 of the
+ * 111 exclusions, and has no equivalent — an arm is excluded because it is uncovered TODAY, so
+ * when one becomes covered it simply drops off the list and nothing says so.
+ *
+ * That is not hypothetical. At C4 `construct.ts`'s
+ *   `(g.deck || []).find(c => c.dz === dz) ?? DECK_MASTER.find(...)`
+ * left the list, and the reason turned out to be that it was never dead: it is reachable by
+ * force-injecting a card `newGame` filters out of the deck, and no test had ever done that. The
+ * list shrank silently inside a generated-file diff.
+ *
+ * So: read the PREVIOUS list before overwriting it, and NAME every arm that has since become
+ * covered. Full re-testing is not mechanisable — proving an arm reachable is the same work as
+ * writing the test — but this costs one file read.
+ *
+ * REPORTS, DOES NOT REMOVE. What it means when an arm leaves the list is a judgement: the class
+ * argument may have been wrong, or a new test may simply have reached further. A human decides.
+ * ------------------------------------------------------------------ */
+
+/**
+ * Rule-A entries from a previously generated COVERAGE_EXCLUSIONS.md, COUNTED by `file|text`.
+ *
+ * Counted, not a set, and that distinction is load-bearing. One source line usually carries
+ * SEVERAL arms — `a ?? b` has two — and they are excluded individually, so the same text can
+ * appear twice. The first version of this check asked "is every arm at this text now covered?",
+ * which is the right question for rule B and the WRONG one here: it misses a line going from two
+ * excluded arms to one, and that is precisely the C4 case that motivated the whole check.
+ *
+ * Found by the negative control, not by reasoning.
+ */
+function previousRuleA(path: string): Map<string, number> {
+  let text: string;
+  try {
+    text = readFileSync(path, 'utf8');
+  } catch {
+    return new Map(); // first ever run
+  }
+  const out = new Map<string, number>();
+  let file = '';
+  let inRuleA = false;
+  for (const line of text.split(/\r?\n/)) {
+    if (line.startsWith('## Rule A')) inRuleA = true;
+    else if (line.startsWith('## Rule B')) inRuleA = false;
+    else if (line.startsWith('### ')) file = line.slice(4).trim();
+    else if (inRuleA) {
+      // - `<line>` `<text>`
+      const m = /^- `\d+` `(.*)`$/.exec(line);
+      if (m && file) {
+        const k = `${file}|${m[1]}`;
+        out.set(k, (out.get(k) ?? 0) + 1);
+      }
+    }
+  }
+  return out;
+}
+
+const EXCLUSIONS_DOC = 'docs/COVERAGE_EXCLUSIONS.md';
+const wasExcluded = previousRuleA(EXCLUSIONS_DOC);
+
+/** Keyed the same way the document writes them: short file name + text truncated to 110. */
+const armKey = (a: Arm): string => `${a.short}|${a.text.slice(0, 110)}`;
+
+const nowCovered: { arm: Arm; n: number }[] = [];
+const nowAbsent: string[] = [];
+if (wasExcluded.size) {
+  const current = new Map<string, Arm[]>();
+  for (const a of arms) {
+    const k = armKey(a);
+    const list = current.get(k) ?? [];
+    list.push(a);
+    current.set(k, list);
+  }
+  for (const [key, wasCount] of wasExcluded) {
+    const matches = current.get(key);
+    if (!matches) {
+      nowAbsent.push(key);
+      continue;
+    }
+    // How many arms at this text are STILL uncovered? Fewer than were excluded means that many
+    // have become covered — including the two-arms-to-one case a boolean check would miss.
+    const stillUncovered = matches.filter((a) => !a.covered).length;
+    if (stillUncovered < wasCount) {
+      nowCovered.push({ arm: matches[0] as Arm, n: wasCount - stillUncovered });
+    }
+  }
+}
+
 /* --- self-policing --- */
 const problems: string[] = [];
 
@@ -363,7 +453,34 @@ lines.push('Each carries the demonstration that established it.', '');
 for (const e of excluded.filter((x) => x.rule === 'B')) {
   lines.push(`### ${e.short}:${e.line}`, '', `\`\`\`\n${e.text}\n\`\`\``, '', e.why, '');
 }
-writeFileSync('docs/COVERAGE_EXCLUSIONS.md', lines.join('\n') + '\n');
+writeFileSync(EXCLUSIONS_DOC, lines.join('\n') + '\n');
+
+/* --- report the churn, after reading the old list and before anyone reads the new one --- */
+if (nowCovered.length || nowAbsent.length) {
+  console.log('');
+  console.log('RULE-A CHURN — arms that have LEFT the exclusion list since the last run');
+  console.log(
+    '  (docs/FINDINGS.md #25. Reported, never auto-removed: what it means is a judgement.)',
+  );
+}
+if (nowCovered.length) {
+  console.log('');
+  const total = nowCovered.reduce((s, c) => s + c.n, 0);
+  console.log(`  NOW COVERED — ${total} arm(s) across ${nowCovered.length} line(s):`);
+  for (const c of nowCovered) {
+    const suffix = c.n > 1 ? `   (${c.n} arms)` : '';
+    console.log(`      ${c.arm.short}:${c.arm.line}  ${c.arm.text.slice(0, 90)}${suffix}`);
+  }
+  console.log('');
+  console.log('  Each of these was excluded as a defensive arm that could not be taken, and a');
+  console.log('  test now reaches it. Either the arm was never dead, or the new test found a');
+  console.log('  path nobody had. Both are worth knowing; neither is automatic.');
+}
+if (nowAbsent.length) {
+  console.log('');
+  console.log(`  NO LONGER PRESENT — ${nowAbsent.length} (code moved, changed or was deleted):`);
+  for (const k of nowAbsent.slice(0, 10)) console.log(`      ${k.replace('|', ':  ')}`);
+}
 
 /* --- the DEFERRED lists: reachable, uncovered, and deliberately NOT excluded --- */
 
