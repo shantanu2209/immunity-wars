@@ -41,7 +41,7 @@ good enough to measure difficulty would reach them.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:258` `if (!target) return false;`
 
-## Uncategorised — still open (43 arms)
+## Uncategorised — still open (42 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
@@ -69,7 +69,6 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `construct.ts:215` `if (i >= 0) {`
 - `construct.ts:297` `if ((card as Card).novel) {`
 - `construct.ts:307` `if (!card) return null;`
-- `construct.ts:312` `if ((card as Card).novel) {`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
 - `queries.ts:178` `if (!helper || !target) return false;`
 - `queries.ts:274` `if (!g.flags.dendritic) {`

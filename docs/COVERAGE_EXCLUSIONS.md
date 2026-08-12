@@ -51,7 +51,6 @@ weaker than a demonstration and is labelled so deliberately.
 - `290` `.find((c) => c.type === type) ??`
 - `291` `DECK_MASTER.find((c) => c.type === type) ??`
 - `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
-- `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
@@ -61,7 +60,7 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### primitives.ts
 
-- `89` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
+- `116` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
 
 ### queries.ts
 
