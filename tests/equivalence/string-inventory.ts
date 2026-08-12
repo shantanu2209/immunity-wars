@@ -511,14 +511,27 @@ function report(): string {
   return L.join('\n') + '\n';
 }
 
-const text = report();
-if (process.argv.includes('--check')) {
-  if (readFileSync(OUT, 'utf8') !== text) {
-    console.error(`${OUT} is out of date — re-run string-inventory.ts`);
-    process.exit(1);
+/**
+ * ONLY RUN WHEN EXECUTED DIRECTLY. NEVER ON IMPORT.
+ *
+ * Same guard, same reason as `reachability-report.ts` — see its note. At Task C5b a generator
+ * with top-level side effects, imported by its own test, made that test unable to fail while
+ * showing nineteen green tests. Nothing imports this file yet; the guard is what keeps that
+ * from mattering when something does.
+ */
+const executedDirectly =
+  process.argv[1] !== undefined && /string-inventory\.[tj]s$/.test(process.argv[1]);
+
+if (executedDirectly) {
+  const text = report();
+  if (process.argv.includes('--check')) {
+    if (readFileSync(OUT, 'utf8') !== text) {
+      console.error(`${OUT} is out of date — re-run string-inventory.ts`);
+      process.exit(1);
+    }
+    console.log('string inventory is up to date');
+  } else {
+    writeFileSync(OUT, text);
+    console.log(`wrote ${OUT}`);
   }
-  console.log('string inventory is up to date');
-} else {
-  writeFileSync(OUT, text);
-  console.log(`wrote ${OUT}`);
 }

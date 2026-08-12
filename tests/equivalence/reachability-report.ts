@@ -219,16 +219,35 @@ function report(): string {
 }
 
 const OUT = 'docs/CONTENT_REACHABILITY.md';
-const text = report();
 
-if (process.argv.includes('--check')) {
-  const existing = readFileSync(OUT, 'utf8');
-  if (existing !== text) {
-    console.error(`${OUT} is out of date — re-run reachability-report.ts`);
-    process.exit(1);
+/**
+ * ONLY RUN WHEN EXECUTED DIRECTLY. NEVER ON IMPORT.
+ *
+ * Nothing imports this file today, so nothing is broken today. The guard is here because the
+ * shape it prevents already cost this project its worst failure: at Task C5b, `i18n-extract.ts`
+ * ran its generator at module top level and `i18n-engine.test.ts` imported it for a helper. ES
+ * module imports evaluate BEFORE the importing module's body, so the import REGENERATED the
+ * catalogue and the test then read the file it had just rewritten. Nineteen tests passed while
+ * every one of five deliberate mutations was silently erased.
+ *
+ * **A test that regenerates its own oracle cannot fail.** The trap is invisible at the import
+ * site — `import { thing } from './generator.js'` looks inert — so it is closed here rather than
+ * left for whoever first wants a helper out of this file.
+ */
+const executedDirectly =
+  process.argv[1] !== undefined && /reachability-report\.[tj]s$/.test(process.argv[1]);
+
+if (executedDirectly) {
+  const text = report();
+  if (process.argv.includes('--check')) {
+    const existing = readFileSync(OUT, 'utf8');
+    if (existing !== text) {
+      console.error(`${OUT} is out of date — re-run reachability-report.ts`);
+      process.exit(1);
+    }
+    console.log(`${OUT} is up to date`);
+  } else {
+    writeFileSync(OUT, text);
+    console.log(`wrote ${OUT}`);
   }
-  console.log(`${OUT} is up to date`);
-} else {
-  writeFileSync(OUT, text);
-  console.log(`wrote ${OUT}`);
 }
