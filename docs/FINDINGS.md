@@ -35,6 +35,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **22** | **PATTERN: guards against states the content makes impossible** | **Design + Task C** | Schema work should watch for it |
 | **23** | **`Diphtheria toxin` is content the engine can never produce — #22 in mirror** | **Task C** | Report only; C4's reachability report must find it unaided |
 | **24** | **VARIANT OF THE PATTERN: a measuring instrument wrong where nobody was looking** | **Method** | **FIXED** at C1; the lesson is the finding |
+| **25** | **An arm ASSUMED dead and excluded turned out to be live — exclusion lists decay both ways** | **Method** | Rule A re-test proposed; decision for Shantanu |
 
 ---
 
@@ -1101,3 +1102,85 @@ numbers because it no longer reads them.
 Related: [#14](#14-the-three-worm-safeguards--all-verified-all-holding), where the worm safeguard
 holds by *placement* rather than by intent — a property true for a reason nobody wrote down. The
 classifier was the same shape: correct output for a reason that had nothing to do with the rule.
+
+---
+
+## 25. An arm assumed dead turned out to be live — exclusion lists decay in BOTH directions
+
+Found at C4, by accident, which is the part worth keeping.
+
+Every other instance in this file runs one way: **a guard that never fires**. #4, #13, #21 and the
+three more in #22 are all code defending against a state the content cannot produce. This one runs
+the other way — **a guard everyone assumed never fires, that does.**
+
+### What happened
+
+`coverage-gate.ts`'s rule A excludes an uncovered arm whose source line contains `??` or
+`|| <literal>`, on the class argument that `noUncheckedIndexedAccess` forces a miss handler where
+the surrounding guard has already established presence. At C4 the count fell:
+
+```
+excluded (rule A)   96 -> 95        exclusions total  112 -> 111 of 120
+uncovered coverable  61 -> 60       construct.ts        8 -> 7
+```
+
+The arm that left is `construct.ts:306`, inside `forceInjectCard`:
+
+```ts
+const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);
+```
+
+**It is reachable, and by a narrow path nobody had tested.** `newGame` filters novel cards out of
+the live deck entirely, so force-injecting `Pathogen X` misses `g.deck` and takes the fallback —
+which is exactly what the rewritten `pathogen-x.test.ts` does to build a novel pathogen in play.
+The arm had sat on the exclusion list not because it was dead but because **no test had ever
+force-injected a card that `newGame` removes.**
+
+### CORRECTION to commit `8c73717`
+
+That commit's message says the arm was `famOf`'s `?? 'EXB'`, made measurable by splitting the
+ternary. **That is wrong.** It was asserted from the arm counts without reading the diff.
+`famOf`'s fallback was already covered before C4 — by `data.test.ts`'s unknown-disease case — and
+the line-number change to `primitives.ts` in that diff is only my new comment shifting `organsFor`
+from line 89 to 116. The real arm is the `construct.ts` one above. Recorded here rather than by
+rewriting history, on the same rule [`DEVIATIONS.md`](DEVIATIONS.md) uses.
+
+### Why this matters more than one arm
+
+**Rule A is the weakest evidence in the gate, and it is weak in a specific way.** Its own header
+says so — "CLASS ARGUMENT, not per-arm proof" — but the practical consequence had not been drawn:
+
+| | Rule A | Rule B |
+|---|---|---|
+| Evidence | One argument covering a *class* of arms | A demonstration per arm, executable in `demonstrate-dead-arms.ts` |
+| Self-policing | **None.** An arm is excluded because it is uncovered *today* | The gate FAILS if a demonstrated-dead arm becomes covered |
+| Failure mode | An arm silently sits on the list because nobody wrote the test that reaches it | Caught on the next run |
+
+Rule B's self-policing check exists precisely because "provably dead" can be wrong. Rule A has no
+equivalent, and rule A is where 95 of the 111 exclusions live.
+
+**The list is not a snapshot of dead code. It is a snapshot of code no current test reaches** —
+and those are different claims. Rule A's wording invites reading it as the first when it only
+supports the second.
+
+### The proposal, for Shantanu to decide
+
+Full re-testing is not mechanisable: proving an arm reachable means constructing an input, which
+is the same work as writing the test. But **the churn is free to report**, because the previous
+list is already committed:
+
+> Before overwriting `COVERAGE_EXCLUSIONS.md`, the gate reads the existing file and prints every
+> arm that WAS excluded and is now COVERED — "the class argument was wrong for these" — instead of
+> letting the list silently shrink inside a generated-file diff nobody reads.
+
+That converts this accident into a standing signal, costs one file read, and mirrors rule B's
+self-policing at the only point where rule A can be cheaply falsified. It would have reported this
+arm by name at C4 rather than leaving it to be noticed.
+
+It does **not** solve the general problem — an arm nobody has yet reached still looks dead — and
+saying so is the point: it makes the list honest about being a coverage snapshot rather than a
+proof of death.
+
+**Disposition: report only; the churn check is a decision, not a change made unilaterally.** The
+gate is a measuring instrument, and [#24](#24-a-measuring-instrument-that-was-wrong-in-a-region-nobody-was-looking-at)
+is what happens when one is changed without care.
