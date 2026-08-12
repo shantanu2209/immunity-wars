@@ -285,10 +285,53 @@ largest state 57.1 vs 57.0 KiB).
 
 ---
 
+### 10.4 ⚠️ A known false-positive risk on Normal — Task F's first decision
+
+`pnpm test:balance` runs one unseen arm against the shipped bands. On the first such run, with
+**no engine change at all**, Normal came back:
+
+```
+normal    pass        no broad shift detected
+  avgTurnsSurvived      10.9610   band [10.9399, 11.2377]   -2.6σ
+  avgAntibodiesMade     19.2710   band [19.2457, 19.7104]   -2.7σ
+```
+
+Two metrics at 2.6σ and 2.7σ. **The failure rule is two metrics past 3σ.** That arm passed, and it
+was not far off failing a build for no reason.
+
+The cause is not the rule, it is the width of the estimate behind it: `sd(arm)` comes from **8
+arms**, and a standard deviation estimated from 8 samples carries roughly **27% relative
+uncertainty**. The held-out arm in the calibration run peaked at 2.0σ on Normal; this one reached
+2.7σ. Both are consistent with a true sd somewhat larger than 8 arms measured.
+
+**Recommendation for Task F, before this gate blocks a merge:** recalibrate Normal with more arms
+(16–24) and re-check. A gate that fails on seeds gets disabled by whoever it annoys, and then the
+project has a gate in name only — which is the same end state as a win-rate gate pinned at zero.
+
+**Not fixed here, deliberately.** It is a measurement decision that costs ~10 minutes of compute
+and it belongs with the person wiring the gate into CI, who will also decide how often it runs.
+Recorded rather than left to be discovered by a red build.
+
+---
+
 ## 11. Outstanding
 
-**Not Task E's:** wiring any of this into CI, which is Task F — along with the suite manifest
-[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §7's seven-suite table still has no counterpart for.
+**Task F inherits, in priority order:**
+
+1. **Recalibrate Normal with more arms** before the panel blocks a merge — §10.4. This is the one
+   item that will otherwise be found by a red build on an unchanged engine.
+2. Wire the tiers into CI: `pnpm test` (fast, includes every negative control), `pnpm test:balance`
+   (one arm vs the bands, ~50s), `pnpm test:property` (≥10,000 games), plus the E1 size run for the
+   dashboard's "serialised state size over time".
+3. The suite manifest [`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §7's seven-suite table still has no
+   counterpart on disk — carried over from [`TASK_D_CLOSEOUT.md`](TASK_D_CLOSEOUT.md) §7.
+4. **Do not put a win rate on the dashboard without its generator.** The only name it has in this
+   codebase is `winRateUnderReferenceBot`, and that is deliberate.
 
 **For Kartik, from E1:** [`FINDINGS.md`](FINDINGS.md) #29 — the Helper T-Cell's free-action pool,
-which the engine models and nothing ever grants. Third instance of the #4 pattern.
+which the engine models and nothing ever grants. Third instance of the #4 pattern, and the design
+work is already done; what is missing is the plumbing.
+
+**Still open from earlier tasks, unchanged:** `rulesVersion` on states and messages
+([`FINDINGS.md`](FINDINGS.md) #26, Phase 3); the coverage-gate classifier still has no test
+([`FINDINGS.md`](FINDINGS.md) #30); rule A's churn check ([`FINDINGS.md`](FINDINGS.md) #25).

@@ -134,10 +134,20 @@ expressions stop being interchangeable. The test says so in its failure message.
 
 ```bash
 pnpm test                                   # the fast tier, inside pnpm verify
+pnpm test:balance                           # CHECK this engine vs bands.json      (~50s)
 npx tsx tests/balance/fidelity.ts           # E0a — bot fidelity, 1000 seeds x 3   (~25s)
 npx tsx tests/balance/size-run.ts           # E1  — state size, 200 seeds x 3      (~30s)
-npx tsx tests/balance/metrics-run.ts        # E2  — calibrate bands, 54,000 games  (~4min)
+npx tsx tests/balance/metrics-run.ts        # E2  — RECALIBRATE bands, 54,000 games (~4min)
 ```
+
+**`check.ts` reads `bands.json`; `metrics-run.ts` overwrites it.** Keeping those in separate
+commands is not tidiness — a harness that recalibrated on every run would regenerate its own
+reference and could never fail, which is the Task C5b shape exactly.
+
+⚠️ **Known false-positive risk on Normal.** The first check run against the shipped bands, with no
+engine change, put two Normal metrics at 2.6σ and 2.7σ — and the failure rule is two past 3σ.
+`sd(arm)` is estimated from 8 arms, which carries ~27% uncertainty. Recalibrate Normal with more
+arms before this gates a merge: [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.4.
 
 Seeds are `splitmix32(index)` — **deterministic, and deliberately not an arithmetic step**
 ([`FINDINGS.md`](../../docs/FINDINGS.md) #33). Every figure is reproducible exactly.
