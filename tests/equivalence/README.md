@@ -69,7 +69,7 @@ pnpm coverage:gaps          # classify what is still uncovered
 
 ---
 
-## Four things that will bite you
+## Five things that will bite you
 
 **1. `DELIBERATE_DIVERGENCES` in `src/rig.ts` is a liability, not a convenience.**
 Every path on it is a place the corpus has **stopped watching**. It currently holds
@@ -126,6 +126,33 @@ add or remove an import, dependency-cruiser will pass and prove nothing, and the
 docs will outlive the check that was supposed to back it. `CLAUDE.md` and
 [`docs/PHASE1_BRIEF.md`](../../docs/PHASE1_BRIEF.md) §2 now name **which** of the two mechanisms
 enforces each half, rather than saying "enforced in CI" and leaving the reader to assume.
+
+**5. EVERY CHECK HAS A SHAPE, AND THE SHAPE TELLS YOU WHAT IT CANNOT SEE.**
+
+Item 4 is one instance. This is the rule, and it is the most transferable thing in this file.
+Four instruments guard this repository. Each is excellent at one shape of question and blind to
+the others — not through any defect, but because that is what it is:
+
+| Instrument | Authoritative on | Structurally cannot see |
+|---|---|---|
+| Equivalence corpus | **Behaviour.** Any state divergence, per action | Whether the tests reach anything. 6,000 identical games would still be identical if half the engine were never entered |
+| Coverage gate | **Test reach.** Which arms are exercised | Whether the code is *right*. It counts visits, not correctness |
+| dependency-cruiser | **The import graph.** Who may reach whom | Anything that is not an edge — a table re-declared in `engine` imports nothing (item 4) |
+| `tsc --noEmit` | **Types.** Shapes, nullability, exhaustiveness | Runtime order. At C3 it was green while `packages/content` was **unloadable**: a module-scope call read a `const` declared below it, so every import threw `Cannot access 'X' before initialization` |
+
+Each of those blind spots has now cost this project real time, and in three of the four cases the
+check was **green** while the thing it appeared to guarantee was false.
+
+Two consequences worth acting on:
+
+- **When two instruments disagree, know which one owns the question.** The corpus owns behaviour;
+  the gate owns reach. That is what settled the C1 arm-count wobble — the corpus was
+  byte-identical, so control flow provably had not moved, while the arm count had. Only one of
+  those can be measuring what it claims to.
+- **Before trusting a green, name the shape of the failure you are worried about, then ask which
+  instrument would have seen it.** If the answer is "none of them", you do not have a check —
+  you have a habit. That question is what produced the identity test in `exports.test.ts` and the
+  geometry/rules parity check in `packages/content/src/schema.ts`.
 
 ---
 
