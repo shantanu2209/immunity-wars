@@ -12,6 +12,38 @@ Status and limits: [`docs/TASK_B_CLOSEOUT.md`](../../docs/TASK_B_CLOSEOUT.md).
 
 ---
 
+## Read this first
+
+> ### A check that has never failed is not known to work.
+>
+> Not "probably works" — **not known**. Every new check gets a negative control that makes it
+> fire on purpose, before it is trusted.
+>
+> **This has been true roughly ten times in this project, and zero times has the check turned
+> out to be fine.**
+
+It is the single most portable thing this codebase has learned, so it goes above everything else,
+including the four instrument blind spots below.
+
+The failure is never that the check is obviously broken. It is that the check **looks right**.
+Three from Task C alone:
+
+| The check | Why it looked right | What it actually did |
+|---|---|---|
+| The engine/content identity test | Compared the tables and passed | Would have passed on a re-declared copy too, until `toBe` replaced `toEqual` |
+| The C3 geometry oracle | Corrupted the pack and the suite went red | The pack threw at **import**, so no test ran at all. Inconclusive, not passing |
+| The rule-A churn report | Reported the case it was seeded with | Silent on the *other* case — the one it was built for. See below |
+
+The last is the sharpest. Its predicate was *"is every arm at this text now covered?"* — correct
+for rule B, where each entry is one demonstration, and wrong for rule A, where one source line
+carries several arms excluded individually. **The checker was blind to the exact event it existed
+to catch, while looking correct**, and only a seeded negative control said so.
+
+So: write the check, then break something on purpose and watch it fail. If it does not fail,
+you have learned something more important than whatever you were testing.
+
+---
+
 ## How it works, in one paragraph
 
 Both engines are driven from the **same seeded `Math.random`**, so a run is reproducible and the
@@ -80,8 +112,9 @@ proves what the closeout claims it proves.
 Any new comparison must apply `normalise()` from `src/rig.ts`, or it will fail on those paths.
 
 **2. A green first run is not a result until you have tried to break it.**
-This project has found the same failure five times: a check that appears to pass because nobody
-measured the thing that would have said otherwise. Concretely, twice in this rig:
+The applied form of the rule at the top of this file, and the count is now roughly ten. A check
+that appears to pass because nobody measured the thing that would have said otherwise.
+Concretely, twice in this rig:
 
 - A rare-trigger test called a function *neither* engine exports, through an optional chain. Both
   sides silently did nothing and it passed while comparing absolutely nothing.
