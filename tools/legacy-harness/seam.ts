@@ -31,6 +31,8 @@
  * work around quietly.
  */
 
+import * as content from '@immunity-wars/content';
+
 import { measureSeam } from './seam-lib.js';
 
 // --- report -------------------------------------------------------------------------------------
@@ -75,16 +77,30 @@ console.log(
 console.log(
   `  ${fromEngine.length} names the board script reads that the legacy engine declares.\n`,
 );
-console.log(`  COVERED by the port : ${covered.length}`);
-console.log(`  MISSING from the port: ${missing.length}`);
-if (missing.length > 0) {
+// Step 1 asked "does the PORT publish every name". Step 3 answered the real question: the shim
+// binds each name from the engine OR from content, and docs/FINDINGS.md #39 records why five must
+// come from content and why nothing was added to `packages/engine` to change that.
+//
+// So the exit criterion is now "covered by the SHIM", not "covered by the engine". Left as it
+// stood, this script would report red forever against a harness that works — the docs/FINDINGS.md
+// #38 shape, where a permanently-red instrument stops carrying any information at all.
+const inContent = (n: string): boolean =>
+  (content as unknown as Record<string, unknown>)[n] !== undefined;
+const fromContent = missing.filter(inContent);
+const uncovered = missing.filter((n) => !inContent(n));
+
+console.log(`  COVERED by the port   : ${covered.length}`);
+console.log(`  supplied from content : ${fromContent.length}   (FINDINGS #39 — the five)`);
+for (const n of fromContent) console.log(`      ${n.padEnd(22)} referenced ${free.get(n)}x`);
+console.log(`  COVERED BY NEITHER    : ${uncovered.length}`);
+if (uncovered.length > 0) {
   console.log('');
-  for (const n of missing) console.log(`    MISSING  ${n}  (referenced ${free.get(n)}x)`);
+  for (const n of uncovered) console.log(`    MISSING  ${n}  (referenced ${free.get(n)}x)`);
   console.log(
     '\n  Each of these is a ReferenceError mid-game in a build a human is trying to judge.',
   );
 } else {
-  console.log('\n  The port covers every engine name the UI reads.');
+  console.log('\n  Every engine name the UI reads is bound by the shim.');
 }
 
 console.log('');
@@ -113,4 +129,4 @@ console.log(
     : '    (none)',
 );
 
-process.exit(missing.length > 0 ? 1 : 0);
+process.exit(uncovered.length > 0 ? 1 : 0);
