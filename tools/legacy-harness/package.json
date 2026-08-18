@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@immunity-wars/content": "workspace:*",
-    "@immunity-wars/engine": "workspace:*"
+    "@immunity-wars/engine": "workspace:*",
+    "@immunity-wars/equivalence": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.3",

@@ -157,6 +157,9 @@ importers:
       '@immunity-wars/engine':
         specifier: workspace:*
         version: link:../../packages/engine
+      '@immunity-wars/equivalence':
+        specifier: workspace:*
+        version: link:../../tests/equivalence
     devDependencies:
       typescript:
         specifier: ^5.7.3
