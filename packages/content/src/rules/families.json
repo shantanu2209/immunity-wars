@@ -37,14 +37,7 @@
       "bio": "Fungi, worms and protozoa — complex cells like ours, so they are hard to target without harming yourself."
     }
   },
-  "FAM_KEYS": [
-    "ENV",
-    "NAK",
-    "EXB",
-    "ICB",
-    "TOX",
-    "EUK"
-  ],
+  "FAM_KEYS": ["ENV", "NAK", "EXB", "ICB", "TOX", "EUK"],
   "FAMILY": {
     "Influenza": "ENV",
     "COVID-19": "ENV",
@@ -153,7 +146,5 @@
     "Molluscum contagiosum": "ENV",
     "Endocarditis": "EXB"
   },
-  "NOVEL_ANTIGENS": [
-    "Pathogen X"
-  ]
+  "NOVEL_ANTIGENS": ["Pathogen X"]
 }

@@ -125,11 +125,7 @@ export function shrinkActions(
   actions: readonly Action[],
   budget = 400,
 ): readonly Action[] {
-  return ddmin(
-    actions,
-    (list) => stillDiverges(legacy, candidate, seed, difficulty, list),
-    budget,
-  );
+  return ddmin(actions, (list) => stillDiverges(legacy, candidate, seed, difficulty, list), budget);
 }
 
 export interface ShrunkReport {

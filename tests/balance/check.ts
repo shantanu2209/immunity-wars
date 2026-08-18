@@ -39,7 +39,9 @@ const BANDS_PATH = join(HERE, 'bands.json');
 const only = process.argv[2];
 const wanted = only ? DIFFICULTIES.filter((d) => d === only) : [...DIFFICULTIES];
 if (wanted.length === 0) {
-  console.error(`unknown difficulty ${JSON.stringify(only)}; expected one of ${DIFFICULTIES.join(', ')}`);
+  console.error(
+    `unknown difficulty ${JSON.stringify(only)}; expected one of ${DIFFICULTIES.join(', ')}`,
+  );
   process.exit(2);
 }
 
@@ -55,7 +57,9 @@ try {
 console.log('='.repeat(95));
 console.log('BALANCE CHECK — does this engine still behave the way the bands were measured on?');
 console.log('='.repeat(95));
-console.log(`bands: ${file.generator} ${file.generatorVersion} · engine rev ${file.engineRev} · ${file.measuredAt}`);
+console.log(
+  `bands: ${file.generator} ${file.generatorVersion} · engine rev ${file.engineRev} · ${file.measuredAt}`,
+);
 console.log(`rule:  ${file.rule}\n`);
 
 let failed = false;
@@ -96,7 +100,9 @@ for (const difficulty of wanted) {
   checked += perArm;
   if (verdict.failed) failed = true;
 
-  console.log(`${difficulty.padEnd(9)} ${verdict.failed ? '** FAIL **' : 'pass      '}  ${verdict.reason}`);
+  console.log(
+    `${difficulty.padEnd(9)} ${verdict.failed ? '** FAIL **' : 'pass      '}  ${verdict.reason}`,
+  );
   for (const s of verdict.shifts) {
     const flag = s.breached ? ' <-' : '';
     console.log(

@@ -13,13 +13,7 @@ import { seedAt } from './src/fidelity.js';
 import { DIFFICULTIES, PORT } from './src/play.js';
 import { collectDistribution, collectEnvelope, turnWindow } from './src/size-collect.js';
 import { fullDeckEnvelope, invaderCurve } from './src/size-envelope.js';
-import {
-  censoring,
-  distribution,
-  fitLine,
-  percentileRank,
-  type StateSample,
-} from './src/size.js';
+import { censoring, distribution, fitLine, percentileRank, type StateSample } from './src/size.js';
 
 const SEEDS = Number(process.argv[2] ?? 200);
 const ENVELOPE_SEEDS = Number(process.argv[3] ?? 60);
@@ -40,11 +34,15 @@ console.log('='.repeat(95));
 console.log('E1 — SERIALISED STATE SIZE');
 console.log('='.repeat(95));
 console.log(`generator: reference bot v1 · ${SEEDS} seeds x ${DIFFICULTIES.length} difficulties`);
-console.log(`sampled: ${sampler.states.length} states, ${sampler.bursts.length} endCommand bursts\n`);
+console.log(
+  `sampled: ${sampler.states.length} states, ${sampler.bursts.length} endCommand bursts\n`,
+);
 
 console.log('-- 1. CENSORING — how much of the legal game was reached ---------------------------');
 console.log('   Everything below is conditional on this table.\n');
-console.log('            maxTurn  +grace  longest   bot mean end   window reached   games past maxTurn');
+console.log(
+  '            maxTurn  +grace  longest   bot mean end   window reached   games past maxTurn',
+);
 for (const d of DIFFICULTIES) {
   const w = turnWindow(d);
   const ends = records.filter((r) => r.difficulty === d).map((r) => r.endTurn);
@@ -61,7 +59,9 @@ console.log(
 );
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 2. ONE STATE — the brief\'s number, and what actually goes on a wire -------------\n');
+console.log(
+  "\n-- 2. ONE STATE — the brief's number, and what actually goes on a wire -------------\n",
+);
 console.log('              n      mean      p50      p90      p99      max     (KiB)');
 for (const d of DIFFICULTIES) {
   const rows = sampler.states.filter((s) => s.difficulty === d);
@@ -77,11 +77,15 @@ for (const d of DIFFICULTIES) {
     );
   }
 }
-console.log("\n  'chars' is JSON.stringify(...).length — the brief's number, in UTF-16 code units.");
+console.log(
+  "\n  'chars' is JSON.stringify(...).length — the brief's number, in UTF-16 code units.",
+);
 console.log('  utf8/gzip are wire bytes. A relay would use permessage-deflate; gzip sizes it.');
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 3. THE ENDCOMMAND BURST — the realistic per-turn broadcast -----------------------\n');
+console.log(
+  '\n-- 3. THE ENDCOMMAND BURST — the realistic per-turn broadcast -----------------------\n',
+);
 console.log('              frames/burst                 burst gzip (KiB)');
 console.log('              mean   p90   max      mean      p50      p90      p99      max');
 for (const d of DIFFICULTIES) {
@@ -96,8 +100,12 @@ for (const d of DIFFICULTIES) {
 
 // -----------------------------------------------------------------------------------------------
 const FIELD_COUNT = Object.keys(sampler.states[0]?.fields ?? {}).length;
-console.log('\n-- 4. CHURN — how much of a state changes per action --------------------------------\n');
-console.log(`            utf8 full  utf8 delta   ratio      gzip full  gzip delta   ratio    changed keys (of ${FIELD_COUNT})`);
+console.log(
+  '\n-- 4. CHURN — how much of a state changes per action --------------------------------\n',
+);
+console.log(
+  `            utf8 full  utf8 delta   ratio      gzip full  gzip delta   ratio    changed keys (of ${FIELD_COUNT})`,
+);
 for (const d of DIFFICULTIES) {
   const rows = sampler.states.filter((s) => s.difficulty === d && s.delta !== null);
   const fullU = distribution(rows.map((s) => s.size.utf8));
@@ -119,7 +127,9 @@ console.log(
 );
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 5. WHERE THE BYTES ARE ----------------------------------------------------------\n');
+console.log(
+  '\n-- 5. WHERE THE BYTES ARE ----------------------------------------------------------\n',
+);
 {
   const totals = new Map<string, number>();
   for (const s of sampler.states) {
@@ -136,11 +146,15 @@ console.log('\n-- 5. WHERE THE BYTES ARE ---------------------------------------
 }
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 6. THE TAIL — bounded, not sampled -----------------------------------------------\n');
+console.log(
+  '\n-- 6. THE TAIL — bounded, not sampled -----------------------------------------------\n',
+);
 {
   const points = sampler.states.map((s) => [s.invaders, s.size.utf8] as const);
   const { slope, intercept } = fitLine(points);
-  console.log(`  marginal cost per invader   ${slope.toFixed(0)} bytes  (intercept ${intercept.toFixed(0)})`);
+  console.log(
+    `  marginal cost per invader   ${slope.toFixed(0)} bytes  (intercept ${intercept.toFixed(0)})`,
+  );
   console.log(`  most invaders ever sampled  ${sampler.maxInvaders}`);
   const worstSampled = distribution(sampler.states.map((s) => s.size.utf8)).max;
   console.log(`  largest state sampled       ${(worstSampled / 1024).toFixed(1)} KiB`);
@@ -166,7 +180,9 @@ console.log('\n-- 6. THE TAIL — bounded, not sampled -------------------------
 }
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 7. FIELD-POPULATION CENSUS — what neither generator ever fills -------------------\n');
+console.log(
+  '\n-- 7. FIELD-POPULATION CENSUS — what neither generator ever fills -------------------\n',
+);
 {
   const envelope = collectEnvelope(DIFFICULTIES, ENVELOPE_SEEDS, seedAt);
   const keys = [...sampler.populated.keys()].sort();
@@ -220,7 +236,9 @@ console.log('\n-- 7. FIELD-POPULATION CENSUS — what neither generator ever fil
 }
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 8. THE "REPRESENTATIVE MID-GAME STATE", with its percentile rank -----------------\n');
+console.log(
+  '\n-- 8. THE "REPRESENTATIVE MID-GAME STATE", with its percentile rank -----------------\n',
+);
 for (const d of DIFFICULTIES) {
   const rows = sampler.states.filter((s) => s.difficulty === d);
   const w = turnWindow(d);
@@ -230,12 +248,17 @@ for (const d of DIFFICULTIES) {
   const median = sizes[Math.floor(sizes.length / 2)] ?? 0;
   console.log(
     `  ${d.padEnd(9)} ${String(median).padStart(7)} chars   ` +
-      `percentile ${pct(percentileRank(rows.map((s) => s.size.chars), median)).padStart(6)} of all ${d} states   ` +
+      `percentile ${pct(
+        percentileRank(
+          rows.map((s) => s.size.chars),
+          median,
+        ),
+      ).padStart(6)} of all ${d} states   ` +
       `(n=${pool.length})`,
   );
 }
 console.log(
-  "\n  Quoted ONLY with its rank. There is no single number that sizes a protocol, and the\n" +
+  '\n  Quoted ONLY with its rank. There is no single number that sizes a protocol, and the\n' +
     '  brief\'s "representative mid-game state" is a median over a censored sample.',
 );
 

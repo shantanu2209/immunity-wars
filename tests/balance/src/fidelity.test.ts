@@ -9,7 +9,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { comparatorControl, compareFidelity, differences, harnessOutcome, seedAt, simulateOutcome } from './fidelity.js';
+import {
+  comparatorControl,
+  compareFidelity,
+  differences,
+  harnessOutcome,
+  seedAt,
+  simulateOutcome,
+} from './fidelity.js';
 import { DIFFICULTIES } from './play.js';
 
 const SEEDS = 25;

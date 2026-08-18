@@ -80,9 +80,10 @@ describe('C3: the one place in the content with integer-like keys', () => {
       // regardless of where they were written.
       for (const [outer, steps] of Object.entries(table)) {
         const keys = Object.keys(steps);
-        expect(keys.every(intLike), `${name}.${outer} has a non-integer key: ${keys.join(',')}`).toBe(
-          true,
-        );
+        expect(
+          keys.every(intLike),
+          `${name}.${outer} has a non-integer key: ${keys.join(',')}`,
+        ).toBe(true);
       }
     });
 

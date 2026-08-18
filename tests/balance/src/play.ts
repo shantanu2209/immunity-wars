@@ -132,12 +132,12 @@ interface Loss {
   readonly reason?: string;
 }
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null;
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 function statsOf(g: GameState): Stats {
   const s = g['stats'];
-  if (!isRecord(s)) throw new Error('game state has no stats object — the harness is measuring nothing');
+  if (!isRecord(s))
+    throw new Error('game state has no stats object — the harness is measuring nothing');
   const num = (k: string): number => {
     const v = s[k];
     if (typeof v !== 'number' || !Number.isFinite(v)) {

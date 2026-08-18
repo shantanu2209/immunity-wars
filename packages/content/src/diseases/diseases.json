@@ -776,747 +776,111 @@
     }
   },
   "DZSTATS": {
-    "Influenza": [
-      5,
-      3,
-      4,
-      4,
-      "Common"
-    ],
-    "Common cold": [
-      5,
-      1,
-      4,
-      3,
-      "Common"
-    ],
-    "COVID-19": [
-      5,
-      4,
-      4,
-      4,
-      "Legendary"
-    ],
-    "RSV": [
-      4,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Measles": [
-      5,
-      4,
-      4,
-      5,
-      "Legendary"
-    ],
-    "Mumps": [
-      4,
-      2,
-      3,
-      2,
-      "Common"
-    ],
-    "Rubella": [
-      4,
-      2,
-      3,
-      3,
-      "Common"
-    ],
-    "Smallpox": [
-      5,
-      5,
-      4,
-      4,
-      "Legendary"
-    ],
-    "Nipah": [
-      2,
-      5,
-      3,
-      4,
-      "Legendary"
-    ],
-    "Hand-foot-and-mouth": [
-      5,
-      1,
-      4,
-      1,
-      "Common"
-    ],
-    "Chickenpox": [
-      5,
-      2,
-      3,
-      5,
-      "Rare"
-    ],
-    "Glandular fever": [
-      3,
-      3,
-      2,
-      5,
-      "Rare"
-    ],
-    "Cytomegalovirus": [
-      3,
-      2,
-      2,
-      5,
-      "Common"
-    ],
-    "Tuberculosis": [
-      3,
-      5,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Whooping cough": [
-      5,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Meningitis": [
-      3,
-      5,
-      5,
-      3,
-      "Legendary"
-    ],
-    "Pneumonia": [
-      4,
-      5,
-      4,
-      2,
-      "Rare"
-    ],
-    "Strep throat": [
-      4,
-      2,
-      3,
-      5,
-      "Rare"
-    ],
-    "Leprosy": [
-      1,
-      3,
-      1,
-      4,
-      "Rare"
-    ],
-    "Legionnaires' disease": [
-      1,
-      4,
-      3,
-      2,
-      "Common"
-    ],
-    "Diphtheria": [
-      3,
-      5,
-      4,
-      3,
-      "Legendary"
-    ],
-    "Mucormycosis": [
-      1,
-      5,
-      3,
-      4,
-      "Legendary"
-    ],
-    "Aspergillosis": [
-      2,
-      4,
-      2,
-      3,
-      "Rare"
-    ],
-    "Cryptococcus": [
-      1,
-      5,
-      2,
-      4,
-      "Rare"
-    ],
-    "Pneumocystis pneumonia": [
-      1,
-      4,
-      2,
-      3,
-      "Rare"
-    ],
-    "Dengue": [
-      3,
-      4,
-      3,
-      3,
-      "Rare"
-    ],
-    "Chikungunya": [
-      3,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Japanese encephalitis": [
-      2,
-      5,
-      3,
-      4,
-      "Rare"
-    ],
-    "Yellow fever": [
-      3,
-      5,
-      3,
-      3,
-      "Rare"
-    ],
-    "Zika": [
-      3,
-      3,
-      3,
-      4,
-      "Rare"
-    ],
-    "West Nile fever": [
-      2,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Rabies": [
-      1,
-      5,
-      2,
-      5,
-      "Legendary"
-    ],
-    "HIV": [
-      2,
-      5,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Hepatitis B": [
-      3,
-      4,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Hepatitis C": [
-      2,
-      4,
-      1,
-      5,
-      "Rare"
-    ],
-    "Chagas disease": [
-      1,
-      4,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Lyme disease": [
-      1,
-      3,
-      2,
-      4,
-      "Common"
-    ],
-    "Plague": [
-      4,
-      5,
-      4,
-      3,
-      "Legendary"
-    ],
-    "Scrub typhus": [
-      1,
-      4,
-      3,
-      2,
-      "Rare"
-    ],
-    "Malaria": [
-      3,
-      5,
-      3,
-      5,
-      "Legendary"
-    ],
-    "Malaria (blood)": [
-      2,
-      4,
-      3,
-      3,
-      "Rare"
-    ],
-    "Kala-azar": [
-      2,
-      5,
-      2,
-      5,
-      "Legendary"
-    ],
-    "Sleeping sickness": [
-      1,
-      5,
-      2,
-      5,
-      "Legendary"
-    ],
-    "Filariasis": [
-      2,
-      4,
-      1,
-      4,
-      "Legendary"
-    ],
-    "Snake venom": [
-      1,
-      5,
-      5,
-      1,
-      "Legendary"
-    ],
-    "Russell's viper venom": [
-      1,
-      5,
-      5,
-      1,
-      "Legendary"
-    ],
-    "Red scorpion sting": [
-      1,
-      4,
-      5,
-      1,
-      "Rare"
-    ],
-    "Tetanus": [
-      1,
-      5,
-      3,
-      3,
-      "Rare"
-    ],
-    "MRSA": [
-      3,
-      4,
-      3,
-      5,
-      "Legendary"
-    ],
-    "Cellulitis": [
-      2,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Leptospirosis": [
-      2,
-      4,
-      3,
-      2,
-      "Common"
-    ],
-    "Gas gangrene": [
-      1,
-      5,
-      5,
-      2,
-      "Rare"
-    ],
-    "Syphilis": [
-      3,
-      4,
-      1,
-      5,
-      "Rare"
-    ],
-    "Brucellosis": [
-      2,
-      3,
-      1,
-      3,
-      "Common"
-    ],
-    "Cold sore": [
-      4,
-      1,
-      2,
-      5,
-      "Common"
-    ],
-    "Human papillomavirus": [
-      5,
-      4,
-      1,
-      5,
-      "Rare"
-    ],
-    "Ebola": [
-      3,
-      5,
-      4,
-      3,
-      "Legendary"
-    ],
-    "Anthrax": [
-      1,
-      5,
-      4,
-      3,
-      "Legendary"
-    ],
-    "Hookworm": [
-      3,
-      3,
-      1,
-      3,
-      "Rare"
-    ],
-    "Schistosomiasis": [
-      3,
-      4,
-      1,
-      4,
-      "Rare"
-    ],
-    "Guinea worm": [
-      2,
-      3,
-      1,
-      2,
-      "Rare"
-    ],
-    "Histoplasmosis": [
-      1,
-      3,
-      2,
-      3,
-      "Common"
-    ],
-    "Typhoid": [
-      3,
-      4,
-      2,
-      4,
-      "Rare"
-    ],
-    "Cholera": [
-      4,
-      5,
-      5,
-      2,
-      "Legendary"
-    ],
-    "Dysentery": [
-      4,
-      3,
-      4,
-      2,
-      "Common"
-    ],
-    "Food poisoning": [
-      3,
-      2,
-      4,
-      2,
-      "Common"
-    ],
-    "Listeria": [
-      2,
-      4,
-      2,
-      4,
-      "Rare"
-    ],
-    "Stomach ulcer (H. pylori)": [
-      3,
-      2,
-      1,
-      4,
-      "Common"
-    ],
-    "Rotavirus": [
-      5,
-      3,
-      4,
-      2,
-      "Common"
-    ],
-    "Hepatitis A": [
-      3,
-      2,
-      2,
-      2,
-      "Common"
-    ],
-    "Hepatitis E": [
-      3,
-      3,
-      2,
-      2,
-      "Common"
-    ],
-    "Norovirus": [
-      5,
-      2,
-      5,
-      3,
-      "Rare"
-    ],
-    "Polio": [
-      4,
-      5,
-      3,
-      4,
-      "Legendary"
-    ],
-    "Botulism": [
-      1,
-      5,
-      5,
-      3,
-      "Legendary"
-    ],
-    "Shiga toxin (E. coli O157)": [
-      2,
-      5,
-      4,
-      3,
-      "Rare"
-    ],
-    "Roundworm": [
-      4,
-      3,
-      1,
-      3,
-      "Rare"
-    ],
-    "Tapeworm": [
-      3,
-      5,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Whipworm": [
-      3,
-      2,
-      1,
-      2,
-      "Common"
-    ],
-    "Amoebiasis": [
-      3,
-      4,
-      2,
-      4,
-      "Rare"
-    ],
-    "Giardia": [
-      4,
-      2,
-      2,
-      3,
-      "Common"
-    ],
-    "Toxoplasmosis": [
-      4,
-      3,
-      1,
-      5,
-      "Rare"
-    ],
-    "Candida": [
-      2,
-      4,
-      2,
-      4,
-      "Rare"
-    ],
-    "Scabies": [
-      5,
-      2,
-      2,
-      3,
-      "Common"
-    ],
-    "Ringworm": [
-      4,
-      1,
-      2,
-      2,
-      "Common"
-    ],
-    "Impetigo": [
-      4,
-      2,
-      3,
-      2,
-      "Common"
-    ],
-    "Trachoma": [
-      3,
-      4,
-      1,
-      4,
-      "Legendary"
-    ],
-    "Conjunctivitis": [
-      5,
-      1,
-      4,
-      2,
-      "Common"
-    ],
-    "Molluscum contagiosum": [
-      4,
-      1,
-      1,
-      3,
-      "Common"
-    ],
-    "Endocarditis": [
-      1,
-      5,
-      2,
-      5,
-      "Legendary"
-    ],
-    "Gonorrhoea": [
-      4,
-      3,
-      3,
-      5,
-      "Legendary"
-    ],
-    "Chlamydia": [
-      5,
-      3,
-      2,
-      5,
-      "Rare"
-    ],
-    "Genital herpes": [
-      4,
-      2,
-      2,
-      5,
-      "Rare"
-    ],
-    "Trichomoniasis": [
-      4,
-      2,
-      2,
-      3,
-      "Common"
-    ],
-    "Hepatitis D": [
-      2,
-      5,
-      2,
-      5,
-      "Legendary"
-    ],
-    "Transfusion malaria": [
-      1,
-      5,
-      4,
-      4,
-      "Rare"
-    ],
-    "Catheter sepsis": [
-      1,
-      4,
-      3,
-      3,
-      "Rare"
-    ],
-    "Cannula infection": [
-      2,
-      3,
-      3,
-      2,
-      "Common"
-    ],
-    "Tetanus toxin": [
-      1,
-      5,
-      5,
-      2,
-      "Rare"
-    ],
-    "Cholera toxin": [
-      1,
-      4,
-      5,
-      2,
-      "Rare"
-    ],
-    "Clostridial toxin": [
-      1,
-      5,
-      5,
-      2,
-      "Rare"
-    ],
-    "Diphtheria toxin": [
-      1,
-      5,
-      5,
-      2,
-      "Rare"
-    ],
-    "Shingles": [
-      2,
-      3,
-      2,
-      5,
-      "Rare"
-    ],
-    "Dengue (ADE)": [
-      3,
-      5,
-      5,
-      5,
-      "Legendary"
-    ],
-    "Malaria (relapse)": [
-      2,
-      4,
-      2,
-      5,
-      "Legendary"
-    ],
-    "Tuberculosis (reactivated)": [
-      3,
-      5,
-      1,
-      5,
-      "Legendary"
-    ],
-    "Pneumococcal pneumonia": [
-      3,
-      4,
-      3,
-      2,
-      "Rare"
-    ]
+    "Influenza": [5, 3, 4, 4, "Common"],
+    "Common cold": [5, 1, 4, 3, "Common"],
+    "COVID-19": [5, 4, 4, 4, "Legendary"],
+    "RSV": [4, 3, 3, 2, "Common"],
+    "Measles": [5, 4, 4, 5, "Legendary"],
+    "Mumps": [4, 2, 3, 2, "Common"],
+    "Rubella": [4, 2, 3, 3, "Common"],
+    "Smallpox": [5, 5, 4, 4, "Legendary"],
+    "Nipah": [2, 5, 3, 4, "Legendary"],
+    "Hand-foot-and-mouth": [5, 1, 4, 1, "Common"],
+    "Chickenpox": [5, 2, 3, 5, "Rare"],
+    "Glandular fever": [3, 3, 2, 5, "Rare"],
+    "Cytomegalovirus": [3, 2, 2, 5, "Common"],
+    "Tuberculosis": [3, 5, 1, 5, "Legendary"],
+    "Whooping cough": [5, 3, 3, 2, "Common"],
+    "Meningitis": [3, 5, 5, 3, "Legendary"],
+    "Pneumonia": [4, 5, 4, 2, "Rare"],
+    "Strep throat": [4, 2, 3, 5, "Rare"],
+    "Leprosy": [1, 3, 1, 4, "Rare"],
+    "Legionnaires' disease": [1, 4, 3, 2, "Common"],
+    "Diphtheria": [3, 5, 4, 3, "Legendary"],
+    "Mucormycosis": [1, 5, 3, 4, "Legendary"],
+    "Aspergillosis": [2, 4, 2, 3, "Rare"],
+    "Cryptococcus": [1, 5, 2, 4, "Rare"],
+    "Pneumocystis pneumonia": [1, 4, 2, 3, "Rare"],
+    "Dengue": [3, 4, 3, 3, "Rare"],
+    "Chikungunya": [3, 3, 3, 2, "Common"],
+    "Japanese encephalitis": [2, 5, 3, 4, "Rare"],
+    "Yellow fever": [3, 5, 3, 3, "Rare"],
+    "Zika": [3, 3, 3, 4, "Rare"],
+    "West Nile fever": [2, 3, 3, 2, "Common"],
+    "Rabies": [1, 5, 2, 5, "Legendary"],
+    "HIV": [2, 5, 1, 5, "Legendary"],
+    "Hepatitis B": [3, 4, 1, 5, "Legendary"],
+    "Hepatitis C": [2, 4, 1, 5, "Rare"],
+    "Chagas disease": [1, 4, 1, 5, "Legendary"],
+    "Lyme disease": [1, 3, 2, 4, "Common"],
+    "Plague": [4, 5, 4, 3, "Legendary"],
+    "Scrub typhus": [1, 4, 3, 2, "Rare"],
+    "Malaria": [3, 5, 3, 5, "Legendary"],
+    "Malaria (blood)": [2, 4, 3, 3, "Rare"],
+    "Kala-azar": [2, 5, 2, 5, "Legendary"],
+    "Sleeping sickness": [1, 5, 2, 5, "Legendary"],
+    "Filariasis": [2, 4, 1, 4, "Legendary"],
+    "Snake venom": [1, 5, 5, 1, "Legendary"],
+    "Russell's viper venom": [1, 5, 5, 1, "Legendary"],
+    "Red scorpion sting": [1, 4, 5, 1, "Rare"],
+    "Tetanus": [1, 5, 3, 3, "Rare"],
+    "MRSA": [3, 4, 3, 5, "Legendary"],
+    "Cellulitis": [2, 3, 3, 2, "Common"],
+    "Leptospirosis": [2, 4, 3, 2, "Common"],
+    "Gas gangrene": [1, 5, 5, 2, "Rare"],
+    "Syphilis": [3, 4, 1, 5, "Rare"],
+    "Brucellosis": [2, 3, 1, 3, "Common"],
+    "Cold sore": [4, 1, 2, 5, "Common"],
+    "Human papillomavirus": [5, 4, 1, 5, "Rare"],
+    "Ebola": [3, 5, 4, 3, "Legendary"],
+    "Anthrax": [1, 5, 4, 3, "Legendary"],
+    "Hookworm": [3, 3, 1, 3, "Rare"],
+    "Schistosomiasis": [3, 4, 1, 4, "Rare"],
+    "Guinea worm": [2, 3, 1, 2, "Rare"],
+    "Histoplasmosis": [1, 3, 2, 3, "Common"],
+    "Typhoid": [3, 4, 2, 4, "Rare"],
+    "Cholera": [4, 5, 5, 2, "Legendary"],
+    "Dysentery": [4, 3, 4, 2, "Common"],
+    "Food poisoning": [3, 2, 4, 2, "Common"],
+    "Listeria": [2, 4, 2, 4, "Rare"],
+    "Stomach ulcer (H. pylori)": [3, 2, 1, 4, "Common"],
+    "Rotavirus": [5, 3, 4, 2, "Common"],
+    "Hepatitis A": [3, 2, 2, 2, "Common"],
+    "Hepatitis E": [3, 3, 2, 2, "Common"],
+    "Norovirus": [5, 2, 5, 3, "Rare"],
+    "Polio": [4, 5, 3, 4, "Legendary"],
+    "Botulism": [1, 5, 5, 3, "Legendary"],
+    "Shiga toxin (E. coli O157)": [2, 5, 4, 3, "Rare"],
+    "Roundworm": [4, 3, 1, 3, "Rare"],
+    "Tapeworm": [3, 5, 1, 5, "Legendary"],
+    "Whipworm": [3, 2, 1, 2, "Common"],
+    "Amoebiasis": [3, 4, 2, 4, "Rare"],
+    "Giardia": [4, 2, 2, 3, "Common"],
+    "Toxoplasmosis": [4, 3, 1, 5, "Rare"],
+    "Candida": [2, 4, 2, 4, "Rare"],
+    "Scabies": [5, 2, 2, 3, "Common"],
+    "Ringworm": [4, 1, 2, 2, "Common"],
+    "Impetigo": [4, 2, 3, 2, "Common"],
+    "Trachoma": [3, 4, 1, 4, "Legendary"],
+    "Conjunctivitis": [5, 1, 4, 2, "Common"],
+    "Molluscum contagiosum": [4, 1, 1, 3, "Common"],
+    "Endocarditis": [1, 5, 2, 5, "Legendary"],
+    "Gonorrhoea": [4, 3, 3, 5, "Legendary"],
+    "Chlamydia": [5, 3, 2, 5, "Rare"],
+    "Genital herpes": [4, 2, 2, 5, "Rare"],
+    "Trichomoniasis": [4, 2, 2, 3, "Common"],
+    "Hepatitis D": [2, 5, 2, 5, "Legendary"],
+    "Transfusion malaria": [1, 5, 4, 4, "Rare"],
+    "Catheter sepsis": [1, 4, 3, 3, "Rare"],
+    "Cannula infection": [2, 3, 3, 2, "Common"],
+    "Tetanus toxin": [1, 5, 5, 2, "Rare"],
+    "Cholera toxin": [1, 4, 5, 2, "Rare"],
+    "Clostridial toxin": [1, 5, 5, 2, "Rare"],
+    "Diphtheria toxin": [1, 5, 5, 2, "Rare"],
+    "Shingles": [2, 3, 2, 5, "Rare"],
+    "Dengue (ADE)": [3, 5, 5, 5, "Legendary"],
+    "Malaria (relapse)": [2, 4, 2, 5, "Legendary"],
+    "Tuberculosis (reactivated)": [3, 5, 1, 5, "Legendary"],
+    "Pneumococcal pneumonia": [3, 4, 3, 2, "Rare"]
   }
 }

@@ -22,10 +22,15 @@ import { withSeed } from '@immunity-wars/equivalence/rng';
 import type { Engine } from '@immunity-wars/equivalence/types';
 
 import { PORT, playGame } from './play.js';
-import { SizeSampler, distribution, fitLine, isEmptyValue, percentileRank, sizeOf } from './size.js';
+import {
+  SizeSampler,
+  distribution,
+  fitLine,
+  isEmptyValue,
+  percentileRank,
+  sizeOf,
+} from './size.js';
 import { fullDeckEnvelope, invaderCurve } from './size-envelope.js';
-
-
 
 describe('E1 control: the sampler measures the LIVE state', () => {
   /**
@@ -136,7 +141,7 @@ describe('E1 control: churn discriminates', () => {
     expect(first?.delta).toBeNull();
     expect(same?.changedKeys).toBe(0);
     expect(changed?.changedKeys).toBeGreaterThan(0);
-    expect((changed?.delta?.utf8 ?? 0)).toBeGreaterThan(100);
+    expect(changed?.delta?.utf8 ?? 0).toBeGreaterThan(100);
   });
 });
 

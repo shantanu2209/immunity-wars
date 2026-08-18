@@ -60,11 +60,7 @@
     "fatigue",
     "coInfection"
   ],
-  "GOOD_POOL": [
-    "surge",
-    "passiveAntibodies",
-    "fever"
-  ],
+  "GOOD_POOL": ["surge", "passiveAntibodies", "fever"],
   "RARE": {
     "malariaRelapse": {
       "name": "Malaria relapse",

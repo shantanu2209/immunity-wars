@@ -84,7 +84,7 @@ describe('the undo snapshot captures a turn-safe subset of the state', () => {
       expect(
         Object.prototype.hasOwnProperty.call(snap, field),
         `pushUndo now captures "${field}". undo() will restore it, so undo can rewind more ` +
-          'than a player\'s actions within a turn. See view.ts:20 and this file\'s header.',
+          "than a player's actions within a turn. See view.ts:20 and this file's header.",
       ).toBe(false);
     }
   });

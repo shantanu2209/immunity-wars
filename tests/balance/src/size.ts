@@ -181,13 +181,7 @@ export class SizeSampler {
    * The frames are measured AS RETURNED — including each frame's `label` and `dice`, because
    * that is what a relay forwarding the burst would actually send.
    */
-  recordBurst(
-    result: unknown,
-    g: GameState,
-    seed: number,
-    difficulty: string,
-    a: Action,
-  ): void {
+  recordBurst(result: unknown, g: GameState, seed: number, difficulty: string, a: Action): void {
     if (a.action !== 'endCommand') return;
     if (!isPlainObject(result)) return;
     const frames = result['frames'];

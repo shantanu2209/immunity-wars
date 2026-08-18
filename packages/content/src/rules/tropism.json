@@ -1,355 +1,110 @@
 {
   "TROPISM": {
-    "Influenza": [
-      "lungs"
-    ],
-    "Common cold": [
-      "lungs"
-    ],
-    "COVID-19": [
-      "lungs",
-      "heart"
-    ],
-    "RSV": [
-      "lungs"
-    ],
-    "Measles": [
-      "lungs",
-      "brain"
-    ],
-    "Mumps": [
-      "brain",
-      "spleen"
-    ],
-    "Rubella": [
-      "lungs",
-      "heart"
-    ],
-    "Smallpox": [
-      "lungs",
-      "liver"
-    ],
-    "Nipah": [
-      "brain",
-      "lungs"
-    ],
-    "Hand-foot-and-mouth": [
-      "lungs",
-      "heart"
-    ],
-    "Chickenpox": [
-      "lungs",
-      "brain"
-    ],
-    "Glandular fever": [
-      "spleen",
-      "liver"
-    ],
-    "Cytomegalovirus": [
-      "liver",
-      "lungs"
-    ],
-    "Tuberculosis": [
-      "lungs"
-    ],
-    "Whooping cough": [
-      "lungs"
-    ],
-    "Meningitis": [
-      "brain"
-    ],
-    "Pneumonia": [
-      "lungs"
-    ],
-    "Strep throat": [
-      "heart",
-      "kidneys"
-    ],
-    "Leprosy": [
-      "brain"
-    ],
-    "Legionnaires' disease": [
-      "lungs"
-    ],
-    "Diphtheria": [
-      "heart"
-    ],
-    "Mucormycosis": [
-      "brain",
-      "lungs"
-    ],
-    "Aspergillosis": [
-      "lungs"
-    ],
-    "Cryptococcus": [
-      "brain"
-    ],
-    "Pneumocystis pneumonia": [
-      "lungs"
-    ],
-    "Dengue": [
-      "liver",
-      "marrow"
-    ],
-    "Chikungunya": [
-      "liver",
-      "heart"
-    ],
-    "Japanese encephalitis": [
-      "brain"
-    ],
-    "Yellow fever": [
-      "liver",
-      "kidneys"
-    ],
-    "Zika": [
-      "brain"
-    ],
-    "West Nile fever": [
-      "brain"
-    ],
-    "Rabies": [
-      "brain"
-    ],
-    "HIV": [
-      "marrow",
-      "spleen"
-    ],
-    "Hepatitis B": [
-      "liver"
-    ],
-    "Hepatitis C": [
-      "liver"
-    ],
-    "Chagas disease": [
-      "heart"
-    ],
-    "Lyme disease": [
-      "brain",
-      "heart"
-    ],
-    "Plague": [
-      "lungs",
-      "spleen"
-    ],
-    "Scrub typhus": [
-      "lungs",
-      "brain"
-    ],
-    "Malaria": [
-      "liver"
-    ],
-    "Malaria (blood)": [
-      "spleen",
-      "brain"
-    ],
-    "Kala-azar": [
-      "spleen",
-      "marrow"
-    ],
-    "Sleeping sickness": [
-      "brain"
-    ],
-    "Filariasis": [
-      "marrow",
-      "spleen"
-    ],
-    "Snake venom": [
-      "heart",
-      "kidneys"
-    ],
-    "Russell's viper venom": [
-      "kidneys"
-    ],
-    "Red scorpion sting": [
-      "heart",
-      "lungs"
-    ],
-    "Tetanus": [
-      "brain"
-    ],
+    "Influenza": ["lungs"],
+    "Common cold": ["lungs"],
+    "COVID-19": ["lungs", "heart"],
+    "RSV": ["lungs"],
+    "Measles": ["lungs", "brain"],
+    "Mumps": ["brain", "spleen"],
+    "Rubella": ["lungs", "heart"],
+    "Smallpox": ["lungs", "liver"],
+    "Nipah": ["brain", "lungs"],
+    "Hand-foot-and-mouth": ["lungs", "heart"],
+    "Chickenpox": ["lungs", "brain"],
+    "Glandular fever": ["spleen", "liver"],
+    "Cytomegalovirus": ["liver", "lungs"],
+    "Tuberculosis": ["lungs"],
+    "Whooping cough": ["lungs"],
+    "Meningitis": ["brain"],
+    "Pneumonia": ["lungs"],
+    "Strep throat": ["heart", "kidneys"],
+    "Leprosy": ["brain"],
+    "Legionnaires' disease": ["lungs"],
+    "Diphtheria": ["heart"],
+    "Mucormycosis": ["brain", "lungs"],
+    "Aspergillosis": ["lungs"],
+    "Cryptococcus": ["brain"],
+    "Pneumocystis pneumonia": ["lungs"],
+    "Dengue": ["liver", "marrow"],
+    "Chikungunya": ["liver", "heart"],
+    "Japanese encephalitis": ["brain"],
+    "Yellow fever": ["liver", "kidneys"],
+    "Zika": ["brain"],
+    "West Nile fever": ["brain"],
+    "Rabies": ["brain"],
+    "HIV": ["marrow", "spleen"],
+    "Hepatitis B": ["liver"],
+    "Hepatitis C": ["liver"],
+    "Chagas disease": ["heart"],
+    "Lyme disease": ["brain", "heart"],
+    "Plague": ["lungs", "spleen"],
+    "Scrub typhus": ["lungs", "brain"],
+    "Malaria": ["liver"],
+    "Malaria (blood)": ["spleen", "brain"],
+    "Kala-azar": ["spleen", "marrow"],
+    "Sleeping sickness": ["brain"],
+    "Filariasis": ["marrow", "spleen"],
+    "Snake venom": ["heart", "kidneys"],
+    "Russell's viper venom": ["kidneys"],
+    "Red scorpion sting": ["heart", "lungs"],
+    "Tetanus": ["brain"],
     "MRSA": "any",
-    "Cellulitis": [
-      "marrow",
-      "heart"
-    ],
-    "Leptospirosis": [
-      "kidneys",
-      "liver"
-    ],
-    "Gas gangrene": [
-      "kidneys",
-      "liver"
-    ],
-    "Syphilis": [
-      "brain",
-      "heart"
-    ],
-    "Brucellosis": [
-      "spleen",
-      "liver"
-    ],
-    "Cold sore": [
-      "brain"
-    ],
-    "Human papillomavirus": [
-      "liver"
-    ],
-    "Ebola": [
-      "liver",
-      "spleen"
-    ],
-    "Anthrax": [
-      "lungs"
-    ],
-    "Hookworm": [
-      "marrow"
-    ],
-    "Schistosomiasis": [
-      "liver",
-      "spleen"
-    ],
-    "Guinea worm": [
-      "marrow"
-    ],
-    "Histoplasmosis": [
-      "lungs",
-      "spleen"
-    ],
-    "Typhoid": [
-      "liver",
-      "spleen"
-    ],
-    "Cholera": [
-      "kidneys"
-    ],
-    "Dysentery": [
-      "kidneys"
-    ],
-    "Food poisoning": [
-      "kidneys"
-    ],
-    "Listeria": [
-      "brain"
-    ],
-    "Stomach ulcer (H. pylori)": [
-      "liver"
-    ],
-    "Rotavirus": [
-      "kidneys"
-    ],
-    "Hepatitis A": [
-      "liver"
-    ],
-    "Hepatitis E": [
-      "liver"
-    ],
-    "Norovirus": [
-      "kidneys"
-    ],
-    "Polio": [
-      "brain"
-    ],
-    "Botulism": [
-      "brain"
-    ],
-    "Shiga toxin (E. coli O157)": [
-      "kidneys"
-    ],
-    "Roundworm": [
-      "lungs",
-      "liver"
-    ],
-    "Tapeworm": [
-      "brain"
-    ],
-    "Whipworm": [
-      "marrow"
-    ],
-    "Amoebiasis": [
-      "liver"
-    ],
-    "Giardia": [
-      "liver"
-    ],
-    "Toxoplasmosis": [
-      "brain"
-    ],
+    "Cellulitis": ["marrow", "heart"],
+    "Leptospirosis": ["kidneys", "liver"],
+    "Gas gangrene": ["kidneys", "liver"],
+    "Syphilis": ["brain", "heart"],
+    "Brucellosis": ["spleen", "liver"],
+    "Cold sore": ["brain"],
+    "Human papillomavirus": ["liver"],
+    "Ebola": ["liver", "spleen"],
+    "Anthrax": ["lungs"],
+    "Hookworm": ["marrow"],
+    "Schistosomiasis": ["liver", "spleen"],
+    "Guinea worm": ["marrow"],
+    "Histoplasmosis": ["lungs", "spleen"],
+    "Typhoid": ["liver", "spleen"],
+    "Cholera": ["kidneys"],
+    "Dysentery": ["kidneys"],
+    "Food poisoning": ["kidneys"],
+    "Listeria": ["brain"],
+    "Stomach ulcer (H. pylori)": ["liver"],
+    "Rotavirus": ["kidneys"],
+    "Hepatitis A": ["liver"],
+    "Hepatitis E": ["liver"],
+    "Norovirus": ["kidneys"],
+    "Polio": ["brain"],
+    "Botulism": ["brain"],
+    "Shiga toxin (E. coli O157)": ["kidneys"],
+    "Roundworm": ["lungs", "liver"],
+    "Tapeworm": ["brain"],
+    "Whipworm": ["marrow"],
+    "Amoebiasis": ["liver"],
+    "Giardia": ["liver"],
+    "Toxoplasmosis": ["brain"],
     "Candida": "any",
-    "Gonorrhoea": [
-      "kidneys",
-      "heart"
-    ],
-    "Chlamydia": [
-      "kidneys"
-    ],
-    "Genital herpes": [
-      "brain"
-    ],
-    "Trichomoniasis": [
-      "kidneys"
-    ],
-    "Hepatitis D": [
-      "liver"
-    ],
-    "Transfusion malaria": [
-      "liver"
-    ],
+    "Gonorrhoea": ["kidneys", "heart"],
+    "Chlamydia": ["kidneys"],
+    "Genital herpes": ["brain"],
+    "Trichomoniasis": ["kidneys"],
+    "Hepatitis D": ["liver"],
+    "Transfusion malaria": ["liver"],
     "Catheter sepsis": "any",
-    "Scabies": [
-      "marrow"
-    ],
-    "Ringworm": [
-      "lungs"
-    ],
-    "Impetigo": [
-      "heart",
-      "kidneys"
-    ],
-    "Trachoma": [
-      "brain"
-    ],
-    "Conjunctivitis": [
-      "lungs"
-    ],
-    "Molluscum contagiosum": [
-      "lungs"
-    ],
-    "Endocarditis": [
-      "heart"
-    ],
-    "Cannula infection": [
-      "heart",
-      "marrow"
-    ],
-    "Tetanus toxin": [
-      "brain"
-    ],
-    "Cholera toxin": [
-      "kidneys"
-    ],
-    "Clostridial toxin": [
-      "kidneys",
-      "liver"
-    ],
-    "Diphtheria toxin": [
-      "heart"
-    ],
-    "Shingles": [
-      "brain"
-    ],
-    "Dengue (ADE)": [
-      "liver",
-      "marrow"
-    ],
-    "Malaria (relapse)": [
-      "liver"
-    ],
-    "Tuberculosis (reactivated)": [
-      "lungs"
-    ],
-    "Pneumococcal pneumonia": [
-      "lungs"
-    ]
+    "Scabies": ["marrow"],
+    "Ringworm": ["lungs"],
+    "Impetigo": ["heart", "kidneys"],
+    "Trachoma": ["brain"],
+    "Conjunctivitis": ["lungs"],
+    "Molluscum contagiosum": ["lungs"],
+    "Endocarditis": ["heart"],
+    "Cannula infection": ["heart", "marrow"],
+    "Tetanus toxin": ["brain"],
+    "Cholera toxin": ["kidneys"],
+    "Clostridial toxin": ["kidneys", "liver"],
+    "Diphtheria toxin": ["heart"],
+    "Shingles": ["brain"],
+    "Dengue (ADE)": ["liver", "marrow"],
+    "Malaria (relapse)": ["liver"],
+    "Tuberculosis (reactivated)": ["lungs"],
+    "Pneumococcal pneumonia": ["lungs"]
   }
 }

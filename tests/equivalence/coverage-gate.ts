@@ -586,7 +586,11 @@ function multiplayerRegions(file: string): { from: number; to: number }[] {
           from: lineOf(n.thenStatement.getStart(sf)),
           to: lineOf(n.thenStatement.getEnd()),
         });
-      } else if (guardsOnNotMultiplayer(n.expression) && !n.elseStatement && terminates(n.thenStatement)) {
+      } else if (
+        guardsOnNotMultiplayer(n.expression) &&
+        !n.elseStatement &&
+        terminates(n.thenStatement)
+      ) {
         const body = enclosingBody(n);
         if (body) {
           // From the guard's closing brace inclusive: V8 attributes the implicit else-arm there.

@@ -57,43 +57,11 @@
       "bio": "Damaged kidneys leak antibodies into the urine — a real cause of secondary immunodeficiency."
     }
   },
-  "ALL_ORGANS": [
-    "heart",
-    "lungs",
-    "liver",
-    "marrow",
-    "brain",
-    "spleen",
-    "kidneys"
-  ],
+  "ALL_ORGANS": ["heart", "lungs", "liver", "marrow", "brain", "spleen", "kidneys"],
   "ORGAN_SETS": {
-    "training": [
-      "heart",
-      "lungs",
-      "liver",
-      "marrow",
-      "brain",
-      "spleen",
-      "kidneys"
-    ],
-    "normal": [
-      "heart",
-      "lungs",
-      "liver",
-      "marrow",
-      "brain",
-      "spleen",
-      "kidneys"
-    ],
-    "hard": [
-      "heart",
-      "lungs",
-      "liver",
-      "marrow",
-      "brain",
-      "spleen",
-      "kidneys"
-    ]
+    "training": ["heart", "lungs", "liver", "marrow", "brain", "spleen", "kidneys"],
+    "normal": ["heart", "lungs", "liver", "marrow", "brain", "spleen", "kidneys"],
+    "hard": ["heart", "lungs", "liver", "marrow", "brain", "spleen", "kidneys"]
   },
   "ROUTES": {
     "nose": {
@@ -121,14 +89,7 @@
       "len": 3
     }
   },
-  "ROUTE_KEYS": [
-    "nose",
-    "gut",
-    "contact",
-    "wound",
-    "bite",
-    "blood"
-  ],
+  "ROUTE_KEYS": ["nose", "gut", "contact", "wound", "bite", "blood"],
   "LYMPH_GROUP": {
     "nose": "mucosal",
     "gut": "mucosal",

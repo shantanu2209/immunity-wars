@@ -169,13 +169,17 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
 
     const offRoute = {
       ...base,
-      invaders: [{ id: 'a', disease: 'Influenza', type: 'virus', zone: 'route', lane: 'nose', step: 9 }],
+      invaders: [
+        { id: 'a', disease: 'Influenza', type: 'virus', zone: 'route', lane: 'nose', step: 9 },
+      ],
     } as unknown as GameState;
     expect(probe(PLACEMENT_COHERENCE, offRoute).violations).toHaveLength(1);
 
     const noOrgan = {
       ...base,
-      invaders: [{ id: 'b', disease: 'Influenza', type: 'virus', zone: 'branch', organ: null, step: 1 }],
+      invaders: [
+        { id: 'b', disease: 'Influenza', type: 'virus', zone: 'branch', organ: null, step: 1 },
+      ],
     } as unknown as GameState;
     expect(probe(PLACEMENT_COHERENCE, noOrgan).violations).toHaveLength(1);
 
@@ -191,7 +195,15 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
     const branchWithLane = {
       ...base,
       invaders: [
-        { id: 'd', disease: 'Influenza', type: 'virus', zone: 'branch', organ: 'lungs', lane: 'nose', step: 1 },
+        {
+          id: 'd',
+          disease: 'Influenza',
+          type: 'virus',
+          zone: 'branch',
+          organ: 'lungs',
+          lane: 'nose',
+          step: 1,
+        },
       ],
     } as unknown as GameState;
     const ok = probe(PLACEMENT_COHERENCE, branchWithLane);
@@ -229,12 +241,24 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
   it('production-respects-cap sees a write above the cap that was in force', () => {
     const g = { ap: 4, cells: {}, turn: 3, invaders: [], ab: { EXB: 6 } } as unknown as GameState;
     const pre = { family: 'EXB', cap: 4, had: 3 };
-    const bad = probe(PRODUCTION_RESPECTS_CAP, g, { action: 'produce', family: 'EXB' }, { ok: true }, pre);
+    const bad = probe(
+      PRODUCTION_RESPECTS_CAP,
+      g,
+      { action: 'produce', family: 'EXB' },
+      { ok: true },
+      pre,
+    );
     expect(bad.violations).toHaveLength(1);
 
     // NEAR MISS: landing exactly ON the cap is what a correct produce does.
     const atCap = { ...g, ab: { EXB: 4 } } as unknown as GameState;
-    const ok = probe(PRODUCTION_RESPECTS_CAP, atCap, { action: 'produce', family: 'EXB' }, { ok: true }, pre);
+    const ok = probe(
+      PRODUCTION_RESPECTS_CAP,
+      atCap,
+      { action: 'produce', family: 'EXB' },
+      { ok: true },
+      pre,
+    );
     expect(ok.violations).toEqual([]);
     expect(ok.checked).toBe(1);
 
@@ -296,7 +320,9 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
       difficulty: 'normal',
       memory: { Cholera: true },
     } as unknown as GameState;
-    expect(probe(MEMORY_ON_KILL, normalGranted, kill, { ok: true }, pre).violations).toHaveLength(1);
+    expect(probe(MEMORY_ON_KILL, normalGranted, kill, { ok: true }, pre).violations).toHaveLength(
+      1,
+    );
 
     // NEAR MISSES: each difficulty behaving correctly.
     const trainingOk = {
@@ -313,7 +339,14 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
   });
 
   it('memory-on-kill sees memory being un-set', () => {
-    const g = { ap: 4, cells: {}, turn: 3, invaders: [], memory: {}, difficulty: 'normal' } as unknown as GameState;
+    const g = {
+      ap: 4,
+      cells: {},
+      turn: 3,
+      invaders: [],
+      memory: {},
+      difficulty: 'normal',
+    } as unknown as GameState;
     const pre = { diseases: [], memory: { Cholera: true } };
     const out = probe(MEMORY_ON_KILL, g, { action: 'engulf' }, { ok: true }, pre);
     expect(out.violations).toHaveLength(1);

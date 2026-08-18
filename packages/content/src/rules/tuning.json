@@ -1,13 +1,5 @@
 {
-  "CELL_KEYS": [
-    "macrophage",
-    "neutrophil",
-    "bcell",
-    "tcell",
-    "helper",
-    "nk",
-    "eosinophil"
-  ],
+  "CELL_KEYS": ["macrophage", "neutrophil", "bcell", "tcell", "helper", "nk", "eosinophil"],
   "SPEED": {
     "macrophage": 1,
     "neutrophil": 2,
@@ -43,30 +35,9 @@
     }
   },
   "SPAWN_TABLE": {
-    "training": [
-      1,
-      1,
-      1,
-      1,
-      1,
-      2
-    ],
-    "normal": [
-      1,
-      1,
-      1,
-      1,
-      2,
-      2
-    ],
-    "hard": [
-      1,
-      1,
-      1,
-      2,
-      2,
-      3
-    ]
+    "training": [1, 1, 1, 1, 1, 2],
+    "normal": [1, 1, 1, 1, 2, 2],
+    "hard": [1, 1, 1, 2, 2, 3]
   },
   "FLAGS": {
     "organs": true,
@@ -101,27 +72,11 @@
   "AB_CAP_FAM": 3,
   "AFFINITY_AT": 4,
   "PRESENT_TIER_BY_DIFF": {
-    "training": [
-      0,
-      1,
-      3
-    ],
-    "normal": [
-      0,
-      3,
-      7
-    ],
-    "hard": [
-      0,
-      5,
-      12
-    ]
+    "training": [0, 1, 3],
+    "normal": [0, 3, 7],
+    "hard": [0, 5, 12]
   },
-  "PRESENT_TIER": [
-    0,
-    1,
-    4
-  ],
+  "PRESENT_TIER": [0, 1, 4],
   "RATE_CAP_BY_DIFF": {
     "training": 3,
     "normal": 3,

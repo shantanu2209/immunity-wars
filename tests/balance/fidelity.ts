@@ -29,7 +29,9 @@ if (control.length === 0) {
   );
   process.exit(2);
 }
-console.log(`comparator control: differing seeds produce ${control.length} field mismatches — OK\n`);
+console.log(
+  `comparator control: differing seeds produce ${control.length} field mismatches — OK\n`,
+);
 
 console.log("E0a bot fidelity — harness bot vs simulate()'s inlined bot");
 console.log(`${SEEDS} seeds x ${DIFFICULTIES.length} difficulties, identical seeded RNG\n`);

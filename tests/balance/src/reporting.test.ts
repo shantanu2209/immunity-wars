@@ -18,16 +18,20 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { GATED_METRICS, GENERATOR, GENERATOR_VERSION, measure, render, valueOf, type MetricValue } from './metrics.js';
+import {
+  GATED_METRICS,
+  GENERATOR,
+  GENERATOR_VERSION,
+  measure,
+  render,
+  valueOf,
+  type MetricValue,
+} from './metrics.js';
 
 /** Tiny — this suite is about the shape of the output, not the size of the sample. */
 const run = measure('normal', 3, 6, 0);
 
-const REQUIRED = [
-  `under the ${GENERATOR} ${GENERATOR_VERSION}`,
-  'games',
-  'on normal',
-];
+const REQUIRED = [`under the ${GENERATOR} ${GENERATOR_VERSION}`, 'games', 'on normal'];
 
 describe('every published figure carries the conditions that produced it', () => {
   it('renders the generator, its version, the game count and the difficulty — on every metric', () => {

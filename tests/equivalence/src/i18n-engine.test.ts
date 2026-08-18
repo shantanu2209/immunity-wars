@@ -56,7 +56,8 @@ describe('LEG 1 — completeness: sites and catalogue entries agree', () => {
     const missing: string[] = [];
     for (const s of sites) {
       const key = built.keyOf.get(s.message);
-      if (!key || !(key in catalogue)) missing.push(`${s.file}:${s.line}  ${s.message.slice(0, 60)}`);
+      if (!key || !(key in catalogue))
+        missing.push(`${s.file}:${s.line}  ${s.message.slice(0, 60)}`);
     }
     expect(missing).toEqual([]);
   });
