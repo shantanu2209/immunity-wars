@@ -2150,14 +2150,35 @@ turn.
   that is an engine change measured against the corpus like any other. It is not a protocol
   decision that can be taken on the server side alone.
 
-### 40.4 Why nothing had noticed
+### 40.4 Why nothing had noticed — A WORKAROUND SO EFFECTIVE IT HID THE THING IT WORKED AROUND
 
 Everything that needed determinism in Phase 1 got it by **swapping the global** — `installRng` in
 `tests/equivalence/src/rng.ts`, and the same trick pasted into a browser console for the Task G
 protocol. That works for a test harness and for one machine. It does not work across two devices,
-because there is no shared global to swap.
+because **there is no shared global to swap.**
 
-The workaround was so effective that the underlying property was never written down.
+**This is a new variant of the pattern this document keeps recording, and it is worth naming
+separately.** Every previous instance was a check that was *blind* — measuring nothing (C5b), or
+measuring the wrong region (#24, #30), or measuring a spread the sample never contained (#35). This
+one is the opposite shape:
+
+> **The instrument was never wrong. The workaround was so good that the property it worked around
+> stopped being visible as a property at all.**
+
+Six months of tests depended on the engine being non-deterministic-but-swappable, and every one of
+them passed, because on one machine swapping the global *is* determinism. Nothing failed, nothing
+was mis-measured, and nobody had a reason to write down that `applyAction` is impure — the
+workaround had made the question stop arising.
+
+It is more dangerous than a blind check, for two reasons. A blind check can be caught by a negative
+control; **there is nothing to negative-control here, because nothing is broken.** And a workaround
+earns trust by working, so the longer it holds the less likely anyone is to look behind it — the
+evidence that it is fine accumulates right up until the environment changes.
+
+**What to do with it, generally:** when a workaround is introduced for an awkward property, record
+the *property*, not just the workaround. `rng.ts`'s header explains beautifully why the global is
+swapped and never says the engine is impure — which is the same sentence, aimed at the mechanism
+rather than the fact. The fact is what a later phase needs.
 
 **Disposition: RECORDED, Phase 3 input.** No engine change. Seam 1's interface is designed around
 it rather than against it.
