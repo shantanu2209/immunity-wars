@@ -37,7 +37,7 @@ Phase 6  The classroom layer
 | **D** | Build the seven test suites, including property tests that attack invariants | 10,000+ random games with no invariant violated |
 | **E** | Measure what the engine actually does | State size and balance metrics reported, with variance |
 | **F** | Turn on CI; publish a live test dashboard | A URL you can open on your phone showing green |
-| **G** | Prove it end-to-end | One file, opened on the iPad, plays identically to today |
+| **G** | Prove it end-to-end | One file, double-clicked open with no toolchain, plays identically to today |
 
 **What you get:** nothing visibly different, and a codebase where a mistake announces itself
 instead of waiting to be discovered.

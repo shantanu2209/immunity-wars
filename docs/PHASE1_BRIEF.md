@@ -249,13 +249,21 @@ Keep types boring: no clever generics, `unknown` at every trust boundary.
 **Task F — CI and dashboard.** Per §8.
 
 **Task G — Single-file harness.** `vite-plugin-singlefile` to emit a self-contained HTML build,
-preserving the double-click-to-play test loop that exists today. Non-negotiable — it is how
-Shantanu tests on iPad.
+preserving the double-click-to-play test loop that exists today. Non-negotiable — **double-click
+to play, no server, no dev command, no toolchain.**
+
+> ⚠️ **Corrected 19 Aug 2026, at Task G planning.** This said "it is how Shantanu tests on iPad".
+> That was his own wording and it hardened a habit into a requirement. **Testing happens on the
+> Windows PC** — two browser windows side by side, a developer console so a JS error is visible
+> rather than presenting as "the button did nothing", the file already local, no `file://`
+> restrictions, and a rebuild-retest loop of seconds. What the single-file requirement protects is
+> the *no-toolchain double-click*, not the device. Mobile testing belongs in Phase 2, where there
+> is a mobile UI worth testing. See [`TASK_G_PLAN.md`](TASK_G_PLAN.md) §1.
 
 **Resolves an apparent contradiction in v1.0:** §2 keeps `packages/app` empty, yet §9 requires a
 playable single-file build. Both hold, because the harness stitches the **new TypeScript engine**
 into the **legacy `v2_ui.html`**. If that plays identically to today, the port is proven end-to-end
-by a human at an iPad, not only by automated diffs. `packages/app` stays empty; the harness is a
+by a human at a keyboard, not only by automated diffs. `packages/app` stays empty; the harness is a
 build tool, not an app.
 
 ---
@@ -356,7 +364,8 @@ Merges blocked on red. Balance drift outside tolerance fails the build.
 - [ ] All player-visible strings in i18n catalogues
 - [ ] Seven test suites green; property suite runs ≥10,000 games without invariant violation
 - [ ] CI green; dashboard live at a public URL
-- [ ] Single-file harness (new engine + legacy UI) plays identically to today on Shantanu's iPad
+- [ ] Single-file harness (new engine + legacy UI) plays identically to today, opened by
+      double-clicking on Shantanu's Windows PC — no server, no toolchain
 - [ ] **Reported:** serialised state size, and the current balance baseline (post-brain-fix)
 - [ ] Eight seam interfaces defined, one implementation each
 - [ ] Legacy files retained read-only under `tools/legacy/`
