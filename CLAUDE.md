@@ -42,7 +42,7 @@ pnpm lint
 pnpm test             # unit + property + negative + schema
 pnpm test:balance     # slow; run on engine/content changes
 pnpm build
-pnpm build:single     # self-contained HTML harness — Shantanu tests this on iPad
+pnpm build:single     # self-contained HTML harness — double-click to play, no toolchain
 ```
 
 ## Layout

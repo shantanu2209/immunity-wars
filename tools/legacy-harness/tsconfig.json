@@ -1,0 +1,9 @@
+{
+  // Node types: this reads the legacy sources off disk and will write a build artifact.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}
