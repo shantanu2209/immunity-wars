@@ -31,273 +31,29 @@
  * work around quietly.
  */
 
-import { readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as content from '@immunity-wars/content';
 
-import ts from 'typescript';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
-const REPO = resolve(HERE, '..', '..');
-const LEGACY = join(REPO, 'tools', 'legacy');
-
-// --- the two sides of the seam -----------------------------------------------------------------
-
-const uiHtml = readFileSync(join(LEGACY, 'v2_ui.html'), 'utf8');
-const scripts = [...uiHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1] ?? '');
-const marker = scripts.findIndex((s) => s.includes('__ENGINE__'));
-if (marker < 0) throw new Error('engine marker missing from v2_ui.html');
-
-// The board script is the one after the marker script, per spectator_build.js.
-const board = scripts[marker + 1];
-if (!board) throw new Error('board script not found after the engine marker');
-
-/** Legacy's public API — the names it puts in scope once module.exports is stripped. */
-function legacyExports(): string[] {
-  const src = readFileSync(join(LEGACY, 'v2_engine.js'), 'utf8');
-  const m = src.match(/module\.exports\s*=\s*\{([\s\S]*?)\};?\s*$/);
-  if (!m?.[1]) throw new Error('could not find module.exports in v2_engine.js');
-  return [
-    ...new Set(
-      m[1]
-        .split(',')
-        .map((s) => s.trim().split(':')[0]?.trim() ?? '')
-        .filter((s) => /^[A-Za-z_$][\w$]*$/.test(s)),
-    ),
-  ].sort();
-}
-
-/** Every top-level declaration in the legacy engine — what actually lands in global scope. */
-function legacyTopLevelNames(): Set<string> {
-  const src = readFileSync(join(LEGACY, 'v2_engine.js'), 'utf8');
-  const sf = ts.createSourceFile('v2_engine.js', src, ts.ScriptTarget.ES2022, true);
-  const names = new Set<string>();
-  for (const st of sf.statements) {
-    if (ts.isFunctionDeclaration(st) && st.name) names.add(st.name.text);
-    else if (ts.isVariableStatement(st)) {
-      for (const d of st.declarationList.declarations) {
-        if (ts.isIdentifier(d.name)) names.add(d.name.text);
-      }
-    } else if (ts.isClassDeclaration(st) && st.name) names.add(st.name.text);
-  }
-  return names;
-}
-
-/** What the ported engine publishes. */
-function portExports(): string[] {
-  const src = readFileSync(join(REPO, 'packages', 'engine', 'src', 'index.ts'), 'utf8');
-  const sf = ts.createSourceFile('index.ts', src, ts.ScriptTarget.ES2022, true);
-  const names = new Set<string>();
-  const visit = (n: ts.Node): void => {
-    if (ts.isExportDeclaration(n) && n.exportClause && ts.isNamedExports(n.exportClause)) {
-      for (const e of n.exportClause.elements) names.add(e.name.text);
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(sf);
-  return [...names].sort();
-}
-
-// --- the demand surface -------------------------------------------------------------------------
-
-/**
- * Identifiers the board script READS but never declares, in any enclosing scope.
- *
- * Scope tracking is deliberately conservative: a name is only reported as free when no enclosing
- * function, block, parameter list or top-level statement declares it. Over-reporting would bury
- * the real answer in noise; under-reporting would hide a missing export, so where the two conflict
- * this errs toward reporting.
- */
-function freeIdentifiers(code: string): Map<string, number> {
-  const sf = ts.createSourceFile('board.js', code, ts.ScriptTarget.ES2022, true);
-  const free = new Map<string, number>();
-
-  const declare = (name: string, scope: Set<string>): void => {
-    scope.add(name);
-  };
-
-  const bindingNames = (n: ts.BindingName, scope: Set<string>): void => {
-    if (ts.isIdentifier(n)) declare(n.text, scope);
-    else if (ts.isObjectBindingPattern(n) || ts.isArrayBindingPattern(n)) {
-      for (const el of n.elements) {
-        if (ts.isBindingElement(el)) bindingNames(el.name, scope);
-      }
-    }
-  };
-
-  /** Hoist declarations that belong to a scope before walking its body. */
-  const hoist = (nodes: readonly ts.Node[], scope: Set<string>): void => {
-    for (const st of nodes) {
-      if (ts.isFunctionDeclaration(st) && st.name) declare(st.name.text, scope);
-      else if (ts.isClassDeclaration(st) && st.name) declare(st.name.text, scope);
-      else if (ts.isVariableStatement(st)) {
-        for (const d of st.declarationList.declarations) bindingNames(d.name, scope);
-      }
-    }
-  };
-
-  const walk = (node: ts.Node, scopes: Set<string>[]): void => {
-    const inScope = (name: string): boolean => scopes.some((s) => s.has(name));
-
-    if (
-      ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node) ||
-      ts.isMethodDeclaration(node)
-    ) {
-      const scope = new Set<string>();
-      for (const p of node.parameters) bindingNames(p.name, scope);
-      if ((ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node)) && node.name) {
-        scope.add(node.name.text);
-      }
-      const body = node.body;
-      if (body && ts.isBlock(body)) hoist(body.statements, scope);
-      const next = [...scopes, scope];
-      for (const p of node.parameters) if (p.initializer) walk(p.initializer, next);
-      if (body) walk(body, next);
-      return;
-    }
-
-    if (ts.isBlock(node) || ts.isCaseBlock(node)) {
-      const scope = new Set<string>();
-      // A CaseBlock holds clauses, each with its own statements; a Block holds statements directly.
-      const stmts: readonly ts.Node[] = ts.isBlock(node)
-        ? node.statements
-        : node.clauses.flatMap((c) => [...c.statements]);
-      hoist(stmts, scope);
-      const next = [...scopes, scope];
-      ts.forEachChild(node, (c) => walk(c, next));
-      return;
-    }
-
-    if (ts.isForStatement(node) || ts.isForOfStatement(node) || ts.isForInStatement(node)) {
-      const scope = new Set<string>();
-      const init = ts.isForStatement(node) ? node.initializer : node.initializer;
-      if (init && ts.isVariableDeclarationList(init)) {
-        for (const d of init.declarations) bindingNames(d.name, scope);
-      }
-      const next = [...scopes, scope];
-      ts.forEachChild(node, (c) => walk(c, next));
-      return;
-    }
-
-    if (ts.isIdentifier(node)) {
-      const p = node.parent;
-      // Property names, member access after the dot, and declaration names are not references.
-      const isMemberName = ts.isPropertyAccessExpression(p) && p.name === node;
-      const isPropName = ts.isPropertyAssignment(p) && p.name === node;
-      const isShorthandValue = ts.isShorthandPropertyAssignment(p);
-      const isDeclName =
-        (ts.isVariableDeclaration(p) || ts.isFunctionDeclaration(p) || ts.isParameter(p)) &&
-        p.name === node;
-      const isLabel = ts.isLabeledStatement(p) || ts.isBreakOrContinueStatement(p);
-      if (!isMemberName && !isPropName && !isDeclName && !isLabel) {
-        void isShorthandValue;
-        if (!inScope(node.text)) free.set(node.text, (free.get(node.text) ?? 0) + 1);
-      }
-      return;
-    }
-
-    ts.forEachChild(node, (c) => walk(c, scopes));
-  };
-
-  const top = new Set<string>();
-  hoist(sf.statements, top);
-  walk(sf, [top]);
-  return free;
-}
-
-/** Names the browser provides. Not exhaustive — extended as the report shows noise. */
-const BROWSER = new Set([
-  'window',
-  'document',
-  'console',
-  'Math',
-  'JSON',
-  'Object',
-  'Array',
-  'String',
-  'Number',
-  'Boolean',
-  'Date',
-  'Set',
-  'Map',
-  'Promise',
-  'RegExp',
-  'Error',
-  'isNaN',
-  'parseInt',
-  'parseFloat',
-  'setTimeout',
-  'clearTimeout',
-  'setInterval',
-  'clearInterval',
-  'requestAnimationFrame',
-  'navigator',
-  'location',
-  'history',
-  'alert',
-  'confirm',
-  'prompt',
-  'fetch',
-  'localStorage',
-  'sessionStorage',
-  'undefined',
-  'NaN',
-  'Infinity',
-  'globalThis',
-  'encodeURIComponent',
-  'decodeURIComponent',
-  'Blob',
-  'URL',
-  'FileReader',
-  'Image',
-  'event',
-  'performance',
-  'structuredClone',
-  'CustomEvent',
-  'Event',
-  'HTMLElement',
-  'getComputedStyle',
-  'matchMedia',
-  'crypto',
-  'requestIdleCallback',
-  'cancelAnimationFrame',
-  'TextEncoder',
-  'TextDecoder',
-  'Intl',
-  'Symbol',
-  'BigInt',
-  'Proxy',
-  'Reflect',
-  'WeakMap',
-  'WeakSet',
-  'ArrayBuffer',
-  'Uint8Array',
-  'parse',
-  'arguments',
-  'this',
-]);
+import { measureSeam } from './seam-lib.js';
 
 // --- report -------------------------------------------------------------------------------------
-
-const exportsLegacy = legacyExports();
-const topLevelLegacy = legacyTopLevelNames();
-const exportsPort = portExports();
-const free = freeIdentifiers(board);
-
-const demanded = [...free.keys()].filter((n) => !BROWSER.has(n)).sort();
 
 // A name the UI needs is satisfiable if the legacy engine declares it at top level, because that
 // is what injection puts in scope. Legacy's module.exports list is the CONTRACT, but the injected
 // script exposes every top-level declaration, so the two can differ — and that difference is
 // exactly the kind of thing worth knowing before building a shim.
-const fromEngine = demanded.filter((n) => topLevelLegacy.has(n));
-const notFromEngine = demanded.filter((n) => !topLevelLegacy.has(n));
-
-const portHas = new Set(exportsPort);
-const covered = fromEngine.filter((n) => portHas.has(n));
-const missing = fromEngine.filter((n) => !portHas.has(n));
+//
+// The measurement itself lives in seam-lib.ts, so step 2 and the shim talk about the SAME surface.
+const {
+  exportsLegacy,
+  topLevelLegacy,
+  exportsPort,
+  free,
+  demanded,
+  fromEngine,
+  notFromEngine,
+  covered,
+  missing,
+} = measureSeam();
 
 const line = '='.repeat(95);
 console.log(line);
@@ -321,16 +77,30 @@ console.log(
 console.log(
   `  ${fromEngine.length} names the board script reads that the legacy engine declares.\n`,
 );
-console.log(`  COVERED by the port : ${covered.length}`);
-console.log(`  MISSING from the port: ${missing.length}`);
-if (missing.length > 0) {
+// Step 1 asked "does the PORT publish every name". Step 3 answered the real question: the shim
+// binds each name from the engine OR from content, and docs/FINDINGS.md #39 records why five must
+// come from content and why nothing was added to `packages/engine` to change that.
+//
+// So the exit criterion is now "covered by the SHIM", not "covered by the engine". Left as it
+// stood, this script would report red forever against a harness that works — the docs/FINDINGS.md
+// #38 shape, where a permanently-red instrument stops carrying any information at all.
+const inContent = (n: string): boolean =>
+  (content as unknown as Record<string, unknown>)[n] !== undefined;
+const fromContent = missing.filter(inContent);
+const uncovered = missing.filter((n) => !inContent(n));
+
+console.log(`  COVERED by the port   : ${covered.length}`);
+console.log(`  supplied from content : ${fromContent.length}   (FINDINGS #39 — the five)`);
+for (const n of fromContent) console.log(`      ${n.padEnd(22)} referenced ${free.get(n)}x`);
+console.log(`  COVERED BY NEITHER    : ${uncovered.length}`);
+if (uncovered.length > 0) {
   console.log('');
-  for (const n of missing) console.log(`    MISSING  ${n}  (referenced ${free.get(n)}x)`);
+  for (const n of uncovered) console.log(`    MISSING  ${n}  (referenced ${free.get(n)}x)`);
   console.log(
     '\n  Each of these is a ReferenceError mid-game in a build a human is trying to judge.',
   );
 } else {
-  console.log('\n  The port covers every engine name the UI reads.');
+  console.log('\n  Every engine name the UI reads is bound by the shim.');
 }
 
 console.log('');
@@ -359,4 +129,4 @@ console.log(
     : '    (none)',
 );
 
-process.exit(missing.length > 0 ? 1 : 0);
+process.exit(uncovered.length > 0 ? 1 : 0);

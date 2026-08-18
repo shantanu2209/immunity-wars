@@ -45,6 +45,11 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **32** | **A control that fires is not enough — measure how STRONGLY, against WHAT** | **Method** | Rule added to `tests/property/README.md` beside the four-kinds table |
 | **33** | **Linearly-spaced seeds are not independent samples — the harness's own bands were wrong** | **Method** | **FIXED** at E2; found by the reproducibility check that exists for it |
 | **34** | **The Task E metric-panel design in this file does not work as proposed, measured three ways** | **Task E** | **CORRECTED** at E2; the panel now detects an Action Point, and #17's blind spot is narrower than stated |
+| **35** | **A measured `sd(arm)` can sit BELOW the floor sampling theory allows — the 8-arm bands did, at 0.72×** | **Task F0** | **FIXED** at F0; the floor is now checked on every calibration |
+| **36** | **The port and legacy agree to four decimal places on aggregate metrics** | **Verified** | Corroboration nobody was looking for; report only |
+| **37** | **An inventory can be wrong by OMISSION, not only by overclaim** | **Method / Task F1** | **FIXED** at F1; the manifest asserts both directions |
+| **38** | **Two instruments, each correct, that together produced a permanently-red dashboard row** | **Method / Task F** | **FIXED**; nightly tiers declared, result writing moved into a tested script |
+| **39** | **Task B proved the 67-export contract; that contract is NOT the surface `v2_ui.html` uses** | **Task G** | Five names supplied by the shim from `packages/content`; no engine change |
 
 ---
 
@@ -1987,3 +1992,93 @@ invisible in a green run.
 and `history/` added to `.gitignore` — CI writes them into the working tree and untracked is one
 careless `git add -A` from committed.
 
+
+---
+
+## 39. Task B proved the 67-export contract; the 67-export contract is not the surface `v2_ui.html` uses
+
+**Found at Task G step 1, 18 Aug 2026**, measuring the seam before writing any shim —
+[`TASK_G_PLAN.md`](TASK_G_PLAN.md) §3 step 1 requires exactly that, and this is why.
+
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §5 names the port's contract precisely:
+
+> The public API is the contract: **67 exports at `v2_engine.js:1767`**
+
+That is a true statement about `module.exports`. It is not a true statement about what the UI
+reads, and the difference is structural rather than an oversight by anyone.
+
+**The harness does not `import` the engine — it injects it.** `v2_ui.html` carries a literal
+engine marker, and `tools/legacy/spectator_build.js` shows the contract it was built for: read the
+engine file, strip `module.exports`, substitute the source at the marker. The engine therefore
+arrives as a **classic script**, and every top-level `const`, `let` and `function` in it becomes a
+global. `module.exports` is not consulted at all in a browser.
+
+Measured with the TypeScript compiler API rather than assumed — every identifier the board script
+reads but never declares in any enclosing scope:
+
+| | |
+|---|---|
+| legacy `module.exports` | **67** names — the documented contract |
+| legacy top-level declarations | **153** names — what injection actually exposes |
+| port `index.ts` exports | 94 names |
+| board-script free identifiers | 68 (53 after browser globals) |
+| of which the engine declares | 49 → **44 covered by the port, 5 missing** |
+
+The five: `LYMPH_STEP`, `ROUTE_KEYS`, `SNIPE_RANGE`, `SNIPE_RANGE_BY_DIFF`, `SPEED`.
+
+**None of the five is among legacy's 67.** They are engine internals that were never part of the
+public API, and the UI has been reading them for as long as it has existed, because injection made
+them reachable.
+
+### 39.1 Why nothing before now had reason to notice
+
+The equivalence corpus drives the engine **directly, through its exports**. It never loads
+`v2_ui.html`. So every instrument in this repository has been measuring the 67-name surface, and
+measuring it correctly — while the surface the game is actually played through is 153 names wide.
+No check was wrong. The checks were aimed at a smaller target than the one that matters here, and
+nothing in Phase 1 had cause to aim differently until a browser was in the loop.
+
+Publishing legacy's 67 exports was **necessary and not sufficient** for this harness.
+
+### 39.2 Why this is an argument FOR Task G, not a complication of it
+
+The obvious reading is that G has found a gap. The useful reading is the opposite:
+
+> **The harness exercises a wider surface than the corpus ever did.** It is the first thing in
+> Phase 1 to touch the seam the game is actually played through.
+
+Left undiscovered, this would have surfaced in Phase 2 as five `ReferenceError`s inside a new React
+UI — mystifying, because the port publishes a contract that was proved green, and the missing names
+appear nowhere in that contract to be looked for. A whole class of "the port is broken" debugging
+is avoided by finding it here, in a rename layer, with the legacy UI to compare against.
+
+This is the same shape as the negative-control rule in [`CLAUDE.md`](../CLAUDE.md): the value is in
+the *class* of error caught, not the five names.
+
+### 39.3 Disposition — five renames, nothing added to `packages/engine`
+
+All five are already exported from `packages/content/src/index.ts`. The shim imports them from
+content, so:
+
+- **no logic moves out of `packages/engine`** — the thing `TASK_G_PLAN.md` step 1 exists to catch;
+- **nothing is added to the engine's public API**, which stays exactly where Task B fixed it;
+- the shim stays what it is meant to be, a rename layer.
+
+That they are all content tables is the reason step 1 came in at a day rather than a week. It was
+not guaranteed and it was checked, not hoped for.
+
+### 39.4 The method's own blind spot, checked rather than assumed
+
+Free-identifier collection filters browser globals with an allowlist. **An engine name colliding
+with a browser global would have been silently filtered and never reported as missing.** Measured:
+the intersection of the engine's 153 declarations with the browser-global allowlist is **empty**,
+so nothing was masked. Recorded because an unmeasured filter is exactly the shape of #24 — an
+instrument wrong in the region nobody was looking at.
+
+Three residual names, confirmed benign: `ART` arrives from the art marker; `innerWidth` and
+`innerHeight` are browser globals; `mbPickTarget` is guarded by a `typeof` check, so it is a soft
+optional from the mobile build rather than a dangling reference.
+
+**Disposition: MEASURED and RESOLVED at G step 1.** The measurement script is
+`tools/legacy-harness/seam.ts`, a workspace member so it is typechecked and linted like every other
+instrument here. No engine change. The five names are supplied by the shim from `packages/content`.

@@ -2,7 +2,7 @@
   "name": "immunity-wars",
   "version": "0.0.0",
   "private": true,
-  "description": "The Immunity Wars \u2014 cooperative immunology board game, digital edition",
+  "description": "The Immunity Wars — cooperative immunology board game, digital edition",
   "license": "Apache-2.0",
   "type": "module",
   "packageManager": "pnpm@11.20.0",
@@ -31,11 +31,14 @@
     "ci:matrix": "tsx tools/ci/matrix.ts",
     "dashboard:build": "tsx tools/dashboard/build.ts",
     "build": "turbo run build",
-    "build:single": "node scripts/not-implemented.mjs build:single G",
+    "build:single": "pnpm --filter @immunity-wars/legacy-harness build",
     "boundaries": "depcruise packages --config .dependency-cruiser.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm boundaries && pnpm test"
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm boundaries && pnpm test",
+    "harness:frames": "tsx tools/legacy-harness/frames.ts",
+    "harness:controls": "tsx tools/legacy-harness/controls.ts",
+    "harness:drift": "tsx tools/legacy-harness/drift.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
