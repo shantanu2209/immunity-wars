@@ -11,7 +11,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 
 | # | Finding | Severity | Disposition |
 |---|---|---|---|
-| 1 | The reference bot has fallen far behind the game | **Phase 2 decision input** | Capability audit below; build a competent bot in Phase 2 |
+| 1 | The reference bot has fallen far behind the game | **Phase 3 decision input** | Capability audit below; build a competent bot in Phase 3 — see §1.4 |
 | 2 | Training 79 / Normal 51 / Hard 19 are obsolete | **Reporting** | Marked obsolete here and in `CLAUDE.md` |
 | 3 | `stats.arrivals` / `stats.gotThrough` go `NaN` | Medium | **FIXED** after equivalence — [`DEVIATIONS.md`](DEVIATIONS.md) #3 |
 | 4 | Antigenic variation is unreachable | **Design** | Port dead; conversation with Kartik |
@@ -148,11 +148,26 @@ A competent bot is **dual-use**, which is what makes it worth building rather th
 nice to have:
 
 1. It is the only way `simulate()` can measure anything meaningful about *difficulty*.
-2. Online play needs AI to fill seats when a player drops — a real Phase 2/3 requirement, and
+2. Online play needs AI to fill seats when a player drops — a real Phase 3 requirement, and
    with 14 seats a dropped player is likely rather than exceptional.
 
-**This is a Phase 2 decision, not a Task B one.** Nothing here is tuned or changed during the
+**This is a Phase 3 decision, not a Task B one.** Nothing here is tuned or changed during the
 port. Recorded so the decision is made on measurements rather than impressions.
+
+> ⚠️ **Corrected 18 Aug 2026, at the Phase 2 brief review.** This said **Phase 2**, in both
+> places above. The correction is measured, not editorial.
+>
+> The bot is **inlined in `packages/engine/src/simulate.ts`** (that is finding #6), and
+> `simulate()` is compared **byte-identically** by the B6 corpus check
+> (`tests/equivalence/src/simulate.test.ts`). So building a competent bot is an **engine change
+> that necessarily breaks the corpus** — and `docs/PHASE2_BRIEF.md`'s definition of done
+> requires "the engine is unchanged". Both could not stand.
+>
+> The ruling is that the bot moves to **Phase 3**, where the seat-filling AI makes it the same
+> piece of work: re-baselining this project's primary oracle **during a renderer rewrite** is the
+> worst available timing, because that oracle is the only thing saying the rewrite did not change
+> the rules. The 9 bot-conditional coverage arms move with it
+> ([`COVERAGE_DEFERRED.md`](COVERAGE_DEFERRED.md)). Record: `PHASE2_BRIEF.md` v1.1 §6, item A.
 
 ---
 

@@ -58,9 +58,19 @@
  *
  * Two categories are NOT excluded, deliberately:
  *   - MULTIPLAYER arms stay in the denominator. They are reachable; Phase 3 must cover them.
- *   - BOT-CONDITIONAL arms stay in the denominator. They become reachable when Phase 2 builds
- *     a competent bot.
+ *   - BOT-CONDITIONAL arms stay in the denominator. They become reachable when a competent bot
+ *     is built, which is PHASE 3's work, not Phase 2's.
  * Both are tracked as lists their phase inherits.
+ *
+ * The bot arms said "Phase 2" until 18 Aug 2026. That was wrong and the correction is measured,
+ * not editorial: the reference bot is INLINED IN THE ENGINE (docs/FINDINGS.md #6), and
+ * simulate() is compared BYTE-IDENTICALLY by the B6 corpus check
+ * (tests/equivalence/src/simulate.test.ts). So a competent bot is an engine change that
+ * necessarily breaks the corpus — which Phase 2's own definition of done forbids in the same
+ * breath ("the engine is unchanged"). Both could not stand. Phase 2 is a renderer rewrite, and
+ * re-baselining the primary oracle DURING a rewrite is the worst available timing. The arms move
+ * to Phase 3, where the seat-filling AI makes them the same piece of work.
+ * docs/PHASE2_BRIEF.md v1.1 §6, review item A.
  *
  *   node --import tsx tests/equivalence/coverage-gate.ts
  */
@@ -643,11 +653,17 @@ const dl: string[] = [
   '',
   ...deferredMp.map(row),
   '',
-  '## Phase 2 — reachable once a competent bot exists (' + deferredBot.length + ' arms)',
+  '## Phase 3 — reachable once a competent bot exists (' + deferredBot.length + ' arms)',
   '',
   "Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never",
   'emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot',
   'good enough to measure difficulty would reach them.',
+  '',
+  '**These were listed against Phase 2 until 18 August 2026.** The bot is inlined in the engine',
+  '(docs/FINDINGS.md #6) and `simulate()` is compared byte-identically by the B6 corpus check, so',
+  'building a competent bot is an engine change that breaks the corpus — which Phase 2 forbids in',
+  'its own definition of done. They move here, alongside the seat-filling AI they are the same',
+  'work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.',
   '',
   ...deferredBot.map(row),
   '',
@@ -661,7 +677,7 @@ writeFileSync('docs/COVERAGE_DEFERRED.md', dl.join('\n') + '\n');
 
 console.log('');
 console.log('  deferred to Phase 3 (multiplayer) : ' + deferredMp.length);
-console.log('  deferred to Phase 2 (bot)         : ' + deferredBot.length);
+console.log('  deferred to Phase 3 (bot)         : ' + deferredBot.length);
 console.log('  uncategorised, still open         : ' + rest.length);
 console.log('  wrote docs/COVERAGE_EXCLUSIONS.md and docs/COVERAGE_DEFERRED.md');
 

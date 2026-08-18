@@ -3,6 +3,18 @@
 **Written 18 August 2026**, reviewing [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v1.0 before any Phase 2
 code exists. **Nothing has been implemented.**
 
+> **STATUS — all seven items ruled on, same day. The brief is now v1.1.**
+> Shantanu accepted **A, B, D, E, F** as written, took **C** as the real gap and required the
+> classification to be **reported before any design** (his lean is recorded in the brief, as a
+> lean), and settled all six of **G**'s ambiguities. **H** is recorded as a claim that held.
+> Every ruling is applied and marked in [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v1.1 — see its
+> "What v1.1 changes" table for the item-to-section map.
+>
+> **Section references below are to brief v1.0.** v1.1 keeps the same numbering, so they still
+> resolve, but the text they quote has in several cases been corrected. This document is left as
+> written: it is the record of what the brief said and why it was wrong, and rewriting it would
+> destroy the only copy of that.
+
 Recorded to disk because the measurements below took a session to produce and are not derivable by
 reading. Items **A** and **C** change what P2.1 builds and need a decision from Shantanu.
 
