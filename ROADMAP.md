@@ -42,6 +42,21 @@ Phase 6  The classroom layer
 **What you get:** nothing visibly different, and a codebase where a mistake announces itself
 instead of waiting to be discovered.
 
+**Scheduled immediately after G — upgrade vitest 2 → 3.** It clears every open Dependabot advisory
+in one move (vitest 3 brings vite 6, which brings a patched esbuild), and there is no patch-level
+alternative: the fixes exist only in the next major.
+
+It is scheduled **as an upgrade, not as a security response.** None of the advisories is reachable
+— they all require a long-running server, and nothing here starts one
+([`docs/SECURITY_NOTES.md`](docs/SECURITY_NOTES.md)) — so there is no urgency to justify doing it
+carelessly. It moves the test framework underneath all 511 tests including the equivalence corpus,
+which is the oracle for the Task B port, so **the corpus and the full suite are the check that it
+landed correctly.** After G, because G is the end-to-end proof and it should not be attempted on
+shifting foundations.
+
+The one thing that would make it urgent instead: Phase 2 adding a dev server. The trigger is
+written down where whoever adds one will meet it.
+
 **Coverage gate:** met at 95.46% of coverable arms, with exclusions enumerated and self-policing.
 Two deferred lists carry into Phases 2 and 3.
 
