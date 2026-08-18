@@ -1,0 +1,38 @@
+{
+  "note": "POINT ZERO. These figures were measured on a developer machine during Task E, before CI existed — they are seeded so the dashboard's trends start from something rather than from nothing. Every record here carries source:\"local\", is rendered as such, and must never be presented as a CI measurement. A trend whose newest point is local has not been measured by CI at all, and the renderer says so.",
+  "records": [
+    {
+      "at": "2026-08-12T12:26:44Z",
+      "commit": "5c6cfc2",
+      "source": "local",
+      "sourceNote": "Task E, measured on a 20-core developer machine — not CI",
+      "sizeMedianChars": {
+        "training": 7636,
+        "normal": 10574,
+        "hard": 21812
+      },
+      "balance": {
+        "normal": {
+          "avgTurnsSurvived": 11.0888,
+          "trunkKillPct": 0.9781,
+          "avgAntibodiesMade": 19.4781,
+          "avgOrgansDamaged": 2.0912
+        }
+      }
+    },
+    {
+      "at": "2026-08-18T16:19:36Z",
+      "commit": "f86dd7d",
+      "source": "local",
+      "sourceNote": "Task F0, the 24-arm recalibration — measured locally, not CI",
+      "balance": {
+        "normal": {
+          "avgTurnsSurvived": 11.0534,
+          "trunkKillPct": 0.9774,
+          "avgAntibodiesMade": 19.47,
+          "avgOrgansDamaged": 2.0889
+        }
+      }
+    }
+  ]
+}
