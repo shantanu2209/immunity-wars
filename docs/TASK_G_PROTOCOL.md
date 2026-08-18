@@ -51,11 +51,16 @@ which is exactly what the equivalence rig does. **Paste this into BOTH consoles*
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-  lab.difficulty = "normal";
-  newG();
-  console.log('seeded, new game started');
+  var L = typeof lab !== "undefined" ? lab : null;
+  var N = typeof newG === "function" ? newG : null;
+  if (L) L.difficulty = "normal";
+  if (N) { N(); console.log("SEEDED - new game started on normal."); }
+  else console.log("SEEDED - now click the normal difficulty button to start the game.");
 })();
 ```
+
+It prints `SEEDED`. If it says to click the difficulty button, do that — the seed is already
+installed, and the button runs the same two calls from page scope.
 
 Both windows now hold the identical game. If the two boards do not look identical at this point,
 stop — that is a finding, and nothing after it is interpretable.
