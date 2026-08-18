@@ -1,5 +1,12 @@
 # The Immunity Wars
 
+[![CI](https://github.com/shantanu2209/immunity-wars/actions/workflows/ci.yml/badge.svg)](https://github.com/shantanu2209/immunity-wars/actions/workflows/ci.yml)
+[![Nightly](https://github.com/shantanu2209/immunity-wars/actions/workflows/nightly.yml/badge.svg)](https://github.com/shantanu2209/immunity-wars/actions/workflows/nightly.yml)
+
+> The CI badge reflects the **per-push** tier only. What that does and does not prove is
+> stated on the [results dashboard](https://shantanu2209.github.io/immunity-wars/), which is
+> the honest place to look — a green badge is a smaller claim than it appears.
+
 **A cooperative board game where players are immune cells defending a body against real diseases — and accurate immunology is the winning strategy.**
 
 Seven immune cell types. Six antigen classes. Ninety-six real diseases. Four infection routes
