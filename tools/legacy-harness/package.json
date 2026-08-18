@@ -14,7 +14,8 @@
     "frames": "tsx frames.ts",
     "controls": "tsx controls.ts",
     "drift": "tsx drift.ts",
-    "seam": "tsx seam.ts"
+    "seam": "tsx seam.ts",
+    "homes": "tsx homes.ts"
   },
   "dependencies": {
     "@immunity-wars/content": "workspace:*",

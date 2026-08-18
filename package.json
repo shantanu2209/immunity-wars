@@ -38,7 +38,9 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm boundaries && pnpm test",
     "harness:frames": "tsx tools/legacy-harness/frames.ts",
     "harness:controls": "tsx tools/legacy-harness/controls.ts",
-    "harness:drift": "tsx tools/legacy-harness/drift.ts"
+    "harness:drift": "tsx tools/legacy-harness/drift.ts",
+    "comment:seam:homes": "P2.1 step 2. Classifies the 49 names v2_ui.html reads out of the engine into the three homes Phase 2's boundary rule leaves open, from the engine's own module grouping rather than from a second hand-written list. REPORTS ONLY — exits non-zero on a name with no home or a cross-check disagreement, and the query group is a decision for Shantanu, not an output of this script.",
+    "seam:homes": "tsx tools/legacy-harness/homes.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
