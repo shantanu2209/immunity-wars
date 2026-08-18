@@ -287,6 +287,10 @@ largest state 57.1 vs 57.0 KiB).
 
 ### 10.4 ⚠️ A known false-positive risk on Normal — Task F's first decision
 
+> **RESOLVED at F0, and the diagnosis below was wrong. See §10.5.** The recommendation — more arms
+> on Normal — was carried out and was not sufficient, because the cause was not the one named here.
+> Kept as written, with the correction after it, on the rule [`DEVIATIONS.md`](DEVIATIONS.md) uses.
+
 `pnpm test:balance` runs one unseen arm against the shipped bands. On the first such run, with
 **no engine change at all**, Normal came back:
 
@@ -314,12 +318,90 @@ Recorded rather than left to be discovered by a red build.
 
 ---
 
+### 10.5 What F0 actually found — the bands were below the floor sampling theory allows
+
+Recalibrated at **24 arms on all three difficulties** (not Normal alone — a `bands.json` with mixed
+provenance is a debugging problem nobody can unpick later, and `check.ts` already refuses mixed arm
+*shapes*). Two things came out of it, and neither was the expected one.
+
+**First, §10.4's diagnosis does not survive its own evidence.** It says the 2.6σ/2.7σ pair is
+"consistent with a true sd somewhat larger than 8 arms measured." At 24 arms the sd moved in **both
+directions** — four of twelve estimates went *down*:
+
+| | sd(8 arms) → sd(24 arms) | |
+|---|---|---|
+| normal `avgTurnsSurvived` | 0.0496 → 0.0643 | **+30%** |
+| normal `avgAntibodiesMade` | 0.0775 → 0.0924 | **+19%** |
+| normal `avgOrgansDamaged` | 0.0259 → 0.0203 | **−22%** |
+| training `avgTurnsSurvived` | 0.1035 → 0.0764 | **−26%** |
+
+So the accurate statement is **not** "the band was too narrow". It is: **the width was unknown to
+±27%, and four of twelve estimates happened to come in high rather than low.** Which of the two you
+got was not knowable from the estimate itself.
+
+**Second, and the real cause: seven of nine floorable bands sat below their analytic sampling
+floor.** An arm mean is the mean of exactly 2,000 games, so its sd cannot be below
+`sd(one game)/√2000` — the variance of a mean, not an assumption. The 8-arm bands sat at **0.72×**
+that floor on Normal.
+
+That explains everything §10.4 could not. The 2.6σ/2.7σ pair was not an unlucky arm: the divisor
+was ~28% too small, so every σ the panel printed was inflated. And it explains why 8 → 24 arms
+*moved* the near-miss to Training rather than removing it — more arms sharpens an estimate but
+cannot reveal spread the sample never contained.
+
+**The fix, applied at F0:** band width is `max(measured sd(arm), sd(one game)/√perArm)` for the
+three metrics that are means of a per-game value. `trunkKillPct` is a ratio of sums, not a sample
+mean, so the √N argument does not apply and it keeps its measured sd — a floor there would be a
+number that looks rigorous and is not.
+
+**What it costs in detection, measured at the shipped arm shape: nothing.**
+
+| control | measured bands | floored bands |
+|---|---|---|
+| AP −1, Normal *(must FAIL)* | 2 breaches / 17.9σ / FAIL | 2 / 13.2σ / **FAIL** |
+| brain 2→1, Normal *(must FAIL)* | 3 / 13.0σ / FAIL | 3 / 9.3σ / **FAIL** |
+| brain 3→4, Normal *(must PASS)* | 1 breach / 3.3σ / pass | **0** / 2.4σ / pass |
+| AP −1, Hard *(must FAIL)* | 4 / 37.0σ / FAIL | 2 / 31.7σ / **FAIL** |
+| brain 2→1, Hard *(must FAIL)* | 3 / 9.1σ / FAIL | 3 / 6.8σ / **FAIL** |
+| brain 3→4, Hard *(must PASS)* | 1 / 3.6σ / pass | **0** / 2.7σ / pass |
+
+⚠️ **That table had to be measured at the shipped scale.** The same comparison against the E2
+controls' own calibration — 4 arms × 400 games — says AP −1 flips **FAIL → pass**, and on that
+basis the fix was going to be abandoned. The change reads 3.8σ there and 17.9σ here. The rule that
+came out of it is in [`tests/property/README.md`](../tests/property/README.md): *a control measured
+at the wrong scale gives a confident, coherent, wrong answer.*
+
+**What the shipped bands then measured.** 8 of 12 bands were widened to their floor. Re-probing
+with **24 unseen arms** (48,000 games) of the unchanged engine:
+
+| | before flooring | after flooring |
+|---|---|---|
+| arms that would have failed | 0 / 24 | **0 / 24** |
+| single-metric 3σ breaches | 2 in this probe (3 in 204 draws overall) | **0** |
+| worst excursion, training | 3.24σ | **2.65σ** |
+| worst excursion, normal | 1.82σ | **1.64σ** |
+| worst excursion, hard | 1.99σ | **1.87σ** |
+
+The rule-level verdict was already 0/24 before flooring — the gate was not failing builds. What
+changed is the **margin**: no metric now comes within 0.35σ of the breach line on an unchanged
+engine, where one previously crossed it. A gate whose worst unchanged-engine arm sits at 3.24σ
+against a 3σ line is one unlucky seed block from a red build; at 2.65σ it is not.
+
+Full record: [`FINDINGS.md`](FINDINGS.md) #35. The technique, as a standing calibration check:
+[`tests/balance/README.md`](../tests/balance/README.md).
+
+---
+
 ## 11. Outstanding
 
 **Task F inherits, in priority order:**
 
-1. **Recalibrate Normal with more arms** before the panel blocks a merge — §10.4. This is the one
-   item that will otherwise be found by a red build on an unchanged engine.
+1. ~~**Recalibrate Normal with more arms** before the panel blocks a merge — §10.4.~~
+   **DONE at F0, and the wording here was wrong twice over.** It was not Normal-only — all three
+   difficulties were recalibrated at 24 arms, because mixed-provenance bands are a debugging
+   problem nobody can unpick later. And more arms was not the fix: the cause was that seven of nine
+   bands sat below their **analytic sampling floor**, which no number of arms can correct. §10.5
+   and [`FINDINGS.md`](FINDINGS.md) #35.
 2. Wire the tiers into CI: `pnpm test` (fast, includes every negative control), `pnpm test:balance`
    (one arm vs the bands, ~50s), `pnpm test:property` (≥10,000 games), plus the E1 size run for the
    dashboard's "serialised state size over time".

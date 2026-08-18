@@ -32,6 +32,59 @@ And the two standing rules it sits on, from the property suite:
 > ### A check that has never failed is not known to work.
 >
 > ### A control that fires is not enough — measure how STRONGLY it fires, against WHAT.
+>
+> ### A control measured at the wrong scale gives a confident, coherent, WRONG answer.
+
+The third was added at F0 and the case that earned it is in
+[`../property/README.md`](../property/README.md): a band-widening trade-off measured at 4 arms ×
+400 games said the flagship control flipped FAIL → pass, and at the shipped 20 × 100 it does not,
+because the same change reads 3.8σ at one scale and 17.9σ at the other.
+
+---
+
+## The calibration sanity check: sd(arm) has an analytic FLOOR
+
+**This runs on every calibration, and it is not advisory.** `metrics-run.ts` prints it as section
+1b and `bands.json` records both numbers per band.
+
+An arm mean is the mean of `batches × gamesPerBatch` per-game values at equal batch sizes — so it
+is exactly the mean of `perArm` games. If those games are independent then
+
+> **sd(arm) = sd(one game) / √perArm**, exactly.
+
+Not an approximation, not an assumption about normality, and not something more arms can move. It
+is the variance of a mean.
+
+> ### A measured sd(arm) below its analytic floor is PROOF the calibration under-sampled.
+>
+> Not evidence — proof. It is the claim that a mean of N independent draws varies less than N
+> independent draws allow.
+
+**This is not hypothetical and it was not cheap to find.** The shipped 8-arm bands sat at **0.72×**
+their floor on Normal. That is why an unchanged engine came back at 2.6σ and 2.7σ against a
+two-past-3σ rule, and why widening to 24 arms *moved* the near-miss to Training instead of removing
+it — more arms sharpens an estimate but cannot reveal spread the sample never contained. Nothing in
+this repository could see it before F0, because every instrument compared the band against **other
+measurements of the same kind**, and the floor comes from a different direction entirely.
+
+Three things about how it is applied, each a decision rather than a detail:
+
+- **It only ever widens.** `bandOf` takes `max(sdMeasured, sdFloor)`, so the floor can never tighten
+  a band and therefore can never manufacture a failure.
+- **`trunkKillPct` has no floor and must not be given one.** It is a ratio of two sums over the
+  batch, not a sample mean of a per-game value, so the √N argument does not apply. A floor there
+  would be a number that looks rigorous and is not — the exact failure mode this project keeps
+  finding. It keeps its measured sd.
+- **The floor is measured on a seed block disjoint from every arm** (base 1,000,000). A floor
+  computed from the arms themselves would be partly the same sample and could not contradict them.
+
+What it costs in detection, measured at the shipped arm shape: **nothing.** Every "must FAIL"
+control still fails on both difficulties, and the demonstrated blind spot goes from 1 breach to 0.
+Table in [`../../docs/TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.5.
+
+Both directions are pinned in `src/floor.test.ts`: a starved calibration is caught and widened, a
+sound one is left byte-identical, and the "left alone" case carries a vacuity guard because every
+assertion in it sits behind a `continue`.
 
 The second was added at E0a and lives with the four-kinds table in
 [`../property/README.md`](../property/README.md), which is where the negative-control rule is
@@ -137,17 +190,26 @@ pnpm test                                   # the fast tier, inside pnpm verify
 pnpm test:balance                           # CHECK this engine vs bands.json      (~50s)
 npx tsx tests/balance/fidelity.ts           # E0a — bot fidelity, 1000 seeds x 3   (~25s)
 npx tsx tests/balance/size-run.ts           # E1  — state size, 200 seeds x 3      (~30s)
-npx tsx tests/balance/metrics-run.ts        # E2  — RECALIBRATE bands, 54,000 games (~4min)
+npx tsx tests/balance/metrics-run.ts        # E2  — RECALIBRATE bands, 24 arms          (~12min)
+npx tsx tests/balance/false-positive-run.ts # F0  — 8 unseen arms vs the bands         (~4min)
 ```
 
 **`check.ts` reads `bands.json`; `metrics-run.ts` overwrites it.** Keeping those in separate
 commands is not tidiness — a harness that recalibrated on every run would regenerate its own
 reference and could never fail, which is the Task C5b shape exactly.
 
-⚠️ **Known false-positive risk on Normal.** The first check run against the shipped bands, with no
-engine change, put two Normal metrics at 2.6σ and 2.7σ — and the failure rule is two past 3σ.
-`sd(arm)` is estimated from 8 arms, which carries ~27% uncertainty. Recalibrate Normal with more
-arms before this gates a merge: [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.4.
+✅ **The false-positive risk recorded at E2 is resolved, and its diagnosis was wrong.** An
+unchanged engine put two Normal metrics at 2.6σ and 2.7σ against a two-past-3σ rule. That was not
+an unlucky arm and not an 8-arm estimate being noisy: the bands sat at **0.72× their analytic
+sampling floor**, so every σ was inflated by ~28%. Bands are now calibrated from **24 arms** and
+floored. Measured on the shipped bands across **24 unseen arms** (48,000 games) of the unchanged
+engine: **0 failures, and 0 single-metric breaches** — worst excursion 2.65σ against a 3σ line.
+Before flooring, the same probe produced three 3σ breaches across 204 metric draws. See the
+calibration sanity check above, [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.5 and
+[`FINDINGS.md`](../../docs/FINDINGS.md) #35.
+
+Re-run the probe whenever bands are recalibrated — `npx tsx tests/balance/false-positive-run.ts`.
+A band nobody has tried to make fire on an unchanged engine is a band nobody has checked.
 
 Seeds are `splitmix32(index)` — **deterministic, and deliberately not an arithmetic step**
 ([`FINDINGS.md`](../../docs/FINDINGS.md) #33). Every figure is reproducible exactly.
@@ -163,6 +225,7 @@ Seeds are `splitmix32(index)` — **deterministic, and deliberately not an arith
 | E0c vacuity guards | done for E0a and E1; E2 inherits |
 | **E1** state size | **done** — [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §1–8 |
 | **E2** metric panel | **done** — bands in [`bands.json`](bands.json); closeout §10 |
+| **F0** gateable bands | **done** — 24 arms, floored, 0 false positives in 51 unseen arm-checks; closeout §10.5, [`FINDINGS.md`](../../docs/FINDINGS.md) #35 |
 
 ### E1 — state size
 
@@ -196,6 +259,12 @@ worth knowing before trusting a number from it:
   to be corrected three times**, each time by a control aimed at a change whose answer was known.
 - `src/metrics-control.test.ts` — the controls, including the demonstrated blind spot.
 - `src/reporting.test.ts` — the qualifier constraint, with the control that strips the label.
+- `src/floor.test.ts` — the analytic floor, made to fire on a starved calibration and made to
+  leave a sound one byte-identical. The second carries a vacuity guard: every assertion in it sits
+  behind a `continue`, so without the guard it would pass having checked nothing.
+- `../false-positive-run.ts` — the other error direction. The controls measure what the panel
+  CATCHES; this measures how often it fires on an engine that did not change. A gate needs both
+  numbers and they come from different runs.
 
 **Two results here are about this suite rather than about the game**, and both were found by
 checks written for exactly them:

@@ -168,6 +168,33 @@ Note how this composes with the four kinds above. The four-kinds rule stops you 
 that **cannot** fire. This one stops you trusting a control that **barely** does. Both failures
 look identical from the outside: a green test and a claim nobody has falsified.
 
+### And the third half of it, added at Task F0
+
+> ### A control measured at the wrong scale gives a confident, coherent, WRONG answer.
+>
+> Sensitivity is a property of the **sample size**, not of the check.
+> **Measure controls at the scale they will actually run at.**
+
+This one is nastier than the two above, because nothing about the result looks wrong. F0 needed to
+know whether widening a band to its analytic floor would cost the panel any detection, and measured
+it against the E2 controls' own calibration — **4 arms × 400 games**. The answer came back clean,
+internally consistent, and alarming: the flagship control, one Action Point removed from every
+turn, flipped from **FAIL to pass**. On that basis the fix was going to be abandoned.
+
+At the shipped arm shape — **20 × 100, the size CI actually gates at** — the same comparison says
+the opposite. The change reads **3.8σ** at control scale and **17.9σ** at shipped scale, so at
+shipped scale it fails on the 6σ clause with room to spare, and every other "must FAIL" control
+survives widening too. `metrics-control.test.ts` had even written the 3.8-vs-14σ gap down in a
+comment; it still did not stop the wrong conclusion being drawn, because the number was in the
+control's own file and the question was being asked somewhere else.
+
+What makes it dangerous is that the wrong answer is not noisy or marginal. It is a clean table with
+a clear verdict, and the verdict is an artefact of running the comparison 5× too small. There is no
+internal signal to catch it — only the discipline of asking *"is this the scale the thing under
+test will run at?"* before believing the output.
+
+**The check is not the instrument. The check plus its sample size is the instrument.**
+
 ---
 
 ## The third rule: a diff cannot see a defect both sides share

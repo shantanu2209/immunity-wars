@@ -252,3 +252,120 @@ export function calibratedValue(c: Calibration, metric: GatedMetric): MetricValu
   const xs = c.armMeans[metric];
   return { metric, mean: mean(xs), sd: sampleSd(xs), provenance: c.provenance };
 }
+
+/**
+ * ============================================================================================
+ * THE ANALYTIC SAMPLING FLOOR ON sd(arm)
+ * ============================================================================================
+ *
+ * An arm mean is the mean of `batches x gamesPerBatch` per-game values with EQUAL batch sizes, so
+ * it is exactly the mean of `perArm` games. If those games are independent, then
+ *
+ *     sd(arm mean) = sd(one game) / sqrt(perArm)
+ *
+ * exactly. That is the variance of a mean — not an assumption about normality, not an
+ * approximation, and not something a larger calibration can move. Arm means CANNOT be more stable
+ * than that.
+ *
+ * SO A MEASURED sd(arm) BELOW THIS FLOOR IS PROOF THE CALIBRATION UNDER-SAMPLED. Not evidence,
+ * proof: it is a claim that a mean of N independent draws varies less than N independent draws
+ * allow. Nothing in this repository could previously see that, and it was not hypothetical — the
+ * shipped 8-arm bands sat at **0.72x** their floor on Normal, which is why an unchanged engine
+ * came back at 2.6 and 2.7 sigma against a two-past-3-sigma rule (`docs/TASK_E_CLOSEOUT.md`
+ * section 10.4, `docs/FINDINGS.md` #35).
+ *
+ * WHY ONLY THREE OF THE FOUR METRICS. The argument holds for a metric that is the MEAN OF A
+ * PER-GAME VALUE and for nothing else. `trunkKillPct` is a ratio of two sums over the batch —
+ * sum(trunk) / sum(trunk + branch) — so it is not a sample mean of a per-game quantity and the
+ * sqrt(N) argument simply does not apply to it. It therefore keeps its measured sd. Inventing a
+ * floor for it would be a number that looks rigorous and is not, which is the exact failure mode
+ * this project keeps finding.
+ *
+ * WHAT APPLYING THE FLOOR COSTS: measured at the shipped arm shape, nothing. Every "must FAIL"
+ * control still fails on both difficulties and the demonstrated blind spot goes from 1 breach to
+ * 0. The table is in `docs/TASK_E_CLOSEOUT.md` section 10.5. It was measured at the shipped scale
+ * deliberately — at control scale the same comparison gives a confident and WRONG answer
+ * (`../property/README.md`, the scale rule).
+ */
+
+/** The metrics that are a mean of a per-game value, and so have an analytic floor. */
+export const FLOORED_METRICS = [
+  'avgTurnsSurvived',
+  'avgAntibodiesMade',
+  'avgOrgansDamaged',
+] as const;
+
+export type FlooredMetric = (typeof FLOORED_METRICS)[number];
+
+/**
+ * The per-game value behind each floored metric.
+ *
+ * These MUST agree with `metricsOfBatch` above. If a metric's definition changes there and not
+ * here, the floor would be computed from a different quantity than the band it is applied to —
+ * a silent category error, so `floor.test.ts` pins the correspondence by measuring both.
+ */
+export const PER_GAME_VALUE: Record<FlooredMetric, (g: GameRecord) => number> = {
+  avgTurnsSurvived: (g) => g.endTurn,
+  avgAntibodiesMade: (g) => g.antibodiesMade,
+  avgOrgansDamaged: (g) => g.organsDamaged,
+};
+
+export interface SamplingFloor {
+  /** sd(one game)/sqrt(perArm) per floored metric. `trunkKillPct` is deliberately absent. */
+  readonly floors: Readonly<Record<FlooredMetric, number>>;
+  /** sd of the raw per-game value, kept so a reader can see where the floor came from. */
+  readonly perGameSd: Readonly<Record<FlooredMetric, number>>;
+  readonly games: number;
+  readonly perArm: number;
+  readonly seedIndexFrom: number;
+  readonly seedIndexTo: number;
+}
+
+/**
+ * Measure the floor from `games` fresh games.
+ *
+ * `indexBase` must be outside every block the calibration uses. Sharing seeds with the arms would
+ * make the floor and the measured sd partly the same sample, and the comparison between them is
+ * the entire point.
+ */
+export function samplingFloor(
+  difficulty: string,
+  perArm: number,
+  games: number,
+  indexBase: number,
+  engine: Engine = PORT,
+): SamplingFloor {
+  const collected: Record<string, number[]> = {};
+  for (const m of FLOORED_METRICS) collected[m] = [];
+
+  for (let i = 0; i < games; i += 1) {
+    const r = playGame({ seed: seedAt(indexBase + i), difficulty, engine });
+    for (const m of FLOORED_METRICS) collected[m]?.push(PER_GAME_VALUE[m](r));
+  }
+
+  const floors: Record<string, number> = {};
+  const perGameSd: Record<string, number> = {};
+  const k = Math.sqrt(perArm);
+  for (const m of FLOORED_METRICS) {
+    const s = sampleSd(collected[m] ?? []);
+    perGameSd[m] = s;
+    floors[m] = s / k;
+  }
+
+  return {
+    floors: floors as SamplingFloor['floors'],
+    perGameSd: perGameSd as SamplingFloor['perGameSd'],
+    games,
+    perArm,
+    seedIndexFrom: indexBase,
+    seedIndexTo: indexBase + games - 1,
+  };
+}
+
+/** The floor for one metric, or `undefined` where the argument does not apply. */
+export function floorFor(f: SamplingFloor | undefined, metric: GatedMetric): number | undefined {
+  if (!f) return undefined;
+  return (FLOORED_METRICS as readonly string[]).includes(metric)
+    ? f.floors[metric as FlooredMetric]
+    : undefined;
+}

@@ -34,7 +34,14 @@ import { describe, expect, it } from 'vitest';
 import { loadLegacy, loadMutatedLegacy, type Mutation } from '@immunity-wars/equivalence/engine';
 
 import { calibrate, GATED_METRICS, measure } from './metrics.js';
-import { aggregate, bandOf, evaluate, mismatchedShape, type Band, type PanelVerdict } from './panel.js';
+import {
+  aggregate,
+  bandOf,
+  evaluate,
+  mismatchedShape,
+  type Band,
+  type PanelVerdict,
+} from './panel.js';
 
 /**
  * Sized for the fast tier, and every number here was chosen by measurement rather than taste.
@@ -107,8 +114,7 @@ function judge(mutation: Mutation, difficulty: string): PanelVerdict {
   return evaluate(bands, aggregate(mutant.batches));
 }
 
-const worst = (v: PanelVerdict): number =>
-  Math.max(...v.shifts.map((s) => Math.abs(s.sigmas)));
+const worst = (v: PanelVerdict): number => Math.max(...v.shifts.map((s) => Math.abs(s.sigmas)));
 
 describe('E2 control: the panel detects changes it should', () => {
   /**
@@ -127,7 +133,13 @@ describe('E2 control: the panel detects changes it should', () => {
 
     // A HELD-OUT arm: seeds past the calibration block, same engine. This is the false-positive
     // check, and it is the one that says the bands measure the engine rather than the seeds.
-    const held = measure('normal', BATCHES, GAMES, INDEX_BASE + ARMS * BATCHES * GAMES, loadLegacy());
+    const held = measure(
+      'normal',
+      BATCHES,
+      GAMES,
+      INDEX_BASE + ARMS * BATCHES * GAMES,
+      loadLegacy(),
+    );
     const v = evaluate(bands, aggregate(held.batches));
     expect(v.failed, `unmutated legacy tripped its own panel: ${v.reason}`).toBe(false);
   });
@@ -139,7 +151,9 @@ describe('E2 control: the panel detects changes it should', () => {
   it('one fewer AP per turn fails the panel', () => {
     const v = judge(MUT_AP, 'normal');
     const detail = v.shifts.map((s) => `${s.metric} ${s.sigmas.toFixed(1)}σ`).join(', ');
-    expect(v.failed, `the panel missed a whole Action Point per turn. shifts: ${detail}`).toBe(true);
+    expect(v.failed, `the panel missed a whole Action Point per turn. shifts: ${detail}`).toBe(
+      true,
+    );
     // Strength, not only direction. The threshold is 3 and not 6 because THIS calibration is the
     // small one: 4 arms x 400 games gives a wider band than the shipped 8 x 2,000, so the same
     // change reads ~3.8σ here where it reads 14σ against the shipped bands. Asserting 6 here
@@ -209,6 +223,11 @@ describe('E2: the evaluator implements the failure rule it claims', () => {
     metric: metric as Band['metric'],
     mean,
     sdArm: sd,
+    // These fixtures test the FAILURE RULE, not the floor: a synthetic band stands for whatever
+    // width the calibration produced, so it declares itself unfloored and sdArm is the whole story.
+    sdMeasured: sd,
+    sdFloor: null,
+    floorApplied: false,
     arms: ARMS,
     batches: BATCHES,
     gamesPerBatch: GAMES,

@@ -75,13 +75,33 @@ import {
   type GatedMetric,
   type MetricValue,
   type PanelMetrics,
+  type SamplingFloor,
 } from './metrics.js';
 
 export interface Band {
   readonly metric: GatedMetric;
   readonly mean: number;
-  /** MEASURED arm-to-arm standard deviation, from K independent arms. Not derived, not assumed. */
+  /**
+   * The band's half-width divisor: `max(sdMeasured, sdFloor)`.
+   *
+   * MEASURED arm-to-arm standard deviation, from K independent arms — not derived, not assumed —
+   * except that it is never allowed below the analytic sampling floor, because a mean of N
+   * independent draws cannot vary less than N independent draws allow. See `metrics.ts`,
+   * "THE ANALYTIC SAMPLING FLOOR".
+   */
   readonly sdArm: number;
+  /** What the K arms actually measured, kept even when the floor overrode it. */
+  readonly sdMeasured: number;
+  /**
+   * sd(one game)/sqrt(perArm), or `null` for `trunkKillPct` — a ratio of sums, not a mean of a
+   * per-game value, so the sqrt(N) argument does not apply and no floor is claimed for it.
+   */
+  readonly sdFloor: number | null;
+  /**
+   * True when the floor overrode the measurement. NOT a warning to be silenced: it is PROOF the
+   * calibration under-sampled, and the ratio below says by how much.
+   */
+  readonly floorApplied: boolean;
   /** Independent arms behind the sd. Fewer than 3 is not a calibration. */
   readonly arms: number;
   /** The arm size this band is valid for. Comparing a different size is a category error. */
@@ -99,18 +119,24 @@ export const SIGMA = 3;
 /** A single metric this far out fails on its own. Measured: see the header's table. */
 export const LOUD_SIGMA = 6;
 
-export function bandOf(c: Calibration, metric: GatedMetric): Band {
+export function bandOf(c: Calibration, metric: GatedMetric, floor?: number): Band {
   const v: MetricValue = calibratedValue(c, metric);
+  // max(), not "replace when suspicious". A measurement above its floor is the normal case and is
+  // kept; the floor only ever widens, so this cannot tighten a band and cannot mask a real change.
+  const sd = floor !== undefined && floor > v.sd ? floor : v.sd;
   return {
     metric,
     mean: v.mean,
-    sdArm: v.sd,
+    sdArm: sd,
+    sdMeasured: v.sd,
+    sdFloor: floor ?? null,
+    floorApplied: sd !== v.sd,
     arms: c.arms,
     batches: v.provenance.batches,
     gamesPerBatch: v.provenance.gamesPerBatch,
-    lo: v.mean - SIGMA * v.sd,
-    hi: v.mean + SIGMA * v.sd,
-    rsd: v.mean === 0 ? 0 : v.sd / v.mean,
+    lo: v.mean - SIGMA * sd,
+    hi: v.mean + SIGMA * sd,
+    rsd: v.mean === 0 ? 0 : sd / v.mean,
   };
 }
 
@@ -215,6 +241,8 @@ export interface BandFile {
     {
       readonly provenance: MetricValue['provenance'];
       readonly arms: number;
+      /** Where each band's floor came from, so the sanity check is reproducible from the file. */
+      readonly samplingFloor?: SamplingFloor;
       readonly bands: readonly Band[];
       readonly reportedNotGated: Record<string, number>;
     }

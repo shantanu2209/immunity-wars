@@ -22,12 +22,15 @@ import { DIFFICULTIES } from './src/play.js';
 import {
   calibrate,
   calibratedValue,
+  floorFor,
   GATED_METRICS,
   GENERATOR,
   GENERATOR_VERSION,
   measure,
   render,
+  samplingFloor,
   type Calibration,
+  type SamplingFloor,
 } from './src/metrics.js';
 import {
   aggregate,
@@ -51,18 +54,33 @@ console.log('='.repeat(95));
 console.log('E2 — THE METRIC PANEL');
 console.log('='.repeat(95));
 console.log(`generator: ${GENERATOR} ${GENERATOR_VERSION}`);
-console.log(`${ARMS} calibration arms of ${BATCHES} x ${GAMES} = ${PER_ARM} games, + 1 held-out arm`);
+console.log(
+  `${ARMS} calibration arms of ${BATCHES} x ${GAMES} = ${PER_ARM} games, + 1 held-out arm`,
+);
 console.log(
   `${DIFFICULTIES.length} difficulties · ${(ARMS + 1) * PER_ARM * DIFFICULTIES.length} games total\n`,
 );
 
+/**
+ * The floor is measured on a seed block far past every arm this run uses — the calibration arms
+ * (0 .. ARMS*PER_ARM), the held-out arm, check.ts's arm and false-positive-run.ts's arms. Sharing
+ * seeds with the arms would make the floor and the measured sd partly the SAME sample, and the
+ * comparison between them is the entire point.
+ */
+const FLOOR_BASE = 1_000_000;
+const FLOOR_GAMES = 4000;
+
 const cal: Record<string, Calibration> = {};
 const bands: Record<string, Band[]> = {};
+const floors: Record<string, SamplingFloor> = {};
 for (const d of DIFFICULTIES) {
   process.stdout.write(`  calibrating ${d} `);
   const c = calibrate(d, ARMS, BATCHES, GAMES, 0, undefined, () => process.stdout.write('.'));
   cal[d] = c;
-  bands[d] = GATED_METRICS.map((m) => bandOf(c, m));
+  process.stdout.write(' floor');
+  const f = samplingFloor(d, PER_ARM, FLOOR_GAMES, FLOOR_BASE);
+  floors[d] = f;
+  bands[d] = GATED_METRICS.map((m) => bandOf(c, m, floorFor(f, m)));
   process.stdout.write('\n');
 }
 
@@ -73,14 +91,23 @@ for (const d of DIFFICULTIES) {
 }
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 1. THE CALIBRATED BANDS ---------------------------------------------------------\n');
-console.log('                           mean    sd(arm)   sd/mean               band ±3σ        arm spread');
+console.log(
+  '\n-- 1. THE CALIBRATED BANDS ---------------------------------------------------------\n',
+);
+console.log(
+  '                           mean    sd(arm)   sd/mean               band ±3σ        arm spread',
+);
 for (const d of DIFFICULTIES) {
   const c = cal[d];
-  if (!c) continue;
+  const built = bands[d];
+  if (!c || !built) continue;
   console.log(`  ${d}`);
   for (const m of GATED_METRICS) {
-    const b = bandOf(c, m);
+    // The band AS BUILT — floor included. Recomputing with bandOf(c, m) here would print an
+    // unfloored width beside a floored bands.json: a quiet disagreement between a report and the
+    // artefact it describes, which is the shape this project keeps finding.
+    const b = built.find((x) => x.metric === m);
+    if (!b) continue;
     const xs = c.armMeans[m];
     console.log(
       `    ${m.padEnd(18)} ${b.mean.toFixed(4).padStart(9)} ${b.sdArm.toFixed(4).padStart(10)} ` +
@@ -92,7 +119,53 @@ for (const d of DIFFICULTIES) {
 }
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 2. HELD-OUT ARM — never used to build the bands ---------------------------------\n');
+// THE CALIBRATION SANITY CHECK, and it runs every time rather than when someone suspects trouble.
+//
+// A measured sd below sd(one game)/sqrt(perArm) is PROOF the arms under-sampled — not evidence,
+// proof — because a mean of N independent games cannot vary less than N independent games allow.
+// The 8-arm bands this replaced sat at 0.72x on Normal, and nothing in the repo could see it.
+console.log(
+  '\n-- 1b. SANITY: measured sd against its analytic floor -------------------------------\n',
+);
+console.log(
+  `      floor = sd(one game)/sqrt(${PER_ARM}), from ${FLOOR_GAMES} games at seed index ${FLOOR_BASE}+\n`,
+);
+console.log('                           measured sd     floor   measured/floor   band uses');
+let anyFloored = false;
+for (const d of DIFFICULTIES) {
+  const built = bands[d];
+  if (!built) continue;
+  console.log(`  ${d}`);
+  for (const band of built) {
+    if (band.sdFloor === null) {
+      console.log(
+        `    ${band.metric.padEnd(18)} ${band.sdMeasured.toFixed(4).padStart(11)}         —` +
+          '                —   measured (a ratio of sums has no sqrt(N) floor)',
+      );
+      continue;
+    }
+    if (band.floorApplied) anyFloored = true;
+    const ratio = band.sdMeasured / band.sdFloor;
+    console.log(
+      `    ${band.metric.padEnd(18)} ${band.sdMeasured.toFixed(4).padStart(11)} ` +
+        `${band.sdFloor.toFixed(4).padStart(9)} ${ratio.toFixed(2).padStart(16)}   ` +
+        `${band.floorApplied ? 'FLOOR  <- under-sampled' : 'measured'}`,
+    );
+  }
+}
+console.log(
+  anyFloored
+    ? '\n  At least one band was widened to its floor. That is the floor working, not a warning to\n' +
+        '  silence. A ratio near 1.00 is a tie the floor happened to win and means little; a\n' +
+        '  ratio well below 1 means these arms under-sampled badly, and MORE ARMS is the honest\n' +
+        '  fix rather than leaning on the floor to cover it. docs/FINDINGS.md #35.'
+    : '\n  Every measured sd sits at or above its floor. The arms sampled the spread they claim to.',
+);
+
+// -----------------------------------------------------------------------------------------------
+console.log(
+  '\n-- 2. HELD-OUT ARM — never used to build the bands ---------------------------------\n',
+);
 let selfClean = true;
 for (const d of DIFFICULTIES) {
   const b = bands[d];
@@ -111,7 +184,9 @@ console.log(
 );
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 3. REPORTED, NEVER GATED --------------------------------------------------------\n');
+console.log(
+  '\n-- 3. REPORTED, NEVER GATED --------------------------------------------------------\n',
+);
 for (const d of DIFFICULTIES) {
   const h = heldOut[d];
   if (!h) continue;
@@ -119,7 +194,9 @@ for (const d of DIFFICULTIES) {
     `  ${d.padEnd(9)} winRateUnderReferenceBot = ${h.winRateUnderReferenceBot.toFixed(4)} ` +
       `— under the ${GENERATOR} ${GENERATOR_VERSION}, ${PER_ARM} games on ${d}`,
   );
-  console.log(`            unfinished games (neither won nor lost at the turn guard): ${h.unfinished}`);
+  console.log(
+    `            unfinished games (neither won nor lost at the turn guard): ${h.unfinished}`,
+  );
 }
 console.log(
   '\n  A win rate pinned near zero cannot fall, so it cannot fail usefully and is never a gate.\n' +
@@ -127,12 +204,20 @@ console.log(
 );
 
 // -----------------------------------------------------------------------------------------------
-console.log('\n-- 4. ONE RENDERED LINE PER METRIC — the only way a number leaves this harness ------\n');
+console.log(
+  '\n-- 4. ONE RENDERED LINE PER METRIC — the only way a number leaves this harness ------\n',
+);
 for (const d of DIFFICULTIES) {
   const c = cal[d];
   if (!c) continue;
   for (const m of GATED_METRICS) console.log(`  ${render(calibratedValue(c, m))}`);
 }
+console.log(
+  '\n  The ± above is the MEASURED sd(arm) — what these arms observed, which is what a published\n' +
+    '  figure should carry. It is NOT necessarily the width the gate uses: where the measurement\n' +
+    '  fell below its analytic floor, the band was widened to the floor and section 1b names both.\n' +
+    '  Quoting one number for both would make a report and its artefact disagree quietly.',
+);
 
 // -----------------------------------------------------------------------------------------------
 let engineRev = 'unknown';
@@ -155,8 +240,11 @@ const file: BandFile = {
   rule:
     `Compare the MEAN of one arm of ${BATCHES}x${GAMES} games against these bands. FAIL when two ` +
     `or more metrics are past ±${SIGMA} sd(arm), OR when any one is past ±${LOUD_SIGMA}. sd(arm) ` +
-    `is MEASURED from ${ARMS} independent arms — do not recompute it as sd(batch)/sqrt(batches), ` +
-    'which understates it by up to 1.5x (src/panel.ts).',
+    `is MEASURED from ${ARMS} independent arms — do not recompute it as sd(batch)/sqrt(batches) ` +
+    '(src/panel.ts) — and is never allowed below sd(one game)/sqrt(gamesPerArm), the analytic ' +
+    'floor a mean of that many independent games cannot go under (src/metrics.ts). trunkKillPct ' +
+    'is a ratio of sums, not a mean of a per-game value, so it has no floor and keeps its ' +
+    'measured sd.',
   engineRev,
   measuredAt: new Date().toISOString(),
   difficulties: Object.fromEntries(
@@ -170,6 +258,7 @@ const file: BandFile = {
         {
           provenance: c.provenance,
           arms: c.arms,
+          samplingFloor: floors[d],
           bands: b,
           reportedNotGated: {
             winRateUnderReferenceBot: h.winRateUnderReferenceBot,
@@ -185,12 +274,16 @@ const file: BandFile = {
 // not a measurement of spread. Either would produce a file that looks authoritative and is not.
 for (const [d, entry] of Object.entries(file.difficulties)) {
   if (entry.arms < 3) {
-    console.error(`\nVACUITY: ${d} calibrated on ${entry.arms} arms. That is not a null distribution.`);
+    console.error(
+      `\nVACUITY: ${d} calibrated on ${entry.arms} arms. That is not a null distribution.`,
+    );
     process.exit(2);
   }
   for (const b of entry.bands) {
     if (!(b.sdArm > 0)) {
-      console.error(`\nVACUITY: ${d}/${b.metric} has sd ${b.sdArm}. A zero-width band is not a band.`);
+      console.error(
+        `\nVACUITY: ${d}/${b.metric} has sd ${b.sdArm}. A zero-width band is not a band.`,
+      );
       process.exit(2);
     }
   }

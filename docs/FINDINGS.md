@@ -1720,3 +1720,151 @@ through, which is exactly what #17 says a metric panel is for and against.
 
 **Disposition: CORRECTED at E2.** The § "Task E metrics" recommendation carries a pointer here.
 Nothing about the engine changed; what changed is the instrument built on top of it.
+
+---
+
+## 35. A measured `sd(arm)` can sit below the floor sampling theory allows — the 8-arm bands did, at 0.72×
+
+**Found at Task F0**, while checking whether recalibrating from 8 arms to 24 had made the metric
+panel safe to gate a merge on. It had not, and more arms was never going to be the fix.
+
+### 35.1 The floor
+
+An arm mean is the mean of `batches × gamesPerBatch` per-game values at **equal** batch sizes, so
+it is exactly the mean of `perArm` games. If those games are independent then
+
+> **sd(arm) = sd(one game) / √perArm**, exactly.
+
+That is the variance of a mean. It is not an approximation, not an assumption about normality, and
+not a quantity a larger calibration can move. Arm means cannot be more stable than that.
+
+> **So a measured `sd(arm)` below this floor is PROOF the calibration under-sampled.** Not
+> evidence — proof. It asserts that a mean of N independent draws varies less than N independent
+> draws allow.
+
+### 35.2 What the shipped bands were doing
+
+Measured on legacy at the shipped arm shape (20 × 100), floors from 3,000–4,000 fresh games on a
+disjoint seed block:
+
+| | 8-arm band | ratio to floor | 24-arm band | ratio to floor | floor |
+|---|---|---|---|---|---|
+| normal `avgTurnsSurvived` | 0.0496 | **0.72×** | 0.0643 | 0.93× | 0.0689 |
+| normal `avgAntibodiesMade` | 0.0775 | **0.74×** | 0.0924 | 0.88× | 0.1050 |
+| hard `avgTurnsSurvived` | 0.0379 | **0.74×** | 0.0420 | 0.82× | 0.0511 |
+| hard `avgOrgansDamaged` | 0.0169 | **0.67×** | 0.0198 | 0.78× | 0.0253 |
+
+Seven of nine floorable bands sat below their floor at 24 arms; all four sampled above sat well
+below it at 8.
+
+**This is the whole explanation of the false-positive risk** recorded at
+[`TASK_E_CLOSEOUT.md`](TASK_E_CLOSEOUT.md) §10.4. An unchanged Normal engine came back at 2.6σ and
+2.7σ not because of an unlucky arm but because the divisor was ~28% too small. Every σ the panel
+printed was inflated by 1/ratio.
+
+### 35.3 Why 8 → 24 arms moved the problem instead of fixing it
+
+More arms sharpens the *estimate* of a spread; it cannot reveal spread the sample never contained.
+Going to 24 arms moved Normal from 0.72× to ~0.90× of the floor — a real improvement — and the
+near-miss relocated to **Training**, whose `avgAntibodiesMade` came out at 0.83×. Across 51 unseen
+arm-checks on an unchanged engine, three single-metric 3σ breaches appeared in 204 draws (1.47%
+against the 0.27% normal theory predicts). Under floored bands two of the three fall below 3σ.
+
+### 35.4 Why `trunkKillPct` is excluded, and why that matters
+
+The √N argument holds for a metric that is the **mean of a per-game value** and for nothing else.
+`trunkKillPct` is `sum(trunk) / sum(trunk + branch)` over the batch — a ratio of two sums, not a
+sample mean — so it has no such floor and keeps its measured sd.
+
+Giving it one would have been easy, would have looked more consistent, and would have been a
+number that looks rigorous and is not. That is the failure mode this document is mostly a list of.
+
+### 35.5 What applying the floor costs
+
+Measured at the shipped arm shape, on both difficulties, against the E2 controls: **nothing.**
+
+| control | measured bands | floored bands |
+|---|---|---|
+| AP −1, Normal *(must FAIL)* | 2 breaches / 17.9σ / FAIL | 2 / 13.2σ / **FAIL** |
+| brain 2→1, Normal *(must FAIL)* | 3 / 13.0σ / FAIL | 3 / 9.3σ / **FAIL** |
+| brain 3→4, Normal *(must PASS)* | 1 breach / 3.3σ / pass | **0** / 2.4σ / pass |
+| AP −1, Hard *(must FAIL)* | 4 / 37.0σ / FAIL | 2 / 31.7σ / **FAIL** |
+| brain 2→1, Hard *(must FAIL)* | 3 / 9.1σ / FAIL | 3 / 6.8σ / **FAIL** |
+| brain 3→4, Hard *(must PASS)* | 1 / 3.6σ / pass | **0** / 2.7σ / pass |
+
+The demonstrated blind spot becomes *more* robustly blind, which is the correct direction for a
+case pinned as *should not fail*.
+
+**This table had to be measured at the shipped scale.** The same comparison at the E2 controls' own
+4 arms × 400 games says AP −1 flips FAIL → pass, and on that basis the fix would have been
+abandoned. See `tests/property/README.md`, the scale rule.
+
+### 35.6 Why no instrument here could have caught this
+
+Every check the panel had compared the band against **another measurement of the same kind** — more
+arms, a held-out arm, a different seed block. All of those share the sampling defect, and
+[#30's rule](#30-24-again--the-coverage-gate-files-a-non-multiplayer-arm-into-phase-3-by-a-whole-file-rule)
+applies exactly: *a diff cannot see a defect both sides share.* The floor is the first check here
+that comes from a different direction — closed-form theory rather than a second sample.
+
+### 35.7 What it changed on the shipped bands
+
+8 of 12 bands were widened. Re-probing with 24 unseen arms (48,000 games) of the unchanged engine:
+
+| | before flooring | after flooring |
+|---|---|---|
+| arms that would have failed | 0 / 24 | **0 / 24** |
+| single-metric 3σ breaches | 2 | **0** |
+| worst excursion (training) | 3.24σ | **2.65σ** |
+
+**The rule-level verdict did not change, and that is the honest headline.** The gate was not
+failing builds before; what changed is the margin. A gate whose worst unchanged-engine arm sits at
+3.24σ against a 3σ line is one unlucky seed block away from a red build for no reason. At 2.65σ it
+is not. The floor bought headroom, not a fixed failure.
+
+**Disposition: FIXED at F0.** `bandOf` takes `max(sdMeasured, sdFloor)`; both numbers and the
+floor's provenance are recorded in `bands.json`; `metrics-run.ts` prints the ratio every run as a
+standing sanity check; `src/floor.test.ts` pins both directions, including that the per-game value
+behind each floor is the one `metricsOfBatch` averages — without which a metric redefined in one
+place and not the other would compute the floor from a different quantity than the band it widens.
+Technique written up in `tests/balance/README.md`.
+
+---
+
+## 36. The port and legacy agree to four decimal places on aggregate metrics — corroboration nobody was looking for
+
+**Found at Task F0, incidentally, and recorded because of how it was found.**
+
+While measuring whether floor-widening costs detection, the comparison needed a legacy-run baseline
+at the shipped arm shape, so it calibrated 8 arms × 20 × 100 on `loadLegacy()` from seed index 0 —
+the same arm shape, arm count and seed block the original 8-arm bands used, except those were
+calibrated on the **ported** engine.
+
+The two agree to every digit either instrument printed — four decimal places. That is the
+precision of the comparison, not a claim of bit-identity:
+
+| metric | 8-arm bands (port) | F0's 8 arms (legacy) |
+|---|---|---|
+| normal `avgTurnsSurvived` | 0.0496 | 0.0496 |
+| normal `avgAntibodiesMade` | 0.0775 | 0.0775 |
+| normal `avgOrgansDamaged` | 0.0259 | 0.0259 |
+| hard `avgTurnsSurvived` | 0.0379 | 0.0379 |
+
+**Why this is worth keeping.** Task B's equivalence claim rests on the corpus: 6,000 recorded games
+diffed state-for-state. That is a purpose-built instrument, and a purpose-built instrument is
+exactly the kind that can be wrong in a way its own author cannot see — this document records
+several. Here the agreement fell out of an instrument built for something else entirely, at a
+different level of abstraction (aggregate statistics over 16,000 games, not per-action state), with
+nobody checking for it and nothing riding on the answer.
+
+**Corroboration nobody was seeking is the strongest kind**, because no design decision was made in
+order to produce it. If the equivalence claim is ever questioned — by a reviewer, a funder, or a
+future contributor who does not trust the corpus — this is independent support that does not route
+through `rig.ts`, `normalise()`, or any of the machinery Task B built to make the claim.
+
+**It does not replace the corpus.** Aggregate agreement over four statistics is far weaker than
+state-for-state agreement, and two engines could in principle agree on these means while differing
+somewhere the means average over. The claim here is narrow: a second, unrelated instrument had a
+chance to disagree and did not.
+
+**Disposition: NOT AN ISSUE.** Recorded as supporting evidence.

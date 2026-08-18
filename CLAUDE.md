@@ -161,8 +161,19 @@ Measured bands live in `tests/balance/bands.json`; the rule is:
 
 > Compare the **mean of one arm** of 20 × 100 games against the band. **FAIL when two or more
 > metrics are past ±3 sd(arm), OR when any one is past ±6 sd(arm).** `sd(arm)` is **measured
-> from 8 independent arms** — never recomputed as `sd(batch)/√batches`, which understates it by
-> up to 1.5×.
+> from 24 independent arms** — never recomputed as `sd(batch)/√batches` — and is **never allowed
+> below `sd(one game)/√gamesPerArm`**, the analytic floor a mean of that many independent games
+> cannot go under. `trunkKillPct` is a ratio of sums, not a mean of a per-game value, so it has
+> no floor and keeps its measured sd.
+
+*Corrected 18 Aug 2026, at Task F0.* This said **8** independent arms, and said nothing about a
+floor. Both mattered: the 8-arm bands sat at **0.72× their analytic floor** on Normal, so every σ
+the panel printed was inflated by ~28% and an *unchanged* engine came back at 2.6σ and 2.7σ against
+a two-past-3σ rule. Widening to 24 arms helped and was not enough — more arms sharpens an estimate
+but cannot reveal spread the sample never contained. **A measured `sd(arm)` below its floor is
+proof the calibration under-sampled**, and it is now checked on every calibration
+(`tests/balance/README.md`, "The calibration sanity check"). Applying the floor costs no detection
+at the shipped arm shape, measured. Full record: `docs/FINDINGS.md` #35.
 
 *Corrected 12 Aug 2026, at Task E2.* This previously said "failing the build only when two or
 more breach ±3 sd together", quoting `docs/FINDINGS.md` § "Task E metrics". Built exactly as

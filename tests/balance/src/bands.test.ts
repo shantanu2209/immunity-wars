@@ -23,9 +23,7 @@ import { LOUD_SIGMA, SIGMA, mismatchedShape, type Band, type BandFile } from './
 import { DIFFICULTIES } from './play.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const file = JSON.parse(
-  readFileSync(join(HERE, '..', 'bands.json'), 'utf8'),
-) as BandFile;
+const file = JSON.parse(readFileSync(join(HERE, '..', 'bands.json'), 'utf8')) as BandFile;
 
 describe('bands.json', () => {
   it('covers every difficulty, with every gated metric', () => {
@@ -51,6 +49,50 @@ describe('bands.json', () => {
         expect(b.lo).toBeCloseTo(b.mean - SIGMA * b.sdArm, 9);
         expect(b.hi).toBeCloseTo(b.mean + SIGMA * b.sdArm, 9);
       }
+    }
+  });
+
+  /**
+   * The shipped bands respect the analytic floor — `sdArm` is never below
+   * `sd(one game)/sqrt(perArm)`, because a mean of N independent games cannot vary less than N
+   * independent games allow (`metrics.ts`, docs/FINDINGS.md #35).
+   *
+   * This is a STRUCTURE check on the file, like everything else here: it asserts the shipped
+   * numbers are internally consistent with the floor recorded alongside them. Whether the floor is
+   * itself correct is `floor.test.ts`'s question, and whether it costs detection is
+   * `metrics-control.test.ts`'s.
+   */
+  it('respects the analytic sampling floor, and records both numbers', () => {
+    for (const d of DIFFICULTIES) {
+      for (const b of file.difficulties[d]?.bands ?? []) {
+        expect(b.sdMeasured, `${d}/${b.metric} lost its measured sd`).toBeGreaterThan(0);
+        expect(b.sdArm).toBe(Math.max(b.sdMeasured, b.sdFloor ?? 0));
+        expect(b.floorApplied).toBe(b.sdArm !== b.sdMeasured);
+        if (b.metric === 'trunkKillPct') {
+          // A ratio of sums has no sqrt(N) floor. Claiming one would be a number that looks
+          // rigorous and is not — the failure mode this project keeps finding.
+          expect(b.sdFloor, 'trunkKillPct was given a floor it cannot have').toBeNull();
+          expect(b.floorApplied).toBe(false);
+        } else {
+          expect(b.sdFloor, `${d}/${b.metric} has no floor recorded`).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  /** The floor's own provenance, so the sanity check is reproducible from the file alone. */
+  it('records where the floor was measured', () => {
+    for (const d of DIFFICULTIES) {
+      const f = file.difficulties[d]?.samplingFloor;
+      expect(f, `no samplingFloor recorded for ${d}`).toBeTruthy();
+      if (!f) continue;
+      expect(f.games).toBeGreaterThan(0);
+      // The floor is only meaningful for the arm size it divides by. A floor computed for a
+      // different perArm than the bands were calibrated at would be a silent category error.
+      const first = file.difficulties[d]?.bands[0];
+      expect(first).toBeTruthy();
+      if (first) expect(f.perArm).toBe(first.batches * first.gamesPerBatch);
+      expect(f.seedIndexTo).toBeGreaterThan(f.seedIndexFrom);
     }
   });
 
