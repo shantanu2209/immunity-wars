@@ -61,6 +61,16 @@ export interface Trend {
   readonly label: string;
   readonly points: readonly TrendPoint[];
   readonly qualifierLine: string;
+  /**
+   * A provenance warning shown ABOVE the line, not beneath it.
+   *
+   * Used when the series contains points that were not measured by CI — seeded figures from a
+   * developer machine, kept so the trends start from something rather than nothing. A local point
+   * plotted on the same axis as CI points is indistinguishable from a CI point unless the page
+   * says otherwise, and "measured on someone's laptop in August" is exactly the kind of condition
+   * that stops travelling with a number the moment it is drawn as a dot.
+   */
+  readonly provenanceWarning?: string | null;
 }
 
 export interface DashboardInput {
@@ -102,9 +112,12 @@ export function headlineStatus(rows: readonly SuiteRow[]): SuiteStatus {
 export const MIN_TREND_POINTS = 3;
 
 export function renderTrend(trend: Trend): string {
+  const warning = trend.provenanceWarning
+    ? `<p class="warn">${esc(trend.provenanceWarning)}</p>`
+    : '';
   if (trend.points.length < MIN_TREND_POINTS) {
     return (
-      `<div class="trend"><h3>${esc(trend.label)}</h3>` +
+      `<div class="trend"><h3>${esc(trend.label)}</h3>${warning}` +
       `<p class="insufficient">Insufficient history — ${trend.points.length} point` +
       `${trend.points.length === 1 ? '' : 's'} recorded. A line needs at least ${MIN_TREND_POINTS}; ` +
       `fewer would draw a slope out of noise.</p>` +
@@ -123,7 +136,7 @@ export function renderTrend(trend: Trend): string {
     })
     .join(' ');
   return (
-    `<div class="trend"><h3>${esc(trend.label)}</h3>` +
+    `<div class="trend"><h3>${esc(trend.label)}</h3>${warning}` +
     `<svg viewBox="0 0 300 70" role="img" aria-label="${esc(trend.label)} over time">` +
     `<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2"/></svg>` +
     `<p class="range">${lo} … ${hi} over ${trend.points.length} runs</p>` +
@@ -184,7 +197,8 @@ td{border-top:1px solid var(--line);padding:.6rem .4rem;vertical-align:top}
 .size,.trend{border:1px solid var(--line);padding:.75rem;margin:.5rem 0}
 .figure{font-size:1.3rem;font-weight:600;margin:.2rem 0}
 .censor{font-size:.8rem;margin:.3rem 0}.qual{color:var(--mut);font-size:.75rem;margin:.3rem 0 0}
-.insufficient{font-size:.85rem;color:var(--mut)}.range{font-size:.8rem;color:var(--mut);margin:.2rem 0}
+.insufficient{font-size:.85rem;color:var(--mut)}
+.warn{font-size:.8rem;color:var(--miss);font-weight:600;margin:.2rem 0}.range{font-size:.8rem;color:var(--mut);margin:.2rem 0}
 .stale{color:var(--miss);font-weight:600}
 ul{padding-left:1.2rem;margin:.4rem 0}li{font-size:.85rem;margin:.2rem 0}
 footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--line);color:var(--mut);font-size:.78rem}
@@ -196,16 +210,22 @@ export function renderDashboard(input: DashboardInput, now: Date): string {
   const meaning = perPushMeaning(input.manifest);
 
   const nightlyAge = ageHours(input.nightly.at, now);
+  // A future-dated record means clock skew between the runner and the build, or a hand-added
+  // record. Saying "ran -43 hours ago" is nonsense on a published page; naming the skew tells the
+  // reader the timestamp is not to be trusted, which is the actual situation.
+  const futureDated = nightlyAge !== null && nightlyAge < 0;
   // Staleness is always shown. Data with no age on it reads as current, and a dashboard whose
   // nightly job died three weeks ago looks exactly like one that ran an hour ago.
   const staleness =
     nightlyAge === null
       ? '<span class="stale">The nightly tier has never reported.</span>'
-      : nightlyAge > 168
-        ? `<span class="stale">The nightly tier last ran ${Math.floor(nightlyAge / 24)} days ago — treat everything from it as stale.</span>`
-        : nightlyAge > 48
-          ? `<span class="stale">The nightly tier last ran ${Math.floor(nightlyAge)} hours ago.</span>`
-          : `The nightly tier ran ${Math.floor(nightlyAge)} hours ago.`;
+      : futureDated
+        ? '<span class="stale">The nightly tier reports a timestamp in the FUTURE — the clocks disagree, so treat its age as unknown.</span>'
+        : nightlyAge > 168
+          ? `<span class="stale">The nightly tier last ran ${Math.floor(nightlyAge / 24)} days ago — treat everything from it as stale.</span>`
+          : nightlyAge > 48
+            ? `<span class="stale">The nightly tier last ran ${Math.floor(nightlyAge)} hours ago.</span>`
+            : `The nightly tier ran ${Math.floor(nightlyAge)} hours ago.`;
 
   const rowsHtml = input.rows.map(renderRow).join('');
   const sizesHtml = input.sizes.map(renderSize).join('');
