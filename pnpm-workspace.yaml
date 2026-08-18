@@ -20,6 +20,7 @@ packages:
   # empty and are not listed.
   - 'tools/ci'
   - 'tools/dashboard'
+  - 'tools/legacy-harness'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed
