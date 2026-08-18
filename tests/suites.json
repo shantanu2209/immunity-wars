@@ -31,9 +31,9 @@
       "id": "property",
       "title": "Property / invariant suite",
       "briefSuite": "property",
-      "proves": "That nine stated invariants hold over generated legal play. The first instrument here that asks whether the rules are TRUE rather than whether two engines agree.",
-      "doesNotProve": "Coverage of the engine — it checks nine claims, and a rule nobody stated is a rule nobody is checking. Nothing about difficulty or balance. Nothing about multiplayer: single-player only, the three allocation actions are Phase 3. memory-on-kill is checked in the command phase only.",
-      "negativeControls": 20,
+      "proves": "That ten stated invariants hold over generated legal play. The first instrument here that asks whether the rules are TRUE rather than whether two engines agree.",
+      "doesNotProve": "Coverage of the engine — it checks ten claims, and a rule nobody stated is a rule nobody is checking. Nothing about difficulty or balance. Nothing about multiplayer: single-player only, the three allocation actions are Phase 3. memory-on-kill is checked in the command phase only.",
+      "negativeControls": 21,
       "controlFiles": ["tests/property/src/negative-control.test.ts"],
       "tiers": {
         "per-push": {
@@ -129,13 +129,13 @@
     {
       "briefSuite": "serialisation",
       "status": "realised-inside-other-suites",
-      "explanation": "Two invariants inside the property suite, not a suite of its own: viewstate-round-trip and undo-round-trip. viewstate-round-trip is invisible to the equivalence corpus BY CONSTRUCTION — rig.ts normalise() round-trips both engines through JSON before hashing, so anything JSON destroys is destroyed identically on both sides and the hashes still match.",
+      "explanation": "Three invariants inside the property suite, not a suite of its own: viewstate-round-trip, gamestate-round-trip and undo-round-trip. All three are invisible to the equivalence corpus BY CONSTRUCTION — rig.ts normalise() round-trips both engines through JSON before hashing, so anything JSON destroys is destroyed identically on both sides and the hashes still match. gamestate-round-trip was added at P2.1 and is NOT redundant with the viewState one: viewState is a projection that drops 13 of GameState's 53 keys including the deck, so a defect in any of those 13 is invisible to it. Its control asserts exactly that asymmetry — one saboteur, gamestate-round-trip fires, viewstate-round-trip does not. Phase 2 Storage serialises GameState, so this is the property that save-and-resume is built on. PHASE1_BRIEF §7 asked for a whole serialisation SUITE and it was never built; this is the half Phase 2 depends on.",
       "realisedIn": ["property"]
     },
     {
       "briefSuite": "unit",
       "status": "does-not-exist",
-      "explanation": "There is no suite testing each engine rule in isolation, and this file will not pretend otherwise. §7 describes one; the disk does not have one. What exists is the equivalence corpus, which proves agreement with legacy, and the property suite, which proves nine stated invariants. Neither is a unit suite and neither claims to be. Note the converse too: the corpus realises NO §7 row — the largest test asset in this repository, 315 assertions and 2,000 nightly games, does not appear in that table at all, which is the other half of why the table could not simply be transcribed. Whether a unit suite is worth building is a real question for a later phase. Recording that it is absent is not a criticism of the repository — it is the precondition for anyone reasoning correctly about what is proven here.",
+      "explanation": "There is no suite testing each engine rule in isolation, and this file will not pretend otherwise. §7 describes one; the disk does not have one. What exists is the equivalence corpus, which proves agreement with legacy, and the property suite, which proves ten stated invariants. Neither is a unit suite and neither claims to be. Note the converse too: the corpus realises NO §7 row — the largest test asset in this repository, 315 assertions and 2,000 nightly games, does not appear in that table at all, which is the other half of why the table could not simply be transcribed. Whether a unit suite is worth building is a real question for a later phase. Recording that it is absent is not a criticism of the repository — it is the precondition for anyone reasoning correctly about what is proven here.",
       "realisedIn": ["equivalence-corpus", "property"]
     }
   ]

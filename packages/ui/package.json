@@ -15,5 +15,9 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "build": "tsc -p tsconfig.json"
+  },
+  "comment:dependencies": "content, and deliberately NOT engine. The ui-app-no-engine boundary rule permits content and forbids engine; the ui-app-no-unresolvable rule beside it makes an UNRESOLVED import red, which means a permitted import that does not resolve is red too. So this dependency is what makes 'ui may import content' true rather than merely written down. Do not add @immunity-wars/engine here: the gate will catch it, which is the point.",
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*"
   }
 }

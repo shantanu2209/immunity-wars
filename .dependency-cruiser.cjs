@@ -69,6 +69,46 @@ module.exports = {
       to: { path: '^packages/(engine|ui|app|server)' },
     },
     {
+      name: 'ui-app-no-engine',
+      severity: 'error',
+      comment:
+        'THE LOAD-BEARING HALF OF SEAM 1. The UI and the app shell talk to the game through ' +
+        'the Session interface and nothing else. They may import @immunity-wars/content ' +
+        'freely — content is validated data, not behaviour, which is what the two rules above ' +
+        'exist to keep true — and they may import the session package. They may NEVER import ' +
+        'the engine, by any path: not the package specifier, not a relative reach across ' +
+        'packages/, not the ./internal entry point. ' +
+        'Why a rule rather than a convention: v2_ui.html read 49 engine names when only 44 ' +
+        'were in the 67-export contract Task B was measured against, and nothing ever failed, ' +
+        'because script injection made all 153 top-level declarations reachable ' +
+        '(docs/FINDINGS.md #39). An interface nobody is forced to use is a convention, and ' +
+        'this project has found roughly a dozen conventions that were quietly false. ' +
+        'What it buys concretely: a UI written against a synchronous in-process applyAction is ' +
+        'a fork that nothing fails on until Phase 3 tries to put a network in that gap. ' +
+        'docs/PHASE2_BRIEF.md v1.1 §3, docs/SEAM_DECISIONS.md §1.',
+      from: { path: '^packages/(ui|app)' },
+      to: { path: '^packages/engine' },
+    },
+    {
+      name: 'ui-app-no-unresolvable',
+      severity: 'error',
+      comment:
+        'THE HOLE IN THE RULE ABOVE, closed. dependency-cruiser matches `to.path` against the ' +
+        'RESOLVED module path, so an import it cannot resolve has no path to match and slips ' +
+        'past ui-app-no-engine silently. Measured, not assumed: with `@immunity-wars/engine` ' +
+        'absent from packages/ui/package.json, `import { applyAction } from ' +
+        '"@immunity-wars/engine"` produces couldNotResolve and ui-app-no-engine does NOT fire. ' +
+        'Only a relative reach across packages/ fires it. Both spellings are things a person ' +
+        'under deadline actually writes, so both must be caught — and "the typecheck would ' +
+        'have caught it" is exactly the reasoning that left #39 undetected for years. ' +
+        'This rule makes the unresolved case red HERE, in the boundary gate, where someone ' +
+        'reading the failure is being told about the boundary. ' +
+        'Scoped to ui and app deliberately: it is a boundary control, not a general hygiene ' +
+        'rule, and widening it to every package is a separate decision with its own noise.',
+      from: { path: '^packages/(ui|app)' },
+      to: { couldNotResolve: true },
+    },
+    {
       name: 'content-no-node-builtins',
       severity: 'error',
       comment:

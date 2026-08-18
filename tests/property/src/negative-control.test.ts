@@ -37,6 +37,7 @@ import {
   BURST_TAIL_IS_AUTHORITATIVE,
   UNDO_ROUND_TRIPS,
   VIEWSTATE_ROUND_TRIPS,
+  GAMESTATE_ROUND_TRIPS,
   type Ctx,
   type EngineUnderTest,
   type Invariant,
@@ -62,6 +63,7 @@ describe('L0: every invariant actually examined something', () => {
     'production-respects-cap': 10,
     'no-dead-cell-acts': 20,
     'viewstate-round-trip': 200,
+    'gamestate-round-trip': 200,
     'undo-round-trip': 100,
     'memory-on-kill': 5,
     // Bursts are rarer than actions: one per endCommand. Measured at ~600 over this 18-game
@@ -717,6 +719,63 @@ describe('L1/L2: the serialisation invariants, which the corpus is blind to by c
       'a NaN reached viewState and the round-trip invariant did not notice. If this passes ' +
         'silently the suite is using JSON.stringify somewhere it must use canonical().',
     ).toBeGreaterThan(0);
+  });
+
+  it('gamestate-round-trip sees a value JSON cannot carry — WHERE THE VIEW CANNOT LOOK', () => {
+    /**
+     * ONE SABOTEUR, TWO INVARIANTS, AND THE POINT IS THE DISAGREEMENT.
+     *
+     * `g.wormsThisTurn` is one of the 13 keys `GameState` has and `viewState` does not. Planting
+     * a NaN there is therefore a defect the view-level round-trip CANNOT SEE, by construction —
+     * and if this suite only asserted that the new invariant fires, it would never establish that
+     * the new invariant was worth adding.
+     *
+     * So this control asserts both halves in the same run:
+     *
+     *   gamestate-round-trip  MUST fire   — it reaches the whole state
+     *   viewstate-round-trip  MUST NOT    — the field is not in the projection
+     *
+     * The second half is not a vacuous "expect 0". It is only meaningful BECAUSE the first half
+     * fired on the identical corruption, which is what makes it a measurement of blindness rather
+     * than an absence of evidence. This is docs/PHASE2_BRIEF.md v1.1 §3, review item B, made
+     * mechanical: a save wired to `getView()` loses the deck, and it loses it silently.
+     */
+    const saboteur: Saboteur = {
+      name: 'NaN in a GameState field the view drops',
+      when: (g) => g.phase === 'command' && g.turn >= 2,
+      apply: (g) => {
+        (g as unknown as Record<string, unknown>).wormsThisTurn = NaN;
+      },
+    };
+
+    let sawGameState = 0;
+    let sawViewState = 0;
+    for (let i = 0; i < 4 && sawGameState === 0; i += 1) {
+      sawGameState = runGame({
+        seed: 880000 + i,
+        difficulty: 'normal',
+        saboteur,
+        invariants: [GAMESTATE_ROUND_TRIPS],
+      }).violations.length;
+      sawViewState = runGame({
+        seed: 880000 + i,
+        difficulty: 'normal',
+        saboteur,
+        invariants: [VIEWSTATE_ROUND_TRIPS],
+      }).violations.length;
+    }
+
+    expect(
+      sawGameState,
+      'a NaN was planted in g.wormsThisTurn and the whole-state round-trip did not notice. ' +
+        'Storage serialises GameState and is being built on this property.',
+    ).toBeGreaterThan(0);
+    expect(
+      sawViewState,
+      'viewstate-round-trip reported a defect in a field viewState does not carry, which means ' +
+        'this control is not demonstrating what it claims — check that wormsThisTurn is still ' +
+        'absent from view.ts before trusting either half.',
+    ).toBe(0);
   });
 
   it('undo-round-trip sees an engine whose snapshot does not restore', () => {

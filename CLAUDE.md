@@ -14,7 +14,9 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 1.** Spec: @docs/PHASE1_BRIEF.md
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.1).
+Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
+`docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 
 **This is a public repository.** Do not commit personal details of either contributor beyond
 what is in the README credits — no school, no address, no contact details, no photographs.
@@ -142,8 +144,16 @@ contract Task B was measured against.
   the bot never emits 8 of the engine's 27 actions, never moves the Neutrophil (so it can never
   NET), and never repositions a resident macrophage (so all seven are inert). It plays about
   six of the game's fourteen seats. Full audit in `docs/FINDINGS.md` §1. Building a competent
-  bot is a **Phase 2** decision — it is dual-use, since online play needs AI to fill dropped
-  seats. **Do not tune the game to the bot's numbers.**
+  bot is a **Phase 3** decision, taken there alongside seat-filling AI — the two are the same
+  piece of work. **Do not tune the game to the bot's numbers.**
+
+  *Corrected 18 Aug 2026, at the Phase 2 brief review.* This said **Phase 2**. It cannot be:
+  the bot is **inlined inside `packages/engine/src/simulate.ts`**, and `simulate()` is compared
+  **byte-identically** by the B6 corpus check (`tests/equivalence/src/simulate.test.ts`). So a
+  competent bot is an **engine change that necessarily breaks the corpus** — while Phase 2's
+  definition of done requires "the engine is unchanged". Re-baselining the project's primary
+  oracle during a renderer rewrite is the worst available timing. The 9 coverage arms move with
+  it (`docs/COVERAGE_DEFERRED.md`). Record: `docs/PHASE2_BRIEF.md` v1.1 §6, review item A.
 
 - **Open Dependabot advisories are accepted, and the acceptance has a TRIGGER.** GitHub shows
   criticals; it is one advisory counted once per manifest, in test tooling. Every open advisory

@@ -24,11 +24,17 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 - `ap.ts:29` `}`
 - `ap.ts:53` `return g.multiplayer ? apAvail(g, g._actingPid) : g.ap;`
 
-## Phase 2 — reachable once a competent bot exists (9 arms)
+## Phase 3 — reachable once a competent bot exists (9 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
 emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot
 good enough to measure difficulty would reach them.
+
+**These were listed against Phase 2 until 18 August 2026.** The bot is inlined in the engine
+(docs/FINDINGS.md #6) and `simulate()` is compared byte-identically by the B6 corpus check, so
+building a competent bot is an engine change that breaks the corpus — which Phase 2 forbids in
+its own definition of done. They move here, alongside the seat-filling AI they are the same
+work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.
 
 - `simulate.ts:83` `if (e && applyAction(g, { action: 'resengulf', organ: o, invaderId: e.id }).ok) {`
 - `simulate.ts:83` `if (e && applyAction(g, { action: 'resengulf', organ: o, invaderId: e.id }).ok) {`

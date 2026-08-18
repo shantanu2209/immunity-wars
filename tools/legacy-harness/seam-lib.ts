@@ -83,6 +83,41 @@ export function portExports(): string[] {
   return [...names].sort();
 }
 
+/**
+ * Every runtime export of the port, mapped to the MODULE IT COMES FROM.
+ *
+ * Added at P2.1 step 2. `packages/engine/src/index.ts` already groups its surface by origin —
+ * `from '@immunity-wars/content'`, `from './queries.js'`, `from './actions.js'` — and that
+ * grouping is a classification the engine maintains for its own reasons, not one written for
+ * this report. Reading it is therefore a measurement rather than a second opinion, which is the
+ * whole reason step 2 reuses this file instead of listing 49 names again.
+ *
+ * `export type` is deliberately skipped: types are erased, so a UI cannot demand one at runtime
+ * and it cannot appear in the board script's free identifiers either.
+ */
+export function portExportOrigins(): Map<string, string> {
+  const src = readFileSync(join(REPO, 'packages', 'engine', 'src', 'index.ts'), 'utf8');
+  const sf = ts.createSourceFile('index.ts', src, ts.ScriptTarget.ES2022, true);
+  const origins = new Map<string, string>();
+  const visit = (n: ts.Node): void => {
+    if (
+      ts.isExportDeclaration(n) &&
+      !n.isTypeOnly &&
+      n.exportClause &&
+      ts.isNamedExports(n.exportClause) &&
+      n.moduleSpecifier &&
+      ts.isStringLiteral(n.moduleSpecifier)
+    ) {
+      for (const e of n.exportClause.elements) {
+        if (!e.isTypeOnly) origins.set(e.name.text, n.moduleSpecifier.text);
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return origins;
+}
+
 // --- the demand surface -------------------------------------------------------------------------
 
 /**

@@ -63,7 +63,11 @@ importers:
 
   packages/server: {}
 
-  packages/ui: {}
+  packages/ui:
+    dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../content
 
   tests/balance:
     dependencies:
