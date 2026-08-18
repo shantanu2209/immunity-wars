@@ -409,6 +409,53 @@ export const MEMORY_ON_KILL: Invariant = {
   },
 };
 
+/* ------------------------------------------------------------------ *
+ * 9. The last frame of a burst IS the authoritative state
+ * ------------------------------------------------------------------ */
+
+/**
+ * `endCommand` returns a `Frame[]`, not a state — up to 9 frames, each carrying a full
+ * `viewState` (docs/FINDINGS.md #31). This asserts that **the last frame equals the state the
+ * action actually left behind**.
+ *
+ * WHY IT IS AN INVARIANT AND NOT A MEASUREMENT. It was first measured while assessing seam 1 —
+ * 908 of 908 bursts, 4,131 frames — and a measurement is a statement about the past. This is
+ * load-bearing for the future, in two places:
+ *
+ *   1. **It licenses splitting `view` from `burst` in the Session interface.** The burst is
+ *      presentation and the view is authority; that separation is only sound because a consumer
+ *      which ignores every frame still lands on the right state.
+ *   2. **Reconnection depends on it.** A client that drops mid-burst — a phone that slept, a
+ *      relay that reconnected — resyncs by taking the authoritative view. If the tail could
+ *      differ, the last thing the player saw would not be the state the game is in, and the
+ *      disagreement would be invisible until they acted on it.
+ *
+ * So if it ever stops being true it has to fail loudly, here, rather than be rediscovered in
+ * Phase 3 as a desync nobody can reproduce.
+ *
+ * Compared with `canonical()` rather than `toEqual`, because property ORDER is part of the
+ * claim — the same reason every other comparison in this repository uses it.
+ */
+export const BURST_TAIL_IS_AUTHORITATIVE: Invariant = {
+  id: 'burst-tail-authoritative',
+  title: 'the last frame of an endCommand burst equals the post-action viewState',
+  after(ctx, g, _a, r, _pre, report) {
+    const frames = (r as { frames?: { view?: unknown; label?: string }[] }).frames;
+    if (!frames || frames.length === 0) return; // not a burst-producing action
+    report.checked();
+
+    const last = frames[frames.length - 1];
+    const tail = canonical(last?.view);
+    const authoritative = canonical(ctx.engine.viewState(g));
+    if (tail !== authoritative) {
+      report.violate(
+        `last frame ("${last?.label ?? '?'}", ${frames.length} in burst) is not the ` +
+          `post-action state — ${firstDifference(tail, authoritative)}`,
+      );
+    }
+  },
+};
+
 export const ALL_INVARIANTS: readonly Invariant[] = [
   AP_NON_NEGATIVE,
   PLACEMENT_COHERENCE,
@@ -418,6 +465,7 @@ export const ALL_INVARIANTS: readonly Invariant[] = [
   VIEWSTATE_ROUND_TRIPS,
   UNDO_ROUND_TRIPS,
   MEMORY_ON_KILL,
+  BURST_TAIL_IS_AUTHORITATIVE,
 ];
 
 /** Locate roughly where two canonical strings part company, so a failure names a field. */

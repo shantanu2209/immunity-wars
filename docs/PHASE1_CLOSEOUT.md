@@ -22,7 +22,7 @@ is hidden behind a qualifier.
 | **G** — Single-file harness | Ported engine + legacy UI → one self-contained HTML file that plays by double-clicking, plus a legacy-engine reference window. [`TASK_G_CLOSEOUT.md`](TASK_G_CLOSEOUT.md) |
 
 **Four test suites on disk**, each with negative controls that fire on purpose: equivalence-corpus
-(7), property (19), balance-panel (24), content-schema (27).
+(7), property (20), balance-panel (24), content-schema (27).
 
 ---
 
@@ -59,7 +59,7 @@ Collected from every task's closeout into one place, so nobody has to reassemble
 | **Anything about multiplayer.** Single-player throughout. The three allocation actions and the per-player AP plumbing are barely exercised — 8 arms deferred to Phase 3 | B, D, `COVERAGE_DEFERRED.md` |
 | **Anything about difficulty.** The reference bot wins 0.2% on Normal where humans win essentially every game. That is a bot-capability signal | `FINDINGS.md` §1 |
 | **That deliberately-diverged paths still match.** `stats.arrivals` / `stats.gotThrough` are excluded from the comparison hash | B §5 |
-| **Coverage of rules nobody stated.** The property suite checks eight claims; an unstated rule is unchecked | D §3 |
+| **Coverage of rules nobody stated.** The property suite checks nine claims; an unstated rule is unchecked | D §3 |
 | **That the panel detects a difficulty change.** It detects *engine change*, and brain `branch:3→4` is a pinned, demonstrated gate-level blind spot | E, `FINDINGS.md` #34.4 |
 | **That the port and legacy RENDER identically.** Never compared visually by anything or anyone | G §3, §4 |
 | **Performance, anywhere.** Nothing in Phase 1 timed anything | G §3 |
@@ -131,6 +131,11 @@ pinned.
 ## 5. What Phase 2 inherits
 
 ### The two unmet definition-of-done items — do these first
+
+> ⚠️ **Decided 18 Aug 2026, after this closeout was written:** three of the eight will be built,
+> five will not. [`SEAM_DECISIONS.md`](SEAM_DECISIONS.md) records which and why, including the
+> reasoning for each declined seam. **Item 9 remains NOT MET** — that file supersedes the brief's
+> list rather than retroactively satisfying it.
 
 **1. The eight seams do not exist.** [`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §6 requires an interface
 each with one implementation, and §6 says why seam 1 in particular is load-bearing:

@@ -50,6 +50,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **37** | **An inventory can be wrong by OMISSION, not only by overclaim** | **Method / Task F1** | **FIXED** at F1; the manifest asserts both directions |
 | **38** | **Two instruments, each correct, that together produced a permanently-red dashboard row** | **Method / Task F** | **FIXED**; nightly tiers declared, result writing moved into a tested script |
 | **39** | **Task B proved the 67-export contract; that contract is NOT the surface `v2_ui.html` uses** | **Task G** | Five names supplied by the shim from `packages/content`; no engine change |
+| **40** | **The engine is NOT deterministic given `(state, action)` — global `Math.random`, no injection point** | **Phase 3 input** | Recorded; seam 1's interface must not assume replayability |
 
 ---
 
@@ -2082,3 +2083,81 @@ optional from the mobile build rather than a dangling reference.
 **Disposition: MEASURED and RESOLVED at G step 1.** The measurement script is
 `tools/legacy-harness/seam.ts`, a workspace member so it is typechecked and linted like every other
 instrument here. No engine change. The five names are supplied by the shim from `packages/content`.
+
+---
+
+## 40. The engine is not deterministic given `(state, action)` — and that removes an option Phase 3 might assume it has
+
+**Found at Phase 2 planning, 18 Aug 2026**, assessing what seam 1's interface has to be.
+
+`applyAction(g, a)` is not a pure function of its arguments. The engine calls **global
+`Math.random()`** directly, and there is no injection point anywhere in its public surface:
+
+| site | what it decides |
+|---|---|
+| `shuffle` | the deck order |
+| `d6` | every die roll |
+| `rollOrgan` | which organ an invader targets at the hub |
+| the reinfection draw | whether a cleared disease returns |
+| the cytokine-storm organ pick | which organ a crisis hits |
+| **three places in `newGame`** | including `rare.armed`, evaluated *before* `deck: shuffle(...)` |
+
+### 40.1 What it removes
+
+The cheapest design for a relay is **action broadcast**: the server relays the action, every
+client applies it to its own copy, and the wire carries a few dozen bytes per move. It is the
+standard arrangement for turn-based games and it is the one a reader of the brief would assume is
+available.
+
+> **It is not available here.** Two clients applying the same action to the same state draw
+> different numbers and diverge on the first die roll — and the divergence is silent, because both
+> states are internally consistent. The players would see different boards and neither would get an
+> error.
+
+This is not a defect. It is a consequence of the engine being a faithful port of a browser game
+that never needed determinism, and [`CLAUDE.md`](../CLAUDE.md) is explicit that behaviour
+preservation outranks improvement. Making it deterministic means threading a seeded generator
+through the engine's public API — which is exactly the change Task B's contract forbade, and which
+would have to be measured against the equivalence corpus if it were ever attempted.
+
+### 40.2 Why the decision is INFORMED rather than forced
+
+**Task E already measured the cost of the alternative.** Broadcasting authoritative state — the
+post-action `viewState`, plus the frame burst where one exists — was measured as a distribution
+with percentile ranks, together with `frames.length × stateSize` for the burst, which
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §5's correction identifies as the quantity the decision
+actually turns on. It is affordable ([`TASK_E_CLOSEOUT.md`](TASK_E_CLOSEOUT.md)).
+
+So Phase 3 is not backed into a corner by this finding; it is spared discovering it late. The
+sequence that would have hurt is: assume replay, design the protocol around actions, build it, and
+find the desync in testing with two devices — where it presents as an intermittent, unreproducible
+board disagreement.
+
+There is a second, quieter benefit. **A server that is the only roller is also the only place a
+cheat could be introduced**, which matters more for a schools product than an extra kilobyte per
+turn.
+
+### 40.3 What it constrains, concretely
+
+- **Seam 1's interface must not assume replayability.** `sendAction` returns an outcome and the
+  state arrives through the subscription — it is never re-derived locally from the action. A local
+  implementation that *happens* to be able to replay must not expose that as part of the contract,
+  or `RelaySession` becomes a rewrite rather than a second implementation.
+- **`viewState` is the unit of synchronisation**, not `Action`.
+- The frame burst is presentation and is droppable, which is asserted separately — see the
+  `burst-tail-authoritative` invariant in `tests/property/src/invariants.ts`.
+- **If Phase 3 ever wants action broadcast**, the prerequisite is a seeded RNG in the engine, and
+  that is an engine change measured against the corpus like any other. It is not a protocol
+  decision that can be taken on the server side alone.
+
+### 40.4 Why nothing had noticed
+
+Everything that needed determinism in Phase 1 got it by **swapping the global** — `installRng` in
+`tests/equivalence/src/rng.ts`, and the same trick pasted into a browser console for the Task G
+protocol. That works for a test harness and for one machine. It does not work across two devices,
+because there is no shared global to swap.
+
+The workaround was so effective that the underlying property was never written down.
+
+**Disposition: RECORDED, Phase 3 input.** No engine change. Seam 1's interface is designed around
+it rather than against it.

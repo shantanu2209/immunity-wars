@@ -34,6 +34,7 @@ import {
   NO_DEAD_CELL_ACTS,
   PLACEMENT_COHERENCE,
   PRODUCTION_RESPECTS_CAP,
+  BURST_TAIL_IS_AUTHORITATIVE,
   UNDO_ROUND_TRIPS,
   VIEWSTATE_ROUND_TRIPS,
   type Ctx,
@@ -63,6 +64,10 @@ describe('L0: every invariant actually examined something', () => {
     'viewstate-round-trip': 200,
     'undo-round-trip': 100,
     'memory-on-kill': 5,
+    // Bursts are rarer than actions: one per endCommand. Measured at ~600 over this 18-game
+    // batch, so the floor is well under it and fires on the predicate going silent, not on
+    // ordinary variance.
+    'burst-tail-authoritative': 100,
   };
 
   it('reaches every invariant across a small batch, above a floor', () => {
@@ -351,6 +356,42 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
     const out = probe(MEMORY_ON_KILL, g, { action: 'engulf' }, { ok: true }, pre);
     expect(out.violations).toHaveLength(1);
     expect(out.violations[0]).toContain('un-set memory');
+  });
+
+  it('burst-tail-authoritative sees a tail that is not the post-action state', () => {
+    // A REAL burst, from a real transition, with its last frame swapped for a stale one. That is
+    // the failure being guarded against: the animation ends on a state the game is not in, so a
+    // client which drops mid-burst resyncs to something the player never saw agree.
+    const g = portNs.newGame({ difficulty: 'normal', science: true }) as unknown as GameState;
+    portNs.applyAction(g as never, { action: 'draw' } as never);
+    portNs.applyAction(g as never, { action: 'beginCommand' } as never);
+    const real = portNs.applyAction(g as never, { action: 'endCommand' } as never) as {
+      frames?: { view: unknown; label?: string }[];
+    };
+    const frames = real.frames ?? [];
+    expect(frames.length, 'the control needs a real burst to doctor').toBeGreaterThan(1);
+
+    // Sound baseline first: untouched, the predicate must be silent. A control that fires on an
+    // already-red baseline proves nothing about the control.
+    const clean = probe(BURST_TAIL_IS_AUTHORITATIVE, g, { action: 'endCommand' }, real as never);
+    expect(clean.violations).toEqual([]);
+    expect(clean.checked).toBeGreaterThan(0);
+
+    // Now the tail is an EARLIER frame of the same burst — a stale but entirely well-formed
+    // viewState, which is exactly what a real desync would look like. Nothing structural is
+    // broken, so only a value comparison can see it.
+    const doctored = {
+      ok: true,
+      frames: [...frames.slice(0, -1), frames[0]],
+    };
+    const bad = probe(BURST_TAIL_IS_AUTHORITATIVE, g, { action: 'endCommand' }, doctored as never);
+    expect(bad.violations).toHaveLength(1);
+    expect(bad.violations[0]).toContain('not the post-action state');
+
+    // NEAR MISS: an action that produces no frames at all must stay silent rather than count.
+    const none = probe(BURST_TAIL_IS_AUTHORITATIVE, g, { action: 'draw' }, { ok: true });
+    expect(none.violations).toEqual([]);
+    expect(none.checked).toBe(0);
   });
 });
 
