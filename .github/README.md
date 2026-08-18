@@ -44,21 +44,43 @@ a job that does not exist cannot fail.
 
 ### Per-push — [`ci.yml`](workflows/ci.yml)
 
-Runs on every push and pull request. Jobs run in parallel, so the tier costs the longest job rather
-than the sum. Local uncached timings on 20 cores; **CI wall time is unmeasured until the first real
-run and will differ**:
+Runs on every push and pull request. `plan`, `static` and `coverage` all start immediately;
+`suites` waits on `plan`; `ci-green` waits on everything.
 
-| job | contents | local |
+**Measured on GitHub-hosted `ubuntu-latest`, 19 Aug 2026** — the first two real runs, not a
+projection:
+
+| job | cold cache | warm cache |
 |---|---|---|
-| `plan` | derive the matrix from the manifest | seconds |
-| `static` | typecheck · lint · format:check · boundaries | ~21s |
-| `suites` | `pnpm test` (equivalence, property, content) and `pnpm test:balance` | 2m 02s |
-| `coverage` | `coverage:all` + the 95% gate, and the regenerated exclusion list must match what is committed | 2m 30s |
-| `ci-green` | the aggregate — **the only required check** | seconds |
+| `plan` — derive the matrix from the manifest | 24s | 25s |
+| `static` — typecheck · lint · format:check · boundaries | 1m 00s | 54s |
+| `test` — equivalence, property and content in one vitest run | 4m 00s | 3m 00s |
+| `test-balance` — one unseen arm per difficulty | 59s | 56s |
+| **`coverage`** — `coverage:all` + the 95% gate + the regenerated exclusion list | **5m 00s** | **4m 00s** |
+| `ci-green` — the aggregate, **the only required check** | 16s | 23s |
+| **tier wall clock** | **~5m 16s** | **~4m 23s** |
 
-`coverage` is the job most at risk of breaching the 5-minute budget. If the first week shows it
-consistently over, it moves to nightly — and that fact goes **on the dashboard**, not in a doc,
-because a gate that quietly stopped running per-push is exactly the kind of thing nobody notices.
+**`coverage` is the critical path in both runs** — it is very nearly the whole tier, and every
+other job finishes inside it.
+
+Two things about reading these numbers:
+
+- **The cold/warm split is the pnpm store cache, not noise.** The first run populated it; the
+  second hit it. Steady state is the warm column, so the tier sits around **4m 23s** against a
+  5-minute budget — under, but with roughly 35 seconds of headroom and `coverage` owning four
+  minutes of it.
+- **GitHub reports JOB duration, which excludes queue time.** Real push-to-green wall clock is
+  longer than the table, by an amount that depends on runner availability rather than on anything
+  in this repository.
+
+> **The trigger, recorded so it is a decision rather than a judgement call later:** `coverage`
+> moves to the nightly tier if it sits **above 5 minutes on warm-cache runs**. One cold-cache run
+> over budget is not that — the first push measured 5m 00s with an empty cache and 4m 00s with a
+> warm one, and demoting on that would be reacting to cache state rather than to cost.
+>
+> **If it moves, the fact goes on the dashboard, not into this file.** A gate that quietly stopped
+> running per-push is exactly the kind of thing nobody notices, and a reader of the page has no
+> reason to come looking here.
 
 ### Nightly — [`nightly.yml`](workflows/nightly.yml)
 
