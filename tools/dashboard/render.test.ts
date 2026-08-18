@@ -190,6 +190,48 @@ describe('trends', () => {
   });
 });
 
+describe('trend provenance', () => {
+  const pts3 = [
+    { at: '2026-08-12', value: 1 },
+    { at: '2026-08-19', value: 2 },
+    { at: '2026-08-20', value: 3 },
+  ];
+
+  /**
+   * A locally-measured point drawn on the same axis as CI points is indistinguishable from a CI
+   * point. The seeded Task E figures are exactly that, so any series containing one says so ABOVE
+   * the line rather than in the qualifier beneath it.
+   */
+  it('shows a provenance warning above the line when one is given', () => {
+    const html = renderTrend({
+      label: 'x',
+      points: pts3,
+      qualifierLine: 'q',
+      provenanceWarning: 'NOT MEASURED BY CI.',
+    });
+    expect(html).toContain('NOT MEASURED BY CI.');
+    expect(html.indexOf('NOT MEASURED BY CI.')).toBeLessThan(html.indexOf('<polyline'));
+  });
+
+  it('shows it on a too-short series too, where there is no line to caveat', () => {
+    const html = renderTrend({
+      label: 'x',
+      points: pts3.slice(0, 2),
+      qualifierLine: 'q',
+      provenanceWarning: 'NOT MEASURED BY CI.',
+    });
+    expect(html).toContain('NOT MEASURED BY CI.');
+    expect(html).toContain('Insufficient history');
+  });
+
+  /** CONTROL: a pure-CI series must not carry a warning it has not earned. */
+  it('CONTROL: no warning when none is given', () => {
+    const html = renderTrend({ label: 'x', points: pts3, qualifierLine: 'q' });
+    expect(html).not.toContain('class="warn"');
+    expect(html).not.toContain('NOT MEASURED BY CI');
+  });
+});
+
 describe('staleness', () => {
   it('is always stated, even when fresh', () => {
     expect(renderDashboard(input(), NOW)).toContain('nightly tier ran');
@@ -205,6 +247,20 @@ describe('staleness', () => {
 
     const never = renderDashboard(input({ nightly: { status: 'missing', at: null } }), NOW);
     expect(never).toContain('never reported');
+  });
+
+  /**
+   * Clock skew between the runner and the build, or a hand-added record, produces a negative age.
+   * "ran -43 hours ago" is nonsense on a published page; naming the skew is the true statement.
+   */
+  it('CONTROL: a future-dated record is called out rather than rendered as negative hours', () => {
+    const html = renderDashboard(
+      input({ nightly: { status: 'pass', at: '2026-08-20T04:00:00Z' } }),
+      NOW,
+    );
+    expect(html).toContain('timestamp in the FUTURE');
+    expect(html).not.toContain('-4');
+    expect(html).not.toMatch(/ran -\d+ hours/);
   });
 
   it('ageHours handles absent and malformed timestamps', () => {
