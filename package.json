@@ -24,6 +24,8 @@
     "test:balance": "tsx tests/balance/check.ts",
     "comment:test:property": "The fast tier already runs inside `pnpm test` via turbo. This is the >=10,000-game tier PHASE1_BRIEF.md section 9 asks for: slow, on demand, and exiting non-zero if any invariant finished having checked nothing. Same two-tier arrangement as the equivalence corpus. Wiring it into a CI tier is Task F's.",
     "test:property": "tsx tests/property/full-run.ts",
+    "comment:test:manifest-controls": "Mutates tests/suites.json six ways and requires manifest.test.ts to redden EXACTLY the assertions each mutation targets — not merely to go red, which would only prove the file is read. Deliberately NOT in `pnpm test`: it shells out to vitest, and a suite that recursively runs itself takes forever. Run it when the manifest or its schema changes.",
+    "test:manifest-controls": "tsx tests/manifest/controls.ts",
     "build": "turbo run build",
     "build:single": "node scripts/not-implemented.mjs build:single G",
     "boundaries": "depcruise packages --config .dependency-cruiser.cjs",

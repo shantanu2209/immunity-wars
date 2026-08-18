@@ -1,0 +1,10 @@
+{
+  // Node types are allowed here for the reason the other tests/ tsconfigs give: this reads the
+  // manifest and package.json off disk. Nothing in packages/engine gains them.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}

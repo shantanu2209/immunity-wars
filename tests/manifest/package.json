@@ -1,0 +1,24 @@
+{
+  "name": "@immunity-wars/manifest",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The suite manifest: what each test suite proves, what it does not, and how PHASE1_BRIEF section 7 reconciles with what is on disk",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:why-here": "Lives under tests/ because it describes the test suites and is consumed by them, by the CI workflows (job matrix) and by the dashboard (one row per entry). It is a workspace member so that typecheck and lint reach it: a manifest nobody typechecks is the same class of problem as a generator that regenerates its own oracle.",
+  "exports": {
+    "./schema": "./schema.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}
