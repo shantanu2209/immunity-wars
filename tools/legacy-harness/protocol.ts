@@ -336,6 +336,28 @@ function render(
   cov: Coverage,
   continuation: readonly Readout[] | null,
 ): string {
+  // THE SNIPPET REACHES FOR TWO OF THE PAGE'S OWN GLOBALS, AND THAT IS THE FRAGILE PART.
+  //
+  // `lab` and `newG` are declared at the top level of v2_ui.html's board script — `lab` with
+  // `let`, which puts it in the global LEXICAL environment rather than on `window`. Whether a
+  // pasted console snippet can see that binding depends on the browser and on how the console
+  // scopes an evaluation, and the first version of this snippet assumed it always could.
+  //
+  // It failed for Shantanu with `TypeError: "" is not a function` — a message that names neither
+  // `lab` nor `newG`, so it points nowhere useful. It could not be reproduced here: the same
+  // snippet, run against the real built artifact under jsdom, seeds and starts a game cleanly.
+  //
+  // So this does not claim to have found the cause. It removes the dependency instead:
+  //
+  //   - `typeof x !== 'undefined'` is the ONLY form that does not throw on an undeclared
+  //     identifier, so neither lookup can fail loudly or confusingly;
+  //   - the SEEDING always happens, because that part touches nothing but `Math`;
+  //   - if `newG` is out of reach the snippet says so and tells him to click the difficulty
+  //     button, which runs `lab.difficulty='normal';newG()` from an onclick in PAGE scope and so
+  //     cannot have this problem at all.
+  //
+  // Both paths are exercised in a jsdom harness — the real artifact, and a blank page with
+  // neither global present — because a fallback that has never run is not known to work.
   const snippet = `(() => {
   let a = ${seed} | 0;
   Math.random = () => {
@@ -344,9 +366,11 @@ function render(
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-  lab.difficulty = ${JSON.stringify(DIFFICULTY)};
-  newG();
-  console.log('seeded, new game started');
+  var L = typeof lab !== "undefined" ? lab : null;
+  var N = typeof newG === "function" ? newG : null;
+  if (L) L.difficulty = ${JSON.stringify(DIFFICULTY)};
+  if (N) { N(); console.log("SEEDED - new game started on ${DIFFICULTY}."); }
+  else console.log("SEEDED - now click the ${DIFFICULTY} difficulty button to start the game.");
 })();`;
 
   const steps = rs
@@ -424,6 +448,9 @@ which is exactly what the equivalence rig does. **Paste this into BOTH consoles*
 \`\`\`js
 ${snippet}
 \`\`\`
+
+It prints \`SEEDED\`. If it says to click the difficulty button, do that — the seed is already
+installed, and the button runs the same two calls from page scope.
 
 Both windows now hold the identical game. If the two boards do not look identical at this point,
 stop — that is a finding, and nothing after it is interpretable.
