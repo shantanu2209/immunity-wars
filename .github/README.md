@@ -103,6 +103,27 @@ and *overwrites* `bands.json`; a scheduled recalibration would regenerate the pa
 and it could never fail again — the Task C5b shape. It is `manual` in the manifest, a human runs
 it, and the matrix generator's tests assert it appears in no automated tier.
 
+### What the nightly records for the trends
+
+One JSON record per run, appended to the orphan `results-data` branch:
+
+| field | source | status |
+|---|---|---|
+| `coveragePct` | the coverage gate's output | **recorded** |
+| `balance.*` | `pnpm test:balance` | **not yet** — `check.ts` prints a table and emits no JSON |
+| `sizeMedianChars` | `size-run.ts` | **not yet**, same reason |
+
+`tools/dashboard/history-seed.json` seeds point zero from Tasks E and F0 so the trends start from
+something. Those records are marked `source: "local"` and the page says so above the line: a
+figure measured on a developer machine is indistinguishable from a CI measurement once it is drawn
+as a dot, unless the page states it.
+
+**The consequence is visible rather than hidden.** Because CI does not yet record the balance
+metrics, their series say *"NOT MEASURED BY CI … the series cannot grow until it does"* — which is
+true, and is the honest way to show a gap in the pipeline. Closing it means teaching `check.ts` and
+`size-run.ts` to emit JSON alongside their human output; that is a change to Task E's instruments
+and belongs in its own commit, not smuggled into a dashboard change.
+
 ---
 
 ## What a per-push green does not prove
