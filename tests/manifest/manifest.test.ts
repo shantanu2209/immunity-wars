@@ -120,6 +120,36 @@ describe('tests/suites.json', () => {
     expect(unit?.explanation).toContain('no suite testing each engine rule in isolation');
   });
 
+  /**
+   * EVERY SUITE MUST DECLARE A NIGHTLY TIER, and this is not a stylistic preference.
+   *
+   * The dashboard is published by the NIGHTLY workflow and renders one row per manifest suite,
+   * with a missing result rendered RED. So a suite that the nightly does not run has a row that
+   * can never be green — no matter how often it passes per-push, its result file never reaches
+   * the job that builds the page.
+   *
+   * That is exactly what happened on the first real nightly: `balance-panel` and `content-schema`
+   * declared per-push tiers only, the nightly matrix contained two jobs instead of four, and the
+   * published page read INCOMPLETE with two permanent NO RESULT rows. The missing-is-red rule was
+   * working perfectly; what was wrong was that nothing made the two facts agree.
+   *
+   * The fix for the two entries was one edit. This is the fix for the CLASS: a suite added later
+   * with a per-push tier alone would reintroduce a permanently-red row, and the failure would look
+   * like a broken dashboard rather than a missing job.
+   */
+  it('every suite declares a nightly tier, because the nightly is what publishes the page', () => {
+    if (!manifest) return;
+    for (const suite of manifest.suites) {
+      expect(
+        suite.tiers.nightly,
+        `${suite.id} has no nightly tier. The dashboard is built by the nightly workflow and ` +
+          'renders every manifest suite, so this suite would show NO RESULT on every published ' +
+          'page regardless of how often it passes per-push. Give it a nightly tier, or remove it ' +
+          'from the manifest — do not let the page carry a row that cannot go green.',
+      ).toBeTruthy();
+    }
+  });
+
   it('names a real command for every tier of every suite', () => {
     if (!manifest) return;
     let checked = 0;

@@ -70,6 +70,12 @@
           "blocking": true,
           "approxSeconds": 50
         },
+        "nightly": {
+          "command": "pnpm test:balance",
+          "scale": "one unseen arm per difficulty, 6,000 games — the same check, run unconditionally rather than only on a push that touched the engine",
+          "blocking": true,
+          "approxSeconds": 50
+        },
         "manual": {
           "command": "npx tsx tests/balance/metrics-run.ts 24 20 100",
           "scale": "24 arms + held-out, 150,000 games — RECALIBRATES and overwrites bands.json",
@@ -93,6 +99,12 @@
           "scale": "52 assertions over every bundled pack",
           "blocking": true,
           "approxSeconds": 3
+        },
+        "nightly": {
+          "command": "pnpm test",
+          "scale": "52 assertions over every bundled pack",
+          "blocking": true,
+          "approxSeconds": 120
         }
       },
       "resultFile": "results/content-schema.json"

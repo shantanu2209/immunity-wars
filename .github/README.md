@@ -62,10 +62,19 @@ because a gate that quietly stopped running per-push is exactly the kind of thin
 
 ### Nightly — [`nightly.yml`](workflows/nightly.yml)
 
-02:00 UTC and on demand. The full corpus (2,000 games) and the property suite at 10,002 games run
-in parallel, so the tier costs ~15 minutes rather than ~30. Also measures coverage and serialised
+02:00 UTC and on demand. **Runs every suite**, not only the slow ones: the full corpus at 2,000
+games and the property suite at 10,002 run in parallel with the balance panel and the content
+schema, so the tier costs ~15 minutes rather than the sum. Also measures coverage and serialised
 state size for the trends, appends one history record to the `results-data` branch, and publishes
 the dashboard.
+
+**Why every suite, and not just the slow tiers.** This workflow is what publishes the page, and the
+page renders one row per manifest suite with a missing result shown RED. So a suite the nightly
+does not run has a row that can never go green, no matter how often it passes per-push. The first
+real nightly proved it: `balance-panel` and `content-schema` declared per-push tiers only, the
+matrix held two jobs instead of four, and the page read INCOMPLETE with two permanent NO RESULT
+rows. The missing-is-red rule was working exactly as designed — nothing made it agree with the
+tier list. `manifest.test.ts` now requires every suite to declare a nightly tier.
 
 **`metrics-run.ts` is deliberately in neither automated tier.** It recalibrates the balance bands
 and *overwrites* `bands.json`; a scheduled recalibration would regenerate the panel's own reference
@@ -109,7 +118,9 @@ rule *name* in the output — that is what separates "this gate caught my mutati
 went wrong". A gate that fails for the wrong reason has not been demonstrated.
 
 It also refuses an inert mutation (one that no longer changes the file, because the code moved
-under it) and verifies the working tree is clean afterwards.
+under it) and verifies the tree matches its state **before** the run — not that it is clean, since
+uncommitted work is the normal case and a check that cannot tell "I failed to restore your files"
+from "you had edits already" gets deleted.
 
 ---
 

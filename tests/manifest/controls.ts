@@ -79,6 +79,16 @@ const CONTROLS: readonly Control[] = [
     ],
   },
   {
+    name: 'drop a nightly tier — the permanently-red-row trap',
+    mutate: (t) => {
+      const d = JSON.parse(t) as { suites: { id: string; tiers: Record<string, unknown> }[] };
+      const balance = d.suites.find((s) => s.id === 'balance-panel');
+      if (balance) delete balance.tiers.nightly;
+      return `${JSON.stringify(d, null, 2)}\n`;
+    },
+    expectFailing: ['every suite declares a nightly tier'],
+  },
+  {
     name: 'blank out a doesNotProve field',
     mutate: (t) => {
       const d = JSON.parse(t) as { suites: { id: string; doesNotProve: string }[] };

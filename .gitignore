@@ -71,3 +71,13 @@ docs/*.docx
 
 # Coverage output
 coverage/
+
+# CI output, written into the working tree by the workflows and by anyone running the same
+# commands locally. Ignored rather than merely untracked, on the rule the docx entry above uses:
+# untracked is one careless `git add -A` away from being committed, and that has happened here.
+#   results/  one JSON per suite, written by tools/ci/record-result.ts
+#   site/     the built dashboard, uploaded to Pages and never committed to main
+#   history/  the accumulated records, fetched from the orphan results-data branch
+results/
+site/
+history/

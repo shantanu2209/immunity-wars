@@ -1919,3 +1919,71 @@ corpus and once as the row recording that no unit suite exists.
 **Disposition: FIXED at F1.** Both directions asserted; `docs/PHASE1_BRIEF.md` §7 carries a pointer
 to `tests/suites.json` as the reconciliation of record.
 
+---
+
+## 38. Two instruments, each correct, that together produced a permanently-red dashboard row
+
+**Found by the first real nightly run, 19 Aug 2026.** The published page read INCOMPLETE with
+`balance-panel` and `content-schema` showing NO RESULT. Nothing was broken.
+
+- The **dashboard** renders one row per manifest suite, and a suite with no result renders RED
+  rather than being omitted — because a suite that silently stopped running must look worse than
+  one that failed. Correct, and working exactly as designed.
+- The **nightly matrix** is derived from the manifest, and runs the suites that declare a nightly
+  tier. `balance-panel` and `content-schema` declared per-push tiers only, so the matrix held two
+  jobs instead of four. Also correct.
+
+Each rule is right. **The conjunction is a row that can never go green**, no matter how often the
+suite passes per-push, because the job that builds the page never sees its result.
+
+> **A defect can live in the RELATIONSHIP between two correct components, and be invisible in
+> both.** Neither the dashboard tests nor the matrix tests could have caught this: each verified
+> its own half against its own spec, and each half was right.
+
+### 38.1 Why the diagnosis mattered more than the fix
+
+The two candidate explanations demanded opposite responses:
+
+| if | then |
+|---|---|
+| the job ran and failed to publish its result | fix the artifact plumbing |
+| the job never ran | fix the tier declarations |
+
+Guessing would have produced a plausible change to the wrong component. The nightly matrix,
+printed directly, settled it in one command: two jobs, not four. **The artifact names the run
+produced — `nightly-results-full-corpus` and `nightly-results-test-property`, and no others —
+were the same evidence from the other end.**
+
+### 38.2 The fix, and the invariant
+
+`balance-panel` and `content-schema` gained nightly tiers. That fixes today. The class is closed by
+an assertion in `tests/manifest/manifest.test.ts`: **every suite must declare a nightly tier**,
+because the nightly is what publishes the page. A suite added later with a per-push tier alone
+would otherwise reintroduce the same permanently-red row, and the symptom — a broken-looking
+dashboard — points at the wrong component.
+
+### 38.3 A second defect, found while verifying the first
+
+Simulating the nightly end-to-end surfaced something the run itself could not have shown:
+**`${{ matrix.scale }}` was empty in every result file the workflows wrote.** The GROUPED matrix
+carries `id`, `command`, `suiteIds`, `resultFiles`, `approxSeconds` and `blocking` — not `scale`,
+which only the ungrouped entries have. Every result the first nightly published had `"detail": ""`.
+
+Nothing failed. The rows simply rendered blank, which is the quiet kind of wrong: a green run, a
+published page, and a field silently empty.
+
+The same step also hand-assembled JSON with `printf` and no escaping. Since `build.ts` treats an
+unparseable result as MISSING, a single quotation mark in a manifest scale would have turned a
+passing suite red with no explanation anywhere in the logs.
+
+Both are now `tools/ci/record-result.ts`, tested over the real manifest — including a control that
+puts quotes, backslashes and a newline in a scale and requires the record to survive a JSON
+round-trip. It is the aggregate gate's lesson a second time: **logic that lives in YAML cannot be
+falsified.** A `printf` inside a workflow step runs only in CI, and both of its defects were
+invisible in a green run.
+
+**Disposition: FIXED.** Tier declarations corrected, the invariant asserted with a control in
+`tests/manifest/controls.ts`, result writing moved into a tested script, and `results/`, `site/`
+and `history/` added to `.gitignore` — CI writes them into the working tree and untracked is one
+careless `git add -A` from committed.
+
