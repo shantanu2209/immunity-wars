@@ -145,6 +145,18 @@ contract Task B was measured against.
   bot is a **Phase 2** decision — it is dual-use, since online play needs AI to fill dropped
   seats. **Do not tune the game to the bot's numbers.**
 
+- **Open Dependabot advisories are accepted, and the acceptance has a TRIGGER.** GitHub shows
+  criticals; it is one advisory counted once per manifest, in test tooling. Every open advisory
+  requires a long-running server accepting requests, and nothing here starts one — every test
+  command is one-shot. Full reasoning: `docs/SECURITY_NOTES.md`.
+
+  > ⚠️ **If you are about to add a Vite dev server for the Phase 2 UI, or `vitest --ui`, or
+  > anything else that listens on a port — that reasoning collapses and `vitest 2 → 3` becomes
+  > urgent. Upgrade it in the same change that introduces the server.**
+
+  This is not a reason to avoid a dev server. Phase 2 will want one. It is a reason not to add one
+  without also moving vitest.
+
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.
   Reference only — never build from them, never cite their behaviour.

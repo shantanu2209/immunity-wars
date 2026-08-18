@@ -44,6 +44,19 @@ use it.
 Under active development. The playable browser version works; the app rebuild is at Phase 1
 (foundations, test infrastructure). Expect things to move.
 
+### About the security alerts
+
+GitHub's Dependabot page currently shows critical vulnerabilities. **It is one advisory, counted
+once per manifest, in test tooling that never runs a server and never reaches a player.**
+
+Every open advisory requires a long-running server accepting requests, and nothing in this
+repository starts one — every test command is one-shot and exits. The only third-party runtime
+dependency in anything installable is `zod`.
+
+The full reasoning, advisory by advisory, plus the trigger that would make it urgent, is in
+[docs/SECURITY_NOTES.md](docs/SECURITY_NOTES.md). It is written to be read by someone who has just
+seen the alert count and wants to know whether it means anything.
+
 ---
 
 ## Credits

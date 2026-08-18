@@ -1,13 +1,23 @@
 # The per-push tier.
 #
 # Budget: under 5 minutes wall clock. Achieved by running jobs in PARALLEL, so the tier costs the
-# longest job rather than the sum. Local uncached timings, 20 cores (CI will differ and the first
-# real run reports the truth):
+# longest job rather than the sum.
 #
-#   static     typecheck 12s + lint 5s + format 3s + boundaries 1s
-#   test       2m 02s   <- the critical path, and it is one vitest file inside it
-#   coverage   2m 30s   <- the job most at risk of breaching the budget
-#   balance    50s      run unconditionally, not path-filtered
+# MEASURED on ubuntu-latest, 19 Aug 2026 (cold cache / warm cache):
+#
+#   plan          24s / 25s
+#   static      1m 00s / 54s
+#   test        4m 00s / 3m 00s
+#   test-balance  59s / 56s
+#   coverage    5m 00s / 4m 00s   <- the critical path; very nearly the whole tier
+#   ci-green      16s / 23s
+#   tier        ~5m16s / ~4m23s
+#
+# The cold/warm split is the pnpm store cache. Steady state is the warm column. GitHub reports job
+# duration and excludes queue time, so real push-to-green is longer than this.
+#
+# TRIGGER: coverage moves to nightly if it sits above 5 minutes on WARM-cache runs, and if it moves
+# the fact goes on the dashboard rather than into a comment nobody reads. See .github/README.md.
 #
 # WHAT THE JOB LIST IS NOT: hand-written. `tools/ci/matrix.ts` derives it from tests/suites.json,
 # so a suite that gains a tier cannot silently fail to get a job.
