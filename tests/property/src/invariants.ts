@@ -319,6 +319,47 @@ export const VIEWSTATE_ROUND_TRIPS: Invariant = {
 };
 
 /**
+ * THE SAME PROPERTY, OVER THE WHOLE STATE — the precondition `Storage` is built on.
+ *
+ * WHY THIS IS NOT COVERED BY THE ONE ABOVE. `viewState` is a PROJECTION, and it drops 13 of
+ * `GameState`'s 53 keys: `_actingPid`, `complement`, `deck`, `discard`, `drawnList`, `events`,
+ * `everInfected`, `fx`, `novelTurn`, `stats`, `undo`, `wormsSpawned`, `wormsThisTurn`. It reports
+ * `deckCount: 95` and not the 95 cards. So a value JSON destroys, sitting in any of those 13, is
+ * invisible to `viewstate-round-trip` — and `negative-control.test.ts` demonstrates exactly that
+ * rather than leaving it as an argument.
+ *
+ * WHY IT MATTERS NOW, at P2.1 rather than whenever someone gets to it. Phase 2 builds `Storage`,
+ * whose consumer is `Session` and whose serialisation unit is `GameState` — a game cannot be
+ * resumed from a `viewState`, because the deck is not in one (docs/PHASE2_BRIEF.md v1.1 §3,
+ * review item B). Before this invariant, the strongest thing anyone could say about that was that
+ * ONE state had been observed to survive `JSON.parse(JSON.stringify(…))` byte-identically. One
+ * state is not an invariant, and `Storage` would have been built on it.
+ *
+ * docs/PHASE1_BRIEF.md §7 listed a "Serialisation — every reachable state round-trips
+ * identically" suite. It was never built (`tests/suites.json` has four suites and that is not one
+ * of them). This is the half of it that Phase 2 actually depends on, put where the other
+ * round-trip property already lives rather than in a new suite that would carry one check.
+ *
+ * `canonical()` and not `JSON.stringify`, for the same reason as above: `JSON.stringify` renders
+ * both `NaN` and `undefined` as `null`, so it cannot tell a survived round-trip from a destroyed
+ * one and would pass on the failure.
+ */
+export const GAMESTATE_ROUND_TRIPS: Invariant = {
+  id: 'gamestate-round-trip',
+  title: 'the whole GameState survives a JSON round-trip unchanged',
+  after(_ctx, g, _a, _r, _pre, report) {
+    report.checked();
+    const before = canonical(g);
+    const after = canonical(JSON.parse(JSON.stringify(g)) as GameState);
+    if (before !== after) {
+      report.violate(
+        `GameState changed under JSON round-trip near ${firstDifference(before, after)}`,
+      );
+    }
+  },
+};
+
+/**
  * The engine's only genuine capture-and-restore. `pushUndo` snapshots 15 fields and `undo`
  * writes them back, so push-then-pop must be the identity.
  *
@@ -463,6 +504,7 @@ export const ALL_INVARIANTS: readonly Invariant[] = [
   PRODUCTION_RESPECTS_CAP,
   NO_DEAD_CELL_ACTS,
   VIEWSTATE_ROUND_TRIPS,
+  GAMESTATE_ROUND_TRIPS,
   UNDO_ROUND_TRIPS,
   MEMORY_ON_KILL,
   BURST_TAIL_IS_AUTHORITATIVE,

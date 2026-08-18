@@ -49,7 +49,7 @@ green. `L3` breaks it on purpose and watches the suite go red.
 
 ---
 
-## The eight invariants
+## The ten invariants
 
 | id | Claim | Kind |
 |---|---|---|
@@ -59,12 +59,39 @@ green. `L3` breaks it on purpose and watches the suite go red.
 | `production-respects-cap` | `produce` never writes above the cap in force at that moment | transition |
 | `no-dead-cell-acts` | An action never succeeds for a cell that was not alive | transition |
 | `viewstate-round-trip` | `viewState` survives a JSON round-trip unchanged | state |
+| `gamestate-round-trip` | The **whole `GameState`** survives a JSON round-trip unchanged | state |
 | `undo-round-trip` | `pushUndo` then `undo` is the identity | state |
 | `memory-on-kill` | A kill records memory on Training, and never on Normal or Hard | transition |
+| `burst-tail-authoritative` | The last frame of an `endCommand` burst equals the post-action `viewState` | transition |
 
-`viewstate-round-trip` is the one the corpus is blind to **by construction**: `rig.ts`'s
+> ⚠️ **Corrected 18 Aug 2026, at P2.1 step 3.** This heading said **eight** and the table had
+> eight rows. `ALL_INVARIANTS` held **nine** — `burst-tail-authoritative` was added with the
+> Phase 2 preconditions and never reached this file. Nobody was harmed by it, and that is the
+> uncomfortable part: an undercounting inventory reads as conservative, so it does not attract
+> the suspicion an overclaim does. It is the same shape as [`FINDINGS.md`](../../docs/FINDINGS.md)
+> #37, an inventory missing its largest entry. Both missing rows are now here, and the count is
+> ten.
+
+The three round-trip invariants are the ones the corpus is blind to **by construction**: `rig.ts`'s
 `normalise()` round-trips *both* engines through JSON before hashing, so anything JSON destroys is
 destroyed identically on both sides and the hashes still match.
+
+**`gamestate-round-trip` is not redundant with `viewstate-round-trip`, and the difference is the
+whole reason it exists.** `viewState` is a *projection*: it drops 13 of `GameState`'s 53 keys —
+`_actingPid`, `complement`, **`deck`**, `discard`, `drawnList`, `events`, `everInfected`, `fx`,
+`novelTurn`, `stats`, `undo`, `wormsSpawned`, `wormsThisTurn` — and reports `deckCount: 95` rather
+than the 95 cards. A game therefore **cannot be resumed from a `viewState`**.
+
+Phase 2's `Storage` serialises `GameState`, so save-and-resume rests on this property
+([`PHASE2_BRIEF.md`](../../docs/PHASE2_BRIEF.md) v1.1 §3, review item B). Before this invariant the
+strongest available statement was that **one** state had been observed to survive
+`JSON.parse(JSON.stringify(…))` — one state is not an invariant, and `Storage` would have been
+built on it.
+
+Its control asserts the asymmetry rather than describing it: **one** saboteur plants a `NaN` in
+`g.wormsThisTurn`, `gamestate-round-trip` must fire, and `viewstate-round-trip` must **not**. The
+second half is only meaningful because the first half fired on the identical corruption — which is
+what makes it a measurement of blindness rather than an absence of evidence.
 
 ---
 
