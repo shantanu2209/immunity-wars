@@ -18,10 +18,12 @@
  */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { loadManifest } from '@immunity-wars/ci/matrix';
 
+import { mergeHistory, mostRecentWith, provenanceWarning, type HistoryRecord } from './history.js';
 import { reported, type Provenance } from './reported.js';
 import { renderDashboard, type SizeFigure, type SuiteRow, type Trend } from './render.js';
 
@@ -32,20 +34,13 @@ interface SuiteResult {
   readonly ranAt?: string;
 }
 
-interface HistoryRecord {
-  readonly at: string;
-  readonly commit: string;
-  readonly coveragePct?: number;
-  readonly balance?: Record<string, Record<string, number>>;
-  readonly sizeMedianChars?: Record<string, number>;
-}
-
 const [resultsDir, historyDir, outDir] = process.argv.slice(2);
 if (!resultsDir || !historyDir || !outDir) {
   console.error('usage: build.ts <results-dir> <history-dir> <out-dir>');
   process.exit(2);
 }
 
+const HERE_DIR = dirname(fileURLToPath(import.meta.url));
 const manifest = loadManifest();
 const now = new Date();
 const commit = process.env.GITHUB_SHA?.slice(0, 7) ?? 'unknown';
@@ -75,13 +70,27 @@ const rows: SuiteRow[] = manifest.suites.map((suite) => {
 });
 
 // --- history ---------------------------------------------------------------------------------
-const history: HistoryRecord[] = [];
+//
+// POINT ZERO comes from a seed file committed to the repository: figures measured on a developer
+// machine during Tasks E and F0, before CI existed. Without them every trend starts empty and the
+// page says "insufficient history" for weeks.
+//
+// They are merged, never merged AWAY — each keeps source:'local', and any series containing one
+// carries a warning above the line. See history.ts for the three rules.
+const seeded: HistoryRecord[] = [];
+const SEED = join(HERE_DIR, 'history-seed.json');
+if (existsSync(SEED)) {
+  const seed = JSON.parse(readFileSync(SEED, 'utf8')) as { records: HistoryRecord[] };
+  seeded.push(...seed.records);
+}
+
+const fromCi: HistoryRecord[] = [];
 if (existsSync(historyDir)) {
   for (const f of readdirSync(historyDir)
     .filter((f) => f.endsWith('.json'))
     .sort()) {
     try {
-      history.push(JSON.parse(readFileSync(join(historyDir, f), 'utf8')) as HistoryRecord);
+      fromCi.push(JSON.parse(readFileSync(join(historyDir, f), 'utf8')) as HistoryRecord);
     } catch {
       // A corrupt history file must not take the page down; it simply contributes no point.
       console.warn(`skipping unreadable history record: ${f}`);
@@ -89,7 +98,12 @@ if (existsSync(historyDir)) {
   }
 }
 
-const latest = history[history.length - 1];
+const history = mergeHistory(seeded, fromCi);
+
+// The nightly's freshness comes from the most recent CI record ONLY. A seeded local point must
+// never make the nightly look as though it ran — that would turn the staleness banner, which
+// exists to say when CI last spoke, into a statement about a developer's laptop.
+const lastCi = [...history].reverse().find((h) => h.source === 'ci');
 
 const prov = (over: Partial<Provenance>): Provenance => ({
   generator: 'CI',
@@ -101,22 +115,24 @@ const prov = (over: Partial<Provenance>): Provenance => ({
   ...over,
 });
 
+const coverageRec = mostRecentWith(history, 'coveragePct');
 const coverage =
-  latest?.coveragePct !== undefined
+  coverageRec?.coveragePct !== undefined
     ? reported(
-        `${latest.coveragePct.toFixed(2)}% of coverable branch arms`,
+        `${coverageRec.coveragePct.toFixed(2)}% of coverable branch arms`,
         prov({
           generator: 'coverage gate',
           scale: 'v8 provider, coverable arms only',
-          measuredAt: latest.at,
+          measuredAt: coverageRec.at,
           caveat:
             'coverable arms exclude provably-dead ones, enumerated in docs/COVERAGE_EXCLUSIONS.md',
         }),
       )
     : null;
 
+const sizeRec = mostRecentWith(history, 'sizeMedianChars');
 const sizes: SizeFigure[] = [];
-if (latest?.sizeMedianChars) {
+if (sizeRec?.sizeMedianChars) {
   // Every size figure carries its censoring row. The type requires it; this is where the text
   // comes from, and it is per-difficulty because the censoring differs per difficulty.
   const CENSORING: Record<string, string> = {
@@ -124,7 +140,7 @@ if (latest?.sizeMedianChars) {
     normal: 'The reference bot reaches 32.4% of the legal turn window on Normal.',
     hard: 'The reference bot dies at turn 8.6 of a 45-turn Hard game — 19.2% of the window. Zero of 200 games survived to the end of the onslaught window.',
   };
-  for (const [difficulty, chars] of Object.entries(latest.sizeMedianChars)) {
+  for (const [difficulty, chars] of Object.entries(sizeRec.sizeMedianChars)) {
     sizes.push({
       label: `Median mid-game state — ${difficulty}`,
       value: reported(
@@ -132,8 +148,11 @@ if (latest?.sizeMedianChars) {
         prov({
           generator: 'reference bot',
           scale: `median over sampled ${difficulty} states`,
-          measuredAt: latest.at,
-          caveat: 'a floor: the late game is not in the sample at all',
+          measuredAt: sizeRec.at,
+          caveat:
+            sizeRec.source === 'local'
+              ? `a floor, and NOT a CI measurement — ${sizeRec.sourceNote ?? 'measured locally'}`
+              : 'a floor: the late game is not in the sample at all',
         }),
       ),
       censoring:
@@ -154,6 +173,7 @@ if (history.length > 0) {
       points: coveragePoints,
       qualifierLine:
         'under the coverage gate, v8 provider — the ±1 arm wobble is measurement noise',
+      provenanceWarning: provenanceWarning(history.filter((h) => h.coveragePct !== undefined)),
     });
   }
 
@@ -174,6 +194,9 @@ if (history.length > 0) {
         points: pts,
         qualifierLine:
           'under the reference bot v1, one arm of 20 × 100 games. Detects ENGINE CHANGE, not difficulty.',
+        provenanceWarning: provenanceWarning(
+          history.filter((h) => h.balance?.normal?.[metric] !== undefined),
+        ),
       });
     }
   }
@@ -185,7 +208,7 @@ const html = renderDashboard(
     commit,
     builtAt: now.toISOString().replace('T', ' ').slice(0, 16),
     perPush: { status: 'pass', at: now.toISOString() },
-    nightly: { status: latest ? 'pass' : 'missing', at: latest?.at ?? null },
+    nightly: { status: lastCi ? 'pass' : 'missing', at: lastCi?.at ?? null },
     rows,
     coverage,
     sizes,
