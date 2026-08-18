@@ -1,0 +1,9 @@
+{
+  // Node types: these scripts read the manifest off disk and are executed by the workflows.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}

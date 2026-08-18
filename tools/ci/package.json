@@ -1,0 +1,25 @@
+{
+  "name": "@immunity-wars/ci",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CI helpers: the aggregate gate, and the job matrix generated from the suite manifest",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:why-a-package": "LOGIC THAT LIVES IN YAML CANNOT BE FALSIFIED; LOGIC IN A SCRIPT CAN. The aggregate gate decides whether the build is green, and a gate that has never been made to fail is not known to work. As a workflow `if:` expression it could only be tested by breaking a real build; as a module it has unit tests that hand it a skipped job and require exit 1.",
+  "exports": {
+    "./aggregate": "./aggregate.ts",
+    "./matrix": "./matrix.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "@immunity-wars/manifest": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

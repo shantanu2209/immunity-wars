@@ -13,6 +13,13 @@ packages:
   # engine-no-node-builtins dependency-cruiser rule). Keeping it here preserves that
   # purity guarantee instead of poking a hole in it for the sake of a test.
   - 'tests/*'
+  # CI helpers and the results dashboard. Workspace members so that typecheck, lint and test reach
+  # them: the dashboard is the instrument that REPORTS on every other instrument, and the aggregate
+  # gate decides whether the build is green. Neither can be the one thing nobody checks.
+  # tools/legacy stays excluded for the reason above; tools/art-pipeline and tools/balance-sim are
+  # empty and are not listed.
+  - 'tools/ci'
+  - 'tools/dashboard'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed

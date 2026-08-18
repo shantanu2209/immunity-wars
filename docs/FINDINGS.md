@@ -1868,3 +1868,54 @@ somewhere the means average over. The claim here is narrow: a second, unrelated 
 chance to disagree and did not.
 
 **Disposition: NOT AN ISSUE.** Recorded as supporting evidence.
+
+---
+
+## 37. An inventory can be wrong by OMISSION, not only by overclaim — and only asserting both directions catches it
+
+**Found at Task F1**, building the suite manifest against
+[`PHASE1_BRIEF.md`](PHASE1_BRIEF.md) §7's seven-row table.
+
+Every previous instance of this pattern in this document is documentation claiming **more** than
+exists: a CI rule nobody wrote (#9 at C1), a balance harness that was never built (#6, corrected at
+Task E), `rulesVersion` on states and messages that carry neither (#26), a coverage-gate exclusion
+that was not dead (#25). The response each time was the same — make it true or make it accurate.
+
+**§7 is the first that is also wrong the other way.** It lists seven suites. Four exist. The other
+three are cross-cutting properties and one, `unit`, does not exist at all. That much is an ordinary
+overclaim. The new part:
+
+> **The equivalence corpus appears in no row of §7.** The largest test asset in this repository —
+> 315 assertions, 2,000 nightly games, the instrument Task B was measured against — is absent from
+> the table that purports to list the test suites.
+
+An inventory can be false by listing what is not there **and** by omitting what is. The two failure
+modes look nothing alike from inside: an overclaim is found the moment someone tries to run the
+thing, while an omission is invisible forever, because nothing ever fails on account of a row that
+was never written.
+
+### 37.1 The check that catches it
+
+`tests/manifest/manifest.test.ts` asserts both directions, and the second is the one that would
+otherwise have been skipped:
+
+- every §7 row is accounted for **exactly once** — as a suite, or explicitly as cross-cutting or
+  absent. This catches the overclaim.
+- at least one suite on disk has `briefSuite: null` — it realises **no** §7 row. This catches the
+  omission, and it is asserted by name (`equivalence-corpus`) so that quietly mapping the corpus
+  onto some row to tidy the file would go red.
+
+The first version of the manifest did map the corpus to `unit`, which read plausibly and was wrong:
+an agreement oracle against a legacy implementation is not a suite of isolated unit tests. The
+"exactly once" assertion caught it, because `unit` was then accounted for twice — once as the
+corpus and once as the row recording that no unit suite exists.
+
+**The general form, and the reason this is filed rather than fixed silently:**
+
+> **An inventory is two claims, not one: that everything listed exists, and that everything existing
+> is listed. A check that only tests the first will pass forever on an inventory missing its largest
+> entry.**
+
+**Disposition: FIXED at F1.** Both directions asserted; `docs/PHASE1_BRIEF.md` §7 carries a pointer
+to `tests/suites.json` as the reconciliation of record.
+

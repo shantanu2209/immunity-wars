@@ -1,0 +1,26 @@
+{
+  "name": "@immunity-wars/dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The results dashboard: static HTML built from suite results, with its caveats enforced by the type system",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:no-client-js": "Static HTML with inline CSS and inline SVG. No framework, no client JavaScript, no external requests: it is opened on a phone, often on a slow connection, and it must render instantly and work offline. It is also the instrument that reports on every other instrument, so it is a workspace member and is typechecked, linted and tested like anything else.",
+  "exports": {
+    "./reported": "./reported.ts",
+    "./render": "./render.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "@immunity-wars/ci": "workspace:*",
+    "@immunity-wars/manifest": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

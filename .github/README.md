@@ -1,0 +1,144 @@
+# CI
+
+Two workflows and a self-test. What runs, what it proves, and the two traps this pipeline is
+built around.
+
+---
+
+## Read this first
+
+> ### Logic that lives in YAML cannot be falsified; logic in a script can.
+
+The aggregate gate — the single check branch protection keys on — decides whether the build is
+green. Written the obvious way it is a workflow expression:
+
+```yaml
+if: ${{ !contains(needs.*.result, 'failure') }}   # WRONG
+```
+
+**That is green when a needed job was SKIPPED.** Jobs skip for ordinary reasons: an unmatched path
+filter, a dependency that failed so a dependent never started, a cancelled run. A skipped job
+produces no result, no red cross, and no signal that anything is missing — the merge button turns
+green because a check *did not happen*.
+
+> ### A green build because a needed job was SKIPPED is the CI-shaped version of every blind check this project has found.
+
+It is the same shape as all ten of them: a green that means "nothing ran" is indistinguishable from
+a green that means "everything passed". As an expression it could only ever be tested by
+deliberately breaking a build on `main`. So the decision lives in
+[`tools/ci/aggregate.ts`](../tools/ci/aggregate.ts), and
+[`aggregate.test.ts`](../tools/ci/aggregate.test.ts) hands it a skipped job and requires exit 1 —
+along with an absent job, a cancelled one, an unrecognised status, and an empty expected list.
+
+**Everything else that can be a script, is one.** The job matrix comes from
+[`tools/ci/matrix.ts`](../tools/ci/matrix.ts) reading `tests/suites.json`; the dashboard's caveats
+are enforced by TypeScript. The YAML is plumbing.
+
+---
+
+## The tiers
+
+Derived from [`tests/suites.json`](../tests/suites.json), never written twice. A suite that gains a
+tier gets a job automatically; a tier list in YAML would drift, and the drift would be silent —
+a job that does not exist cannot fail.
+
+### Per-push — [`ci.yml`](workflows/ci.yml)
+
+Runs on every push and pull request. Jobs run in parallel, so the tier costs the longest job rather
+than the sum. Local uncached timings on 20 cores; **CI wall time is unmeasured until the first real
+run and will differ**:
+
+| job | contents | local |
+|---|---|---|
+| `plan` | derive the matrix from the manifest | seconds |
+| `static` | typecheck · lint · format:check · boundaries | ~21s |
+| `suites` | `pnpm test` (equivalence, property, content) and `pnpm test:balance` | 2m 02s |
+| `coverage` | `coverage:all` + the 95% gate, and the regenerated exclusion list must match what is committed | 2m 30s |
+| `ci-green` | the aggregate — **the only required check** | seconds |
+
+`coverage` is the job most at risk of breaching the 5-minute budget. If the first week shows it
+consistently over, it moves to nightly — and that fact goes **on the dashboard**, not in a doc,
+because a gate that quietly stopped running per-push is exactly the kind of thing nobody notices.
+
+### Nightly — [`nightly.yml`](workflows/nightly.yml)
+
+02:00 UTC and on demand. The full corpus (2,000 games) and the property suite at 10,002 games run
+in parallel, so the tier costs ~15 minutes rather than ~30. Also measures coverage and serialised
+state size for the trends, appends one history record to the `results-data` branch, and publishes
+the dashboard.
+
+**`metrics-run.ts` is deliberately in neither automated tier.** It recalibrates the balance bands
+and *overwrites* `bands.json`; a scheduled recalibration would regenerate the panel's own reference
+and it could never fail again — the Task C5b shape. It is `manual` in the manifest, a human runs
+it, and the matrix generator's tests assert it appears in no automated tier.
+
+---
+
+## What a per-push green does not prove
+
+The sentence on the dashboard is **generated from the manifest**, not typed, so it cannot drift
+from what actually ran. Today it says the per-push tier runs 210 of the corpus's 2,000 games and
+120 of the property suite's 10,002 — and that none of it measures difficulty, or whether the game
+is any good.
+
+Regenerate it with:
+
+```bash
+npx tsx tools/ci/matrix.ts --sentence
+```
+
+---
+
+## The self-test
+
+> ### A CI pipeline that has never gone red is not known to work.
+
+Same rule as everything else here, with one wrinkle: making a pipeline fail on purpose normally
+means pushing a broken commit, which marks the branch history forever and tempts everyone to skip
+it. So [`tools/ci/selftest.ts`](../tools/ci/selftest.ts) mutates a file in the working tree, runs
+one gate, requires it to fail, and reverts. Nothing is committed and `main` never goes red.
+
+```bash
+npx tsx tools/ci/selftest.ts          # every gate
+npx tsx tools/ci/selftest.ts lint     # one, by id
+```
+
+**The diagnostic is the point, not the exit code.** `pnpm lint` exits non-zero if the config is
+broken, a dependency is missing, or the file will not parse. Each control requires the expected
+rule *name* in the output — that is what separates "this gate caught my mutation" from "something
+went wrong". A gate that fails for the wrong reason has not been demonstrated.
+
+It also refuses an inert mutation (one that no longer changes the file, because the code moved
+under it) and verifies the working tree is clean afterwards.
+
+---
+
+## Secrets and permissions
+
+**This pipeline needs zero repository secrets.** If a step ever appears to need one, that is a
+design change to discuss, not a value to add.
+
+- `permissions: contents: read` at the top of both workflows, so every job starts read-only.
+- Exactly one job elevates: `record` in the nightly takes `contents: write`, and writes only to the
+  orphan `results-data` branch. Nothing writes to `main`.
+- `publish` takes `pages: write` and `id-token: write` and nothing else.
+- `pull_request`, never `pull_request_target`.
+- Every action pinned to a full commit SHA. Dependabot updates them monthly.
+- **No `${{ }}` interpolated into a `run:` block.** Values reach the shell through `env:`, because
+  `${{ }}` is substituted before bash sees it — a crafted branch name or manifest string would
+  otherwise execute. This is a public repository and anyone can open a pull request.
+- Logs are public. No `set -x` over anything sensitive, no environment dumps.
+- The site is built from an explicit `site/` directory, **never from `docs/` wholesale**: `docs/`
+  holds the rulebook and study packet, which are gitignored and unlicensed, and publishing the
+  folder would be one careless change away from publishing Kartik's design work.
+- History commits are authored by `github-actions[bot]` with GitHub's no-reply address. Commit
+  metadata is permanent and routinely scraped.
+
+---
+
+## Repository settings
+
+Several things cannot be set from a file and must be switched on in the GitHub UI — Pages source,
+Dependabot alerts, secret scanning, default workflow permissions, and branch protection. The
+ordered list is in [`docs/CI_SETUP.md`](../docs/CI_SETUP.md). **Branch protection goes last**, once
+the checks it names have run at least once and are known green.

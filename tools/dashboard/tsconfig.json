@@ -1,0 +1,9 @@
+{
+  // Node types: the builder reads results off disk and writes the site.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}

@@ -66,7 +66,7 @@
       "tiers": {
         "per-push": {
           "command": "pnpm test:balance",
-          "scale": "one unseen arm per difficulty, 6,000 games; path-filtered to engine/content/balance changes",
+          "scale": "one unseen arm per difficulty, 6,000 games",
           "blocking": true,
           "approxSeconds": 50
         },
