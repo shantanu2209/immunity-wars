@@ -24,6 +24,15 @@ import * as port from '@immunity-wars/engine';
 import * as internal from '@immunity-wars/engine/internal';
 
 import { augment, harvest } from './states.js';
+import {
+  CELL_KEYS,
+  FAMILIES,
+  PER_CELL,
+  PER_FAMILY,
+  PER_INVADER,
+  PER_ORGAN,
+  STATE_ONLY,
+} from './query-shapes.js';
 import { loadLegacy } from './engine.js';
 import { canonical } from './hash.js';
 import type { GameState } from './types.js';
@@ -95,38 +104,10 @@ type Unary = (g: unknown) => unknown;
 const L = legacy as unknown as Record<string, Unary>;
 const P = { ...port, ...internal } as unknown as Record<string, Unary>;
 
-/** Queries taking only the game state. */
-const STATE_ONLY = [
-  'anyNeutralisable',
-  'anyTaggable',
-  'macrophageEatable',
-  'snipeTargets',
-  'netTargets',
-  'nkTargets',
-  'antivenomTargets',
-  'hivActive',
-  'lymphBlocked',
-  'helperInBlood',
-  'helperLicensed',
-  'neutrophilReadyTurn',
-  'rateFor',
-  'wormAllowed',
-];
-
-/** Queries taking (state, invader). */
-const PER_INVADER = ['canNeutralise', 'canTag', 'abMatch', 'invSpeed', 'distToOrgan'];
-
-/** Queries taking (state, cellKey). */
-const PER_CELL = ['moveDestinations', 'wormStrikeable', 'helperWith'];
-
-/** Queries taking (state, organKey). */
-const PER_ORGAN = ['residentEatable', 'macDisabled'];
-
-/** Queries taking (state, antigen class). */
-const PER_FAMILY = ['capFam', 'rateForFam', 'canProduceFam', 'productionBreakdown'];
-
-const CELL_KEYS = ['macrophage', 'neutrophil', 'bcell', 'tcell', 'helper', 'nk', 'eosinophil'];
-const FAMILIES = ['ENV', 'NAK', 'EXB', 'ICB', 'TOX', 'EUK', 'X'];
+// The four groups and the two key lists moved to ./query-shapes.ts at P2.1, unchanged — same
+// names, same order, same groups. They moved because P2.1's query-payload measurement needs the
+// SAME argument shapes to know what a precomputing ViewState would have to carry, and a second
+// copy is how two lists agree today and disagree later. Nothing about this comparison changed.
 
 /**
  * Compare one query across every harvested state.

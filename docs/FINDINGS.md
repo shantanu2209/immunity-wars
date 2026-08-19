@@ -51,6 +51,7 @@ Deliberate departures from legacy behaviour live in [`DEVIATIONS.md`](DEVIATIONS
 | **38** | **Two instruments, each correct, that together produced a permanently-red dashboard row** | **Method / Task F** | **FIXED**; nightly tiers declared, result writing moved into a tested script |
 | **39** | **Task B proved the 67-export contract; that contract is NOT the surface `v2_ui.html` uses** | **Task G** | Five names supplied by the shim from `packages/content`; no engine change |
 | **40** | **The engine is NOT deterministic given `(state, action)` — global `Math.random`, no injection point** | **Phase 3 input** | Recorded; seam 1's interface must not assume replayability |
+| **41** | **A boundary rule that matches on RESOLVED paths cannot see the violation someone would actually write** | **P2.1** | **FIXED** at P2.1; second rule added, both spellings controlled |
 
 ---
 
@@ -2197,3 +2198,113 @@ rather than the fact. The fact is what a later phase needs.
 
 **Disposition: RECORDED, Phase 3 input.** No engine change. Seam 1's interface is designed around
 it rather than against it.
+
+
+---
+
+## 41. A boundary rule that matches on resolved paths cannot see the violation someone would actually write
+
+**Found at P2.1, 18 August 2026**, while building the rule `docs/SEAM_DECISIONS.md` §1 calls the
+load-bearing half of seam 1 — that `packages/ui` and `packages/app` may never import
+`packages/engine`.
+
+The rule was written the obvious way:
+
+```js
+{
+  name: 'ui-app-no-engine',
+  from: { path: '^packages/(ui|app)' },
+  to:   { path: '^packages/engine' },
+}
+```
+
+It reads correctly, it is the shape every other rule in `.dependency-cruiser.cjs` has, and
+**it does not fire on the violation a person under deadline actually writes.**
+
+### Measured, both spellings, before the rule was trusted
+
+| what was added to `packages/ui/src/index.ts` | result |
+|---|---|
+| `import { applyAction } from '../../engine/src/index.js'` | **red** — `ui-app-no-engine` |
+| `import { applyAction } from '@immunity-wars/engine'` | **GREEN for that rule** |
+
+**dependency-cruiser matches `to.path` against the RESOLVED module path.** With
+`@immunity-wars/engine` absent from `packages/ui/package.json`, pnpm has linked nothing, the
+specifier resolves to nothing, and a dependency with no resolved path has no path to match. The
+rule is not evaluated as false — it has nothing to evaluate against.
+
+So the rule catches the relative reach across `packages/`, which is the spelling nobody writes,
+and misses the package specifier, which is the spelling everybody writes.
+
+### Why it would have looked correct forever
+
+This is the specific reason it is worth a finding rather than a commit message. The rule *has* a
+negative control, and the control *passes*, because a control written by the same person who wrote
+the rule naturally exercises the case the rule was designed around. Nothing about the green result
+is suspicious. The rule would have sat there through Phase 2 looking enforced, and the first real
+violation — someone adding the dependency to `package.json` so their import resolves, or
+`packages/ui` gaining an engine dependency for a "temporary" reason — is exactly the case where
+it *would* fire, so even the eventual failure would have read as the system working.
+
+The counter-argument that has to be refused: *"the typecheck catches an unresolvable import
+anyway."* It does. But that is the reasoning that left **#39** standing for years — a second
+instrument happens to cover the gap today, so nobody closes it, and nothing records that the
+boundary gate is not the thing enforcing the boundary. When the two instruments drift, the one
+everybody believes is watching is the one that is not.
+
+### The fix, and the general rule
+
+A second rule, scoped to the same packages:
+
+```js
+{
+  name: 'ui-app-no-unresolvable',
+  from: { path: '^packages/(ui|app)' },
+  to:   { couldNotResolve: true },
+}
+```
+
+An unresolved import out of `ui` or `app` is now red **in the boundary gate**, where the person
+reading the failure is being told about the boundary.
+
+> **Generally: a rule that matches on a resolved path is only as good as resolution. Before
+> trusting one, write the violation the way a person in a hurry would write it — not the way the
+> rule is shaped — and check that it fires.**
+
+**Disposition: FIXED at P2.1.** Both spellings carry controls in `tools/ci/selftest.ts`
+(`boundaries-ui-engine`, `boundaries-ui-engine-bare`), and the permitted edge carries a third —
+see **#42**.
+
+---
+
+## 42. "Forbid X" is a half-specified rule, and a fail-only control set cannot tell
+
+**Found at P2.1, 18 August 2026**, immediately after #41 and by the check written to guard against
+it.
+
+`docs/PHASE2_BRIEF.md` v1.1 §3 says `ui` may import `@immunity-wars/content` and may never import
+`engine`. The rules of #41 were built for the second half. A control was then written for the
+first half — add the content import, require the gate to stay **green** — and it went **RED**.
+
+`ui-app-no-unresolvable` reddens on an import it cannot resolve. `packages/ui` did not declare
+`@immunity-wars/content` as a dependency, so the permitted import did not resolve either, so the
+boundary gate rejected the exact edge the brief calls legitimate.
+
+**Every failure control aimed at those rules passed the whole time.** They were correct: the rules
+did forbid what they were meant to forbid. What no failure control can detect is a rule that
+forbids *too much*, because forbidding more only makes a mustFail control pass harder.
+
+> **A rule that forbade everything satisfies every negative control ever aimed at it.**
+
+### What was added
+
+`tools/ci/selftest.ts` grew a `mustPass` control kind: mutate in a **permitted** edge and require
+the gate to stay green. `boundaries-ui-content-permitted` is the first. `packages/ui` now declares
+its content dependency, which is what makes "ui may import content" a fact rather than a sentence.
+
+**The standing rule, now in `CLAUDE.md`:** every boundary rule needs a `mustPass` control as well
+as a `mustFail` one. The existing rule — *a check that has never failed is not known to work* —
+covers only one direction. This is its other half: **a check that has never been required to pass
+on purpose is not known to permit anything.**
+
+**Disposition: FIXED at P2.1**, and generalised into the standing rules.

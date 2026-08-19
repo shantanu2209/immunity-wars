@@ -216,6 +216,24 @@ directly.)
 >
 > **Anything that fits none of the three classes is a finding, and is reported before it is
 > worked around.**
+>
+> ### ✅ The measurement the lean needed now exists — [`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md)
+>
+> *Added 18 August 2026, on Shantanu's instruction to measure before ruling.* `pnpm
+> measure:query-payload`, 25,497 command-phase states. The lean is broadly right and right for a
+> reason nobody had identified:
+>
+> - Precomputing all 22 costs **89% of `viewState` at p50, 168% at p90** — roughly doubling the
+>   payload — so the lean's premise holds.
+> - But **two queries are 88% of that cost**: `moveDestinations` (61%) and `productionBreakdown`
+>   (27%). The other twenty together are ~530 bytes.
+> - **Exposing those two and precomputing the other twenty costs 8.8% of `viewState`.** Exposing a
+>   third buys 0.8 points. The curve collapses at N = 2 and is flat after it.
+> - Three of the 22 — `branchLen`, `famOf`, `attackable` — need neither Session nor the view;
+>   two are pure functions of `content`, which `ui` may already import.
+>
+> **So the decision is no longer all-or-nothing, and that is what the measurement changed.** It
+> remains Shantanu's.
 
 ### ⚠️ The rule matters more than the interface
 
@@ -449,6 +467,12 @@ fine when a control was pointed at it.**
 
 - **A check that has never failed is not known to work.** Every new check gets a negative
   control that makes it fire on purpose, before it is trusted.
+- **A check that has never been required to PASS on purpose is not known to permit anything.**
+  Its other half, added at P2.1. "Forbid X" is half a specification — a rule forbidding
+  *everything* satisfies every negative control aimed at it. **Every boundary rule gets a
+  `mustPass` control as well as a `mustFail` one.** Found by the control that caught this brief's
+  own `ui → content` permission being rejected by the gate meant to enforce it
+  ([`FINDINGS.md`](FINDINGS.md) #42; #41 is the resolved-path defect beside it).
 - **Measure controls at the scale they will actually run at.** A control at the wrong scale
   gives a confident, coherent, wrong answer.
 - **Simulate before building.** Validate in a standalone model before production code.
