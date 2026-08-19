@@ -14,7 +14,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.1).
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.2).
 Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
 `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 
@@ -132,6 +132,26 @@ contract Task B was measured against.
   both on its first run, along with a new test suite missing from the manifest.** A sweep that
   depends on someone remembering to sweep would have been the thirteenth documented-but-false
   claim in a repository that has found twelve.
+
+- **When a control fires: FIX INLINE IF IT IS IN THE INSTRUMENT. FILE IF IT IS IN THE PRODUCT.**
+
+  A control firing on a **check** — a boundary rule that cannot see the violation, a manifest
+  missing a package, a gate sitting below its floor — means **the measuring apparatus is wrong,
+  and everything measured with it until it is fixed is untrustworthy.** That is a stop-the-line
+  condition, not scope creep. Fix it before continuing, in the same change.
+
+  A control firing on **the thing being built** — a component, a layout, a rendering bug — is
+  ordinary work. It goes in `docs/FINDINGS.md` and waits its turn.
+
+  > **The test: does anything downstream depend on this being right?**
+  > Instrument defects poison results. Product defects do not.
+
+  *Agreed 19 Aug 2026, at the close of P2.1.* P2.1 absorbed four unplanned pieces of work and
+  three of them were controls firing — the two-rule boundary defect, the permitted edge the gate
+  was rejecting, the suite missing from the manifest. Each was fixed inline and each was right to
+  fix inline, because all three were instruments. The rule exists so that the next sub-phase can
+  stay scoped **without** teaching anyone to ignore a firing control, which is the failure this
+  project would least survive.
 
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the

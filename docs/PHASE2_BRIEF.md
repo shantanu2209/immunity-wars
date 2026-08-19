@@ -1,12 +1,25 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.1 · 18 August 2026
+**Version:** 1.2 · 19 August 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
 Read alongside [`PHASE2_INPUTS.md`](PHASE2_INPUTS.md), [`SEAM_DECISIONS.md`](SEAM_DECISIONS.md)
 and [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md). This brief makes decisions; those documents
 supply the measurements behind them.
+
+---
+
+## What v1.2 adds
+
+v1.2 changes no ruling. It records three things settled while P2.1 was built, so that the spec and
+the work do not drift apart:
+
+- **Decision C is RULED** — selection-scoped, with both its conditions measured. §3.
+- **Two standing rules** earned during P2.1: the documentation sweep as a check, and
+  instrument-versus-product when a control fires. §6.
+- **P2.2's scope, stated before it starts.** §2 and §5. It is the sub-phase most likely to grow,
+  because it is the first one with something to look at.
 
 ---
 
@@ -143,6 +156,19 @@ Sequenced so the decision that could invalidate everything happens in week two, 
 | **P2.5** | Full UI build, screen by screen | See §5 |
 | **P2.6** | Onboarding, empty/error/offline states, settings | The screens an exhibition demo never needed |
 | **P2.7** | Polish rounds, then Gate 2 | §1 |
+
+> ⚠️ **Scope, fixed in v1.2 before P2.2 starts — and it is the sub-phase most likely to grow,
+> because it is the first one with something to look at.**
+>
+> **P2.2's deliverable is a MEASURABLE ARTEFACT, not a beautiful one.** It exists to answer the
+> performance question at P2.3 and for no other reason. Visual quality is **Gate 2's** business
+> and Gate 2 comes much later (§1).
+>
+> **The signal that the slice has grown past its purpose:** deciding how something should *look*
+> rather than whether it *renders*. The board's layout is already determined by `geometry.json` —
+> P2.2 is a data-to-code transformation with nothing to design. **Make no layout or styling
+> decision beyond what is needed to render and measure.** Anything worth deciding visually is
+> noted for **P2.5** and left there.
 
 > ⚠️ **Settled in v1.1 — review item G, first bullet.** v1.0 did not say whether the thin slice
 > drives the real engine or replays a canned `Frame[]`, and the two measure different things:
@@ -466,7 +492,19 @@ Everything goes through the pipeline and then it does not matter which tool made
 [`ASSETS.md`](ASSETS.md). The content licence is still pending exactly this question. If the
 terms turn out not to permit CC BY-SA redistribution, you need to know which assets are affected.
 
-### Tools
+### Tools — and the division of labour, explicit from the start
+
+> ⚠️ **Stated in v1.2**, so it is not discovered by someone doing the wrong half.
+>
+> **Claude builds the working UI** — React components, the SVG board, state wiring, tests. That is
+> the application, and it lives in the repository.
+>
+> **Claude Design is for EXPLORING screens that do not exist yet and have no prior version to
+> copy** — mode select, room lobby, onboarding, settings, store screenshots. Shantanu directs it
+> separately and brings back a direction; Claude builds to that direction.
+>
+> **P2.2 needs neither.** The board's layout comes out of `geometry.json`, so there is nothing to
+> design and nothing to explore.
 
 - **Claude Design** for screens that do not yet exist: mode select, lobby, onboarding, settings,
   store screenshots. Directed through chat; no drawing skill required.
@@ -511,6 +549,12 @@ fine when a control was pointed at it.**
 - **The smaller true claim.** Kartik may have to defend any sentence to a judge.
 - **One task per session, plan before code, commit after verification, `pnpm verify` before
   commit.**
+- **When a control fires: fix inline if it is in the INSTRUMENT, file if it is in the PRODUCT.**
+  A control firing on a check means the measuring apparatus is wrong and everything measured with
+  it is untrustworthy — a stop-the-line condition, not scope. A control firing on the thing being
+  built is ordinary work and queues in [`FINDINGS.md`](FINDINGS.md). **The test: does anything
+  downstream depend on this being right?** Added at the close of P2.1, where three of the four
+  unplanned pieces of work were controls firing on instruments.
 - **Every sub-phase ends with a documentation sweep before its closing commit** — `pnpm docs:check`,
   inside `pnpm verify`, with two controls. Added at the close of P2.1 because the habit had already
   failed: `CLAUDE.md` said "Current phase: Phase 1" for the whole first session of Phase 2.
