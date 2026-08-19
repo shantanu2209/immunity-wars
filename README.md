@@ -41,8 +41,10 @@ use it.
 
 ## Status
 
-Under active development. The playable browser version works; the app rebuild is at Phase 1
-(foundations, test infrastructure). Expect things to move.
+Under active development. The playable browser version works; the app rebuild is at **Phase 2**
+— the renderer rewrite. Phase 1 (foundations and test infrastructure) is closed. Nothing a player
+can see has changed yet: Phase 2's first sub-phase built the seam the new UI will talk through and
+the boundary that stops it reaching past. Expect things to move.
 
 ### About the security alerts
 

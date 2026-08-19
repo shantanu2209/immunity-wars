@@ -90,6 +90,19 @@ module.exports = {
       to: { path: '^packages/engine' },
     },
     {
+      name: 'session-no-downstream',
+      severity: 'error',
+      comment:
+        'Session is the seam, not a participant. It may reach the engine and the content pack — ' +
+        'it is the one package permitted to reach the engine at all — and it must never reach ' +
+        'back down into the UI, the app shell or the server. A session that imported the UI ' +
+        'would make the seam bidirectional, and RelaySession could not then be a second ' +
+        'implementation of the same interface: it would need a UI to exist. ' +
+        'docs/SEAM_DECISIONS.md §1.',
+      from: { path: '^packages/session' },
+      to: { path: '^packages/(ui|app|server)' },
+    },
+    {
       name: 'ui-app-no-unresolvable',
       severity: 'error',
       comment:

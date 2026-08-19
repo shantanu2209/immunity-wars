@@ -1,0 +1,24 @@
+{
+  "name": "@immunity-wars/session-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "P2.1 step 6: proves single-player goes through Session, and that Session never hands out what it must not",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:why-here": "It needs the equivalence rig's bot and seeded RNG to generate a real game, and packages/ must never import out of tests/. So the proof lives beside the other suites rather than inside packages/session.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output\""
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "@immunity-wars/engine": "workspace:*",
+    "@immunity-wars/equivalence": "workspace:*",
+    "@immunity-wars/session": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

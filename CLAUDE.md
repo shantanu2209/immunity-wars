@@ -117,6 +117,22 @@ contract Task B was measured against.
   failure control could ever have said so. `docs/FINDINGS.md` #42; #41 is the resolved-path
   defect in the same rule.
 
+- **Every sub-phase ends with a documentation sweep, before its closing commit.** Not a habit —
+  **`pnpm docs:check`**, which runs inside `pnpm verify`. It checks the phase marker resolves and
+  agrees with the brief version it names, that every test package reaches `tests/suites.json`, and
+  that every relative markdown link resolves. Two negative controls prove it fires.
+
+  It deliberately does **not** read prose: the parts a machine can falsify are checked, the rest
+  is still a person's job, and a green run is not a claim that the documentation is true.
+
+  *Added 19 Aug 2026, at the close of P2.1, because the habit had already failed.* `CLAUDE.md`
+  said **"Current phase: Phase 1"** through the entire first session of Phase 2 and `ROADMAP.md`
+  agreed with it. Nobody was badly misled, and that is the problem — a stale phase marker is not
+  wrong enough to notice, so it survives in the document everyone reads first. **The check found
+  both on its first run, along with a new test suite missing from the manifest.** A sweep that
+  depends on someone remembering to sweep would have been the thirteenth documented-but-false
+  claim in a repository that has found twelve.
+
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the
   first kind freely — the negative-control rule qualifies, because it catches a *class* of error

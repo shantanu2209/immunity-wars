@@ -43,7 +43,7 @@ import { z } from 'zod';
  * port matches legacy and say nothing about whether legacy was right.
  */
 export const RECONCILIATION =
-  'Four suites and three cross-cutting properties. There is no unit suite. What exists is the ' +
+  'Five suites and three cross-cutting properties. There is no unit suite. What exists is the ' +
   'equivalence corpus, which proves AGREEMENT and not CORRECTNESS — a bug-for-bug port is green ' +
   'on a violation both engines share.';
 
