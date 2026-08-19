@@ -2618,3 +2618,38 @@ count of what it will make reachable.
 
 **Disposition: the coverage half is CLOSED; the bot half is Phase 3's, tracked in
 `COVERAGE_DEFERRED.md`.**
+
+---
+
+## 48. A timing probe measures whatever clock it is attached to
+
+**Found at P2.3, 19 August 2026, by the instrument's own first two runs — and entered here by
+ruling, because both defects produced confident, well-formatted, WRONG figures rather than
+errors.**
+
+The P2.3 instrumentation corrected itself twice before producing a number anyone saw:
+
+1. **The wall measurement was pinned to a two-vsync floor.** Tap-to-paint via double-rAF read
+   ~32ms at 1× CPU throttling *and* ~32ms at 6× — and 32.3ms is two 60Hz compositor frames.
+   The probe was attached to the **vsync clock**: it measured how long the page waits for the
+   compositor, quantized, with the actual work invisible beneath the floor. What exposed it was
+   the throttle sweep — **a number that does not move when the CPU gets six times slower is not
+   measuring the CPU.** A busy-time channel (main-thread work) now carries §4's budget metric,
+   with wall-to-paint kept, labelled with its floor.
+2. **The busy probe raced React's scheduler.** The first busy channel read 0.1ms for a
+   full-board redraw where an identical tree cost 3ms from a tap. The probe (a 0ms timer)
+   assumed the render+commit ran in the current task; for timer-driven updates React renders in
+   a scheduler task that can run *after* the probe fires, so the probe measured an empty
+   interval. What exposed it was the asymmetry between two paths through the same tree. Burst
+   frames now render under `flushSync` and are timed directly.
+
+> **The general form, for any future timing work: a timing probe measures whatever clock it is
+> attached to — vsync, a scheduler queue, a timer wheel — and attaching it to the wrong one
+> produces a plausible number rather than an error.** The defences that worked here, both
+> cheap: sweep a variable the number MUST respond to (the throttle sweep caught #1), and
+> measure the same thing two ways (the tap/frame asymmetry caught #2). A single-condition,
+> single-channel timing figure has survived neither check.
+
+**Disposition: FIXED before any figure was published.** Both corrections are recorded in
+`P2_3_MEASUREMENT.md` and commented at the code they correct (`packages/app/src/metrics.ts`,
+`packages/app/src/main.tsx`).

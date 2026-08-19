@@ -96,6 +96,26 @@ minified production build will.
 
 ---
 
+## The ruling — added 19 August 2026, by Shantanu, after the numbers above stood alone
+
+**The budget passes at every level, and Capacitor holds. React Native is not needed on this
+evidence.** At 6× — the harshest screen — initial render has ~8× headroom, tap ~3×, per-redraw
+work ~30%. **Recorded as CONFIRMED BY SCREENING, not decided:** the deciding pass on a 2–3GB
+handset has not happened, and locked decision #1 stays formally open until it does
+([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4 carries the same words).
+
+Two notes from the ruling that belong beside the numbers:
+
+- **Not memoising pre-emptively was the right call, and it is now measured rather than
+  argued.** The unmemoised full-tree re-render — the number that would have justified premature
+  memoisation — is 22.7ms p50 at 6× on this device. The plan forbade memoising before this
+  number existed precisely so it could be seen; it was seen, and it fits.
+- **Row 3 is the row to watch, and its re-measure is EXPECTED, not optional.** 22.2ms max
+  against a 32ms budget is ~30% headroom on a slice that is board plus spread only — no panels,
+  no log, no hand, no dialogs. That margin is what the rest of the UI will spend. **When the
+  full UI lands (P2.5), row 3 is re-measured with this same instrument before Gate 1 is
+  claimed.**
+
 *Instrument: `tools/perf/measure.ts` against `packages/app/src/metrics.ts`. Raw JSON for this
 run is reproducible with:*
 

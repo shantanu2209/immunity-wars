@@ -83,6 +83,11 @@ the boundary rule and its controls, the `GameState` round-trip. P2.2 is the firs
 Capacitor is out and React Native comes back on the table. Everything downstream depends on it,
 which is why it happens early.
 
+> *Status, 19 Aug 2026:* the **screening half is taken and the budget passed at every throttle
+> level** (`docs/P2_3_MEASUREMENT.md`). **Capacitor holds — confirmed by screening, not
+> decided**: the ₹6–8k-handset pass has not happened, and the decision stays formally open
+> until it does.
+
 **What you get:** something a stranger can install and understand without Kartik standing beside
 them. That last part is the real work — at Hyderabad, a human explained the game.
 
@@ -220,4 +225,6 @@ This is a father-and-son project running alongside school and work, so ranges ra
 | Phase 6 | Open-ended — it grows with schools using it |
 
 **The thing that would most change this timeline** is the Phase 2 performance spike. Everything
-else is work; that is a decision waiting on a measurement.
+else is work; that is a decision waiting on a measurement. *The screening half of that
+measurement passed on 19 Aug 2026 (`docs/P2_3_MEASUREMENT.md`); the handset half is still
+owed.*
