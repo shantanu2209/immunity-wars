@@ -2275,6 +2275,18 @@ reading the failure is being told about the boundary.
 (`boundaries-ui-engine`, `boundaries-ui-engine-bare`), and the permitted edge carries a third —
 see **#42**.
 
+*The pattern, named at P2.2 step 3 after its third instance, by ruling.* First the rule could
+not see **resolved paths** (this entry); then it could not see **permitted edges** (#42); then —
+when the first `.tsx` files entered `packages/ui` — dependency-cruiser's resolver listed only
+`.js/.ts/.mjs/.cjs`, and eslint's custom blocks matched `**/*.ts`, so the boundary rule
+protecting Phase 3 from a fork could not see **the file type the entire UI phase is written
+in**. Three instances, one shape: **a boundary rule is only as wide as its matcher, and every
+widening of the codebase is a chance for the matcher to fall behind it silently.** The `.tsx`
+instance was caught before any component existed and carries its own control
+(`boundaries-ui-engine-tsx`, which mutates a real `.tsx` file and requires the rule to fire).
+When the codebase next gains a file type, a package root, or an import style, check the
+matchers first.
+
 ---
 
 ## 42. "Forbid X" is a half-specified rule, and a fail-only control set cannot tell
