@@ -123,6 +123,15 @@ const CONTROLS: readonly Control[] = [
     expect: 'ui-app-no-unresolvable',
   },
   {
+    id: 'boundaries-ui-engine-tsx',
+    why: 'P2.2 step 3: the first .tsx files entered packages/ui, and dependency-cruiser resolved only .js/.ts/.mjs/.cjs until the same change — a UI component was invisible to the exact gate built to watch the UI. This control proves the boundary fires INSIDE a .tsx file, so the extension list can never quietly regress.',
+    file: 'packages/ui/src/board/Board.tsx',
+    mutate: (t) =>
+      `import { applyAction } from '../../../engine/src/index.js';\nvoid applyAction;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'ui-app-no-engine',
+  },
+  {
     id: 'boundaries-ui-content-permitted',
     why: 'The rule must permit what the brief says it permits. ui -> content is legitimate: content is validated data, not behaviour, which is exactly what content-stays-data and exports.test.ts jointly keep true. A boundary that also blocked this would be discovered by the first person to render an organ name.',
     file: 'packages/ui/src/index.ts',

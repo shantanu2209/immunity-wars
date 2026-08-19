@@ -5,19 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Immunity Wars — dev shell</title>
     <!--
-      P2.2 commit 2: the dev server, and the IndexedDbStorage exercise page.
-
-      This page is DEVELOPER SCAFFOLDING, not the game UI — the board arrives in the next
-      commits and replaces the contents of #app. Its text is deliberately not in the i18n
-      catalogue: the catalogue rule covers player-visible text, and this page's only reader
-      is whoever is verifying the storage seam.
+      P2.2 dev shell. From commit 2 this page ran the IndexedDbStorage exercise; from step 3 the
+      board renders here through LocalSession, and the exercise lives in a collapsed section so
+      indexeddb.ts's "reruns on every load" promise stays true. Developer scaffolding, not the
+      player UI — that is P2.5's, catalogue duty and all.
     -->
   </head>
   <body>
-    <h1>Immunity Wars — dev shell</h1>
-    <p>P2.2 scaffolding. The board renders here from the next commit onward.</p>
-    <h2>IndexedDbStorage exercise</h2>
-    <pre id="report">running…</pre>
-    <script type="module" src="/src/main.ts"></script>
+    <div id="app"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
