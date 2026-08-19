@@ -120,3 +120,77 @@ Written down because it would otherwise be re-derived, and two of these are trap
 - **Claude Design explores screens with no prior version to copy.** Shantanu directs it separately
   and brings back a direction; Claude builds to it.
 - **P2.2 needs neither.** The board's layout comes out of `geometry.json`.
+
+---
+
+## 5. The board sessions, planned at the commit-2 boundary
+
+*Added 19 August 2026, after commits 1–2 landed, so the next session starts from disk rather than
+from a conversation.* Steps 1–2 are done: vitest is on 4.1.11 ([`FINDINGS.md`](FINDINGS.md) #43,
+#44, #45), the dev server exists, and `IndexedDbStorage` is first-executed 9/9 — the dev shell at
+`packages/app/index.html` currently shows that exercise, and **the board replaces the contents of
+its `#app` region**. What follows is the settled design for steps 3–6, none of it yet built.
+
+### Step 3 — the SVG board, a runtime derivation
+
+- `geometry.json` has eight top-level keys: `VW`/`VH` (660×930 — the viewBox, verbatim), `HUB`,
+  `ORGAN_POS` and `CHIP_POS` (seven organs each), `BRANCH` (numbered step nodes per organ),
+  `ROUTE` (six entry routes of five steps), `ENTRY` (six labelled entry points).
+- **Derived at render time, not codegen** — a generated file would be a second copy of the
+  geometry that can drift. A pure module in `packages/ui` imports the JSON through
+  `@immunity-wars/content`'s validated loader (the permitted edge; DECLARE the dependency) and
+  maps it to SVG: circles for step nodes, path segments joining consecutive steps and
+  hub→branch→organ, positions read from the tables.
+- **No coordinate literal appears in `ui`.** The only authored numbers are stroke widths and
+  radii — rendering necessities, not layout. Tokens are placed by looking up their location key
+  from `view.game` in the same tables: state decides *which* node, geometry decides *where*.
+- The board component renders a **plain `ViewState`** — the same component must render
+  `sessionView.game` and a burst frame's `frame.view`, so it takes the projection, not the
+  `SessionView` wrapper.
+- **The first player-visible string goes through the i18n catalogue, from the first commit.**
+  The dev shell's scaffolding text is exempt (its only reader is a developer); a label a player
+  reads is not.
+
+### Step 4 — wiring: `createGame` → `subscribe` → render
+
+`LocalSession.createGame({difficulty})` in the app shell; render on `{kind:'view'}` events.
+`getView()` returns a new object identity per action AND per selection change — correct for
+reference equality, and **do not memoise pre-emptively**: the full-tree re-render cost on
+selection is one of the numbers P2.3 exists to produce.
+
+### Step 5 — the spread, the burst channel's first real consumer
+
+- The listener fires synchronously inside `sendAction`, so the UI **queues** frames and never
+  renders in the listener. The animation loop drains the queue at legacy pacing — **800ms dice
+  frames, 560ms otherwise, kept deliberately** so the measurement is comparable; pacing
+  preferences go on the P2.5 list, not into code.
+- Input disabled during a burst; clickability only ever comes from `SessionView`'s queries,
+  never from a frame.
+- **Dev-mode assertion:** the final frame's projection deep-equals the following view event's
+  `game` — the renderer-side confirmation of `burst-tail-authoritative`.
+- **The skip toggle** (~3 lines): ignore every `burst`, render view events only; the same spread
+  with skip on and off must land on identical boards. It is the consumer-side control on
+  skippability and behaviourally what a reconnecting Phase 3 client does.
+- Emission-order check: if the finished state ever paints before the animation plays, the split
+  is broken — visible on the first real spread, which is why the slice drives the real engine.
+
+### Step 6 — instrumentation for P2.3
+
+Three screening rows, on the device clock: tap→paint (<100ms; selection via `setSelection` is
+the real tap), per-redraw main-thread work during the spread (<32ms, ideally 16 — `performance`
+marks around each frame's render-to-commit plus a `longtask` observer), initial full-board
+render (<1s). The per-redraw number **includes engine time**, which is the number Phase 4 needs.
+Do not re-quote the 0.054ms selection figure — it was the data half only; measure the whole
+redraw.
+
+> ⚠️ **Ruled by Shantanu, recorded here because it was ruled in conversation:** the P2.3 report
+> leads with the two things the slice cannot answer — **the handset row is open** (no low-end
+> device exists yet) and **the slice's redraw cost is a lower bound on the full UI's** (board +
+> spread, not every panel). *In its first paragraph, not its caveats — the same discipline as
+> Task E's censoring table.*
+
+### Conventions for these sessions
+
+- Anything visual worth deciding goes to a running `docs/for-P2.5.md`, and is not acted on.
+- `pnpm ci:selftest` mutates tracked files and verifies restoration against the pre-run tree —
+  do not edit files (or trust `git status`) while it runs.
