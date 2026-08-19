@@ -24,7 +24,7 @@ export default tseslint.config(
   prettier,
 
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       // Unused variables are an error, but an underscore prefix is an explicit
       // "I know, and I mean it" escape hatch.
@@ -62,7 +62,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       // ENABLED SO AN EXISTING DISABLE COMMENT BECOMES LOAD-BEARING.
       //

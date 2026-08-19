@@ -5,7 +5,8 @@
       "name": "app",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@immunity-wars/app", "dev"],
-      "port": 5173
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }

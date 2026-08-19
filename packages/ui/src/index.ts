@@ -1,11 +1,12 @@
 /**
  * @immunity-wars/ui
  *
- * React components.
- *
- * Phase 1 Task A: scaffold only. This package is intentionally empty. The export
- * below exists so the package is a real module that compiles, resolves and can be
- * imported by a test — which is what proves the toolchain works end to end.
+ * React components. First real occupant: the P2.2 board — an SVG derived at render time from
+ * `geometry.json` through content's validated loader, taking a plain `ViewState` so the same
+ * component renders authoritative views and burst frames alike.
  */
 
 export const PACKAGE_NAME = '@immunity-wars/ui';
+
+export { Board } from './board/Board';
+export * as boardGeometry from './board/geometry';
