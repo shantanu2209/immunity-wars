@@ -228,6 +228,14 @@ contract Task B was measured against.
   still applies — but note the dev server exists from P2.2 commit 2 onward, so "nothing listens
   on a port" is no longer the automatic answer it was.
 
+  **The battery for any future runner or toolchain move, in full — learned the once-hard way
+  when the P2.2 upgrade ran the coverage TESTS but not the coverage GATE, and the gate was where
+  the provider change was hiding:** `pnpm verify` · `pnpm ci:selftest` reading every control's
+  own line, not the exit code · `pnpm test:manifest-controls` · `rm -rf coverage && pnpm
+  coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
+  --force`), because turbo cancels queued tasks on first failure and a single red suite is a
+  lower bound, not a census.
+
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.
   Reference only — never build from them, never cite their behaviour.
