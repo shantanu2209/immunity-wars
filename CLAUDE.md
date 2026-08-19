@@ -220,12 +220,13 @@ contract Task B was measured against.
   the final 3.x — can fail a run in which every test passed, a false-red its closed line will
   never fix. `docs/FINDINGS.md` #43 and #44.
 
-  **What remains accepted:** one moderate advisory — esbuild ≤0.24.2, dev-only, via
-  `tools/legacy-harness`'s own pinned esbuild for `build:single`. It requires `esbuild --serve`
-  or an equivalent long-running dev context, and nothing here starts one; every test command is
-  one-shot. Same structural acceptance as before (`docs/SECURITY_NOTES.md`); bumping that pin to
-  ^0.28 (which vite 8 also wants as a peer) clears it, and awaits a ruling because it changes the
-  tool that builds the single-file harness.
+  **Nothing remains accepted: `pnpm audit` is clean.** The last advisory (esbuild ≤0.24.2 via
+  `tools/legacy-harness`'s own pin) was cleared later the same day by ruling — the pin moved to
+  ^0.28, and the bump was verified the strong way: `build:single` rebuilt, both artifacts opened
+  in a browser and **played** through a full turn including a spread, with zero console errors.
+  If an advisory appears in future, the structural acceptance test in `docs/SECURITY_NOTES.md`
+  still applies — but note the dev server exists from P2.2 commit 2 onward, so "nothing listens
+  on a port" is no longer the automatic answer it was.
 
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.
