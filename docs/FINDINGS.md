@@ -2373,13 +2373,21 @@ time, and no instrument could say so.
 fix the tests that failed and leave their siblings — 1.4–4.5s on a 20-core i7-12700F — to cross
 5s later on a 4-core CI runner, looking like a new and unrelated problem. The suite-level budget
 states the truth about the suite: these tests do real computation and 5s was never their real
-ceiling. Applied at all four entry points, each sized from its own measurements at ~4.5–5.5x the
-slowest observation: `tests/balance` 60s, `tests/property` 120s, `tests/equivalence` 60s (where
-the existing larger per-test declarations override it), and `vitest.coverage.config.ts` 120s —
-the root config that runs the equivalence files itself, out of reach of the package config and
-with v8 instrumentation multiplying compute. Each config carries the observed durations and the
-hardware they were measured on, so whoever finds it slow later has the baseline rather than a
-bare number.
+ceiling. Applied at five entry points, each sized from its own measurements: `tests/balance`
+60s, `tests/property` 120s, `tests/equivalence` 60s (where the existing larger per-test
+declarations override it), `vitest.coverage.config.ts` 120s — the root config that runs the
+equivalence files itself, out of reach of the package config and with v8 instrumentation
+multiplying compute — and `tests/session` 60s. Each config carries the observed durations and
+the hardware they were measured on, so whoever finds it slow later has the baseline rather than
+a bare number.
+
+**The fifth entry point is the ruling's own prediction, observed.** `tests/session` needed no
+budget on the 20-core development machine — its longest test sat just under 5s — so it got
+none, and PR #21's first CI run failed exactly there: 5,769ms on a 4-core GitHub runner, red in
+one run and green in the other, a race at the exact boundary. That is the scenario the ruling
+named when it chose suite-level over per-test ("leave the siblings to cross 5s later on a
+slower machine, looking like a new and unrelated problem"), at suite granularity instead of
+test granularity.
 
 The assertions are untouched, and a declared real budget is more honest than an undeclared
 fictional one — the same shape as the sd floor (#35), where the correction was making the
