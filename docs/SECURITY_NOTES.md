@@ -165,6 +165,21 @@ re-reading this file**, and the honest expectation is that they will find it no 
 Nothing here is a reason to avoid a dev server. It is a reason to upgrade vitest in the same change
 that introduces one.
 
+> ⚠️ **Sequenced 19 Aug 2026, at the close of P2.1. "Same change" means two commits, in this
+> order:**
+>
+> 1. **`vitest 2 → 3`, alone.** Every suite green under it, every `pnpm ci:selftest` control still
+>    behaving. **Nothing listens on a port yet, so the acceptance above still holds while this
+>    lands** — the reasoning is repaired *before* it is needed rather than at the moment it
+>    collapses.
+> 2. **The dev server.** This is what pulls the trigger, and by then the runner is known good.
+>
+> **Why not one commit.** `vitest` is the instrument every suite in this repository runs on, so a
+> break there is stop-the-line under the instrument-versus-product rule in
+> [`CLAUDE.md`](../CLAUDE.md) — and bundling it with the first UI code means a red suite cannot be
+> attributed to the runner or to the new code. Two commits cost nothing and make the bisect
+> trivial. Plan: [`P2_2_PLAN.md`](P2_2_PLAN.md) §0.
+
 ---
 
 ## Repository settings
