@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.3 · 19 August 2026
+**Version:** 1.4 · 19 August 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
@@ -41,6 +41,19 @@ belongs in the versioned document:
   the ones on the *inherited* default), **#44** (vitest 3.2.7 can fail a run in which every test
   passed, and 3.x is a closed line), **#45** (the manifest-controls cadence rule was written
   down and not practised — now a fast-tier check).
+
+---
+
+## What v1.4 records
+
+v1.4 changes no ruling of v1.3. It records the P2.3 screening result and the ruling on it,
+because §4 is the section that defined "acceptable" before the number existed and it should be
+the section that says what the number turned out to be:
+
+- **The screening budget passed at every throttle level** ([`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md)).
+  **Capacitor holds — CONFIRMED BY SCREENING, not decided.** Locked decision #1 stays formally
+  open until the deciding pass on real 2–3GB hardware. §4 carries the ruling in place.
+- P2.2 and P2.3 are closed: [`P2_2_CLOSEOUT.md`](P2_2_CLOSEOUT.md).
 
 ---
 
@@ -379,6 +392,17 @@ so this is informed rather than forced.
 
 Whether **Capacitor holds or React Native becomes necessary** — the one locked decision Phase 2
 can reopen.
+
+> ✅ **RULED on the screening numbers, 19 August 2026 — Capacitor holds; React Native is not
+> needed on this evidence. CONFIRMED BY SCREENING, not decided.** The screening pass
+> ([`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), every number carrying its device and throttle
+> level) passed the budget at every level; at 6× — the harshest screen — initial render has ~8×
+> headroom, tap ~3×, and per-redraw work ~30%. **The deciding pass on a 2–3GB handset has not
+> happened, and locked decision #1 stays formally open until it does.** Two of the ruling's
+> notes are recorded with the numbers rather than here: the unmemoised full-tree re-render
+> measured at 22.7ms p50 at 6× — so not memoising pre-emptively is now measured rather than
+> argued — and row 3's ~30% headroom is what the rest of the UI will spend, so that row's
+> re-measure when the full UI lands is **expected, not optional**.
 
 ### Define "acceptable" BEFORE the number exists
 
