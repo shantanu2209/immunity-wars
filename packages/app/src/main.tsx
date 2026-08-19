@@ -30,9 +30,11 @@ import {
 } from '@immunity-wars/session';
 import { Board } from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 
 import { runIdbExercise } from './idb-exercise';
+import { markInitialRender, recordFrame, recordTap } from './metrics';
 
 const session = LocalSession.createGame(
   { difficulty: 'training' },
@@ -88,7 +90,15 @@ function App(): ReactElement {
       }
       lastFrameRef.current = f;
       const n = burstSizeRef.current - queueRef.current.length;
-      setFrame({ view: f.view, label: f.label, n, of: burstSizeRef.current });
+      // Per-redraw main-thread work, §4's second budget row. flushSync so the render+commit
+      // happens HERE, synchronously, and the busy number is deterministic — from a timer
+      // callback React otherwise renders in a scheduler task that races the busy-probe timer,
+      // which is how the first run of this channel read 0.1ms for a full board redraw.
+      const frameStart = performance.now();
+      flushSync(() => {
+        setFrame({ view: f.view, label: f.label, n, of: burstSizeRef.current });
+      });
+      recordFrame(frameStart, performance.now() - frameStart, f.label, Boolean(f.dice));
       // Legacy pacing, kept for measurement comparability. A rendering decision for P2.5.
       setTimeout(playNext, f.dice ? 800 : 560);
     };
@@ -125,10 +135,20 @@ function App(): ReactElement {
     });
   };
 
+  // §4's first budget row, and it is the REAL tap: selection goes through Session (the view is
+  // a function of game state AND selection), the whole tree re-renders unmemoised — deliberately,
+  // per the plan: this cost is one of the numbers P2.3 exists to see.
+  const tapCell = (cell: string): void => {
+    const from = performance.now();
+    session.setSelection({ cell, family: null });
+    recordTap(from, cell);
+  };
+
   const game = authView.game;
   const phase = String(game['phase']);
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
+  const selectedCell = authView.selection.cell;
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 700, margin: '0 auto' }}>
@@ -163,7 +183,7 @@ function App(): ReactElement {
           bursts (render authoritative views only)
         </label>
       </p>
-      <Board view={shown} />
+      <Board view={shown} selectedCell={selectedCell} onCellClick={playing ? undefined : tapCell} />
       <pre style={{ fontSize: 12 }}>{checks.join('\n')}</pre>
       <details>
         <summary style={{ fontSize: 13 }}>IndexedDbStorage exercise (reruns every load)</summary>
@@ -174,4 +194,7 @@ function App(): ReactElement {
 }
 
 const el = document.getElementById('app');
-if (el) createRoot(el).render(<App />);
+if (el) {
+  createRoot(el).render(<App />);
+  markInitialRender();
+}

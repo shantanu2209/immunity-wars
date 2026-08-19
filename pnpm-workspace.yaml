@@ -21,6 +21,10 @@ packages:
   - 'tools/ci'
   - 'tools/dashboard'
   - 'tools/legacy-harness'
+  # P2.3's measurement driver: launches system Chrome over CDP, applies CPU throttling, drives
+  # the dev shell and collects the page's own __iwMetrics. A workspace member so typecheck and
+  # lint reach it — an instrument nobody typechecks is the known failure shape.
+  - 'tools/perf'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed

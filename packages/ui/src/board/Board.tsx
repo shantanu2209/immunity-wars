@@ -55,13 +55,29 @@ interface Organish {
 const fan = (p: Pt, i: number, n: number): Pt =>
   n <= 1 ? p : { x: p.x + (i - (n - 1) / 2) * 16, y: p.y };
 
-export function Board({ view }: { view: ViewState }): ReactElement {
+export function Board({
+  view,
+  selectedCell = null,
+  onCellClick,
+}: {
+  view: ViewState;
+  /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
+  selectedCell?: string | null;
+  /** Wired by the shell to `session.setSelection`; absent means a non-interactive board. */
+  onCellClick?: (cell: string) => void;
+}): ReactElement {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
   const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
 
   // Group everything standing on the board by its resolved position, so co-located tokens fan.
-  const tokens: { key: string; label: string; kind: 'invader' | 'cell'; pos: Pt }[] = [];
+  const tokens: {
+    key: string;
+    label: string;
+    kind: 'invader' | 'cell';
+    pos: Pt;
+    cell?: string;
+  }[] = [];
   invaders.forEach((iv, i) => {
     const pos = tokenPos(iv);
     if (pos) {
@@ -75,7 +91,7 @@ export function Board({ view }: { view: ViewState }): ReactElement {
   });
   for (const [ck, c] of Object.entries(cells)) {
     const pos = tokenPos(c);
-    if (pos) tokens.push({ key: `cell-${ck}`, label: ck.slice(0, 4), kind: 'cell', pos });
+    if (pos) tokens.push({ key: `cell-${ck}`, label: ck.slice(0, 4), kind: 'cell', pos, cell: ck });
   }
   const byNode = new Map<string, typeof tokens>();
   for (const t of tokens) {
@@ -138,15 +154,21 @@ export function Board({ view }: { view: ViewState }): ReactElement {
       {[...byNode.values()].map((list) =>
         list.map((t, i) => {
           const p = fan(t.pos, i, list.length);
+          const selected = t.cell !== undefined && t.cell === selectedCell;
           return (
-            <g key={t.key}>
+            <g
+              key={t.key}
+              data-cell={t.cell}
+              onClick={t.cell && onCellClick ? () => onCellClick(t.cell as string) : undefined}
+              style={t.cell && onCellClick ? { cursor: 'pointer' } : undefined}
+            >
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={9}
+                r={selected ? 11 : 9}
                 fill={t.kind === 'invader' ? '#b33' : '#fff'}
-                stroke={t.kind === 'invader' ? '#711' : '#236'}
-                strokeWidth={2}
+                stroke={selected ? '#e80' : t.kind === 'invader' ? '#711' : '#236'}
+                strokeWidth={selected ? 4 : 2}
               />
               <text
                 x={p.x}
