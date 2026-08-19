@@ -14,7 +14,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.2).
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.3).
 Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
 `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 

@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.2 · 19 August 2026
+**Version:** 1.3 · 19 August 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
@@ -20,6 +20,27 @@ the work do not drift apart:
   instrument-versus-product when a control fires. §6.
 - **P2.2's scope, stated before it starts.** §2 and §5. It is the sub-phase most likely to grow,
   because it is the first one with something to look at.
+
+---
+
+## What v1.3 records
+
+v1.3 changes no ruling of v1.2. It records what happened when P2.2's first step executed the
+vitest plan, because the plan's premise did not survive contact and the decision that replaced it
+belongs in the versioned document:
+
+- **`vitest 2 → 3` became `2 → 4.1.11`, in a commit BEFORE the dev server rather than the same
+  change.** §6 carries the correction and the reasoning.
+- **The security trigger is now FIRED.** The advisory acceptance rested on nothing listening on
+  a port; the dev server (P2.2 commit 2) changes that, and the runner it was waiting on moved
+  first. `pnpm audit` is clean at the time of this revision —
+  [`SECURITY_NOTES.md`](SECURITY_NOTES.md) holds the current state.
+- Three findings came out of the upgrade battery: [`FINDINGS.md`](FINDINGS.md) **#43** (vitest 2
+  never enforced `testTimeout` on synchronous tests — eight tests across three suites ran on a
+  fictional budget, and the tests with *declared* budgets sailed through the change that broke
+  the ones on the *inherited* default), **#44** (vitest 3.2.7 can fail a run in which every test
+  passed, and 3.x is a closed line), **#45** (the manifest-controls cadence rule was written
+  down and not practised — now a fast-tier check).
 
 ---
 
@@ -565,10 +586,21 @@ fine when a control was pointed at it.**
 
 ### Also inherited
 
-⚠️ **`vitest 2 → 3` upgrades in the same change that introduces a Vite dev server.** Every open
-Dependabot advisory requires a long-running server accepting requests, and nothing currently
-starts one. A dev server collapses that reasoning ([`SECURITY_NOTES.md`](SECURITY_NOTES.md)).
-P2.1 needs no dev server and so does not pull this trigger; P2.2 probably does.
+⚠️ **CORRECTED in v1.3 — the upgrade happened, early, and landed on 4.** This block read:
+*"`vitest 2 → 3` upgrades in the same change that introduces a Vite dev server."* What happened
+instead, recorded rather than silently rewritten:
+
+- The upgrade landed **alone, before the server** (P2.2 commit 1), so a runner break could be
+  attributed to the runner and nothing else. That sequencing was [`P2_2_PLAN.md`](P2_2_PLAN.md)
+  §0's, and it earned its keep twice over — the runner broke twice, in two unrelated ways.
+- The landing version is **4.1.11, not 3**: vitest 3.2.7 is the final release of a closed line,
+  and it carries a worker-RPC race that false-reds a run in which every test passed —
+  deterministically reproduced, unreachable from config, fixed upstream in 4
+  ([`FINDINGS.md`](FINDINGS.md) #44). A gate that goes red on a coin flip cannot anchor "commit
+  after verification", which is the property the upgrade existed to protect.
+- The trigger this note guarded is therefore **fired before it was pulled**: when the dev server
+  arrives in P2.2 commit 2, the runner it was waiting on has already moved, and the advisory set
+  the acceptance covered is empty.
 
 TypeScript 6.0.3 (Dependabot PR #2) remains deliberately deferred.
 
