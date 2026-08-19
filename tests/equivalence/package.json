@@ -13,7 +13,8 @@
     "./shrink": "./src/shrink.ts",
     "./diff": "./src/diff.ts",
     "./engine": "./src/engine.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./query-shapes": "./src/query-shapes.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

@@ -43,6 +43,8 @@
 import * as content from '@immunity-wars/content';
 import * as engine from '@immunity-wars/engine';
 
+import { UI_QUERIES } from '@immunity-wars/equivalence/query-shapes';
+
 import { measureSeam, portExportOrigins } from './seam-lib.js';
 
 // --- the one judgement call, written down -------------------------------------------------------
@@ -194,6 +196,26 @@ if (by('UNCLASSIFIED').length > 0) {
 
 const crossCheckFailures = rows.filter((r) => r.notes.some((n) => n.startsWith('CROSS-CHECK')));
 
+/**
+ * THE QUERY SET THIS SCRIPT DERIVES MUST EQUAL THE ONE THE PAYLOAD MEASUREMENT MEASURES.
+ *
+ * `tests/equivalence/src/query-shapes.ts` writes the 22 out, because `tests/` cannot reach
+ * `tools/legacy-harness`. A written list is exactly what this project keeps catching, so it does
+ * not stand on its own: this compares it against the set derived here from the board script's
+ * free identifiers and the engine's own module grouping, and reddens on any disagreement. If a
+ * query is added, removed or renamed, the payload measurement stops silently measuring the wrong
+ * set and says so instead.
+ */
+const derived = by('query')
+  .map((r) => r.name)
+  .sort();
+const declared: string[] = [...UI_QUERIES].sort();
+const setMismatch: string[] = [];
+for (const n of derived)
+  if (!declared.includes(n)) setMismatch.push(`derived but not declared: ${n}`);
+for (const n of declared)
+  if (!derived.includes(n)) setMismatch.push(`declared but not derived: ${n}`);
+
 console.log(line);
 console.log('THE DECISION, AND WHAT THE MEASUREMENT SAYS ABOUT IT');
 console.log(line);
@@ -228,8 +250,17 @@ if (crossCheckFailures.length > 0) {
   for (const r of crossCheckFailures) console.log(`    ${r.name}: ${r.notes.join('; ')}`);
 }
 
-const problems = by('UNCLASSIFIED').length + crossCheckFailures.length;
+if (setMismatch.length > 0) {
+  console.log('');
+  console.log('  THE DECLARED QUERY SET DISAGREES WITH THE DERIVED ONE.');
+  console.log('  tests/equivalence/src/query-shapes.ts UI_QUERIES is what the P2.1 payload');
+  console.log('  measurement sizes. If it is wrong, that measurement is sizing the wrong set.');
+  for (const m of setMismatch) console.log(`    ${m}`);
+}
+
+const problems = by('UNCLASSIFIED').length + crossCheckFailures.length + setMismatch.length;
 if (problems === 0) {
-  console.log('  Every one of the 49 has a home, and no cross-check disagreed.');
+  console.log('  Every one of the 49 has a home, no cross-check disagreed, and the 22 this');
+  console.log('  script derives are exactly the 22 the payload measurement sizes.');
 }
 process.exit(problems > 0 ? 1 : 0);

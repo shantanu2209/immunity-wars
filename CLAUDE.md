@@ -101,6 +101,22 @@ contract Task B was measured against.
   before it was checked. **A test that regenerates its own oracle cannot fail.** Full list of
   instances and the four instrument blind spots: `tests/equivalence/README.md`, "Read this first".
 
+- **A check that has never been required to PASS on purpose is not known to permit anything.**
+  The other half of the rule above, and it applies to every rule that expresses a boundary.
+  **"Forbid X" is half a specification**: a rule that forbade *everything* would satisfy every
+  negative control ever aimed at it, because forbidding more only makes a mustFail control pass
+  harder. So **every boundary rule gets a `mustPass` control as well as a `mustFail` one** — a
+  mutation in a PERMITTED edge, with the gate required to stay green.
+  `tools/ci/selftest.ts` carries both kinds.
+
+  *Added 18 Aug 2026, at P2.1, by a control that fired on its first run.* The `ui`/`app` boundary
+  had two fail-controls, both green and both correct. The permitted edge — `ui` importing
+  `@immunity-wars/content`, which the brief explicitly allows — came back **red**, because a
+  companion rule reddens on unresolvable imports and `packages/ui` had not declared the
+  dependency. The boundary gate was rejecting the one import it was supposed to allow, and no
+  failure control could ever have said so. `docs/FINDINGS.md` #42; #41 is the resolved-path
+  defect in the same rule.
+
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the
   first kind freely — the negative-control rule qualifies, because it catches a *class* of error
