@@ -11,8 +11,8 @@ Six phases. Phase 1 changes nothing a player can see and is the reason the other
 affordable. Each phase ends with something you can hold, open, or install.
 
 ```
-Phase 1  Foundations ─────────── in progress (A, B done)
-Phase 2  The app people see
+Phase 1  Foundations ─────────── CLOSED (docs/PHASE1_CLOSEOUT.md)
+Phase 2  The app people see ──── in progress (P2.1 seam + boundary done)
 Phase 3  Playing together
 Phase 4  Android
 Phase 5  iOS
@@ -58,13 +58,18 @@ The one thing that would make it urgent instead: Phase 2 adding a dev server. Th
 written down where whoever adds one will meet it.
 
 **Coverage gate:** met at 95.46% of coverable arms, with exclusions enumerated and self-policing.
-Two deferred lists carry into Phases 2 and 3.
+Two deferred lists carry into Phase 3 — the 8 multiplayer arms and, since 18 Aug 2026, the 9
+bot-conditional ones. The bot moved out of Phase 2 because it is inlined in the engine and
+`simulate()` is compared byte-identically, so building a competent one is an engine change that
+breaks the corpus during a renderer rewrite ([`FINDINGS.md`](docs/FINDINGS.md) #1).
 
 ---
 
 ## Phase 2 — The app people see
 
 **Goal:** stop being a browser page and become an application.
+**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v1.1. **Status:** P2.1 complete — seam 1,
+the boundary rule and its controls, the `GameState` round-trip. P2.2 is the first visible pixel.
 
 - UI rebuilt in React; the board becomes SVG generated from the geometry content pack, so
   one source drives screen **and** printed board

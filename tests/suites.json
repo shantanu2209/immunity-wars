@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "reconciliation": "Four suites and three cross-cutting properties. There is no unit suite. What exists is the equivalence corpus, which proves AGREEMENT and not CORRECTNESS — a bug-for-bug port is green on a violation both engines share.",
+  "reconciliation": "Five suites and three cross-cutting properties. There is no unit suite. What exists is the equivalence corpus, which proves AGREEMENT and not CORRECTNESS — a bug-for-bug port is green on a violation both engines share.",
   "note": "docs/PHASE1_BRIEF.md §7 lists seven suites. This file is the reconciliation with what is actually on disk, not a transcription of that table. Consumed by the CI workflows (job matrix), the dashboard (one row per entry; a missing result renders RED) and tests/manifest/manifest.test.ts (every claim here is checked). Timings measured on a 20-core machine, 18 Aug 2026; CI wall time will differ.",
   "suites": [
     {
@@ -84,6 +84,30 @@
         }
       },
       "resultFile": "results/balance-panel.json"
+    },
+    {
+      "id": "session",
+      "title": "Session seam",
+      "briefSuite": null,
+      "proves": "That single-player goes through Session and not around it: a full bot game replayed through LocalSession produces the same projection, action for action, as the engine driven directly. Also that the subscription's view/burst split behaves as specified, that Session never hands out GameState, and that Storage round-trips a game.",
+      "doesNotProve": "Anything about a UI, which does not exist yet. Anything about RelaySession, which is Phase 3's — this proves the interface has one working implementation, not that a second one is possible. And nothing about IndexedDbStorage, which NO TEST EXERCISES: there is no browser in the test environment and no IndexedDB shim among the dependencies, so the port is tested through MemoryStorage only. P2.2 is the first moment a browser exists to run it in.",
+      "negativeControls": 8,
+      "controlFiles": ["tests/session/src/negative-control.test.ts"],
+      "tiers": {
+        "per-push": {
+          "command": "pnpm test",
+          "scale": "9 replayed games across 3 seeds x 3 difficulties, plus the seam's own assertions",
+          "blocking": true,
+          "approxSeconds": 3
+        },
+        "nightly": {
+          "command": "pnpm test",
+          "scale": "the same 9 games; this suite has no separate slow tier",
+          "blocking": true,
+          "approxSeconds": 3
+        }
+      },
+      "resultFile": "results/session.json"
     },
     {
       "id": "content-schema",

@@ -1,0 +1,15 @@
+{
+  // Tests are typechecked, but separately from production code.
+  //
+  // A test file imports vitest, whose type definitions pull in @types/node. Ambient
+  // globals from that are visible to EVERY file in the same program — so with tests and
+  // source in one tsconfig, `process` and `Buffer` silently become available inside the
+  // engine, defeating the "types": [] purity guarantee. Splitting the programs keeps the
+  // guarantee on source while still typechecking the tests.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}

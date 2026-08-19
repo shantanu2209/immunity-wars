@@ -45,7 +45,11 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(supports-color@7.2.0)
 
-  packages/app: {}
+  packages/app:
+    dependencies:
+      '@immunity-wars/session':
+        specifier: workspace:*
+        version: link:../session
 
   packages/content:
     dependencies:
@@ -63,11 +67,27 @@ importers:
 
   packages/server: {}
 
+  packages/session:
+    dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../content
+      '@immunity-wars/engine':
+        specifier: workspace:*
+        version: link:../engine
+    devDependencies:
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(supports-color@7.2.0)
+
   packages/ui:
     dependencies:
       '@immunity-wars/content':
         specifier: workspace:*
         version: link:../content
+      '@immunity-wars/session':
+        specifier: workspace:*
+        version: link:../session
 
   tests/balance:
     dependencies:
@@ -126,6 +146,25 @@ importers:
       fast-check:
         specifier: ^3.23.2
         version: 3.23.2
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(supports-color@7.2.0)
+
+  tests/session:
+    dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../../packages/content
+      '@immunity-wars/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@immunity-wars/equivalence':
+        specifier: workspace:*
+        version: link:../equivalence
+      '@immunity-wars/session':
+        specifier: workspace:*
+        version: link:../../packages/session
+    devDependencies:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(supports-color@7.2.0)

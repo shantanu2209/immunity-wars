@@ -133,7 +133,69 @@ answers per view, on every action, regardless of how the game is going.
 
 ---
 
-## 6. What this does not settle
+## 6. THE RULING, and the second measurement it required
+
+**Ruled 19 August 2026: selection-scoped.** None of the three options this report was written
+against. The view becomes a function of **(game state, selection)**; `moveDestinations` is carried
+for the selected cell and the full `productionBreakdown` for the selected family. **No query is
+exposed**, so the boundary rule stays absolute and Phase 3 inherits no exception.
+
+Two conditions were attached, and both were measured **before** anything was built —
+`pnpm measure:selection-cost`, 30 seeds × 3 difficulties.
+
+### Condition 1 — the compute trade. MET.
+
+Selection changes are frequent and local; if every one rebuilt the whole view, payload would have
+been traded for compute. A selection change is a tap, so §4 of the brief governs it.
+
+| | p50 | p90 | p99 | max |
+|---|---|---|---|---|
+| `viewState(g)` full rebuild | 33.5µs | 66.2µs | 136.2µs | 215.2µs |
+| `moveDestinations`, 1 cell | 2.8µs | 3.3µs | 8.0µs | 10.0µs |
+| `moveDestinations`, all 7 | 22.8µs | 28.8µs | 38.0µs | 56.7µs |
+| **selection-scoped rebuild, total** | **0.054ms** | 0.094ms | **0.181ms** | 0.282ms |
+
+**1.1% of the 16ms redraw budget at p99; ~7% at the 6× throttling §4 screens with.** Measured in
+Node on a development PC — *not* a handset, and the **data half only**: no React, no layout, no
+paint, none of which exist yet. The budget this is checked against is the redraw budget *minus*
+whatever rendering costs.
+
+The fallback to expose-two was therefore not taken.
+
+### Condition 2 — `productionBreakdown`. Mixed, and stated rather than arrived at.
+
+**The scoping applies, but to FIELDS rather than to subjects.** Read from `v2_ui.html`:
+
+- Two call sites (717, 1900) map over **all** families and read `net`, `boosted`, `reduced` — the
+  always-on antibody panel. Needed for every family at once.
+- The other six fields are read by exactly one function, `prodBreakdownHTML` (1923), which renders
+  a **tooltip**. One family at a time.
+
+| | p50 |
+|---|---|
+| `{net, boosted, reduced}` × 7 families | **293B** |
+| full breakdown × 7 families | 2,003B |
+| the summary as a share | **14.6%** |
+
+So the summary is precomputed for all seven families and the detail is selection-scoped. **It does
+not need exposing.** Same insight as the ruling, one level down: expensive is answering *in full*
+for every possible subject at once.
+
+### Payload, all three options
+
+| option | p50 | % of `viewState` p50 |
+|---|---|---|
+| precompute everything | 7,051B | 90.6% |
+| **selection-scoped — the ruling** | **1,653B** | **21.2%** |
+| expose-two | 638B | 8.2% |
+
+Selection-scoped is **not the cheapest** and was not chosen for being cheapest. It buys something
+neither number shows: no query crosses the boundary, so there is no exception to argue about when
+Phase 3 puts a relay in the gap.
+
+---
+
+## 7. What this does not settle
 
 - **The compute cost.** Precomputing 22 answers on every action is a §4 per-redraw budget question,
   not a payload one. Nothing here times anything.

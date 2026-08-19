@@ -217,23 +217,49 @@ directly.)
 > **Anything that fits none of the three classes is a finding, and is reported before it is
 > worked around.**
 >
-> ### ✅ The measurement the lean needed now exists — [`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md)
+> ### ✅ RULED, 19 August 2026 — SELECTION-SCOPED. No query is exposed.
+
+> **The ruling, and it is none of the three options v1.0 offered.** The view becomes a function of
+> **(game state, selection)** rather than of game state alone. `moveDestinations` is carried for the
+> **selected** cell; the full `productionBreakdown` for the **selected** family. Nothing is exposed,
+> so **the boundary rule stays absolute and Phase 3 inherits no exception to argue about.**
 >
-> *Added 18 August 2026, on Shantanu's instruction to measure before ruling.* `pnpm
-> measure:query-payload`, 25,497 command-phase states. The lean is broadly right and right for a
-> reason nobody had identified:
+> **What decided it was the measurement, and it produced a better answer than either party had
+> reasoned to.** [`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md), 25,497 command-phase states:
 >
-> - Precomputing all 22 costs **89% of `viewState` at p50, 168% at p90** — roughly doubling the
->   payload — so the lean's premise holds.
-> - But **two queries are 88% of that cost**: `moveDestinations` (61%) and `productionBreakdown`
->   (27%). The other twenty together are ~530 bytes.
-> - **Exposing those two and precomputing the other twenty costs 8.8% of `viewState`.** Exposing a
->   third buys 0.8 points. The curve collapses at N = 2 and is flat after it.
-> - Three of the 22 — `branchLen`, `famOf`, `attackable` — need neither Session nor the view;
->   two are pure functions of `content`, which `ui` may already import.
+> - Precomputing all 22 costs **89% of `viewState` at p50 and 168% at p90** — so the lean's premise
+>   held.
+> - But **two queries are 88% of that**: `moveDestinations` (61%) and `productionBreakdown` (27%).
+>   Fourteen of the 22 cost under 30 bytes; `rateFor` costs one.
+> - The cost is **not in queries that are expensive to answer. It is in queries that are expensive
+>   to answer FOR EVERY POSSIBLE SUBJECT AT ONCE.** A precomputing view does not know which cell is
+>   selected, so it carries `moveDestinations` for all seven — six of them answering questions
+>   nobody asked.
 >
-> **So the decision is no longer all-or-nothing, and that is what the measurement changed.** It
-> remains Shantanu's.
+> **So make the view know.** That is closer to what a UI actually renders, and it is the option the
+> report itself flagged as unmodelled rather than one of the three the brief listed.
+>
+> **Both conditions on the ruling were measured before anything was built.**
+>
+> 1. **The compute trade.** A selection change is a tap, so §4 governs it. A selection-triggered
+>    rebuild of the whole projection plus the scoped answers costs **0.054ms at p50 and 0.181ms at
+>    p99** — **1.1% of the 16ms redraw budget, ~7% at the 6× throttling §4 screens with**, on a
+>    development PC in Node. **Condition met**, so the stated fallback to expose-two was not taken.
+>    That number is the DATA half only: no React, no layout, no paint, none of which exist yet.
+> 2. **`productionBreakdown`.** The scoping applies, but **to fields rather than to subjects** —
+>    a mixed answer, stated rather than arrived at. Its two always-on call sites read `net`,
+>    `boosted` and `reduced` for every family; the other six fields are read by exactly one
+>    function, `prodBreakdownHTML`, which renders a **tooltip**. The summary is **293B for all seven
+>    families, 14.6% of the full object**. So the summary is precomputed for all seven and the
+>    detail is selection-scoped. **It does not need exposing.**
+>
+> **Three of the 22 need neither Session nor the view.** `branchLen` and `famOf` are pure functions
+> of the content pack, which `ui` may already import; `attackable` needs one engine knob plus a
+> field the view already carries. A two-line helper, not a seam.
+>
+> Payload, for the record: precompute-everything 90.6% of `viewState`, **selection-scoped 21.2%**,
+> expose-two 8.2%. Selection-scoped is not the cheapest option and was not chosen for being
+> cheapest.
 
 ### ⚠️ The rule matters more than the interface
 
@@ -485,6 +511,9 @@ fine when a control was pointed at it.**
 - **The smaller true claim.** Kartik may have to defend any sentence to a judge.
 - **One task per session, plan before code, commit after verification, `pnpm verify` before
   commit.**
+- **Every sub-phase ends with a documentation sweep before its closing commit** — `pnpm docs:check`,
+  inside `pnpm verify`, with two controls. Added at the close of P2.1 because the habit had already
+  failed: `CLAUDE.md` said "Current phase: Phase 1" for the whole first session of Phase 2.
 - **Scientific accuracy is a hard constraint**, not a preference.
 - **Build what the task specifies.** Beyond it, the test is purpose — does this make later work
   faster or safer? — not cost. Say what it buys and let Shantanu decide.

@@ -1,0 +1,27 @@
+{
+  "name": "@immunity-wars/session",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Seam 1. The only way anything talks to the game.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "comment:why-this-package-may-import-the-engine": "It is the ONLY thing that may. packages/ui and packages/app are forbidden by ui-app-no-engine and ui-app-no-unresolvable; this package is the permitted side of that boundary, and session-no-downstream keeps it from reaching back the other way. docs/SEAM_DECISIONS.md §1.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "@immunity-wars/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

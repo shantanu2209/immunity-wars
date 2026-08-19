@@ -132,6 +132,22 @@ const CONTROLS: readonly Control[] = [
     mustPass: true,
   },
   {
+    id: 'docs-phase-marker',
+    why: 'CLAUDE.md said "Current phase: Phase 1" for the whole first session of Phase 2, and ROADMAP.md agreed with it. A stale phase marker is not wrong enough to notice, so it survives.',
+    file: 'CLAUDE.md',
+    mutate: (t) => t.replace('**Current phase: Phase 2**', '**Current phase: Phase 1**'),
+    gate: 'pnpm docs:check',
+    expect: 'but the spec it names is PHASE2_BRIEF.md',
+  },
+  {
+    id: 'docs-dead-link',
+    why: 'A link to a document that was renamed or never written reads exactly like one that resolves.',
+    file: 'docs/PHASE2_BRIEF.md',
+    mutate: (t) => t.replace('](PHASE2_INPUTS.md)', '](PHASE2_INPUTS_RENAMED.md)'),
+    gate: 'pnpm docs:check',
+    expect: 'does not resolve',
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',

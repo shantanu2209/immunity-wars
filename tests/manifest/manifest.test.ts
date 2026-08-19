@@ -100,9 +100,11 @@ describe('tests/suites.json', () => {
   });
 
   /** The headline count, asserted so the sentence and the file cannot disagree. */
-  it('is four suites and three cross-cutting properties, as the sentence says', () => {
+  it('is five suites and three cross-cutting properties, as the sentence says', () => {
     if (!manifest) return;
-    expect(manifest.suites).toHaveLength(4);
+    // Four until P2.1 added the session seam. The count is pinned rather than derived so that
+    // the sentence and the array cannot disagree — which is the whole job of this file.
+    expect(manifest.suites).toHaveLength(5);
     expect(
       manifest.crossCutting.filter((c) => c.status === 'realised-inside-other-suites'),
     ).toHaveLength(3);
