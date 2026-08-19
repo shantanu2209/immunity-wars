@@ -24,11 +24,16 @@ import { defineConfig } from 'vitest/config';
  *   B4d residents fuzzer                                       7.0s
  *   rig smoke batch / B3 viewState projection                  3.6–4.5s
  *
- * 60s is ~5.5x the slowest undeclared observation — headroom for a 4-core CI runner, not slack
- * for an accidental quadratic. A fuzzer hitting 60s of compute has changed, and should fail.
+ * RESIZED to 300s the same day, when CI falsified the first sizing: the budgets were sized
+ * from 20-core SOLO observations, and the binding environment is a 4-core CI runner executing
+ * the whole workspace concurrently — where the B4b fuzzer stretched to 65.1s (6x its solo
+ * time) and the balance blind-spot control to 50.5s, red in one run and green in the other.
+ * 300s is ~4.5-6x the worst CI-concurrent observation: still far below any hang, and wall
+ * clock under contention is what vitest actually measures. A test at five minutes has changed
+ * or hung, and should fail.
  */
 export default defineConfig({
   test: {
-    testTimeout: 60_000,
+    testTimeout: 300_000,
   },
 });

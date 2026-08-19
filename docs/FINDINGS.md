@@ -2397,6 +2397,18 @@ instrument say what was actually true.
 them on vitest 4.1.11 (#44), where all four entry points are green and the retroactive
 enforcement they exist to satisfy is confirmed still present.
 
+*Corrected later the same day, twice, by CI — the same lesson at two more removes.* First, the
+fifth entry point: `tests/session` needed no budget on the 20-core machine and PR #21's first CI
+run failed exactly there (5,769ms on a 4-core runner), the scenario the ruling predicted.
+Second, the SIZES: every budget was sized from 20-core SOLO observations, and the binding
+environment turned out to be the 4-core CI runner executing the whole workspace concurrently —
+where the B4b fuzzer stretched to 65.1s against its 60s budget (red in one run, green in the
+other) and the balance blind-spot control to 50.5s of its 60s. All five entry points now carry
+**300s**, ~4.5–6x the worst CI-concurrent observation: wall clock under contention is what
+vitest measures, and a test at five minutes has changed or hung. The general form: **a budget is
+sized against its binding environment, not its convenient one — and the binding environment is
+found by being bitten in it.**
+
 ---
 
 ## 44. vitest 3's worker RPC can fail a run in which every test passed

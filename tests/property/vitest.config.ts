@@ -21,12 +21,16 @@ import { defineConfig } from 'vitest/config';
  *   non-vacuity counts (18 games)                              5.5s
  *   L2 runner controls                                        2.4–3.7s
  *
- * 120s is ~4.6x the slowest observation — the same headroom ratio as tests/balance, for the
- * same reason: a 4-core CI runner, not slack for an accidental quadratic. A test hitting two
- * minutes of compute has changed, and should fail.
+ * RESIZED to 300s the same day, when CI falsified the first sizing: the budgets were sized
+ * from 20-core SOLO observations, and the binding environment is a 4-core CI runner executing
+ * the whole workspace concurrently — where the B4b fuzzer stretched to 65.1s (6x its solo
+ * time) and the balance blind-spot control to 50.5s, red in one run and green in the other.
+ * 300s is ~4.5-6x the worst CI-concurrent observation: still far below any hang, and wall
+ * clock under contention is what vitest actually measures. A test at five minutes has changed
+ * or hung, and should fail.
  */
 export default defineConfig({
   test: {
-    testTimeout: 120_000,
+    testTimeout: 300_000,
   },
 });

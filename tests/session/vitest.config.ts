@@ -16,12 +16,16 @@ import { defineConfig } from 'vitest/config';
  *                                                       a race at the exact boundary)
  *   same test locally                                  under 5s  20-core i7-12700F
  *
- * 60s is ~10x the CI observation — the same headroom philosophy as the sibling suites: room for
- * a slow runner, not slack for an accidental quadratic. A replayed game hitting a minute of
- * compute has changed, and should fail.
+ * RESIZED to 300s the same day, when CI falsified the first sizing: the budgets were sized
+ * from 20-core SOLO observations, and the binding environment is a 4-core CI runner executing
+ * the whole workspace concurrently — where the B4b fuzzer stretched to 65.1s (6x its solo
+ * time) and the balance blind-spot control to 50.5s, red in one run and green in the other.
+ * 300s is ~4.5-6x the worst CI-concurrent observation: still far below any hang, and wall
+ * clock under contention is what vitest actually measures. A test at five minutes has changed
+ * or hung, and should fail.
  */
 export default defineConfig({
   test: {
-    testTimeout: 60_000,
+    testTimeout: 300_000,
   },
 });
