@@ -2488,3 +2488,109 @@ something; only running `pnpm test:manifest-controls` proves the assertions stil
 cadence rule stands for that half — but a stale name can no longer wait for it.
 
 **Disposition: FIXED at P2.2 commit 1**, with the check and its control both demonstrated.
+
+---
+
+## 46. The v4-provider reconciliation: a finer arm universe, honestly reclassified — and the target did not move
+
+**Found and executed at P2.2, 19 August 2026**, after PR #21's coverage job went red at 92.53%
+against the 95% target. `@vitest/coverage-v8` 4 derives branch arms from the AST where v2
+derived them from V8 ranges: the raw universe grew 1,526 → 1,876 with behaviour provably
+unchanged (the corpus stayed byte-identical in the same runs), the deferred lists doubled on
+unchanged pinned lines, and three text-keyed exclusions stopped matching. **Ruled: recalibrate
+before merging — some of the new arms might be reach we thought we had and did not.**
+
+### The classification, all 78 uncategorised arms read in source context
+
+- **53 unreachable with a reason.** Overwhelmingly rule A's own class in a spelling rule A
+  cannot see: defensive presence-handling required by `noUncheckedIndexedAccess`, written as
+  `if (x)` instead of `??`. Now excluded by **rule C** — three mechanical shapes (total-member
+  presence guards; `indexOf` on the list the element was filtered from; exhausted tails of
+  closed-set zone chains), each carrying its class argument and corpus evidence at the rule and
+  **watched by the churn report from day one** — plus 30 new rule-B entries, every one
+  demonstrated in `demonstrate-dead-arms.ts` (30/30 DEAD).
+- **25 reachable but uncovered.** Six were **NEW REACH** — code the v2 provider never showed
+  anyone (see #47 for the significant one) — and became both-engine scenarios immediately, per
+  the ruling, rather than being absorbed into a recalibrated number. The rest are **named test
+  debt**, individually:
+  `actions.ts:169` endCommand out of phase · `actions.ts:240` hop with an unknown cell ·
+  `actions.ts:270` recall with an unknown cell · `actions.ts:309` clonalSelection at 0 AP ·
+  `actions.ts:337` vaccinate when already immune · `actions.ts:339` vaccinate at 0 AP ·
+  `actions.ts:450` antivenom at 0 AP · `actions.ts:480` strike with a wrong cell ·
+  `actions.ts:597` memoryKill on a missing id · `actions.ts:602` memoryKill unattackable ·
+  `actions.ts:605` memoryKill at 0 AP on Hard · `construct.ts:126` coInfection with an empty
+  deck · `effects.ts:65` Cellulitis killed by antibody (rare-trigger seed) · `queries.ts:274`
+  productionBreakdown without dendritic · `queries.ts:365` canNeutralise unattackable ·
+  `queries.ts:379` canTag unattackable · `spread.ts:66` fireRare unarmed · `spread.ts:69`
+  fireRare with an unknown key. Two switch `default:` arms (construct.ts:164, spread.ts:166)
+  stay uncategorised deliberately: dead by closed key sets, but a `default:` text key would
+  over-match, and two arms are not worth a rule.
+
+### What the reconciliation itself surfaced — four instrument findings inside one
+
+1. **405 arms had no identity at all**: the v4 mapper emits implicit-else arms with an empty
+   `start`, and the gate mapped them to line `undefined`, text `''`. Fixed by anchoring on the
+   `if`-line, with a loud throw replacing any silent drop — a throw that fired on its own first
+   version.
+2. **Line-level exclusion keys leaked a deferred arm**: excluding one arm at a line silently
+   removed its sibling from the denominator — at `simulate.ts:368`, a bot-reachable arm vanished
+   from the list Phase 3 inherits. Keys are now arm-precise; found by balancing the bot list's
+   ledger (19 → 17: exactly the two absent-path arms, which are dead at any bot strength).
+3. **Rule C's first draft ate live paths in never-called code**: a presence guard there has BOTH
+   arms uncovered and only the absent-path arm is dead. All three C shapes now discriminate on
+   arm index.
+4. **Two demonstrations corrected their own claims while being written**: the lymph-continuation
+   scan came back LIVE until narrowed to lymph-*linked* routes (blood is 3 steps but has no
+   lymph group), and the unknown-cell exhibit **crashed legacy** — legacy's `moveDestinations`
+   reads `cell.zone` unguarded and throws on an unknown cell key where the port returns
+   *"Illegal move."* A real malformed-input divergence, unreachable through the corpus (the
+   fuzzer's vocabulary never held an unknown cell key), recorded here rather than smoothed over.
+
+### The rulings, and which kind of change each was
+
+- **TARGET UNCHANGED at 95%.** Classification alone brings the gate to **96.46%** — it crosses
+  its existing target as a consequence of honest work, the sd-floor case (#35), not a moved
+  goalpost (#34).
+- **Cap restated as a ratio: 9.4% of raw arms** (176 today, 168 used), both numbers printed
+  every run so a future universe change shows as a number that moved. ⚠️ **Deviation from the
+  ruling's estimate, stated rather than fitted quietly:** the ruled figure was 7.9% (~147),
+  derived by holding exclusion *density* constant across the universe change. Measured, the v4
+  universe's new arms are disproportionately defensive — 29 of the 35 newly visible
+  uncategorised arms classified dead — so the honest exclusion set landed at 168 and the
+  constant-density rescale was an undercount. The ratio is set from the measured set plus the
+  old cap's proportional headroom (~9 arms).
+- **The `while`-loop exclusion: dropped, demonstration kept.** AST mapping emits no branch arm
+  for a loop condition; the property is still proven — the instrument stopped charging for it.
+
+**Disposition: EXECUTED.** Gate green at 96.46%, `pnpm audit` clean, every demonstration DEAD,
+and the deferred lists Phase 3 inherits are two arms more honest than before.
+
+---
+
+## 47. Two instruments, blind in the same place: the NET path
+
+**Named at the v4 reconciliation, 19 August 2026, by ruling.** The most significant of the six
+new-reach arms: **everything past `net`'s hub guard — the success path AND its own "nothing
+here a NET can catch" rejection — had zero test coverage**, because every test attempt at `net`
+sat at the hub.
+
+That is not a new gap. It is **FINDINGS #1's bot blindness seen from the coverage side**: the
+reference bot never moves the Neutrophil, so it can never NET, so no recorded game ever entered
+the success path — and the v2 coverage provider had merged those arms away, so no coverage
+report ever showed them uncovered. **Each instrument's blind spot hid the other's.** The corpus
+could not miss what it never entered; the coverage gate could not name what its provider never
+split out; and the gap sat in the intersection for the life of the project.
+
+> **The shape worth naming: where two instruments are blind in the same place, their overlap is
+> where the unknown lives — and no amount of green from either one says anything about it.**
+> When a blind spot is found in one instrument, check the same location in the others.
+
+The NET success path executed for the first time in this repository's history during this
+reconciliation — first by hand in the esbuild verification (a spread played in the browser),
+then as a permanent both-engine scenario (`coverage-scenarios.test.ts`, "new reach under
+coverage-v8 4"). The bot half of the gap remains, deliberately: a competent bot is Phase 3's
+work (#6, PHASE2_BRIEF v1.1 §6), and the bot-deferred coverage list now carries the honest
+count of what it will make reachable.
+
+**Disposition: the coverage half is CLOSED; the bot half is Phase 3's, tracked in
+`COVERAGE_DEFERRED.md`.**
