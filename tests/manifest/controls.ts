@@ -51,7 +51,10 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) =>
       t.replace('"status": "does-not-exist"', '"status": "realised-inside-other-suites"'),
     expectFailing: [
-      'is four suites and three cross-cutting properties',
+      // 'four' until P2.1 added the session suite; the title tracks tests/suites.json's count.
+      // These two controls were stale for the whole gap between that change and the next run of
+      // this harness — see the P2.2 commit-1 report. When the count changes, change this WITH it.
+      'is five suites and three cross-cutting properties',
       'records the absent unit suite as absent',
     ],
   },
@@ -75,7 +78,10 @@ const CONTROLS: readonly Control[] = [
     },
     expectFailing: [
       'accounts for every one of the brief §7 rows',
-      'is four suites and three cross-cutting properties',
+      // 'four' until P2.1 added the session suite; the title tracks tests/suites.json's count.
+      // These two controls were stale for the whole gap between that change and the next run of
+      // this harness — see the P2.2 commit-1 report. When the count changes, change this WITH it.
+      'is five suites and three cross-cutting properties',
     ],
   },
   {

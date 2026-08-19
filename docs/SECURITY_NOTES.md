@@ -6,6 +6,18 @@ and why we have accepted them rather than upgraded.
 This is a public repository. Anyone can see the alert count, and a count is not a finding. This
 document is the finding.
 
+> **Updated later the same day, at P2.2 commit 1: the vitest trigger fired, deliberately early.**
+> vitest moved `2 → 4.1.11` — not `2 → 3` as §"The trigger" anticipated, because 3.2.7 (the
+> final 3.x) carries an unfixable run-level false-red of its own (`FINDINGS.md` #43, #44). The
+> upgrade landed *before* any server exists, alone, so a runner break could be attributed to the
+> runner. `pnpm audit` now reports **one** advisory: esbuild ≤0.24.2 (moderate, dev-only), via
+> `tools/legacy-harness`'s directly pinned esbuild for `build:single` — the rest of the workspace
+> resolves esbuild ≥0.25. The structural acceptance below still covers it: the advisory requires
+> `esbuild --serve` or an equivalent long-running context, and nothing here starts one. A `pnpm`
+> override also pins transitive `nanoid >= 3.3.18` (GHSA-2v37-7h3g-55p8), which the lockfile's
+> stale in-range resolution would otherwise keep vulnerable. The counts and tables below are the
+> 19 Aug 2026 *morning* state, kept as the record this acceptance was argued from.
+
 ---
 
 ## The one thing to read

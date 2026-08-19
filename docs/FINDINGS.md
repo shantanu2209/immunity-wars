@@ -2308,3 +2308,135 @@ covers only one direction. This is its other half: **a check that has never been
 on purpose is not known to permit anything.**
 
 **Disposition: FIXED at P2.1**, and generalised into the standing rules.
+
+---
+
+## 43. vitest 2 never enforced `testTimeout` on a synchronous test — a limit that could never fire, trusted implicitly
+
+**Found at P2.2 commit 1, 19 August 2026**, by the `vitest 2 → 3` upgrade the security note
+required (`docs/SECURITY_NOTES.md`), landed alone and before the dev server so that exactly this
+kind of break could be attributed to the runner and nothing else.
+
+**The whole finding is visible in one contrast inside `tests/equivalence`: an 81.6-second test
+passed the upgrade while a 7-second test failed it.** `spread.test.ts` and `simulate.test.ts`
+declare per-test timeouts — 120s to 600s, as bare third arguments a grep for "timeout" does not
+find — and `actions.test.ts` inherited the 5,000ms default. **Declared budgets survived the
+instrument change; inherited ones did not.**
+
+The first symptom was two tests in `tests/balance/src/metrics-control.test.ts` going red with
+*"Test timed out in 5000ms"* — the two compute-heavy E2 controls: the baseline held-out arm,
+which pays the full 1,600-game calibration, and the blind-spot control, which pays a second
+calibration plus two mutated-legacy arms (11.5–13.3s observed across runs). Both had been green
+under vitest 2 at that morning's merge, unchanged.
+
+**The full extent was three suites, revealed serially.** turbo cancels queued tasks on the first
+failure, so each fix unmasked the next: `tests/balance` (2 tests), then `tests/property` (3 —
+the fast-check property at 25.8s, the per-difficulty sweep, the non-vacuity counts), then
+`tests/equivalence` (3 — the B4b/B4c/B4d action fuzzers, 7.0–10.9s). A run that reports one red
+suite under turbo's default scheduling is reporting a lower bound, not a census.
+
+### The mechanism, established by a controlled experiment rather than a changelog
+
+A test file containing nothing but a synchronous 6-second busy-loop and one trivial assertion,
+run under both runners with the default 5,000ms `testTimeout`:
+
+| runner | verdict |
+|---|---|
+| vitest 2.1.9 | **passes**, 6.0s |
+| vitest 3.2.7 | **fails** — *"Test timed out in 5000ms"*, the exact error the suite shows |
+
+So vitest 2 never enforced `testTimeout` against a synchronous test. The timer cannot fire while
+the event loop is blocked, and v2 never checked elapsed time after the test returned. Vitest 3
+checks retroactively — confirmed in `@vitest/runner`'s source, not inferred: `runWithTimeout`'s
+resolve path now carries `if (now() - startTime >= timeout) rejectTimeoutError()`, added against
+upstream issue vitest#2920, with `now` a `Date.now` reference captured at module load. Vitest 4
+keeps the same enforcement, re-measured with the same experiment before commit 1 landed on it
+(see #44 for why the commit lands on 4).
+
+### The key detail: the verdict was retroactive, and nothing about the statistics changed
+
+The failing tests **ran to completion and their assertions held** — the recorded 13.3s duration
+and the absence of any assertion error prove it. A synchronous test cannot be interrupted; vitest
+3 lets it finish and then fails it on elapsed time alone. Every statistical claim the E2 controls
+assert was as true under the new runner as under the old. What broke was purely a time budget —
+one that had never actually been applied to these tests.
+
+**That is the finding: the 5,000ms limit was fictional for every synchronous test in this
+repository, for the entire life of the project.** A limit that can never fire is the same class
+as a check that has never failed — trusted, not known. The suite's own header says its sizes were
+chosen to keep the tier "inside ~30s"; individual tests were over the per-test budget the whole
+time, and no instrument could say so.
+
+### The fix, and why it is a migration fix rather than a patch to green
+
+**Ruled by Shantanu:** a suite-level `testTimeout`, not per-test values. Per-test values would
+fix the tests that failed and leave their siblings — 1.4–4.5s on a 20-core i7-12700F — to cross
+5s later on a 4-core CI runner, looking like a new and unrelated problem. The suite-level budget
+states the truth about the suite: these tests do real computation and 5s was never their real
+ceiling. Applied at all four entry points, each sized from its own measurements at ~4.5–5.5x the
+slowest observation: `tests/balance` 60s, `tests/property` 120s, `tests/equivalence` 60s (where
+the existing larger per-test declarations override it), and `vitest.coverage.config.ts` 120s —
+the root config that runs the equivalence files itself, out of reach of the package config and
+with v8 instrumentation multiplying compute. Each config carries the observed durations and the
+hardware they were measured on, so whoever finds it slow later has the baseline rather than a
+bare number.
+
+The assertions are untouched, and a declared real budget is more honest than an undeclared
+fictional one — the same shape as the sd floor (#35), where the correction was making the
+instrument say what was actually true.
+
+**Disposition: FIXED at P2.2 commit 1.** The budgets are correct on any runner; the commit lands
+them on vitest 4.1.11 (#44), where all four entry points are green and the retroactive
+enforcement they exist to satisfy is confirmed still present.
+
+---
+
+## 44. vitest 3's worker RPC can fail a run in which every test passed
+
+**Found at P2.2 commit 1, 19 August 2026**, while verifying the `vitest 2 → 3` upgrade — and it
+is the reason that upgrade became `2 → 4`. A separate defect from #43: that one made a fictional
+budget real; this one fails runs for a reason that has nothing to do with any test.
+
+Two forced fully-concurrent runs of `pnpm test` under vitest 3.2.7 went red with
+`tests/equivalence` at **315/315 tests passed**. The exit code was flipped by unhandled
+`[vitest-worker]: Timeout calling "onTaskUpdate"` errors — two per run.
+
+### The mechanism, read from the dist and then reproduced
+
+- vitest's worker talks to the main process over birpc, whose response timeout is a hardcoded
+  `DEFAULT_TIMEOUT = 60_000`. No config option or environment variable reaches it in 3.2.7 —
+  every `VITEST_*` knob in the dist was enumerated to check.
+- A worker issues `onTaskUpdate` after finishing a test, then the next **synchronous** test
+  blocks the event loop. If the block outlasts 60s, Node's timers phase runs **before** its poll
+  phase when the loop unblocks — so the expired timer fires before the response, which arrived
+  long ago, is ever read. A spurious timeout, manufactured by the worker's own blocked loop.
+- **Controlled reproduction:** one quick test (so an RPC is in flight), then a 70s sync
+  busy-loop. Both tests pass; the run exits 1 with the exact production signature. Deterministic.
+- **Why solo runs looked safe:** the forks pool starts each file in a fresh worker, so a file's
+  *first* test — the 81.6s corpus run — has nothing in flight. The danger is a *later* test in a
+  file stretching past 60s, which is what turbo's 15 concurrent vitest instances on 20 cores
+  did: ~285 forked processes, and 4–14s tests stretch past the timer. It also retroactively
+  explains one earlier anomalous red on `tests/property` that could not be reproduced solo.
+
+**This is a false-red generator in the instrument itself.** A gate that goes red on a coin flip
+cannot anchor "commit after verification" — it teaches people to re-run until green, which is
+the failure culture this project least survives.
+
+### The ruling
+
+**vitest 2 → 4.1.11, superseding 2 → 3.** Three facts decided it:
+
+1. 3.2.7 is the **final 3.x release** — the line is closed and no fix is coming to it.
+2. 4.1.11 runs the identical reproduction **clean, exit 0**, and two forced fully-concurrent
+   census runs of the whole repository under it show 15/15 tasks green with no RPC errors.
+3. The security note's intent (`docs/SECURITY_NOTES.md`) was a current, maintained runner before
+   any dev server exists. 3.2.7 is neither. Patching a dead major's RPC layer by hand would have
+   made this repository the maintainer of its own test runner.
+
+The #43 suite budgets carry over unchanged — they are correct on any runner, and vitest 4 still
+enforces the retroactive sync-test timeout (measured: the 6s busy-loop controls still fail under
+4.1.11). One v4 behaviour was verified rather than assumed: `coverage.all`'s promise — every
+file in scope reported, never-loaded files at 0% — still holds, measured at 18/18 source files
+with `simulate.ts` correctly at 0% in the generators tier.
+
+**Disposition: FIXED at P2.2 commit 1**, by the version the commit lands.

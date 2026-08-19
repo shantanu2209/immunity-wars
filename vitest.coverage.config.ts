@@ -30,6 +30,14 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['tests/equivalence/src/**/*.test.ts', 'packages/content/src/**/*.test.ts'],
+    // SUITE-LEVEL TIME BUDGET — docs/FINDINGS.md #43, fourth entry point. This config runs the
+    // equivalence suite from the repo root, so tests/equivalence/vitest.config.ts does NOT apply
+    // here, and v8 instrumentation multiplies compute (~1.2-3x measured: the B4b fuzzer 10.9s ->
+    // 12.9s, the all-seven-cells query sweep from under 5s to 5.9s). Observed slowest undeclared
+    // test under coverage, 19 Aug 2026, 20-core i7-12700F, vitest 4.1.11: 12.9s. 120s covers a
+    // 4-core CI runner on top of the instrumentation cost; the corpus tests' own declared
+    // 120s-600s values override it where they are larger.
+    testTimeout: 120_000,
     coverage: {
       provider: 'v8',
       include: ['packages/engine/src/**/*.ts', 'packages/content/src/**/*.ts'],

@@ -207,17 +207,25 @@ contract Task B was measured against.
   oracle during a renderer rewrite is the worst available timing. The 9 coverage arms move with
   it (`docs/COVERAGE_DEFERRED.md`). Record: `docs/PHASE2_BRIEF.md` v1.1 §6, review item A.
 
-- **Open Dependabot advisories are accepted, and the acceptance has a TRIGGER.** GitHub shows
-  criticals; it is one advisory counted once per manifest, in test tooling. Every open advisory
-  requires a long-running server accepting requests, and nothing here starts one — every test
-  command is one-shot. Full reasoning: `docs/SECURITY_NOTES.md`.
+- **The vitest trigger has FIRED, deliberately early: vitest is on 4.1.11.** The advisory
+  acceptance below survives with one advisory left, and the dev server no longer waits on a
+  runner move.
 
-  > ⚠️ **If you are about to add a Vite dev server for the Phase 2 UI, or `vitest --ui`, or
-  > anything else that listens on a port — that reasoning collapses and `vitest 2 → 3` becomes
-  > urgent. Upgrade it in the same change that introduces the server.**
+  *Corrected 19 Aug 2026, at P2.2 commit 1.* This block previously said `vitest 2 → 3` becomes
+  urgent the moment anything listens on a port, and to upgrade in the same change that introduces
+  the server. The upgrade landed **before** the server instead, alone, so a runner break could be
+  attributed to the runner — and it broke twice, which is why the landing version is 4 and not 3:
+  vitest 2 had never enforced `testTimeout` on synchronous tests (8 tests across 3 suites ran on
+  a fictional budget; suite-level budgets now declared at four entry points), and vitest 3.2.7 —
+  the final 3.x — can fail a run in which every test passed, a false-red its closed line will
+  never fix. `docs/FINDINGS.md` #43 and #44.
 
-  This is not a reason to avoid a dev server. Phase 2 will want one. It is a reason not to add one
-  without also moving vitest.
+  **What remains accepted:** one moderate advisory — esbuild ≤0.24.2, dev-only, via
+  `tools/legacy-harness`'s own pinned esbuild for `build:single`. It requires `esbuild --serve`
+  or an equivalent long-running dev context, and nothing here starts one; every test command is
+  one-shot. Same structural acceptance as before (`docs/SECURITY_NOTES.md`); bumping that pin to
+  ^0.28 (which vite 8 also wants as a peer) clears it, and awaits a ruling because it changes the
+  tool that builds the single-file harness.
 
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.
