@@ -37,6 +37,8 @@ weaker than a demonstration and is labelled so deliberately.
 ### ap.ts
 
 - `25` `const amount = n || 1;`
+- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
+- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
 - `39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 
 ### construct.ts
@@ -46,9 +48,10 @@ weaker than a demonstration and is labelled so deliberately.
 - `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
 - `204` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
 - `209` `return (alt ?? null) as Card | null;`
+- `218` `return (alt ?? null) as Card | null;`
+- `218` `return (alt ?? null) as Card | null;`
 - `242` `hp: INV_HP[c.type] || 1,`
 - `243` `maxhp: INV_HP[c.type] || 1,`
-- `290` `.find((c) => c.type === type) ??`
 - `291` `DECK_MASTER.find((c) => c.type === type) ??`
 - `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
@@ -71,7 +74,13 @@ weaker than a demonstration and is labelled so deliberately.
 - `85` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `157` `return INV_SPEED[iv.type] || 1;`
 - `203` `if (g.fx) ap += g.fx.apMod ?? 0;`
+- `203` `if (g.fx) ap += g.fx.apMod ?? 0;`
 - `209` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `227` `return (g.ab[famOf(iv)] ?? 0) > 0;`
+- `227` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `248` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
 - `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
 - `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
@@ -86,7 +95,6 @@ weaker than a demonstration and is labelled so deliberately.
 - `321` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
 - `384` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
 - `388` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `405` `(iv.type === 'parasite' && iv.tagged && !iv.inMac && (iv.hp ?? 0) <= 1) ||`
 - `420` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
 - `620` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
 - `621` `return t[d6() - 1] ?? 1;`
@@ -95,8 +103,6 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### simulate.ts
 
-- `133` `(g.ab.X ?? 0) < 1 &&`
-- `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `178` `if ((g.ab[tf] ?? 0) > 0) {`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
@@ -216,14 +222,6 @@ export function apOwnerOf(g: GameState, a: Action | null | undefined): string | 
 ```
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
-
-### construct.ts:75
-
-```
-while (slots.includes(t)) t += 1;
-```
-
-the collision loop never runs: the three quartile slots are 4,8,11 / 5,10,15 / 8,15,23 at the three difficulties, which never collide
 
 ### queries.ts:578
 

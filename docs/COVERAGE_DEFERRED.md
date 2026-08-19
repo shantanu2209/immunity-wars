@@ -10,7 +10,7 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (8 arms)
+## Phase 3 — multiplayer (22 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
@@ -21,10 +21,24 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 - `actions.ts:158` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
 - `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
 - `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
-- `ap.ts:29` `}`
+- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
+- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
+- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
+- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
+- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
+- `ap.ts:20` `if (!g.multiplayer) return g.ap;`
+- `ap.ts:20` `if (!g.multiplayer) return g.ap;`
+- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
+- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
+- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
+- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
+- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
+- `ap.ts:26` `if (!g.multiplayer) {`
+- `ap.ts:30` `if (pid == null) return;`
+- `ap.ts:30` `if (pid == null) return;`
 - `ap.ts:53` `return g.multiplayer ? apAvail(g, g._actingPid) : g.ap;`
 
-## Phase 3 — reachable once a competent bot exists (9 arms)
+## Phase 3 — reachable once a competent bot exists (19 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
 emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot
@@ -40,17 +54,28 @@ work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.
 - `simulate.ts:83` `if (e && applyAction(g, { action: 'resengulf', organ: o, invaderId: e.id }).ok) {`
 - `simulate.ts:88` `if (primed) continue;`
 - `simulate.ts:107` `if (helper && bcell && helperLicensed(g) && !samePlace(helper, bcell)) {`
-- `simulate.ts:229` `n.zone !== 'hub' &&`
+- `simulate.ts:112` `if (`
+- `simulate.ts:112` `if (`
+- `simulate.ts:113` `best &&`
+- `simulate.ts:114` `best.s < placeDist(helper, bcell) &&`
+- `simulate.ts:115` `applyAction(g, { action: 'move', cell: 'helper', ...best.d }).ok`
+- `simulate.ts:144` `if (mac) {`
+- `simulate.ts:227` `if (`
 - `simulate.ts:230` `invadersWithNeutrophil(g).length >= 2 &&`
-- `simulate.ts:232` `) {`
-- `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
+- `simulate.ts:231` `applyAction(g, { action: 'net', cell: 'neutrophil' }).ok`
 - `simulate.ts:258` `if (!target) return false;`
+- `simulate.ts:278` `else if (goTo('nk', hidden)) moved = true;`
+- `simulate.ts:316` `else if (g.lost) {`
+- `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
+- `simulate.ts:368` `if (!n) return [];`
+- `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (43 arms)
+## Uncategorised — still open (78 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
 - `actions.ts:169` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:179` `if (g.suppress) {`
 - `actions.ts:221` `if (!c) return err('Illegal move.');`
 - `actions.ts:240` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:251` `if (!to) return err('No lymphatic link from this route.');`
@@ -60,22 +85,37 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
 - `actions.ts:450` `if (apNow(g) < 1) return err('No Action Points.');`
 - `actions.ts:480` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:511` `if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {`
+- `actions.ts:513` `if (org) {`
 - `actions.ts:532` ``<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disea`
 - `actions.ts:597` `if (!iv) return err('No such pathogen.');`
 - `actions.ts:602` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
 - `actions.ts:605` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
 - `actions.ts:627` `if (n.zone === 'hub') return err('Move onto a swarm first.');`
+- `actions.ts:629` `if (!here.length) {`
+- `actions.ts:629` `if (!here.length) {`
 - `actions.ts:691` ``The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ`
 - `actions.ts:706` ``The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,`
+- `actions.ts:760` `if (c) {`
+- `actions.ts:780` `if (pool.length) {`
+- `actions.ts:788` `if (c) g.discard.push(c as never);`
 - `ap.ts:40` `if (ck && g.free && free > 0) {`
+- `construct.ts:84` `if (pick !== undefined) g.events[t] = pick;`
 - `construct.ts:102` `if (!e) return;`
-- `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
-- `construct.ts:140` `if ((c as unknown as Card).novel) {`
 - `construct.ts:164` `default:`
+- `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
+- `construct.ts:128` `if (c) g.discard.push(c);`
+- `construct.ts:140` `if ((c as unknown as Card).novel) {`
+- `construct.ts:208` `if (alt) g.discard.push(alt);`
 - `construct.ts:215` `if (i >= 0) {`
+- `construct.ts:217` `if (alt) g.discard.push(alt);`
+- `construct.ts:217` `if (alt) g.discard.push(alt);`
+- `construct.ts:292` `({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);`
 - `construct.ts:297` `if ((card as Card).novel) {`
 - `construct.ts:307` `if (!card) return null;`
+- `effects.ts:62` `if (g.rare) {`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
+- `primitives.ts:34` `if (i in a && j in a) {`
 - `queries.ts:178` `if (!helper || !target) return false;`
 - `queries.ts:274` `if (!g.flags.dendritic) {`
 - `queries.ts:365` `if (!attackable(iv)) return false;`
@@ -86,10 +126,29 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `queries.ts:459` `if (!n) return [];`
 - `queries.ts:466` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
 - `queries.ts:482` `if (!c) return [];`
+- `queries.ts:547` `if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });`
+- `queries.ts:558` `} else if (c.zone === 'branch' && c.organ) {`
+- `queries.ts:577` `if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });`
 - `spread.ts:66` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
 - `spread.ts:69` `if (!e) return false;`
 - `spread.ts:166` `default:`
+- `spread.ts:91` `if (d) {`
+- `spread.ts:147` `if (h) {`
+- `spread.ts:156` `if (o) {`
+- `spread.ts:158` `if (org) {`
+- `spread.ts:161` `if (g.rareBanner) g.rareBanner.why += ` The ${ORGANS[o].name} took the damage.`;`
+- `spread.ts:367` `if (t) {`
+- `spread.ts:465` `if (org) {`
+- `spread.ts:555` `} else if (iv.zone === 'branch') {`
+- `spread.ts:607` `if (i >= 0) arrivals.splice(i, 1);`
 - `spread.ts:626` `if (!r) return;`
+- `spread.ts:631` `if (i >= 0) arrivals.splice(i, 1);`
+- `spread.ts:649` `if (i >= 0) arrivals.splice(i, 1); // remove from the one-time-hit list`
+- `spread.ts:651` `if (org) {`
 - `spread.ts:668` `if (!org) return;`
 - `spread.ts:744` `if (!org) return;`
+- `spread.ts:789` `if (g.fx) {`
+- `spread.ts:804` `if (g.cells.macrophage) g.cells.macrophage.freeEngulf = true;`
+- `spread.ts:811` `if (g.cells.helper) g.cells.helper.usedThisTurn = false;`
+- `spread.ts:816` `if (r) r.ate = false; // each resident may engulf once (free) per turn`
 - `view.ts:50` `if (!u) return err('Nothing to undo.');`

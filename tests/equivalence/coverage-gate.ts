@@ -185,7 +185,13 @@ const RULE_B: Demonstrated[] = [
 /* ------------------------------------------------------------------ */
 
 interface Loc {
-  start: { line: number };
+  /**
+   * `line` optional since @vitest/coverage-v8 4: the AST-based mapper (ast-v8-to-istanbul)
+   * emits the IMPLICIT-ELSE arm of an else-less `if` as `{ start: {}, end: {} }` — an EMPTY
+   * start, not a missing one, so the check must be on `.line` — 405 of 1,876 arms in the first
+   * run under it. See the fallback where arms are collected.
+   */
+  start?: { line?: number };
 }
 interface FileCoverage {
   path: string;
@@ -229,7 +235,17 @@ for (const fc of Object.values(data)) {
     const meta = fc.branchMap[id];
     if (!meta) continue;
     counts.forEach((hits, i) => {
-      const n = (meta.locations[i] ?? meta.loc).start.line;
+      // The IMPLICIT-ELSE fallback, required since coverage-v8 4. The v4 mapper emits the
+      // else-arm of an else-less `if` with a startless location; without this fallback such an
+      // arm gets line `undefined` and text '' — an identity no rule can match, no deferred
+      // matcher can classify, and no human can review. Anchoring it on the `if` line restores
+      // the semantics every rule here was written against: a line's arms share its text
+      // ("a line usually has two arms — the dead one and its live counterpart", rule B note).
+      const n = meta.locations[i]?.start?.line ?? meta.loc.start?.line;
+      if (n === undefined) {
+        // Never silently drop an arm — a skipped arm shrinks the denominator invisibly.
+        throw new Error(`branch arm with no resolvable line: ${fc.path} branch ${id} arm ${i}`);
+      }
       arms.push({
         file: fc.path,
         short,
