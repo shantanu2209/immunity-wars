@@ -28,7 +28,7 @@ No API keys or secrets, ever.
   If a change would make the biology wrong, stop and say so — do not ship it and flag it later.
 - **Rules live in `packages/engine/` and nowhere else.** No game logic in UI, server, or content.
 - **Physical/digital parity.** The printed board and the app must agree. Board geometry has one
-  source: `packages/content/board/geometry.json`. Never hardcode coordinates elsewhere.
+  source: `packages/content/src/board/geometry.json`. Never hardcode coordinates elsewhere.
 - **No personal data.** No accounts, no emails, no persistent user identifiers, no analytics IDs.
   Users are under 18; India's DPDP Act treats them as children. Staying out of scope is a
   design constraint, not a preference.

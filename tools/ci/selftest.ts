@@ -148,6 +148,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'does not resolve',
   },
   {
+    id: 'docs-bad-inline-path',
+    why: 'CLAUDE.md named packages/content/board/geometry.json in its hard rules; it has always been packages/content/src/board/. A code span is not a markdown link, so the link check could never have seen it.',
+    file: 'CLAUDE.md',
+    mutate: (t) =>
+      t.replace(
+        '`packages/content/src/board/geometry.json`',
+        '`packages/content/board/geometry.json`',
+      ),
+    gate: 'pnpm docs:check',
+    expect: 'which does not exist',
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',

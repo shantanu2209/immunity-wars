@@ -150,7 +150,7 @@ Sequenced so the decision that could invalidate everything happens in week two, 
 | # | Stage | Why here |
 |---|---|---|
 | **P2.1** | **Seam 1 + the dependency rule** | Nothing else may start. See §3 |
-| **P2.2** | **Thin vertical slice** — SVG board from `geometry.json`, one animated spread **driven through `Session` against the real engine**, no game logic | The cheapest artefact that can answer P2.3 |
+| **P2.2** | **Thin vertical slice** ([plan](P2_2_PLAN.md)) — SVG board from `geometry.json`, one animated spread **driven through `Session` against the real engine**, no game logic | The cheapest artefact that can answer P2.3 |
 | **P2.3** | **Performance measurement** on that slice | The decision point. See §4 |
 | **P2.4** | Art pipeline | Runs alongside from here; blocks nothing |
 | **P2.5** | Full UI build, screen by screen | See §5 |
@@ -432,7 +432,8 @@ confirmed pass on real low-end hardware. It stays because an honest gap beats a 
 ### The board is SVG; the illustrations stay raster
 
 **Geometry** — vessels, step nodes, lane curves, organ positions — is *generated from*
-`content/board/geometry.json`. No drawing, no design tool: a data-to-code transformation.
+`packages/content/src/board/geometry.json`. No drawing, no design tool: a data-to-code
+transformation.
 
 **Illustrations** — cells, pathogens, organs — remain raster, dropped into the SVG via `<image>`.
 Every pixel of the existing contrast-tuned art is preserved.
