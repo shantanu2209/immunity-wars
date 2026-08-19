@@ -176,6 +176,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'reconciliation sentence verbatim',
   },
   {
+    id: 'manifest-coupling',
+    why: 'FINDINGS #45: a control expectation naming a renamed test title strands the control silently, and the harness cadence rule proved unpractised at P2.1. coupling.test.ts must redden the fast tier the moment an expectation and a title disagree.',
+    file: 'tests/manifest/controls-data.ts',
+    mutate: (t) =>
+      t.replace(
+        "'is five suites and three cross-cutting properties',\n      'records the absent unit suite as absent',",
+        "'is four suites and three cross-cutting properties',\n      'records the absent unit suite as absent',",
+      ),
+    gate: 'npx vitest run --root tests/manifest',
+    expect: 'no longer matches any test title',
+  },
+  {
     id: 'aggregate',
     why: 'The CI-shaped blind check: a green build because a needed job was SKIPPED.',
     file: 'tools/ci/aggregate.ts',

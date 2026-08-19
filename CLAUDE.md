@@ -14,7 +14,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.2).
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.3).
 Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
 `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 
@@ -207,17 +207,34 @@ contract Task B was measured against.
   oracle during a renderer rewrite is the worst available timing. The 9 coverage arms move with
   it (`docs/COVERAGE_DEFERRED.md`). Record: `docs/PHASE2_BRIEF.md` v1.1 §6, review item A.
 
-- **Open Dependabot advisories are accepted, and the acceptance has a TRIGGER.** GitHub shows
-  criticals; it is one advisory counted once per manifest, in test tooling. Every open advisory
-  requires a long-running server accepting requests, and nothing here starts one — every test
-  command is one-shot. Full reasoning: `docs/SECURITY_NOTES.md`.
+- **The vitest trigger has FIRED, deliberately early: vitest is on 4.1.11.** The advisory
+  acceptance below survives with one advisory left, and the dev server no longer waits on a
+  runner move.
 
-  > ⚠️ **If you are about to add a Vite dev server for the Phase 2 UI, or `vitest --ui`, or
-  > anything else that listens on a port — that reasoning collapses and `vitest 2 → 3` becomes
-  > urgent. Upgrade it in the same change that introduces the server.**
+  *Corrected 19 Aug 2026, at P2.2 commit 1.* This block previously said `vitest 2 → 3` becomes
+  urgent the moment anything listens on a port, and to upgrade in the same change that introduces
+  the server. The upgrade landed **before** the server instead, alone, so a runner break could be
+  attributed to the runner — and it broke twice, which is why the landing version is 4 and not 3:
+  vitest 2 had never enforced `testTimeout` on synchronous tests (8 tests across 3 suites ran on
+  a fictional budget; suite-level budgets now declared at four entry points), and vitest 3.2.7 —
+  the final 3.x — can fail a run in which every test passed, a false-red its closed line will
+  never fix. `docs/FINDINGS.md` #43 and #44.
 
-  This is not a reason to avoid a dev server. Phase 2 will want one. It is a reason not to add one
-  without also moving vitest.
+  **Nothing remains accepted: `pnpm audit` is clean.** The last advisory (esbuild ≤0.24.2 via
+  `tools/legacy-harness`'s own pin) was cleared later the same day by ruling — the pin moved to
+  ^0.28, and the bump was verified the strong way: `build:single` rebuilt, both artifacts opened
+  in a browser and **played** through a full turn including a spread, with zero console errors.
+  If an advisory appears in future, the structural acceptance test in `docs/SECURITY_NOTES.md`
+  still applies — but note the dev server exists from P2.2 commit 2 onward, so "nothing listens
+  on a port" is no longer the automatic answer it was.
+
+  **The battery for any future runner or toolchain move, in full — learned the once-hard way
+  when the P2.2 upgrade ran the coverage TESTS but not the coverage GATE, and the gate was where
+  the provider change was hiding:** `pnpm verify` · `pnpm ci:selftest` reading every control's
+  own line, not the exit code · `pnpm test:manifest-controls` · `rm -rf coverage && pnpm
+  coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
+  --force`), because turbo cancels queued tasks on first failure and a single red suite is a
+  lower bound, not a census.
 
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.

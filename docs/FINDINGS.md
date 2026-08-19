@@ -2308,3 +2308,301 @@ covers only one direction. This is its other half: **a check that has never been
 on purpose is not known to permit anything.**
 
 **Disposition: FIXED at P2.1**, and generalised into the standing rules.
+
+---
+
+## 43. vitest 2 never enforced `testTimeout` on a synchronous test — a limit that could never fire, trusted implicitly
+
+**Found at P2.2 commit 1, 19 August 2026**, by the `vitest 2 → 3` upgrade the security note
+required (`docs/SECURITY_NOTES.md`), landed alone and before the dev server so that exactly this
+kind of break could be attributed to the runner and nothing else.
+
+**The whole finding is visible in one contrast inside `tests/equivalence`: an 81.6-second test
+passed the upgrade while a 7-second test failed it.** `spread.test.ts` and `simulate.test.ts`
+declare per-test timeouts — 120s to 600s, as bare third arguments a grep for "timeout" does not
+find — and `actions.test.ts` inherited the 5,000ms default. **Declared budgets survived the
+instrument change; inherited ones did not.**
+
+The first symptom was two tests in `tests/balance/src/metrics-control.test.ts` going red with
+*"Test timed out in 5000ms"* — the two compute-heavy E2 controls: the baseline held-out arm,
+which pays the full 1,600-game calibration, and the blind-spot control, which pays a second
+calibration plus two mutated-legacy arms (11.5–13.3s observed across runs). Both had been green
+under vitest 2 at that morning's merge, unchanged.
+
+**The full extent was three suites, revealed serially.** turbo cancels queued tasks on the first
+failure, so each fix unmasked the next: `tests/balance` (2 tests), then `tests/property` (3 —
+the fast-check property at 25.8s, the per-difficulty sweep, the non-vacuity counts), then
+`tests/equivalence` (3 — the B4b/B4c/B4d action fuzzers, 7.0–10.9s). A run that reports one red
+suite under turbo's default scheduling is reporting a lower bound, not a census.
+
+### The mechanism, established by a controlled experiment rather than a changelog
+
+A test file containing nothing but a synchronous 6-second busy-loop and one trivial assertion,
+run under both runners with the default 5,000ms `testTimeout`:
+
+| runner | verdict |
+|---|---|
+| vitest 2.1.9 | **passes**, 6.0s |
+| vitest 3.2.7 | **fails** — *"Test timed out in 5000ms"*, the exact error the suite shows |
+
+So vitest 2 never enforced `testTimeout` against a synchronous test. The timer cannot fire while
+the event loop is blocked, and v2 never checked elapsed time after the test returned. Vitest 3
+checks retroactively — confirmed in `@vitest/runner`'s source, not inferred: `runWithTimeout`'s
+resolve path now carries `if (now() - startTime >= timeout) rejectTimeoutError()`, added against
+upstream issue vitest#2920, with `now` a `Date.now` reference captured at module load. Vitest 4
+keeps the same enforcement, re-measured with the same experiment before commit 1 landed on it
+(see #44 for why the commit lands on 4).
+
+### The key detail: the verdict was retroactive, and nothing about the statistics changed
+
+The failing tests **ran to completion and their assertions held** — the recorded 13.3s duration
+and the absence of any assertion error prove it. A synchronous test cannot be interrupted; vitest
+3 lets it finish and then fails it on elapsed time alone. Every statistical claim the E2 controls
+assert was as true under the new runner as under the old. What broke was purely a time budget —
+one that had never actually been applied to these tests.
+
+**That is the finding: the 5,000ms limit was fictional for every synchronous test in this
+repository, for the entire life of the project.** A limit that can never fire is the same class
+as a check that has never failed — trusted, not known. The suite's own header says its sizes were
+chosen to keep the tier "inside ~30s"; individual tests were over the per-test budget the whole
+time, and no instrument could say so.
+
+### The fix, and why it is a migration fix rather than a patch to green
+
+**Ruled by Shantanu:** a suite-level `testTimeout`, not per-test values. Per-test values would
+fix the tests that failed and leave their siblings — 1.4–4.5s on a 20-core i7-12700F — to cross
+5s later on a 4-core CI runner, looking like a new and unrelated problem. The suite-level budget
+states the truth about the suite: these tests do real computation and 5s was never their real
+ceiling. Applied at five entry points, each sized from its own measurements: `tests/balance`
+60s, `tests/property` 120s, `tests/equivalence` 60s (where the existing larger per-test
+declarations override it), `vitest.coverage.config.ts` 120s — the root config that runs the
+equivalence files itself, out of reach of the package config and with v8 instrumentation
+multiplying compute — and `tests/session` 60s. Each config carries the observed durations and
+the hardware they were measured on, so whoever finds it slow later has the baseline rather than
+a bare number.
+
+**The fifth entry point is the ruling's own prediction, observed.** `tests/session` needed no
+budget on the 20-core development machine — its longest test sat just under 5s — so it got
+none, and PR #21's first CI run failed exactly there: 5,769ms on a 4-core GitHub runner, red in
+one run and green in the other, a race at the exact boundary. That is the scenario the ruling
+named when it chose suite-level over per-test ("leave the siblings to cross 5s later on a
+slower machine, looking like a new and unrelated problem"), at suite granularity instead of
+test granularity.
+
+The assertions are untouched, and a declared real budget is more honest than an undeclared
+fictional one — the same shape as the sd floor (#35), where the correction was making the
+instrument say what was actually true.
+
+**Disposition: FIXED at P2.2 commit 1.** The budgets are correct on any runner; the commit lands
+them on vitest 4.1.11 (#44), where all four entry points are green and the retroactive
+enforcement they exist to satisfy is confirmed still present.
+
+*Corrected later the same day, twice, by CI — the same lesson at two more removes.* First, the
+fifth entry point: `tests/session` needed no budget on the 20-core machine and PR #21's first CI
+run failed exactly there (5,769ms on a 4-core runner), the scenario the ruling predicted.
+Second, the SIZES: every budget was sized from 20-core SOLO observations, and the binding
+environment turned out to be the 4-core CI runner executing the whole workspace concurrently —
+where the B4b fuzzer stretched to 65.1s against its 60s budget (red in one run, green in the
+other) and the balance blind-spot control to 50.5s of its 60s. All five entry points now carry
+**300s**, ~4.5–6x the worst CI-concurrent observation: wall clock under contention is what
+vitest measures, and a test at five minutes has changed or hung. The general form: **a budget is
+sized against its binding environment, not its convenient one — and the binding environment is
+found by being bitten in it.**
+
+---
+
+## 44. vitest 3's worker RPC can fail a run in which every test passed
+
+**Found at P2.2 commit 1, 19 August 2026**, while verifying the `vitest 2 → 3` upgrade — and it
+is the reason that upgrade became `2 → 4`. A separate defect from #43: that one made a fictional
+budget real; this one fails runs for a reason that has nothing to do with any test.
+
+Two forced fully-concurrent runs of `pnpm test` under vitest 3.2.7 went red with
+`tests/equivalence` at **315/315 tests passed**. The exit code was flipped by unhandled
+`[vitest-worker]: Timeout calling "onTaskUpdate"` errors — two per run.
+
+### The mechanism, read from the dist and then reproduced
+
+- vitest's worker talks to the main process over birpc, whose response timeout is a hardcoded
+  `DEFAULT_TIMEOUT = 60_000`. No config option or environment variable reaches it in 3.2.7 —
+  every `VITEST_*` knob in the dist was enumerated to check.
+- A worker issues `onTaskUpdate` after finishing a test, then the next **synchronous** test
+  blocks the event loop. If the block outlasts 60s, Node's timers phase runs **before** its poll
+  phase when the loop unblocks — so the expired timer fires before the response, which arrived
+  long ago, is ever read. A spurious timeout, manufactured by the worker's own blocked loop.
+- **Controlled reproduction:** one quick test (so an RPC is in flight), then a 70s sync
+  busy-loop. Both tests pass; the run exits 1 with the exact production signature. Deterministic.
+- **Why solo runs looked safe:** the forks pool starts each file in a fresh worker, so a file's
+  *first* test — the 81.6s corpus run — has nothing in flight. The danger is a *later* test in a
+  file stretching past 60s, which is what turbo's 15 concurrent vitest instances on 20 cores
+  did: ~285 forked processes, and 4–14s tests stretch past the timer. It also retroactively
+  explains one earlier anomalous red on `tests/property` that could not be reproduced solo.
+
+**This is a false-red generator in the instrument itself.** A gate that goes red on a coin flip
+cannot anchor "commit after verification" — it teaches people to re-run until green, which is
+the failure culture this project least survives.
+
+### The ruling
+
+**vitest 2 → 4.1.11, superseding 2 → 3.** Three facts decided it:
+
+1. 3.2.7 is the **final 3.x release** — the line is closed and no fix is coming to it.
+2. 4.1.11 runs the identical reproduction **clean, exit 0**, and two forced fully-concurrent
+   census runs of the whole repository under it show 15/15 tasks green with no RPC errors.
+3. The security note's intent (`docs/SECURITY_NOTES.md`) was a current, maintained runner before
+   any dev server exists. 3.2.7 is neither. Patching a dead major's RPC layer by hand would have
+   made this repository the maintainer of its own test runner.
+
+The #43 suite budgets carry over unchanged — they are correct on any runner, and vitest 4 still
+enforces the retroactive sync-test timeout (measured: the 6s busy-loop controls still fail under
+4.1.11). One v4 behaviour was verified rather than assumed: `coverage.all`'s promise — every
+file in scope reported, never-loaded files at 0% — still holds, measured at 18/18 source files
+with `simulate.ts` correctly at 0% in the generators tier.
+
+**Disposition: FIXED at P2.2 commit 1**, by the version the commit lands.
+
+---
+
+## 45. The first documented-but-UNPRACTISED claim: a written cadence rule, not followed, and no check to notice
+
+**Found at P2.2 commit 1, 19 August 2026**, by running `pnpm test:manifest-controls` as part of
+the vitest-upgrade battery. Two of the harness's controls expected the test title *"is **four**
+suites and three cross-cutting properties"*; P2.1 (`7ee6eee`) had renamed it to *"is **five**
+suites…"* when the session suite joined the manifest. The expectations sat stale for the whole
+gap — the controls still reddened the right *number* of assertions, but one of the assertions
+they were watching for no longer existed, so that half of each control could never fire again.
+
+**This is a different failure shape from the usual one.** This project has found roughly a dozen
+documented-but-**false** claims — sentences that stated something untrue. Here every sentence was
+true: the harness worked, the cadence rule existed and was written down in the root
+`package.json` — *"Run it when the manifest or its schema changes."* The manifest changed; the
+rule was not followed. **The controls did not drift. The practice did.** A practice that lives in
+prose fails exactly the way the pre-`docs:check` documentation sweep failed: silently, and in
+the gap between the sessions where anyone would look.
+
+### The fix, same argument as `docs:check`: the cadence became a check
+
+The coupling the cadence protected — expectation strings in the harness naming test titles in
+`manifest.test.ts` — is now asserted **in the fast tier**, so it breaks the build the moment it
+breaks, with no practice to remember:
+
+- `tests/manifest/controls-data.ts` — the control definitions, split from the runner so a test
+  can import them without executing mutations;
+- `tests/manifest/coupling.test.ts` — every `expectFailing` entry must match some `it(...)`
+  title, by the same substring relation the harness itself uses, plus a floor on extracted
+  titles so a broken extraction cannot pass as vacuously green;
+- a `manifest-coupling` control in `tools/ci/selftest.ts` — the stale-title mutation replayed on
+  purpose, required to redden with *"no longer matches any test title"*. Demonstrated firing on
+  its first run.
+
+**What the check does not replace:** the harness. Coupling proves the names still refer to
+something; only running `pnpm test:manifest-controls` proves the assertions still *fire*. The
+cadence rule stands for that half — but a stale name can no longer wait for it.
+
+**Disposition: FIXED at P2.2 commit 1**, with the check and its control both demonstrated.
+
+---
+
+## 46. The v4-provider reconciliation: a finer arm universe, honestly reclassified — and the target did not move
+
+**Found and executed at P2.2, 19 August 2026**, after PR #21's coverage job went red at 92.53%
+against the 95% target. `@vitest/coverage-v8` 4 derives branch arms from the AST where v2
+derived them from V8 ranges: the raw universe grew 1,526 → 1,876 with behaviour provably
+unchanged (the corpus stayed byte-identical in the same runs), the deferred lists doubled on
+unchanged pinned lines, and three text-keyed exclusions stopped matching. **Ruled: recalibrate
+before merging — some of the new arms might be reach we thought we had and did not.**
+
+### The classification, all 78 uncategorised arms read in source context
+
+- **53 unreachable with a reason.** Overwhelmingly rule A's own class in a spelling rule A
+  cannot see: defensive presence-handling required by `noUncheckedIndexedAccess`, written as
+  `if (x)` instead of `??`. Now excluded by **rule C** — three mechanical shapes (total-member
+  presence guards; `indexOf` on the list the element was filtered from; exhausted tails of
+  closed-set zone chains), each carrying its class argument and corpus evidence at the rule and
+  **watched by the churn report from day one** — plus 30 new rule-B entries, every one
+  demonstrated in `demonstrate-dead-arms.ts` (30/30 DEAD).
+- **25 reachable but uncovered.** Six were **NEW REACH** — code the v2 provider never showed
+  anyone (see #47 for the significant one) — and became both-engine scenarios immediately, per
+  the ruling, rather than being absorbed into a recalibrated number. The rest are **named test
+  debt**, individually:
+  `actions.ts:169` endCommand out of phase · `actions.ts:240` hop with an unknown cell ·
+  `actions.ts:270` recall with an unknown cell · `actions.ts:309` clonalSelection at 0 AP ·
+  `actions.ts:337` vaccinate when already immune · `actions.ts:339` vaccinate at 0 AP ·
+  `actions.ts:450` antivenom at 0 AP · `actions.ts:480` strike with a wrong cell ·
+  `actions.ts:597` memoryKill on a missing id · `actions.ts:602` memoryKill unattackable ·
+  `actions.ts:605` memoryKill at 0 AP on Hard · `construct.ts:126` coInfection with an empty
+  deck · `effects.ts:65` Cellulitis killed by antibody (rare-trigger seed) · `queries.ts:274`
+  productionBreakdown without dendritic · `queries.ts:365` canNeutralise unattackable ·
+  `queries.ts:379` canTag unattackable · `spread.ts:66` fireRare unarmed · `spread.ts:69`
+  fireRare with an unknown key. Two switch `default:` arms (construct.ts:164, spread.ts:166)
+  stay uncategorised deliberately: dead by closed key sets, but a `default:` text key would
+  over-match, and two arms are not worth a rule.
+
+### What the reconciliation itself surfaced — four instrument findings inside one
+
+1. **405 arms had no identity at all**: the v4 mapper emits implicit-else arms with an empty
+   `start`, and the gate mapped them to line `undefined`, text `''`. Fixed by anchoring on the
+   `if`-line, with a loud throw replacing any silent drop — a throw that fired on its own first
+   version.
+2. **Line-level exclusion keys leaked a deferred arm**: excluding one arm at a line silently
+   removed its sibling from the denominator — at `simulate.ts:368`, a bot-reachable arm vanished
+   from the list Phase 3 inherits. Keys are now arm-precise; found by balancing the bot list's
+   ledger (19 → 17: exactly the two absent-path arms, which are dead at any bot strength).
+3. **Rule C's first draft ate live paths in never-called code**: a presence guard there has BOTH
+   arms uncovered and only the absent-path arm is dead. All three C shapes now discriminate on
+   arm index.
+4. **Two demonstrations corrected their own claims while being written**: the lymph-continuation
+   scan came back LIVE until narrowed to lymph-*linked* routes (blood is 3 steps but has no
+   lymph group), and the unknown-cell exhibit **crashed legacy** — legacy's `moveDestinations`
+   reads `cell.zone` unguarded and throws on an unknown cell key where the port returns
+   *"Illegal move."* A real malformed-input divergence, unreachable through the corpus (the
+   fuzzer's vocabulary never held an unknown cell key), recorded here rather than smoothed over.
+
+### The rulings, and which kind of change each was
+
+- **TARGET UNCHANGED at 95%.** Classification alone brings the gate to **96.46%** — it crosses
+  its existing target as a consequence of honest work, the sd-floor case (#35), not a moved
+  goalpost (#34).
+- **Cap restated as a ratio: 9.4% of raw arms** (176 today, 168 used), both numbers printed
+  every run so a future universe change shows as a number that moved. ⚠️ **Deviation from the
+  ruling's estimate, stated rather than fitted quietly:** the ruled figure was 7.9% (~147),
+  derived by holding exclusion *density* constant across the universe change. Measured, the v4
+  universe's new arms are disproportionately defensive — 29 of the 35 newly visible
+  uncategorised arms classified dead — so the honest exclusion set landed at 168 and the
+  constant-density rescale was an undercount. The ratio is set from the measured set plus the
+  old cap's proportional headroom (~9 arms).
+- **The `while`-loop exclusion: dropped, demonstration kept.** AST mapping emits no branch arm
+  for a loop condition; the property is still proven — the instrument stopped charging for it.
+
+**Disposition: EXECUTED.** Gate green at 96.46%, `pnpm audit` clean, every demonstration DEAD,
+and the deferred lists Phase 3 inherits are two arms more honest than before.
+
+---
+
+## 47. Two instruments, blind in the same place: the NET path
+
+**Named at the v4 reconciliation, 19 August 2026, by ruling.** The most significant of the six
+new-reach arms: **everything past `net`'s hub guard — the success path AND its own "nothing
+here a NET can catch" rejection — had zero test coverage**, because every test attempt at `net`
+sat at the hub.
+
+That is not a new gap. It is **FINDINGS #1's bot blindness seen from the coverage side**: the
+reference bot never moves the Neutrophil, so it can never NET, so no recorded game ever entered
+the success path — and the v2 coverage provider had merged those arms away, so no coverage
+report ever showed them uncovered. **Each instrument's blind spot hid the other's.** The corpus
+could not miss what it never entered; the coverage gate could not name what its provider never
+split out; and the gap sat in the intersection for the life of the project.
+
+> **The shape worth naming: where two instruments are blind in the same place, their overlap is
+> where the unknown lives — and no amount of green from either one says anything about it.**
+> When a blind spot is found in one instrument, check the same location in the others.
+
+The NET success path executed for the first time in this repository's history during this
+reconciliation — first by hand in the esbuild verification (a spread played in the browser),
+then as a permanent both-engine scenario (`coverage-scenarios.test.ts`, "new reach under
+coverage-v8 4"). The bot half of the gap remains, deliberately: a competent bot is Phase 3's
+work (#6, PHASE2_BRIEF v1.1 §6), and the bot-deferred coverage list now carries the honest
+count of what it will make reachable.
+
+**Disposition: the coverage half is CLOSED; the bot half is Phase 3's, tracked in
+`COVERAGE_DEFERRED.md`.**

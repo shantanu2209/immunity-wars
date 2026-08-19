@@ -16,7 +16,7 @@
  *      carries a class argument plus corpus evidence, and says so rather than pretending
  *      otherwise.
  *   4. THE LIST IS A LIABILITY. It stays short. Growth is a warning, not routine — the gate
- *      fails if it exceeds MAX_EXCLUSIONS.
+ *      fails if it exceeds the ratio cap (MAX_EXCLUSION_RATIO of raw arms).
  *
  * And it is SELF-POLICING: if an excluded arm ever becomes covered, it was not dead, and the
  * gate fails telling you to remove it.
@@ -81,7 +81,20 @@ import { relative } from 'node:path';
 import ts from 'typescript';
 
 const TARGET = 95;
-const MAX_EXCLUSIONS = 120;
+
+/**
+ * THE EXCLUSION CAP, restated as a RATIO of raw arms at the v4-provider reconciliation
+ * (docs/FINDINGS.md #46). It was `MAX_EXCLUSIONS = 120`, an absolute set against the v2
+ * provider's 1,526-arm universe. coverage-v8 4 derives arms from the AST and its universe is
+ * 1,876 — and the new arms are DISPROPORTIONATELY defensive (29 of the 35 newly visible
+ * uncategorised arms classified dead, plus the implicit-else class), so exclusion density is
+ * higher than a constant-density rescale of the old cap predicts: the ruling's estimate was
+ * 7.9% (~147) and the honestly classified set landed at 168. The ratio below is the measured
+ * set plus headroom proportional to the old cap's (120 vs ~111 used, so ~9 arms), and BOTH
+ * numbers are printed every run so a future universe change shows up as a number that moved,
+ * not a cap that silently accommodated it.
+ */
+const MAX_EXCLUSION_RATIO = 0.094;
 
 /**
  * RULE A — defensive null-coalescing arms.
@@ -140,11 +153,11 @@ const RULE_B: Demonstrated[] = [
     match: 'if (c.novel) {',
     why: 'unreachable inside the spawn loop: newGame filters novel cards out of the deck entirely (measured: 0 in deck); the novel pathogen is injected on novelTurn instead',
   },
-  {
-    file: 'construct.ts',
-    match: 'while (slots.includes(t)) t += 1;',
-    why: 'the collision loop never runs: the three quartile slots are 4,8,11 / 5,10,15 / 8,15,23 at the three difficulties, which never collide',
-  },
+  // DROPPED 19 Aug 2026, at the v4-provider reconciliation: `while (slots.includes(t)) t += 1;`
+  // (construct.ts). The line, the property and its executable demonstration all still exist —
+  // demonstrate-dead-arms.ts still prints DEAD for it — but istanbul-style AST mapping does not
+  // treat loop conditions as branches, so there is no arm left to exclude. The property is still
+  // proven; the instrument stopped charging for it. docs/FINDINGS.md #46.
   {
     file: 'queries.ts',
     match: 'export function abTotal(g: GameState): number {',
@@ -180,12 +193,178 @@ const RULE_B: Demonstrated[] = [
     match: 'export function apOwnerOf(g: GameState, a: Action | null | undefined): string | null {',
     why: 'dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11',
   },
+
+  /* ------------------------------------------------------------------ *
+   * ADDED 19 Aug 2026 at the v4-provider reconciliation (docs/FINDINGS.md #46). The AST-based
+   * mapper surfaced ~50 defensive arms the range-based v2 mapper had merged away. Rule C takes
+   * the three mechanical shapes; these are the remainder, each with its argument. Grouped
+   * demonstrations live in demonstrate-dead-arms.ts under "v4 reconciliation".
+   * ------------------------------------------------------------------ */
+  {
+    file: 'actions.ts',
+    match: "if (!c) return err('Illegal move.');",
+    why: 'unreachable in move: the `!d` guard two lines up already rejected any cell key that moveDestinations returns [] for — and moveDestinations opens with the same g.cells lookup — so by the time c is read, the key is known to resolve',
+  },
+  {
+    file: 'actions.ts',
+    match: "if (!to) return err('No lymphatic link from this route.');",
+    why: 'unreachable: a route with no lymph link was rejected two guards earlier (the LYMPH_GROUP check), so lymphPartners is never empty here',
+  },
+  {
+    file: 'actions.ts',
+    match: 'if (org) {',
+    why: "repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; this re-reads the same key two lines later for the compiler's sake",
+  },
+  {
+    file: 'actions.ts',
+    match:
+      '`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,',
+    why: 'the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan',
+  },
+  {
+    file: 'actions.ts',
+    match:
+      "`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,",
+    why: 'the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan',
+  },
+  {
+    file: 'actions.ts',
+    match:
+      "`The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,",
+    why: 'the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan',
+  },
+  {
+    file: 'actions.ts',
+    match: 'if (c) {',
+    why: 'the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan',
+  },
+  {
+    file: 'actions.ts',
+    match: 'if (pool.length) {',
+    why: "pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games",
+  },
+  {
+    file: 'actions.ts',
+    match: 'if (c) g.discard.push(c as never);',
+    why: 'conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games',
+  },
+  {
+    file: 'ap.ts',
+    match: 'if (ck && g.free && free > 0) {',
+    why: 'docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0',
+  },
+  {
+    file: 'view.ts',
+    match: "if (!u) return err('Nothing to undo.');",
+    why: 'pop on an array the previous line proved non-empty',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if (pick !== undefined) g.events[t] = pick;',
+    why: 'picks and slots both have length 3 by construction — two slices of 2 and 1 concatenated, indexed by a forEach over 3 slots',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if (!e) return;',
+    why: 'every caller passes keys drawn from the pools that built g.events, and both pools are subsets of EVENTS. Demonstrated by data scan',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if (c) g.discard.push(c);',
+    why: 'same conservation as the spawn path: deck and discard cannot both be empty at a coInfection. Demonstrated over 300 games',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if ((c as unknown as Card).novel) {',
+    why: 'the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if (alt) g.discard.push(alt);',
+    why: 'both sites: splice at an index findIndex just returned as >= 0 always yields an element',
+  },
+  {
+    file: 'construct.ts',
+    match: "({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);",
+    why: 'testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan',
+  },
+  {
+    file: 'construct.ts',
+    match: 'if ((card as Card).novel) {',
+    why: "testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck",
+  },
+  {
+    file: 'construct.ts',
+    match: 'if (!card) return null;',
+    why: 'testing-hook guard: every dz the suites force exists in DECK_MASTER',
+  },
+  {
+    file: 'queries.ts',
+    match: 'if (!helper || !target) return false;',
+    why: 'helper is roster-total (constructed at newGame, never deleted), and target is read with keys callers draw from CELL_KEYS. Demonstrated over 300 games',
+  },
+  {
+    file: 'queries.ts',
+    match: 'if (!c) return [];',
+    why: 'roster-total lookup: wormStrikeable is called with keys from CELL_KEYS and g.cells is total over them. Demonstrated over 300 games',
+  },
+  {
+    file: 'queries.ts',
+    match: "if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });",
+    why: 'dead by data: every branch is at least 2 steps (schema-enforced against the drawn board) and speed tops out at 3, so st = L - k >= 0 always. Demonstrated by data scan',
+  },
+  {
+    file: 'queries.ts',
+    match: "if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });",
+    why: 'dead by data: every route is 5 steps, the lymph crossing is step 3, and extra <= 2, so ns is always within [1, 5]. Demonstrated by data scan',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (o) {',
+    why: 'the live-organ list is empty only when every organ is at 0 integrity, and a vital at 0 has already ended the game before a rare event can fire. Demonstrated over 300 games',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (org) {',
+    why: 'three sites, one shape: the organ key was established by the surrounding filter or invariant (the live-organ filter; the lodged-worm organ invariant demonstrated in the neighbouring entry; worm arrivals always carrying an organ), and g.organs is total over organList',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (g.rareBanner) g.rareBanner.why += ` The ${ORGANS[o].name} took the damage.`;',
+    why: 'fireRare set g.rareBanner unconditionally at its top, ninety lines up the same function',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (t) {',
+    why: 're-find by id in the same array the iteratee came from — the element cannot be absent',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (!r) return;',
+    why: 'the hide filter three lines up required g.residents[iv.organ] truthy; repeat lookup',
+  },
+  {
+    file: 'spread.ts',
+    match: 'if (!org) return;',
+    why: 'arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games',
+  },
+  {
+    file: 'primitives.ts',
+    match: 'if (i in a && j in a) {',
+    why: 'Fisher-Yates over dense arrays: the comment above the line is the argument, and the demonstration shuffles 10,000 dense arrays without one skipped swap',
+  },
 ];
 
 /* ------------------------------------------------------------------ */
 
 interface Loc {
-  start: { line: number };
+  /**
+   * `line` optional since @vitest/coverage-v8 4: the AST-based mapper (ast-v8-to-istanbul)
+   * emits the IMPLICIT-ELSE arm of an else-less `if` as `{ start: {}, end: {} }` — an EMPTY
+   * start, not a missing one, so the check must be on `.line` — 405 of 1,876 arms in the first
+   * run under it. See the fallback where arms are collected.
+   */
+  start?: { line?: number };
 }
 interface FileCoverage {
   path: string;
@@ -219,6 +398,13 @@ interface Arm {
   text: string;
   covered: boolean;
   kind: 'branch' | 'function';
+  /**
+   * Position within the branch (0 = then/first). Rule C discriminates on it: a presence guard
+   * in NEVER-CALLED code has BOTH arms uncovered, and only the absent-path arm is dead — the
+   * other is the path every call would take, which is exactly what a deferred list must keep.
+   * Found by the first run of rule C eating three bot-deferred arms in simulate.ts.
+   */
+  armIndex: number;
 }
 
 const arms: Arm[] = [];
@@ -229,7 +415,17 @@ for (const fc of Object.values(data)) {
     const meta = fc.branchMap[id];
     if (!meta) continue;
     counts.forEach((hits, i) => {
-      const n = (meta.locations[i] ?? meta.loc).start.line;
+      // The IMPLICIT-ELSE fallback, required since coverage-v8 4. The v4 mapper emits the
+      // else-arm of an else-less `if` with a startless location; without this fallback such an
+      // arm gets line `undefined` and text '' — an identity no rule can match, no deferred
+      // matcher can classify, and no human can review. Anchoring it on the `if` line restores
+      // the semantics every rule here was written against: a line's arms share its text
+      // ("a line usually has two arms — the dead one and its live counterpart", rule B note).
+      const n = meta.locations[i]?.start?.line ?? meta.loc.start?.line;
+      if (n === undefined) {
+        // Never silently drop an arm — a skipped arm shrinks the denominator invisibly.
+        throw new Error(`branch arm with no resolvable line: ${fc.path} branch ${id} arm ${i}`);
+      }
       arms.push({
         file: fc.path,
         short,
@@ -237,13 +433,17 @@ for (const fc of Object.values(data)) {
         text: lineAt(fc.path, n),
         covered: hits > 0,
         kind: 'branch',
+        armIndex: i,
       });
     });
   }
   for (const [id, hits] of Object.entries(fc.f)) {
     const meta = fc.fnMap[id];
     if (!meta) continue;
-    const n = meta.decl.start.line;
+    const n = meta.decl.start?.line;
+    if (n === undefined) {
+      throw new Error(`function arm with no resolvable line: ${fc.path} fn ${id}`);
+    }
     arms.push({
       file: fc.path,
       short,
@@ -251,6 +451,7 @@ for (const fc of Object.values(data)) {
       text: lineAt(fc.path, n),
       covered: hits > 0,
       kind: 'function',
+      armIndex: 0,
     });
   }
 }
@@ -258,7 +459,102 @@ for (const fc of Object.values(data)) {
 const ruleB = (a: Arm): Demonstrated | undefined =>
   RULE_B.find((d) => a.short === d.file && a.text === d.match);
 
-const excluded: (Arm & { rule: 'A' | 'B'; why: string })[] = [];
+/* ------------------------------------------------------------------ *
+ * RULE C — three mechanical shapes, added at the v4-provider reconciliation.
+ *
+ * docs/FINDINGS.md #46. The AST-based mapper surfaced ~50 defensive arms the range-based v2
+ * mapper merged away, and most are RULE A'S OWN CLASS IN A SPELLING RULE A CANNOT SEE:
+ * presence-handling required by noUncheckedIndexedAccess, written as `if (x)` instead of `??`.
+ * Like rule A these are class arguments, which is the WEAKER evidence — rule A has already had
+ * one exclusion turn out to be live (docs/FINDINGS.md #25) — so rule C is watched by the same
+ * churn report from day one: its exclusions are written to the generated doc and every arm that
+ * leaves the list is named. Each shape carries its argument and its corpus evidence HERE, at
+ * the rule, not in a commit message.
+ *
+ * Deliberately narrow. C1 accepts only FIXED dotted paths (or `[o]` under a visible iteration
+ * over the total key set) because the bracket-lookup spelling of the same guard is genuinely
+ * reachable with a garbage key — `hop`/`recall` with an unknown cell prove it (two of the named
+ * test-debt arms) — and a rule that swept those would be excluding real test debt.
+ * ------------------------------------------------------------------ */
+
+/**
+ * C1 — presence guard on a total state member.
+ *
+ * CLASS ARGUMENT: `g.cells.*` (all seven), `g.organs.*`, `g.fx`, `g.rare`, `g.suppress` are
+ * constructed at newGame (construct.ts, the state literal) and never deleted — cells die by
+ * `alive: false`, organs by `hp: 0`; no key is ever removed. A presence guard on one of them,
+ * spelled directly or through a const bound 1–3 lines above (including `g.organs[o]` /
+ * `g.residents[o]` where `o` visibly iterates organList or the residents record), can therefore
+ * never take its absent arm. CORPUS EVIDENCE: 6,000 games with zero divergence, plus the
+ * 300-game totality scan in demonstrate-dead-arms.ts ("v4 reconciliation" block).
+ */
+const C1_DIRECT =
+  /^(?:\} else )?if \(!?g\.(?:fx|rare|suppress|cells\.(?:macrophage|neutrophil|bcell|tcell|helper|nk|eosinophil)|organs\.(?:heart|lungs|liver|brain|spleen|kidneys|marrow))\b/;
+const C1_BARE = /^(?:\} else )?if \(!?([A-Za-z_]\w*)\) (?:\{|return\b|[a-zA-Z])/;
+const C1_BOUND_FIXED =
+  /= g\.(?:fx|rare|suppress|cells\.(?:macrophage|neutrophil|bcell|tcell|helper|nk|eosinophil)|organs\.(?:heart|lungs|liver|brain|spleen|kidneys|marrow))\s*;?\s*$/;
+const C1_BOUND_ITER = /= g\.(?:organs|residents)\[o\]\s*;?\s*$/;
+const C1_ITERATION = /organList\.forEach\(\(o\)|for \(const o in g\.residents\)/;
+
+function ruleC1(a: Arm): boolean {
+  // Only the ABSENT-PATH arm is dead: the implicit else of `if (x)`, the then of `if (!x)`.
+  // In never-called code both arms are uncovered, and the other one is the path every call
+  // would take — exactly what the bot-deferred list must keep (see the armIndex note above).
+  const negated = /^(?:\} else )?if \(!/.test(a.text);
+  if ((negated && a.armIndex !== 0) || (!negated && a.armIndex !== 1)) return false;
+  if (C1_DIRECT.test(a.text)) return true;
+  const m = C1_BARE.exec(a.text);
+  if (!m) return false;
+  const ident = m[1] ?? '';
+  for (let k = 1; k <= 3; k += 1) {
+    const above = lineAt(a.file, a.line - k);
+    if (!above.includes(`const ${ident}`) && !above.includes(`let ${ident}`)) continue;
+    if (C1_BOUND_FIXED.test(above)) return true;
+    if (C1_BOUND_ITER.test(above)) {
+      for (let j = k + 1; j <= k + 4; j += 1) {
+        if (C1_ITERATION.test(lineAt(a.file, a.line - j))) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * C2 — `indexOf` on the list the element was filtered FROM.
+ *
+ * CLASS ARGUMENT: every `if (i >= 0) list.splice(i, 1)` site in the engine searches a list for
+ * an element obtained by `list.filter(...)` a few lines above — the element is in the list by
+ * construction, so the `< 0` arm cannot be taken. CORPUS EVIDENCE: 6,000 games, zero
+ * divergence; the three current sites are all in spread.ts's arrival bookkeeping.
+ */
+const C2 = /^if \((\w+) >= 0\) \w+\.splice\(\1, 1\);/;
+// The condition is always TRUE, so the dead arm is the implicit else — arm 1 only.
+const ruleC2 = (a: Arm): boolean => a.armIndex === 1 && C2.test(a.text);
+
+/**
+ * C3 — the exhausted tail of a closed-set zone chain.
+ *
+ * CLASS ARGUMENT: an invader or cell `zone` is exactly one of 'hub' | 'route' | 'branch' (the
+ * type is that closed union, and every writer assigns a literal). A zone-equality test that is
+ * the `} else if` tail of a chain, or whose immediately preceding lines already tested another
+ * zone literal and returned, cannot see its false arm: the alternatives are exhausted. The
+ * spelling requires that visible chain context precisely so a FIRST zone test — like `net`'s
+ * hub guard, whose else-arm was real test debt — can never match. CORPUS EVIDENCE: 6,000
+ * games, zero divergence.
+ */
+const ZONE_TEST = /\.zone === '(?:hub|route|branch)'/;
+function ruleC3(a: Arm): boolean {
+  // An exhausted chain tail's condition is always TRUE, so the dead arm is the else — arm 1.
+  if (a.armIndex !== 1) return false;
+  if (!ZONE_TEST.test(a.text)) return false;
+  if (/^\} else if /.test(a.text)) return true;
+  return ZONE_TEST.test(lineAt(a.file, a.line - 1)) || ZONE_TEST.test(lineAt(a.file, a.line - 2));
+}
+
+const ruleC = (a: Arm): 'C1' | 'C2' | 'C3' | undefined =>
+  ruleC1(a) ? 'C1' : ruleC2(a) ? 'C2' : ruleC3(a) ? 'C3' : undefined;
+
+const excluded: (Arm & { rule: 'A' | 'B' | 'C1' | 'C2' | 'C3'; why: string })[] = [];
 for (const a of arms) {
   // An excluded arm is by definition an UNCOVERED one. A rule-B entry names a line, and a line
   // usually has two arms — the dead one and its live counterpart. Excluding both would quietly
@@ -274,6 +570,20 @@ for (const a of arms) {
       ...a,
       rule: 'A',
       why: 'null-coalescing arm required by noUncheckedIndexedAccess where the surrounding guard already establishes presence',
+    });
+    continue;
+  }
+  const c = ruleC(a);
+  if (c) {
+    excluded.push({
+      ...a,
+      rule: c,
+      why:
+        c === 'C1'
+          ? 'presence guard on a total state member — constructed at newGame, never deleted'
+          : c === 'C2'
+            ? 'indexOf on the list the element was filtered from — present by construction'
+            : 'exhausted tail of a closed-set zone chain — the alternatives returned above',
     });
   }
 }
@@ -320,9 +630,11 @@ function previousRuleA(path: string): Map<string, number> {
   }
   const out = new Map<string, number>();
   let file = '';
+  // Rule C entries are watched by the same churn from day one (docs/FINDINGS.md #46): class
+  // arguments are the weaker evidence, so every mechanical rule's exits are named, not only A's.
   let inRuleA = false;
   for (const line of text.split(/\r?\n/)) {
-    if (line.startsWith('## Rule A')) inRuleA = true;
+    if (line.startsWith('## Rule A') || line.startsWith('## Rule C')) inRuleA = true;
     else if (line.startsWith('## Rule B')) inRuleA = false;
     else if (line.startsWith('### ')) file = line.slice(4).trim();
     else if (inRuleA) {
@@ -389,15 +701,27 @@ for (const d of RULE_B) {
     );
   }
 }
-if (excluded.length > MAX_EXCLUSIONS) {
+// The cap, computed from the ratio against THIS run's raw branch-arm universe. Both numbers
+// print below so a provider change shows as a number that moved, not a cap that accommodated it.
+const rawBranchArmCount = arms.filter((a) => a.kind === 'branch').length;
+const maxExclusions = Math.floor(rawBranchArmCount * MAX_EXCLUSION_RATIO);
+if (excluded.length > maxExclusions) {
   problems.push(
-    `EXCLUSION LIST TOO LONG: ${excluded.length} > ${MAX_EXCLUSIONS}. This list is a liability.`,
+    `EXCLUSION LIST TOO LONG: ${excluded.length} > ${maxExclusions} ` +
+      `(${(MAX_EXCLUSION_RATIO * 100).toFixed(1)}% of ${rawBranchArmCount} raw arms). ` +
+      'This list is a liability.',
   );
 }
 
 /* --- the numbers --- */
-const excludedKeys = new Set(excluded.map((e) => `${e.file}:${e.line}:${e.text}`));
-const coverable = arms.filter((a) => !excludedKeys.has(`${a.file}:${a.line}:${a.text}`));
+// ARM-PRECISE keys, not line-level. A line-level key silently removed every sibling arm at an
+// excluded line from the denominator — including, at simulate.ts:368, an uncovered BOT-REACHABLE
+// arm that then vanished from the deferred list Phase 3 inherits. The `if (a.covered) continue`
+// guard in the exclusion loop already expresses the intent (exclude only the dead arm); the key
+// now matches it. Found at the v4 reconciliation by balancing the bot list's ledger.
+const armKey2 = (a: Arm): string => `${a.file}:${a.line}:${a.armIndex}:${a.text}`;
+const excludedKeys = new Set(excluded.map(armKey2));
+const coverable = arms.filter((a) => !excludedKeys.has(armKey2(a)));
 const branchArms = coverable.filter((a) => a.kind === 'branch');
 const coveredBranch = branchArms.filter((a) => a.covered).length;
 const pct = (coveredBranch / branchArms.length) * 100;
@@ -409,6 +733,10 @@ console.log('RESTATED COVERAGE GATE — 95% of coverable branch arms\n');
 console.log(`  raw branch arms          ${rawBranch.length}`);
 console.log(`  excluded (rule A)        ${excluded.filter((e) => e.rule === 'A').length}`);
 console.log(`  excluded (rule B)        ${excluded.filter((e) => e.rule === 'B').length}`);
+console.log(`  excluded (rule C)        ${excluded.filter((e) => e.rule.startsWith('C')).length}`);
+console.log(
+  `  exclusion cap            ${maxExclusions} (${(MAX_EXCLUSION_RATIO * 100).toFixed(1)}% of raw), used ${excluded.length}`,
+);
 console.log(`  coverable branch arms    ${branchArms.length}`);
 console.log('');
 console.log(`  raw branch coverage      ${rawPct.toFixed(2)}%`);
@@ -434,8 +762,9 @@ const lines: string[] = [
   '',
   '**It is a liability, not a convenience.** Everything here is a place the gate has stopped',
   'looking. It stays short; growth is a warning. The gate fails if it exceeds ' +
-    `${MAX_EXCLUSIONS} entries, or if any entry stops matching, or if an excluded arm turns out`,
-  'to be covered after all — which would mean it was never dead.',
+    `${maxExclusions} entries (${(MAX_EXCLUSION_RATIO * 100).toFixed(1)}% of the ${rawBranchArmCount} raw arms — a ratio, so a`,
+  'provider changing the arm universe moves the number visibly), or if any entry stops matching,',
+  'or if an excluded arm turns out to be covered after all — which would mean it was never dead.',
   '',
   '## Rule A — defensive null-coalescing arms',
   '',
@@ -458,6 +787,27 @@ for (const e of a1.sort((x, y) =>
   }
   lines.push(`- \`${e.line}\` \`${e.text.slice(0, 110)}\``);
 }
+lines.push('', '## Rule C — mechanical shapes from the v4-provider reconciliation', '');
+lines.push(
+  'Three shapes, each with its class argument and corpus evidence at the rule in',
+  '`coverage-gate.ts` (docs/FINDINGS.md #46): C1 presence guards on total state members, C2',
+  '`indexOf` on the list the element was filtered from, C3 exhausted tails of closed-set zone',
+  'chains. Class arguments are the weaker evidence, so rule C is watched by the same churn',
+  'report as rule A: every arm that leaves this list is named.',
+  '',
+);
+const c1 = excluded.filter((e) => e.rule.startsWith('C'));
+cur = '';
+for (const e of c1.sort((x, y) =>
+  x.short === y.short ? x.line - y.line : x.short.localeCompare(y.short),
+)) {
+  if (e.short !== cur) {
+    cur = e.short;
+    lines.push('', `### ${cur}`, '');
+  }
+  lines.push(`- \`${e.line}\` \`${e.text.slice(0, 110)}\``);
+}
+
 lines.push('', '## Rule B — individually demonstrated dead arms', '');
 lines.push('Each carries the demonstration that established it.', '');
 for (const e of excluded.filter((x) => x.rule === 'B')) {

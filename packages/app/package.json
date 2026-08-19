@@ -14,10 +14,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "dev": "vite"
   },
   "comment:dependencies": "session and content, and deliberately NOT engine. ui-app-no-engine forbids the engine; ui-app-no-unresolvable makes an unresolved import red too, so a permitted dependency that is not declared is also red. Declaring these is what makes the permission true rather than written down.",
   "dependencies": {
     "@immunity-wars/session": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0"
   }
 }

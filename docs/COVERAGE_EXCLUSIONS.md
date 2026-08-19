@@ -6,8 +6,9 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 120 entries, or if any entry stops matching, or if an excluded arm turns out
-to be covered after all — which would mean it was never dead.
+looking. It stays short; growth is a warning. The gate fails if it exceeds 176 entries (9.4% of the 1876 raw arms — a ratio, so a
+provider changing the arm universe moves the number visibly), or if any entry stops matching,
+or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
 ## Rule A — defensive null-coalescing arms
 
@@ -37,6 +38,8 @@ weaker than a demonstration and is labelled so deliberately.
 ### ap.ts
 
 - `25` `const amount = n || 1;`
+- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
+- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
 - `39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 
 ### construct.ts
@@ -46,9 +49,9 @@ weaker than a demonstration and is labelled so deliberately.
 - `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
 - `204` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
 - `209` `return (alt ?? null) as Card | null;`
+- `218` `return (alt ?? null) as Card | null;`
 - `242` `hp: INV_HP[c.type] || 1,`
 - `243` `maxhp: INV_HP[c.type] || 1,`
-- `290` `.find((c) => c.type === type) ??`
 - `291` `DECK_MASTER.find((c) => c.type === type) ??`
 - `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
@@ -71,7 +74,13 @@ weaker than a demonstration and is labelled so deliberately.
 - `85` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `157` `return INV_SPEED[iv.type] || 1;`
 - `203` `if (g.fx) ap += g.fx.apMod ?? 0;`
+- `203` `if (g.fx) ap += g.fx.apMod ?? 0;`
 - `209` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `223` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `227` `return (g.ab[famOf(iv)] ?? 0) > 0;`
+- `227` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `248` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
 - `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
 - `249` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
@@ -86,7 +95,6 @@ weaker than a demonstration and is labelled so deliberately.
 - `321` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
 - `384` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
 - `388` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `405` `(iv.type === 'parasite' && iv.tagged && !iv.inMac && (iv.hp ?? 0) <= 1) ||`
 - `420` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
 - `620` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
 - `621` `return t[d6() - 1] ?? 1;`
@@ -95,8 +103,6 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### simulate.ts
 
-- `133` `(g.ab.X ?? 0) < 1 &&`
-- `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `178` `if ((g.ab[tf] ?? 0) > 0) {`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
@@ -141,9 +147,68 @@ weaker than a demonstration and is labelled so deliberately.
 - `113` `seen: clone(g.seen || {}),`
 - `117` `undoDepth: (g.undo || []).length,`
 
+## Rule C — mechanical shapes from the v4-provider reconciliation
+
+Three shapes, each with its class argument and corpus evidence at the rule in
+`coverage-gate.ts` (docs/FINDINGS.md #46): C1 presence guards on total state members, C2
+`indexOf` on the list the element was filtered from, C3 exhausted tails of closed-set zone
+chains. Class arguments are the weaker evidence, so rule C is watched by the same churn
+report as rule A: every arm that leaves this list is named.
+
+
+### actions.ts
+
+- `179` `if (g.suppress) {`
+
+### effects.ts
+
+- `62` `if (g.rare) {`
+
+### queries.ts
+
+- `397` `if (!m) return [];`
+- `419` `if (!t) return [];`
+- `431` `if (iv.zone === 'branch') return iv.step <= R;`
+- `459` `if (!n) return [];`
+- `466` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
+- `558` `} else if (c.zone === 'branch' && c.organ) {`
+
+### simulate.ts
+
+- `144` `if (mac) {`
+- `368` `if (!n) return [];`
+
+### spread.ts
+
+- `147` `if (h) {`
+- `555` `} else if (iv.zone === 'branch') {`
+- `607` `if (i >= 0) arrivals.splice(i, 1);`
+- `631` `if (i >= 0) arrivals.splice(i, 1);`
+- `649` `if (i >= 0) arrivals.splice(i, 1); // remove from the one-time-hit list`
+- `789` `if (g.fx) {`
+- `804` `if (g.cells.macrophage) g.cells.macrophage.freeEngulf = true;`
+- `811` `if (g.cells.helper) g.cells.helper.usedThisTurn = false;`
+- `816` `if (r) r.ate = false; // each resident may engulf once (free) per turn`
+
 ## Rule B — individually demonstrated dead arms
 
 Each carries the demonstration that established it.
+
+### actions.ts:221
+
+```
+if (!c) return err('Illegal move.');
+```
+
+unreachable in move: the `!d` guard two lines up already rejected any cell key that moveDestinations returns [] for — and moveDestinations opens with the same g.cells lookup — so by the time c is read, the key is known to resolve
+
+### actions.ts:251
+
+```
+if (!to) return err('No lymphatic link from this route.');
+```
+
+unreachable: a route with no lymph link was rejected two guards earlier (the LYMPH_GROUP check), so lymphPartners is never empty here
 
 ### actions.ts:374
 
@@ -177,6 +242,22 @@ if (iv.variant && d6() <= 3) {
 
 unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
 
+### actions.ts:513
+
+```
+if (org) {
+```
+
+repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; this re-reads the same key two lines later for the compiler's sake
+
+### actions.ts:532
+
+```
+`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
+```
+
+the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan
+
 ### actions.ts:550
 
 ```
@@ -192,6 +273,38 @@ if (f === 'X' && !g.cloneFound) {
 ```
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
+
+### actions.ts:691
+
+```
+`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
+```
+
+the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
+
+### actions.ts:706
+
+```
+`The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,
+```
+
+the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
+
+### actions.ts:760
+
+```
+if (c) {
+```
+
+the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan
+
+### actions.ts:780
+
+```
+if (pool.length) {
+```
+
+pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games
 
 ### actions.ts:782
 
@@ -201,6 +314,14 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
+### actions.ts:788
+
+```
+if (c) g.discard.push(c as never);
+```
+
+conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games
+
 ### actions.ts:804
 
 ```
@@ -208,6 +329,14 @@ if (c.novel) {
 ```
 
 unreachable inside the spawn loop: newGame filters novel cards out of the deck entirely (measured: 0 in deck); the novel pathogen is injected on novelTurn instead
+
+### ap.ts:40
+
+```
+if (ck && g.free && free > 0) {
+```
+
+docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
 
 ### ap.ts:15
 
@@ -217,13 +346,117 @@ export function apOwnerOf(g: GameState, a: Action | null | undefined): string | 
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
-### construct.ts:75
+### construct.ts:84
 
 ```
-while (slots.includes(t)) t += 1;
+if (pick !== undefined) g.events[t] = pick;
 ```
 
-the collision loop never runs: the three quartile slots are 4,8,11 / 5,10,15 / 8,15,23 at the three difficulties, which never collide
+picks and slots both have length 3 by construction — two slices of 2 and 1 concatenated, indexed by a forEach over 3 slots
+
+### construct.ts:102
+
+```
+if (!e) return;
+```
+
+every caller passes keys drawn from the pools that built g.events, and both pools are subsets of EVENTS. Demonstrated by data scan
+
+### construct.ts:128
+
+```
+if (c) g.discard.push(c);
+```
+
+same conservation as the spawn path: deck and discard cannot both be empty at a coInfection. Demonstrated over 300 games
+
+### construct.ts:140
+
+```
+if ((c as unknown as Card).novel) {
+```
+
+the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games
+
+### construct.ts:208
+
+```
+if (alt) g.discard.push(alt);
+```
+
+both sites: splice at an index findIndex just returned as >= 0 always yields an element
+
+### construct.ts:217
+
+```
+if (alt) g.discard.push(alt);
+```
+
+both sites: splice at an index findIndex just returned as >= 0 always yields an element
+
+### construct.ts:292
+
+```
+({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
+```
+
+testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan
+
+### construct.ts:297
+
+```
+if ((card as Card).novel) {
+```
+
+testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck
+
+### construct.ts:307
+
+```
+if (!card) return null;
+```
+
+testing-hook guard: every dz the suites force exists in DECK_MASTER
+
+### primitives.ts:34
+
+```
+if (i in a && j in a) {
+```
+
+Fisher-Yates over dense arrays: the comment above the line is the argument, and the demonstration shuffles 10,000 dense arrays without one skipped swap
+
+### queries.ts:178
+
+```
+if (!helper || !target) return false;
+```
+
+helper is roster-total (constructed at newGame, never deleted), and target is read with keys callers draw from CELL_KEYS. Demonstrated over 300 games
+
+### queries.ts:482
+
+```
+if (!c) return [];
+```
+
+roster-total lookup: wormStrikeable is called with keys from CELL_KEYS and g.cells is total over them. Demonstrated over 300 games
+
+### queries.ts:547
+
+```
+if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
+```
+
+dead by data: every branch is at least 2 steps (schema-enforced against the drawn board) and speed tops out at 3, so st = L - k >= 0 always. Demonstrated by data scan
+
+### queries.ts:577
+
+```
+if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });
+```
+
+dead by data: every route is 5 steps, the lymph crossing is step 3, and extra <= 2, so ns is always within [1, 5]. Demonstrated by data scan
 
 ### queries.ts:578
 
@@ -249,6 +482,38 @@ export function hasAb(g: GameState, iv: Invader): boolean {
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
+### spread.ts:156
+
+```
+if (o) {
+```
+
+the live-organ list is empty only when every organ is at 0 integrity, and a vital at 0 has already ended the game before a rare event can fire. Demonstrated over 300 games
+
+### spread.ts:158
+
+```
+if (org) {
+```
+
+three sites, one shape: the organ key was established by the surrounding filter or invariant (the live-organ filter; the lodged-worm organ invariant demonstrated in the neighbouring entry; worm arrivals always carrying an organ), and g.organs is total over organList
+
+### spread.ts:161
+
+```
+if (g.rareBanner) g.rareBanner.why += ` The ${ORGANS[o].name} took the damage.`;
+```
+
+fireRare set g.rareBanner unconditionally at its top, ninety lines up the same function
+
+### spread.ts:367
+
+```
+if (t) {
+```
+
+re-find by id in the same array the iteratee came from — the element cannot be absent
+
 ### spread.ts:461
 
 ```
@@ -265,6 +530,14 @@ const org = iv.organ ? g.organs[iv.organ] : undefined;
 
 the undefined arm is unreachable: makeInvader always assigns an organ before a worm can lodge. Demonstrated over 300 games
 
+### spread.ts:465
+
+```
+if (org) {
+```
+
+three sites, one shape: the organ key was established by the surrounding filter or invariant (the live-organ filter; the lodged-worm organ invariant demonstrated in the neighbouring entry; worm arrivals always carrying an organ), and g.organs is total over organList
+
 ### spread.ts:533
 
 ```
@@ -272,4 +545,44 @@ if (arrivals.includes(iv)) break;
 ```
 
 unreachable: every arrivals.push(iv) in the march is immediately followed by break, so the loop can never re-enter with iv already present
+
+### spread.ts:626
+
+```
+if (!r) return;
+```
+
+the hide filter three lines up required g.residents[iv.organ] truthy; repeat lookup
+
+### spread.ts:651
+
+```
+if (org) {
+```
+
+three sites, one shape: the organ key was established by the surrounding filter or invariant (the live-organ filter; the lodged-worm organ invariant demonstrated in the neighbouring entry; worm arrivals always carrying an organ), and g.organs is total over organList
+
+### spread.ts:668
+
+```
+if (!org) return;
+```
+
+arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
+
+### spread.ts:744
+
+```
+if (!org) return;
+```
+
+arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
+
+### view.ts:50
+
+```
+if (!u) return err('Nothing to undo.');
+```
+
+pop on an array the previous line proved non-empty
 

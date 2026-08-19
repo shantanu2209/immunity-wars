@@ -30,3 +30,21 @@ packages:
 # Anything added here should be a build-tool binary with an understood reason.
 allowBuilds:
   esbuild: true
+
+# nanoid: GHSA-2v37-7h3g-55p8 (high, dev-only chain: vite > postcss > nanoid). The patched
+# 3.3.18 is inside postcss's ^3 range, but pnpm keeps the lockfile's pre-existing 3.3.16 on
+# re-resolution, so the range alone never picks up the fix. Pinned at the P2.2 vitest-4
+# upgrade; drop the override when the lockfile naturally resolves past it.
+overrides:
+  'nanoid@<3.3.18': '>=3.3.18'
+
+minimumReleaseAgeExclude:
+  - '@vitest/coverage-v8@4.1.11'
+  - '@vitest/expect@4.1.11'
+  - '@vitest/mocker@4.1.11'
+  - '@vitest/pretty-format@4.1.11'
+  - '@vitest/runner@4.1.11'
+  - '@vitest/snapshot@4.1.11'
+  - '@vitest/spy@4.1.11'
+  - '@vitest/utils@4.1.11'
+  - vitest@4.1.11
