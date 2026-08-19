@@ -2440,3 +2440,43 @@ file in scope reported, never-loaded files at 0% — still holds, measured at 18
 with `simulate.ts` correctly at 0% in the generators tier.
 
 **Disposition: FIXED at P2.2 commit 1**, by the version the commit lands.
+
+---
+
+## 45. The first documented-but-UNPRACTISED claim: a written cadence rule, not followed, and no check to notice
+
+**Found at P2.2 commit 1, 19 August 2026**, by running `pnpm test:manifest-controls` as part of
+the vitest-upgrade battery. Two of the harness's controls expected the test title *"is **four**
+suites and three cross-cutting properties"*; P2.1 (`7ee6eee`) had renamed it to *"is **five**
+suites…"* when the session suite joined the manifest. The expectations sat stale for the whole
+gap — the controls still reddened the right *number* of assertions, but one of the assertions
+they were watching for no longer existed, so that half of each control could never fire again.
+
+**This is a different failure shape from the usual one.** This project has found roughly a dozen
+documented-but-**false** claims — sentences that stated something untrue. Here every sentence was
+true: the harness worked, the cadence rule existed and was written down in the root
+`package.json` — *"Run it when the manifest or its schema changes."* The manifest changed; the
+rule was not followed. **The controls did not drift. The practice did.** A practice that lives in
+prose fails exactly the way the pre-`docs:check` documentation sweep failed: silently, and in
+the gap between the sessions where anyone would look.
+
+### The fix, same argument as `docs:check`: the cadence became a check
+
+The coupling the cadence protected — expectation strings in the harness naming test titles in
+`manifest.test.ts` — is now asserted **in the fast tier**, so it breaks the build the moment it
+breaks, with no practice to remember:
+
+- `tests/manifest/controls-data.ts` — the control definitions, split from the runner so a test
+  can import them without executing mutations;
+- `tests/manifest/coupling.test.ts` — every `expectFailing` entry must match some `it(...)`
+  title, by the same substring relation the harness itself uses, plus a floor on extracted
+  titles so a broken extraction cannot pass as vacuously green;
+- a `manifest-coupling` control in `tools/ci/selftest.ts` — the stale-title mutation replayed on
+  purpose, required to redden with *"no longer matches any test title"*. Demonstrated firing on
+  its first run.
+
+**What the check does not replace:** the harness. Coupling proves the names still refer to
+something; only running `pnpm test:manifest-controls` proves the assertions still *fire*. The
+cadence rule stands for that half — but a stale name can no longer wait for it.
+
+**Disposition: FIXED at P2.2 commit 1**, with the check and its control both demonstrated.

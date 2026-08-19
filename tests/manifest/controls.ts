@@ -28,86 +28,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { CONTROLS } from './controls-data.js';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
 const MANIFEST = join(REPO, 'tests', 'suites.json');
-
-interface Control {
-  readonly name: string;
-  /** Applied to the manifest text. Must change it — an inert mutation is a control that lies. */
-  readonly mutate: (text: string) => string;
-  /** Substrings of the test titles this must redden. Exact set: no more, no fewer. */
-  readonly expectFailing: readonly string[];
-}
-
-const CONTROLS: readonly Control[] = [
-  {
-    name: 'soften the pinned sentence — remove "There is no unit suite"',
-    mutate: (t) => t.replace('There is no unit suite. ', ''),
-    expectFailing: ['validates against the schema', 'carries the reconciliation sentence verbatim'],
-  },
-  {
-    name: 'claim the unit suite exists after all',
-    mutate: (t) =>
-      t.replace('"status": "does-not-exist"', '"status": "realised-inside-other-suites"'),
-    expectFailing: [
-      // 'four' until P2.1 added the session suite; the title tracks tests/suites.json's count.
-      // These two controls were stale for the whole gap between that change and the next run of
-      // this harness — see the P2.2 commit-1 report. When the count changes, change this WITH it.
-      'is five suites and three cross-cutting properties',
-      'records the absent unit suite as absent',
-    ],
-  },
-  {
-    name: 'point a tier at a command that does not exist',
-    mutate: (t) =>
-      t.replace('"command": "pnpm test:property"', '"command": "pnpm test:nonexistent"'),
-    expectFailing: ['names a real command for every tier of every suite'],
-  },
-  {
-    name: 'overclaim negative controls — 7 becomes 99',
-    mutate: (t) => t.replace('"negativeControls": 7,', '"negativeControls": 99,'),
-    expectFailing: ['declares negative controls that exist, for every suite'],
-  },
-  {
-    name: 'drop a brief §7 row entirely — serialisation',
-    mutate: (t) => {
-      const d = JSON.parse(t) as { crossCutting: { briefSuite: string }[] };
-      d.crossCutting = d.crossCutting.filter((c) => c.briefSuite !== 'serialisation');
-      return `${JSON.stringify(d, null, 2)}\n`;
-    },
-    expectFailing: [
-      'accounts for every one of the brief §7 rows',
-      // 'four' until P2.1 added the session suite; the title tracks tests/suites.json's count.
-      // These two controls were stale for the whole gap between that change and the next run of
-      // this harness — see the P2.2 commit-1 report. When the count changes, change this WITH it.
-      'is five suites and three cross-cutting properties',
-    ],
-  },
-  {
-    name: 'drop a nightly tier — the permanently-red-row trap',
-    mutate: (t) => {
-      const d = JSON.parse(t) as { suites: { id: string; tiers: Record<string, unknown> }[] };
-      const balance = d.suites.find((s) => s.id === 'balance-panel');
-      if (balance) delete balance.tiers.nightly;
-      return `${JSON.stringify(d, null, 2)}\n`;
-    },
-    expectFailing: ['every suite declares a nightly tier'],
-  },
-  {
-    name: 'blank out a doesNotProve field',
-    mutate: (t) => {
-      const d = JSON.parse(t) as { suites: { id: string; doesNotProve: string }[] };
-      const corpus = d.suites.find((s) => s.id === 'equivalence-corpus');
-      if (corpus) corpus.doesNotProve = 'N/A';
-      return `${JSON.stringify(d, null, 2)}\n`;
-    },
-    expectFailing: [
-      'states what each suite does not prove, substantively',
-      'the corpus suite says plainly that agreement is not correctness',
-    ],
-  },
-];
 
 /** Run the manifest suite and return the titles of the tests that failed. */
 function failingTests(): string[] {
