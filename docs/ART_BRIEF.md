@@ -4,9 +4,18 @@
 provenance duty at the end, it is per-tool).
 **Decision this executes:** Path A, ruled 20 Aug 2026 — illustrated raster art, regenerated,
 normalised through the P2.4 pipeline. The existing set is stylistically consistent; what failed
-is that it was built for a dark screen. Organs are expected to stay vector (`ORGAN_ART`,
-recoloured) pending Shantanu's look at the comparison page, so this set is cells, pathogens and
-entry icons.
+is that it was built for a dark screen.
+
+**Two rulings from Kartik and Shantanu, 20 Aug 2026, folded in:**
+
+1. **Organs are regenerated too.** The recoloured `ORGAN_ART` vectors were reviewed on the real
+   board and rejected — flat silhouettes are not the look. Organs join the raster set in the
+   same illustrated style.
+2. **The duplicate pairs split.** Venom is separate from toxin, malaria from parasite, on the
+   mechanical argument (recorded at the pairs in the list below): same icon for different rules
+   means reading text to know which rules apply, which fails the accuracy constraint.
+
+**The set is 29: 7 cells + 9 pathogens + 6 entry lanes + 7 organs.**
 
 Every constraint below is one the current set measurably fails. Generate against them; do not
 rediscover them afterwards. Numbers are from the P2.4 measurement pages (20 Aug 2026, WCAG 2.1
@@ -131,12 +140,27 @@ board's own rubric:
 | wound | broken skin — a cut with parted edges |
 | bite | insect or animal — a mosquito (or fang pair) |
 
-**Count: 20 assets** (7+7+6) if the two shared-art pairs stay shared, **22** if they split.
+**Organs (7)** — recognisable anatomy, same illustrated style as the rest of the set. Their
+colours are constrained hardest — see "The organ colour problem" below, which gives a measured
+starting colour for each:
 
-### The question for Kartik — stated mechanically, not aesthetically
+| asset | subject |
+|---|---|
+| brain | a brain in profile, folds as interior detail |
+| lungs | paired lungs with trachea |
+| heart | an anatomical heart (not a valentine) |
+| liver | the wedge-shaped liver, lobe line as detail |
+| spleen | the bean-curved spleen |
+| kidneys | a kidney pair |
+| marrow | a cut long bone showing marrow inside — see the marrow entry below, it is the one
+organ whose natural colour cannot pass |
 
-`toxin`/`venom` and `malaria`/`parasite` currently share one image per pair. **They are
-mechanically different in the engine:**
+**Count: 29 assets** (7 cells + 9 pathogens + 6 entries + 7 organs).
+
+### The duplicate pairs — DECIDED 20 Aug 2026: distinct icons
+
+`toxin`/`venom` and `malaria`/`parasite` shared one image per pair. **They are mechanically
+different in the engine, and that settled it:**
 
 - **Toxin vs venom:** a toxin is neutralised by **your own antibodies** — that is the learning
   loop the game teaches. Venom explicitly is not: *"Antibodies can't neutralise venom — it acts
@@ -147,7 +171,53 @@ mechanically different in the engine:**
   the eosinophil's specialist prey, with no staging.
 
 Same icon for mechanically different things means a player must read text to know which rules
-apply. Distinct icons let the board itself say it. **Kartik decides**; the count moves 20→22.
+apply, which fails the accuracy constraint. The board itself must say it.
+
+## The organ colour problem — checked, not assumed
+
+Organs are where the 3:1 bound bites hardest, because **identity is carried by hue**: a heart
+that is not red is a maroon blob. All seven were worked through against the paper
+(20 Aug 2026; ratios are dominant-colour vs `#FFFDF9`; "reads as" judgments were made on
+rendered chips at 30px and 20px on paper, and are judgments, marked as such):
+
+| organ | natural hue | measured verdict | starting colour |
+|---|---|---|---|
+| heart | red | **no strain** — dark heart-red passes at 7.31 and still reads unmistakably red, especially with a lighter highlight | `#9E2B25` |
+| liver | red-brown | **no strain** — naturally dark (8.29) | `#7A3B2E` |
+| spleen | purple-red | **no strain** — oxblood 10.01, plum 9.30 | `#6B2D3C` |
+| kidneys | red-brown | **no strain** (7.17) | `#8A4133` |
+| lungs | pink | **strained but survivable** — true pink fails (1.51); the family's deep end passes and still reads pink: dusty rose 4.58, deep rose 5.47. The eosinophil (3.46) is existing proof the dusty end works | `#A34D5D` |
+| brain | pink-grey | **strained but survivable** — pale brain pink-grey fails (2.11); mauve-taupe passes at 4.58 and the fold-pattern silhouette carries most of the identity anyway | `#8D6B7A` |
+| marrow | bone cream | **FAILS as its natural colour** — bone cream is 1.21, darker ivory 1.59; nothing that reads "cream" can reach 3:1. Resolution below | see below |
+
+**The marrow resolution — two measured options, either acceptable:**
+
+- **Dark ochre bone with cream interior detail:** base `#8A4B08` (6.69 alone); a composite of
+  75% base + 25% cream `#F5E7C6` averages `#A57238` = **4.08:1**. Reads as golden bone.
+- **Red-marrow emphasis** — scientifically the stronger choice: active (hematopoietic) marrow
+  IS red, and the marrow is what the organ does in this game. Base `#7A2E2E` (9.16); 70% base
+  + 30% cream averages **4.56:1**. Reads as cut bone showing red marrow.
+
+**The general two-tone rule, measured rather than asserted:** a dark base carrying a lighter
+interior detail keeps the icon's area-weighted colour past 3:1 with margin, **provided the
+light region stays at or under ~30% of the icon's area.** Measured composites: heart 85/15 →
+6.27, lungs 80/20 → 4.37, brain 80/20 → 4.49, marrow 70/30 → 4.56. This is how a strained hue
+gets its brightness back — a light accent on a dark body, never a light body.
+
+## Size optimisation per class
+
+Each class is seen at a different size, so the amount of interior detail that survives differs.
+DPR does not change this: 2×/3× screens add sharpness, not angular size — the detail budget is
+set by CSS pixels.
+
+| class | optimise for | must also survive | detail budget |
+|---|---|---|---|
+| cells + pathogens (tokens) | **20px** — the largest a board token can be | **10px** (today's render): colour + silhouette only | silhouette-first; at most one bold interior feature (the neutrophil's lobed nucleus, the B-cell's receptors); anything finer is invisible where it matters |
+| organs | **30px** — their board rendering | 20px | one notch richer: an interior line or two survives (brain folds, liver lobe line, marrow interior); still silhouette-first |
+| entry-lane icons | **24px** — board furniture at lane ends, near their labels | 16px | between the two; these sit next to text that names them, so the icon reinforces rather than carries the identity |
+
+Tokens also appear larger elsewhere (the stack-inspect view, hand panels at 40–56px), which the
+256px source covers — but **legibility is judged at the board size, not the panel size.**
 
 ## Output specification
 
