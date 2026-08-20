@@ -65,6 +65,13 @@ For every asset, we need:
 | `tools/art-pipeline/raw/entry-blood.jpeg` (entry lane, Blood) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 20, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/entry-wound.jpeg` (entry lane, Wound) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 21, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/entry-bite.jpeg` (entry lane, Bite) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 22, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-brain.jpeg` (organ, Brain) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 23, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-lungs.jpeg` (organ, Lungs) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 24, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-heart.jpeg` (organ, Heart) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 25, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-liver.jpeg` (organ, Liver) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 26, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-spleen.jpeg` (organ, Spleen) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 27, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-kidneys.jpeg` (organ, Kidneys) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 28, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/organ-marrow.jpeg` (organ, Bone Marrow) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 29, verbatim | not yet | Unknown |
 
 ---
 
