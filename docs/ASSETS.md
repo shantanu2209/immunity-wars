@@ -50,6 +50,15 @@ For every asset, we need:
 | `tools/art-pipeline/raw/cell-helper.jpeg` (board token, Helper T-Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 5, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/cell-nk.jpeg` (board token, NK Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 6, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/cell-eosinophil.jpeg` (board token, Eosinophil) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 7, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-virus.jpeg` (board token, Virus) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 8, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-hidden.jpeg` (board token, Hidden Virus) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 9, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-bacteria.jpeg` (board token, Bacteria) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 10, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-toxin.jpeg` (board token, Toxin) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 11, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-venom.jpeg` (board token, Venom) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 12, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-fungus.jpeg` (board token, Fungus) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 13, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-worm.jpeg` (board token, Worm) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 14, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-malaria.jpeg` (board token, Malaria) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 15, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/path-parasite.jpeg` (board token, Parasite) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 16, verbatim | not yet | Unknown |
 
 ---
 
