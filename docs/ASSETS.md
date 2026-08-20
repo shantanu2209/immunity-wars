@@ -48,6 +48,7 @@ For every asset, we need:
 | `tools/art-pipeline/raw/cell-bcell.jpeg` (board token, B-Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 3, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/cell-tcell.jpeg` (board token, Killer T-Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 4, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/cell-helper.jpeg` (board token, Helper T-Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 5, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/cell-nk.jpeg` (board token, NK Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 6, verbatim | not yet | Unknown |
 
 ---
 

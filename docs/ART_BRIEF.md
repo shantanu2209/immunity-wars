@@ -198,6 +198,11 @@ rendered chips at 30px and 20px on paper, and are judgments, marked as such):
   IS red, and the marrow is what the organ does in this game. Base `#7A2E2E` (9.16); 70% base
   + 30% cream averages **4.56:1**. Reads as cut bone showing red marrow.
 
+**Learned from the generation batches (asset 5), stated so it stops recurring:** the two-tone
+allowance covers light paint sitting ON the dark body only. **Any element that stands directly
+on the background — outer waves, detached arcs, floating dots — must itself pass 3:1**, or on
+paper it simply is not there (Flow drew the helper's signal waves at 1.35:1, twice).
+
 **The general two-tone rule, measured rather than asserted:** a dark base carrying a lighter
 interior detail keeps the icon's area-weighted colour past 3:1 with margin, **provided the
 light region stays at or under ~30% of the icon's area.** Measured composites: heart 85/15 →
