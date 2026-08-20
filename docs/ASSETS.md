@@ -59,6 +59,12 @@ For every asset, we need:
 | `tools/art-pipeline/raw/path-worm.jpeg` (board token, Worm) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 14, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/path-malaria.jpeg` (board token, Malaria) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 15, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/path-parasite.jpeg` (board token, Parasite) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 16, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-nose.jpeg` (entry lane, Nose) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 17, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-contact.jpeg` (entry lane, Contact) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 18, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-gut.jpeg` (entry lane, Gut) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 19, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-blood.jpeg` (entry lane, Blood) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 20, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-wound.jpeg` (entry lane, Wound) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 21, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/entry-bite.jpeg` (entry lane, Bite) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 22, verbatim | not yet | Unknown |
 
 ---
 
