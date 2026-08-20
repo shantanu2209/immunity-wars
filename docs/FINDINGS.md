@@ -2696,3 +2696,12 @@ generator is not going to be lost twice. Consequence #1 above is thereby closed 
 favour; consequence #2 dissolved — with the layouts matched, the lymph connectors are local
 again. What remains open moved to `for-P2.5.md` (connector curvature, arrowheads, the LYMPH
 label's i18n home).
+
+**RELAXED 20 August 2026, later the same day, by Shantanu: the printed A2 was an interim
+artefact for the exhibition**, not a fixed reference — so `geometry.json` is free to change
+for screen reasons from here. The A2 extraction stands as the layout's starting point and
+`tools/geometry-from-a2/` remains the record of where it came from, but parity now means "the
+NEXT print is generated from geometry.json" (the brief's original intent), not "the app must
+match the July print". First consequence: the print's organ boxes are not drawn on screen,
+and co-located tokens will stack with a count badge instead of fanning — both screen
+decisions the print never had to make.

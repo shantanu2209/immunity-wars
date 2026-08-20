@@ -10,8 +10,12 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   their catalogue home, and label typography are P2.5's. (`Board.tsx`)
 - Token art: letters-in-circles now; §5 of the brief says raster illustrations via `<image>`
   through the art pipeline. (`Board.tsx`)
-- Co-located tokens fan out 16px horizontally so each stays visible — stacking/badging is a real
-  design question. (`Board.tsx`)
+- ✅ DECIDED (Shantanu, 20 Aug 2026) — co-located tokens STACK at one position with a count
+  badge; tapping the stack expands it into an INSPECT view (not playable, so collisions with
+  lanes/nodes don't matter there); tapping a pathogen's card brings it to the top. This
+  replaces fanning entirely — 7 tokens fanned at 20px would span 138px, 38% of a phone's
+  width. The 16u fan spacing in geometry terms is thereby IRRELEVANT, not a value to change.
+  P2.5 builds this; `Board.tsx`'s fan is dev-slice scaffolding until then.
 - Spread pacing: 560/800ms kept from legacy for measurement comparability; whether that reads
   well is the open rendering decision the brief §4 names. (`main.tsx`)
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
@@ -19,10 +23,10 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
 - Entry labels render at a fixed 13px from geometry positions; collision with route art untested
   at phone widths. (`Board.tsx`)
 - Board tokens at 360px are ~9.8 CSS px while Gate 1 needs ≥44px touch targets; node spacing
-  caps a non-overlapping token at ~19.7px — token size vs hit-area strategy is a real decision.
-  (P2.4 art measurement, 19 Aug 2026)
-- The 16u fan spacing is narrower than a token at phone scale (8.7px vs 9.8px), so co-located
-  tokens overlap — sharpens the stacking/badging entry above. (same measurement)
+  caps a non-overlapping token at ~20.0px (A2 geometry) — token size vs hit-area strategy is a
+  real decision. (P2.4 art measurement, 19 Aug 2026)
+- ~~Fan spacing narrower than a token~~ — superseded by the stack-with-badge decision above;
+  the overlap problem dissolves with fanning itself. (20 Aug 2026)
 - `toxin`/`venom` and `malaria`/`parasite` share byte-identical art in `art_data.js`; whether
   those pairs deserve distinct icons is Kartik's call. (same measurement)
 - Lymph connectors are straight dashed segments through the `LYMPH_STEP` nodes — short and

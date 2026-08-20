@@ -54,7 +54,6 @@ const CLASSIC = {
   washAlpha: 0.36, // the PDF's ExtGState ca
   wLine: 2.2, // 3.40pt (1.2mm) — route and branch lines
   wNode: 1.6, // 2.55pt (0.9mm) — step-node rings
-  wOrgan: 3.1, // 4.82pt (1.7mm) — organ boxes
   wHub: 3.4, // 5.39pt (1.9mm)
   wLymph: 3.6, // 5.67pt (2.0mm)
   wBoundary: 1.1, // 1.70pt (0.6mm) — the dashed play-area ring
@@ -64,9 +63,8 @@ const CLASSIC = {
   rHub: 50.3, // outer hub circle (print 79.4pt)
   rHubInner: 42.3, // inner hub ring (print 66.6pt)
   rWash: 248.1, // wash disc and dashed boundary ring (print 391.2pt)
-  organW: 89.9, // organ box (print heart box, 141.7 x 107.7pt)
-  organH: 68.3,
-  organRx: 4, // corner radius (print ~6.3pt)
+  // The print's organ boxes (141.7 x 107.7pt) are deliberately NOT drawn — a print
+  // affordance, removed by design decision 20 Aug 2026. The organ marker is P2.5's.
 } as const;
 
 /**
@@ -283,16 +281,9 @@ export function Board({
                 </text>
               </g>
             ))}
-            <rect
-              x={pos.x - CLASSIC.organW / 2}
-              y={pos.y - CLASSIC.organH / 2}
-              width={CLASSIC.organW}
-              height={CLASSIC.organH}
-              rx={CLASSIC.organRx}
-              fill="#fff"
-              stroke={CLASSIC.organ}
-              strokeWidth={CLASSIC.wOrgan}
-            />
+            {/* No organ box: it was a print affordance (Shantanu, 20 Aug 2026) — the screen
+                shows organ name and integrity as UI. The position keeps its label and hp
+                until P2.5 decides the organ marker (see docs/for-P2.5.md). */}
             <text x={pos.x} y={pos.y - 22} textAnchor="middle" fontSize={13} fill={CLASSIC.inkDark}>
               {o}
             </text>
