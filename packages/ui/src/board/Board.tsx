@@ -32,10 +32,11 @@ import {
 } from './geometry';
 
 /**
- * CLASSIC palette and stroke weights, extracted from the physical A2 board
+ * CLASSIC palette, stroke weights and element sizes, extracted from the physical A2 board
  * (Immunity_Wars_BOARD_A2.pdf, vector ops read directly — P2.4 restyle, 20 Aug 2026).
- * Widths were authored in mm on a 1190.55pt-wide A2 page; converted to viewBox units at
- * 660u / 1190.55pt = 0.5543 u/pt. Colours are exact; widths are the print's, rescaled.
+ * `geometry.json` is itself regenerated from the same PDF (`tools/geometry-from-a2/`), and
+ * every derived number below is printed by that generator's report at its scale of
+ * 0.6343 u/pt — change one only by re-running the generator, never by eye.
  */
 const CLASSIC = {
   paper: '#FFFDF9',
@@ -48,12 +49,24 @@ const CLASSIC = {
   hubFill: '#F7CFC7',
   frame: '#B03A2E', // hub ring carries the frame red
   lymph: '#1F6F8B',
-  wLine: 1.89, // 3.40pt (1.2mm) — route and branch lines
-  wNode: 1.41, // 2.55pt (0.9mm) — step-node rings
-  wOrgan: 2.67, // 4.82pt (1.7mm) — organ boxes
-  wHub: 2.99, // 5.39pt (1.9mm)
-  wLymph: 3.14, // 5.67pt (2.0mm)
-  lymphDash: '8.6 3.9', // print dash [15.59 7.09]pt, rescaled
+  lymphNodeFill: '#E6F2F7', // the print draws LYMPH_STEP nodes as blue lymph nodes
+  wash: '#FBEAE5', // translucent disc behind the play area
+  washAlpha: 0.36, // the PDF's ExtGState ca
+  wLine: 2.2, // 3.40pt (1.2mm) — route and branch lines
+  wNode: 1.6, // 2.55pt (0.9mm) — step-node rings
+  wOrgan: 3.1, // 4.82pt (1.7mm) — organ boxes
+  wHub: 3.4, // 5.39pt (1.9mm)
+  wLymph: 3.6, // 5.67pt (2.0mm)
+  wBoundary: 1.1, // 1.70pt (0.6mm) — the dashed play-area ring
+  lymphDash: '9.9 4.5', // print dash [15.59 7.09]pt
+  boundaryDash: '7.2 5.4', // print dash [11.34 8.50]pt
+  rNode: 17.1, // step nodes (print 26.9pt)
+  rHub: 50.3, // outer hub circle (print 79.4pt)
+  rHubInner: 42.3, // inner hub ring (print 66.6pt)
+  rWash: 248.1, // wash disc and dashed boundary ring (print 391.2pt)
+  organW: 89.9, // organ box (print heart box, 141.7 x 107.7pt)
+  organH: 68.3,
+  organRx: 4, // corner radius (print ~6.3pt)
 } as const;
 
 /**
@@ -62,6 +75,11 @@ const CLASSIC = {
  * ordered by angle around the hub so the connector does not zigzag; that ordering is
  * derivation, not design (arc shape and labelling are for-P2.5.md).
  */
+const lymphGroupOf = (lane: string): string | null => {
+  const grp = (LYMPH_GROUP as Record<string, string | null>)[lane];
+  return typeof grp === 'string' ? grp : null;
+};
+
 function lymphArcs(): Pt[][] {
   const groups = new Map<string, Pt[]>();
   for (const [lane, grp] of Object.entries(LYMPH_GROUP as Record<string, string | null>)) {
@@ -156,11 +174,41 @@ export function Board({
       viewBox={VIEWBOX}
       style={{ width: '100%', maxWidth: 660, display: 'block', background: CLASSIC.paper }}
     >
+      {/* the wash disc and dashed boundary ring behind the play area */}
+      <circle
+        cx={HUB_POS.x}
+        cy={HUB_POS.y}
+        r={CLASSIC.rWash}
+        fill={CLASSIC.wash}
+        opacity={CLASSIC.washAlpha}
+      />
+      <circle
+        cx={HUB_POS.x}
+        cy={HUB_POS.y}
+        r={CLASSIC.rWash}
+        fill="none"
+        stroke={CLASSIC.route}
+        strokeWidth={CLASSIC.wBoundary}
+        strokeDasharray={CLASSIC.boundaryDash}
+        opacity={CLASSIC.washAlpha}
+      />
+
       {/* routes: hub -> steps -> entry */}
       {LANES.map((lane) => {
         const stepsOf = routeSteps(lane);
         const entry = entryOf(lane);
         const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
+        // Entry labels sit radially outward from the entry point, as on the print.
+        const label = entry
+          ? (() => {
+              const d = Math.hypot(entry.x - HUB_POS.x, entry.y - HUB_POS.y) || 1;
+              return {
+                x: entry.x + ((entry.x - HUB_POS.x) / d) * 16,
+                y: entry.y + ((entry.y - HUB_POS.y) / d) * 16 + 4,
+              };
+            })()
+          : null;
+        const lymphStep = lymphGroupOf(lane) === null ? -1 : (LYMPH_STEP as number);
         return (
           <g key={lane}>
             <polyline
@@ -174,24 +222,18 @@ export function Board({
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={7}
-                  fill="#fff"
-                  stroke={CLASSIC.route}
+                  r={CLASSIC.rNode}
+                  fill={p.step === lymphStep ? CLASSIC.lymphNodeFill : '#fff'}
+                  stroke={p.step === lymphStep ? CLASSIC.lymph : CLASSIC.route}
                   strokeWidth={CLASSIC.wNode}
                 />
-                <text x={p.x} y={p.y + 3} textAnchor="middle" fontSize={8} fill={CLASSIC.ink}>
+                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
                   {p.step}
                 </text>
               </g>
             ))}
-            {entry ? (
-              <text
-                x={entry.x}
-                y={entry.y - 10}
-                textAnchor="middle"
-                fontSize={13}
-                fill={CLASSIC.ink}
-              >
+            {entry && label ? (
+              <text x={label.x} y={label.y} textAnchor="middle" fontSize={13} fill={CLASSIC.ink}>
                 {entry.t}
               </text>
             ) : null}
@@ -211,7 +253,7 @@ export function Board({
         />
       ))}
 
-      {/* organ branches: hub -> steps -> organ */}
+      {/* organ branches: hub -> steps -> organ box */}
       {BOARD_ORGANS.map((o) => {
         const stepsOf = branchSteps(o);
         const pos = organPos(o);
@@ -231,20 +273,22 @@ export function Board({
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={7}
+                  r={CLASSIC.rNode}
                   fill={CLASSIC.branchNodeFill}
                   stroke={CLASSIC.branch}
                   strokeWidth={CLASSIC.wNode}
                 />
-                <text x={p.x} y={p.y + 3} textAnchor="middle" fontSize={8} fill={CLASSIC.ink}>
+                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
                   {p.step}
                 </text>
               </g>
             ))}
-            <circle
-              cx={pos.x}
-              cy={pos.y}
-              r={17}
+            <rect
+              x={pos.x - CLASSIC.organW / 2}
+              y={pos.y - CLASSIC.organH / 2}
+              width={CLASSIC.organW}
+              height={CLASSIC.organH}
+              rx={CLASSIC.organRx}
               fill="#fff"
               stroke={CLASSIC.organ}
               strokeWidth={CLASSIC.wOrgan}
@@ -259,14 +303,22 @@ export function Board({
         );
       })}
 
-      {/* the bloodstream hub */}
+      {/* the bloodstream hub — a double circle on the print */}
       <circle
         cx={HUB_POS.x}
         cy={HUB_POS.y}
-        r={12}
+        r={CLASSIC.rHub}
         fill={CLASSIC.hubFill}
         stroke={CLASSIC.frame}
         strokeWidth={CLASSIC.wHub}
+      />
+      <circle
+        cx={HUB_POS.x}
+        cy={HUB_POS.y}
+        r={CLASSIC.rHubInner}
+        fill="none"
+        stroke={CLASSIC.frame}
+        strokeWidth={CLASSIC.wNode}
       />
 
       {/* tokens, fanned per node */}

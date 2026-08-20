@@ -25,13 +25,11 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   tokens overlap — sharpens the stacking/badging entry above. (same measurement)
 - `toxin`/`venom` and `malaria`/`parasite` share byte-identical art in `art_data.js`; whether
   those pairs deserve distinct icons is Kartik's call. (same measurement)
-- Lymph connectors are straight dashed segments through the `LYMPH_STEP` nodes; the print's
-  curved arcs assume its bilateral layout and do not transpose to the radial board (FINDINGS
-  #49), so shape, arrowheads and the "LYMPH" label (needs an i18n home) are all open.
-  (`Board.tsx`, P2.4 restyle)
-- The print carries a translucent `#FBEAE5` wash disc behind the whole play area; its extent is
-  layout-tied, so the restyle omitted it. (A2 PDF, P2.4 restyle)
-- Print step nodes are proportionally twice the app's (r≈14.9u equivalent vs authored r=7) and
-  carry their numbers comfortably; at r=7 the numbers are cramped at phone scale. (same)
+- Lymph connectors are straight dashed segments through the `LYMPH_STEP` nodes — short and
+  local now that the layout matches the A2 (FINDINGS #49 resolution), but the print curves
+  them and adds arrowheads and a "LYMPH" label (needs an i18n home). (`Board.tsx`, P2.4)
+- ~~Wash disc omitted~~ and ~~step nodes half the print's proportion~~ — both resolved by the
+  A2-layout regeneration (`tools/geometry-from-a2`): the wash renders at the print's radius and
+  alpha, and node/hub/box sizes now come from the generator's report. (P2.4, second pass)
 - Print label typography: entry names ~6.6u, step numbers ~8.5u, organ names ~10u equivalent —
   the app's authored 13px labels do not match the print's scale. (same)

@@ -2686,3 +2686,13 @@ question.
 **Disposition: recorded; the layout reconciliation is Kartik's, at the point the print is next
 regenerated.** The P2.4 restyle carries the print's palette and stroke weights onto the
 existing radial geometry, which is what it could do without deciding layout.
+
+**RESOLVED 20 August 2026, same day, by Shantanu's direction: the app adopts the A2 layout.**
+`geometry.json` is now **generated from the A2 PDF itself** by `tools/geometry-from-a2/`
+(extraction of the PDF's vector operators; count assertions against `rules/board.json`, with a
+`--control` mode proving they fire; the content schema re-verifies independently). The
+generator and its input PDF are committed — the July script was lost, and this board's
+generator is not going to be lost twice. Consequence #1 above is thereby closed in the print's
+favour; consequence #2 dissolved — with the layouts matched, the lymph connectors are local
+again. What remains open moved to `for-P2.5.md` (connector curvature, arrowheads, the LYMPH
+label's i18n home).

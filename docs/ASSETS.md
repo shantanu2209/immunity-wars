@@ -55,7 +55,12 @@ not exhaustive — confirm against the repository before concluding.
 - `tools/legacy/public/body.png` — board body illustration
 - `tools/legacy/body_crop.png` — cropped variant
 - `ORGAN_ART` in `tools/legacy/v2_ui.html` — inline organ artwork
-- The printed A2 board artwork (not in this repository)
+- `tools/geometry-from-a2/Immunity_Wars_BOARD_A2.pdf` — the printed A2 board (CLASSIC), located
+  20 Aug 2026. Vector, script-generated (the script is lost; the PDF is the surviving record and
+  now the input to `tools/geometry-from-a2/`). **Its 16 embedded rasters** — the print's organ
+  and legend icons — carry the same unknown-tool provenance question as the icon art above; the
+  vector drawing itself is original work, not AI output. The COLOUR variant exists outside the
+  repository and shares the skeleton.
 
 ---
 
