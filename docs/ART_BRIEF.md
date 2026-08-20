@@ -228,6 +228,13 @@ Tokens also appear larger elsewhere (the stack-inspect view, hand panels at 40�
   the 3:1 contrast against `#FFFDF9`, and emits WebP at 1×/2×/3× with a manifest — so generate
   clean and let the pipeline do the conforming
 
+> **Field note from the first batch (20 Aug 2026, asset 1):** the tool exported JPEG with a
+> *drawn checkerboard pattern* standing in for transparency, not a real alpha channel. Accepted
+> — the checker is neutral and the art saturated, so the pipeline keys it out — but prefer a
+> true transparent-PNG export where the tool offers one. Also watch for the tool making interior
+> details genuinely translucent (one of the four candidates did): interiors must be opaque
+> lighter *paint*, not transparency.
+
 ## The 29 prompts — copy-paste, one per asset
 
 Rulings folded in (Shantanu, 20 Aug 2026): **marrow uses the red-marrow emphasis**; entry

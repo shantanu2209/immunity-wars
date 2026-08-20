@@ -37,12 +37,13 @@ For every asset, we need:
 
 ## Asset register
 
-> **Status: not yet started.** This table is a stub. It must be filled in before the game
-> content licence can be declared.
+> **Status: started 20 Aug 2026** with the Path A regeneration. Every file that lands in
+> `tools/art-pipeline/raw/` gets a row here at generation time. The licence stays undeclared
+> until every row is complete and the ToS of the tool(s) actually used are confirmed.
 
 | Asset | Origin | Date | Account/plan | Prompt or source | ToS checked | Redistribution |
 |---|---|---|---|---|---|---|
-| _(unfilled)_ | | | | | | |
+| `tools/art-pipeline/raw/cell-macrophage.jpeg` (board token, Monocyte) | AI image tool — **Gemini or Google Flow, Shantanu to confirm which produced this batch** | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 1, verbatim | not yet | Unknown |
 
 ---
 
