@@ -43,7 +43,8 @@ For every asset, we need:
 
 | Asset | Origin | Date | Account/plan | Prompt or source | ToS checked | Redistribution |
 |---|---|---|---|---|---|---|
-| `tools/art-pipeline/raw/cell-macrophage.jpeg` (board token, Monocyte) | AI image tool — **Gemini or Google Flow, Shantanu to confirm which produced this batch** | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 1, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/cell-macrophage.jpeg` (board token, Monocyte) | Google Flow (confirmed by Shantanu, 20 Aug 2026) | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 1, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/cell-neutrophil.jpeg` (board token, Neutrophil) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 2, verbatim | not yet | Unknown |
 
 ---
 
