@@ -45,6 +45,7 @@ For every asset, we need:
 |---|---|---|---|---|---|---|
 | `tools/art-pipeline/raw/cell-macrophage.jpeg` (board token, Monocyte) | Google Flow (confirmed by Shantanu, 20 Aug 2026) | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 1, verbatim | not yet | Unknown |
 | `tools/art-pipeline/raw/cell-neutrophil.jpeg` (board token, Neutrophil) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 2, verbatim | not yet | Unknown |
+| `tools/art-pipeline/raw/cell-bcell.jpeg` (board token, B-Cell) | Google Flow | 20 Aug 2026 | TBC (Shantanu) | `ART_BRIEF.md` prompt 3, verbatim | not yet | Unknown |
 
 ---
 
