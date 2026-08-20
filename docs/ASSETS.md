@@ -66,6 +66,12 @@ not exhaustive — confirm against the repository before concluding.
 
 ## Open questions
 
+0. **For the P2.4 regeneration (Path A, ruled 20 Aug 2026): the tool may be Gemini OR Google
+   Flow — and redistribution permission is a PER-TOOL question.** Whichever tool is actually
+   used, its output terms as of the generation date must be confirmed to permit CC BY-SA 4.0
+   redistribution before any content licence is declared. An answer obtained for one tool does
+   not transfer to the other, and both may be in play across the set. Record the tool per
+   asset in the register; `docs/ART_BRIEF.md` carries the same duty at the point of use.
 1. Which tool generated the organ and cell illustrations, and on what date?
 2. Was the account used a free or paid tier at that time?
 3. Do that tool's terms permit redistribution of output under a share-alike licence?
