@@ -22,9 +22,10 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   narrates is P2.5's. (`main.tsx`)
 - Entry labels render at a fixed 13px from geometry positions; collision with route art untested
   at phone widths. (`Board.tsx`)
-- Board tokens at 360px are ~9.8 CSS px while Gate 1 needs ≥44px touch targets; node spacing
-  caps a non-overlapping token at ~20.0px (A2 geometry) — token size vs hit-area strategy is a
-  real decision. (P2.4 art measurement, 19 Aug 2026)
+- Tokens render at 20px and organs/entries at 30px since the P2.4 art landed (Shantanu's
+  showcase ruling) — but Gate 1's ≥44px touch targets still need a hit-area strategy
+  (invisible expanded hit regions, or the stack-inspect view as the touch surface).
+  (`Board.tsx`, 20 Aug 2026)
 - ~~Fan spacing narrower than a token~~ — superseded by the stack-with-badge decision above;
   the overlap problem dissolves with fanning itself. (20 Aug 2026)
 - `toxin`/`venom` and `malaria`/`parasite` share byte-identical art in `art_data.js`; whether

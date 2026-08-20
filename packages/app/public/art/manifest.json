@@ -1,0 +1,1225 @@
+{
+  "generator": "tools/art-pipeline/build.ts",
+  "paper": "#FFFDF9",
+  "minContrast": 3,
+  "assets": {
+    "cell-macrophage": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 6.62,
+        "dominant": "#24665A",
+        "lightShare": 0.001,
+        "coverage": 0.359
+      },
+      "files": {
+        "1x": {
+          "file": "cell-macrophage@1x.webp",
+          "px": 20,
+          "bytes": 778,
+          "sha256": "2e8a437059c83a8429b7b726b13b27996856f9c6a10e9a64398ec91ca234b3be"
+        },
+        "2x": {
+          "file": "cell-macrophage@2x.webp",
+          "px": 40,
+          "bytes": 1630,
+          "sha256": "7e27bc7eeeb54b7c4a6bc8c4ed7d2903fb96f7c80e48c2ae2b6ce36094d18b7c"
+        },
+        "3x": {
+          "file": "cell-macrophage@3x.webp",
+          "px": 60,
+          "bytes": 2556,
+          "sha256": "1743ed8fbf47c8379a53d0bc7ab3c116de2d67dcfccb048f918f2d47d270e21b"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-macrophage.jpeg",
+        "sha256": "26324ae606e8be769f8303659631de192441c243410c17dc8f420faf752b5dea"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 1"
+      }
+    },
+    "cell-neutrophil": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 4.93,
+        "dominant": "#7C64A1",
+        "lightShare": 0.264,
+        "coverage": 0.358
+      },
+      "files": {
+        "1x": {
+          "file": "cell-neutrophil@1x.webp",
+          "px": 20,
+          "bytes": 922,
+          "sha256": "b212faf7c2c4f1859f29efef96b2a46700d3ffdd2069f7cb7cee8d46b9dc17cc"
+        },
+        "2x": {
+          "file": "cell-neutrophil@2x.webp",
+          "px": 40,
+          "bytes": 2280,
+          "sha256": "83a5c936d7e5c2f33d89cfd3dcc0c26c6d8b77637eb94f1b01ec1d98e07736c8"
+        },
+        "3x": {
+          "file": "cell-neutrophil@3x.webp",
+          "px": 60,
+          "bytes": 3806,
+          "sha256": "8b498da998ef954802ea13b9dce91e2a68f073a93678c943c5474086754bef04"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-neutrophil.jpeg",
+        "sha256": "5a67f60db48eec4d51b55fb75793a202d9bab69bd92d1ae973159766834bbed6"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 2"
+      }
+    },
+    "cell-bcell": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 5.22,
+        "dominant": "#28748B",
+        "lightShare": 0.091,
+        "coverage": 0.251
+      },
+      "files": {
+        "1x": {
+          "file": "cell-bcell@1x.webp",
+          "px": 20,
+          "bytes": 904,
+          "sha256": "a1274ab93fc27cdce17117f12f10575367c51f7b898eba893258bbfcf9c5597c"
+        },
+        "2x": {
+          "file": "cell-bcell@2x.webp",
+          "px": 40,
+          "bytes": 2460,
+          "sha256": "e968e84d783373ea2d11ca424454b6da2f593f588b8847b303250715af3ecbfb"
+        },
+        "3x": {
+          "file": "cell-bcell@3x.webp",
+          "px": 60,
+          "bytes": 4684,
+          "sha256": "9a810dcb9a6ba4a91f263f33d1fcb0b41400f581047c22fc4145ededdd8194cd"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-bcell.jpeg",
+        "sha256": "bf01165b64b1a3e12513cf7285a53c29143793d1e859ad72763745b1bd8b81f9"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 3"
+      }
+    },
+    "cell-tcell": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 5.82,
+        "dominant": "#3C7030",
+        "lightShare": 0.079,
+        "coverage": 0.378
+      },
+      "files": {
+        "1x": {
+          "file": "cell-tcell@1x.webp",
+          "px": 20,
+          "bytes": 884,
+          "sha256": "c399a47e030924f678d957f7e313cc48668e0998be7a6bc17736049d26972405"
+        },
+        "2x": {
+          "file": "cell-tcell@2x.webp",
+          "px": 40,
+          "bytes": 2356,
+          "sha256": "ba416f852a02833e5bebcfcb3eddc5020a23c58945438badad0a566bc8c625ce"
+        },
+        "3x": {
+          "file": "cell-tcell@3x.webp",
+          "px": 60,
+          "bytes": 4078,
+          "sha256": "4dcdac04d5c8831c36d54894813d2445ada83033cdc04daf1fc14693604e8142"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-tcell.jpeg",
+        "sha256": "6c3d0aa8a0579316f2a0144f91fd4e319b571c7407ed5aeff22f95d08dca172a"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 4"
+      }
+    },
+    "cell-helper": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 5.39,
+        "dominant": "#3363D0",
+        "lightShare": 0.086,
+        "coverage": 0.224
+      },
+      "files": {
+        "1x": {
+          "file": "cell-helper@1x.webp",
+          "px": 20,
+          "bytes": 1012,
+          "sha256": "66e53869a32e317e2c575c97b5c5343e3a2a8f5a85a82baf082bc635a54ec6a8"
+        },
+        "2x": {
+          "file": "cell-helper@2x.webp",
+          "px": 40,
+          "bytes": 2810,
+          "sha256": "3ca125e1a6ee6222a3ad47803700dbe65763d2c4dfb79de3928a89bc3bb4aa79"
+        },
+        "3x": {
+          "file": "cell-helper@3x.webp",
+          "px": 60,
+          "bytes": 5304,
+          "sha256": "280364e74897d6496a19adbd99f2eb3954c532cae3e093be2b680ee15629ecdd"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-helper.jpeg",
+        "sha256": "e4831de587697b01ac0977c166822966a7cd57740d72cc68cb5702529582c0ec"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 5"
+      }
+    },
+    "cell-nk": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 6.8,
+        "dominant": "#4E5B6D",
+        "lightShare": 0.076,
+        "coverage": 0.637
+      },
+      "files": {
+        "1x": {
+          "file": "cell-nk@1x.webp",
+          "px": 20,
+          "bytes": 778,
+          "sha256": "ca9840be412d45e1af24b5d16d230e805b5060d88315dee02b0b7177e4c7c8a3"
+        },
+        "2x": {
+          "file": "cell-nk@2x.webp",
+          "px": 40,
+          "bytes": 1908,
+          "sha256": "8b948bb600bfab1c010417c51f3c1992de19afc0968f379fb2cec3f0fc13bfd1"
+        },
+        "3x": {
+          "file": "cell-nk@3x.webp",
+          "px": 60,
+          "bytes": 3432,
+          "sha256": "2e7fe7452c5d6a420f63a51562dd26c0e11ad400501e3f4f17e896ea6a9adf08"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-nk.jpeg",
+        "sha256": "c632fd2f9c0b2ae9e3d824350e94db32530ace49015284a6d597f2fe91fea915"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 6"
+      }
+    },
+    "cell-eosinophil": {
+      "cls": "cell",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 3.59,
+        "dominant": "#D26279",
+        "lightShare": 0.244,
+        "coverage": 0.643
+      },
+      "files": {
+        "1x": {
+          "file": "cell-eosinophil@1x.webp",
+          "px": 20,
+          "bytes": 906,
+          "sha256": "fcc8561642664a54762836a8a41d1b40ed1d28ebbdea9624012576eede3946c1"
+        },
+        "2x": {
+          "file": "cell-eosinophil@2x.webp",
+          "px": 40,
+          "bytes": 2232,
+          "sha256": "2e3c08b51f709182492e89a05a730f22d85bbee261d7b0dba2848539f470cf4c"
+        },
+        "3x": {
+          "file": "cell-eosinophil@3x.webp",
+          "px": 60,
+          "bytes": 3810,
+          "sha256": "83818e0bd6595932a1ba2a02d7b374cafd5cd5bfa07540b49a031271eea97639"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/cell-eosinophil.jpeg",
+        "sha256": "1cf1ffaa1943cd5585c38cf86dbf191fc6e59867f04adbbdf458d10aa1be82e5"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 7"
+      }
+    },
+    "path-virus": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 8.87,
+        "dominant": "#85253E",
+        "lightShare": 0.044,
+        "coverage": 0.306
+      },
+      "files": {
+        "1x": {
+          "file": "path-virus@1x.webp",
+          "px": 20,
+          "bytes": 810,
+          "sha256": "5bfa057255dea058fb6d2a913a4f5655be502f6c8972f9bd73f1610cbdb366a8"
+        },
+        "2x": {
+          "file": "path-virus@2x.webp",
+          "px": 40,
+          "bytes": 2508,
+          "sha256": "55d881084cb8cff2f5c58e240c46ab7f8889c0876f7403d6ae6742a1d2db86ee"
+        },
+        "3x": {
+          "file": "path-virus@3x.webp",
+          "px": 60,
+          "bytes": 4720,
+          "sha256": "bd2ee663c626fa7adafff10c001b2d9f6d7af2c3d24505eac1b7e82d9b57948a"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-virus.jpeg",
+        "sha256": "224629529272e37de22d34a313d4781fa5643e71eda7c09aba194c1128740610"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 8"
+      }
+    },
+    "path-hidden": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 8.56,
+        "dominant": "#544757",
+        "lightShare": 0.152,
+        "coverage": 0.368
+      },
+      "files": {
+        "1x": {
+          "file": "path-hidden@1x.webp",
+          "px": 20,
+          "bytes": 786,
+          "sha256": "9aa0047b013f222e1988d19bc7a2a5295d21c62fd8a116bfa9ed6516dbb469fb"
+        },
+        "2x": {
+          "file": "path-hidden@2x.webp",
+          "px": 40,
+          "bytes": 1768,
+          "sha256": "18b8a4f65e4e4413ac7f1e5e6d20232a21dd88c19bd4d1dc75ae1d6d137e1311"
+        },
+        "3x": {
+          "file": "path-hidden@3x.webp",
+          "px": 60,
+          "bytes": 3072,
+          "sha256": "69f4cd25347f9f87dc96295068b2e32cb555ad54e6ee2b39d6f5c9db6d60f1bf"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-hidden.jpeg",
+        "sha256": "35fc0040a60a691a50fd0e89c13ead601921b3e789d05d79a99caa1309d6c449"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 9"
+      }
+    },
+    "path-bacteria": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 6.35,
+        "dominant": "#536526",
+        "lightShare": 0.113,
+        "coverage": 0.257
+      },
+      "files": {
+        "1x": {
+          "file": "path-bacteria@1x.webp",
+          "px": 20,
+          "bytes": 772,
+          "sha256": "bdd0f8e4c47007d2740fde69d42b48473f0860803e6729757511a5f87b844db2"
+        },
+        "2x": {
+          "file": "path-bacteria@2x.webp",
+          "px": 40,
+          "bytes": 1846,
+          "sha256": "a8fd1875416d2ba5fd43c45cc5d3aec4d92220ec9a6c289676a097c270a2f4c6"
+        },
+        "3x": {
+          "file": "path-bacteria@3x.webp",
+          "px": 60,
+          "bytes": 3200,
+          "sha256": "3973de55a6087d110f73c650909ec9df0c112842572e8646a4bdf3ff7c763923"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-bacteria.jpeg",
+        "sha256": "1fc2aeab411088fc2ac74f0fddd2d4145e66a7a76dbf6b5ed6f8b763913a2c8c"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 10"
+      }
+    },
+    "path-toxin": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 7.02,
+        "dominant": "#784F24",
+        "lightShare": 0.173,
+        "coverage": 0.37
+      },
+      "files": {
+        "1x": {
+          "file": "path-toxin@1x.webp",
+          "px": 20,
+          "bytes": 796,
+          "sha256": "9ed6413c511f7e7e3228c647540dcfa88483fb204906a5307781d903fc9f807e"
+        },
+        "2x": {
+          "file": "path-toxin@2x.webp",
+          "px": 40,
+          "bytes": 1998,
+          "sha256": "3788955a19a4acf74609fe02895906dd7fc4c28e9d3f827024b704968113ca67"
+        },
+        "3x": {
+          "file": "path-toxin@3x.webp",
+          "px": 60,
+          "bytes": 3288,
+          "sha256": "79bd92c8b029e6c664cd7c9a90175f801b4925ee212957a709228d938c5f1b5b"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-toxin.jpeg",
+        "sha256": "0bb9211ab2db9f57e8b5f9fdaa3bea7d1aed5b3fdf66c28f79cc90bda33b7163"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 11"
+      }
+    },
+    "path-venom": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 7.47,
+        "dominant": "#3C5B42",
+        "lightShare": 0.113,
+        "coverage": 0.407
+      },
+      "files": {
+        "1x": {
+          "file": "path-venom@1x.webp",
+          "px": 20,
+          "bytes": 858,
+          "sha256": "0de19494720ab213d92ad9aa984dbd5b9fca5e09ab8c155884109bf0c7645432"
+        },
+        "2x": {
+          "file": "path-venom@2x.webp",
+          "px": 40,
+          "bytes": 1928,
+          "sha256": "95b63c78b0668a3ddc9ef7b96fd96f11b58e208b02e21a19c2b9e14cf37d00a8"
+        },
+        "3x": {
+          "file": "path-venom@3x.webp",
+          "px": 60,
+          "bytes": 3342,
+          "sha256": "c79088075507a4f76cc0ed454b54e93b10055568958ecddfdf151bf90aea1068"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-venom.jpeg",
+        "sha256": "da2c81f931f504f23e69696c477c1549d212079bd102a83fc58e7ff4410073fe"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 12"
+      }
+    },
+    "path-fungus": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 10.71,
+        "dominant": "#523250",
+        "lightShare": 0.04,
+        "coverage": 0.218
+      },
+      "files": {
+        "1x": {
+          "file": "path-fungus@1x.webp",
+          "px": 20,
+          "bytes": 722,
+          "sha256": "47b61ade52c93b74776bc0def1019805d3f7276507448213104049096c0e166c"
+        },
+        "2x": {
+          "file": "path-fungus@2x.webp",
+          "px": 40,
+          "bytes": 1544,
+          "sha256": "077c484065398ebca8a798a93639cd5a2a653bd51fac26b821858cb89c75612e"
+        },
+        "3x": {
+          "file": "path-fungus@3x.webp",
+          "px": 60,
+          "bytes": 2756,
+          "sha256": "ae08ee88d071e3090009c5e5cd9f556c60c26ae932d7f1b585081b97022e70ef"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-fungus.jpeg",
+        "sha256": "8a6ee5863b9e6ad4e2f6c6191f39a6b44033ba87c4d466aea4ab0dc5c3e47b2f"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 13"
+      }
+    },
+    "path-worm": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 10.46,
+        "dominant": "#583719",
+        "lightShare": 0.038,
+        "coverage": 0.334
+      },
+      "files": {
+        "1x": {
+          "file": "path-worm@1x.webp",
+          "px": 20,
+          "bytes": 872,
+          "sha256": "353fc1644a096d1d99277696c86add3b3dff4be5e65ac474de7e78757d4d9688"
+        },
+        "2x": {
+          "file": "path-worm@2x.webp",
+          "px": 40,
+          "bytes": 2292,
+          "sha256": "cc322ef21add8fc60811d0c442f5fcd897d5a8ef1c04586a3548806dc01d7f45"
+        },
+        "3x": {
+          "file": "path-worm@3x.webp",
+          "px": 60,
+          "bytes": 3894,
+          "sha256": "25280f83bd2294f47b7e0dfde04b76913e8cdd5a214fa9ea3664e2275bdacb01"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-worm.jpeg",
+        "sha256": "9a909ed4770f0b9f082df8b22ea782d1e66e42eaf674e076be5fc118041ef154"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 14"
+      }
+    },
+    "path-malaria": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 5.97,
+        "dominant": "#5E5D93",
+        "lightShare": 0.242,
+        "coverage": 0.196
+      },
+      "files": {
+        "1x": {
+          "file": "path-malaria@1x.webp",
+          "px": 20,
+          "bytes": 782,
+          "sha256": "3a3b849dc7fddcb20391fabe723ac5a93c1c00d5171cec250705af932d147d97"
+        },
+        "2x": {
+          "file": "path-malaria@2x.webp",
+          "px": 40,
+          "bytes": 1882,
+          "sha256": "96aabcdc9911918dea1a3e21b49a120b1219f47974ff18c4ea2b4b8105b55fb8"
+        },
+        "3x": {
+          "file": "path-malaria@3x.webp",
+          "px": 60,
+          "bytes": 3482,
+          "sha256": "d65433ad6949b262a3b65a82c3afe751990c2c490316109547285a65ed12c405"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-malaria.jpeg",
+        "sha256": "8956128bf1adaa29cac0eb49bca2fa4466387dbb09cf472978d4d152fc20cef4"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 15"
+      }
+    },
+    "path-parasite": {
+      "cls": "path",
+      "displayPx": 20,
+      "measured": {
+        "contrast": 6.59,
+        "dominant": "#7F4D61",
+        "lightShare": 0.198,
+        "coverage": 0.254
+      },
+      "files": {
+        "1x": {
+          "file": "path-parasite@1x.webp",
+          "px": 20,
+          "bytes": 990,
+          "sha256": "fc89d720a828a8f2d98a7d9370fa32d23e591352cfb5d88e83b3533e64c09163"
+        },
+        "2x": {
+          "file": "path-parasite@2x.webp",
+          "px": 40,
+          "bytes": 2734,
+          "sha256": "eb2545ad06efe21e2d688bb54516e4a1fb464597dc91a14b245c7adf26b9527a"
+        },
+        "3x": {
+          "file": "path-parasite@3x.webp",
+          "px": 60,
+          "bytes": 4966,
+          "sha256": "4719a14fc0f852ce80ce0a78685ff47e9c6ef26281ae6ee2a0f1812a9f635d50"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/path-parasite.jpeg",
+        "sha256": "ab3cfdad324904bc06904562d5c03440f546b345f7fb3be8a65cba0efe2d9a8d"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 16"
+      }
+    },
+    "entry-nose": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.54,
+        "dominant": "#454C56",
+        "lightShare": 0.111,
+        "coverage": 0.199
+      },
+      "files": {
+        "1x": {
+          "file": "entry-nose@1x.webp",
+          "px": 30,
+          "bytes": 1018,
+          "sha256": "0ef93dd0cda8911827f7285086d5c2649a1f97854b891de1dd3a363b48e5a6a3"
+        },
+        "2x": {
+          "file": "entry-nose@2x.webp",
+          "px": 60,
+          "bytes": 2082,
+          "sha256": "072977d382b50071185da18f58a58a5659f7bd02f301aed126a308820605936a"
+        },
+        "3x": {
+          "file": "entry-nose@3x.webp",
+          "px": 90,
+          "bytes": 3442,
+          "sha256": "63b58792d53a3af518d0457272e7489e859edac2a28b3736d18526a2edbf415b"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-nose.jpeg",
+        "sha256": "61fc713e4d1e27ab590adfe66b2c543bc40ac5962f9c9a0a037361eb55af2112"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 17"
+      }
+    },
+    "entry-contact": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 6.85,
+        "dominant": "#2C6445",
+        "lightShare": 0,
+        "coverage": 0.328
+      },
+      "files": {
+        "1x": {
+          "file": "entry-contact@1x.webp",
+          "px": 30,
+          "bytes": 1152,
+          "sha256": "57e274029156924351f20c172e57c119d50f7ac849640fd9f0a7f2be74034557"
+        },
+        "2x": {
+          "file": "entry-contact@2x.webp",
+          "px": 60,
+          "bytes": 3078,
+          "sha256": "44dbedad95938c831798d0f8a24d30e3dd9a7a520147473b16130ebe14bfd6fd"
+        },
+        "3x": {
+          "file": "entry-contact@3x.webp",
+          "px": 90,
+          "bytes": 5380,
+          "sha256": "e64b65a5a92557848e37e81762d714b658a95988331166adba1d7cc919fd6fbc"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-contact.jpeg",
+        "sha256": "084c2475d923def0a64dfdaa5163035be6fed4d6ff1f30b62c6498bc6b4e885a"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 18"
+      }
+    },
+    "entry-gut": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 4.85,
+        "dominant": "#94673C",
+        "lightShare": 0.247,
+        "coverage": 0.272
+      },
+      "files": {
+        "1x": {
+          "file": "entry-gut@1x.webp",
+          "px": 30,
+          "bytes": 1396,
+          "sha256": "061c38264ab9339d0fbde212c68e771bf8becf536b16535dcb2f26cefb4124f4"
+        },
+        "2x": {
+          "file": "entry-gut@2x.webp",
+          "px": 60,
+          "bytes": 3520,
+          "sha256": "f8327739ac601ab963d611cf9c85f7cfd2ebe32a35445706dfdc498809e8f1f9"
+        },
+        "3x": {
+          "file": "entry-gut@3x.webp",
+          "px": 90,
+          "bytes": 6110,
+          "sha256": "b067c4e21da14a6f68b6bc62e20af3030ca1701b30f4174b978ebb5b8dc8559d"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-gut.jpeg",
+        "sha256": "529bf0cc987a1d48d9cd4f7013173a4102e71501b49ceb1e5eb0b3d54a89dbbb"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 19"
+      }
+    },
+    "entry-blood": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 10.47,
+        "dominant": "#702520",
+        "lightShare": 0.068,
+        "coverage": 0.184
+      },
+      "files": {
+        "1x": {
+          "file": "entry-blood@1x.webp",
+          "px": 30,
+          "bytes": 968,
+          "sha256": "49b592a803ced0b37621622d9e6e38b1d55d7f394bcafab026f4ecdf9ea7a4e8"
+        },
+        "2x": {
+          "file": "entry-blood@2x.webp",
+          "px": 60,
+          "bytes": 2362,
+          "sha256": "116c14554dfd8b2bf10b61d75b5fa674208fab32ea4bdc5aea838a782ff2717c"
+        },
+        "3x": {
+          "file": "entry-blood@3x.webp",
+          "px": 90,
+          "bytes": 4132,
+          "sha256": "b166e35fb1570b84da2bde7b0823c42b0095438ed7e61bac0d43144c5871c1d6"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-blood.jpeg",
+        "sha256": "2fdf98f67c8353c8cc0fd78d0137c4de4d3f6848bb76f5217ae8bd88c0deaf0a"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 20"
+      }
+    },
+    "entry-wound": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.82,
+        "dominant": "#79342E",
+        "lightShare": 0.088,
+        "coverage": 0.269
+      },
+      "files": {
+        "1x": {
+          "file": "entry-wound@1x.webp",
+          "px": 30,
+          "bytes": 1364,
+          "sha256": "3276a8481dda781b1816cf708cb6f92858ebaff6415a72eb5761fbbbfe1ca84b"
+        },
+        "2x": {
+          "file": "entry-wound@2x.webp",
+          "px": 60,
+          "bytes": 3642,
+          "sha256": "ab954c4547694641547890018b193352c84597a938faabc305206f8497d4d5f1"
+        },
+        "3x": {
+          "file": "entry-wound@3x.webp",
+          "px": 90,
+          "bytes": 6504,
+          "sha256": "749e11962ddd3224c04d20654a0e5cf88275e42e807d1bffa2d5d95ab1ea84ca"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-wound.jpeg",
+        "sha256": "e9defe0488e15dc23ecb70eab7e15016477196432ed55df940d753022740f075"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 21"
+      }
+    },
+    "entry-bite": {
+      "cls": "entry",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.45,
+        "dominant": "#435039",
+        "lightShare": 0.024,
+        "coverage": 0.158
+      },
+      "files": {
+        "1x": {
+          "file": "entry-bite@1x.webp",
+          "px": 30,
+          "bytes": 972,
+          "sha256": "27088ad98df45a7884dcd916005ff3a52dbd507a2d33346be970f5dfed464a5e"
+        },
+        "2x": {
+          "file": "entry-bite@2x.webp",
+          "px": 60,
+          "bytes": 2368,
+          "sha256": "dfa7672096b78c9564c488868e8bebb301b46e0e4d3327e974b8a7cc93438a20"
+        },
+        "3x": {
+          "file": "entry-bite@3x.webp",
+          "px": 90,
+          "bytes": 4210,
+          "sha256": "70b75f71e2b1fb9526993a6a259fb5dcccb71b150b6c50772d38cab9b963e388"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/entry-bite.jpeg",
+        "sha256": "1ad87e568f10a88ecfe441b5077eb5d5abe041197876f3ccb8028ae7de2a229a"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 22"
+      }
+    },
+    "organ-brain": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 5.53,
+        "dominant": "#835D6A",
+        "lightShare": 0.045,
+        "coverage": 0.377
+      },
+      "files": {
+        "1x": {
+          "file": "organ-brain@1x.webp",
+          "px": 30,
+          "bytes": 1170,
+          "sha256": "0f9dc8e907c6bd7d7b4693b6ea131af6147ad9c894c05ff17acad19604a450c0"
+        },
+        "2x": {
+          "file": "organ-brain@2x.webp",
+          "px": 60,
+          "bytes": 2930,
+          "sha256": "99dcb7c4114d3174531e9f80c6cf9e7531da2b8c07fecaf85812b795e1d61598"
+        },
+        "3x": {
+          "file": "organ-brain@3x.webp",
+          "px": 90,
+          "bytes": 4884,
+          "sha256": "b83832ad972f433056f0bfa5043a3d5b9efb4266dc04b5cd3654fe24e23f13b9"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-brain.jpeg",
+        "sha256": "237a8eabbab0f0816dfc879e284706876910064e34bb3567afc038cd297c5a7d"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 23"
+      }
+    },
+    "organ-lungs": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.67,
+        "dominant": "#783541",
+        "lightShare": 0,
+        "coverage": 0.209
+      },
+      "files": {
+        "1x": {
+          "file": "organ-lungs@1x.webp",
+          "px": 30,
+          "bytes": 1200,
+          "sha256": "7b45f9633b2e4133a134d39b160c458bf126f56f3dc246dc3f23e4d36a89d077"
+        },
+        "2x": {
+          "file": "organ-lungs@2x.webp",
+          "px": 60,
+          "bytes": 3140,
+          "sha256": "293bb284a588927fe09a327508b5a6a9127b76f273c9504e12af69ebb1de0529"
+        },
+        "3x": {
+          "file": "organ-lungs@3x.webp",
+          "px": 90,
+          "bytes": 5614,
+          "sha256": "94b5606afe8e8eedb0c50e7e9521198ce6a54287756eab3564cb15b2afe7df3b"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-lungs.jpeg",
+        "sha256": "e22bbf594adef0814c980e457ae43676858cd5d4cc4cdd7dcabc6894d2420c0b"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 24"
+      }
+    },
+    "organ-heart": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 7.72,
+        "dominant": "#942E25",
+        "lightShare": 0.044,
+        "coverage": 0.202
+      },
+      "files": {
+        "1x": {
+          "file": "organ-heart@1x.webp",
+          "px": 30,
+          "bytes": 1474,
+          "sha256": "2084c7baee38f001e78a477a1ce8dd46dbe32aca5e1fae93a3c21cc0068bb422"
+        },
+        "2x": {
+          "file": "organ-heart@2x.webp",
+          "px": 60,
+          "bytes": 3974,
+          "sha256": "1fbcd535ee4edb43aca21275daaf1632b7517941cec63144f47fb9e8744fbea2"
+        },
+        "3x": {
+          "file": "organ-heart@3x.webp",
+          "px": 90,
+          "bytes": 7176,
+          "sha256": "95967a5d27b11db174e69095efc29315b98fbf2889c7ccdcff9f1bcab7965d60"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-heart.jpeg",
+        "sha256": "3b42cda89b26a7a397f4c63532ba8d5269b7ba1a838df4b677ea706918934d53"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 25"
+      }
+    },
+    "organ-liver": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.86,
+        "dominant": "#793427",
+        "lightShare": 0.002,
+        "coverage": 0.29
+      },
+      "files": {
+        "1x": {
+          "file": "organ-liver@1x.webp",
+          "px": 30,
+          "bytes": 1014,
+          "sha256": "94e67b9e477774075845b61fe3fcd2c7f557da352c4105605d33ca28f64e8fdc"
+        },
+        "2x": {
+          "file": "organ-liver@2x.webp",
+          "px": 60,
+          "bytes": 2524,
+          "sha256": "1e3b357548fb37a2a0cb1b25019ff43f1259367e3d799e350013d88fdbaf6e3c"
+        },
+        "3x": {
+          "file": "organ-liver@3x.webp",
+          "px": 90,
+          "bytes": 4268,
+          "sha256": "57a0d695e587fee00af62eeed3c5ec40c7ef127c694441621485f76371bd4e12"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-liver.jpeg",
+        "sha256": "43cf3adc16322c1e3f9a4b89a36fe02a18486fc9fc18604fd07d2361e2d8639a"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 26"
+      }
+    },
+    "organ-spleen": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 8.71,
+        "dominant": "#713945",
+        "lightShare": 0.076,
+        "coverage": 0.294
+      },
+      "files": {
+        "1x": {
+          "file": "organ-spleen@1x.webp",
+          "px": 30,
+          "bytes": 1156,
+          "sha256": "7572f65a4698a717ed01a2d17ac165743c5ad5f98fdc9fc862021e2f16ea2e73"
+        },
+        "2x": {
+          "file": "organ-spleen@2x.webp",
+          "px": 60,
+          "bytes": 2792,
+          "sha256": "c9021a6ba3f1ed9d61e37052c7de57bdbf1d335b7b263a68c305d460044ed366"
+        },
+        "3x": {
+          "file": "organ-spleen@3x.webp",
+          "px": 90,
+          "bytes": 4656,
+          "sha256": "bf863c3cbf10870808154b010fa03d377a2795e45c0285ebf36c0dd1ba1f98d9"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-spleen.jpeg",
+        "sha256": "95c060872d986e87f4702938acddd57fd933269d2ebb414f333fd839665d4e4d"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 27"
+      }
+    },
+    "organ-kidneys": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 7.53,
+        "dominant": "#834032",
+        "lightShare": 0.062,
+        "coverage": 0.272
+      },
+      "files": {
+        "1x": {
+          "file": "organ-kidneys@1x.webp",
+          "px": 30,
+          "bytes": 1394,
+          "sha256": "b039d152bc4bbd85468e2b472bfe29bfabbfb6fcc57b51b1d6551b0a887fccd6"
+        },
+        "2x": {
+          "file": "organ-kidneys@2x.webp",
+          "px": 60,
+          "bytes": 3516,
+          "sha256": "8d448289fe63f07b38d9e2af5169e1cf8d84ddea37c6bc19716c1098e60416af"
+        },
+        "3x": {
+          "file": "organ-kidneys@3x.webp",
+          "px": 90,
+          "bytes": 5954,
+          "sha256": "004efa1da54047ea7e3112340006cdfdc49bfa78996c04e0b1b28a39f2c29887"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-kidneys.jpeg",
+        "sha256": "27481c1059956d359e9897f887b59b562d26082f8e376ac9881f44dbce4fa1db"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 28"
+      }
+    },
+    "organ-marrow": {
+      "cls": "organ",
+      "displayPx": 30,
+      "measured": {
+        "contrast": 7.45,
+        "dominant": "#7F433E",
+        "lightShare": 0.179,
+        "coverage": 0.273
+      },
+      "files": {
+        "1x": {
+          "file": "organ-marrow@1x.webp",
+          "px": 30,
+          "bytes": 1336,
+          "sha256": "a783888bcd51a84afcac0454c65f73220c84112404e7765e50e3f2fd164e69ce"
+        },
+        "2x": {
+          "file": "organ-marrow@2x.webp",
+          "px": 60,
+          "bytes": 3552,
+          "sha256": "fb94604d9511a8b1aa08d51602759d8b10826212a375b063d1fc5fd2c2cf40c5"
+        },
+        "3x": {
+          "file": "organ-marrow@3x.webp",
+          "px": 90,
+          "bytes": 6306,
+          "sha256": "3719e66f70edcab16f33ae101bf74853cc3643ffffadb73001efe865fc1cfb49"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/organ-marrow.jpeg",
+        "sha256": "ffb479c00c9398cf504c57b6a3da90f4539d7e6e443c28fcf51429152177cde8"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-08-20",
+        "account": "TBC (Shantanu)",
+        "tosChecked": "not yet",
+        "redistribution": "Unknown",
+        "prompt": "ART_BRIEF.md prompt 29"
+      }
+    }
+  }
+}

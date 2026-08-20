@@ -105,6 +105,8 @@ interface Located {
 interface Invaderish extends Located {
   id?: unknown;
   disease?: unknown;
+  type?: unknown;
+  novel?: unknown;
   hp?: unknown;
   maxhp?: unknown;
 }
@@ -117,9 +119,58 @@ interface Organish {
   hp?: unknown;
 }
 
-/** Fan tokens sharing one node out horizontally so each stays visible. Rendering necessity. */
+/** Fan tokens sharing one node out horizontally so each stays visible. Rendering necessity.
+ *  Scaffolding until P2.5 builds the decided stack-with-badge (docs/for-P2.5.md). */
 const fan = (p: Pt, i: number, n: number): Pt =>
   n <= 1 ? p : { x: p.x + (i - (n - 1) / 2) * 16, y: p.y };
+
+/**
+ * P2.4 art, emitted by tools/art-pipeline into the app's public dir and served at /art/.
+ * The 3x rendition is referenced everywhere: SVG scales it down, and 3x covers every DPR.
+ * Sizes are the brief's per-class display sizes (tokens 20px, organs/entries 30px) in
+ * viewBox units at the 360px reference width (20 / (360/660) etc.).
+ */
+const ART_URL = (key: string): string => `/art/${key}@3x.webp`;
+const TOKEN_ART_U = 36.7; // 20 CSS px at 360
+const LARGE_ART_U = 55; // 30 CSS px at 360
+const CELL_ART = new Set([
+  'macrophage',
+  'neutrophil',
+  'bcell',
+  'tcell',
+  'helper',
+  'nk',
+  'eosinophil',
+]);
+const PATH_ART = new Set([
+  'virus',
+  'hidden',
+  'bacteria',
+  'toxin',
+  'venom',
+  'fungus',
+  'worm',
+  'malaria',
+  'parasite',
+]);
+
+/** Art key for a token, or null when there is none (novel invaders stay masked circles). */
+function tokenArtKey(t: {
+  kind: 'invader' | 'cell';
+  cell?: string;
+  type?: unknown;
+  novel?: unknown;
+}): string | null {
+  if (t.kind === 'cell' && t.cell !== undefined && CELL_ART.has(t.cell)) return `cell-${t.cell}`;
+  if (
+    t.kind === 'invader' &&
+    t.novel !== true &&
+    typeof t.type === 'string' &&
+    PATH_ART.has(t.type)
+  )
+    return `path-${t.type}`;
+  return null;
+}
 
 export function Board({
   view,
@@ -143,6 +194,8 @@ export function Board({
     kind: 'invader' | 'cell';
     pos: Pt;
     cell?: string;
+    type?: unknown;
+    novel?: unknown;
   }[] = [];
   invaders.forEach((iv, i) => {
     const pos = tokenPos(iv);
@@ -152,6 +205,8 @@ export function Board({
         label: String(iv.disease ?? '?').slice(0, 6),
         kind: 'invader',
         pos,
+        type: iv.type,
+        novel: iv.novel,
       });
     }
   });
@@ -196,13 +251,15 @@ export function Board({
         const stepsOf = routeSteps(lane);
         const entry = entryOf(lane);
         const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
-        // Entry labels sit radially outward from the entry point, as on the print.
+        // Entry icon sits ON the entry point; the label radially outward past it, as on
+        // the print (offset = icon half-size + clearance).
         const label = entry
           ? (() => {
               const d = Math.hypot(entry.x - HUB_POS.x, entry.y - HUB_POS.y) || 1;
+              const off = LARGE_ART_U / 2 + 12;
               return {
-                x: entry.x + ((entry.x - HUB_POS.x) / d) * 16,
-                y: entry.y + ((entry.y - HUB_POS.y) / d) * 16 + 4,
+                x: entry.x + ((entry.x - HUB_POS.x) / d) * off,
+                y: entry.y + ((entry.y - HUB_POS.y) / d) * off + 4,
               };
             })()
           : null;
@@ -230,6 +287,15 @@ export function Board({
                 </text>
               </g>
             ))}
+            {entry ? (
+              <image
+                href={ART_URL(`entry-${lane}`)}
+                x={entry.x - LARGE_ART_U / 2}
+                y={entry.y - LARGE_ART_U / 2}
+                width={LARGE_ART_U}
+                height={LARGE_ART_U}
+              />
+            ) : null}
             {entry && label ? (
               <text x={label.x} y={label.y} textAnchor="middle" fontSize={13} fill={CLASSIC.ink}>
                 {entry.t}
@@ -281,13 +347,31 @@ export function Board({
                 </text>
               </g>
             ))}
-            {/* No organ box: it was a print affordance (Shantanu, 20 Aug 2026) — the screen
-                shows organ name and integrity as UI. The position keeps its label and hp
-                until P2.5 decides the organ marker (see docs/for-P2.5.md). */}
-            <text x={pos.x} y={pos.y - 22} textAnchor="middle" fontSize={13} fill={CLASSIC.inkDark}>
+            {/* No organ box (a print affordance, removed by design 20 Aug 2026): the organ
+                marker is its P2.4 illustration; name and integrity as UI are P2.5's. */}
+            <image
+              href={ART_URL(`organ-${o}`)}
+              x={pos.x - LARGE_ART_U / 2}
+              y={pos.y - LARGE_ART_U / 2}
+              width={LARGE_ART_U}
+              height={LARGE_ART_U}
+            />
+            <text
+              x={pos.x}
+              y={pos.y - LARGE_ART_U / 2 - 6}
+              textAnchor="middle"
+              fontSize={13}
+              fill={CLASSIC.inkDark}
+            >
               {o}
             </text>
-            <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
+            <text
+              x={pos.x}
+              y={pos.y + LARGE_ART_U / 2 + 12}
+              textAnchor="middle"
+              fontSize={12}
+              fill={CLASSIC.ink}
+            >
               {hp}
             </text>
           </g>
@@ -317,6 +401,7 @@ export function Board({
         list.map((t, i) => {
           const p = fan(t.pos, i, list.length);
           const selected = t.cell !== undefined && t.cell === selectedCell;
+          const art = tokenArtKey(t);
           return (
             <g
               key={t.key}
@@ -324,17 +409,38 @@ export function Board({
               onClick={t.cell && onCellClick ? () => onCellClick(t.cell as string) : undefined}
               style={t.cell && onCellClick ? { cursor: 'pointer' } : undefined}
             >
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={selected ? 11 : 9}
-                fill={t.kind === 'invader' ? '#b33' : '#fff'}
-                stroke={selected ? '#e80' : t.kind === 'invader' ? '#711' : '#236'}
-                strokeWidth={selected ? 4 : 2}
-              />
+              {selected ? (
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={TOKEN_ART_U / 2 + 3}
+                  fill="none"
+                  stroke="#e80"
+                  strokeWidth={4}
+                />
+              ) : null}
+              {art !== null ? (
+                <image
+                  href={ART_URL(art)}
+                  x={p.x - TOKEN_ART_U / 2}
+                  y={p.y - TOKEN_ART_U / 2}
+                  width={TOKEN_ART_U}
+                  height={TOKEN_ART_U}
+                />
+              ) : (
+                // No art (a novel invader stays masked): the placeholder circle.
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={9}
+                  fill={t.kind === 'invader' ? '#b33' : '#fff'}
+                  stroke={t.kind === 'invader' ? '#711' : '#236'}
+                  strokeWidth={2}
+                />
+              )}
               <text
                 x={p.x}
-                y={p.y + 18}
+                y={p.y + TOKEN_ART_U / 2 + 10}
                 textAnchor="middle"
                 fontSize={10}
                 fill={t.kind === 'invader' ? '#711' : '#236'}

@@ -84,6 +84,10 @@ not exhaustive — confirm against the repository before concluding.
 - `tools/legacy/public/body.png` — board body illustration
 - `tools/legacy/body_crop.png` — cropped variant
 - `ORGAN_ART` in `tools/legacy/v2_ui.html` — inline organ artwork
+- `packages/app/public/art/` — the P2.4 pipeline's emitted WebP (1×/2×/3×) and
+  `manifest.json`, which carries a machine copy of each asset's register row plus its
+  MEASURED contrast; regenerate with `pnpm art:build` (the gate re-measures — it never
+  trusts this register), controls via `--control`, determinism via `--verify`
 - `tools/geometry-from-a2/Immunity_Wars_BOARD_A2.pdf` — the printed A2 board (CLASSIC), located
   20 Aug 2026. Vector, script-generated (the script is lost; the PDF is the surviving record and
   now the input to `tools/geometry-from-a2/`). **Its 16 embedded rasters** — the print's organ

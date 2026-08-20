@@ -16,11 +16,13 @@ packages:
   # CI helpers and the results dashboard. Workspace members so that typecheck, lint and test reach
   # them: the dashboard is the instrument that REPORTS on every other instrument, and the aggregate
   # gate decides whether the build is green. Neither can be the one thing nobody checks.
-  # tools/legacy stays excluded for the reason above; tools/art-pipeline and tools/balance-sim are
-  # empty and are not listed.
+  # tools/legacy stays excluded for the reason above; tools/balance-sim is empty and is not listed.
   - 'tools/ci'
   - 'tools/dashboard'
   - 'tools/legacy-harness'
+  # P2.4's art pipeline: keys/trims/gates the generated raw art and emits WebP + manifest.
+  # A workspace member because its contrast gate is the check the whole token set depends on.
+  - 'tools/art-pipeline'
   # P2.3's measurement driver: launches system Chrome over CDP, applies CPU throttling, drives
   # the dev shell and collects the page's own __iwMetrics. A workspace member so typecheck and
   # lint reach it — an instrument nobody typechecks is the known failure shape.
@@ -34,6 +36,11 @@ packages:
 # Anything added here should be a build-tool binary with an understood reason.
 allowBuilds:
   esbuild: true
+  # sharp ships its platform binary as an optional dependency (@img/sharp-win32-x64); its
+  # install script is only a fallback download for platforms without a prebuild. Blocked:
+  # if sharp ever fails to load on a new machine, the fix is installing the right @img
+  # optional package, not opening arbitrary code execution at install time.
+  sharp: false
 
 # nanoid: GHSA-2v37-7h3g-55p8 (high, dev-only chain: vite > postcss > nanoid). The patched
 # 3.3.18 is inside postcss's ^3 range, but pnpm keeps the lockfile's pre-existing 3.3.16 on
