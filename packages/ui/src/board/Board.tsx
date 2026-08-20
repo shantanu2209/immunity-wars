@@ -6,12 +6,14 @@
  * takes the one shape both carry. Clickability never comes from a frame — this component has no
  * interaction at all; the dev shell drives the game and hands views in.
  *
- * MEASURABLE, NOT BEAUTIFUL (PHASE2_BRIEF §2). Every number authored here is a stroke width, a
- * radius, or a fan-out offset — rendering necessities. Layout comes entirely from
- * `./geometry`, which reads `geometry.json` through content's validated loader. Anything worth
- * deciding visually is in docs/for-P2.5.md, untouched.
+ * Every number authored here is a stroke width, a radius, or a fan-out offset — rendering
+ * necessities. Layout comes entirely from `./geometry`, which reads `geometry.json` through
+ * content's validated loader. Colours and stroke weights are the physical board's CLASSIC
+ * design (P2.4 restyle — see the CLASSIC constant below); anything visual beyond matching the
+ * print is in docs/for-P2.5.md.
  */
 
+import { LYMPH_GROUP, LYMPH_STEP } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
 import type { ReactElement } from 'react';
 
@@ -28,6 +30,54 @@ import {
   tokenPos,
   type Pt,
 } from './geometry';
+
+/**
+ * CLASSIC palette and stroke weights, extracted from the physical A2 board
+ * (Immunity_Wars_BOARD_A2.pdf, vector ops read directly — P2.4 restyle, 20 Aug 2026).
+ * Widths were authored in mm on a 1190.55pt-wide A2 page; converted to viewBox units at
+ * 660u / 1190.55pt = 0.5543 u/pt. Colours are exact; widths are the print's, rescaled.
+ */
+const CLASSIC = {
+  paper: '#FFFDF9',
+  ink: '#7C6A61', // label/step-number ink
+  inkDark: '#2E2A28', // organ names
+  route: '#C8877B',
+  branch: '#C89A6B',
+  branchNodeFill: '#FDF3EC',
+  organ: '#8E6E53',
+  hubFill: '#F7CFC7',
+  frame: '#B03A2E', // hub ring carries the frame red
+  lymph: '#1F6F8B',
+  wLine: 1.89, // 3.40pt (1.2mm) — route and branch lines
+  wNode: 1.41, // 2.55pt (0.9mm) — step-node rings
+  wOrgan: 2.67, // 4.82pt (1.7mm) — organ boxes
+  wHub: 2.99, // 5.39pt (1.9mm)
+  wLymph: 3.14, // 5.67pt (2.0mm)
+  lymphDash: '8.6 3.9', // print dash [15.59 7.09]pt, rescaled
+} as const;
+
+/**
+ * Lymphatic arcs: one dashed connector per LYMPH_GROUP, through the LYMPH_STEP node of each
+ * member route — both facts from content, so the UI hardcodes no lane grouping. Members are
+ * ordered by angle around the hub so the connector does not zigzag; that ordering is
+ * derivation, not design (arc shape and labelling are for-P2.5.md).
+ */
+function lymphArcs(): Pt[][] {
+  const groups = new Map<string, Pt[]>();
+  for (const [lane, grp] of Object.entries(LYMPH_GROUP as Record<string, string | null>)) {
+    if (typeof grp !== 'string') continue;
+    const node = routeSteps(lane).find((s) => s.step === (LYMPH_STEP as number));
+    if (!node) continue;
+    const list = groups.get(grp) ?? [];
+    list.push(node);
+    groups.set(grp, list);
+  }
+  const angle = (p: Pt): number => Math.atan2(p.y - HUB_POS.y, p.x - HUB_POS.x);
+  return [...groups.values()]
+    .filter((l) => l.length >= 2)
+    .map((l) => l.slice().sort((a, b) => angle(a) - angle(b)));
+}
+const LYMPH_ARCS = lymphArcs();
 
 interface Located {
   zone?: unknown;
@@ -102,7 +152,10 @@ export function Board({
   }
 
   return (
-    <svg viewBox={VIEWBOX} style={{ width: '100%', maxWidth: 660, display: 'block' }}>
+    <svg
+      viewBox={VIEWBOX}
+      style={{ width: '100%', maxWidth: 660, display: 'block', background: CLASSIC.paper }}
+    >
       {/* routes: hub -> steps -> entry */}
       {LANES.map((lane) => {
         const stepsOf = routeSteps(lane);
@@ -110,18 +163,53 @@ export function Board({
         const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
         return (
           <g key={lane}>
-            <polyline points={polyPoints(run)} fill="none" stroke="#999" strokeWidth={2} />
+            <polyline
+              points={polyPoints(run)}
+              fill="none"
+              stroke={CLASSIC.route}
+              strokeWidth={CLASSIC.wLine}
+            />
             {stepsOf.map((p) => (
-              <circle key={p.step} cx={p.x} cy={p.y} r={7} fill="#fff" stroke="#999" />
+              <g key={p.step}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={7}
+                  fill="#fff"
+                  stroke={CLASSIC.route}
+                  strokeWidth={CLASSIC.wNode}
+                />
+                <text x={p.x} y={p.y + 3} textAnchor="middle" fontSize={8} fill={CLASSIC.ink}>
+                  {p.step}
+                </text>
+              </g>
             ))}
             {entry ? (
-              <text x={entry.x} y={entry.y - 10} textAnchor="middle" fontSize={13} fill="#555">
+              <text
+                x={entry.x}
+                y={entry.y - 10}
+                textAnchor="middle"
+                fontSize={13}
+                fill={CLASSIC.ink}
+              >
                 {entry.t}
               </text>
             ) : null}
           </g>
         );
       })}
+
+      {/* lymphatic connectors, over the routes they shortcut */}
+      {LYMPH_ARCS.map((arc, i) => (
+        <polyline
+          key={`lymph-${i}`}
+          points={polyPoints(arc)}
+          fill="none"
+          stroke={CLASSIC.lymph}
+          strokeWidth={CLASSIC.wLymph}
+          strokeDasharray={CLASSIC.lymphDash}
+        />
+      ))}
 
       {/* organ branches: hub -> steps -> organ */}
       {BOARD_ORGANS.map((o) => {
@@ -132,15 +220,39 @@ export function Board({
         const hp = Number((organs[o] ?? {}).hp ?? 0);
         return (
           <g key={o}>
-            <polyline points={polyPoints(run)} fill="none" stroke="#bbb" strokeWidth={2} />
+            <polyline
+              points={polyPoints(run)}
+              fill="none"
+              stroke={CLASSIC.branch}
+              strokeWidth={CLASSIC.wLine}
+            />
             {stepsOf.map((p) => (
-              <circle key={p.step} cx={p.x} cy={p.y} r={7} fill="#fff" stroke="#bbb" />
+              <g key={p.step}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={7}
+                  fill={CLASSIC.branchNodeFill}
+                  stroke={CLASSIC.branch}
+                  strokeWidth={CLASSIC.wNode}
+                />
+                <text x={p.x} y={p.y + 3} textAnchor="middle" fontSize={8} fill={CLASSIC.ink}>
+                  {p.step}
+                </text>
+              </g>
             ))}
-            <circle cx={pos.x} cy={pos.y} r={17} fill="#eee" stroke="#777" strokeWidth={2} />
-            <text x={pos.x} y={pos.y - 22} textAnchor="middle" fontSize={13} fill="#333">
+            <circle
+              cx={pos.x}
+              cy={pos.y}
+              r={17}
+              fill="#fff"
+              stroke={CLASSIC.organ}
+              strokeWidth={CLASSIC.wOrgan}
+            />
+            <text x={pos.x} y={pos.y - 22} textAnchor="middle" fontSize={13} fill={CLASSIC.inkDark}>
               {o}
             </text>
-            <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={12} fill="#333">
+            <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
               {hp}
             </text>
           </g>
@@ -148,7 +260,14 @@ export function Board({
       })}
 
       {/* the bloodstream hub */}
-      <circle cx={HUB_POS.x} cy={HUB_POS.y} r={12} fill="#ddd" stroke="#555" strokeWidth={2} />
+      <circle
+        cx={HUB_POS.x}
+        cy={HUB_POS.y}
+        r={12}
+        fill={CLASSIC.hubFill}
+        stroke={CLASSIC.frame}
+        strokeWidth={CLASSIC.wHub}
+      />
 
       {/* tokens, fanned per node */}
       {[...byNode.values()].map((list) =>

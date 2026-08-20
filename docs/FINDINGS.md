@@ -2653,3 +2653,36 @@ The P2.3 instrumentation corrected itself twice before producing a number anyone
 **Disposition: FIXED before any figure was published.** Both corrections are recorded in
 `P2_3_MEASUREMENT.md` and commented at the code they correct (`packages/app/src/metrics.ts`,
 `packages/app/src/main.tsx`).
+
+## 49. The physical A2 board and `geometry.json` disagree on layout — parity is an aspiration, not a current fact
+
+**Found 20 August 2026, at the P2.4 restyle, by reading the located A2 PDFs' vector operators
+directly.**
+
+The physical board (`Immunity_Wars_BOARD_A2.pdf` / `_COLOUR.pdf`, generated July 2026 by a
+Python script that is now lost — the PDFs themselves are vector and fully recoverable) is
+**bilateral**: all six entry labels sit in the left half of the page (x 77–452 of 1191pt),
+all six organ labels in the right half (x 698–1054), head to toe, hub in the centre — the
+board's own rubric says "Entry routes on the LEFT · organs on the RIGHT". `geometry.json` is
+**radial**: entries and organs on all sides of a central hub.
+
+So the print was **not** produced from `geometry.json`, and the brief's "geometry.json is the
+single source for the on-screen board AND the printed A2 artwork" (PHASE2_BRIEF §5) describes
+the intended pipeline, not the existing artefacts. Two consequences already landed:
+
+1. **A reprint generated from `geometry.json` will not look like the board Kartik has been
+   presenting.** Reconciling the two layouts — move `geometry.json` to the bilateral design,
+   or accept the radial one for both — is a design decision for Kartik, not a Phase 2 styling
+   call.
+2. **Print elements whose shape assumes the bilateral layout do not transpose.** The lymph
+   arcs are the first: on the print they are short local arcs because lymph-linked entries are
+   adjacent *by layout*; on the radial board those entries are scattered, and the restyle could
+   only draw straight dashed connectors (`for-P2.5.md`).
+
+Also settles half of `ASSETS.md` open question 4: the A2 artwork is separately produced vector
+work, not the `art_data.js` icon set — only its 16 small embedded rasters share that provenance
+question.
+
+**Disposition: recorded; the layout reconciliation is Kartik's, at the point the print is next
+regenerated.** The P2.4 restyle carries the print's palette and stroke weights onto the
+existing radial geometry, which is what it could do without deciding layout.
