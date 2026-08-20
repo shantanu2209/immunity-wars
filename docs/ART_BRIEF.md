@@ -228,6 +228,171 @@ Tokens also appear larger elsewhere (the stack-inspect view, hand panels at 40�
   the 3:1 contrast against `#FFFDF9`, and emits WebP at 1×/2×/3× with a manifest — so generate
   clean and let the pipeline do the conforming
 
+## The 29 prompts — copy-paste, one per asset
+
+Rulings folded in (Shantanu, 20 Aug 2026): **marrow uses the red-marrow emphasis**; entry
+subjects are **stomach for Gut, mosquito for Bite, syringe for Blood**; and every prompt
+carries an assigned starting colour — **all 29 measured ≥3:1 against the paper** (ratio noted
+per prompt). Colours are generation starting points: Kartik may swap any hex — pick the
+replacement from the viable table or check it against the ≤0.295-luminance bound first.
+Sixteen token colours cannot all sit far apart; where two are neighbours, the silhouettes are
+deliberately unalike, which is what constraint 3 is for.
+
+The anchor sentence is identical in every prompt. Paste a block as-is.
+
+### Cells
+
+**1 · macrophage — teal `#1D5C4D` (7.68:1)**
+```text
+Flat sticker-style game icon of a monocyte white blood cell, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The immune system's big eater: a large friendly amoeba-like cell with one broad pseudopod arm reaching forward to engulf, its single interior detail a kidney-shaped nucleus in a lighter tint. Dominant colour #1D5C4D, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**2 · neutrophil — stain violet `#5B3A8C` (8.51:1)**
+```text
+Flat sticker-style game icon of a neutrophil white blood cell, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The fast first responder: a round energetic cell whose single interior detail is its three-lobed nucleus in a lighter tint. Dominant colour #5B3A8C, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**3 · bcell — lymph blue `#1F6F8B` (5.58:1)**
+```text
+Flat sticker-style game icon of a B-cell lymphocyte, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The antibody factory: a round cell studded around its rim with small Y-shaped antibody receptors, the Y-shapes bold enough to survive tiny sizes. Dominant colour #1F6F8B, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**4 · tcell — forest green `#3D6B35` (6.16:1)**
+```text
+Flat sticker-style game icon of a killer T-cell lymphocyte, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The assassin: a taut, angular cell with one striking sharp edge, coiled to strike. Dominant colour #3D6B35, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**5 · helper — royal blue `#1D4ED8` (6.60:1)**
+```text
+Flat sticker-style game icon of a helper T-cell lymphocyte, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The coordinator: a round cell radiating short signal waves from its surface — its power is communication, not combat. Dominant colour #1D4ED8, the lighter signal waves covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**6 · nk — slate `#44546A` (7.59:1)**
+```text
+Flat sticker-style game icon of a natural killer cell, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A dense, dangerous-looking round lymphocyte whose single interior detail is a scatter of heavy granules in a lighter tint. Dominant colour #44546A, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**7 · eosinophil — eosin pink `#D96180` (3.46:1, its real stain colour)**
+```text
+Flat sticker-style game icon of an eosinophil white blood cell, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The anti-worm specialist: a round granulocyte whose single interior detail is its two-lobed nucleus in a lighter tint. Dominant colour #D96180, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+### Pathogens
+
+**8 · virus — deep crimson `#8B1E3F` (8.78:1)**
+```text
+Flat sticker-style game icon of a virus, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A menacing spiked icosahedral virion, the spikes bold and few enough to survive tiny sizes. Dominant colour #8B1E3F, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**9 · hidden — shadow plum `#4A3B52` (10.14:1)**
+```text
+Flat sticker-style game icon of a hidden virus, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A spiked virion half-concealed inside a plain host-cell outline — half seen, half hidden; its identity is concealment. Dominant colour #4A3B52, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**10 · bacteria — dark olive `#556B2F` (5.85:1)**
+```text
+Flat sticker-style game icon of a bacterium, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A rod-shaped bacterium — a capsule with rounded ends — with one whip-like flagellum tail as detail it can afford to lose. Dominant colour #556B2F, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**11 · toxin — dark ochre `#8A4B08` (6.69:1)**
+```text
+Flat sticker-style game icon of a toxin, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A poison droplet marked with a small skull — a chemical, not a creature. Dominant colour #8A4B08, the lighter skull mark covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**12 · venom — viper green `#2E5339` (8.57:1)**
+```text
+Flat sticker-style game icon of venom, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A droplet pierced by two snake fangs — unmistakably the animal poison, a sibling of the toxin drop but clearly distinct. Dominant colour #2E5339, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**13 · fungus — aubergine `#5C3566` (9.59:1)**
+```text
+Flat sticker-style game icon of a fungus, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A budding yeast: one large oval cell with a smaller bud growing from it, a few spore dots as detail it can afford to lose. Dominant colour #5C3566, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**14 · worm — umber `#6B4423` (8.35:1)**
+```text
+Flat sticker-style game icon of a parasitic worm, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. One thick S-coiled helminth, visibly too big for any cell to swallow. Dominant colour #6B4423, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**15 · malaria — indigo `#312E81` (11.24:1)**
+```text
+Flat sticker-style game icon of the malaria parasite, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A crescent-shaped plasmodium — the banana-like gametocyte form. Dominant colour #312E81, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**16 · parasite — mulberry `#6E2F4B` (9.52:1)**
+```text
+Flat sticker-style game icon of a single-celled parasite, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A complex layered teardrop-shaped protozoan with twin flagella trailing — tough and intricate, clearly not a simple microbe. Dominant colour #6E2F4B, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+### Entry lanes
+
+**17 · nose — slate `#566270` (6.12:1)**
+```text
+Flat sticker-style game icon of a human nose in profile, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The airway entry: a simple side-profile nose, instantly readable. Dominant colour #566270, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**18 · contact — green `#2F6B4A` (6.22:1)**
+```text
+Flat sticker-style game icon of a hand pressing flat onto a surface, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The skin-and-mucous-contact entry: an open palm touching a plain surface edge. Dominant colour #2F6B4A, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**19 · gut — brown `#8C5A2B` (5.72:1)**
+```text
+Flat sticker-style game icon of a stomach, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The food-and-water entry: a simple J-shaped stomach. Dominant colour #8C5A2B, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**20 · blood — frame red `#B03A2E` (5.92:1)**
+```text
+Flat sticker-style game icon of a syringe, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The needle-and-transfusion entry: a simple syringe at a diagonal. Dominant colour #B03A2E, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**21 · wound — rust `#8B3A2A` (7.55:1)**
+```text
+Flat sticker-style game icon of a wound, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The broken-skin entry: a lens-shaped cut with parted edges. Dominant colour #8B3A2A, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**22 · bite — moss `#3E4E34` (8.82:1)**
+```text
+Flat sticker-style game icon of a mosquito, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The insect-or-animal-bite entry: a mosquito from above, wings and proboscis bold and simple. Dominant colour #3E4E34, any lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+### Organs
+
+**23 · brain — mauve-taupe `#8D6B7A` (4.58:1)**
+```text
+Flat sticker-style game icon of a human brain, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A brain in side profile, with two or three fold lines in a lighter tint as its only interior detail. Dominant colour #8D6B7A, the lighter fold lines covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**24 · lungs — deep rose `#A34D5D` (5.47:1)**
+```text
+Flat sticker-style game icon of human lungs, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A paired set of lungs joined by a short trachea, one or two airway branch lines in a lighter tint as the only interior detail. Dominant colour #A34D5D, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**25 · heart — dark heart-red `#9E2B25` (7.31:1)**
+```text
+Flat sticker-style game icon of an anatomical human heart, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A real anatomical heart, not a valentine, with short vessel stubs at the top and one lighter highlight. Dominant colour #9E2B25, the lighter highlight covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**26 · liver — liver brown `#7A3B2E` (8.29:1)**
+```text
+Flat sticker-style game icon of a human liver, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The wedge-shaped liver with its lobe line in a lighter tint as the only interior detail. Dominant colour #7A3B2E, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**27 · spleen — oxblood `#6B2D3C` (10.01:1)**
+```text
+Flat sticker-style game icon of a human spleen, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. The bean-curved spleen with its gently notched inner edge, one lighter highlight as the only interior detail. Dominant colour #6B2D3C, the lighter highlight covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**28 · kidneys — kidney brown `#8A4133` (7.17:1)**
+```text
+Flat sticker-style game icon of a pair of human kidneys, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. Two kidney-bean shapes side by side, each with one lighter inner curve as the only interior detail. Dominant colour #8A4133, the lighter interior covering at most 30% of the icon. 256x256 pixels, transparent background, PNG.
+```
+
+**29 · marrow — red marrow `#7A2E2E` (9.16:1; composite with cream 4.56:1)**
+```text
+Flat sticker-style game icon of a cut long bone showing its marrow, one bold dark solid-colour silhouette with minimal lighter interior detail, smooth rounded shapes, no outline stroke, no gradients, no shadow, no background, centered, filling the frame. A long bone cut open whose dark red marrow interior dominates the icon; the pale cream bone shell is a thin rim around it, covering at most 30% of the icon. Dominant colour #7A2E2E with the cream rim as the lighter detail. 256x256 pixels, transparent background, PNG.
+```
+
 ## Provenance — record at generation time, per tool
 
 Before the first image: open [`ASSETS.md`](ASSETS.md) and for **every** asset record tool +
