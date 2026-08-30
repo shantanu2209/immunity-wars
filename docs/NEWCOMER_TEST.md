@@ -1,7 +1,9 @@
 # The Newcomer Test — protocol
 
-**Status: DRAFT, awaiting Shantanu's review. DO NOT RUN A TEST UNTIL THIS IS APPROVED.**
-An approved version replaces this line with the approval date.
+**Status: APPROVED by Shantanu, 30 August 2026**, with two amendments applied in place and
+marked below: the difficulty choice is **unaided** (the reviewed draft's "choose Training"
+came out of the script — the ruling is recorded at the script), and the two testers run
+**staggered**, not in parallel. Everything else stands as reviewed.
 
 ---
 
@@ -33,10 +35,10 @@ path checks the joins nobody thought to instrument. This test is that, formalise
 - **Age:** any never-seen person satisfies Gate 1's wording. The most honest tester is in the
   game's own audience — a bright 12–15-year-old — because the app is meant to teach exactly
   that person. Recommendation: at least one tester from that group.
-- **How many: two testers minimum, recommended.** Gate 1's wording is satisfied by one
-  finished unaided run, but one person is a coin with unknown bias — two independent runs cost
-  one more afternoon and stop a fluke (in either direction) from deciding the gate.
-  Shantanu rules on the count.
+- **How many: two testers, STAGGERED — ruled 30 August 2026.** Run one, learn, fix the
+  obvious breakages, run the second on the fixed build. Two testers on the same build mostly
+  find the same top-level problem twice, and testers are single-use, so parallel runs spend
+  the scarce resource on duplicate information.
 - **Each tester is single-use.** A person who has run once is no longer a newcomer; after
   fixes, the re-test needs a fresh tester. Recruit accordingly.
 
@@ -54,19 +56,22 @@ path checks the joins nobody thought to instrument. This test is that, formalise
 
 ## The script — everything the tester is told, in full
 
-> "This is a game. When it asks you to choose, choose Training. Play until it tells you the
-> game is over. I can't answer questions — the app has to do the explaining."
+> "This is a game. Play until it tells you the game is over. I can't answer questions — the
+> app has to do the explaining."
 
-Nothing else. Not the game's subject, not what any button does, not that it is Kartik's, not
-how long it takes.
+Nothing else. Not the game's subject, not what any button does, not which difficulty to pick,
+not that it is Kartik's, not how long it takes.
 
-**Why "choose Training" is in the script and is not a hint:** Gate 1 fixes the setting — the
-test runs on Training by ruling (brief §1, review item E). Telling the tester which difficulty
-to pick implements the ruling; finding the difficulty screen and everything after it is still
-unaided. The alternative — saying nothing and voiding the run if they pick Hard — burns a
-single-use tester on a coin flip. *(Flagged for review: if Shantanu prefers the silent
-variant, this sentence comes out and a non-Training pick is recorded as "run void, tester
-spent".)*
+> ⚠️ **Amended by ruling, 30 August 2026.** The reviewed draft's script included "when it
+> asks you to choose, choose Training", argued as implementing Gate 1's setting rather than
+> hinting. **Overruled: the difficulty screen is one of the screens under test, and telling
+> someone which button to press on a screen under test means that screen is not tested.**
+> "Can a newcomer tell which difficulty to start with?" is a real usability question with a
+> real answer in the interface. So the interface carries the guidance the script was
+> carrying — Training is marked **"Recommended for your first game"** on the difficulty
+> screen — and the test now tells us whether that works. **A tester who picks Hard and loses
+> in eight turns is a FINDING, not a wasted run:** the screen failed to communicate where to
+> start. That is worth more than the run the instruction would have bought.
 
 ## What the observer does
 
@@ -112,10 +117,15 @@ recorded as invalidated, with the reason — it is never quietly rerun with the 
 ## Reading the result
 
 - **Pass, for Gate 1:** the tester reached the Result screen unaided. A loss counts.
+  Choosing a difficulty is part of "starting unaided". Training is the *expected* setting —
+  the recommendation on the difficulty screen should produce it, and whether it does is
+  itself under test. A tester who finishes unaided on another difficulty has demonstrated
+  the capability the gate names; the recommendation's failure to steer them is recorded as a
+  finding about the screen, not a defect in the run.
 - The stall list, dead taps and verbatim questions are **findings regardless of outcome** —
   they are the "named specifics" Gate 2's polish rounds run on.
 - **One failed run does not fail the app**, and one passed run does not exhaust the
-  protocol's value; the recommendation above (two testers) is the honest minimum for a gate
+  protocol's value; the staggered two-tester shape above is the ruled minimum for a gate
   this project intends to state publicly.
 - The write-up quotes outcomes in this document's terms: *"finished unaided on Training
   (lost), Tester A, [device]"* — never "usability tested" or any claim broader than the runs

@@ -31,15 +31,20 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   replaces fanning entirely — 7 tokens fanned at 20px would span 138px, 38% of a phone's
   width. The 16u fan spacing in geometry terms is thereby IRRELEVANT, not a value to change.
   P2.5 builds this; `Board.tsx`'s fan is dev-slice scaffolding until then.
-- Spread pacing: 560/800ms kept from legacy for measurement comparability; whether that reads
-  well is the open rendering decision the brief §4 names. (`main.tsx`)
-  **PROPOSED 30 Aug 2026, awaiting Shantanu's ruling:** auto-advance at 900ms standard /
-  1400ms dice, plus tap-anywhere-to-advance during a burst (the tap advances one frame
-  immediately; board taps regain their normal meaning when the burst ends). Reasoning and the
-  measurement-impact statement (nothing needs re-running — the P2.3 budget rows are all
-  per-frame or per-tap, none depend on the inter-frame delay, and `tools/perf/measure.ts`
-  waits on DOM conditions with 30–120s timeouts) are in the piece 3 session record; the
-  ruling lands here when made.
+- ✅ RULED (Shantanu, 30 Aug 2026) — spread pacing is **900ms standard / 1400ms dice, with
+  tap-anywhere-to-advance**, replacing the legacy 560/800ms. The reasoning that carried it:
+  for a newcomer the frame headline is information, not confirmation — 560ms does not fit
+  reading a label AND registering which tokens changed — and the tap makes the exact numbers
+  low-stakes while reusing a surface that is already dead during bursts. Nothing re-run,
+  confirmed: the P2.3 budget rows are all per-frame or per-tap, none depend on the
+  inter-frame delay, and `tools/perf/measure.ts` waits on DOM conditions with 30–120s
+  timeouts. Built in `PlayScreen.tsx` + `SpreadNarration.tsx`; the ruled numbers verified
+  live (dice frame held ~1374ms, standard frames ~935/~869ms, a tap ended the final wait
+  immediately).
+- **For the P2.5 closeout** (noted by Shantanu, 30 Aug 2026): the card reveal's arrival diff
+  earned its keep on its second turn of existence — the walkthrough drew two Strep throat
+  cards in one turn and the dialog listed both, where the view's `drawn` (first card only)
+  would have silently shown one. The diff-by-invader-id design was necessary, not defensive.
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
   narrates is P2.5's. (`main.tsx`)
 - ~~Entry-label collision with route art~~ — resolved by the radial annotation layout
