@@ -44,8 +44,20 @@ export function DifficultyScreen({
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }}>
       <h2 style={{ fontSize: 22, color: '#2E2A28' }}>{t('difficulty.heading')}</h2>
       {DIFFS.map((d) => (
-        <button key={d} style={BTN} onClick={() => pick(d)}>
+        <button
+          key={d}
+          style={d === 'training' ? { ...BTN, borderColor: '#1F6F8B' } : BTN}
+          onClick={() => pick(d)}
+        >
           <span style={{ fontWeight: 700 }}>{t(`difficulty.${d}`)}</span>
+          {d === 'training' ? (
+            // The interface carries the first-game guidance, not the newcomer-test script —
+            // Shantanu's ruling, 30 Aug 2026 (docs/NEWCOMER_TEST.md): whether a newcomer can
+            // tell where to start is part of what the test measures.
+            <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#1F6F8B' }}>
+              {t('difficulty.trainingRecommended')}
+            </span>
+          ) : null}
           <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
             {t(`difficulty.${d}Desc`)}
           </span>

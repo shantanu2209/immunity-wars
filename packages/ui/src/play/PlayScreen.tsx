@@ -6,8 +6,11 @@
  * tools/perf/measure.ts's coupling holds verbatim), the checks panel and the skip toggle.
  * Ported from the P2.2 dev shell; the burst machinery keeps its exact shape:
  *
- * - The subscribe listener only queues; the animation loop drains at legacy pacing
- *   (800ms dice / 560ms otherwise — the P2.5 pacing decision pending, docs/for-P2.5.md).
+ * - The subscribe listener only queues; the animation loop drains at the RULED pacing
+ *   (Shantanu, 30 Aug 2026): 900ms standard / 1400ms dice, with tap-anywhere-to-advance.
+ *   For a newcomer the frame headline is information, not confirmation — the tap is what
+ *   makes the exact numbers low-stakes. None of the P2.3 budget rows depend on the
+ *   inter-frame delay, so nothing was re-run (for-P2.5.md).
  * - ⚠️ Burst frames render under `flushSync`, and that is INSTRUMENTATION, not style
  *   (FINDINGS #48): the busy-time channel's definition depends on it. Do not refactor away.
  * - The tail assertion (burst-tail-authoritative) runs in BOTH shells and reports through
@@ -26,6 +29,12 @@ import { t } from '../i18n';
 import { CommandBar, type EngulfTarget } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
 import { cellDisplayName } from '../names';
+import { SpreadNarration, diceOf } from './SpreadNarration';
+
+// Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
+// its outcome), so they hold longer. A tap anywhere advances immediately.
+const FRAME_MS = 900;
+const DICE_FRAME_MS = 1400;
 
 /** What PlayScreen needs from a session — structural, so RelaySession fits it too. */
 export interface PlaySessionLike {
@@ -81,6 +90,7 @@ export function PlayScreen({
     label: string;
     n: number;
     of: number;
+    dice: unknown;
   } | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
@@ -93,6 +103,8 @@ export function PlayScreen({
   const lastFrameRef = useRef<{ view: ViewState } | null>(null);
   const pendingViewRef = useRef<SessionView | null>(null);
   const endedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
+  const playNextRef = useRef<(() => void) | null>(null);
 
   const onCheckRef = useRef(onCheck);
   onCheckRef.current = onCheck;
@@ -106,6 +118,7 @@ export function PlayScreen({
       const f = queueRef.current.shift();
       if (!f) {
         playingRef.current = false;
+        timerRef.current = null;
         const pv = pendingViewRef.current;
         pendingViewRef.current = null;
         const last = lastFrameRef.current;
@@ -127,14 +140,14 @@ export function PlayScreen({
       // Per-redraw main-thread work (§4 row 2). flushSync is instrumentation — FINDINGS #48.
       const frameStart = performance.now();
       flushSync(() => {
-        setFrame({ view: f.view, label: f.label, n, of: burstSizeRef.current });
+        setFrame({ view: f.view, label: f.label, n, of: burstSizeRef.current, dice: f.dice });
       });
       onFrameRef.current?.(frameStart, performance.now() - frameStart, f.label, Boolean(f.dice));
-      // Legacy pacing, kept for measurement comparability (pacing decision: for-P2.5.md).
-      setTimeout(playNext, f.dice ? 800 : 560);
+      timerRef.current = window.setTimeout(playNext, f.dice ? DICE_FRAME_MS : FRAME_MS);
     };
+    playNextRef.current = playNext;
 
-    return session.subscribe((ev) => {
+    const unsubscribe = session.subscribe((ev) => {
       if (ev.kind === 'burst') {
         if (skipRef.current) {
           onCheckRef.current?.(
@@ -153,7 +166,19 @@ export function PlayScreen({
         else setAuthView(ev.view);
       }
     });
+    return (): void => {
+      unsubscribe();
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
+    };
   }, [session]);
+
+  /** Tap-anywhere during a burst: advance one frame now instead of waiting out the timer. */
+  const advanceFrame = (): void => {
+    if (!playingRef.current || timerRef.current === null) return;
+    clearTimeout(timerRef.current);
+    timerRef.current = null;
+    playNextRef.current?.();
+  };
 
   // Game end: detected on the authoritative view, after any burst has drained.
   useEffect(() => {
@@ -244,6 +269,9 @@ export function PlayScreen({
         frameInfo: frame ? { n: frame.n, of: frame.of, label: frame.label } : null,
         send,
       })}
+      {frame ? (
+        <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
+      ) : null}
       <Board
         view={shown}
         selectedCell={selectedCell}
@@ -283,6 +311,16 @@ export function PlayScreen({
             setInspect(null);
           }}
           onClose={() => setInspect(null)}
+        />
+      ) : null}
+      {playing ? (
+        // The tap-to-advance surface (pacing ruling, 30 Aug 2026). Input is disabled during a
+        // burst anyway (APP_FLOW, Play states), so this reuses a dead surface: every tap while
+        // frames play means "next frame". Below the dialog layer (30) — a dialog never shows
+        // mid-burst, but the ordering should not depend on that.
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
+          onPointerDown={advanceFrame}
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
