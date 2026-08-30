@@ -5,11 +5,11 @@
  * component: all text renders through the catalogue (t()), under the negative-controlled
  * hardcoded-string check.
  */
-import { CNAME, UI_ } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
 import type { InspectInfo } from '../board/Board';
 import { t } from '../i18n';
+import { cellDisplayName as cellName, typeDisplayName as typeName } from '../names';
 
 const ROW: CSSProperties = {
   display: 'flex',
@@ -17,11 +17,6 @@ const ROW: CSSProperties = {
   gap: 10,
   minHeight: 44,
 };
-
-// Display names from the rules tables — the same one-source rule as the board's labels.
-const cellName = (ck: string): string => String((CNAME as Record<string, string>)[ck] ?? ck);
-const typeName = (ty: string): string =>
-  String((UI_ as Record<string, { n?: string }>)[ty]?.n ?? ty);
 
 export function InspectSheet({
   info,
