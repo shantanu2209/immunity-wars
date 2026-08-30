@@ -116,6 +116,16 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
         },
         { timeout: 30000 },
       );
+      // The card reveal (P2.5 piece 3) modalizes the draw. A real player dismisses it before
+      // commanding, so the measured spread must run without a lingering dialog. Tolerant on
+      // purpose — a mop-up draw shows no dialog. Coupled to the catalogue's reveal.continue
+      // text, the same kind of coupling as the button labels above.
+      await page.evaluate(() => {
+        const b = [...document.querySelectorAll('button')].find((x) =>
+          x.textContent?.includes('Continue'),
+        );
+        if (b) b.click();
+      });
       await clickButton(page, 'Begin command');
       await page.waitForFunction(
         () => {

@@ -20,6 +20,9 @@ import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, InspectInfo } from '../board/Board';
 import { Board } from '../board/Board';
+import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
+import { RevealBody, type RevealArrival } from '../dialogs/RevealBody';
+import { t } from '../i18n';
 import { CommandBar, type EngulfTarget } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
 import { cellDisplayName } from '../names';
@@ -161,6 +164,47 @@ export function PlayScreen({
     }
   }, [authView]);
 
+  // THE CARD REVEAL — the dialog queue's first client (docs/APP_FLOW.md ruling 5).
+  //
+  // Detected as a TRANSITION on the authoritative view (drawn: null → card), never as state:
+  // the first view on mount only sets the baseline, so a game resumed mid-turn does not
+  // re-announce a draw the player already saw. Arrivals are diffed by invader id because
+  // `drawn` carries only the first card and `drawnList` is one of the 13 state-only keys the
+  // view drops. A `__sentinel` drawn (mop-up / every slot capped) announces nothing.
+  const dialogs = useDialogQueue();
+  const enqueueDialog = dialogs.enqueue;
+  const prevGameRef = useRef<ViewState | null>(null);
+  useEffect(() => {
+    const g = authView.game;
+    const prev = prevGameRef.current;
+    prevGameRef.current = g;
+    if (!prev) return;
+    const drawn = g['drawn'] as Record<string, unknown> | null;
+    if (!drawn || prev['drawn'] || drawn['__sentinel']) return;
+    const prevIds = new Set(
+      (((prev['invaders'] as { id?: unknown }[] | undefined) ?? []) as { id?: unknown }[]).map(
+        (iv) => String(iv.id ?? ''),
+      ),
+    );
+    const arrivals: RevealArrival[] = (
+      ((g['invaders'] as Record<string, unknown>[] | undefined) ?? []) as Record<string, unknown>[]
+    )
+      .filter((iv) => !prevIds.has(String(iv['id'] ?? '')))
+      .map((iv) => ({
+        disease: String(iv['disease'] ?? ''),
+        lane: typeof iv['lane'] === 'string' ? iv['lane'] : null,
+        remembered: iv['remembered'] === true,
+        novel: iv['novel'] === true,
+      }));
+    if (arrivals.length === 0) return;
+    enqueueDialog({
+      id: `reveal-t${String(g['turn'])}`,
+      title: t('reveal.title'),
+      body: <RevealBody arrivals={arrivals} />,
+      dismissLabel: t('reveal.continue'),
+    });
+  }, [authView, enqueueDialog]);
+
   const send = (action: Record<string, unknown>): void => {
     setLastError(null);
     void session.sendAction(action).then((r) => {
@@ -241,6 +285,7 @@ export function PlayScreen({
           onClose={() => setInspect(null)}
         />
       ) : null}
+      <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
     </div>
   );
 }

@@ -48,5 +48,10 @@
   "result.antibodies": "Antibodies made",
   "result.playAgain": "Play again",
   "result.changeDifficulty": "Change difficulty",
-  "result.title": "Title"
+  "result.title": "Title",
+  "reveal.title": "Infection!",
+  "reveal.enteredVia": "Entered via the",
+  "reveal.novel": "A pathogen nobody has ever seen — no antibody fits it",
+  "reveal.remembered": "Memory response — your body already knows this one",
+  "reveal.continue": "Continue"
 }
