@@ -181,24 +181,28 @@ function boardSvg(): string {
     const st = stepsOf(t);
     const pos = geo.ORGAN_POS[o];
     if (!pos) continue;
-    const d = Math.hypot(pos.x - geo.HUB.x, pos.y - geo.HUB.y) || 1;
-    const edge = {
-      x: geo.HUB.x + ((pos.x - geo.HUB.x) / d) * R_PLAY,
-      y: geo.HUB.y + ((pos.y - geo.HUB.y) / d) * R_PLAY,
-    };
-    s += poly([geo.HUB, ...st, pos, edge], C.branch, C.wLine);
+    // The line STOPS at the tissue slot — terminal node, no tail past it.
+    s += poly([geo.HUB, ...st, pos], C.branch, C.wLine);
     for (const p of st) s += node(p, C.branchNodeFill, C.branch);
   }
   for (const [o, pos] of Object.entries(geo.ORGAN_POS)) {
     s += `<circle cx="${pos.x}" cy="${pos.y}" r="${C.rNode}" fill="${C.branchNodeFill}" stroke="#8E6E53" stroke-width="${C.wNode}"/>`;
+    s += `<text x="${pos.x}" y="${pos.y + 3.5}" text-anchor="middle" font-size="10" fill="${C.ink}">0</text>`;
     const p = place(pos, `organ-${o}`);
     s += img(`organ-${o}`, p.icon.x, p.icon.y, LARGE_U);
     s += `<text x="${p.label.x}" y="${p.label.y}" text-anchor="middle" font-size="13" fill="${C.inkDark}">${rules.ORGANS[o]?.name ?? o}</text>`;
   }
   s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rHub}" fill="${C.hubFill}" stroke="${C.frame}" stroke-width="${C.wHub}"/>`;
   s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rHubInner}" fill="none" stroke="${C.frame}" stroke-width="${C.wNode}"/>`;
+  s += `<text x="${geo.HUB.x}" y="${geo.HUB.y + 3.5}" text-anchor="middle" font-size="10" fill="${C.ink}">0</text>`;
 
   let toks = '';
+  // Resident macrophages: one per organ, patrolling at the tissue slot (step 0), macrophage
+  // art with an organ-brown ring — as Board.tsx renders them.
+  for (const pos of Object.values(geo.ORGAN_POS)) {
+    toks += `<circle cx="${pos.x}" cy="${pos.y}" r="${TOKEN_U / 2 + 2}" fill="none" stroke="#8E6E53" stroke-width="2.5"/>`;
+    toks += img('cell-macrophage', pos.x, pos.y, TOKEN_U);
+  }
   HUB_CELLS.forEach((ck, i) => {
     toks += img(
       `cell-${ck}`,

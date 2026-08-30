@@ -118,14 +118,6 @@ function annotationPlacement(
   };
 }
 
-/** The point where a lane's ray meets the play circle — the visual end of the lane line. */
-function circleEdge(anchor: Pt): Pt {
-  const dx = anchor.x - HUB_POS.x;
-  const dy = anchor.y - HUB_POS.y;
-  const d = Math.hypot(dx, dy) || 1;
-  return { x: HUB_POS.x + (dx / d) * R_PLAY, y: HUB_POS.y + (dy / d) * R_PLAY };
-}
-
 /**
  * Lymphatic arcs: one dashed connector per LYMPH_GROUP, through the LYMPH_STEP node of each
  * member route — both facts from content, so the UI hardcodes no lane grouping. Members are
@@ -249,6 +241,7 @@ export function Board({
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
   const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
+  const residents = (view['residents'] as Record<string, { step?: unknown }> | undefined) ?? {};
 
   // Group everything standing on the board by its resolved position, so co-located tokens fan.
   const tokens: {
@@ -259,7 +252,16 @@ export function Board({
     cell?: string;
     type?: unknown;
     novel?: unknown;
+    /** A resident macrophage: renders as macrophage art with an organ-brown ring, is never
+     *  clickable, and carries no label. Distinguishing it further from the player's
+     *  Macrophage is P2.5 polish. */
+    resident?: boolean;
   }[] = [];
+  for (const [organ, r] of Object.entries(residents)) {
+    const step = typeof r.step === 'number' ? r.step : 0;
+    const pos = tokenPos({ zone: 'branch', organ, step });
+    if (pos) tokens.push({ key: `res-${organ}`, label: '', kind: 'cell', pos, resident: true });
+  }
   invaders.forEach((iv, i) => {
     const pos = tokenPos(iv);
     if (pos) {
@@ -389,9 +391,10 @@ export function Board({
         const stepsOf = branchSteps(o);
         const pos = organPos(o);
         if (!pos) return null;
-        // hub -> steps -> the tissue slot (inside the circle) -> on to the circle's edge,
-        // so the lane's tail reads like a route's: the line exits, the slots do not.
-        const run: Pt[] = [HUB_POS, ...stepsOf, pos, circleEdge(pos)];
+        // hub -> steps -> the tissue slot, and the line STOPS there: the tissue is a
+        // terminal node, and a tail past it would say pieces can go further (they cannot).
+        // Routes differ deliberately — their tail is the germ arriving from outside.
+        const run: Pt[] = [HUB_POS, ...stepsOf, pos];
         const hp = Number((organs[o] ?? {}).hp ?? 0);
         return (
           <g key={o}>
@@ -427,6 +430,11 @@ export function Board({
               stroke={CLASSIC.organ}
               strokeWidth={CLASSIC.wNode}
             />
+            {/* Step 0 — matching the engine's addressing (tokenPos maps branch step 0 here),
+                so the display never needs translating during a debug session. */}
+            <text x={pos.x} y={pos.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
+              0
+            </text>
             {(() => {
               const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
               return (
@@ -450,9 +458,17 @@ export function Board({
                 </>
               );
             })()}
-            <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
-              {hp}
-            </text>
+            {/* hp sits just inward of the tissue slot — a resident usually stands ON it. */}
+            {(() => {
+              const d = Math.hypot(pos.x - HUB_POS.x, pos.y - HUB_POS.y) || 1;
+              const hx = pos.x - ((pos.x - HUB_POS.x) / d) * (CLASSIC.rNode + 14);
+              const hy = pos.y - ((pos.y - HUB_POS.y) / d) * (CLASSIC.rNode + 14);
+              return (
+                <text x={hx} y={hy + 4} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
+                  {hp}
+                </text>
+              );
+            })()}
           </g>
         );
       })}
@@ -474,13 +490,18 @@ export function Board({
         stroke={CLASSIC.frame}
         strokeWidth={CLASSIC.wNode}
       />
+      {/* The bloodstream is route step 0 (tokenPos maps route step<1 here) — numbered like
+          the tissue slots so every occupiable place carries its engine address. */}
+      <text x={HUB_POS.x} y={HUB_POS.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
+        0
+      </text>
 
       {/* tokens, fanned per node */}
       {[...byNode.values()].map((list) =>
         list.map((t, i) => {
           const p = fan(t.pos, i, list.length);
           const selected = t.cell !== undefined && t.cell === selectedCell;
-          const art = tokenArtKey(t);
+          const art = t.resident === true ? 'cell-macrophage' : tokenArtKey(t);
           return (
             <g
               key={t.key}
@@ -496,6 +517,16 @@ export function Board({
                   fill="none"
                   stroke="#e80"
                   strokeWidth={4}
+                />
+              ) : null}
+              {t.resident === true ? (
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={TOKEN_ART_U / 2 + 2}
+                  fill="none"
+                  stroke={CLASSIC.organ}
+                  strokeWidth={2.5}
                 />
               ) : null}
               {art !== null ? (
