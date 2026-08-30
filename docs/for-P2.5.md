@@ -45,6 +45,18 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   earned its keep on its second turn of existence — the walkthrough drew two Strep throat
   cards in one turn and the dialog listed both, where the view's `drawn` (first card only)
   would have silently shown one. The diff-by-invader-id design was necessary, not defensive.
+- **The Play → Result join was crossed for real, on the LOSS path** (30 Aug 2026, applying
+  FINDINGS #50's lesson that a wired join is not a verified one): a headless driver played an
+  idle Training game in the real app shell — idling guarantees a conclusion by turn 30 — and
+  lost at turn 6 to the Kidneys. The Result screen rendered the organ name and stats, all
+  three nav buttons present, and **the autosave was confirmed deleted at Result** (the saves
+  store read back empty), so Continue can never offer a finished game. The WIN path has not
+  been crossed; it needs a played game, and is expected to fall out of the newcomer test or
+  the first full human playthrough — the closeout should check it happened.
+- Background-tab behaviour, observed while driving bursts in a hidden tab: Chrome throttles
+  timers, so a burst pauses mid-spread and resumes on foreground — with tap-to-advance still
+  working, since taps are event-driven. Valid state throughout, no defect; worth remembering
+  when a phone backgrounds the app mid-spread.
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
   narrates is P2.5's. (`main.tsx`)
 - ~~Entry-label collision with route art~~ — resolved by the radial annotation layout
