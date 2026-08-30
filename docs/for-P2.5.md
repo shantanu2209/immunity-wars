@@ -33,6 +33,13 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   P2.5 builds this; `Board.tsx`'s fan is dev-slice scaffolding until then.
 - Spread pacing: 560/800ms kept from legacy for measurement comparability; whether that reads
   well is the open rendering decision the brief §4 names. (`main.tsx`)
+  **PROPOSED 30 Aug 2026, awaiting Shantanu's ruling:** auto-advance at 900ms standard /
+  1400ms dice, plus tap-anywhere-to-advance during a burst (the tap advances one frame
+  immediately; board taps regain their normal meaning when the burst ends). Reasoning and the
+  measurement-impact statement (nothing needs re-running — the P2.3 budget rows are all
+  per-frame or per-tap, none depend on the inter-frame delay, and `tools/perf/measure.ts`
+  waits on DOM conditions with 30–120s timeouts) are in the piece 3 session record; the
+  ruling lands here when made.
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
   narrates is P2.5's. (`main.tsx`)
 - ~~Entry-label collision with route art~~ — resolved by the radial annotation layout

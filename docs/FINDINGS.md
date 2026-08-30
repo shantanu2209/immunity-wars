@@ -2705,3 +2705,65 @@ NEXT print is generated from geometry.json" (the brief's original intent), not "
 match the July print". First consequence: the print's organ boxes are not drawn on screen,
 and co-located tokens will stack with a count badge instead of fanning — both screen
 decisions the print never had to make.
+
+---
+
+## 50. Two verified components with an unverified join: the autosave that was documented in the commit that failed to implement it
+
+**Found 30 August 2026, at the minimum-shell walkthrough, by playing the app as a player
+would.** No instrument fired.
+
+`docs/APP_FLOW.md` ruling 4 says the save is written **by the session on every accepted
+action**. `packages/app/src/main.tsx` carried a header comment saying exactly that. And
+`LocalSession.sendAction` did not do it: the only `storage.put` in the session sat inside the
+explicit `save()` method, which nothing called. Playing a turn and quitting kept the save, as
+ruled — but there was no save. The IndexedDB store was empty, and Continue never appeared.
+
+A documented-but-false claim, roughly the dozenth in this project — with one property none of
+the others had: **the claim and the code that falsified it landed in the same commit.** The
+previous dozen drifted false over time (#2, #9, #25, #26). This one was born false. Drift is
+not the only way documentation and code disagree; they can simply never have met.
+
+### Why nothing caught it — the variant worth naming
+
+Every component on the path was individually verified, before the walkthrough and honestly:
+
+- **`save()` was tested** — the C2 control saves, resumes, and requires the resumed game to
+  equal the saved one, with the injected clock's stamp checked (`negative-control.test.ts`).
+- **`IndexedDbStorage` was exercised** — the dev-shell IDB exercise drives `session.save()`
+  through the Storage port to real IndexedDB on every load of `dev.html` (`idb-exercise.ts`).
+- **`sendAction` was tested** — the step 6 suite replays full games through it and requires
+  the projections to match the engine driven directly, step for step.
+
+What was never tested is that **`sendAction` CALLS `save`**. Both sides of the seam worked;
+the seam was never connected; and every test looked at one side or the other. A test of
+`save()` cannot see that nothing calls it. A test of `sendAction` that never reads storage
+cannot see what was not written. Green everywhere, and the join did not exist.
+
+> **The shape: two verified components with an unverified join.** It is a sibling of #47
+> (two instruments blind in the same place) but distinct — nothing here was blind, everything
+> was seen, and the gap was BETWEEN the seen things. The defence is a test that spans the
+> join and asserts the OUTCOME of the composition — "after an accepted action, the store
+> contains the state" — not the behaviour of either part. Component tests cannot compose
+> into an integration claim, however many of them are green.
+
+### How it was found, and what that licenses
+
+It was found by walking the app like a player: new game, draw, quit, return to the title —
+and Continue was not there. **That is the newcomer test's justification arriving three pieces
+early.** No instrument was pointed at the join, so no instrument could have found it; a
+person following the path a player follows found it in one pass. The newcomer test (P2.5
+piece 3) is not a courtesy to usability — it is the only check this project runs that walks
+joins nobody thought to instrument.
+
+### The fix, and why it is trustworthy
+
+The autosave moved into `LocalSession.sendAction` — Storage's consumer is Session
+(PHASE2_BRIEF §3), and the UI could not have done it: it never sees the `GameState`. Three
+tests were written FIRST and run RED against the unfixed session — accepted action writes the
+whole `GameState` (deck present) under the save id; rejected action writes nothing; a resumed
+session saves through the same path — then the fix went in and the suite went green. The red
+run is the negative control: the tests are known to be able to fail on exactly this bug.
+
+**Disposition: FIXED in the same session, tests first. The shape is named here so the next
+join gets a spanning test before a walkthrough has to find it.**
