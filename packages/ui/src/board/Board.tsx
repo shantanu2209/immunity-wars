@@ -13,7 +13,7 @@
  * print is in docs/for-P2.5.md.
  */
 
-import { LYMPH_GROUP, LYMPH_STEP } from '@immunity-wars/content';
+import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ROUTES } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
 import type { ReactElement } from 'react';
 
@@ -62,10 +62,59 @@ const CLASSIC = {
   rNode: 17.1, // step nodes (print 26.9pt)
   rHub: 50.3, // outer hub circle (print 79.4pt)
   rHubInner: 42.3, // inner hub ring (print 66.6pt)
-  rWash: 248.1, // wash disc and dashed boundary ring (print 391.2pt)
-  // The print's organ boxes (141.7 x 107.7pt) are deliberately NOT drawn — a print
-  // affordance, removed by design decision 20 Aug 2026. The organ marker is P2.5's.
+  // The wash disc / dashed boundary now sit at R_PLAY (derived below): since the radial
+  // regeneration, the play circle is MEANINGFUL — every lane terminates on it, and organ
+  // and entry icons are annotations OUTSIDE it (decision: icons are labels, not slots).
 } as const;
+
+/** The board's first deliberate typography: a warm humanist stack available offline on every
+ *  platform. Proposal for P2.5: bundle Nunito (OFL) and put it first — see docs/for-P2.5.md. */
+const BOARD_FONT = "'Trebuchet MS', 'Segoe UI', Verdana, system-ui, sans-serif";
+
+/** The uniform play circle: every ENTRY and ORGAN_POS sits on it by construction
+ *  (tools/geometry-from-a2 radialization) — derived, never authored. */
+const R_PLAY = Math.max(
+  ...[...LANES.map((l): Pt | null => entryOf(l)), ...BOARD_ORGANS.map((o) => organPos(o))]
+    .filter((p): p is Pt => p !== null)
+    .map((p) => Math.hypot(p.x - HUB_POS.x, p.y - HUB_POS.y)),
+);
+
+/** Display names come from the rules tables — ONE source (rules/board.json), fixing the
+ *  mixed-case labels that came from two (organ KEYS vs geometry ENTRY.t). i18n catalogues
+ *  are these strings' eventual home (P2.5's hardcoded-string check will insist). */
+const organName = (o: string): string =>
+  String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
+const routeName = (lane: string): string =>
+  String((ROUTES as Record<string, { name?: unknown }>)[lane]?.name ?? lane);
+
+/** Per-asset content-box metrics from the art pipeline's manifest (fractions of the emitted
+ *  square). Icons are spaced from the play circle by their NEAREST CONTENT EDGE — a long
+ *  thin lung and a compact kidney space evenly only when measured this way. */
+export type ArtMetrics = Record<string, { content?: { w?: number; h?: number } }>;
+
+function annotationPlacement(
+  anchor: Pt,
+  metrics: ArtMetrics | undefined,
+  key: string,
+): { icon: Pt; label: Pt } {
+  const dx = anchor.x - HUB_POS.x;
+  const dy = anchor.y - HUB_POS.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const ux = dx / d;
+  const uy = dy / d;
+  const cw = metrics?.[key]?.content?.w ?? 1;
+  const ch = metrics?.[key]?.content?.h ?? 1;
+  // Half-extent of the icon's content rectangle along the radial ray (support function).
+  const ext = ((Math.abs(ux) * cw + Math.abs(uy) * ch) / 2) * LARGE_ART_U;
+  const GAP = 8; // uniform clearance: play circle -> nearest content edge
+  const LABEL_GAP = 14; // uniform clearance: far content edge -> label baseline
+  const iconDist = d + GAP + ext;
+  const labelDist = iconDist + ext + LABEL_GAP;
+  return {
+    icon: { x: HUB_POS.x + ux * iconDist, y: HUB_POS.y + uy * iconDist },
+    label: { x: HUB_POS.x + ux * labelDist, y: HUB_POS.y + uy * labelDist + 4 },
+  };
+}
 
 /**
  * Lymphatic arcs: one dashed connector per LYMPH_GROUP, through the LYMPH_STEP node of each
@@ -176,12 +225,16 @@ export function Board({
   view,
   selectedCell = null,
   onCellClick,
+  artMetrics,
 }: {
   view: ViewState;
   /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
   selectedCell?: string | null;
   /** Wired by the shell to `session.setSelection`; absent means a non-interactive board. */
   onCellClick?: (cell: string) => void;
+  /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
+   *  spaced as full squares. */
+  artMetrics?: ArtMetrics;
 }): ReactElement {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
@@ -225,20 +278,27 @@ export function Board({
   return (
     <svg
       viewBox={VIEWBOX}
-      style={{ width: '100%', maxWidth: 660, display: 'block', background: CLASSIC.paper }}
+      style={{
+        width: '100%',
+        maxWidth: 660,
+        display: 'block',
+        background: CLASSIC.paper,
+        fontFamily: BOARD_FONT,
+      }}
     >
-      {/* the wash disc and dashed boundary ring behind the play area */}
+      {/* the play circle: wash disc and dashed boundary at R_PLAY — everything inside is
+          playable (numbered nodes + bloodstream), everything outside is annotation */}
       <circle
         cx={HUB_POS.x}
         cy={HUB_POS.y}
-        r={CLASSIC.rWash}
+        r={R_PLAY}
         fill={CLASSIC.wash}
         opacity={CLASSIC.washAlpha}
       />
       <circle
         cx={HUB_POS.x}
         cy={HUB_POS.y}
-        r={CLASSIC.rWash}
+        r={R_PLAY}
         fill="none"
         stroke={CLASSIC.route}
         strokeWidth={CLASSIC.wBoundary}
@@ -251,18 +311,9 @@ export function Board({
         const stepsOf = routeSteps(lane);
         const entry = entryOf(lane);
         const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
-        // Entry icon sits ON the entry point; the label radially outward past it, as on
-        // the print (offset = icon half-size + clearance).
-        const label = entry
-          ? (() => {
-              const d = Math.hypot(entry.x - HUB_POS.x, entry.y - HUB_POS.y) || 1;
-              const off = LARGE_ART_U / 2 + 12;
-              return {
-                x: entry.x + ((entry.x - HUB_POS.x) / d) * off,
-                y: entry.y + ((entry.y - HUB_POS.y) / d) * off + 4,
-              };
-            })()
-          : null;
+        // The entry icon is an ANNOTATION outside the play circle — the lane line stops at
+        // the circle's edge (the ENTRY anchor), because nothing ever occupies an entry point.
+        const placed = entry ? annotationPlacement(entry, artMetrics, `entry-${lane}`) : null;
         const lymphStep = lymphGroupOf(lane) === null ? -1 : (LYMPH_STEP as number);
         return (
           <g key={lane}>
@@ -287,18 +338,24 @@ export function Board({
                 </text>
               </g>
             ))}
-            {entry ? (
+            {placed ? (
               <image
                 href={ART_URL(`entry-${lane}`)}
-                x={entry.x - LARGE_ART_U / 2}
-                y={entry.y - LARGE_ART_U / 2}
+                x={placed.icon.x - LARGE_ART_U / 2}
+                y={placed.icon.y - LARGE_ART_U / 2}
                 width={LARGE_ART_U}
                 height={LARGE_ART_U}
               />
             ) : null}
-            {entry && label ? (
-              <text x={label.x} y={label.y} textAnchor="middle" fontSize={13} fill={CLASSIC.ink}>
-                {entry.t}
+            {placed ? (
+              <text
+                x={placed.label.x}
+                y={placed.label.y}
+                textAnchor="middle"
+                fontSize={13}
+                fill={CLASSIC.ink}
+              >
+                {routeName(lane)}
               </text>
             ) : null}
           </g>
@@ -347,31 +404,41 @@ export function Board({
                 </text>
               </g>
             ))}
-            {/* No organ box (a print affordance, removed by design 20 Aug 2026): the organ
-                marker is its P2.4 illustration; name and integrity as UI are P2.5's. */}
-            <image
-              href={ART_URL(`organ-${o}`)}
-              x={pos.x - LARGE_ART_U / 2}
-              y={pos.y - LARGE_ART_U / 2}
-              width={LARGE_ART_U}
-              height={LARGE_ART_U}
+            {/* The organ icon is an ANNOTATION outside the play circle; the branch ends at
+                ORGAN_POS on the circle — the terminal anchor where an attacker or a
+                resident (branch step 0) stands. hp stays at the anchor, inside play. */}
+            <circle
+              cx={pos.x}
+              cy={pos.y}
+              r={CLASSIC.rNode}
+              fill={CLASSIC.branchNodeFill}
+              stroke={CLASSIC.organ}
+              strokeWidth={CLASSIC.wNode}
             />
-            <text
-              x={pos.x}
-              y={pos.y - LARGE_ART_U / 2 - 6}
-              textAnchor="middle"
-              fontSize={13}
-              fill={CLASSIC.inkDark}
-            >
-              {o}
-            </text>
-            <text
-              x={pos.x}
-              y={pos.y + LARGE_ART_U / 2 + 12}
-              textAnchor="middle"
-              fontSize={12}
-              fill={CLASSIC.ink}
-            >
+            {(() => {
+              const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
+              return (
+                <>
+                  <image
+                    href={ART_URL(`organ-${o}`)}
+                    x={p.icon.x - LARGE_ART_U / 2}
+                    y={p.icon.y - LARGE_ART_U / 2}
+                    width={LARGE_ART_U}
+                    height={LARGE_ART_U}
+                  />
+                  <text
+                    x={p.label.x}
+                    y={p.label.y}
+                    textAnchor="middle"
+                    fontSize={13}
+                    fill={CLASSIC.inkDark}
+                  >
+                    {organName(o)}
+                  </text>
+                </>
+              );
+            })()}
+            <text x={pos.x} y={pos.y + 5} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
               {hp}
             </text>
           </g>

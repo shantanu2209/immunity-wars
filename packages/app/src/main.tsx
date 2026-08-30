@@ -28,7 +28,7 @@ import {
   type SessionView,
   type ViewState,
 } from '@immunity-wars/session';
-import { Board } from '@immunity-wars/ui';
+import { Board, type ArtMetrics } from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -53,6 +53,18 @@ function App(): ReactElement {
   const [checks, setChecks] = useState<string[]>([]);
   const [lastError, setLastError] = useState<string | null>(null);
   const [idbLines, setIdbLines] = useState<string[]>([]);
+  // The art pipeline's manifest: per-asset content-box metrics the Board uses to place
+  // annotation icons by their content edge. Absent (fetch failed) the Board falls back
+  // to treating every icon as a full square.
+  const [artMetrics, setArtMetrics] = useState<ArtMetrics | null>(null);
+  useEffect(() => {
+    void fetch('/art/manifest.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m: { assets?: ArtMetrics } | null) => {
+        if (m && typeof m === 'object' && m.assets) setArtMetrics(m.assets);
+      })
+      .catch(() => undefined);
+  }, []);
 
   const skipRef = useRef(false);
   skipRef.current = skip;
@@ -183,7 +195,12 @@ function App(): ReactElement {
           bursts (render authoritative views only)
         </label>
       </p>
-      <Board view={shown} selectedCell={selectedCell} onCellClick={playing ? undefined : tapCell} />
+      <Board
+        view={shown}
+        selectedCell={selectedCell}
+        onCellClick={playing ? undefined : tapCell}
+        artMetrics={artMetrics ?? undefined}
+      />
       <pre style={{ fontSize: 12 }}>{checks.join('\n')}</pre>
       <details>
         <summary style={{ fontSize: 13 }}>IndexedDbStorage exercise (reruns every load)</summary>

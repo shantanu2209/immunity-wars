@@ -20,8 +20,9 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   well is the open rendering decision the brief §4 names. (`main.tsx`)
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
   narrates is P2.5's. (`main.tsx`)
-- Entry labels render at a fixed 13px from geometry positions; collision with route art untested
-  at phone widths. (`Board.tsx`)
+- ~~Entry-label collision with route art~~ — resolved by the radial annotation layout
+  (20 Aug 2026): icons and labels sit outside the play circle at uniform ray distances.
+  (`Board.tsx`)
 - Tokens render at 20px and organs/entries at 30px since the P2.4 art landed (Shantanu's
   showcase ruling) — but Gate 1's ≥44px touch targets still need a hit-area strategy
   (invisible expanded hit regions, or the stack-inspect view as the touch surface).
@@ -36,5 +37,12 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
 - ~~Wash disc omitted~~ and ~~step nodes half the print's proportion~~ — both resolved by the
   A2-layout regeneration (`tools/geometry-from-a2`): the wash renders at the print's radius and
   alpha, and node/hub/box sizes now come from the generator's report. (P2.4, second pass)
-- Print label typography: entry names ~6.6u, step numbers ~8.5u, organ names ~10u equivalent —
-  the app's authored 13px labels do not match the print's scale. (same)
+- Label typography, first decision taken 20 Aug 2026: the board now sets a warm humanist
+  stack (`'Trebuchet MS', 'Segoe UI', Verdana, system-ui`) instead of the browser default.
+  **Proposal for P2.5: bundle Nunito (OFL — offline-safe, rounded, matches the sticker art)
+  and put it first in the stack.** The A2's DejaVu is a print face, not shipped on phones,
+  and was not carried over. Sizes (13px labels) still unmatched to the print's scale. (same)
+- Stack-with-badge is P2.5's OPENING item (confirmed to Shantanu 20 Aug 2026 — the hub pile
+  is now the most visibly wrong thing on the board). The badge design mock-up is in the
+  showcase (`pnpm art:showcase`): top-of-stack token + frame-red count badge, judged by
+  Shantanu before it is settled.

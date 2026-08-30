@@ -78,6 +78,37 @@ const C = {
 } as const;
 const TOKEN_U = 36.7;
 const LARGE_U = 55;
+const BOARD_FONT = "'Trebuchet MS', 'Segoe UI', Verdana, system-ui, sans-serif";
+const rules = JSON.parse(
+  readFileSync(join(HERE, '../../packages/content/src/rules/board.json'), 'utf8'),
+) as {
+  ORGANS: Record<string, { name?: string }>;
+  ROUTES: Record<string, { name?: string }>;
+  LYMPH_GROUP: Record<string, string | null>;
+  LYMPH_STEP: number;
+};
+const R_PLAY = Math.max(
+  ...[...Object.values(geo.ENTRY), ...Object.values(geo.ORGAN_POS)].map((p) =>
+    Math.hypot(p.x - geo.HUB.x, p.y - geo.HUB.y),
+  ),
+);
+function place(anchor: Pt, key: string): { icon: Pt; label: Pt } {
+  const dx = anchor.x - geo.HUB.x;
+  const dy = anchor.y - geo.HUB.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const ux = dx / d;
+  const uy = dy / d;
+  const asset = (manifest.assets as Record<string, { content?: { w?: number; h?: number } }>)[key];
+  const cw = asset?.content?.w ?? 1;
+  const ch = asset?.content?.h ?? 1;
+  const ext = ((Math.abs(ux) * cw + Math.abs(uy) * ch) / 2) * LARGE_U;
+  const iconDist = d + 8 + ext;
+  const labelDist = iconDist + ext + 14;
+  return {
+    icon: { x: geo.HUB.x + ux * iconDist, y: geo.HUB.y + uy * iconDist },
+    label: { x: geo.HUB.x + ux * labelDist, y: geo.HUB.y + uy * labelDist + 4 },
+  };
+}
 
 const stepsOf = (t: Record<string, Pt> | undefined): (Pt & { step: number })[] =>
   Object.keys(t ?? {})
@@ -103,8 +134,8 @@ const HUB_CELLS = ['macrophage', 'neutrophil', 'bcell', 'tcell', 'helper', 'nk',
 
 function boardSvg(): string {
   let s = `<rect x="0" y="0" width="${geo.VW}" height="${geo.VH}" fill="${C.paper}"/>`;
-  s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rWash}" fill="${C.wash}" opacity="${C.washAlpha}"/>`;
-  s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rWash}" fill="none" stroke="${C.route}" stroke-width="${C.wBoundary}" stroke-dasharray="${C.boundaryDash}" opacity="${C.washAlpha}"/>`;
+  s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${R_PLAY}" fill="${C.wash}" opacity="${C.washAlpha}"/>`;
+  s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${R_PLAY}" fill="none" stroke="${C.route}" stroke-width="${C.wBoundary}" stroke-dasharray="${C.boundaryDash}" opacity="${C.washAlpha}"/>`;
   const poly = (pts: Pt[], col: string, w: number, dash?: string): string =>
     `<polyline points="${pts.map((p) => `${p.x},${p.y}`).join(' ')}" fill="none" stroke="${col}" stroke-width="${w}"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
   const node = (p: Pt & { step: number }, fill: string, col: string): string =>
@@ -125,10 +156,9 @@ function boardSvg(): string {
         p.step === lymphStep ? C.lymph : C.route,
       );
     if (entry) {
-      const d = Math.hypot(entry.x - geo.HUB.x, entry.y - geo.HUB.y) || 1;
-      const off = LARGE_U / 2 + 12;
-      s += img(`entry-${lane}`, entry.x, entry.y, LARGE_U);
-      s += `<text x="${entry.x + ((entry.x - geo.HUB.x) / d) * off}" y="${entry.y + ((entry.y - geo.HUB.y) / d) * off + 4}" text-anchor="middle" font-size="13" fill="${C.ink}">${entry.t}</text>`;
+      const p = place(entry, `entry-${lane}`);
+      s += img(`entry-${lane}`, p.icon.x, p.icon.y, LARGE_U);
+      s += `<text x="${p.label.x}" y="${p.label.y}" text-anchor="middle" font-size="13" fill="${C.ink}">${rules.ROUTES[lane]?.name ?? lane}</text>`;
     }
   }
   const groups = new Map<string, (Pt & { step: number })[]>();
@@ -155,8 +185,10 @@ function boardSvg(): string {
     for (const p of st) s += node(p, C.branchNodeFill, C.branch);
   }
   for (const [o, pos] of Object.entries(geo.ORGAN_POS)) {
-    s += img(`organ-${o}`, pos.x, pos.y, LARGE_U);
-    s += `<text x="${pos.x}" y="${pos.y - LARGE_U / 2 - 6}" text-anchor="middle" font-size="13" fill="${C.inkDark}">${o}</text>`;
+    s += `<circle cx="${pos.x}" cy="${pos.y}" r="${C.rNode}" fill="${C.branchNodeFill}" stroke="#8E6E53" stroke-width="${C.wNode}"/>`;
+    const p = place(pos, `organ-${o}`);
+    s += img(`organ-${o}`, p.icon.x, p.icon.y, LARGE_U);
+    s += `<text x="${p.label.x}" y="${p.label.y}" text-anchor="middle" font-size="13" fill="${C.inkDark}">${rules.ORGANS[o]?.name ?? o}</text>`;
   }
   s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rHub}" fill="${C.hubFill}" stroke="${C.frame}" stroke-width="${C.wHub}"/>`;
   s += `<circle cx="${geo.HUB.x}" cy="${geo.HUB.y}" r="${C.rHubInner}" fill="none" stroke="${C.frame}" stroke-width="${C.wNode}"/>`;
@@ -180,7 +212,23 @@ function boardSvg(): string {
     toks += img('cell-macrophage', bs.x - 8, bs.y, TOKEN_U);
     toks += img('path-hidden', bs.x + 8, bs.y, TOKEN_U);
   }
-  return `<svg viewBox="0 0 ${geo.VW} ${geo.VH}" xmlns="http://www.w3.org/2000/svg">${s}${toks}</svg>`;
+  // STACK MOCK-UP (question 9): the proposed stack-with-badge, drawn so the badge design can
+  // be judged before P2.5 builds it. One token shows (the top of the stack); the badge counts
+  // the whole stack. Nose step 4: three viruses. Gut step 3: a worm and a bacterium.
+  const badge = (x: number, y: number, n: number): string =>
+    `<circle cx="${x + TOKEN_U / 2 - 3}" cy="${y - TOKEN_U / 2 + 3}" r="10" fill="${C.frame}" stroke="#fff" stroke-width="1.6"/>` +
+    `<text x="${x + TOKEN_U / 2 - 3}" y="${y - TOKEN_U / 2 + 7.2}" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">${n}</text>`;
+  const noseStack = stepsOf(geo.ROUTE['nose']).find((p) => p.step === 4);
+  if (noseStack) {
+    toks += img('path-virus', noseStack.x, noseStack.y, TOKEN_U);
+    toks += badge(noseStack.x, noseStack.y, 3);
+  }
+  const gutStack = stepsOf(geo.ROUTE['gut']).find((p) => p.step === 3);
+  if (gutStack) {
+    toks += img('path-worm', gutStack.x, gutStack.y, TOKEN_U);
+    toks += badge(gutStack.x, gutStack.y, 2);
+  }
+  return `<svg viewBox="0 0 ${geo.VW} ${geo.VH}" xmlns="http://www.w3.org/2000/svg" style="font-family:${BOARD_FONT.replace(/"/g, '')}">${s}${toks}</svg>`;
 }
 
 const svg = boardSvg();
@@ -194,10 +242,12 @@ const html = `<!doctype html>
   .cap{font-size:12px;color:#6b5d4f;margin:6px 0 0}
 </style>
 <h1>The Immunity Wars board — P2.4 art wired, real sizes</h1>
-<p>Board.tsx's exact rendering: pipeline WebP via the manifest, tokens at 20px (36.7u), organs and
-entry icons at 30px (55u), on the CLASSIC A2 board. Demo state: one pathogen per lane at step 2,
-macrophage + hidden virus co-located on the heart branch, the seven cells piled in the hub (the
-pile is the honest pre-stacking state; P2.5 builds the decided stack-with-badge). Regenerate with
+<p>Board.tsx's exact rendering on the RADIAL geometry: lanes stop at the play circle, organ and
+entry icons are annotations outside it (spaced by their content edge, labels on the far side,
+names from the rules tables), tokens at 20px, icons at 30px. Demo state: one pathogen per lane
+at step 2, macrophage + hidden virus co-located on the heart branch, the seven cells piled in
+the hub (stack-with-badge replaces the pile at P2.5). <b>Stack mock-ups for judging the badge:
+3 viruses on Nose step 4, 2 mixed invaders on Gut step 3.</b> Regenerate with
 <code>pnpm art:showcase</code>.</p>
 <h2>Phone scale — 360px (what a 1× device shows)</h2>
 <div class="board" style="width:360px">${svg}</div>

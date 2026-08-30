@@ -8,5 +8,5 @@
 
 export const PACKAGE_NAME = '@immunity-wars/ui';
 
-export { Board } from './board/Board';
+export { Board, type ArtMetrics } from './board/Board';
 export * as boardGeometry from './board/geometry';

@@ -409,40 +409,59 @@ function main(): void {
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Map print space → viewBox
+  // 3. RADIALIZE — the A2 supplies each lane's ANGLE and the lane order; the screen
+  //    supplies the symmetry (Shantanu, 20 Aug 2026; FINDINGS #49's relaxation makes the
+  //    geometry free to change for screen reasons, and the next print inherits this).
+  //
+  //    The board becomes a true radial figure on a square canvas, hub centred. Every lane
+  //    terminates ON one uniform play circle (R_PLAY): ENTRY and ORGAN_POS are the points
+  //    where the lane meets that circle — the terminal anchors — and the icons drawn
+  //    OUTSIDE the circle are annotations the renderer places by angle, not geometry.
+  //
+  //    Radii are chosen against measured floors, not taste:
+  //      - adjacent-lane nodes must clear the ~34.2u node diameter: organs sit 25° apart,
+  //        so the innermost branch ring needs R >= 88 (chord 2*R*sin(12.5deg) >= 36.7);
+  //        routes sit 30° apart, so their innermost ring needs R >= 71 -> 75.
+  //      - within a lane, the len-5 routes set the binding spacing:
+  //        (R_STEPEND - R0_ROUTE)/4 = 36.75u — exactly the 20px-token floor the previous
+  //        geometry measured. Shorter lanes stretch across the same span, as on the print.
   // ---------------------------------------------------------------------------
-  const allPts: Pt[] = [
-    hub,
-    ...Object.values(routeSteps).flat(),
-    ...Object.values(branchSteps).flat(),
-    ...Object.values(routeOf).map(outerEnd),
-    ...Object.values(organOf).flatMap((b) => [
-      { x: b.x, y: b.y },
-      { x: b.x + b.w, y: b.y + b.h },
-    ]),
-    ...Object.values(chipsFor).flat(),
-  ];
-  const minX = Math.min(...allPts.map((p) => p.x));
-  const maxX = Math.max(...allPts.map((p) => p.x));
-  const minY = Math.min(...allPts.map((p) => p.y));
-  const maxY = Math.max(...allPts.map((p) => p.y));
-  const scale = (VW - 2 * MARGIN) / (maxX - minX);
-  const VH = Math.round((maxY - minY) * scale + 2 * MARGIN);
-  const map = (p: Pt): Pt => ({
-    x: Math.round((p.x - minX) * scale + MARGIN),
-    y: Math.round((p.y - minY) * scale + MARGIN),
+  const VH = VW; // square canvas, radial figure
+  const CENTER: Pt = { x: VW / 2, y: VH / 2 };
+  const R0_ROUTE = 75;
+  const R0_BRANCH = 88;
+  const R_STEPEND_ROUTE = 224;
+  // Branch steps stop a full token-spacing short of the play circle: tokens STAND at
+  // ORGAN_POS (residents at step 0, attackers), so organ<->step-1 needs the same 36.7u
+  // floor as any adjacent pair. Routes keep 222 — nothing ever occupies an ENTRY point.
+  const R_STEPEND_BRANCH = 205;
+  const R_PLAY = 242;
+
+  const angleOf = (lane: Seg): number => {
+    const e = outerEnd(lane);
+    return Math.atan2(e.y - hub.y, e.x - hub.x);
+  };
+  const at = (theta: number, r: number): Pt => ({
+    x: Math.round((CENTER.x + r * Math.cos(theta)) * 10) / 10,
+    y: Math.round((CENTER.y + r * Math.sin(theta)) * 10) / 10,
   });
 
-  const mapSteps = (
-    steps: Record<string, Pt[]>,
-    reverse: boolean,
-  ): Record<string, Record<string, Pt>> =>
-    Object.fromEntries(
-      Object.entries(steps).map(([k, list]) => {
-        const ordered = reverse ? [...list].reverse() : list;
-        return [k, Object.fromEntries(ordered.map((p, i) => [String(i + 1), map(p)]))];
-      }),
-    );
+  /** Steps 1..n evenly spaced along [rInner, R_STEPEND]; `organSide` numbers 1 outermost. */
+  const radialSteps = (
+    theta: number,
+    n: number,
+    rInner: number,
+    organSide: boolean,
+  ): Record<string, Pt> => {
+    const out: Record<string, Pt> = {};
+    for (let k = 1; k <= n; k++) {
+      const frac = n === 1 ? 1 : (k - 1) / (n - 1);
+      const rEnd = organSide ? R_STEPEND_BRANCH : R_STEPEND_ROUTE;
+      const r = organSide ? rEnd - frac * (rEnd - rInner) : rInner + frac * (rEnd - rInner);
+      out[String(k)] = at(theta, r);
+    }
+    return out;
+  };
 
   // Preserve the current file's key orders so the diff reads as movement, not churn.
   const routeOrder = Object.keys(current.ROUTE);
@@ -450,36 +469,51 @@ function main(): void {
   const ordered = <T>(order: string[], obj: Record<string, T>): Record<string, T> =>
     Object.fromEntries(order.map((k) => [k, obj[k]]));
 
+  // Note: chipsFor validated above (every organ has integrity dots on the print) but the
+  // radial CHIP_POS is a derived annotation anchor, not an extracted position.
+  const routeAngle: Record<string, number> = Object.fromEntries(
+    Object.entries(routeOf).map(([k, s]) => [k, angleOf(s)]),
+  );
+  const organAngle: Record<string, number> = Object.fromEntries(
+    Object.entries(branchOf).map(([k, s]) => [k, angleOf(s)]),
+  );
+
   const geometry = {
     VW,
     VH,
-    HUB: map(hub),
+    HUB: CENTER,
     ORGAN_POS: ordered(
       organOrder,
-      Object.fromEntries(
-        Object.entries(organOf).map(([k, b]) => [k, map({ x: b.x + b.w / 2, y: b.y + b.h / 2 })]),
-      ),
+      Object.fromEntries(organOrder.map((k) => [k, at(organAngle[k] ?? 0, R_PLAY)])),
     ),
     CHIP_POS: ordered(
       organOrder,
+      Object.fromEntries(organOrder.map((k) => [k, at(organAngle[k] ?? 0, R_PLAY + 40)])),
+    ),
+    BRANCH: ordered(
+      organOrder,
       Object.fromEntries(
-        Object.entries(chipsFor).map(([k, list]) => [
+        organOrder.map((k) => [
           k,
-          map({
-            x: list.reduce((s, p) => s + p.x, 0) / list.length,
-            y: list.reduce((s, p) => s + p.y, 0) / list.length,
-          }),
+          radialSteps(organAngle[k] ?? 0, (branchSteps[k] ?? []).length, R0_BRANCH, true),
         ]),
       ),
     ),
-    BRANCH: ordered(organOrder, mapSteps(branchSteps, true)), // step 1 = organ side
-    ROUTE: ordered(routeOrder, mapSteps(routeSteps, false)), // step 1 = hub side
+    ROUTE: ordered(
+      routeOrder,
+      Object.fromEntries(
+        routeOrder.map((k) => [
+          k,
+          radialSteps(routeAngle[k] ?? 0, (routeSteps[k] ?? []).length, R0_ROUTE, false),
+        ]),
+      ),
+    ),
     ENTRY: ordered(
       routeOrder,
       Object.fromEntries(
-        Object.entries(routeOf).map(([k, s]) => [
+        routeOrder.map((k) => [
           k,
-          { ...map(outerEnd(s)), t: current.ENTRY[k].t }, // labels stay content's
+          { ...at(routeAngle[k] ?? 0, R_PLAY), t: current.ENTRY[k]?.t ?? k },
         ]),
       ),
     ),
@@ -488,19 +522,8 @@ function main(): void {
   // ---------------------------------------------------------------------------
   // 4. Report — the numbers Board.tsx's authored constants derive from
   // ---------------------------------------------------------------------------
-  const nodeRadius = routeNodes.reduce((s, c) => s + c.r, 0) / routeNodes.length;
-  const hubInner = circles.filter((c) => c.fill === '#F7CFC7' && c !== hub);
-  const anyBox = organOf['heart'];
-  const u = (pt: number): string => (pt * scale).toFixed(1);
-  const mmW = [
-    ['route/branch line', 3.401575],
-    ['node ring', 2.551181],
-    ['organ box', 4.818898],
-    ['hub ring', 5.385827],
-    ['lymph arc', 5.669291],
-  ] as const;
   let minSpace = Infinity;
-  const spacePts: Pt[] = [map(hub), ...Object.values(geometry.ORGAN_POS)];
+  const spacePts: Pt[] = [geometry.HUB, ...Object.values(geometry.ORGAN_POS)];
   for (const t of [...Object.values(geometry.ROUTE), ...Object.values(geometry.BRANCH)])
     spacePts.push(...Object.values(t));
   for (let i = 0; i < spacePts.length; i++)
@@ -509,13 +532,10 @@ function main(): void {
       if (d > 0 && d < minSpace) minSpace = d;
     }
 
-  console.log(`scale: ${scale.toFixed(4)} u/pt · viewBox ${VW}x${VH} · margin ${MARGIN}u`);
-  console.log(`hub r: ${u(hub.r)}u (inner ring ${hubInner.length ? u(hubInner[0].r) : '—'}u)`);
-  console.log(`step node r: ${u(nodeRadius)}u`);
-  console.log(`organ box: ${u(anyBox.w)} x ${u(anyBox.h)}u`);
-  for (const [name, pt] of mmW) console.log(`stroke ${name}: ${u(pt)}u`);
-  console.log(`wash disc r (391.18pt): ${u(391.18)}u at alpha 0.36`);
-  console.log(`lymph dash [15.59 7.09]pt -> [${u(15.590551)} ${u(7.086614)}]u`);
+  console.log(
+    `radial canvas ${VW}x${VH}, hub (${CENTER.x},${CENTER.y}) · rings: routes ${R0_ROUTE}..${R_STEPEND_ROUTE}, ` +
+      `branches ${R0_BRANCH}..${R_STEPEND_BRANCH} · play circle R_PLAY ${R_PLAY}`,
+  );
   console.log(
     `min node spacing: ${minSpace.toFixed(1)}u = ${((minSpace * 360) / VW).toFixed(1)}px at 360px`,
   );
