@@ -1,5 +1,20 @@
 # For P2.5 — visual decisions noticed early and deliberately not taken
 
+> **P2.5 plan, approved by Shantanu 20 Aug 2026 — readable, then playable, then finishable:**
+> **1** stacks: fan-of-types + tap-to-inspect, WITH the inspect view designed deliberately as
+> the touch-target pattern Gate 1 rests on (board = coarse pointing at nodes; inspect =
+> precise ≥44px controls); hub-zone mock-up for ruling, not settled unilaterally.
+> **2** command UI slice, i18n-first (hardcoded-string check + negative control land with the
+> first screen), and the **Nunito decision moves here by reorder** — OFL file committed and
+> the stack set when the first real screen lands, not after three screens exist.
+> **3** turn loop (draw/reveal, spread narration + pacing decision, win/loss) — the first
+> moment a stranger can play, i.e. Gate 1's human test; **the newcomer-test protocol is
+> drafted as part of this piece** (who, device, difficulty, what counts as finished — a loss
+> counts — and what is recorded) and Shantanu reviews it before it runs.
+> Then: panels (organ integrity, production/antibodies, memory/vaccine, log) · dialogs
+> (events, rares, antivenom, Pathogen X) · the hub zone build · 46 strings screen-by-screen ·
+> touch/200%/contrast audits · the mandatory per-redraw re-measure.
+
 The P2.2 tripwire is *deciding how something should look rather than whether it renders*
 ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §2). Anything that trips it lands here as a note and waits.
 An entry is one line: what was noticed, and where. No mockups, no rankings — P2.5 decides.

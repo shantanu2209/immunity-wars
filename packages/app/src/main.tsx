@@ -28,7 +28,7 @@ import {
   type SessionView,
   type ViewState,
 } from '@immunity-wars/session';
-import { Board, type ArtMetrics } from '@immunity-wars/ui';
+import { Board, type ArtMetrics, type InspectInfo } from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -57,6 +57,10 @@ function App(): ReactElement {
   // annotation icons by their content edge. Absent (fetch failed) the Board falls back
   // to treating every icon as a full square.
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | null>(null);
+  // THE TOUCH PATTERN's shell half (P2.5 piece 1): a board tap is coarse pointing — the
+  // Board resolves it to the nearest occupied node — and this sheet is where precise,
+  // >=44px interaction happens: every row is 44px+, including cell selection.
+  const [inspect, setInspect] = useState<InspectInfo | null>(null);
   useEffect(() => {
     void fetch('/art/manifest.json')
       .then((r) => (r.ok ? r.json() : null))
@@ -200,7 +204,88 @@ function App(): ReactElement {
         selectedCell={selectedCell}
         onCellClick={playing ? undefined : tapCell}
         artMetrics={artMetrics ?? undefined}
+        onNodeInspect={setInspect}
       />
+      {inspect ? (
+        <div
+          style={{
+            position: 'fixed',
+            left: '50%',
+            bottom: 12,
+            transform: 'translateX(-50%)',
+            width: 'min(92vw, 420px)',
+            maxHeight: '46vh',
+            overflowY: 'auto',
+            background: '#FFFDF9',
+            border: '2px solid #8E6E53',
+            borderRadius: 12,
+            boxShadow: '0 6px 24px rgba(46,42,40,0.25)',
+            padding: 8,
+            zIndex: 10,
+          }}
+        >
+          {inspect.invaders.map((iv, i) => (
+            <div
+              key={`iv-${i}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}
+            >
+              <img
+                src={`/art/path-${iv.novel ? 'virus' : iv.type}@3x.webp`}
+                width={36}
+                height={36}
+                alt=""
+                style={iv.novel ? { filter: 'brightness(0.2)' } : undefined}
+              />
+              <span style={{ fontSize: 14 }}>
+                {iv.novel ? '???' : iv.disease}
+                <span style={{ color: '#7C6A61' }}>
+                  {' '}
+                  · {iv.novel ? 'unknown' : iv.type} · hp {iv.hp}/{iv.maxhp}
+                </span>
+              </span>
+            </div>
+          ))}
+          {inspect.cells.map((ck) => (
+            <button
+              key={`cell-${ck}`}
+              onClick={() => {
+                tapCell(ck);
+                setInspect(null);
+              }}
+              disabled={playing}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                minHeight: 44,
+                width: '100%',
+                background: selectedCell === ck ? '#FBEAE5' : 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                textAlign: 'left',
+              }}
+            >
+              <img src={`/art/cell-${ck}@3x.webp`} width={36} height={36} alt="" />
+              {ck}
+            </button>
+          ))}
+          {inspect.resident !== null ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+              <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
+              <span style={{ fontSize: 14 }}>
+                resident macrophage <span style={{ color: '#7C6A61' }}>· {inspect.resident}</span>
+              </span>
+            </div>
+          ) : null}
+          <button
+            onClick={() => setInspect(null)}
+            style={{ minHeight: 44, width: '100%', fontSize: 14, marginTop: 4 }}
+          >
+            close
+          </button>
+        </div>
+      ) : null}
       <pre style={{ fontSize: 12 }}>{checks.join('\n')}</pre>
       <details>
         <summary style={{ fontSize: 13 }}>IndexedDbStorage exercise (reruns every load)</summary>

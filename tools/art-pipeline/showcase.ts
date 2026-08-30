@@ -221,9 +221,9 @@ function boardSvg(): string {
     toks += img('cell-macrophage', bs.x - 8, bs.y, TOKEN_U);
     toks += img('path-hidden', bs.x + 8, bs.y, TOKEN_U);
   }
-  // STACK MOCK-UP (question 9): the proposed stack-with-badge, drawn so the badge design can
-  // be judged before P2.5 builds it. One token shows (the top of the stack); the badge counts
-  // the whole stack. Nose step 4: three viruses. Gut step 3: a worm and a bacterium.
+  // FAN-OF-TYPES demo (the RULED design, docs/STACK_COLOCATION.md): one token per distinct
+  // type, per-type count badge. Nose step 4: three viruses -> one token, badge 3. Gut step
+  // 3: two worms + one bacterium -> two tokens fanned, badge 2 on the worm.
   const badge = (x: number, y: number, n: number): string =>
     `<circle cx="${x + TOKEN_U / 2 - 3}" cy="${y - TOKEN_U / 2 + 3}" r="10" fill="${C.frame}" stroke="#fff" stroke-width="1.6"/>` +
     `<text x="${x + TOKEN_U / 2 - 3}" y="${y - TOKEN_U / 2 + 7.2}" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff">${n}</text>`;
@@ -234,13 +234,65 @@ function boardSvg(): string {
   }
   const gutStack = stepsOf(geo.ROUTE['gut']).find((p) => p.step === 3);
   if (gutStack) {
-    toks += img('path-worm', gutStack.x, gutStack.y, TOKEN_U);
-    toks += badge(gutStack.x, gutStack.y, 2);
+    toks += img('path-worm', gutStack.x - 13, gutStack.y, TOKEN_U);
+    toks += badge(gutStack.x - 13, gutStack.y, 2);
+    toks += img('path-bacteria', gutStack.x + 13, gutStack.y, TOKEN_U);
   }
   return `<svg viewBox="0 0 ${geo.VW} ${geo.VH}" xmlns="http://www.w3.org/2000/svg" style="font-family:${BOARD_FONT.replace(/"/g, '')}">${s}${toks}</svg>`;
 }
 
+/**
+ * HUB ZONE MOCK-UPS — two variants for Shantanu's ruling (the hub is a zone, not a node;
+ * its own design problem per docs/STACK_COLOCATION.md). Populated at the measured maximum:
+ * 4 distinct types (virus x9, bacteria x6, toxin x3, worm x1) plus all seven cells.
+ */
+function hubVariantSvg(variant: 'A' | 'B'): string {
+  const cx = 60;
+  const cy = 60;
+  let s = `<circle cx="${cx}" cy="${cy}" r="50" fill="${C.hubFill}" stroke="${C.frame}" stroke-width="3"/>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="43" fill="none" stroke="${C.frame}" stroke-width="1.4"/>`;
+  const groups: [string, number][] = [
+    ['path-virus', 9],
+    ['path-bacteria', 6],
+    ['path-toxin', 3],
+    ['path-worm', 1],
+  ];
+  const cells = ['macrophage', 'neutrophil', 'bcell', 'tcell', 'helper', 'nk', 'eosinophil'];
+  const img = (key: string, x: number, y: number, side: number): string =>
+    `<image href="${ARTD[key] ?? ''}" x="${x - side / 2}" y="${y - side / 2}" width="${side}" height="${side}"/>`;
+  const badge = (x: number, y: number, n: number, s2: number): string =>
+    `<circle cx="${x + s2 / 2 - 2}" cy="${y - s2 / 2 + 2}" r="6.5" fill="${C.frame}" stroke="#fff" stroke-width="1.1"/>` +
+    `<text x="${x + s2 / 2 - 2}" y="${y - s2 / 2 + 4.6}" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff">${n}</text>`;
+  if (variant === 'A') {
+    // A: cells in an upper arc, invader type-groups in a lower row.
+    cells.forEach((ck, i) => {
+      const a = Math.PI * (1.15 + (0.7 * i) / (cells.length - 1)); // upper arc
+      s += img(`cell-${ck}`, cx + 33 * Math.cos(a), cy + 33 * Math.sin(a) + 3, 15);
+    });
+    groups.forEach(([key, n], i) => {
+      const x = cx + (i - (groups.length - 1) / 2) * 24;
+      s += img(key, x, cy + 18, 21);
+      if (n >= 2) s += badge(x, cy + 18, n, 21);
+    });
+  } else {
+    // B: invader type-groups in a centre cluster, cells ringed around the inner edge.
+    cells.forEach((ck, i) => {
+      const a = (2 * Math.PI * i) / cells.length - Math.PI / 2;
+      s += img(`cell-${ck}`, cx + 36 * Math.cos(a), cy + 36 * Math.sin(a), 13);
+    });
+    groups.forEach(([key, n], i) => {
+      const x = cx + ((i % 2) - 0.5) * 24;
+      const y = cy + (Math.floor(i / 2) - 0.5) * 24;
+      s += img(key, x, y, 21);
+      if (n >= 2) s += badge(x, y, n, 21);
+    });
+  }
+  return `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
 const svg = boardSvg();
+const hubA = hubVariantSvg('A');
+const hubB = hubVariantSvg('B');
 const html = `<!doctype html>
 <meta charset="utf-8">
 <title>The board with its art</title>
@@ -264,6 +316,25 @@ the hub (stack-with-badge replaces the pile at P2.5). <b>Stack mock-ups for judg
 <div class="board" style="width:720px">${svg}</div>
 <h2>3× — as a 3× device renders them (1080 physical)</h2>
 <div class="board" style="width:1080px">${svg}</div>
+<h2>Hub zone — two variants FOR RULING (the hub is a zone, not a node)</h2>
+<p>Populated at the measured maximum (docs/STACK_COLOCATION.md): 4 distinct types — virus ×9,
+bacteria ×6, toxin ×3, worm ×1 — plus all seven cells. Left of each pair: magnified for
+inspection. Right: true phone size (the hub is ~55px wide at 360px). Tap-to-inspect completes
+either variant; the question is what the at-a-glance view shows.</p>
+<div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end">
+  <div><b>Variant A</b> — cells arc above, one token per invader type below, badged
+    <div style="display:flex;gap:16px;align-items:flex-end;margin-top:6px">
+      <div style="width:300px">${hubA}</div>
+      <div style="width:55px">${hubA}</div>
+    </div>
+  </div>
+  <div><b>Variant B</b> — invader types in the centre, cells ringed at the edge
+    <div style="display:flex;gap:16px;align-items:flex-end;margin-top:6px">
+      <div style="width:300px">${hubB}</div>
+      <div style="width:55px">${hubB}</div>
+    </div>
+  </div>
+</div>
 `;
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(OUT, html);

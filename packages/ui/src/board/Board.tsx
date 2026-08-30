@@ -170,10 +170,11 @@ interface Organish {
   hp?: unknown;
 }
 
-/** Fan tokens sharing one node out horizontally so each stays visible. Rendering necessity.
- *  Scaffolding until P2.5 builds the decided stack-with-badge (docs/for-P2.5.md). */
+/** Fan a node's DISPLAY tokens out horizontally. With fan-of-types this list is short
+ *  (measured: <=2 type groups on >=99.3% of off-hub nodes) — 26u leaves each token's edge
+ *  visible. The HUB still piles: its grouped-zone display is its own P2.5 piece. */
 const fan = (p: Pt, i: number, n: number): Pt =>
-  n <= 1 ? p : { x: p.x + (i - (n - 1) / 2) * 16, y: p.y };
+  n <= 1 ? p : { x: p.x + (i - (n - 1) / 2) * 26, y: p.y };
 
 /**
  * P2.4 art, emitted by tools/art-pipeline into the app's public dir and served at /art/.
@@ -205,22 +206,24 @@ const PATH_ART = new Set([
   'parasite',
 ]);
 
-/** Art key for a token, or null when there is none (novel invaders stay masked circles). */
-function tokenArtKey(t: {
-  kind: 'invader' | 'cell';
-  cell?: string;
-  type?: unknown;
-  novel?: unknown;
-}): string | null {
-  if (t.kind === 'cell' && t.cell !== undefined && CELL_ART.has(t.cell)) return `cell-${t.cell}`;
-  if (
-    t.kind === 'invader' &&
-    t.novel !== true &&
-    typeof t.type === 'string' &&
-    PATH_ART.has(t.type)
-  )
-    return `path-${t.type}`;
-  return null;
+/** One invader as the inspect view lists it — ungrouped: inspect is the precise view. */
+export interface InspectInvader {
+  disease: string;
+  type: string;
+  novel: boolean;
+  hp: number;
+  maxhp: number;
+}
+
+/** Everything standing on one node, handed to the shell when the node is tapped. */
+export interface InspectInfo {
+  /** viewBox coordinates of the node (for positioning UI, if wanted). */
+  x: number;
+  y: number;
+  cells: string[];
+  /** Organ key when that organ's resident macrophage stands here. */
+  resident: string | null;
+  invaders: InspectInvader[];
 }
 
 export function Board({
@@ -228,6 +231,7 @@ export function Board({
   selectedCell = null,
   onCellClick,
   artMetrics,
+  onNodeInspect,
 }: {
   view: ViewState;
   /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
@@ -237,59 +241,150 @@ export function Board({
   /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
    *  spaced as full squares. */
   artMetrics?: ArtMetrics;
+  /**
+   * THE TOUCH PATTERN (P2.5 piece 1, deliberate): the board is COARSE pointing — a tap
+   * resolves to the nearest occupied node — and the inspect view the shell opens from this
+   * callback is where PRECISE, ≥44px interaction happens. A 20px token cannot be a 44px
+   * target; what a tap opens can be. Direct token clicks (onCellClick) still work and stay
+   * `data-cell`-addressable for the perf driver.
+   */
+  onNodeInspect?: (info: InspectInfo) => void;
 }): ReactElement {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
   const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
   const residents = (view['residents'] as Record<string, { step?: unknown }> | undefined) ?? {};
 
-  // Group everything standing on the board by its resolved position, so co-located tokens fan.
-  const tokens: {
+  // Everything standing on the board, grouped by resolved position. Invaders then collapse
+  // to FAN-OF-TYPES per node (ruled 20 Aug 2026 on docs/STACK_COLOCATION.md): one display
+  // token per distinct type with a count badge — off-hub nodes hold <=2 distinct types
+  // >=99.3% of the time and never 4, so this loses nothing on lanes. Same-type disease
+  // differences live in the inspect view. THE HUB IS A ZONE, NOT A NODE — its grouped
+  // display is its own design piece; until it lands, the hub gets the same fan (scaffolding).
+  interface Standing {
+    kind: 'invader' | 'cell';
+    pos: Pt;
+    cell?: string;
+    resident?: string;
+    iv?: Invaderish;
+  }
+  const standing: Standing[] = [];
+  for (const [organ, r] of Object.entries(residents)) {
+    const step = typeof r.step === 'number' ? r.step : 0;
+    const pos = tokenPos({ zone: 'branch', organ, step });
+    if (pos) standing.push({ kind: 'cell', pos, resident: organ });
+  }
+  for (const iv of invaders) {
+    const pos = tokenPos(iv);
+    if (pos) standing.push({ kind: 'invader', pos, iv });
+  }
+  for (const [ck, c] of Object.entries(cells)) {
+    const pos = tokenPos(c);
+    if (pos) standing.push({ kind: 'cell', pos, cell: ck });
+  }
+
+  interface Display {
     key: string;
     label: string;
     kind: 'invader' | 'cell';
     pos: Pt;
     cell?: string;
-    type?: unknown;
-    novel?: unknown;
-    /** A resident macrophage: renders as macrophage art with an organ-brown ring, is never
-     *  clickable, and carries no label. Distinguishing it further from the player's
-     *  Macrophage is P2.5 polish. */
     resident?: boolean;
-  }[] = [];
-  for (const [organ, r] of Object.entries(residents)) {
-    const step = typeof r.step === 'number' ? r.step : 0;
-    const pos = tokenPos({ zone: 'branch', organ, step });
-    if (pos) tokens.push({ key: `res-${organ}`, label: '', kind: 'cell', pos, resident: true });
+    art: string | null;
+    /** Invaders of this type on this node; a badge shows when >= 2. */
+    count: number;
   }
-  invaders.forEach((iv, i) => {
-    const pos = tokenPos(iv);
-    if (pos) {
-      tokens.push({
-        key: `iv-${String(iv.id ?? i)}`,
-        label: String(iv.disease ?? '?').slice(0, 6),
-        kind: 'invader',
-        pos,
-        type: iv.type,
-        novel: iv.novel,
+  const byNode = new Map<string, { pos: Pt; display: Display[]; inspect: InspectInfo }>();
+  for (const s of standing) {
+    const k = `${s.pos.x}:${s.pos.y}`;
+    let node = byNode.get(k);
+    if (!node) {
+      node = {
+        pos: s.pos,
+        display: [],
+        inspect: { x: s.pos.x, y: s.pos.y, cells: [], resident: null, invaders: [] },
+      };
+      byNode.set(k, node);
+    }
+    if (s.kind === 'cell') {
+      if (s.resident !== undefined) {
+        node.inspect.resident = s.resident;
+        node.display.push({
+          key: `res-${s.resident}`,
+          label: '',
+          kind: 'cell',
+          pos: s.pos,
+          resident: true,
+          art: 'cell-macrophage',
+          count: 1,
+        });
+      } else if (s.cell !== undefined) {
+        node.inspect.cells.push(s.cell);
+        node.display.push({
+          key: `cell-${s.cell}`,
+          label: s.cell.slice(0, 4),
+          kind: 'cell',
+          pos: s.pos,
+          cell: s.cell,
+          art: CELL_ART.has(s.cell) ? `cell-${s.cell}` : null,
+          count: 1,
+        });
+      }
+    } else if (s.iv) {
+      node.inspect.invaders.push({
+        disease: String(s.iv.disease ?? '?'),
+        type: typeof s.iv.type === 'string' ? s.iv.type : '?',
+        novel: s.iv.novel === true,
+        hp: typeof s.iv.hp === 'number' ? s.iv.hp : 1,
+        maxhp: typeof s.iv.maxhp === 'number' ? s.iv.maxhp : 1,
       });
     }
-  });
-  for (const [ck, c] of Object.entries(cells)) {
-    const pos = tokenPos(c);
-    if (pos) tokens.push({ key: `cell-${ck}`, label: ck.slice(0, 4), kind: 'cell', pos, cell: ck });
   }
-  const byNode = new Map<string, typeof tokens>();
-  for (const t of tokens) {
-    const k = `${t.pos.x}:${t.pos.y}`;
-    const list = byNode.get(k) ?? [];
-    list.push(t);
-    byNode.set(k, list);
+  // Collapse each node's invaders into type groups (novel invaders group as 'novel', masked).
+  for (const node of byNode.values()) {
+    const groups = new Map<string, InspectInvader[]>();
+    for (const iv of node.inspect.invaders) {
+      const gk = iv.novel ? 'novel' : iv.type;
+      const list = groups.get(gk) ?? [];
+      list.push(iv);
+      groups.set(gk, list);
+    }
+    for (const [gk, list] of groups) {
+      const first = list[0];
+      if (!first) continue;
+      node.display.push({
+        key: `ivg-${node.pos.x}:${node.pos.y}:${gk}`,
+        label: list.length === 1 ? first.disease.slice(0, 6) : gk,
+        kind: 'invader',
+        pos: node.pos,
+        art: gk !== 'novel' && PATH_ART.has(gk) ? `path-${gk}` : null,
+        count: list.length,
+      });
+    }
   }
+
+  const openInspect = (clientX: number, clientY: number, svg: SVGSVGElement): void => {
+    if (!onNodeInspect) return;
+    const pt = new DOMPoint(clientX, clientY);
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const p = pt.matrixTransform(ctm.inverse());
+    let best: InspectInfo | null = null;
+    let bestD = 60; // coarse-pointing radius, viewBox units
+    for (const node of byNode.values()) {
+      const d = Math.hypot(node.pos.x - p.x, node.pos.y - p.y);
+      if (d < bestD) {
+        bestD = d;
+        best = node.inspect;
+      }
+    }
+    if (best) onNodeInspect(best);
+  };
 
   return (
     <svg
       viewBox={VIEWBOX}
+      onClick={(e) => openInspect(e.clientX, e.clientY, e.currentTarget)}
       style={{
         width: '100%',
         maxWidth: 660,
@@ -496,17 +591,23 @@ export function Board({
         0
       </text>
 
-      {/* tokens, fanned per node */}
-      {[...byNode.values()].map((list) =>
-        list.map((t, i) => {
-          const p = fan(t.pos, i, list.length);
+      {/* tokens: fan-of-types per node (cells individual, invaders one token per type) */}
+      {[...byNode.values()].map((node) =>
+        node.display.map((t, i) => {
+          const p = fan(t.pos, i, node.display.length);
           const selected = t.cell !== undefined && t.cell === selectedCell;
-          const art = t.resident === true ? 'cell-macrophage' : tokenArtKey(t);
           return (
             <g
               key={t.key}
               data-cell={t.cell}
-              onClick={t.cell && onCellClick ? () => onCellClick(t.cell as string) : undefined}
+              onClick={
+                t.cell && onCellClick
+                  ? (e) => {
+                      e.stopPropagation(); // direct token click selects; it must not ALSO inspect
+                      onCellClick(t.cell as string);
+                    }
+                  : undefined
+              }
               style={t.cell && onCellClick ? { cursor: 'pointer' } : undefined}
             >
               {selected ? (
@@ -529,9 +630,9 @@ export function Board({
                   strokeWidth={2.5}
                 />
               ) : null}
-              {art !== null ? (
+              {t.art !== null ? (
                 <image
-                  href={ART_URL(art)}
+                  href={ART_URL(t.art)}
                   x={p.x - TOKEN_ART_U / 2}
                   y={p.y - TOKEN_ART_U / 2}
                   width={TOKEN_ART_U}
@@ -548,6 +649,28 @@ export function Board({
                   strokeWidth={2}
                 />
               )}
+              {t.count >= 2 ? (
+                <>
+                  <circle
+                    cx={p.x + TOKEN_ART_U / 2 - 3}
+                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    r={10}
+                    fill={CLASSIC.frame}
+                    stroke="#fff"
+                    strokeWidth={1.6}
+                  />
+                  <text
+                    x={p.x + TOKEN_ART_U / 2 - 3}
+                    y={p.y - TOKEN_ART_U / 2 + 7.2}
+                    textAnchor="middle"
+                    fontSize={12}
+                    fontWeight="bold"
+                    fill="#fff"
+                  >
+                    {t.count}
+                  </text>
+                </>
+              ) : null}
               <text
                 x={p.x}
                 y={p.y + TOKEN_ART_U / 2 + 10}
