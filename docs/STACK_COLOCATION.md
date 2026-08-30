@@ -68,4 +68,15 @@ stack, it is a zone with a population.
    hub (by type, with counts) plus inspect is a P2.5 design task — the one place where the
    node-stack pattern does not transfer.
 
-Decision is Shantanu's; this document is the measurement.
+**RULED, Shantanu, 20 Aug 2026: fan-of-types on routes/branches/tissue as proposed; the hub
+recorded as its own design problem, explicitly not a variant of stacking.**
+
+---
+
+## The shape of the lesson, noted while fresh (Shantanu's observation)
+
+This is the query-payload measurement's lesson again ([`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md)).
+There, the cost was not in the expensive query but in the one with too many possible subjects
+at once. Here, the difficulty is not the crowded nodes but the one place that is not a node
+at all. **Both times the obvious framing pointed at the wrong object, and the measurement's
+real value was reclassifying the problem, not sizing it.**

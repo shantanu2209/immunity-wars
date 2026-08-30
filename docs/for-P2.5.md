@@ -42,10 +42,15 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   **Proposal for P2.5: bundle Nunito (OFL — offline-safe, rounded, matches the sticker art)
   and put it first in the stack.** The A2's DejaVu is a print face, not shipped on phones,
   and was not carried over. Sizes (13px labels) still unmatched to the print's scale. (same)
-- Stack-with-badge is P2.5's OPENING item (confirmed to Shantanu 20 Aug 2026 — the hub pile
-  is now the most visibly wrong thing on the board). The badge design mock-up is in the
-  showcase (`pnpm art:showcase`). Shantanu's information-loss question was MEASURED before
-  proposing ([`STACK_COLOCATION.md`](STACK_COLOCATION.md), 600 games): off-hub nodes hold
-  ≤2 distinct types ≥99.3% of the time and NEVER 4, so the proposal is a **fan-of-types**
-  (one token per distinct type, per-type count badge); same-type disease differences go to
-  tap-to-inspect; the HUB is a zone, not a node, and needs its own grouped display.
+- ✅ DECIDED (Shantanu, 20 Aug 2026, on the measurement in
+  [`STACK_COLOCATION.md`](STACK_COLOCATION.md)) — **FAN-OF-TYPES on routes, branches and
+  organ tissue**: one token per distinct type, each with its own count badge; two diseases of
+  the same type stay in tap-to-inspect. Off-hub nodes hold ≤2 distinct types ≥99.3% of the
+  time and never 4, so this loses nothing. P2.5's opening item.
+- **THE HUB IS A ZONE, NOT A NODE — its own design problem with its own solution, ruled
+  explicitly NOT a variant of stacking** (Shantanu, same date). Up to 49 invaders, 4 distinct
+  types, plus the player's seven cells, in one 100u circle; the node-stack pattern applied
+  there would be unusable at the busiest spot on the board. Needs a grouped-zone display
+  designed as its own piece. Whenever the co-location numbers are quoted, their label travels
+  with them: mirror of the reference bot, which under-kills — stacking OVERESTIMATED relative
+  to human play, wrong in the safe direction.
