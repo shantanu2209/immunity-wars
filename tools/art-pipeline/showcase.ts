@@ -102,7 +102,7 @@ function place(anchor: Pt, key: string): { icon: Pt; label: Pt } {
   const cw = asset?.content?.w ?? 1;
   const ch = asset?.content?.h ?? 1;
   const ext = ((Math.abs(ux) * cw + Math.abs(uy) * ch) / 2) * LARGE_U;
-  const iconDist = d + 8 + ext;
+  const iconDist = R_PLAY + 8 + ext; // off the play circle, not the anchor (tissue is inside)
   const labelDist = iconDist + ext + 14;
   return {
     icon: { x: geo.HUB.x + ux * iconDist, y: geo.HUB.y + uy * iconDist },
@@ -181,7 +181,12 @@ function boardSvg(): string {
     const st = stepsOf(t);
     const pos = geo.ORGAN_POS[o];
     if (!pos) continue;
-    s += poly([geo.HUB, ...st, pos], C.branch, C.wLine);
+    const d = Math.hypot(pos.x - geo.HUB.x, pos.y - geo.HUB.y) || 1;
+    const edge = {
+      x: geo.HUB.x + ((pos.x - geo.HUB.x) / d) * R_PLAY,
+      y: geo.HUB.y + ((pos.y - geo.HUB.y) / d) * R_PLAY,
+    };
+    s += poly([geo.HUB, ...st, pos, edge], C.branch, C.wLine);
     for (const p of st) s += node(p, C.branchNodeFill, C.branch);
   }
   for (const [o, pos] of Object.entries(geo.ORGAN_POS)) {

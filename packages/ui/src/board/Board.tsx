@@ -108,12 +108,22 @@ function annotationPlacement(
   const ext = ((Math.abs(ux) * cw + Math.abs(uy) * ch) / 2) * LARGE_ART_U;
   const GAP = 8; // uniform clearance: play circle -> nearest content edge
   const LABEL_GAP = 14; // uniform clearance: far content edge -> label baseline
-  const iconDist = d + GAP + ext;
+  // Annotations sit off the PLAY CIRCLE, not off their anchor: the organ tissue slot is
+  // inside the circle, and measuring from it would pull organ icons off the uniform ring.
+  const iconDist = R_PLAY + GAP + ext;
   const labelDist = iconDist + ext + LABEL_GAP;
   return {
     icon: { x: HUB_POS.x + ux * iconDist, y: HUB_POS.y + uy * iconDist },
     label: { x: HUB_POS.x + ux * labelDist, y: HUB_POS.y + uy * labelDist + 4 },
   };
+}
+
+/** The point where a lane's ray meets the play circle — the visual end of the lane line. */
+function circleEdge(anchor: Pt): Pt {
+  const dx = anchor.x - HUB_POS.x;
+  const dy = anchor.y - HUB_POS.y;
+  const d = Math.hypot(dx, dy) || 1;
+  return { x: HUB_POS.x + (dx / d) * R_PLAY, y: HUB_POS.y + (dy / d) * R_PLAY };
 }
 
 /**
@@ -379,7 +389,9 @@ export function Board({
         const stepsOf = branchSteps(o);
         const pos = organPos(o);
         if (!pos) return null;
-        const run: Pt[] = [HUB_POS, ...stepsOf, pos];
+        // hub -> steps -> the tissue slot (inside the circle) -> on to the circle's edge,
+        // so the lane's tail reads like a route's: the line exits, the slots do not.
+        const run: Pt[] = [HUB_POS, ...stepsOf, pos, circleEdge(pos)];
         const hp = Number((organs[o] ?? {}).hp ?? 0);
         return (
           <g key={o}>

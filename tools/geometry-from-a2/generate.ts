@@ -413,28 +413,30 @@ function main(): void {
   //    supplies the symmetry (Shantanu, 20 Aug 2026; FINDINGS #49's relaxation makes the
   //    geometry free to change for screen reasons, and the next print inherits this).
   //
-  //    The board becomes a true radial figure on a square canvas, hub centred. Every lane
-  //    terminates ON one uniform play circle (R_PLAY): ENTRY and ORGAN_POS are the points
-  //    where the lane meets that circle — the terminal anchors — and the icons drawn
-  //    OUTSIDE the circle are annotations the renderer places by angle, not geometry.
+  //    The board becomes a true radial figure on a square canvas, hub centred. EVERY
+  //    PLAYABLE SLOT SITS FULLY INSIDE the play circle (R_PLAY) — including the ORGAN
+  //    TISSUE slot (engine branch step 0, where residents patrol and attackers stand),
+  //    which is ORGAN_POS at R_TISSUE: node edge 222 + 17.1 < 242. Ruled 20 Aug 2026
+  //    after the first radial cut put it ON the circle. ENTRY stays ON the circle: it is
+  //    a line endpoint, not a slot — nothing ever occupies an entry point. Icons OUTSIDE
+  //    the circle are annotations the renderer places by angle, not geometry.
   //
   //    Radii are chosen against measured floors, not taste:
   //      - adjacent-lane nodes must clear the ~34.2u node diameter: organs sit 25° apart,
-  //        so the innermost branch ring needs R >= 88 (chord 2*R*sin(12.5deg) >= 36.7);
+  //        so the innermost branch ring at 111 gives chord 2*111*sin(12.5deg) = 48 >= 36.7;
   //        routes sit 30° apart, so their innermost ring needs R >= 71 -> 75.
-  //      - within a lane, the len-5 routes set the binding spacing:
-  //        (R_STEPEND - R0_ROUTE)/4 = 36.75u — exactly the 20px-token floor the previous
-  //        geometry measured. Shorter lanes stretch across the same span, as on the print.
+  //      - within a lane, the binding spacings are the len-5 routes (224-75)/4 = 37.25u
+  //        and the 3-step branches (185-111)/2 = 37u, both >= the 36.7u (20px) token
+  //        floor; tissue<->step-1 = 222-185 = 37u likewise. Shorter lanes stretch across
+  //        the same span, as on the print.
   // ---------------------------------------------------------------------------
   const VH = VW; // square canvas, radial figure
   const CENTER: Pt = { x: VW / 2, y: VH / 2 };
   const R0_ROUTE = 75;
-  const R0_BRANCH = 88;
+  const R0_BRANCH = 111;
   const R_STEPEND_ROUTE = 224;
-  // Branch steps stop a full token-spacing short of the play circle: tokens STAND at
-  // ORGAN_POS (residents at step 0, attackers), so organ<->step-1 needs the same 36.7u
-  // floor as any adjacent pair. Routes keep 222 — nothing ever occupies an ENTRY point.
-  const R_STEPEND_BRANCH = 205;
+  const R_STEPEND_BRANCH = 185; // step 1, adjacent to the tissue slot
+  const R_TISSUE = 222; // ORGAN_POS: the organ tissue slot, fully inside the circle
   const R_PLAY = 242;
 
   const angleOf = (lane: Seg): number => {
@@ -484,7 +486,7 @@ function main(): void {
     HUB: CENTER,
     ORGAN_POS: ordered(
       organOrder,
-      Object.fromEntries(organOrder.map((k) => [k, at(organAngle[k] ?? 0, R_PLAY)])),
+      Object.fromEntries(organOrder.map((k) => [k, at(organAngle[k] ?? 0, R_TISSUE)])),
     ),
     CHIP_POS: ordered(
       organOrder,
