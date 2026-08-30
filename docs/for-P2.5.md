@@ -44,5 +44,8 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   and was not carried over. Sizes (13px labels) still unmatched to the print's scale. (same)
 - Stack-with-badge is P2.5's OPENING item (confirmed to Shantanu 20 Aug 2026 — the hub pile
   is now the most visibly wrong thing on the board). The badge design mock-up is in the
-  showcase (`pnpm art:showcase`): top-of-stack token + frame-red count badge, judged by
-  Shantanu before it is settled.
+  showcase (`pnpm art:showcase`). Shantanu's information-loss question was MEASURED before
+  proposing ([`STACK_COLOCATION.md`](STACK_COLOCATION.md), 600 games): off-hub nodes hold
+  ≤2 distinct types ≥99.3% of the time and NEVER 4, so the proposal is a **fan-of-types**
+  (one token per distinct type, per-type count badge); same-type disease differences go to
+  tap-to-inspect; the HUB is a zone, not a node, and needs its own grouped display.
