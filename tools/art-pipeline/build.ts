@@ -93,9 +93,13 @@ const ASSETS: AssetDef[] = [
 const PROVENANCE = {
   tool: 'Google Flow',
   date: '2026-08-20',
-  account: 'TBC (Shantanu)',
-  tosChecked: 'not yet',
-  redistribution: 'Unknown',
+  account: 'Pro',
+  tosChecked:
+    '2026-08-20 by Shantanu: Google does not claim ownership of generated content; ' +
+    'commercial use permitted on all tiers. Dated copy of the terms saved locally by Shantanu.',
+  redistribution:
+    'None declared — DECISION 2026-08-20 (LICENSES.md): content is all rights reserved; ' +
+    'whether AI-generated images are copyrightable is unsettled, so no licence is granted.',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -230,6 +234,10 @@ interface Emitted {
   cls: AssetDef['cls'];
   displayPx: number;
   measured: Measured;
+  /** The trimmed artwork's extent inside the emitted square, as fractions of the side.
+   *  Consumers use it to place icons by their CONTENT edge rather than the file edge —
+   *  a long thin lung and a compact kidney space evenly only when measured this way. */
+  content: { w: number; h: number };
   files: Record<string, { file: string; px: number; bytes: number; sha256: string }>;
   source: { file: string; sha256: string };
   provenance: typeof PROVENANCE & { prompt: string };
@@ -294,6 +302,10 @@ async function processAsset(def: AssetDef, outDir: string): Promise<Emitted> {
       dominant: m.dominant,
       lightShare: Number(m.lightShare.toFixed(3)),
       coverage: Number(m.coverage.toFixed(3)),
+    },
+    content: {
+      w: Number((box.width / side).toFixed(3)),
+      h: Number((box.height / side).toFixed(3)),
     },
     files,
     source: {

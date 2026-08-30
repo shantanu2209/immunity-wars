@@ -24,45 +24,40 @@ Copyright 2026 Shantanu Chaudhary.
 
 ---
 
-## Game content — ⚠️ NOT YET LICENSED FOR REDISTRIBUTION
+## Game content — all rights reserved, by decision
 
-**Status: PENDING an assets-provenance check. No licence is granted at this time.**
+**Status: DECIDED, 20 August 2026. No content licence is declared, and none is pending.**
 
 This covers the board artwork, card designs, organ and cell illustrations, the rulebook,
 and the study materials — everything that makes up the game as a played object, as opposed
 to the software that runs it.
 
-### Why there is no licence here yet
+### Why there is no licence, and why that is the answer rather than a delay
 
-We intend to release the game content under **CC BY-SA 4.0**, so that any school or teacher
-can print, translate and adapt it freely. That is the whole point of the project.
+The artwork was generated with Google Flow, and the provenance check was completed on
+20 August 2026 ([docs/ASSETS.md](docs/ASSETS.md) has the full register). What it found:
 
-Before we can do that, we have to confirm one thing: **some of the artwork was generated
-with an AI image tool, and we have not yet verified that that tool's terms of service permit
-us to redistribute its output under CC BY-SA 4.0.**
+- **Google is not the obstacle.** Google does not claim ownership of Flow output, and
+  commercial use is permitted. If the question were "may we use this art", the answer is yes.
+- **The question a licence actually turns on is different:** "Google does not claim
+  ownership" is not the same as "we hold a copyright we can license to others." A Creative
+  Commons licence works by granting rights *we hold* — and whether AI-generated images are
+  copyrightable at all is legally unsettled.
 
-This matters because a Creative Commons licence is **irrevocable**. Once granted, it cannot
-be withdrawn from anyone who has already received a copy. Declaring CC BY-SA 4.0 before the
-check is complete would mean granting rights we may not hold — and we would have no way to
-take it back. So the honest position, until the check is done, is to grant nothing.
+Rather than resolve an unsettled legal question ourselves, we sidestep it: **no content
+licence is declared.** Teachers and schools using the app are unaffected. The only thing
+this forecloses is third-party redistribution of modified artwork — which nobody has asked
+for. If that ever becomes a real need, it can be revisited, and it would be a question for
+a lawyer, not for us.
 
-### What this means for you right now
+### What this means for you
 
-- **Reading, studying and running this repository:** fine, no restrictions beyond Apache 2.0.
-- **Redistributing the game content, artwork or rulebook:** please don't, yet.
-- **Using the game in a classroom:** this is exactly what it is for, and it is what the licence
-  check is meant to unblock. If you want to use it before then, open an issue and ask —
-  the answer is very likely yes, we would just rather say so explicitly than by silence.
-
-### What has to happen to resolve this
-
-1. Record, in [docs/ASSETS.md](docs/ASSETS.md), which tool generated which asset and when.
-2. Read that tool's terms of service as they stood at the time of generation, on the
-   question of commercial use and redistribution under an open licence.
-3. Either declare CC BY-SA 4.0 here, or regenerate/replace the affected assets with ones
-   whose provenance is unambiguous, and then declare it.
-
-Until step 3 is complete, this section stays as it is.
+- **Reading, studying and running this repository:** fine, no restrictions beyond Apache 2.0
+  on the code.
+- **Using the game in a classroom:** this is exactly what the project is for. Go ahead; if
+  you want it in writing for your school, open an issue and ask.
+- **Redistributing the game content or artwork, modified or not:** not granted. All rights
+  reserved.
 
 ---
 
