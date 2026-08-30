@@ -10,6 +10,17 @@
       indexeddb.ts's "reruns on every load" promise stays true. Developer scaffolding, not the
       player UI — that is P2.5's, catalogue duty and all.
     -->
+    <style>
+      /* Nunito (variable, latin, OFL — public/fonts/OFL.txt): the board's typography,
+         decided at P2.5 piece 2 and bundled so it works fully offline (Gate 1). */
+      @font-face {
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

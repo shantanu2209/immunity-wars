@@ -18,6 +18,48 @@ export default tseslint.config(
   },
 
   js.configs.recommended,
+
+  // THE HARDCODED-STRING CHECK (P2.5 piece 2) — what makes DoD item 4 real rather than a
+  // second unconsumed catalogue: player components must render text through the i18n
+  // catalogue (packages/ui/src/i18n.ts t()), and this rule REJECTS hardcoded JSX text.
+  // Scope is packages/ui (the player-component home); the dev shell in packages/app is
+  // developer scaffolding, exempt on purpose and recorded as such. Negative-controlled in
+  // packages/ui/src/i18n-check.control.test.ts — a check that has never rejected a
+  // hardcoded string is not known to work.
+  {
+    files: ['packages/ui/src/**/*.tsx'],
+    plugins: {
+      iw: {
+        rules: {
+          'no-hardcoded-jsx-text': {
+            meta: {
+              type: 'problem',
+              schema: [],
+              messages: {
+                hardcoded:
+                  'Hardcoded player-visible string in JSX — render it through the i18n catalogue (t()) instead.',
+              },
+            },
+            create(ctx) {
+              return {
+                JSXText(node) {
+                  if (node.value.trim() !== '') ctx.report({ node, messageId: 'hardcoded' });
+                },
+                JSXExpressionContainer(node) {
+                  if (node.parent && node.parent.type === 'JSXAttribute') return; // props are not player-visible text
+                  const e = node.expression;
+                  if (e.type === 'Literal' && typeof e.value === 'string' && e.value.trim() !== '')
+                    ctx.report({ node: e, messageId: 'hardcoded' });
+                  if (e.type === 'TemplateLiteral') ctx.report({ node: e, messageId: 'hardcoded' });
+                },
+              };
+            },
+          },
+        },
+      },
+    },
+    rules: { 'iw/no-hardcoded-jsx-text': 'error' },
+  },
   ...tseslint.configs.recommended,
 
   // Must come last: turns off every rule that would fight Prettier over formatting.

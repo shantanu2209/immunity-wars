@@ -1,0 +1,16 @@
+{
+  "$meta": {
+    "namespace": "ui",
+    "locale": "en",
+    "note": "Player-facing UI strings, hand-authored as screens are built (P2.5). Every ui component renders text through this catalogue via t(); the eslint rule iw/no-hardcoded-jsx-text rejects hardcoded JSX text in packages/ui, and its negative control lives in packages/ui/src/i18n-check.control.test.ts. The Hindi edition translates this file."
+  },
+  "commandBar.selectPrompt": "Tap one of your cells to command it",
+  "commandBar.moveHint": "Tap a highlighted node to move there",
+  "commandBar.ap": "AP",
+  "commandBar.engulf": "Engulf",
+  "commandBar.deselect": "Deselect",
+  "inspect.close": "Close",
+  "inspect.resident": "Resident macrophage",
+  "inspect.unknown": "Unknown pathogen",
+  "inspect.hp": "hp"
+}

@@ -52,20 +52,30 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
 - ~~Wash disc omitted~~ and ~~step nodes half the print's proportion~~ — both resolved by the
   A2-layout regeneration (`tools/geometry-from-a2`): the wash renders at the print's radius and
   alpha, and node/hub/box sizes now come from the generator's report. (P2.4, second pass)
-- Label typography, first decision taken 20 Aug 2026: the board now sets a warm humanist
-  stack (`'Trebuchet MS', 'Segoe UI', Verdana, system-ui`) instead of the browser default.
-  **Proposal for P2.5: bundle Nunito (OFL — offline-safe, rounded, matches the sticker art)
-  and put it first in the stack.** The A2's DejaVu is a print face, not shipped on phones,
-  and was not carried over. Sizes (13px labels) still unmatched to the print's scale. (same)
+- ✅ Typography DECIDED and shipped (P2.5 piece 2, per Shantanu's reorder): Nunito (OFL)
+  bundled at `packages/app/public/fonts/` (39KB latin variable woff2 + `OFL.txt`), first in
+  the board's stack with the humanist fallbacks behind it; fully offline. The A2's DejaVu
+  deliberately not carried over (a print face, not shipped on phones). Label sizes still
+  unmatched to the print's scale. (`Board.tsx`, `packages/app/index.html`)
 - ✅ DECIDED (Shantanu, 20 Aug 2026, on the measurement in
   [`STACK_COLOCATION.md`](STACK_COLOCATION.md)) — **FAN-OF-TYPES on routes, branches and
   organ tissue**: one token per distinct type, each with its own count badge; two diseases of
   the same type stay in tap-to-inspect. Off-hub nodes hold ≤2 distinct types ≥99.3% of the
   time and never 4, so this loses nothing. P2.5's opening item.
-- **THE HUB IS A ZONE, NOT A NODE — its own design problem with its own solution, ruled
-  explicitly NOT a variant of stacking** (Shantanu, same date). Up to 49 invaders, 4 distinct
-  types, plus the player's seven cells, in one 100u circle; the node-stack pattern applied
-  there would be unusable at the busiest spot on the board. Needs a grouped-zone display
-  designed as its own piece. Whenever the co-location numbers are quoted, their label travels
-  with them: mirror of the reference bot, which under-kills — stacking OVERESTIMATED relative
-  to human play, wrong in the safe direction.
+- **THE HUB IS A ZONE, NOT A NODE — its own design problem, ruled explicitly NOT a variant
+  of stacking** (Shantanu, 20 Aug 2026). Up to 49 invaders, 4 distinct types, plus the
+  player's seven cells, in one 100u circle. Whenever the co-location numbers are quoted,
+  their label travels with them: mirror of the reference bot, which under-kills — stacking
+  OVERESTIMATED relative to human play, wrong in the safe direction.
+- ✅ **HUB LAYOUT DECIDED: VARIANT B** — invader type-tokens (badged) clustered in the
+  centre, cells ringed at the inner edge. Ruled by Shantanu and Kartik independently of the
+  builder's lean, which matched (noted deliberately: two readers, one answer, before seeing
+  each other's reasoning). Grounds: (1) threats are the decision-relevant information and
+  belong in the hub's most legible region; (2) graceful degradation — cells LEAVING the hub
+  is the normal state of a game in progress, so variant A (cells arced above, types below)
+  would be lopsided most of the time and balanced mainly at setup. **A's counter-argument is
+  recorded so this reads as a considered choice, not a default:** A's two-register layout
+  ("yours above, threats below") is calmer and more teachable in a first game — but that is
+  an onboarding problem, which is P2.6's job, and solving a teaching problem with a permanent
+  layout compromise is the wrong trade. Both variants render in the showcase
+  (`pnpm art:showcase`) at magnified and true size.

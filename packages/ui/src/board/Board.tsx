@@ -67,9 +67,9 @@ const CLASSIC = {
   // and entry icons are annotations OUTSIDE it (decision: icons are labels, not slots).
 } as const;
 
-/** The board's first deliberate typography: a warm humanist stack available offline on every
- *  platform. Proposal for P2.5: bundle Nunito (OFL) and put it first — see docs/for-P2.5.md. */
-const BOARD_FONT = "'Trebuchet MS', 'Segoe UI', Verdana, system-ui, sans-serif";
+/** The board's typography, DECIDED at P2.5 piece 2: Nunito (OFL), bundled by the app at
+ *  /fonts/ so it works fully offline; the humanist stack behind it is the fallback. */
+const BOARD_FONT = "'Nunito', 'Trebuchet MS', 'Segoe UI', Verdana, system-ui, sans-serif";
 
 /** The uniform play circle: every ENTRY and ORGAN_POS sits on it by construction
  *  (tools/geometry-from-a2 radialization) — derived, never authored. */
@@ -232,6 +232,8 @@ export function Board({
   onCellClick,
   artMetrics,
   onNodeInspect,
+  moveTargets = [],
+  onMoveTarget,
 }: {
   view: ViewState;
   /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
@@ -249,6 +251,10 @@ export function Board({
    * `data-cell`-addressable for the perf driver.
    */
   onNodeInspect?: (info: InspectInfo) => void;
+  /** Legal destinations for the selected cell (the view's selection-scoped answer); each
+   *  renders as a tappable highlight ring. Tapping one emits the destination back. */
+  moveTargets?: Located[];
+  onMoveTarget?: (target: Located) => void;
 }): ReactElement {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
@@ -528,7 +534,7 @@ export function Board({
             {/* Step 0 — matching the engine's addressing (tokenPos maps branch step 0 here),
                 so the display never needs translating during a debug session. */}
             <text x={pos.x} y={pos.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
-              0
+              {0}
             </text>
             {(() => {
               const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
@@ -588,7 +594,7 @@ export function Board({
       {/* The bloodstream is route step 0 (tokenPos maps route step<1 here) — numbered like
           the tissue slots so every occupiable place carries its engine address. */}
       <text x={HUB_POS.x} y={HUB_POS.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
-        0
+        {0}
       </text>
 
       {/* tokens: fan-of-types per node (cells individual, invaders one token per type) */}
@@ -684,6 +690,33 @@ export function Board({
           );
         }),
       )}
+
+      {/* move-target highlights: tappable rings at each legal destination */}
+      {moveTargets.map((mt, i) => {
+        const pos = tokenPos(mt);
+        if (!pos) return null;
+        return (
+          <circle
+            key={`mt-${String(i)}`}
+            cx={pos.x}
+            cy={pos.y}
+            r={CLASSIC.rNode + 6}
+            fill="rgba(47,107,74,0.12)"
+            stroke="#2F6B4A"
+            strokeWidth={3}
+            strokeDasharray="6 4"
+            style={onMoveTarget ? { cursor: 'pointer' } : undefined}
+            onClick={
+              onMoveTarget
+                ? (e) => {
+                    e.stopPropagation();
+                    onMoveTarget(mt);
+                  }
+                : undefined
+            }
+          />
+        );
+      })}
     </svg>
   );
 }

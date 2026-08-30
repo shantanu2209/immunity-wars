@@ -28,7 +28,15 @@ import {
   type SessionView,
   type ViewState,
 } from '@immunity-wars/session';
-import { Board, type ArtMetrics, type InspectInfo } from '@immunity-wars/ui';
+import { CNAME } from '@immunity-wars/content';
+import {
+  Board,
+  CommandBar,
+  InspectSheet,
+  type ArtMetrics,
+  type EngulfTarget,
+  type InspectInfo,
+} from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -165,6 +173,22 @@ function App(): ReactElement {
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
+  const cellName = (ck: string): string => (CNAME as Record<string, string>)[ck] ?? ck;
+  // The selection-scoped answer the command slice runs on: legal destinations for the
+  // selected cell, rendered as tappable highlight rings. Hidden during a burst.
+  const moveTargets = playing
+    ? []
+    : ((authView.scoped.moveDestinations ?? []) as Record<string, unknown>[]);
+  const engulfTargets: EngulfTarget[] =
+    !playing && selectedCell === 'macrophage'
+      ? (
+          (authView.queries.state['macrophageEatable'] as
+            { id?: unknown; disease?: unknown }[] | undefined) ?? []
+        ).map((iv) => ({
+          id: String(iv.id ?? ''),
+          label: String(iv.disease ?? ''),
+        }))
+      : [];
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 700, margin: '0 auto' }}>
@@ -205,86 +229,40 @@ function App(): ReactElement {
         onCellClick={playing ? undefined : tapCell}
         artMetrics={artMetrics ?? undefined}
         onNodeInspect={setInspect}
+        moveTargets={moveTargets}
+        onMoveTarget={(mt) =>
+          selectedCell
+            ? send({
+                action: 'move',
+                cell: selectedCell,
+                zone: (mt as Record<string, unknown>)['zone'],
+                lane: (mt as Record<string, unknown>)['lane'],
+                organ: (mt as Record<string, unknown>)['organ'],
+                step: (mt as Record<string, unknown>)['step'],
+              })
+            : undefined
+        }
+      />
+      <CommandBar
+        selectedCellName={selectedCell ? cellName(selectedCell) : null}
+        ap={Number(game['ap'] ?? 0)}
+        moveTargetCount={moveTargets.length}
+        engulfTargets={engulfTargets}
+        disabled={playing}
+        onEngulf={(invaderId) => send({ action: 'engulf', cell: 'macrophage', invaderId })}
+        onDeselect={() => session.setSelection({ cell: null, family: null })}
       />
       {inspect ? (
-        <div
-          style={{
-            position: 'fixed',
-            left: '50%',
-            bottom: 12,
-            transform: 'translateX(-50%)',
-            width: 'min(92vw, 420px)',
-            maxHeight: '46vh',
-            overflowY: 'auto',
-            background: '#FFFDF9',
-            border: '2px solid #8E6E53',
-            borderRadius: 12,
-            boxShadow: '0 6px 24px rgba(46,42,40,0.25)',
-            padding: 8,
-            zIndex: 10,
+        <InspectSheet
+          info={inspect}
+          selectedCell={selectedCell}
+          disabled={playing}
+          onSelectCell={(ck) => {
+            tapCell(ck);
+            setInspect(null);
           }}
-        >
-          {inspect.invaders.map((iv, i) => (
-            <div
-              key={`iv-${i}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}
-            >
-              <img
-                src={`/art/path-${iv.novel ? 'virus' : iv.type}@3x.webp`}
-                width={36}
-                height={36}
-                alt=""
-                style={iv.novel ? { filter: 'brightness(0.2)' } : undefined}
-              />
-              <span style={{ fontSize: 14 }}>
-                {iv.novel ? '???' : iv.disease}
-                <span style={{ color: '#7C6A61' }}>
-                  {' '}
-                  · {iv.novel ? 'unknown' : iv.type} · hp {iv.hp}/{iv.maxhp}
-                </span>
-              </span>
-            </div>
-          ))}
-          {inspect.cells.map((ck) => (
-            <button
-              key={`cell-${ck}`}
-              onClick={() => {
-                tapCell(ck);
-                setInspect(null);
-              }}
-              disabled={playing}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                minHeight: 44,
-                width: '100%',
-                background: selectedCell === ck ? '#FBEAE5' : 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 14,
-                textAlign: 'left',
-              }}
-            >
-              <img src={`/art/cell-${ck}@3x.webp`} width={36} height={36} alt="" />
-              {ck}
-            </button>
-          ))}
-          {inspect.resident !== null ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
-              <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
-              <span style={{ fontSize: 14 }}>
-                resident macrophage <span style={{ color: '#7C6A61' }}>· {inspect.resident}</span>
-              </span>
-            </div>
-          ) : null}
-          <button
-            onClick={() => setInspect(null)}
-            style={{ minHeight: 44, width: '100%', fontSize: 14, marginTop: 4 }}
-          >
-            close
-          </button>
-        </div>
+          onClose={() => setInspect(null)}
+        />
       ) : null}
       <pre style={{ fontSize: 12 }}>{checks.join('\n')}</pre>
       <details>

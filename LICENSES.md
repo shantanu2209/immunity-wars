@@ -73,5 +73,7 @@ artwork is licensed, and is not altered by anything in this document. See the
 ## Third-party dependencies
 
 Build and runtime dependencies are listed in the `package.json` files throughout this
-repository and carry their own licences. None are vendored into this repository; they are
-fetched by the package manager at install time.
+repository and carry their own licences. They are fetched by the package manager at install
+time. One asset is vendored deliberately: the **Nunito** font
+(`packages/app/public/fonts/`), bundled so the app works fully offline, under the SIL Open
+Font License 1.1 — the licence text is committed beside it as `OFL.txt`.

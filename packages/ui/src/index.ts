@@ -9,4 +9,7 @@
 export const PACKAGE_NAME = '@immunity-wars/ui';
 
 export { Board, type ArtMetrics, type InspectInfo, type InspectInvader } from './board/Board';
+export { InspectSheet } from './panels/InspectSheet';
+export { CommandBar, type EngulfTarget } from './panels/CommandBar';
+export { t } from './i18n';
 export * as boardGeometry from './board/geometry';
