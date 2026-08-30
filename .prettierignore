@@ -18,3 +18,6 @@ LICENSE
 # that rewrites documents somebody actually wrote, produces large diffs that hide real
 # edits, and fights the author over style. Formatting is for code.
 *.md
+
+# generated showcase output (untracked, re-derivable via pnpm art:showcase)
+tools/art-pipeline/showcase/
