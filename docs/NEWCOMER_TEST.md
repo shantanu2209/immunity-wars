@@ -136,3 +136,59 @@ recorded as invalidated, with the reason — it is never quietly rerun with the 
 Testers are likely minors. Parental agreement before the run; no names, contact details,
 school, photographs or recordings in the repository or the write-up (`CLAUDE.md`, hard
 rules). The run record uses tester labels only.
+
+---
+
+## Pre-test readiness — the day-of checklist
+
+*Added 31 August 2026. Operational, not protocol: nothing below changes a ruling. The aim is
+to spend the single-use tester on what we do NOT know — anything on this list found broken on
+the day is a free fix, not a finding.*
+
+### Known gaps to settle BEFORE tester one (each is cheap; rulings where marked)
+
+- [ ] **The goal is stated nowhere in the UI — the one known gap most likely to dominate the
+      run.** The engine's game-start message ("New infections arrive until turn 15; then
+      clear the body of every pathogen to win, by turn 30 or the body is lost") exists only
+      in the log, and the UI renders no log. A tester can navigate to a conclusion without
+      ever being told what winning is — the run would then mostly measure a gap we already
+      know about. **Proposed fix, awaiting Shantanu's ruling:** a one-time game-start dialog
+      through the existing queue (the mechanism is built; this is one catalogue string and
+      one enqueue). The full log panel stays later work.
+- [ ] **Shantanu plays 2–3 full turns BY TOUCH on the S25 first.** He is disqualified as a
+      tester, so this spends nothing — but any purely mechanical trip (a target too small to
+      hit, a tap that misfires, the spread unreadable on a real screen) that HE hits is a
+      free fix. Tap-to-advance in particular has only been exercised with synthetic events
+      and a mouse; one finger on one real spread settles it.
+- [ ] **Missing-key sweep on the build being tested.** Title → difficulty → play → reveal →
+      command → spread → pause: no ⟪…⟫ marker anywhere. (Swept clean on the dev build,
+      31 Aug 2026 — re-check on the built artefact on the day.)
+
+### The build, on the day
+
+- [ ] **Production build, not the dev server:** `pnpm build`, serve `packages/app/dist` over
+      the LAN, open **`index.html`'s page** on the phone — never `/dev.html`.
+- [ ] Art and fonts confirmed on the phone: board icons render (they ship in `dist` from
+      `public/`), Nunito loads, no console errors.
+- [ ] One full turn played on the phone by Shantanu — draw, reveal, command, spread with
+      tap-to-advance — before handing anything to a tester.
+- [ ] **Fresh state:** clear site data for the origin (or a fresh browser profile) so the
+      Title shows no Continue. Verify it actually shows none.
+- [ ] Record device model, browser, online/offline — the protocol's own fields.
+
+### Have ready
+
+- [ ] The recording sheet, matching "What is recorded" above (stalls ≥30s, dead taps,
+      verbatim questions, timestamps, outcome).
+- [ ] Parental agreement done before the day.
+- [ ] The fixed deflection, verbatim: *"The app has to answer that — I can't."*
+- [ ] Time budget: an idle loss can end by turn ~6, but a tester who engages runs long —
+      hold an hour, and do not schedule anything that pressures an abandonment.
+
+### Expected behaviour worth knowing (not defects)
+
+- If the phone is locked or the app backgrounded mid-spread, the burst pauses and resumes on
+  foreground; taps still advance it. Known and verified (for-P2.5.md) — do not treat it as a
+  crash on the day, and record it if the tester encounters it.
+- After turn 15, a draw can announce nothing (no new infections arrive in mop-up). Mechanically
+  fine; if the tester visibly expects a card and stalls, that is a finding to record.

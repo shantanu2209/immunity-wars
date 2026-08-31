@@ -50,13 +50,18 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   idle Training game in the real app shell — idling guarantees a conclusion by turn 30 — and
   lost at turn 6 to the Kidneys. The Result screen rendered the organ name and stats, all
   three nav buttons present, and **the autosave was confirmed deleted at Result** (the saves
-  store read back empty), so Continue can never offer a finished game. The WIN path has not
-  been crossed; it needs a played game, and is expected to fall out of the newcomer test or
-  the first full human playthrough — the closeout should check it happened.
-- Background-tab behaviour, observed while driving bursts in a hidden tab: Chrome throttles
-  timers, so a burst pauses mid-spread and resumes on foreground — with tap-to-advance still
-  working, since taps are event-driven. Valid state throughout, no defect; worth remembering
-  when a phone backgrounds the app mid-spread.
+  store read back empty), so Continue can never offer a finished game.
+- [ ] **CLOSEOUT CHECKLIST ITEM (Shantanu, 30 Aug 2026): the WIN path has been crossed.**
+  A loss and a win are different paths and only the loss has been walked — the win-side
+  Result (headline, stats, autosave deletion) has never rendered from a real game. Expected
+  to fall out of the newcomer test or the first full human playthrough; the closeout may not
+  claim the join verified until this box is ticked with the run that ticked it.
+- **KNOWN AND VERIFIED behaviour, not an open item** (ruled 30 Aug 2026): under background-tab
+  timer throttling a burst pauses mid-spread and resumes on foreground, with tap-to-advance
+  still working (taps are event-driven). Valid state throughout — found by driving a hidden
+  tab, verified by advancing the stalled burst with a tap. This is exactly the shape of a
+  mystifying phone bug report ("the spread froze"), so it is recorded as expected behaviour
+  the support answer can point at.
 - The spread shows only the frame label ("Bacteria divide") — legacy renders dice; how a spread
   narrates is P2.5's. (`main.tsx`)
 - ~~Entry-label collision with route art~~ — resolved by the radial annotation layout
