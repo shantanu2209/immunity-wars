@@ -23,7 +23,10 @@ import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, InspectInfo } from '../board/Board';
 import { Board } from '../board/Board';
+import { GRACE_CLEAR } from '@immunity-wars/content';
+
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
+import { GoalBody } from '../dialogs/GoalBody';
 import { RevealBody, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { CommandBar, type EngulfTarget } from '../panels/CommandBar';
@@ -203,7 +206,21 @@ export function PlayScreen({
     const g = authView.game;
     const prev = prevGameRef.current;
     prevGameRef.current = g;
-    if (!prev) return;
+    if (!prev) {
+      // THE GOAL DIALOG — shown once, at the start of a NEW game only. A fresh game's first
+      // view is turn 1, nothing drawn; a resumed game can never look like this, because the
+      // autosave is written on accepted actions and a turn-1-pre-draw state is never saved.
+      const maxTurn = Number(g['maxTurn'] ?? 0);
+      if (Number(g['turn']) === 1 && !g['drawn'] && String(g['phase']) === 'infection') {
+        enqueueDialog({
+          id: 'goal',
+          title: t('goal.title'),
+          body: <GoalBody maxTurn={maxTurn} lastTurn={maxTurn + GRACE_CLEAR} />,
+          dismissLabel: t('goal.begin'),
+        });
+      }
+      return;
+    }
     const drawn = g['drawn'] as Record<string, unknown> | null;
     if (!drawn || prev['drawn'] || drawn['__sentinel']) return;
     const prevIds = new Set(

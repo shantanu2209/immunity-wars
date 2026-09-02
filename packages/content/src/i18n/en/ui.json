@@ -74,5 +74,10 @@
   "spread.label.Organ damage": "Organ damage",
   "spread.label.Organ failure": "Organ failure",
   "spread.label.Defeat": "Defeat",
-  "spread.label.Next turn": "Next turn"
+  "spread.label.Next turn": "Next turn",
+  "goal.title": "Defend the body",
+  "goal.arrive": "You command the body's immune cells. New infections will keep breaking in until turn {maxTurn}.",
+  "goal.win": "After that, destroy every pathogen still inside the body — that is the win.",
+  "goal.lose": "If an organ fails, or the body is still infected at turn {lastTurn}, the body is lost.",
+  "goal.begin": "Begin"
 }
