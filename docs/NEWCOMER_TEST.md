@@ -147,14 +147,11 @@ the day is a free fix, not a finding.*
 
 ### Known gaps to settle BEFORE tester one (each is cheap; rulings where marked)
 
-- [ ] **The goal is stated nowhere in the UI — the one known gap most likely to dominate the
-      run.** The engine's game-start message ("New infections arrive until turn 15; then
-      clear the body of every pathogen to win, by turn 30 or the body is lost") exists only
-      in the log, and the UI renders no log. A tester can navigate to a conclusion without
-      ever being told what winning is — the run would then mostly measure a gap we already
-      know about. **Proposed fix, awaiting Shantanu's ruling:** a one-time game-start dialog
-      through the existing queue (the mechanism is built; this is one catalogue string and
-      one enqueue). The full log panel stays later work.
+- [x] **The goal is stated nowhere in the UI** — was the one known gap most likely to
+      dominate the run. **DONE, 31 Aug 2026:** the goal dialog opens every new game through
+      the dialog queue, wording approved as written, turn numbers interpolated per difficulty
+      (P2.5 piece 3c). The full log panel stays later work. Test expectations for it are
+      stated in `P2_5_PROGRESS.md`.
 - [ ] **Shantanu plays 2–3 full turns BY TOUCH on the S25 first.** He is disqualified as a
       tester, so this spends nothing — but any purely mechanical trip (a target too small to
       hit, a tap that misfires, the spread unreadable on a real screen) that HE hits is a

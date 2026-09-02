@@ -56,6 +56,11 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   Result (headline, stats, autosave deletion) has never rendered from a real game. Expected
   to fall out of the newcomer test or the first full human playthrough; the closeout may not
   claim the join verified until this box is ticked with the run that ticked it.
+- **For Phase 3, flagged for Kartik rather than changed** (Shantanu, 31 Aug 2026): the goal
+  dialog opens with *"You command the body's immune cells."* That is right for single-player
+  and becomes **untrue in Phase 3**, where each player commands some of them. It stands as
+  written for P2.5; the multiplayer edition needs its own opening line (`goal.arrive` in
+  `ui.json`), and this note exists so nobody discovers that late.
 - **KNOWN AND VERIFIED behaviour, not an open item** (ruled 30 Aug 2026): under background-tab
   timer throttling a burst pauses mid-spread and resumes on foreground, with tap-to-advance
   still working (taps are event-driven). Valid state throughout — found by driving a hidden

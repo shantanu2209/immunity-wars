@@ -79,10 +79,17 @@ The test's product is **named specifics** — stalls, dead taps, verbatim questi
 reorder the table above; that is why the two runs are staggered. Honest expectations, stated
 before the result exists so they can be checked against it:
 
-- **Goal comprehension is the likeliest dominant finding** if it is not addressed first: the
-  UI currently states the win condition nowhere (the pre-test checklist carries the proposed
-  cheap fix, awaiting ruling). If tester one's record is mostly "did not know what winning
-  was", the run has confirmed a known gap rather than found an unknown one.
+- **Goal comprehension** was the likeliest dominant finding while the UI stated the win
+  condition nowhere. **Addressed before the run:** the goal dialog (piece 3c, 31 Aug 2026)
+  now opens every new game — so if tester one's record still reads "did not know what
+  winning was", that is a finding about the dialog's wording, not about its absence.
+- **"Pathogen" is expected to be understood from context** (Shantanu, 31 Aug 2026, stated
+  before the run so the result is data rather than a retrofitted explanation). The goal
+  dialog keeps the real word — "infections… breaking in… destroy every pathogen" teaches it
+  in passing, and softening the first sentence would undercut the premise that the real
+  immunology is more interesting than the simplification. **If the tester stumbles on the
+  word, that is a finding**, and the softer register ("germ") is a one-word change in
+  `ui.json`.
 - **The difficulty screen's recommendation is under test for the first time** — whether
   "Recommended for your first game" actually steers a stranger to Training is now a
   measurable outcome, per the v1.5 amendment.
