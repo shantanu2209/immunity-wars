@@ -2829,3 +2829,12 @@ this entry makes.
 
 **Disposition: FIXED inline, with a control. The cache-blindness window is 20 August – 2
 September 2026; the only known casualty is the parity suite above.**
+
+**Addendum, same day — two things the PR's coverage job then surfaced.** (1) The
+`UI_I18N_EN` loader's non-string throw was listed as an unreachable arm: a validator that had
+never fired. It is now a pure function (`buildUiCatalogue`) with a mustFail/mustPass pair in
+`load.test.ts`, and the arm is covered rather than excluded. (2) Observed while fixing it:
+`pnpm coverage:gate` printed GATE PASSES after a `coverage:all` that had exited 2 on a parse
+error — it consumes whatever coverage data is on disk and does not check that the run producing
+it succeeded. CI is protected by step ordering (`set -e` stops the job), so the gap is local
+only; recorded as the property, not worked around.

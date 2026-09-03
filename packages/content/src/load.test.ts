@@ -405,3 +405,22 @@ describe('the board pack', () => {
     expect(() => BoardPackS.parse(rawBoard())).not.toThrow();
   });
 });
+
+/**
+ * THE UI CATALOGUE VALIDATOR, controlled both ways. It had never fired: the coverage gate
+ * listed its throw as unreachable, which is the definition of a check not known to work.
+ */
+describe('UI_I18N_EN: every non-$ key maps to a string', () => {
+  it('mustFail — a non-string value throws, naming the key', () => {
+    const raw: Record<string, unknown> = { ...(pack.UI_I18N_EN as Record<string, unknown>) };
+    raw['title.name'] = 42;
+    expect(() => pack.buildUiCatalogue(raw)).toThrow(/title.name is not a string/);
+  });
+
+  it('mustPass — the committed catalogue builds, $-keys dropped, nothing else lost', () => {
+    const built = pack.buildUiCatalogue({ $meta: { note: 'ignored' }, ...pack.UI_I18N_EN });
+    expect(Object.keys(built)).not.toContain('$meta');
+    expect(built).toEqual(pack.UI_I18N_EN);
+    expect(Object.keys(built).length).toBeGreaterThan(50);
+  });
+});

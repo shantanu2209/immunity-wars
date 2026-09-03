@@ -269,12 +269,17 @@ export const ORGAN_ART = pack['ORGAN_ART'] as Record<OrganKey, string>;
  * it through packages/ui's t(); the eslint rule iw/no-hardcoded-jsx-text (negative-controlled)
  * is what forces that path.
  */
-export const UI_I18N_EN: Record<string, string> = (() => {
-  const entries = Object.entries(uiI18nEnJson as Record<string, unknown>).filter(
-    ([k]) => !k.startsWith('$'),
-  );
+export function buildUiCatalogue(raw: Record<string, unknown>): Record<string, string> {
+  const entries = Object.entries(raw).filter(([k]) => !k.startsWith('$'));
   for (const [k, v] of entries) {
+    // A validator that had never fired: extracted from the module-load IIFE so load.test.ts
+    // can make it throw on purpose (and require the real catalogue to build) — the coverage
+    // gate had listed this arm as unreachable (FINDINGS #51's PR run).
     if (typeof v !== 'string') throw new Error(`i18n/en/ui.json: key ${k} is not a string`);
   }
   return Object.fromEntries(entries as [string, string][]);
-})();
+}
+
+export const UI_I18N_EN: Record<string, string> = buildUiCatalogue(
+  uiI18nEnJson as Record<string, unknown>,
+);
