@@ -2767,3 +2767,65 @@ run is the negative control: the tests are known to be able to fail on exactly t
 
 **Disposition: FIXED in the same session, tests first. The shape is named here so the next
 join gets a spanning test before a walkthrough has to find it.**
+
+---
+
+## 51. `pnpm verify` replayed a cached green over a red suite for thirteen days: the turbo test hash did not see workspace dependencies
+
+**Found 2 September 2026, by CI, on the first push of the Phase 2 branch — thirty-seven
+commits, every one of them verified green locally.** Entered by the instrument rule: everything
+measured with `pnpm verify` between 20 August and 2 September is untrustworthy on one axis.
+
+### What happened
+
+CI's `test` and `coverage` jobs failed seven assertions in
+`tests/equivalence/src/ui-content.test.ts` — the Phase 1 check that pins the content pack's
+board tables to the legacy `v2_ui.html` extraction. All seven were the A2 radialisation of
+20 August (#49): `VH` 660 versus legacy 930, the hub at (330,330) versus (330,462), and the
+five position tables. The parity claim had been **deliberately false for thirteen days**, by
+ruling, and the suite that asserts it had been green on every local run since.
+
+A forced run (`turbo run test --force`) was red immediately. Turbo's own dry run said why:
+
+```
+@immunity-wars/equivalence#test  cache: HIT  dependencies: []  inputs: 43 files
+```
+
+**The `test` task in `turbo.json` had no `dependsOn`, so a package's test hash covered only
+its own files.** `tests/equivalence` imports `@immunity-wars/content`; the content package
+changed; the equivalence task's 43 hashed files did not; turbo replayed the pass it had recorded
+before the change. CI caught it only because CI has no cache — the one environment that could
+not be fooled was the one nobody ran before pushing.
+
+### Why this is the instrument rule's case, not the product's
+
+`pnpm verify` is what "commit after verification" rests on. For any change confined to one
+package, it worked. **For any change in a package that another package's tests depend on — which
+is every content change, every engine change, every session change — it could replay a stale
+result for the dependents.** The equivalence corpus, the project's primary oracle, is a
+dependent of the engine. Phase 2 made no engine change, so nothing is known to have slipped
+through on that axis; but "nothing is known to have" is the smaller claim, and it is the one
+this entry makes.
+
+> **The shape: a cache that hashes the wrong set of inputs is a check that goes green on
+> exactly the changes it exists to catch.** It is a sibling of #45 (a rule written down and
+> not practised) and of the C5b lesson (a test that regenerates its own oracle): the check ran,
+> reported, and measured nothing. The defence is the same as always — a control that removes
+> the edge and requires the check to fire.
+
+### The fix, with its control
+
+- `turbo.json`: `test` now `dependsOn: ["^test"]`, so a test task's hash includes its
+  workspace dependencies' test tasks, which include their sources. Measured after the change:
+  `equivalence#test` depends on `content#test` and `engine#test` and reports a MISS.
+- `pnpm turbo:check` (`tools/ci/turbo-check.ts`, inside `pnpm verify`): from turbo's dry
+  run, every workspace package with a test script must depend on every workspace dependency's
+  test task. **27 edges** checked; a run that checks no edge exits non-zero.
+- Its negative control, `turbo-test-hash` in `tools/ci/selftest.ts`: the edge deleted from
+  `turbo.json`, the check must fail saying `TURBO TEST HASH BLIND`. **Fired on its first run.**
+- The seven expired assertions are retired **as a list, with the reason**, not deleted: they
+  now require the tables to exist and to still differ from legacy, so a table that becomes
+  equal again is sent back to the pinned set (`ui-content.test.ts`).
+
+**Disposition: FIXED inline, with a control. The cache-blindness window is 20 August – 2
+September 2026; the only known casualty is the parity suite above.**

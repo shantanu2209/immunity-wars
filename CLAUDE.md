@@ -47,6 +47,11 @@ pnpm build
 pnpm build:single     # self-contained HTML harness — double-click to play, no toolchain
 ```
 
+`pnpm test` is turbo-cached. A test task's hash includes its workspace dependencies through the
+`^test` edge in `turbo.json` — without it, `pnpm verify` replayed a cached green over a red
+suite for thirteen days (`docs/FINDINGS.md` #51). `pnpm turbo:check` (inside `verify`) asserts
+the edges exist; `pnpm turbo run test --force` bypasses the cache when the cache itself is in doubt.
+
 ## Layout
 
 ```

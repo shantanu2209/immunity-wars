@@ -16,16 +16,37 @@ import * as content from '@immunity-wars/content';
 import { canonical } from './hash.js';
 import { legacyUiTable } from './legacy-ui.js';
 
-/** Extracted name in the pack -> the name legacy declares it under. */
+/**
+ * THE GEOMETRY TABLES ARE NO LONGER PINNED TO LEGACY, BY RULING — and this is the record of it.
+ *
+ * On 20 August 2026 the board layout moved to the A2 print's radial design, generated from the
+ * PDF itself by tools/geometry-from-a2 (docs/FINDINGS.md #49: the app adopts the A2 layout;
+ * later RELAXED so geometry.json may change for screen reasons). From that day these seven
+ * tables were DIFFERENT from v2_ui.html on purpose, and the parity assertion below was false.
+ *
+ * It stayed green for thirteen days anyway: turbo's test task hashed only this package's own
+ * files, so the change in packages/content never invalidated the cached pass. CI, which has no
+ * cache, went red the first time the branch was pushed (docs/FINDINGS.md #51).
+ *
+ * What still holds for these tables is asserted elsewhere and NOT duplicated here: the content
+ * schema cross-references ORGANS.branch against the drawn BRANCH steps (load.test.ts, with two
+ * mutations that throw), and the generator asserts its counts against rules/board.json with a
+ * --control mode. Here they are only required to still exist, and to still DIFFER from legacy —
+ * a table that becomes equal again belongs back in the pinned set, not in this list.
+ */
+const GEOMETRY_RETIRED_FROM_PARITY: readonly string[] = [
+  'VH',
+  'HUB',
+  'ORGAN_POS',
+  'CHIP_POS',
+  'BRANCH',
+  'ROUTE',
+  'ENTRY',
+];
+
+/** Extracted name in the pack -> the name legacy declares it under. Still equal by construction. */
 const TABLES: Record<string, string> = {
-  VW: 'VW',
-  VH: 'VH',
-  HUB: 'HUB',
-  ORGAN_POS: 'ORGAN_POS',
-  CHIP_POS: 'CHIP_POS',
-  BRANCH: 'BRANCH',
-  ROUTE: 'ROUTE',
-  ENTRY: 'ENTRY',
+  VW: 'VW', // the viewBox width survives the radialisation (660 both); VH does not
   REGIONS: 'REGIONS',
   REGION_BOX: 'REGION_BOX',
   REGION_LABEL: 'REGION_LABEL',
@@ -41,10 +62,24 @@ const TABLES: Record<string, string> = {
 
 const at = (k: string): unknown => (content as unknown as Record<string, unknown>)[k];
 
-describe('C3: extracted UI content matches v2_ui.html exactly', () => {
+describe('C3: extracted UI content matches v2_ui.html exactly (non-geometry tables)', () => {
   for (const [ours, theirs] of Object.entries(TABLES)) {
     it(`${ours} — same values, same key order`, () => {
       expect(canonical(at(ours))).toBe(canonical(legacyUiTable(theirs)));
+    });
+  }
+});
+
+describe('C3: the geometry tables retired from legacy parity (FINDINGS #49)', () => {
+  for (const name of GEOMETRY_RETIRED_FROM_PARITY) {
+    it(`${name} — still present, and still different from v2_ui.html`, () => {
+      const v = at(name);
+      expect(v, `${name} is gone from the content pack`).toBeDefined();
+      expect(JSON.stringify(v).length).toBeGreaterThan(2);
+      // Equal again would mean the retirement is stale: re-pin it in TABLES instead.
+      expect(canonical(v), `${name} equals legacy again — move it back into TABLES`).not.toBe(
+        canonical(legacyUiTable(name)),
+      );
     });
   }
 });

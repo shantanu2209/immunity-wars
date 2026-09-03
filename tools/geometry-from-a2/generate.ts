@@ -183,8 +183,12 @@ function extractLabels(streams: string[]): { text: string; x: number; y: number 
   for (const st of streams) {
     let x = 0;
     let y = 0;
+    // The TJ-array branch's fallback excludes BOTH parens: with only ']' excluded, a '(…)'
+    // string could be consumed either by the string alternative or character by character,
+    // which is exponential backtracking (CodeQL js/redos, PR #29). Output byte-identical —
+    // verified by regenerating geometry.json over the committed PDF after the change.
     const toks = st.match(
-      /(?:[\d.-]+ ){6}Tm|(?:[\d.-]+ ){2}T[dD]|\[(?:\((?:[^()\\]|\\.)*\)|[^\]])*\]\s*TJ|\((?:[^()\\]|\\.)*\)\s*Tj/g,
+      /(?:[\d.-]+ ){6}Tm|(?:[\d.-]+ ){2}T[dD]|\[(?:\((?:[^()\\]|\\.)*\)|[^\]()])*\]\s*TJ|\((?:[^()\\]|\\.)*\)\s*Tj/g,
     );
     if (!toks) continue;
     for (const t of toks) {
