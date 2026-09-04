@@ -36,6 +36,7 @@ import {
   type Session,
   type SessionEvent,
   type SessionView,
+  type UndoAvailability,
   type Unsubscribe,
   type ViewState,
 } from './types.js';
@@ -43,6 +44,17 @@ import {
 const ns = engine as unknown as Record<string, unknown>;
 const call = (name: string, ...args: unknown[]): unknown =>
   (ns[name] as (...a: unknown[]) => unknown)(...args);
+
+/**
+ * THE MOVE CLASS — the actions undo may unwind (ruling of 4 September 2026, `types.ts`).
+ * Repositioning only: no dice, no hidden information, no target consumed. `recall` (back to
+ * the hub) and `resmove` (a resident one step) are repositioning too, and `hop` (the lymphatic
+ * crossing) rolls nothing. Everything else the engine accepts in the command phase is
+ * COMMITMENT and ends undo for the phase.
+ */
+const MOVE_CLASS: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
+/** Not player actions on the board; they mark the phase boundaries. */
+const PHASE_BOUNDARY: ReadonlySet<string> = new Set(['draw', 'endCommand']);
 
 export interface LocalSessionOptions {
   readonly storage?: Storage;
@@ -72,12 +84,21 @@ export class LocalSession implements Session {
   private readonly saveId: string;
   private disposed = false;
 
+  /** Accepted MOVE_CLASS actions this command phase — what an undo unwinds. */
+  private movesThisPhase = 0;
+  /** True once any accepted non-move action has happened this command phase. */
+  private committedThisPhase = false;
+
   private constructor(g: Record<string, unknown>, opts: LocalSessionOptions) {
     this.g = g;
     this.self = opts.self ?? newPlayerRef();
     this.storage = opts.storage ?? new MemoryStorage();
     this.now = opts.now ?? ((): number => Date.now());
     this.saveId = opts.saveId ?? 'current';
+    // A RESUMED game mid-command has an engine snapshot stack and no session history: whether
+    // a committing action happened is unknowable from the state, so undo is conservatively
+    // unavailable for the rest of that phase. A fresh game has an empty stack and is clean.
+    this.committedThisPhase = ((g['undo'] as unknown[] | undefined)?.length ?? 0) > 0;
     this.cached = this.build();
   }
 
@@ -114,13 +135,33 @@ export class LocalSession implements Session {
   async sendAction(action: Record<string, unknown>): Promise<ActionOutcome> {
     this.assertLive();
     await Promise.resolve();
+    const name = String(action['action']);
+    // Undo never reaches the engine directly: the session rule decides (types.ts, `undo`).
+    if (name === 'undo') return this.undoMoves();
+
     const result = call('applyAction', this.g, { ...action, pid: this.self }) as {
       ok: boolean;
       error?: string;
       frames?: unknown[];
     };
 
+    // A rejected action changed nothing — so it changes nothing here either. In particular a
+    // rejected COMMITTING action does not end undo (ruling point 3).
     if (!result.ok) return { ok: false, error: result.error ?? 'rejected' };
+
+    if (name === 'beginCommand') {
+      this.movesThisPhase = 0;
+      this.committedThisPhase = false;
+    } else if (PHASE_BOUNDARY.has(name)) {
+      // Selection clears at phase boundaries — in the session, so every consumer agrees.
+      this.selection = NO_SELECTION;
+      this.movesThisPhase = 0;
+      this.committedThisPhase = false;
+    } else if (MOVE_CLASS.has(name)) {
+      this.movesThisPhase += 1;
+    } else {
+      this.committedThisPhase = true;
+    }
 
     this.cached = this.build();
 
@@ -191,6 +232,35 @@ export class LocalSession implements Session {
     for (const l of [...this.listeners]) l(event);
   }
 
+  /**
+   * Unwind EVERY move of this command phase (ruling point 2), or refuse.
+   *
+   * Loops the engine's one-snapshot `undo` until its stack is empty rather than counting
+   * moves: the engine pushes a snapshot BEFORE it checks an undoable action, so a rejected
+   * `produce` leaves a snapshot behind too. Emptying the stack is what lands exactly at the
+   * phase start. (The engine caps the stack at 60; with single-digit action points a phase
+   * cannot reach it.)
+   */
+  private async undoMoves(): Promise<ActionOutcome> {
+    if (!this.undoAvailability().available) return { ok: false, error: 'Nothing to undo.' };
+    let guard = 0;
+    while (((this.g['undo'] as unknown[] | undefined)?.length ?? 0) > 0 && guard < 100) {
+      call('undo', this.g);
+      guard += 1;
+    }
+    this.movesThisPhase = 0;
+    this.cached = this.build();
+    this.emit({ kind: 'view', view: this.cached });
+    await this.save().catch(() => undefined);
+    return { ok: true };
+  }
+
+  private undoAvailability(): UndoAvailability {
+    const available =
+      String(this.g['phase']) === 'command' && !this.committedThisPhase && this.movesThisPhase > 0;
+    return { available, moves: available ? this.movesThisPhase : 0 };
+  }
+
   private build(): SessionView {
     const game = call('viewState', this.g) as ViewState;
     return {
@@ -198,6 +268,7 @@ export class LocalSession implements Session {
       selection: this.selection,
       queries: this.precompute(game),
       scoped: this.scope(),
+      undo: this.undoAvailability(),
     };
   }
 

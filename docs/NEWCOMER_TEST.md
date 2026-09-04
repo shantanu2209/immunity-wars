@@ -5,6 +5,10 @@ marked below: the difficulty choice is **unaided** (the reviewed draft's "choose
 came out of the script — the ruling is recorded at the script), and the two testers run
 **staggered**, not in parallel. Everything else stands as reviewed.
 
+**NOT READY TO RUN — 4 September 2026, from the S25 touch pass.** Only `move` and `engulf`
+exist as touch actions; a newcomer cannot finish a game by touch. The readiness bar is stated
+in the pre-test section below, and the test moves after the panels/command-surface work.
+
 ---
 
 ## What this is, and why it is written down before anyone runs it
@@ -145,7 +149,21 @@ rules). The run record uses tester labels only.
 to spend the single-use tester on what we do NOT know — anything on this list found broken on
 the day is a free fix, not a finding.*
 
+### The readiness bar (ruled 4 September 2026)
+
+**A full game playable to a conclusion by touch, in the app shell, with no dev-shell controls
+involved.** Every player action the engine accepts in single-player must be reachable by touch —
+twenty actions plus undo and the turn controls (the list is in `P2_5_PROGRESS.md`). As of
+4 September, `move` and `engulf` are the only two built. Until the bar is met, running the
+test spends a single-use tester on a gap already known, which is the one thing the protocol
+exists to prevent.
+
 ### Known gaps to settle BEFORE tester one (each is cheap; rulings where marked)
+
+- [x] **Shantanu plays by touch on the S25** — DONE 4 September 2026: runs, playable, the goal
+      dialog, reveal, spread and tap-to-advance all work with a finger. Found the command
+      surface incomplete — the pass did its job. (The item below is the original; kept so the
+      date is visible.)
 
 - [x] **The goal is stated nowhere in the UI** — was the one known gap most likely to
       dominate the run. **DONE, 31 Aug 2026:** the goal dialog opens every new game through

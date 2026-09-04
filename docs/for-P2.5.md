@@ -113,3 +113,101 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   an onboarding problem, which is P2.6's job, and solving a teaching problem with a permanent
   layout compromise is the wrong trade. Both variants render in the showcase
   (`pnpm art:showcase`) at magnified and true size.
+
+## Cell selection — the assessment, recorded BEFORE Shantanu's specifics (4 September 2026)
+
+Shantanu's ruling from the S25 touch pass: selection needs work, and it is the more valuable
+finding because every remaining action is built on it — nothing more is built on the pattern
+until it is right. He asked for the builder's read first, so the two can be compared. This is
+that read, from the code as it stands (`Board.tsx`, `PlayScreen.tsx`, `CommandBar.tsx`,
+`InspectSheet.tsx`, `LocalSession`):
+
+- **An ambiguous tap resolves silently.** Two tap paths exist: a direct hit on a 20px cell
+  token selects it (and suppresses inspect); any other board tap opens the inspect sheet for
+  the nearest node within 60u, nearest wins with no tiebreak shown, and a tap farther than
+  60u from everything does NOTHING — a dead tap. In a stack, the top token wins the direct hit,
+  so choosing a specific cell in a stack is a 20px precision tap, which is the opposite of the
+  coarse-pointing design the inspect sheet exists for.
+- **What is selected is shown by a thin orange ring on a 20px token, the name and AP in the
+  command bar, and green move rings** — the rings are the only strong signal, and they exist
+  only when the cell can move. A stationary B-cell reads as selected from the bar alone.
+- **Deselect is one button in the command bar.** Tapping the selected token again re-selects
+  (no toggle); tapping empty board inspects or does nothing; there is no tap-away.
+- **Selection persists across everything**: after a move (fine — chaining), after AP reaches
+  zero (stale, no targets, no message), across the spread into the next turn's infection phase
+  (stale highlight on a board where nothing is actionable). The session never clears it; only
+  the UI's Deselect does.
+- **A selected cell with no legal action is silent.** No rings, no line, no reason (no AP /
+  stationary / spent / offline). The engine's rejection text appears only if an action is
+  attempted, as small red text in the controls row — an engine string, not through the
+  catalogue.
+- **An accidental wrong move is irreversible in the UI.** A move-target ring is r ≈ 23u
+  (≈25px diameter at 360 — under the 44px target) and fires on a single tap with no confirm.
+  The engine HAS `undo` (a snapshot stack, cleared at `beginCommand`) and the UI does not
+  expose it; `undo` is one of the 13 view-dropped keys, but `LocalSession` holds the state
+  and can carry a `canUndo` boolean in `SessionView` without any engine change.
+
+**What would change if nobody said anything:** (1) selection becomes a MODE that always
+produces a visible answer — highlighted legal targets, or an explicit "cannot act: reason"
+line, never silence; (2) selection clears at phase boundaries (draw, end of command) in the
+session, and tap-away / tap-again deselect on the board; (3) one tap path, coarse: nearest
+node ≤60u → exactly one of your cells there selects it directly, otherwise the sheet with its
+≥44px rows chooses; (4) undo exposed in the command bar during command phase, from a
+Session-level `canUndo` — the answer to the accidental touch, in place of confirm dialogs;
+(5) move-target hit areas ≥44px behind the drawn ring; (6) rejection text through the engine
+catalogue, next to the command bar — and, as the standing rule for the eighteen actions still
+to build, **offer only legal targets from the view's queries so rejections are rare**, since
+the selection-scoped view already computes them.
+
+### ✅ RULED and BUILT (Shantanu, 4 September 2026): the six points, plus undo for moves only
+
+All six points above were adopted as written. One addition and one constraint:
+
+**Undo is for MOVES only, and it is a SESSION rule — a design distinction, not a safety
+valve.** Movement is repositioning: no dice, no hidden information, you can see where a cell
+would land, so undoing a move corrects a mis-tap. Everything else is COMMITMENT — attacks roll
+dice, engulf consumes a target, produce changes the pool — and undoing those would re-roll a
+bad die and turn a cooperative puzzle into trial-and-error. So:
+
+1. **Session rule, not engine.** The engine's snapshot stack does not know action types and is
+   frozen. `LocalSession` tracks whether a committing action has happened this command phase
+   and drops undo availability when one does. (`SessionView.undo = {available, moves}`.)
+2. **ALL moves, not just the last.** Undo unwinds to the start of the command phase while only
+   moves have happened, action points included — stated explicitly rather than left to the
+   stack's behaviour. It cannot be exploited because no dice have been rolled.
+3. **A REJECTED committing action does not end undo.** Nothing happened.
+
+Seven tests pin the rule (`tests/session/src/undo-rule.test.ts`, written first and run red),
+including the two the engine would get wrong on its own: a committing action the engine does
+not snapshot (`orderAntivenom`) still ends undo, and a rejected undoable action — which the
+engine snapshots BEFORE checking — still unwinds exactly to the phase start.
+
+**Refinements made while building, stated so they can be argued with:**
+
+- **The move class is `move`, `hop`, `recall`, `resmove`.** `recall` (back to the hub)
+  and `resmove` (a resident one step) are repositioning by the ruling's own definition;
+  `hop` (the lymphatic crossing) rolls nothing. Everything else is commitment.
+- **A RESUMED game mid-command starts with undo unavailable** for the rest of that phase:
+  the engine stack is there but whether a committing action happened is unknowable from the
+  state, and the save carries the `GameState` only. Conservative and honest; a known
+  limitation of the single-slot save.
+- **Tap candidates are per TOKEN, not per node.** The ruled "exactly one of your cells at the
+  nearest node selects it" would have sent every hub selection through the sheet — all seven
+  cells start at the hub. Cells are individually addressable at their drawn (fanned)
+  positions, so the nearest token within 60u selects; a node with invaders or a resident is a
+  candidate for the sheet; a legal target is a candidate that acts. Nearest wins; on a tie,
+  target beats cell beats node (`packages/ui/src/board/tap.ts`, modelled in `tap.test.ts`
+  before it was trusted). A direct hit on a cell token is that cell — which is also how the
+  perf driver taps, with coordinate-less clicks on `[data-cell]`; the driver ran end to end
+  after the change.
+- **"What's here"** in the command bar opens the sheet for the selected cell's node when
+  invaders or a resident stand there — the one thing the one-tap-path would otherwise make
+  unreachable (tapping that node now selects/deselects the cell).
+- **Selection clears at phase boundaries in the session** (`draw`, `endCommand`), so every
+  consumer agrees; a move keeps it (chaining).
+- **Rejection text goes through the engine catalogue** (`ENGINE_I18N_EN`, the Phase 1
+  extraction, now consumed for the first time via `engineText()`), shown in the command bar;
+  an engine string the catalogue does not know renders loudly.
+
+**The standing rule for the eighteen actions still to build: offer only legal targets from
+the view's queries, so rejections are rare because illegal options are not offered.**

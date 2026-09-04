@@ -21,8 +21,9 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { ArtMetrics, InspectInfo } from '../board/Board';
-import { Board } from '../board/Board';
+import type { ArtMetrics, BoardTap, InspectInfo, Located } from '../board/Board';
+import { Board, inspectInfoForCell } from '../board/Board';
+import { engineText } from '../engineText';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -38,6 +39,27 @@ import { SpreadNarration, diceOf } from './SpreadNarration';
 // its outcome), so they hold longer. A tap anywhere advances immediately.
 const FRAME_MS = 900;
 const DICE_FRAME_MS = 1400;
+
+/**
+ * SELECTION ALWAYS ANSWERS (ruling of 4 September 2026): when the selected cell has no legal
+ * target, the bar says why. The reasons are read from the view in order of what a player
+ * most needs to hear; the last is the honest fallback.
+ */
+function noActionReason(g: ViewState, cell: string, phase: string): string {
+  if (phase !== 'command') return t('selection.notCommand');
+  const cells = g['cells'] as Record<string, { alive?: unknown }> | undefined;
+  if (cells?.[cell]?.alive === false) return t('selection.spent');
+  const sup = g['suppress'] as Record<string, unknown> | undefined;
+  if (
+    (cell === 'neutrophil' && Number(sup?.['neutrophil'] ?? 0) > 0) ||
+    (cell === 'tcell' && Number(sup?.['tcell'] ?? 0) > 0)
+  ) {
+    return t('selection.offline');
+  }
+  if (Number(g['ap'] ?? 0) <= 0) return t('selection.noAp');
+  if (cell === 'bcell') return t('selection.stationary');
+  return t('selection.nothing');
+}
 
 /** What PlayScreen needs from a session — structural, so RelaySession fits it too. */
 export interface PlaySessionLike {
@@ -259,15 +281,52 @@ export function PlayScreen({
     session.setSelection({ cell, family: null });
     onTap?.(from, cell);
   };
+  const deselect = (): void => session.setSelection({ cell: null, family: null });
 
   const game = authView.game;
   const phase = String(game['phase']);
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
-  const moveTargets = playing
-    ? []
-    : ((authView.scoped.moveDestinations ?? []) as Record<string, unknown>[]);
+  const moveTargets = playing ? [] : ((authView.scoped.moveDestinations ?? []) as Located[]);
+
+  const sendMove = (target: Located): void => {
+    if (!selectedCell) return;
+    send({
+      action: 'move',
+      cell: selectedCell,
+      zone: target.zone,
+      lane: target.lane,
+      organ: target.organ,
+      step: target.step,
+    });
+  };
+
+  // THE ONE TAP PATH's meaning (Board resolves WHAT was tapped; this decides what it does):
+  // a target moves the selected cell; a cell selects, or deselects if it is the selected one
+  // (tap-again); a node opens the sheet; nothing within reach is tap-away — deselect.
+  const handleBoardTap = (hit: BoardTap): void => {
+    setInspect(null);
+    switch (hit.kind) {
+      case 'target':
+        sendMove(hit.target);
+        return;
+      case 'cell':
+        if (hit.cell === selectedCell) deselect();
+        else tapCell(hit.cell);
+        return;
+      case 'node':
+        setInspect(hit.node);
+        return;
+      default:
+        if (selectedCell) deselect();
+    }
+  };
+
+  const selectedNode = selectedCell ? inspectInfoForCell(game, selectedCell) : null;
+  const canInspect =
+    selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
+  const noAction = selectedCell ? noActionReason(game, selectedCell, phase) : null;
   const engulfTargets: EngulfTarget[] =
     !playing && selectedCell === 'macrophage'
       ? (
@@ -292,31 +351,26 @@ export function PlayScreen({
       <Board
         view={shown}
         selectedCell={selectedCell}
-        onCellClick={playing ? undefined : tapCell}
         artMetrics={artMetrics}
-        onNodeInspect={setInspect}
         moveTargets={moveTargets}
-        onMoveTarget={(mt) => {
-          if (!selectedCell) return;
-          const m = mt as Record<string, unknown>;
-          send({
-            action: 'move',
-            cell: selectedCell,
-            zone: m['zone'],
-            lane: m['lane'],
-            organ: m['organ'],
-            step: m['step'],
-          });
-        }}
+        onTap={playing ? undefined : handleBoardTap}
       />
       <CommandBar
         selectedCellName={selectedCell ? cellDisplayName(selectedCell) : null}
         ap={Number(game['ap'] ?? 0)}
         moveTargetCount={moveTargets.length}
         engulfTargets={engulfTargets}
+        noAction={noAction}
+        undo={authView.undo}
+        notice={lastError ? engineText(lastError) : null}
+        canInspect={canInspect}
         disabled={playing}
         onEngulf={(invaderId) => send({ action: 'engulf', cell: 'macrophage', invaderId })}
-        onDeselect={() => session.setSelection({ cell: null, family: null })}
+        onUndo={() => send({ action: 'undo' })}
+        onInspect={() => {
+          if (selectedNode) setInspect(selectedNode);
+        }}
+        onDeselect={deselect}
       />
       {inspect ? (
         <InspectSheet

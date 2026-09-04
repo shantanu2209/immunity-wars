@@ -223,7 +223,7 @@ describe('P2.1 step 4: Session owns the state and never hands it out', () => {
       ]) {
         expect(Object.keys(view.game), `viewState leaked ${k}`).not.toContain(k);
       }
-      expect(Object.keys(view)).toEqual(['game', 'selection', 'queries', 'scoped']);
+      expect(Object.keys(view)).toEqual(['game', 'selection', 'queries', 'scoped', 'undo']);
       expect(
         view.game['deckCount'],
         'deckCount should be present — the count, not the cards',
