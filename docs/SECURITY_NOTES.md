@@ -102,6 +102,27 @@ upgrade to; the only removal would be dropping puppeteer, which is the perf inst
 by it. Two are cheap and one is impossible; whether to take the cheap ones is a ruling, not a
 consequence of this document. `CLAUDE.md` is corrected the same day to say what is true.
 
+### Rulings, 4 September 2026 (Shantanu), and what each leaves open
+
+- **`fast-uri` — FIXED by override.** `pnpm-workspace.yaml` pins `'fast-uri@<3.1.6': '^3.1.6'`
+  (resolved 3.1.7). Kept inside ajv's 3.x range on purpose: the first attempt (`>=3.1.6`) pulled
+  4.1.4, a major past what ajv declares, which is more than "no behaviour change" promises.
+  Verified by running `pnpm boundaries` — dependency-cruiser on the new version, same one
+  warning as before. Four alerts cleared. Drop the override when the lockfile resolves past it.
+- **`sharp` — DEFERRED, with the reasoning recorded so the deferral is a decision and not a
+  default.** The pipeline asserts byte-for-byte determinism across its 29 assets (`--verify`),
+  and a libvips change can move WebP encoder bytes. So the bump means regenerating and
+  re-gating every asset — real work — against an advisory about decoding *crafted* images,
+  when the only images decoded are our own committed art. **Revisit when the pipeline next
+  runs for another reason** (a new or changed asset), and take the bump inside that run.
+- **`extract-zip` — ACCEPTED WITH NO ACTION, not open.** No patched version exists and the
+  vulnerable path (browser download and extraction) is never taken: the perf driver uses the
+  system Chrome. There is nothing to schedule; this line is the disposition.
+
+After the override, `pnpm audit` reports **two** advisories: `sharp` (deferred as above) and
+`extract-zip` (accepted, no action). GitHub will show three alerts for those two, because
+`sharp` is counted once per manifest.
+
 ---
 
 ## The one thing to read
