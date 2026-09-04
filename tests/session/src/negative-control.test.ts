@@ -244,7 +244,7 @@ describe('C4: the session answers exactly the 22 queries the UI demands', () => 
     try {
       const s = LocalSession.createGame({ difficulty: 'normal' });
       await s.sendAction({ action: 'draw' });
-      s.setSelection({ cell: 'macrophage', family: 'ENV' });
+      s.setSelection({ cell: 'macrophage', family: 'ENV', resident: null });
       const v = s.getView();
 
       const answered = new Set<string>([

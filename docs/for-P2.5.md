@@ -295,3 +295,77 @@ by its number), loud on anything new; the correction — the engine emitting ids
 
 **Session-boundary note (the clear comes after CP2):** everything a next session needs is in
 `P2_5_PROGRESS.md` ("State at the boundary"), the plan's checkpoint list, and this file.
+
+## CP3 — repositioning and residents: BUILT (4 September 2026), for review
+
+**The one extension to the selection model, as ruled.** `Selection` gains `resident: string |
+null` — an organ key, because a resident is keyed by its organ (the engine spends
+`res_<organ>`) and `scope()` hands `cell` to `moveDestinations`, which knows no residents. The
+two fields are exclusive; both clear at phase boundaries. Nothing is selection-scoped for a
+resident: its patrol steps (± 1 within the branch) and what it can engulf
+(`perOrgan.residentEatable`) were already in the view, so the payload cost is zero.
+
+**The four actions, in `offered.ts` under the same `cell` source and the same harness:**
+`recall` as a bar button off the hub; `hop` as a ring at each partner crossing, drawn in
+**lymph blue** (ruling 3 — the dashed connectors already teach lymph in blue), with the lane
+passed explicitly because the engine falls back to its first partner otherwise; `resmove` as
+"Patrol" rings at step ± 1; `resengulf` as **attack rings per pathogen** (ruling 1 — the engine
+honours a supplied `invaderId`, so the choice is real here in a way it is not for `net`, and
+the same action keeps one interaction shape whichever macrophage performs it). Undo classes as
+ruled: three moves, one commit — the engine's own snapshot set already held all four.
+
+**Telling a resident from the Monocyte on the same node — leaning on the biology.** The
+player's macrophage is called **Monocyte** everywhere in this UI (CNAME); a resident carries
+its real tissue name from the rules pack — **Kupffer cell**, Microglia, Alveolar macrophage —
+with "resident of the Liver" muted beside it, in the command bar and in the sheet. A monocyte
+is the blood-borne precursor; the residents are the tissue macrophages under their historical
+names, so the naming is already the science and the UI adds no label. On a shared branch node
+the two fan side by side, and the sheet is the precise chooser: two ≥44px rows, both selectable
+(the resident row was a non-selectable line showing the raw organ key — "liver" — fixed). The
+token keeps a **double ring** in the organ brown, no new colour.
+
+> **Recorded for the art pass, deferred with the pipeline:** distinct resident-macrophage art
+> is the real answer. Both tokens use `cell-macrophage` today; a ring at 20px is a weak
+> signal. Taken when the pipeline next runs for another reason (the `sharp` deferral,
+> SECURITY_NOTES) — one asset through the same deterministic pipeline, provenance recorded.
+
+**The reason line for a selected resident, in the engine's gate order** (infected → already
+fed → cannot patrol → no AP → nothing eatable), pinned against the engine's own verdict on the
+same state in `resident-reasons.test.ts`. The step-0 line is the one that earns the phase:
+*"Nothing to engulf at the organ itself — patrol the Kupffer cell up its branch to meet a virus
+or a tagged bacterium."* FINDINGS #5 measured that a resident at its organ can never eat, the
+bot never worked it out, and now the interface says it — the game teaching something the
+instrument could not learn. **Ruling 2 is pinned there too:** an infected resident is still
+offered patrol (the engine accepts it; the legacy UI blocked it and had quietly become a second
+rules source), with the parasite line muted beside the rings.
+
+**The instrument finding (FINDINGS #54), fixed inline.** Counting the harness corpus per action
+showed `net` at **zero offers in 652 states** — the bot never moves the Neutrophil, so the
+harness had been green over `net` since CP1 without checking it, and residents were about to
+inherit the same blind spot. The global vacuity guard is replaced by a **per-action floor**, the
+unreachable actions are judged on **constructed states** driven through the engine from the
+corpus (`constructed.ts`: the Neutrophil moved onto a NET stand; a resident patrolled up to a
+virus), and the floor's control requires it to FIRE on the corpus alone. Third instrument the
+same generator gap has reached (#1 → #47 → #54); the general form is in the entry.
+
+**Verified in the real app, headless** (the app shell, `index.html`, no dev-shell controls):
+tap the Liver resident → bar reads "Kupffer cell · resident of the Liver · AP 6", one patrol
+ring, the step-0 line; patrol → AP 5, "Undo moves 1", the on-branch line; patrol → AP 4, "Undo
+moves 2"; **Undo → AP 6, back at the organ, the step-0 line again**; "What's here" → the sheet
+names it. Neutrophil hub → Nose 2 → Nose 3 → **two lymph-blue rings** (Gut, Contact) beside
+"Recall to bloodstream" → tap the Gut ring → token moved, "Undo moves 3" → Recall → at the hub,
+"Undo moves 4", the button gone → **Undo → AP 6, unwound to the start**. Then a resident meal
+found blind (patrol each resident up its branch looking for a red ring, undo when none): turn 7,
+the **Kupffer cell** three patrols up → red ring → tap → invaders **14 → 13**, AP still 3
+(free), the fed line, **Undo gone** (the commit ended it). No ⟪missing key⟫ anywhere. One
+measurement lesson from the first run: counting invader TOKENS reported 4 → 4 after a Microglia
+ate one of two same-type viruses on a node — the fan-of-types token stays and its badge falls —
+so the driver now sums the badges. The driver: string scripts inside `page.evaluate`, per the
+CP1/CP2 pattern.
+
+**S25 list for CP3 (Shantanu, by finger):** (1) tap a resident token → its real name and
+"resident of the …" in the bar; two patrols then Undo. (2) A cell to step 3 of the Nose, Gut,
+Contact, Wound or Bite route → blue rings on the partner crossings → tap one → the cell slides
+across. (3) Recall from mid-route, then Undo. (4) A resident patrolled onto a virus (a branch
+with a red ring) → tap → Undo vanishes. (5) The Monocyte on a branch node with the resident →
+"What's here" → two rows, choose the resident, choose the Monocyte.
