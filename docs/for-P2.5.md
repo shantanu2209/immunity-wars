@@ -679,3 +679,59 @@ disease you see to 5 — it appears under "Immune"; when it comes back, its ring
 you select anything and the bar says why. (3) Training: a snakebite → the venom's ring, the
 antivenom hint, tap → gone, 3 AP. (4) Hard: when the unknown antigen breaks in, the clone row
 appears; three searches; then X appears in the antibody panel and Produce X works.
+
+## Piece 3 — CP5, the log panel: BUILT (4 September 2026)
+
+**What it is.** The engine's log, newest first with its turn tag, under the body panel: the
+teaching prose that explains the biology as it happens ("1 virus(es) hid inside a cell —
+antibodies can no longer touch them. The Killer T-Cell (never misses) or the NK Cell (d6 3+)
+must kill the infected cell"). Eight lines shown, "Show all N" expands. Read from the SHOWN
+view, so a burst's frames narrate as they land. The engine's `<b>` and `<i>` render as
+emphasis through a tokenizer; nothing is injected as HTML.
+
+**The rendering decision, and the numbers behind it — for ruling, not yet ruled.** The
+engine's log lines are interpolated prose, so the exact-string lookup that rejections use
+cannot find them. `engineLogText` compiles each of the catalogue's 57 placeholder entries to
+a pattern, recovers the values, and re-renders the catalogue's template with them — which is
+how the Hindi edition will render the same line translated; in English the result equals the
+engine's text exactly, and `log-text.test.ts` pins that. **The five composed sites FINDINGS #53
+lists** — produce, strike, tag, engulf, and the draw's entry line — have no template and
+**render plainly, not loudly**. In a short driven Training game **8 of 14** log lines were
+composed sites, almost all the draw's "Infection: X entered via the Nose": a ⟪marker⟫ on
+more than half the log would teach a newcomer nothing, and the English edition is unaffected.
+What it means for the Hindi edition: those five lines will render in English until Phase 3
+makes the engine emit ids (#53's correction) — the draw's entry line above all, which is the
+most frequent line in the log. `log-text.test.ts` asserts on recorded states that the
+composed sites are the ONLY misses, with a control, so a new one fails a test rather than
+hiding in the panel. **Question for Shantanu:** is plain-render acceptable for the Hindi
+deliverable's first cut, or should the five composed lines be re-templated in the UI now
+(a duplicated-prose workaround in the class of #52/#53, deleted with them in Phase 3)?
+Built as plain-render; the workaround is a day's work if ruled.
+
+**Verified in the real app, headless** (`drive-log.ts`): the game-start line at turn 1; a
+move and a produce each add their line, newest first with turn tags; four idle turns then
+"Show all" 8 → 14 lines including the spread's prose ("Bacteria divided: 2 new", the
+hidden-virus line above); then the game idled on to its conclusion — **the Result screen
+("The body has fallen — lost to damage: Kidneys") reached by the app's own controls**. No
+⟪missing key⟫.
+
+## The readiness bar, re-measured (4 September 2026)
+
+**Every player action the engine accepts in single-player is now reachable by touch in the
+app shell, with no dev-shell controls:** move, engulf (CP0); net, snipe, nkkill, strike,
+degranulate (CP1); tag, neutralise, produce (CP2); hop, recall, resmove, resengulf (CP3);
+memoryKill, antivenom, orderAntivenom, clonalSelection, vaccinate (CP4) — **19 of 19** — plus
+undo and the three turn actions. Each is offered only from the view's queries, judged by the
+offered ⊆ accepted harness with its per-action floor, and carries a reason line or an
+in-place why-not. A full Training game has been played to its conclusion by the app's own
+controls, headless, on the LOSS path; **the WIN path remains uncrossed** (closeout item).
+
+**What has been verified headless in the app shell versus by test only** — so the S25 pass
+targets the gaps:
+
+| Verified headless (a driver did it in the app) | Verified by test only (harness + spanning tests; on the S25 list) |
+|---|---|
+| Card from the reveal row and from the sheet; close returns to the reveal | The dashed "hiding inside a cell" ring and its sheet words (kala-azar in a resident, liver-stage malaria) |
+| Order antivenom +1 (1/4, AP −1); vaccine row +1 on Normal (1/5); a venom's ring and bar hint while nothing is selected → antivenom given (AP −3, stock 2 → 1); the clone row on Hard → search 0/3 → 1/3 | **The memory response** (a remembered pathogen's ring while nothing is selected; free / 1 AP on Hard) |
+| The log: lines appear per action and per spread, turn tags, Show all; a full game to the Result screen (loss) | "+2" vanishing at 1 AP or at 1 needed (pinned by test on recorded states) |
+| Earlier pieces: the coat badge and sheet word; spent cell dimmed with the engine's return turn, sheet line; residents, patrol, hop, recall, resengulf, Undo | The suppressed (offline) cell's treatment; the vaccine completing into "Immune"; a vial arriving at 4/4; Produce X after the clone is found |

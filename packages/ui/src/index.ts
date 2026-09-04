@@ -46,3 +46,5 @@ export {
   type PanelButton,
 } from './panels/BodyPanel';
 export { diseaseLabel, CLONE_TARGET } from './play/offered';
+export { LogPanel, RichText, type LogLine } from './panels/LogPanel';
+export { engineText, engineLogText, type LogText } from './engineText';

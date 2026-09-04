@@ -38,6 +38,7 @@ import {
   type Offered,
 } from './offered';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
+import { LogPanel, type LogLine } from '../panels/LogPanel';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -452,6 +453,12 @@ export function PlayScreen({
           ? t('commandBar.antivenomHint')
           : null;
 
+  // THE LOG — the engine's own prose, newest first (the view carries the latest 40). Read
+  // from the SHOWN view so a burst's frames narrate as they land.
+  const logLines: LogLine[] = (
+    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+
   const sendOffer = (id: string): void => {
     const o =
       offered.board.find((x) => x.id === id) ??
@@ -563,6 +570,7 @@ export function PlayScreen({
         onProduce={sendOffer}
       />
       <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+      <LogPanel lines={logLines} />
       {inspect ? (
         <InspectSheet
           info={inspect}

@@ -171,10 +171,16 @@ the real app shell, and an S25 step/expect list like the selection model's.
   vaccine list refer to diseases the card explains. P2.6's library is then this component
   with an index, not a second build. One thing to check at build time: legacy's "Beat it" text
   (`BEAT_BY_TYPE`) was a UI constant, and its home in the content pack must be confirmed.
-- **CP4 — body-level (5) + the body panel.** Reviewable: the panel; the second target source
+- **The card, CP4 and CP5 were BUILT AS ONE BATCH (4 September 2026, Shantanu's change of
+  approach: the interaction pattern had been through a finger test, so the checkpoints could
+  merge; every review went into `for-P2.5.md` per piece instead).** The card piece: record
+  there, with `BEAT_BY_TYPE` moved into content and pinned.
+- **CP4 — body-level (5) + the body panel. BUILT.** Reviewable: the panel; the second target source
   (memory response, antivenom dose) while nothing is selected; the AP chooser. *S25 check:*
   needs Normal difficulty for vaccines; a remembered pathogen highlights on arrival.
-- **CP5 — the teaching-prose panel**, then the readiness bar is re-measured (drive an idle
+- **CP5 — the teaching-prose panel. BUILT**, and the readiness bar re-measured: 19 of 19 by
+  touch, a Training game driven to the Result screen in the app shell (`for-P2.5.md`). As
+  planned: then the readiness bar is re-measured (drive an idle
   game and a played game to conclusion by touch, in the app shell) and the newcomer test is
   scheduled.
 
