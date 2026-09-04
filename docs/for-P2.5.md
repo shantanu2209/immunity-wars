@@ -113,3 +113,48 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   an onboarding problem, which is P2.6's job, and solving a teaching problem with a permanent
   layout compromise is the wrong trade. Both variants render in the showcase
   (`pnpm art:showcase`) at magnified and true size.
+
+## Cell selection — the assessment, recorded BEFORE Shantanu's specifics (4 September 2026)
+
+Shantanu's ruling from the S25 touch pass: selection needs work, and it is the more valuable
+finding because every remaining action is built on it — nothing more is built on the pattern
+until it is right. He asked for the builder's read first, so the two can be compared. This is
+that read, from the code as it stands (`Board.tsx`, `PlayScreen.tsx`, `CommandBar.tsx`,
+`InspectSheet.tsx`, `LocalSession`):
+
+- **An ambiguous tap resolves silently.** Two tap paths exist: a direct hit on a 20px cell
+  token selects it (and suppresses inspect); any other board tap opens the inspect sheet for
+  the nearest node within 60u, nearest wins with no tiebreak shown, and a tap farther than
+  60u from everything does NOTHING — a dead tap. In a stack, the top token wins the direct hit,
+  so choosing a specific cell in a stack is a 20px precision tap, which is the opposite of the
+  coarse-pointing design the inspect sheet exists for.
+- **What is selected is shown by a thin orange ring on a 20px token, the name and AP in the
+  command bar, and green move rings** — the rings are the only strong signal, and they exist
+  only when the cell can move. A stationary B-cell reads as selected from the bar alone.
+- **Deselect is one button in the command bar.** Tapping the selected token again re-selects
+  (no toggle); tapping empty board inspects or does nothing; there is no tap-away.
+- **Selection persists across everything**: after a move (fine — chaining), after AP reaches
+  zero (stale, no targets, no message), across the spread into the next turn's infection phase
+  (stale highlight on a board where nothing is actionable). The session never clears it; only
+  the UI's Deselect does.
+- **A selected cell with no legal action is silent.** No rings, no line, no reason (no AP /
+  stationary / spent / offline). The engine's rejection text appears only if an action is
+  attempted, as small red text in the controls row — an engine string, not through the
+  catalogue.
+- **An accidental wrong move is irreversible in the UI.** A move-target ring is r ≈ 23u
+  (≈25px diameter at 360 — under the 44px target) and fires on a single tap with no confirm.
+  The engine HAS `undo` (a snapshot stack, cleared at `beginCommand`) and the UI does not
+  expose it; `undo` is one of the 13 view-dropped keys, but `LocalSession` holds the state
+  and can carry a `canUndo` boolean in `SessionView` without any engine change.
+
+**What would change if nobody said anything:** (1) selection becomes a MODE that always
+produces a visible answer — highlighted legal targets, or an explicit "cannot act: reason"
+line, never silence; (2) selection clears at phase boundaries (draw, end of command) in the
+session, and tap-away / tap-again deselect on the board; (3) one tap path, coarse: nearest
+node ≤60u → exactly one of your cells there selects it directly, otherwise the sheet with its
+≥44px rows chooses; (4) undo exposed in the command bar during command phase, from a
+Session-level `canUndo` — the answer to the accidental touch, in place of confirm dialogs;
+(5) move-target hit areas ≥44px behind the drawn ring; (6) rejection text through the engine
+catalogue, next to the command bar — and, as the standing rule for the eighteen actions still
+to build, **offer only legal targets from the view's queries so rejections are rare**, since
+the selection-scoped view already computes them.

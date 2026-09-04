@@ -1,4 +1,4 @@
-# P2.5 progress note — 31 August 2026
+# P2.5 progress note — 31 August 2026, amended 4 September 2026
 
 Written at the close of piece 3, before the newcomer test runs. This is a progress note, not
 the closeout: it says where things landed and what is left, and it will be superseded by the
@@ -56,13 +56,36 @@ shell survives as load-bearing, with a build check (negative-controlled) so it c
   ([`for-P2.5.md`](for-P2.5.md)).
 - **The newcomer-test protocol is APPROVED as amended** ([`NEWCOMER_TEST.md`](NEWCOMER_TEST.md)):
   unaided difficulty choice (the interface recommends Training; the script does not), two
-  testers staggered. A pre-test readiness checklist is in the same document. **Running it is
-  Shantanu's; it is the one piece-3 item not done.**
+  testers staggered. **The test is NOT READY TO RUN (Shantanu, 4 September 2026, from the S25
+  touch pass): only `move` and `engulf` exist as touch actions, so a newcomer cannot finish
+  a game by touch. It moves after the panels/command-surface work.** The bar is stated below.
+- **The S25 touch pass is done (4 September 2026):** the app runs and is playable on the
+  phone; the goal dialog, the reveal, the spread and tap-to-advance all work with a finger.
+  The touch-path join — exercised only with synthetic events and a mouse until then — is
+  verified. The pass found the command surface incomplete, which is exactly what it was for.
+
+## The readiness bar for the newcomer test — stated plainly (ruled 4 September 2026)
+
+**A full game playable to a conclusion by touch, in the app shell (`index.html`), with no
+dev-shell controls involved.** Concretely: every player action the engine accepts in
+single-player must be reachable by touch. The engine's action set is `activate`, `antivenom`,
+`clonalSelection`, `degranulate`, `engulf`, `hop`, `memoryKill`, `move`, `net`,
+`neutralise`, `nkkill`, `orderAntivenom`, `produce`, `recall`, `resengulf`, `resmove`,
+`snipe`, `strike`, `tag`, `vaccinate`, plus `undo` and the three turn actions. **As of
+4 September, two of the twenty are built.** Gate 1's human test needs the whole surface — a
+tester who cannot present an antigen or produce an antibody is not testing the game, and a run
+that cannot be finished by touch would be voided by the protocol's own rules.
+
+**Before the missing eighteen are built, cell selection gets reworked** (Shantanu, 4 September):
+everything else is built on that pattern, and its weaknesses are recorded in
+[`for-P2.5.md`](for-P2.5.md) ahead of the ruling.
 
 ## What is left in P2.5
 
 | Work | State |
 |---|---|
+| **Cell selection rework** — FIRST, before any further action is built on the pattern | Assessment recorded in for-P2.5.md; Shantanu's specifics pending; ruling pending |
+| **The command surface** — the 18 player actions not yet reachable by touch, each offered from the view's legal-target queries | `move` and `engulf` only |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
 | **Panels** — the log/teaching prose (currently invisible), production breakdown, status | Not started; the engine's teaching strings render nowhere today |
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
@@ -71,7 +94,7 @@ shell survives as load-bearing, with a build check (negative-controlled) so it c
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
 | **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends) |
 | **Win path crossed** | Closeout checklist item |
-| **Newcomer test, two staggered runs** | Protocol approved; scheduling is Shantanu's |
+| **Newcomer test, two staggered runs** | Protocol approved; **not ready to run** — after the command surface and the panels (bar above) |
 
 ## What the newcomer test is expected to change
 
