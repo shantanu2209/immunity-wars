@@ -101,6 +101,24 @@ export interface SessionView {
   readonly selection: Selection;
   readonly queries: PrecomputedQueries;
   readonly scoped: ScopedQueries;
+  /**
+   * UNDO IS FOR MOVES ONLY — a SESSION rule, ruled 4 September 2026 (docs/for-P2.5.md).
+   *
+   * Movement is repositioning: no dice, no hidden information. Everything else is commitment —
+   * attacks roll dice, engulf consumes a target, produce changes the pool — and undoing those
+   * would re-roll a bad die. So undo is available during the command phase only while every
+   * accepted action this phase has been a move; the first accepted committing action ends it
+   * for the phase; a REJECTED committing action does not (nothing happened). An undo unwinds
+   * ALL the moves back to the start of the phase, action points included. The engine's own
+   * snapshot stack knows none of this and is frozen; `LocalSession` tracks it.
+   */
+  readonly undo: UndoAvailability;
+}
+
+export interface UndoAvailability {
+  readonly available: boolean;
+  /** Accepted moves this command phase — what an undo would unwind. 0 when unavailable. */
+  readonly moves: number;
 }
 
 /** What `sendAction` resolves to. Mirrors the engine's own result, minus the frames. */

@@ -15,7 +15,7 @@
 
 import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ROUTES } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
-import type { ReactElement } from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactElement } from 'react';
 
 import {
   BOARD_ORGANS,
@@ -30,6 +30,7 @@ import {
   tokenPos,
   type Pt,
 } from './geometry';
+import { resolveTap, type TapCandidate } from './tap';
 
 /**
  * CLASSIC palette, stroke weights and element sizes, extracted from the physical A2 board
@@ -146,7 +147,7 @@ function lymphArcs(): Pt[][] {
 }
 const LYMPH_ARCS = lymphArcs();
 
-interface Located {
+export interface Located {
   zone?: unknown;
   lane?: unknown;
   organ?: unknown;
@@ -226,39 +227,28 @@ export interface InspectInfo {
   invaders: InspectInvader[];
 }
 
-export function Board({
-  view,
-  selectedCell = null,
-  onCellClick,
-  artMetrics,
-  onNodeInspect,
-  moveTargets = [],
-  onMoveTarget,
-}: {
-  view: ViewState;
-  /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
-  selectedCell?: string | null;
-  /** Wired by the shell to `session.setSelection`; absent means a non-interactive board. */
-  onCellClick?: (cell: string) => void;
-  /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
-   *  spaced as full squares. */
-  artMetrics?: ArtMetrics;
-  /**
-   * THE TOUCH PATTERN (P2.5 piece 1, deliberate): the board is COARSE pointing — a tap
-   * resolves to the nearest occupied node — and the inspect view the shell opens from this
-   * callback is where PRECISE, ≥44px interaction happens. A 20px token cannot be a 44px
-   * target; what a tap opens can be. Direct token clicks (onCellClick) still work and stay
-   * `data-cell`-addressable for the perf driver.
-   */
-  onNodeInspect?: (info: InspectInfo) => void;
-  /** Legal destinations for the selected cell (the view's selection-scoped answer); each
-   *  renders as a tappable highlight ring. Tapping one emits the destination back. */
-  moveTargets?: Located[];
-  onMoveTarget?: (target: Located) => void;
-}): ReactElement {
+/** Everything standing on the board, grouped by node — what the board draws AND what a tap resolves against. */
+export interface NodeModel {
+  pos: Pt;
+  display: DisplayToken[];
+  inspect: InspectInfo;
+}
+
+export interface DisplayToken {
+  key: string;
+  label: string;
+  kind: 'invader' | 'cell';
+  pos: Pt;
+  cell?: string;
+  resident?: boolean;
+  art: string | null;
+  /** Invaders of this type on this node; a badge shows when >= 2. */
+  count: number;
+}
+
+export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
-  const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
   const residents = (view['residents'] as Record<string, { step?: unknown }> | undefined) ?? {};
 
   // Everything standing on the board, grouped by resolved position. Invaders then collapse
@@ -289,18 +279,7 @@ export function Board({
     if (pos) standing.push({ kind: 'cell', pos, cell: ck });
   }
 
-  interface Display {
-    key: string;
-    label: string;
-    kind: 'invader' | 'cell';
-    pos: Pt;
-    cell?: string;
-    resident?: boolean;
-    art: string | null;
-    /** Invaders of this type on this node; a badge shows when >= 2. */
-    count: number;
-  }
-  const byNode = new Map<string, { pos: Pt; display: Display[]; inspect: InspectInfo }>();
+  const byNode = new Map<string, NodeModel>();
   for (const s of standing) {
     const k = `${s.pos.x}:${s.pos.y}`;
     let node = byNode.get(k);
@@ -369,28 +348,106 @@ export function Board({
     }
   }
 
-  const openInspect = (clientX: number, clientY: number, svg: SVGSVGElement): void => {
-    if (!onNodeInspect) return;
-    const pt = new DOMPoint(clientX, clientY);
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return;
-    const p = pt.matrixTransform(ctm.inverse());
-    let best: InspectInfo | null = null;
-    let bestD = 60; // coarse-pointing radius, viewBox units
-    for (const node of byNode.values()) {
-      const d = Math.hypot(node.pos.x - p.x, node.pos.y - p.y);
-      if (d < bestD) {
-        bestD = d;
-        best = node.inspect;
+  return byNode;
+}
+
+/** The node the given cell stands on, as the inspect sheet would show it — or null. */
+export function inspectInfoForCell(view: ViewState, cell: string): InspectInfo | null {
+  for (const node of buildNodeModel(view).values()) {
+    if (node.inspect.cells.includes(cell)) return node.inspect;
+  }
+  return null;
+}
+
+/** What a board tap resolved to — the ONE tap path (tap.ts). The shell decides what it means. */
+export type BoardTap =
+  | { kind: 'target'; target: Located }
+  | { kind: 'cell'; cell: string; node: InspectInfo }
+  | { kind: 'node'; node: InspectInfo }
+  | { kind: 'nothing' };
+
+export function Board({
+  view,
+  selectedCell = null,
+  artMetrics,
+  moveTargets = [],
+  onTap,
+}: {
+  view: ViewState;
+  /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
+  selectedCell?: string | null;
+  /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
+   *  spaced as full squares. */
+  artMetrics?: ArtMetrics;
+  /** Legal destinations for the selected cell (the view's selection-scoped answer); each
+   *  renders as a highlight ring and is a tap candidate. */
+  moveTargets?: Located[];
+  /**
+   * THE ONE TAP PATH (ruling of 4 September 2026; tap.ts). Every board tap resolves to the
+   * nearest candidate within 60u — a legal target, one of the player's cell tokens at its
+   * drawn position, or a node with something to inspect — and nothing within reach resolves
+   * to `nothing`, which the shell treats as tap-away. A direct hit on a cell token is that
+   * cell (the perf driver dispatches coordinate-less clicks on `[data-cell]`). Absent means a
+   * non-interactive board. Tokens are 20px; the hit area is the radius, well over 44px.
+   */
+  onTap?: (hit: BoardTap) => void;
+}): ReactElement {
+  const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
+  const byNode = buildNodeModel(view);
+
+  // Tap candidates, in the resolver's terms. Cells at their FANNED positions (a stack's cells
+  // are individually addressable); a node is a candidate only if it has something to inspect.
+  const candidates: TapCandidate<BoardTap>[] = [];
+  for (const mt of moveTargets) {
+    const pos = tokenPos(mt);
+    if (pos) candidates.push({ kind: 'target', pos, payload: { kind: 'target', target: mt } });
+  }
+  for (const node of byNode.values()) {
+    node.display.forEach((t, i) => {
+      if (t.cell !== undefined) {
+        candidates.push({
+          kind: 'cell',
+          pos: fan(t.pos, i, node.display.length),
+          payload: { kind: 'cell', cell: t.cell, node: node.inspect },
+        });
+      }
+    });
+    if (node.inspect.invaders.length > 0 || node.inspect.resident !== null) {
+      candidates.push({
+        kind: 'node',
+        pos: node.pos,
+        payload: { kind: 'node', node: node.inspect },
+      });
+    }
+  }
+
+  const handleTap = (e: ReactMouseEvent<SVGSVGElement>): void => {
+    if (!onTap) return;
+    // A direct hit on a cell token is unambiguous — and it is how the perf driver taps
+    // (a click on [data-cell] with no coordinates).
+    const direct = (e.target as Element | null)?.closest?.('[data-cell]');
+    const directCell = direct?.getAttribute('data-cell');
+    if (directCell) {
+      const node = candidates.find(
+        (c) => c.payload.kind === 'cell' && c.payload.cell === directCell,
+      )?.payload;
+      if (node && node.kind === 'cell') {
+        onTap(node);
+        return;
       }
     }
-    if (best) onNodeInspect(best);
+    const svg = e.currentTarget;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return;
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    const hit = resolveTap(candidates, { x: p.x, y: p.y });
+    onTap(hit ? hit.payload : { kind: 'nothing' });
   };
 
   return (
     <svg
       viewBox={VIEWBOX}
-      onClick={(e) => openInspect(e.clientX, e.clientY, e.currentTarget)}
+      onClick={handleTap}
       style={{
         width: '100%',
         maxWidth: 660,
@@ -606,15 +663,7 @@ export function Board({
             <g
               key={t.key}
               data-cell={t.cell}
-              onClick={
-                t.cell && onCellClick
-                  ? (e) => {
-                      e.stopPropagation(); // direct token click selects; it must not ALSO inspect
-                      onCellClick(t.cell as string);
-                    }
-                  : undefined
-              }
-              style={t.cell && onCellClick ? { cursor: 'pointer' } : undefined}
+              style={t.cell && onTap ? { cursor: 'pointer' } : undefined}
             >
               {selected ? (
                 <circle
@@ -705,15 +754,7 @@ export function Board({
             stroke="#2F6B4A"
             strokeWidth={3}
             strokeDasharray="6 4"
-            style={onMoveTarget ? { cursor: 'pointer' } : undefined}
-            onClick={
-              onMoveTarget
-                ? (e) => {
-                    e.stopPropagation();
-                    onMoveTarget(mt);
-                  }
-                : undefined
-            }
+            style={onTap ? { cursor: 'pointer' } : undefined}
           />
         );
       })}

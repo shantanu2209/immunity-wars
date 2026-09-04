@@ -158,3 +158,56 @@ Session-level `canUndo` — the answer to the accidental touch, in place of conf
 catalogue, next to the command bar — and, as the standing rule for the eighteen actions still
 to build, **offer only legal targets from the view's queries so rejections are rare**, since
 the selection-scoped view already computes them.
+
+### ✅ RULED and BUILT (Shantanu, 4 September 2026): the six points, plus undo for moves only
+
+All six points above were adopted as written. One addition and one constraint:
+
+**Undo is for MOVES only, and it is a SESSION rule — a design distinction, not a safety
+valve.** Movement is repositioning: no dice, no hidden information, you can see where a cell
+would land, so undoing a move corrects a mis-tap. Everything else is COMMITMENT — attacks roll
+dice, engulf consumes a target, produce changes the pool — and undoing those would re-roll a
+bad die and turn a cooperative puzzle into trial-and-error. So:
+
+1. **Session rule, not engine.** The engine's snapshot stack does not know action types and is
+   frozen. `LocalSession` tracks whether a committing action has happened this command phase
+   and drops undo availability when one does. (`SessionView.undo = {available, moves}`.)
+2. **ALL moves, not just the last.** Undo unwinds to the start of the command phase while only
+   moves have happened, action points included — stated explicitly rather than left to the
+   stack's behaviour. It cannot be exploited because no dice have been rolled.
+3. **A REJECTED committing action does not end undo.** Nothing happened.
+
+Seven tests pin the rule (`tests/session/src/undo-rule.test.ts`, written first and run red),
+including the two the engine would get wrong on its own: a committing action the engine does
+not snapshot (`orderAntivenom`) still ends undo, and a rejected undoable action — which the
+engine snapshots BEFORE checking — still unwinds exactly to the phase start.
+
+**Refinements made while building, stated so they can be argued with:**
+
+- **The move class is `move`, `hop`, `recall`, `resmove`.** `recall` (back to the hub)
+  and `resmove` (a resident one step) are repositioning by the ruling's own definition;
+  `hop` (the lymphatic crossing) rolls nothing. Everything else is commitment.
+- **A RESUMED game mid-command starts with undo unavailable** for the rest of that phase:
+  the engine stack is there but whether a committing action happened is unknowable from the
+  state, and the save carries the `GameState` only. Conservative and honest; a known
+  limitation of the single-slot save.
+- **Tap candidates are per TOKEN, not per node.** The ruled "exactly one of your cells at the
+  nearest node selects it" would have sent every hub selection through the sheet — all seven
+  cells start at the hub. Cells are individually addressable at their drawn (fanned)
+  positions, so the nearest token within 60u selects; a node with invaders or a resident is a
+  candidate for the sheet; a legal target is a candidate that acts. Nearest wins; on a tie,
+  target beats cell beats node (`packages/ui/src/board/tap.ts`, modelled in `tap.test.ts`
+  before it was trusted). A direct hit on a cell token is that cell — which is also how the
+  perf driver taps, with coordinate-less clicks on `[data-cell]`; the driver ran end to end
+  after the change.
+- **"What's here"** in the command bar opens the sheet for the selected cell's node when
+  invaders or a resident stand there — the one thing the one-tap-path would otherwise make
+  unreachable (tapping that node now selects/deselects the cell).
+- **Selection clears at phase boundaries in the session** (`draw`, `endCommand`), so every
+  consumer agrees; a move keeps it (chaining).
+- **Rejection text goes through the engine catalogue** (`ENGINE_I18N_EN`, the Phase 1
+  extraction, now consumed for the first time via `engineText()`), shown in the command bar;
+  an engine string the catalogue does not know renders loudly.
+
+**The standing rule for the eighteen actions still to build: offer only legal targets from
+the view's queries, so rejections are rare because illegal options are not offered.**

@@ -84,7 +84,7 @@ everything else is built on that pattern, and its weaknesses are recorded in
 
 | Work | State |
 |---|---|
-| **Cell selection rework** — FIRST, before any further action is built on the pattern | Assessment recorded in for-P2.5.md; Shantanu's specifics pending; ruling pending |
+| **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
 | **The command surface** — the 18 player actions not yet reachable by touch, each offered from the view's legal-target queries | `move` and `engulf` only |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
 | **Panels** — the log/teaching prose (currently invisible), production breakdown, status | Not started; the engine's teaching strings render nowhere today |

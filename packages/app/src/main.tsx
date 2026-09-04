@@ -223,9 +223,7 @@ function App(): ReactElement {
             {ctx.frameInfo ? (
               <span style={{ fontSize: 13, color: '#B03A2E' }}>{ctx.frameInfo.label}</span>
             ) : null}
-            {ctx.lastError ? (
-              <span style={{ fontSize: 13, color: '#B03A2E' }}>{ctx.lastError}</span>
-            ) : null}
+            {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
           </div>
         )}
       />
