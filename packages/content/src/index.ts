@@ -143,6 +143,7 @@ export {
   RNAME,
   ROUTE,
   UI_,
+  BEAT_BY_TYPE,
   UM,
   VH,
   VW,

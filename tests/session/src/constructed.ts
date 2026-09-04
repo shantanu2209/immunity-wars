@@ -157,3 +157,41 @@ export function constructedStates(): { label: string; state: GameState }[] {
   if (net) out.push({ label: 'net stand', state: net });
   return out;
 }
+
+/**
+ * HIDING INSIDE A CELL — the two invader states the board-state sweep deferred to the card.
+ * Both are DRIVEN: the card is forced into play (`forceInjectCard`, a dev-only engine entry
+ * point that exists for exactly this) and the game is cycled turn by turn through the engine
+ * until the state arises — kala-azar reaching its organ and moving INSIDE the resident
+ * macrophage; malaria reaching the liver and embedding. Idle cycles: no cell acts, so the
+ * only actor is the spread. Null when the state does not arise within the turn budget.
+ */
+export function findHidden(
+  dz: string,
+  arrived: (g: GameState) => boolean,
+  maxTurns = 14,
+): GameState | null {
+  for (const seed of SEARCH_SEEDS) {
+    for (const difficulty of ['normal', 'hard', 'training']) {
+      installRng(seed);
+      try {
+        const g = PORT.newGame({ difficulty, science: false }) as GameState;
+        const forced = (PORT as unknown as Record<string, (...a: unknown[]) => unknown>)[
+          'forceInjectCard'
+        ]?.(g, dz);
+        if (!forced) continue;
+        for (let turn = 0; turn < maxTurns; turn += 1) {
+          PORT.applyAction(g, { action: 'draw' } as never);
+          PORT.applyAction(g, { action: 'beginCommand' } as never);
+          if (arrived(g)) return clone(g);
+          const s = g as unknown as Raw;
+          if (s['won'] === true || s['lost']) break;
+          PORT.applyAction(g, { action: 'endCommand' } as never);
+        }
+      } finally {
+        restoreRng();
+      }
+    }
+  }
+  return null;
+}

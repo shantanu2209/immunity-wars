@@ -23,7 +23,7 @@ import type { Engine, GameState } from '@immunity-wars/equivalence/types';
 import { LocalSession, MemoryStorage, type SessionView } from '@immunity-wars/session';
 import { buildNodeModel, type DisplayToken } from '@immunity-wars/ui';
 
-import { SEARCH_SEEDS, clone, commandStates, findNetStand } from './constructed.js';
+import { SEARCH_SEEDS, clone, commandStates, findHidden, findNetStand } from './constructed.js';
 
 const PORT = engine as unknown as Engine;
 type Raw = Record<string, unknown>;
@@ -308,5 +308,68 @@ describe('the spent cell: dimmed, with its return in the badge slot', () => {
     if (!found) return;
     const tok = tokens(viewOf(found.state)).find((t) => t.cell === found?.cell);
     expect(tok?.unavailable).toEqual({ kind: 'offline', backIn: found.n });
+  });
+});
+
+describe('hiding inside a cell: liver-stage malaria and kala-azar inside a resident (the card piece)', () => {
+  const inMac = (g: GameState): boolean =>
+    ((g as unknown as Raw)['invaders'] as Raw[]).some((iv) => iv['inMac'] === true);
+  const inLiver = (g: GameState): boolean =>
+    ((g as unknown as Raw)['invaders'] as Raw[]).some(
+      (iv) => iv['type'] === 'malaria' && iv['stage'] === 'liver',
+    );
+
+  it('kala-azar that moved inside a resident is its own token, marked hidden-in-macrophage, and the sheet knows the organ', () => {
+    const g = findHidden('Kala-azar', inMac);
+    expect(g, 'kala-azar never reached a resident within the turn budget').not.toBeNull();
+    if (!g) return;
+    const view = viewOf(g);
+    const ts = tokens(view);
+    const tok = ts.find((t) => t.hiddenIn === 'macrophage');
+    expect(tok, 'no token marked hidden-in-macrophage').toBeDefined();
+    const iv = ((view['invaders'] as Raw[]).find((x) => x['inMac'] === true) ?? {}) as Raw;
+    expect(tok?.ids).toContain(String(iv['id']));
+    const node = [...buildNodeModel(view).values()].find((n) =>
+      n.inspect.invaders.some((x) => x.id === String(iv['id'])),
+    );
+    const row = node?.inspect.invaders.find((x) => x.id === String(iv['id']));
+    expect(row?.hiddenIn).toBe('macrophage');
+    expect(row?.organ).toBe(String(iv['organ']));
+    // The resident it lives in says so from its side too (CP3's line reads `infectedBy`).
+    const residents = view['residents'] as Record<string, Raw>;
+    expect(residents[String(iv['organ'])]?.['infectedBy']).toBe(String(iv['id']));
+  });
+
+  it('liver-stage malaria is marked hidden-in-liver; the stage is on its sheet row', () => {
+    const g = findHidden('Malaria', inLiver);
+    expect(g, 'malaria never embedded in the liver within the turn budget').not.toBeNull();
+    if (!g) return;
+    const view = viewOf(g);
+    const tok = tokens(view).find((t) => t.hiddenIn === 'liver');
+    expect(tok, 'no token marked hidden-in-liver').toBeDefined();
+    const node = [...buildNodeModel(view).values()].find((n) =>
+      n.display.some((t) => t.hiddenIn === 'liver'),
+    );
+    const row = node?.inspect.invaders.find((x) => x.hiddenIn === 'liver');
+    expect(row?.stage).toBe('liver');
+    expect(row?.type).toBe('malaria');
+  });
+
+  it('CONTROL: a token standing for a hidden and an exposed invader is a violation of the split', () => {
+    const g = findHidden('Malaria', inLiver);
+    if (!g) return; // the vacuity guard above already failed
+    const view = viewOf(g);
+    const ts = tokens(view);
+    const hidden = ts.find((t) => t.hiddenIn === 'liver');
+    const exposed = ts.find((t) => t.kind === 'invader' && t.hiddenIn === undefined && t.ids);
+    if (!hidden || !exposed) return;
+    const hiddenIds = new Set(hidden.ids ?? []);
+    const merged = { ...exposed, ids: [...(exposed.ids ?? []), ...(hidden.ids ?? [])] };
+    const mixed =
+      merged.ids.some((id) => hiddenIds.has(id)) && merged.ids.some((id) => !hiddenIds.has(id));
+    expect(
+      mixed,
+      'the re-collapsed token mixes hidden and exposed ids — the split is what prevents it',
+    ).toBe(true);
   });
 });

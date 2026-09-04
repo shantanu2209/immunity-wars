@@ -557,3 +557,70 @@ still answers; end turns and watch the number count down and the cell come back 
 greys with the turns remaining.
 
 **Stays with the card, as ruled:** malaria stage and the parasite inside a resident.
+
+# The P2.5 batch — the card, CP4, CP5 (from 4 September 2026)
+
+**Change of approach (Shantanu, 4 September 2026):** the rest of P2.5 is built as ONE batch
+and tested once, properly — the checkpoints were sized when the interaction pattern was
+unsettled, and selection, offers, rings, badges and the reason-line standard have now all been
+through a finger test. In exchange: every checkpoint review goes into this record as it
+happens, each piece with its own decisions and evidence; any design question that would have
+been a mid-checkpoint ruling is still asked; the harness, the reason-line standard and the
+offered ⊆ accepted check apply per action with the per-action floor covering the new ones; and
+the closing report says exactly what was verified headless and what only by test.
+
+## Piece 1 — the pathogen card: BUILT (4 September 2026)
+
+**As ruled** (COMMAND_SURFACE_PLAN §4): the inspect sheet's pathogen row is the entry, the
+reveal's arrival rows are the second, both open the same component; a novel pathogen gets no
+card. One scrolling card, no flip: name, type and antigen class; "Right now" (below); the
+class's one-line biology; can infect; the fact where one exists; **Beat it**; tier and the
+four stat bars; the five information rows. All content, no engine: `DZINFO`, `DZSTATS`,
+`FACT`, `TROPISM`, `FAMILY` → `FAMILIES`, `UI_`, and `BEAT_BY_TYPE`.
+
+**BEAT_BY_TYPE moved into content** (`labels.json`, beside `UI_`; schema, loader, index) and
+**pinned byte-for-byte against legacy** in `ui-content.test.ts`'s TABLES like every other
+extracted table — extracted by evaluating legacy's initialiser, the same method the pin uses,
+not by retyping. `card-data.test.ts` cross-checks that every playable disease has every row the
+card renders and every type has its line: a missing row would be a silently blank card, which
+no per-table schema can see.
+
+**FAM_LONG, checked and NOT extracted, recorded:** legacy's second constant differs from
+`FAMILIES.bio` in wording ("grip the spikes" versus "target the spikes") and carries two things
+`FAMILIES` does not — the expanded acronym ("ENVeloped virus") and example diseases per class.
+Its legacy surface was the antigen-class legend, not the card. Home: the antibody panel's family
+detail, later; not this piece. The card shows `FAMILIES.name` and `.bio`.
+
+**The two deferred invader states, built as proposed — rule against it if the mark is wrong.**
+Liver-stage malaria and kala-azar inside a resident macrophage are one biological class —
+INTRACELLULAR, reachable only by the Killer T-Cell or NK Cell — so they share one mark: a
+**dashed ring in the organ brown** on the token, the words on the sheet's row ("Hiding inside
+liver cells — only the Killer T-Cell or NK Cell can reach it"; "Hiding inside the Kupffer cell
+— …"; the other two malaria stages say who CAN reach it), and the same words as the card's
+"Right now" line. The group key splits on hidden-inside-a-cell exactly as it does on the coat,
+for the same reason: a liver-stage and a blood-stage malaria on one node are different
+questions, and a ring must not stand for both. **Not a second badge glyph** as the sweep first
+suggested: the coat badge says "you can act on this", and a state that says "you cannot" is
+better carried by the token's outline than by a second symbol competing for the same slot.
+
+**Pinned on engine-produced states**, driven rather than found: `forceInjectCard` (the engine's
+dev-only entry point, one of the 67 exports) puts the card into play and the game is cycled
+idle through the engine until the state arises — kala-azar reaches its organ and moves inside
+the resident (`inMac`, and the resident's `infectedBy` names it back); malaria reaches the liver
+and embeds (`stage: liver`). Both tokens carry the mark and their sheet rows carry the state; a
+control re-collapses a hidden and an exposed token and shows the mix the split prevents.
+
+**Verified in the real app, headless** (`drive-card.ts`): the reveal's arrival row opens the
+card above the reveal, the card shows that disease's own "Discovered" line and its "Beat it",
+Close returns to the reveal; in command, tapping the pathogen's node opens the sheet, its
+**Card** button opens the same card. No ⟪missing key⟫. **Not verified headless:** the dashed
+ring and the "hiding inside" words on a live board — kala-azar and a liver-stage malaria did
+not occur in the driven games; they are covered by the driven tests only, and belong on the S25
+list.
+
+**S25 list for the card:** (1) draw → tap the arrival row → the card, scroll it, close. (2) In
+command, tap a pathogen's node → Card. (3) A Malaria game: its token gains the dashed ring when
+it embeds in the liver, the sheet says "hiding inside liver cells", the card's "Right now"
+agrees; when it bursts out the ring goes. (4) A Kala-azar game: the parasite at its organ gains
+the ring, the sheet names the resident it is inside, and that resident's own line (CP3) says a
+parasite is inside it.

@@ -55,6 +55,7 @@ const TABLES: Record<string, string> = {
   DZSTATS: 'S', // BRIEF §3 renames legacy's `S` on extraction
   UM: 'UM',
   UI_: 'UI_',
+  BEAT_BY_TYPE: 'BEAT_BY_TYPE', // moved into content for the pathogen card (P2.5, 4 Sep 2026)
   RNAME: 'RNAME',
   RGLYPH: 'RGLYPH',
   ORGAN_ART: 'ORGAN_ART',

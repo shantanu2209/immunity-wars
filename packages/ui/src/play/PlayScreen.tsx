@@ -39,6 +39,8 @@ import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
+import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
+import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
 
@@ -109,6 +111,8 @@ export function PlayScreen({
   } | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
+  // THE PATHOGEN CARD — a layer above the sheet and the dialogs, opened from either.
+  const [card, setCard] = useState<PathogenCardSubject | null>(null);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -246,15 +250,30 @@ export function PlayScreen({
       .filter((iv) => !prevIds.has(String(iv['id'] ?? '')))
       .map((iv) => ({
         disease: String(iv['disease'] ?? ''),
+        type: String(iv['type'] ?? ''),
         lane: typeof iv['lane'] === 'string' ? iv['lane'] : null,
         remembered: iv['remembered'] === true,
         novel: iv['novel'] === true,
       }));
     if (arrivals.length === 0) return;
+    const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
     enqueueDialog({
       id: `reveal-t${String(g['turn'])}`,
       title: t('reveal.title'),
-      body: <RevealBody arrivals={arrivals} />,
+      body: (
+        <RevealBody
+          arrivals={arrivals}
+          onCard={(a) =>
+            setCard({
+              disease: a.disease,
+              type: a.type,
+              remembered: a.remembered || memory[a.disease] === true,
+              // An arrival is at its route's entry: nothing invader-specific to say yet.
+              now: null,
+            })
+          }
+        />
+      ),
       dismissLabel: t('reveal.continue'),
     });
   }, [authView, enqueueDialog]);
@@ -488,6 +507,17 @@ export function PlayScreen({
             tapResident(organ);
             setInspect(null);
           }}
+          onCard={(invaderId) => {
+            const iv = inspect.invaders.find((x) => x.id === invaderId);
+            if (!iv || iv.novel) return;
+            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+            setCard({
+              disease: iv.disease,
+              type: iv.type,
+              remembered: memory[iv.disease] === true,
+              now: invaderNowLine(iv),
+            });
+          }}
           onClose={() => setInspect(null)}
         />
       ) : null}
@@ -502,6 +532,7 @@ export function PlayScreen({
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
+      {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
     </div>
   );
 }

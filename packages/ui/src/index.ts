@@ -19,6 +19,8 @@ export {
   type ReadyTurn,
 } from './board/Board';
 export { InspectSheet } from './panels/InspectSheet';
+export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
+export { invaderNowLine } from './panels/invaderNow';
 export { CommandBar, type BarButton } from './panels/CommandBar';
 export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';

@@ -13,6 +13,7 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import type { InspectInfo, Unavailable } from '../board/Board';
 import { t } from '../i18n';
+import { invaderNowLine } from './invaderNow';
 import {
   cellDisplayName as cellName,
   organDisplayName,
@@ -64,8 +65,11 @@ export function InspectSheet({
   onSelectCell,
   onSelectResident,
   selectedResident = null,
+  onCard,
   onClose,
 }: {
+  /** Opens the pathogen card for an invader (never offered for a novel one). */
+  onCard?: (invaderId: string) => void;
   info: InspectInfo;
   selectedCell?: string | null;
   disabled?: boolean;
@@ -118,7 +122,19 @@ export function InspectSheet({
                 {t('inspect.sep')} {t('inspect.coated')}
               </span>
             ) : null}
+            {invaderNowLine(iv) !== null ? (
+              <span style={{ display: 'block', fontSize: 13, color: '#7A5600' }}>
+                {invaderNowLine(iv)}
+              </span>
+            ) : null}
           </span>
+          {!iv.novel && onCard ? (
+            // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
+            // novel pathogen gets no card — it is masked everywhere as unknown.
+            <button style={BTN} disabled={disabled} onClick={() => onCard(iv.id)}>
+              {t('inspect.card')}
+            </button>
+          ) : null}
           {(offers[iv.id] ?? []).map((o) => (
             <button
               key={o.id}
