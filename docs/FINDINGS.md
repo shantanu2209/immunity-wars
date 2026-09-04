@@ -2869,3 +2869,53 @@ pinned by a spanning test in the session suite that drives the engine directly: 
 **Disposition: OPEN — Phase 3.** The UI mirror ships in P2.5 CP2 with its spanning test; this
 entry is what keeps it from being mistaken for the intended shape. When the constant moves to
 content, delete the mirror and its test in the same commit.
+
+---
+
+## 53. The engine's QUERIES return prose, and the Phase 1 catalogue never reached them
+
+**Found 4 September 2026, at CP2, by the loud missing-key marker** — the first tap on an
+antibody family rendered "⟪engine: Helper T-cell present but NOT yet primed — no antigen has
+been presented to it yet⟫" in the new panel.
+
+`productionBreakdown` (`packages/engine/src/queries.ts`) returns its effects as
+`{label, delta, kind}` with the label composed as an English sentence, and its cap reasons as
+English fragments ("liver damaged", "a temporary effect"). The Phase 1 extraction that built
+`engine.json` walked rejection (`err`) and log (`pushLog`) sites — 164 of them — and a query's
+return value is neither, so these strings were never catalogued. `engineText()` therefore
+had nothing to map them to and did what it is built to do: rendered them loudly.
+
+**Why it is the same finding as #52 in a different place.** A query that returns prose is a
+rule module deciding presentation. The correct shape is an id (`'effect.helperUnprimed'`) the
+UI renders through its catalogue; the engine is frozen in Phase 2, so the UI maps the fixed
+set the query can produce (`packages/ui/src/productionText.ts` — six static labels and one
+templated by its number), loud on anything new so a label added to the query announces
+itself. **The mapper is a workaround.** Phase 3 makes the engine emit ids and deletes it.
+
+**What it says about the Hindi edition:** any engine string that reaches a player through a
+QUERY rather than a log or a rejection is outside the 157-key `engine.json`, and this is the
+first one found — the P2.5 panels (CP4's body panel, CP5's log) should expect more.
+
+**Disposition: OPEN — Phase 3, alongside #52.** Workaround shipped in CP2; the loud fallback
+stays so the next one is found the same way.
+
+### The sweep, same day — the size of the class, and the instrument fixed inline
+
+Shantanu's ruling: enumerate the whole class before it is met one panel at a time. The
+extractor (`tests/equivalence/i18n-extract.ts`) was extended rather than the sweep done by
+hand, so the enumeration is the drift test's and cannot go stale:
+
+| Class | What | Count | Where it is now |
+|---|---|---|---|
+| **Query prose** — returned as data | `label:` / `disease:` properties, `capReasons.push`, `blocked =`, `.why +=`, `snap('…')` frame headlines | **34 sites** (7 in `queries.ts` — the breakdown; 19 frame headlines incl. `Victory`; 6 engine-invented disease names — "Malaria (relapse)", "Dengue (ADE)", "Tuberculosis (reactivated)", "Pneumococcal pneumonia", "Malaria (blood)", "Shingles"; 1 rare-banner append; 1 other) | **In `engine.json`** (198 sites → 181 messages). The UI renders frame headlines and breakdown prose through `engineText()`; only the templated rate ceiling still needs its number put back (`productionText.ts`). |
+| **Composed arguments** — `pushLog`/`err` whose message is an identifier or a conditional | `pushLog(msg)` (produce), `pushLog(entryMsg)` (draw), and three ternary arguments (strike, tag, engulf) | **5 sites**, carrying ~10 distinct sentences | **Listed in `$meta.unextractedSites`**, pinned by the drift test and by a count assertion. Outside the catalogue until the engine emits ids. |
+| **Log fragments from a helper** | `placeName()` in `effects.ts`: "the bloodstream", "{route} {step}", "the {organ} itself", "{organ} branch {step}" | 4 fragments, interpolated into 2 log sites | Uncatalogued; reach the player as `{placeName}` inside catalogued messages. Phase 3. |
+| **Content-layer prose in view fields** | `banner` / `warning` / `rareBanner` carry `name`, `tell`, `why` from `events.json` | 38 fields | Content, not engine: translated with the content pack, like the diseases namespace. Not a catalogue gap. |
+| **Keys the UI must map, not prose** | `drawn.__sentinel` texts "(mop-up)" / "(no new infection)", `lost.reason === 'attrition'`, "Pathogen X" | 4 | Sentinels and the novel name are handled; **`attrition` is not** — the Result screen shows a loss with no organ and no reason. UI item for CP5. |
+
+The extractor's new rules carry their own controls
+(`tests/equivalence/src/i18n-query-prose.control.test.ts`): a synthetic source makes every
+shape fire, a `label:` that is an identifier is required NOT to (the permitted case), and a
+composed argument is required to be listed rather than skipped. The `$meta` list of
+unextracted sites is asserted equal to a fresh walk, and its count (5) is pinned so a new one
+must be acknowledged in this entry.

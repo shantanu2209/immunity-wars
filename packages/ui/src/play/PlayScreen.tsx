@@ -31,6 +31,7 @@ import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { GoalBody } from '../dialogs/GoalBody';
 import { RevealBody, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
+import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
 import { cellDisplayName } from '../names';
@@ -296,10 +297,50 @@ export function PlayScreen({
   ];
   const moveCount = offered.board.filter((o) => o.kind === 'move').length;
   const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
+  const barButtons = offered.buttons.filter((b) => b.place !== 'panel');
+  const panelButtons = offered.buttons.filter((b) => b.place === 'panel');
   let hint: string | null = null;
   if (byInvader.size > 0)
     hint = multiChoice ? t('commandBar.tapOrChoose') : t('commandBar.tapPathogen');
   else if (moveCount > 0) hint = t('commandBar.moveHint');
+  else if (panelButtons.length > 0) hint = t('commandBar.producePanel');
+
+  // THE ANTIBODY PANEL's data, all from the view: the summary per family, the store, the caps,
+  // and the selection-scoped breakdown for the family the player tapped.
+  const ab = (game['ab'] as Record<string, unknown> | undefined) ?? {};
+  const caps = (authView.queries.perFamily['capFam'] ?? {}) as Record<string, unknown>;
+  const familyRows: FamilyRow[] = Object.entries(authView.queries.production)
+    // The novel antigen's family exists only once the body has met one (CP4 owns that story);
+    // showing "X 0/5" from turn one would be a question with no answer yet.
+    .filter(([family]) => family !== 'X' || game['novelSeen'] === true)
+    .map(([family, p]) => ({
+      family,
+      have: Number(ab[family] ?? 0),
+      cap: Number(caps[family] ?? 0),
+      net: p.net,
+      boosted: p.boosted,
+      reduced: p.reduced,
+      blocked: p.blocked,
+    }));
+  const selectedFamily = authView.selection.family;
+  const rawDetail = authView.scoped.productionDetail as Record<string, unknown> | null;
+  const familyDetail: FamilyDetail | null = rawDetail
+    ? {
+        base: Number(rawDetail['base'] ?? 0),
+        net: Number(rawDetail['net'] ?? 0),
+        blocked: typeof rawDetail['blocked'] === 'string' ? rawDetail['blocked'] : null,
+        effects: (
+          (rawDetail['effects'] as { label?: unknown; delta?: unknown }[] | undefined) ?? []
+        ).map((e) => ({ label: String(e.label ?? ''), delta: Number(e.delta ?? 0) })),
+        capReasons: (
+          ((rawDetail['storage'] as { capReasons?: unknown } | undefined)?.capReasons as
+            unknown[] | undefined) ?? []
+        ).map((c) => String(c)),
+      }
+    : null;
+  const produceOffers: Record<string, { id: string; label: string }> = {};
+  for (const b of panelButtons)
+    if (b.family) produceOffers[b.family] = { id: b.id, label: b.label };
 
   /** Offers on invaders, keyed by invader id — the sheet's precise rows. */
   const sheetOffers: Record<string, { id: string; label: string }[]> = {};
@@ -372,7 +413,7 @@ export function PlayScreen({
         selectedCellName={selectedCell ? cellDisplayName(selectedCell) : null}
         ap={Number(game['ap'] ?? 0)}
         hint={hint}
-        buttons={offered.buttons.map((b) => ({ id: b.id, label: b.label }))}
+        buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
         noAction={offered.reason}
         undo={authView.undo}
         notice={lastError ? engineText(lastError) : null}
@@ -384,6 +425,15 @@ export function PlayScreen({
           if (selectedNode) setInspect(selectedNode);
         }}
         onDeselect={deselect}
+      />
+      <AntibodyPanel
+        rows={familyRows}
+        selectedFamily={selectedFamily}
+        detail={familyDetail}
+        produce={produceOffers}
+        disabled={playing}
+        onSelectFamily={(family) => session.setSelection({ cell: selectedCell, family })}
+        onProduce={sendOffer}
       />
       {inspect ? (
         <InspectSheet

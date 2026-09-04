@@ -254,3 +254,44 @@ tap path is the S25 list's to see.
 
 **Not in CP1, by design:** `tag` (CP2) — which is why the Monocyte's strike never fired in
 the walkthrough: a worm must be coated first.
+
+## CP2 — antibodies and the antibody panel: BUILT (4 September 2026), for review
+
+**The first panel.** `AntibodyPanel` sits under the command bar on the play surface: one
+chip per family (store / cap, net rate with ↑ boosted / ↓ reduced / Blocked), tapping a chip
+selects the family through the session (`selection.family`), so the selection-scoped
+`productionBreakdown` answers with the detail — base rate, every effect on it, why the store
+is capped — and, when the B-cell is selected and the family may be produced, the Produce
+button. The novel antigen's row (X) appears only once the body has met one.
+
+**The B-cell's offers** (`offered.ts`, same module, same harness): `tag` and `neutralise`
+as attack rings on any attackable pathogen the store matches (`canTag` / `canNeutralise`
+already include the store check; the B-cell never moves, so its reach is the whole board);
+`produce` as panel buttons per family where not blocked, not full, and — for X — the clone is
+found. The offered ⊆ accepted harness stayed green with all three added.
+
+**The two rulings from §3 of the plan, as built:**
+- **`ProductionSummary.blocked`** (session, one field, no engine change) — the panel greys a
+  blocked family and `produce` is withheld; `production-blocked.test.ts` pins it both ways
+  (a fresh game is not blocked; a state with `fx.noProduce` reports every family blocked at
+  net 0).
+- **The neutralise-cost mirror** — `NEUTRALISE_TOXIN_AP = 2` in `offered.ts`, pinned by
+  `neutralise-cost.test.ts`, which searches recorded games for an unremembered neutralisable
+  toxin (vacuity-guarded) and drives the engine directly: rejected at 1 AP with the engine's
+  own message, accepted at 2. FINDINGS #52 is the record that this is a workaround. The offer
+  also honours the engine's memory-response waiver: a remembered pathogen is offered at any AP.
+
+**Verified in the real app, headless:** the panel renders every family; select the B-cell →
+its reason line ("no antibody you hold matches a pathogen in reach — make some") beside the
+"produce in the panel below" hint; tap a chip → Produce ICB → store 0/5 → 1/5 and AP 6 → 5;
+the bacterium's red ring appears for the B-cell → tap → **tagged** (ring gone, AP 4, store
+back to 0); a fresh game: Produce NAK → ring on the virus → tap → **neutralised**, token gone.
+
+**What the loud marker caught (FINDINGS #53):** the first tap on a family chip rendered
+"⟪engine: Helper T-cell present but NOT yet primed…⟫" — the breakdown's effect labels and cap
+reasons are prose the engine's QUERIES return, which the Phase 1 extraction never reached.
+Mapped through the ui catalogue by `productionText.ts` (the templated "Rate ceiling (N/…)"
+by its number), loud on anything new; the correction — the engine emitting ids — is Phase 3's.
+
+**Session-boundary note (the clear comes after CP2):** everything a next session needs is in
+`P2_5_PROGRESS.md` ("State at the boundary"), the plan's checkpoint list, and this file.

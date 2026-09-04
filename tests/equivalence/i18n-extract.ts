@@ -43,7 +43,13 @@ const OUT = `${OUT_DIR}/engine.json`;
 export interface Site {
   file: string;
   line: number;
-  fn: 'err' | 'pushLog';
+  /**
+   * 'err' / 'pushLog': the two call sites Phase 1 walked. 'query': prose the engine returns
+   * as DATA — a `label:` or `disease:` property, a `capReasons.push(...)`, a `blocked = ...`,
+   * a `.why += ...`, a `snap('...')` frame headline — found at P2.5 CP2 when the antibody panel
+   * rendered a query's effect label as a missing-key marker (docs/FINDINGS.md #53).
+   */
+  fn: 'err' | 'pushLog' | 'query';
   /** The message with every `${…}` replaced by `{name}`. This is what the catalogue stores. */
   message: string;
   /** Placeholder names, in source order. */
@@ -90,58 +96,138 @@ function keyFor(file: string, message: string, used: Set<string>): string {
   return key;
 }
 
-export function engineSites(): Site[] {
-  const out: Site[] = [];
-  for (const f of readdirSync(ENGINE).sort()) {
-    if (!f.endsWith('.ts') || f.endsWith('.test.ts')) continue;
-    const path = `${ENGINE}/${f}`;
-    const sf = ts.createSourceFile(path, readFileSync(path, 'utf8'), ts.ScriptTarget.ES2022, true);
+/**
+ * A call site whose message is NOT a literal — an identifier, a call, a conditional — which the
+ * extractor cannot follow. Phase 1's walker skipped these silently; they are now LISTED in the
+ * catalogue's $meta so the drift test pins them and a new one is a visible diff. The message
+ * they carry is composed elsewhere and reaches the player uncatalogued: Phase 3's to fix by
+ * having the engine emit ids (docs/FINDINGS.md #53).
+ */
+export interface Unextracted {
+  file: string;
+  line: number;
+  fn: 'err' | 'pushLog';
+  /** The argument's source text, e.g. `msg` or `entryMsg`. */
+  expr: string;
+}
 
-    const visit = (n: ts.Node): void => {
-      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression)) {
+const literalMessage = (
+  arg: ts.Expression,
+  sf: ts.SourceFile,
+): { message: string; params: string[]; raw: string } | null => {
+  const used = new Set<string>();
+  const params: string[] = [];
+  if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
+    return { message: arg.text, params, raw: arg.getText(sf) };
+  }
+  if (ts.isTemplateExpression(arg)) {
+    let acc = arg.head.text;
+    for (const span of arg.templateSpans) {
+      const p = paramName(span.expression.getText(sf), used);
+      params.push(p);
+      acc += `{${p}}${span.literal.text}`;
+    }
+    return { message: acc, params, raw: arg.getText(sf) };
+  }
+  return null;
+};
+
+/** Walk one source file. Exported so a control can feed it a synthetic file. */
+export function sitesIn(file: string, text: string): { sites: Site[]; unextracted: Unextracted[] } {
+  const sites: Site[] = [];
+  const unextracted: Unextracted[] = [];
+  const sf = ts.createSourceFile(file, text, ts.ScriptTarget.ES2022, true);
+  const lineOf = (n: ts.Node): number => sf.getLineAndCharacterOfPosition(n.getStart(sf)).line + 1;
+  const push = (fn: Site['fn'], arg: ts.Expression): boolean => {
+    const lit = literalMessage(arg, sf);
+    if (!lit) return false;
+    sites.push({
+      file,
+      line: lineOf(arg),
+      fn,
+      message: lit.message,
+      params: lit.params,
+      // A ternary inside an interpolation, or a nested template — ICU select/plural.
+      icuTodo:
+        /\$\{[^}]*\?[^}]*:/.test(lit.raw) || /\?\s*`/.test(lit.raw) || /===\s*1\s*\?/.test(lit.raw),
+    });
+    return true;
+  };
+
+  const visit = (n: ts.Node): void => {
+    if (ts.isCallExpression(n)) {
+      // err(...) / pushLog(...) — Phase 1's two sites, plus the unextracted list.
+      if (ts.isIdentifier(n.expression)) {
         const fn = n.expression.text;
         if (fn === 'err' || fn === 'pushLog') {
           const arg = fn === 'err' ? n.arguments[0] : n.arguments[1];
-          if (!arg) {
-            ts.forEachChild(n, visit);
-            return;
-          }
-          const used = new Set<string>();
-          let message: string | null = null;
-          const params: string[] = [];
-
-          if (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg)) {
-            message = arg.text;
-          } else if (ts.isTemplateExpression(arg)) {
-            let acc = arg.head.text;
-            for (const span of arg.templateSpans) {
-              const p = paramName(span.expression.getText(sf), used);
-              params.push(p);
-              acc += `{${p}}${span.literal.text}`;
-            }
-            message = acc;
-          }
-
-          if (message !== null) {
-            const raw = arg.getText(sf);
-            out.push({
-              file: f,
-              line: sf.getLineAndCharacterOfPosition(arg.getStart(sf)).line + 1,
-              fn,
-              message,
-              params,
-              // A ternary inside an interpolation, or a nested template — ICU select/plural.
-              icuTodo:
-                /\$\{[^}]*\?[^}]*:/.test(raw) || /\?\s*`/.test(raw) || /===\s*1\s*\?/.test(raw),
-            });
+          if (arg && !push(fn, arg)) {
+            unextracted.push({ file, line: lineOf(arg), fn, expr: arg.getText(sf) });
           }
         }
+        // snap('Bacteria divide') — a spread frame's headline, shown by the narration banner.
+        if (fn === 'snap') {
+          const arg = n.arguments[0];
+          if (arg) push('query', arg);
+        }
       }
-      ts.forEachChild(n, visit);
-    };
-    visit(sf);
+      // capReasons.push('liver damaged') — a breakdown's storage reason.
+      if (
+        ts.isPropertyAccessExpression(n.expression) &&
+        n.expression.name.text === 'push' &&
+        ts.isIdentifier(n.expression.expression) &&
+        n.expression.expression.text === 'capReasons'
+      ) {
+        const arg = n.arguments[0];
+        if (arg) push('query', arg);
+      }
+    }
+    // { label: '...' } / { disease: '...' } — an effect label or an engine-invented disease name.
+    if (
+      ts.isPropertyAssignment(n) &&
+      ts.isIdentifier(n.name) &&
+      (n.name.text === 'label' || n.name.text === 'disease')
+    ) {
+      push('query', n.initializer);
+    }
+    // blocked = '...' / x.disease = '...' / x.why += '...' — prose assigned into a return value.
+    if (
+      ts.isBinaryExpression(n) &&
+      (n.operatorToken.kind === ts.SyntaxKind.EqualsToken ||
+        n.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken)
+    ) {
+      const left = n.left;
+      const target = ts.isIdentifier(left)
+        ? left.text
+        : ts.isPropertyAccessExpression(left)
+          ? left.name.text
+          : '';
+      if (target === 'blocked' || target === 'disease' || target === 'why') push('query', n.right);
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return { sites, unextracted };
+}
+
+export function engineSitesFull(): { sites: Site[]; unextracted: Unextracted[] } {
+  const sites: Site[] = [];
+  const unextracted: Unextracted[] = [];
+  for (const f of readdirSync(ENGINE).sort()) {
+    if (!f.endsWith('.ts') || f.endsWith('.test.ts')) continue;
+    const r = sitesIn(f, readFileSync(`${ENGINE}/${f}`, 'utf8'));
+    sites.push(...r.sites);
+    unextracted.push(...r.unextracted);
   }
-  return out;
+  return { sites, unextracted };
+}
+
+export function engineSites(): Site[] {
+  return engineSitesFull().sites;
+}
+
+export function engineUnextracted(): Unextracted[] {
+  return engineSitesFull().unextracted;
 }
 
 /** The catalogue: message -> key, deduplicated by message text. */
@@ -184,7 +270,13 @@ function render(): string {
       locale: 'en',
       generatedBy: 'tests/equivalence/i18n-extract.ts',
       sites: sites.length,
+      queryProseSites: sites.filter((x) => x.fn === 'query').length,
       messages: Object.keys(catalogue).length,
+      // Call sites whose message is composed elsewhere (an identifier, not a literal). Listed so
+      // the drift test pins them; each is a player-visible string outside the catalogue.
+      unextractedSites: engineUnextracted().map(
+        (u) => `${u.file}:${String(u.line)} ${u.fn}(${u.expr})`,
+      ),
       note: 'Nothing consumes this yet — Phase 2 does. tests/equivalence/src/i18n-engine.test.ts is what keeps it honest.',
     },
     /**
