@@ -32,6 +32,7 @@ export interface BarButton {
 export function CommandBar({
   selectedCellName,
   qualifier = null,
+  noSelectionHint = null,
   ap,
   hint = null,
   buttons = [],
@@ -49,6 +50,8 @@ export function CommandBar({
   selectedCellName: string | null;
   /** Muted line after the name — a resident's "resident of the Liver" (CP3). */
   qualifier?: string | null;
+  /** Shown instead of the select prompt while nothing is selected and the body offers rings (CP4). */
+  noSelectionHint?: string | null;
   ap: number;
   /** Localised line describing what the board is offering (tap a node / a pathogen). */
   hint?: string | null;
@@ -83,7 +86,11 @@ export function CommandBar({
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         {selectedCellName === null ? (
-          <span style={{ fontSize: 14, color: '#7C6A61' }}>{t('commandBar.selectPrompt')}</span>
+          // Nothing selected: the prompt — or, when the BODY has rings on the board (a memory
+          // response, an antivenom dose), what those rings are.
+          <span style={{ fontSize: 14, color: noSelectionHint !== null ? '#1F6F8B' : '#7C6A61' }}>
+            {noSelectionHint ?? t('commandBar.selectPrompt')}
+          </span>
         ) : (
           <>
             <span style={{ fontSize: 15, fontWeight: 700 }}>{selectedCellName}</span>

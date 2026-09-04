@@ -624,3 +624,58 @@ it embeds in the liver, the sheet says "hiding inside liver cells", the card's "
 agrees; when it bursts out the ring goes. (4) A Kala-azar game: the parasite at its organ gains
 the ring, the sheet names the resident it is inside, and that resident's own line (CP3) says a
 parasite is inside it.
+
+## Piece 2 — CP4, the body-level actions and the body panel: BUILT (4 September 2026)
+
+**The second source, filled.** `bodyOffers(view)` — wired end-to-end and empty since CP1 —
+now carries the five actions with no cell. Board rings while NOTHING is selected: the
+**memory response** on a remembered, reachable pathogen (free; 1 AP on Hard, the engine's
+own rule) and an **antivenom dose** on a venom (a dose in stock, 3 AP). The command bar, which
+shows only "tap one of your cells" while nothing is selected, now says what those rings are
+("Tap the highlighted pathogen — your body remembers it"; "Tap the venom to give antivenom —
+3 AP"), so a ring on an empty selection is never unexplained. The panel buttons — **order
+antivenom**, **clonal selection**, **vaccinate** — are offered regardless of selection: the
+panel is always visible, and ordering a vial should not require deselecting a cell first.
+
+**The amount chooser (plan §3.5), and the one rule it needed.** `vaccinate` and
+`orderAntivenom` take an amount, and the engine CLAMPS a larger one to what is left — so a
+"+2" at 1 AP would be ACCEPTED while spending 1, a mislabelled button that the offered ⊆
+accepted harness cannot see. Each amount (+1, +2, as legacy offered) is offered only when the
+AP is there AND the progress still needs it, so the label is always exactly what will be spent.
+Pinned in `body-offers.test.ts` on recorded states: every amount within the AP and within
+the need, with a guard that a +2 was actually offered somewhere; no vaccine on Training; no
+clone search without an unknown antigen; no dose without stock; no memory response on Hard
+at 0 AP.
+
+**The body panel** (`BodyPanel.tsx`, under the antibody panel): antivenom doses in stock and
+the order in progress toward the next vial (`avOrder`/`ANTIVENOM_ORDER`, with the buttons);
+"memory response ready" when a remembered pathogen is reachable, so the board's ring is
+explained; clonal selection, shown once an unknown antigen has been met, with its progress
+(`clone`/`CLONE_COST`) and the search button; the vaccine lab — every disease the body has
+seen and does not yet remember, with progress (`vaccine[dz]`/`VACCINE_COST`) and the buttons —
+and, on Training, the engine's own reason in place of the lab ("immunity comes from surviving
+an infection") rather than a hidden section; the immune list. The novel antigen stays masked
+in every list. Each row's why-not is in place: the body's "always answers".
+
+**Harness:** the judge gains the BODY as a subject (nothing selected), the floor gains the
+five actions, and a body over-offer control (the memory response on every invader) fires.
+The corpus reaches all five without construction: the bot vaccinates, searches for the clone
+and uses the memory response; `orderAntivenom` is offerable in any command state with AP; and
+an antivenom dose is offerable wherever a venom stands while stock and AP allow.
+
+**Verified in the real app, headless** (`drive-body.ts`): on Normal, order antivenom +1 →
+progress 0/4 → 1/4, AP 5 → 4; the drawn disease's (Impetigo) vaccine row → +1 AP → 1/5. On
+Training, a venom on the board (turn 2) → its red ring while nothing is selected and the bar
+reads "Tap the venom to give antivenom — 3 AP" → tap → AP 6 → 3, stock 2 doses → 1 dose. On
+Hard, idle until the unknown antigen broke in (turn 7) → the clone row appeared → "Search for
+the clone 0/3" → 1/3, AP −1. No ⟪missing key⟫. **Not verified headless: the memory response**
+— it needs a remembered pathogen back in the body, which no short driven game produced; the
+harness offers and the engine accepts it on recorded states (the bot uses it), and it is on
+the S25 list.
+
+**S25 list for CP4:** (1) order antivenom +1 / +2 and watch the vial arrive at 4; the +2
+button vanishes at 1 AP and when 1 AP is all that is needed. (2) Normal: vaccinate the first
+disease you see to 5 — it appears under "Immune"; when it comes back, its ring is there before
+you select anything and the bar says why. (3) Training: a snakebite → the venom's ring, the
+antivenom hint, tap → gone, 3 AP. (4) Hard: when the unknown antigen breaks in, the clone row
+appears; three searches; then X appears in the antibody panel and Produce X works.

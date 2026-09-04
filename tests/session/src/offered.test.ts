@@ -59,6 +59,11 @@ const OFFERABLE = [
   'hop',
   'resmove',
   'resengulf',
+  'memoryKill',
+  'antivenom',
+  'orderAntivenom',
+  'clonalSelection',
+  'vaccinate',
 ];
 
 interface Verdict {
@@ -90,6 +95,8 @@ function judge(state: GameState, offer: (view: SessionView) => Offered): Verdict
   const raw = state as unknown as Record<string, unknown>;
   const pid = (raw['players'] as string[])[0] ?? '';
   const subjects: { cell: string | null; resident: string | null }[] = [
+    // The BODY — nothing selected: `offeredActions` hands over to `bodyOffers` (CP4).
+    { cell: null, resident: null },
     ...CELLS.map((cell) => ({ cell, resident: null })),
     ...Object.keys((raw['residents'] as Record<string, unknown> | undefined) ?? {}).map(
       (resident) => ({ cell: null, resident }),
@@ -206,6 +213,39 @@ describe('offered ⊆ accepted — the standing rule as a check', () => {
     expect(
       rejected,
       'the over-offer produced no rejection — this check cannot fail',
+    ).toBeGreaterThan(0);
+  });
+
+  it('CONTROL (body): the memory response offered on every invader is rejected', () => {
+    // memoryKill needs `remembered`; offered on every invader while nothing is selected, the
+    // unremembered ones must be refused — so the body subject is known to be able to fail.
+    const overOffer = (view: SessionView): Offered => {
+      const base = offeredActions(view);
+      if (view.selection.cell || view.selection.resident) return base;
+      const invaders = (view.game['invaders'] as Record<string, unknown>[] | undefined) ?? [];
+      return {
+        ...base,
+        board: [
+          ...base.board,
+          ...invaders.map((iv) => ({
+            id: `over:${String(iv['id'])}`,
+            kind: 'attack' as const,
+            action: 'memoryKill',
+            cell: null,
+            invaderId: String(iv['id']),
+            label: 'over-offer',
+            cost: null,
+            params: { action: 'memoryKill', invaderId: String(iv['id']) },
+          })),
+        ],
+      };
+    };
+    let rejected = 0;
+    for (const st of commandStates(0x51de, 'normal', 80))
+      rejected += judge(st, overOffer).rejected.length;
+    expect(
+      rejected,
+      'the body over-offer produced no rejection — the body subject cannot fail',
     ).toBeGreaterThan(0);
   });
 

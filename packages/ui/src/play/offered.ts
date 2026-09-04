@@ -29,7 +29,16 @@
  * (`offered.test.ts`) replays recorded games and requires the engine to ACCEPT every offer
  * this module makes, with a deliberate over-offer as its negative control.
  */
-import { LYMPH_GROUP, LYMPH_STEP, ROUTES, ROUTE_KEYS } from '@immunity-wars/content';
+import {
+  ANTIVENOM_ORDER,
+  CLONE_COST,
+  LYMPH_GROUP,
+  LYMPH_STEP,
+  NOVEL_ANTIGENS,
+  ROUTES,
+  ROUTE_KEYS,
+  VACCINE_COST,
+} from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
@@ -90,6 +99,10 @@ export interface ButtonOffer {
   place?: 'bar' | 'panel';
   /** For panel buttons: which family row. */
   family?: string;
+  /** For the body panel's vaccine rows: which disease. */
+  disease?: string;
+  /** For the body panel's AP choosers: how many AP this button invests (`vaccinate`, `orderAntivenom`). */
+  amount?: number;
 }
 
 export interface Offered {
@@ -135,10 +148,131 @@ function isSpent(g: ViewState, cell: string): boolean {
   return cells?.[cell]?.alive === false;
 }
 
-/** Body-level offers while nothing is selected. CP1–2: none. CP4 adds memoryKill and antivenom. */
-export function bodyOffers(_view: SessionView): Offered {
-  return { source: 'body', board: [], buttons: [], reason: null };
+/**
+ * BODY-LEVEL OFFERS (CP4) — the five actions with no cell: the body spends or responds.
+ *
+ * Board targets exist while NOTHING is selected (the second source, designed at CP1): the
+ * memory response on a remembered pathogen, an antivenom dose on a venom. The panel buttons
+ * (`place: 'panel'`) belong to the body panel and are offered regardless of selection — the
+ * panel is always visible, and ordering a vial should not require deselecting a cell first.
+ *
+ * AMOUNTS (COMMAND_SURFACE_PLAN §3.5): `vaccinate` and `orderAntivenom` take `ap`, 1..n. The
+ * engine CLAMPS a larger amount to what is left, so "+2" at 1 AP would be accepted while
+ * spending 1 — legal, but a mislabelled button. Each amount is offered only when the AP is
+ * there and the progress still needs it, so the label is always exactly what will be spent.
+ *
+ * No reason line: the panel says why each row cannot act, in place.
+ */
+export function bodyOffers(view: SessionView): Offered {
+  const g = view.game;
+  const empty: Offered = { source: 'body', board: [], buttons: [], reason: null };
+  if (String(g['phase']) !== 'command') return empty;
+  const ap = num(g['ap']);
+  const difficulty = String(g['difficulty']);
+  const hard = difficulty === 'hard';
+  const board: BoardOffer[] = [];
+  const buttons: ButtonOffer[] = [];
+  const invaders = (g['invaders'] as Invaderish[] | undefined) ?? [];
+  const apLabel = (n: number): string => `${String(n)} ${t('commandBar.ap')}`;
+
+  // THE MEMORY RESPONSE — free on Training and Normal; 1 AP on Hard (the engine's own rule).
+  const attackable = (view.queries.perInvader['attackable'] ?? []) as unknown[];
+  if (!hard || ap >= 1) {
+    invaders.forEach((iv, i) => {
+      if (iv.remembered !== true || attackable[i] !== true) return;
+      const id = String(iv.id ?? '');
+      board.push({
+        id: `memoryKill:${id}`,
+        kind: 'attack',
+        action: 'memoryKill',
+        cell: null,
+        invaderId: id,
+        label: `${t('action.memoryKill')} ${String(iv.disease ?? '')}`,
+        cost: hard ? apLabel(1) : null,
+        params: { action: 'memoryKill', invaderId: id },
+      });
+    });
+  }
+
+  // ANTIVENOM — a dose in stock, 3 AP, on a venom.
+  const stock = num(g['antivenom']);
+  if (stock > 0 && ap >= 3) {
+    for (const iv of ids(view.queries.state['antivenomTargets'])) {
+      board.push({
+        id: `antivenom:${iv.id}`,
+        kind: 'attack',
+        action: 'antivenom',
+        cell: null,
+        invaderId: iv.id,
+        label: `${t('action.antivenom')} ${iv.disease}`,
+        cost: apLabel(3),
+        params: { action: 'antivenom', invaderId: iv.id },
+      });
+    }
+  }
+
+  // ORDER ANTIVENOM — invest 1 or 2 AP toward the next vial.
+  const orderNeed = ANTIVENOM_ORDER - num(g['avOrder']);
+  for (const amount of [1, 2]) {
+    if (ap >= amount && orderNeed >= amount) {
+      buttons.push({
+        id: `orderAntivenom:${String(amount)}`,
+        action: 'orderAntivenom',
+        cell: null,
+        label: t('body.invest', { n: amount }),
+        params: { action: 'orderAntivenom', ap: amount },
+        place: 'panel',
+        amount,
+      });
+    }
+  }
+
+  // CLONAL SELECTION — only once an unknown antigen has been met, until the clone is found.
+  if (g['novelSeen'] === true && g['cloneFound'] !== true && ap >= 1) {
+    buttons.push({
+      id: 'clonalSelection',
+      action: 'clonalSelection',
+      cell: null,
+      label: t('action.clonalSelection'),
+      params: { action: 'clonalSelection' },
+      place: 'panel',
+    });
+  }
+
+  // VACCINATE — not on Training (immunity comes from surviving); any seen, unremembered disease.
+  if (difficulty !== 'training') {
+    const seen = (g['seen'] as Record<string, unknown> | undefined) ?? {};
+    const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
+    const vaccine = (g['vaccine'] as Record<string, unknown> | undefined) ?? {};
+    for (const dz of Object.keys(seen)) {
+      if (seen[dz] !== true || memory[dz] === true) continue;
+      const need = VACCINE_COST - num(vaccine[dz]);
+      for (const amount of [1, 2]) {
+        if (ap >= amount && need >= amount) {
+          buttons.push({
+            id: `vaccinate:${dz}:${String(amount)}`,
+            action: 'vaccinate',
+            cell: null,
+            label: t('body.invest', { n: amount }),
+            params: { action: 'vaccinate', disease: dz, ap: amount },
+            place: 'panel',
+            disease: dz,
+            amount,
+          });
+        }
+      }
+    }
+  }
+
+  return { source: 'body', board, buttons, reason: null };
 }
+
+/** A disease name as the player sees it — the novel antigen stays masked everywhere. */
+export const diseaseLabel = (dz: string): string =>
+  NOVEL_ANTIGENS.has(dz) ? t('inspect.unknown') : dz;
+
+/** The clone search's cost, for the panel — content, read here so the panel stays dumb. */
+export const CLONE_TARGET = CLONE_COST;
 
 /** Which antibody families the B-cell may produce right now, with the reason it may not. */
 export function producibleFamilies(view: SessionView): {

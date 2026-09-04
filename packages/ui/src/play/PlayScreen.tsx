@@ -29,7 +29,15 @@ import {
   inspectInfoForResident,
 } from '../board/Board';
 import { engineText } from '../engineText';
-import { offeredActions, type BoardOffer, type Offered } from './offered';
+import {
+  CLONE_TARGET,
+  bodyOffers,
+  diseaseLabel,
+  offeredActions,
+  type BoardOffer,
+  type Offered,
+} from './offered';
+import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -382,8 +390,73 @@ export function PlayScreen({
       label: o.cost ? `${o.label} · ${o.cost}` : o.label,
     }));
   }
+  // THE BODY PANEL's data, all from the view, and its buttons from `bodyOffers` — computed
+  // regardless of selection, because the panel is always visible and ordering a vial should
+  // not need a cell deselected first. The body's BOARD rings come through `offered` (the
+  // second source) only while nothing is selected.
+  const body: Offered = playing
+    ? { source: 'body', board: [], buttons: [], reason: null }
+    : bodyOffers(authView);
+  const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+  const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
+  const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
+  const difficulty = String(game['difficulty']);
+  const attackable = (authView.queries.perInvader['attackable'] ?? []) as unknown[];
+  const bodyData: BodyPanelData = {
+    antivenom: Number(game['antivenom'] ?? 0),
+    avOrder: Number(game['avOrder'] ?? 0),
+    orderButtons: body.buttons
+      .filter((b) => b.action === 'orderAntivenom')
+      .map((b) => ({ id: b.id, label: b.label })),
+    memoryReady: ((game['invaders'] as { remembered?: unknown }[] | undefined) ?? []).filter(
+      (iv, i) => iv.remembered === true && attackable[i] === true,
+    ).length,
+    hard: difficulty === 'hard',
+    training: difficulty === 'training',
+    novelSeen: game['novelSeen'] === true,
+    cloneFound: game['cloneFound'] === true,
+    clone: Number(game['clone'] ?? 0),
+    cloneButton: (() => {
+      const b = body.buttons.find((x) => x.action === 'clonalSelection');
+      return b
+        ? {
+            id: b.id,
+            label: `${b.label} ${String(Number(game['clone'] ?? 0))}/${String(CLONE_TARGET)}`,
+          }
+        : null;
+    })(),
+    vaccines:
+      difficulty === 'training'
+        ? []
+        : Object.keys(seen)
+            .filter((dz) => seen[dz] === true && memory[dz] !== true)
+            .map((dz) => ({
+              disease: dz,
+              name: diseaseLabel(dz),
+              family: '',
+              put: Number(vaccine[dz] ?? 0),
+              buttons: body.buttons
+                .filter((b) => b.action === 'vaccinate' && b.disease === dz)
+                .map((b) => ({ id: b.id, label: b.label })),
+            })),
+    immune: Object.keys(memory)
+      .filter((dz) => memory[dz] === true)
+      .map(diseaseLabel),
+  };
+  const noSelectionHint =
+    selectedCell || selectedResident
+      ? null
+      : offered.board.some((o) => o.action === 'memoryKill')
+        ? t('commandBar.memoryHint')
+        : offered.board.some((o) => o.action === 'antivenom')
+          ? t('commandBar.antivenomHint')
+          : null;
+
   const sendOffer = (id: string): void => {
-    const o = offered.board.find((x) => x.id === id) ?? offered.buttons.find((x) => x.id === id);
+    const o =
+      offered.board.find((x) => x.id === id) ??
+      offered.buttons.find((x) => x.id === id) ??
+      body.buttons.find((x) => x.id === id);
     if (o) send(o.params);
   };
 
@@ -462,6 +535,7 @@ export function PlayScreen({
         qualifier={
           selectedResident ? t('resident.of', { organ: organDisplayName(selectedResident) }) : null
         }
+        noSelectionHint={noSelectionHint}
         ap={Number(game['ap'] ?? 0)}
         hint={hint}
         buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
@@ -488,6 +562,7 @@ export function PlayScreen({
         }
         onProduce={sendOffer}
       />
+      <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
       {inspect ? (
         <InspectSheet
           info={inspect}
