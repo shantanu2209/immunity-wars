@@ -21,16 +21,17 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { ArtMetrics, BoardTap, InspectInfo, Located } from '../board/Board';
-import { Board, inspectInfoForCell } from '../board/Board';
+import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
+import { Board, inspectInfoForCell, inspectInfoForInvader } from '../board/Board';
 import { engineText } from '../engineText';
+import { offeredActions, type BoardOffer, type Offered } from './offered';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { GoalBody } from '../dialogs/GoalBody';
 import { RevealBody, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
-import { CommandBar, type EngulfTarget } from '../panels/CommandBar';
+import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
 import { cellDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
@@ -39,27 +40,6 @@ import { SpreadNarration, diceOf } from './SpreadNarration';
 // its outcome), so they hold longer. A tap anywhere advances immediately.
 const FRAME_MS = 900;
 const DICE_FRAME_MS = 1400;
-
-/**
- * SELECTION ALWAYS ANSWERS (ruling of 4 September 2026): when the selected cell has no legal
- * target, the bar says why. The reasons are read from the view in order of what a player
- * most needs to hear; the last is the honest fallback.
- */
-function noActionReason(g: ViewState, cell: string, phase: string): string {
-  if (phase !== 'command') return t('selection.notCommand');
-  const cells = g['cells'] as Record<string, { alive?: unknown }> | undefined;
-  if (cells?.[cell]?.alive === false) return t('selection.spent');
-  const sup = g['suppress'] as Record<string, unknown> | undefined;
-  if (
-    (cell === 'neutrophil' && Number(sup?.['neutrophil'] ?? 0) > 0) ||
-    (cell === 'tcell' && Number(sup?.['tcell'] ?? 0) > 0)
-  ) {
-    return t('selection.offline');
-  }
-  if (Number(g['ap'] ?? 0) <= 0) return t('selection.noAp');
-  if (cell === 'bcell') return t('selection.stationary');
-  return t('selection.nothing');
-}
 
 /** What PlayScreen needs from a session — structural, so RelaySession fits it too. */
 export interface PlaySessionLike {
@@ -288,29 +268,70 @@ export function PlayScreen({
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
-  const moveTargets = playing ? [] : ((authView.scoped.moveDestinations ?? []) as Located[]);
 
-  const sendMove = (target: Located): void => {
-    if (!selectedCell) return;
-    send({
-      action: 'move',
-      cell: selectedCell,
-      zone: target.zone,
-      lane: target.lane,
-      organ: target.organ,
-      step: target.step,
-    });
+  // WHAT IS LEGAL comes from one place (offered.ts) and nowhere else in the UI. During a
+  // burst nothing is offered — input is disabled.
+  const offered: Offered = playing
+    ? { source: 'cell', board: [], buttons: [], reason: null }
+    : offeredActions(authView);
+
+  // Board targets: one ring per move destination; one ring per ATTACKED INVADER carrying every
+  // offer aimed at it (the Eosinophil may strike or degranulate the same worm).
+  const byInvader = new Map<string, BoardOffer[]>();
+  for (const o of offered.board) {
+    if (o.kind === 'attack' && o.invaderId) {
+      byInvader.set(o.invaderId, [...(byInvader.get(o.invaderId) ?? []), o]);
+    }
+  }
+  const boardTargets: BoardTarget[] = [
+    ...offered.board
+      .filter((o) => o.kind === 'move')
+      .map((o) => ({ key: o.id, kind: 'move' as const, located: o.located, payload: [o] })),
+    ...[...byInvader.entries()].map(([invaderId, offers]) => ({
+      key: `attack:${invaderId}`,
+      kind: 'attack' as const,
+      invaderId,
+      payload: offers,
+    })),
+  ];
+  const moveCount = offered.board.filter((o) => o.kind === 'move').length;
+  const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
+  let hint: string | null = null;
+  if (byInvader.size > 0)
+    hint = multiChoice ? t('commandBar.tapOrChoose') : t('commandBar.tapPathogen');
+  else if (moveCount > 0) hint = t('commandBar.moveHint');
+
+  /** Offers on invaders, keyed by invader id — the sheet's precise rows. */
+  const sheetOffers: Record<string, { id: string; label: string }[]> = {};
+  for (const [invaderId, offers] of byInvader) {
+    sheetOffers[invaderId] = offers.map((o) => ({
+      id: o.id,
+      label: o.cost ? `${o.label} · ${o.cost}` : o.label,
+    }));
+  }
+  const sendOffer = (id: string): void => {
+    const o = offered.board.find((x) => x.id === id) ?? offered.buttons.find((x) => x.id === id);
+    if (o) send(o.params);
   };
 
   // THE ONE TAP PATH's meaning (Board resolves WHAT was tapped; this decides what it does):
-  // a target moves the selected cell; a cell selects, or deselects if it is the selected one
+  // a move target moves; an attack target acts when one offer is on it and opens the sheet's
+  // rows when several are; a cell selects, or deselects if it is the selected one
   // (tap-again); a node opens the sheet; nothing within reach is tap-away — deselect.
   const handleBoardTap = (hit: BoardTap): void => {
     setInspect(null);
     switch (hit.kind) {
-      case 'target':
-        sendMove(hit.target);
+      case 'target': {
+        const offers = hit.target.payload as BoardOffer[];
+        const first = offers[0];
+        if (!first) return;
+        if (offers.length === 1) send(first.params);
+        else if (first.invaderId) {
+          const node = inspectInfoForInvader(game, first.invaderId);
+          if (node) setInspect(node);
+        }
         return;
+      }
       case 'cell':
         if (hit.cell === selectedCell) deselect();
         else tapCell(hit.cell);
@@ -326,14 +347,6 @@ export function PlayScreen({
   const selectedNode = selectedCell ? inspectInfoForCell(game, selectedCell) : null;
   const canInspect =
     selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
-  const noAction = selectedCell ? noActionReason(game, selectedCell, phase) : null;
-  const engulfTargets: EngulfTarget[] =
-    !playing && selectedCell === 'macrophage'
-      ? (
-          (authView.queries.state['macrophageEatable'] as
-            { id?: unknown; disease?: unknown }[] | undefined) ?? []
-        ).map((iv) => ({ id: String(iv.id ?? ''), label: String(iv.disease ?? '') }))
-      : [];
 
   return (
     <div>
@@ -352,20 +365,20 @@ export function PlayScreen({
         view={shown}
         selectedCell={selectedCell}
         artMetrics={artMetrics}
-        moveTargets={moveTargets}
+        targets={boardTargets}
         onTap={playing ? undefined : handleBoardTap}
       />
       <CommandBar
         selectedCellName={selectedCell ? cellDisplayName(selectedCell) : null}
         ap={Number(game['ap'] ?? 0)}
-        moveTargetCount={moveTargets.length}
-        engulfTargets={engulfTargets}
-        noAction={noAction}
+        hint={hint}
+        buttons={offered.buttons.map((b) => ({ id: b.id, label: b.label }))}
+        noAction={offered.reason}
         undo={authView.undo}
         notice={lastError ? engineText(lastError) : null}
         canInspect={canInspect}
         disabled={playing}
-        onEngulf={(invaderId) => send({ action: 'engulf', cell: 'macrophage', invaderId })}
+        onButton={sendOffer}
         onUndo={() => send({ action: 'undo' })}
         onInspect={() => {
           if (selectedNode) setInspect(selectedNode);
@@ -377,6 +390,11 @@ export function PlayScreen({
           info={inspect}
           selectedCell={selectedCell}
           disabled={playing}
+          offers={sheetOffers}
+          onOffer={(id) => {
+            setInspect(null);
+            sendOffer(id);
+          }}
           onSelectCell={(ck) => {
             tapCell(ck);
             setInspect(null);

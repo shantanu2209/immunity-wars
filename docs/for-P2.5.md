@@ -211,3 +211,46 @@ engine snapshots BEFORE checking — still unwinds exactly to the phase start.
 
 **The standing rule for the eighteen actions still to build: offer only legal targets from
 the view's queries, so rejections are rare because illegal options are not offered.**
+
+## CP1 — attacks from where you stand: BUILT (4 September 2026), for review
+
+**The two-sources design, shown here as ruled rather than discovered at CP4.** One pure
+module, `packages/ui/src/play/offered.ts`, is the only place the UI decides what is legal,
+and it only reads the view. `offeredActions(view)` returns `{source, board, buttons,
+reason}`:
+
+- **Source `cell`** — the selected cell's offers: its selection-scoped moves, and the attacks
+  its queries answer (`macrophageEatable`, `wormStrikeable[cell]`, `snipeTargets`,
+  `nkTargets`, `netTargets`), each gated by the engine's generic AP-or-free rule and by
+  spent/offline.
+- **Source `body`** — `bodyOffers(view)`: offers that belong to the body, shown while
+  NOTHING is selected. Empty in CP1; the shell already renders and dispatches whatever it
+  returns, so CP4's memory response and antivenom dose are additions to one function, not a
+  second mechanism.
+- **Shape `board`** — positioned targets, typed `move` (at a node) or `attack` (on an
+  invader). The Board draws a move as the green dashed node ring and an attack as a red ring
+  around the type-group token standing for that invader; every ring is a tap candidate in the
+  one tap path. Several offers may aim at one invader (Eosinophil: strike OR degranulate) —
+  one offer acts on the tap, more open the sheet's ≥44px rows to choose.
+- **Shape `buttons`** — offers with no position or where the engine picks the target itself
+  (`net` nets the whole swarm the Neutrophil stands on).
+- **`reason`** — set whenever no ATTACK is offered, even if moves are: muted beside the move
+  hint ("works by contact", "not on a swarm yet"), red when nothing at all is offered. That
+  refinement came out of the headless walkthrough — a Helper T at the hub was answering "tap a
+  node to move" and nothing else, which is an answer but not the one a newcomer needs.
+
+**The standing rule is now a CHECK** (`tests/session/src/offered.test.ts`): recorded bot
+games, three seeds × three difficulties, every command-phase state, every cell — every offer
+applied to a cloned state through the engine must be accepted. Green on first run over every
+offer; its control (the Killer T offered every invader) fails it. It spans ui → session →
+engine the way a tap does.
+
+**Verified in the real app, headless:** NET by button (Neutrophil walked onto a Yellow fever
+swarm; invader gone; the bar then reads "spent and regenerating"); snipe by ring (Killer T,
+Toxoplasmosis, two steps out, ring, tap, gone); engulf by ring (Norovirus; Undo ended on the
+commit). Strike and degranulate share the strike targets query with the Eosinophil's sheet
+rows and are covered by the harness; a coated worm did not occur in the 19-game run, so their
+tap path is the S25 list's to see.
+
+**Not in CP1, by design:** `tag` (CP2) — which is why the Monocyte's strike never fired in
+the walkthrough: a worm must be coated first.

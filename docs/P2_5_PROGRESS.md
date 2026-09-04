@@ -94,7 +94,7 @@ the current surface cannot play. The seventeen are planned in
 | Work | State |
 |---|---|
 | **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
-| **The command surface** — the 17 player actions not yet reachable by touch, each offered from the view's legal-target queries | `move` and `engulf` only; plan for review in [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) (four checkpoints + the teaching-prose panel) |
+| **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **CP1 built (4 Sep):** net, snipe, nkkill, strike, degranulate + the offered ⊆ accepted harness; 7 of 19 reachable by touch. CP2–CP4 per [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
 | **Panels** — the log/teaching prose (currently invisible), production breakdown, status | Not started; the engine's teaching strings render nowhere today |
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |

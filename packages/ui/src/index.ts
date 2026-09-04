@@ -10,7 +10,7 @@ export const PACKAGE_NAME = '@immunity-wars/ui';
 
 export { Board, type ArtMetrics, type InspectInfo, type InspectInvader } from './board/Board';
 export { InspectSheet } from './panels/InspectSheet';
-export { CommandBar, type EngulfTarget } from './panels/CommandBar';
+export { CommandBar, type BarButton } from './panels/CommandBar';
 export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
@@ -19,3 +19,10 @@ export { ResultScreen, type ResultStats } from './screens/ResultScreen';
 export { cellDisplayName, typeDisplayName } from './names';
 export { t } from './i18n';
 export * as boardGeometry from './board/geometry';
+export {
+  offeredActions,
+  bodyOffers,
+  type Offered,
+  type BoardOffer,
+  type ButtonOffer,
+} from './play/offered';
