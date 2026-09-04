@@ -2973,7 +2973,9 @@ its own terms:
 - **Constructed states** for what the corpus cannot reach (`tests/session/src/constructed.ts`):
   found in the corpus and DRIVEN through the engine — the Neutrophil moved onto a pathogen it can
   NET; a resident patrolled up its branch to a virus. Never hand-built: every state is one the
-  engine produced, and a search that finds nothing fails loudly.
+  engine produced, and a search that finds nothing fails loudly. **This is the detail that
+  matters** (Shantanu, at the CP3 review): *a hand-built state proves the UI agrees with our
+  idea of the engine, not with the engine.* Only a state the engine produced can be the oracle.
 - **Two controls.** The floor must FIRE on the corpus alone — `net` and `resengulf` at zero —
   which is also the proof that the constructed states are what covers them (the mustPass half:
   the floor is required to pass on purpose, with the constructed states, and to fail on purpose
