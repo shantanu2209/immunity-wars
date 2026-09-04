@@ -225,10 +225,13 @@ contract Task B was measured against.
   the final 3.x — can fail a run in which every test passed, a false-red its closed line will
   never fix. `docs/FINDINGS.md` #43 and #44.
 
-  **Five advisories are open and ACCEPTED, re-argued 4 September 2026** (`docs/SECURITY_NOTES.md`,
-  "Re-argued"): `sharp` <0.35 (art pipeline, decodes our own committed art), four `fast-uri`
-  advisories (dependency-cruiser's config validation), and `extract-zip` (puppeteer's
-  browser-download path, never taken; no patch exists). **The old acceptance sentence — "this
+  **Two advisories are open, both dispositioned, re-argued 4 September 2026**
+  (`docs/SECURITY_NOTES.md`, "Re-argued" and "Rulings"): `sharp` <0.35 is DEFERRED (the art
+  pipeline decodes only our own committed art; a bump means regenerating and re-gating all 29
+  assets, so it is taken when the pipeline next runs for another reason), and `extract-zip` is
+  ACCEPTED WITH NO ACTION (puppeteer's browser-download path, never taken; no patch exists).
+  Four `fast-uri` advisories were cleared by a `pnpm` override the same day. **The old
+  acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on

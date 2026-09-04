@@ -48,6 +48,11 @@ allowBuilds:
 # upgrade; drop the override when the lockfile naturally resolves past it.
 overrides:
   'nanoid@<3.3.18': '>=3.3.18'
+  # fast-uri: GHSA-jqff-g426-hqxp, -f65p-4m7j-42xc, -fph4-wmhf-6fwf, -5jgf-p345-68v8 (four high,
+  # dev-only: dependency-cruiser > ajv > fast-uri, validating our own config). Not reachable
+  # (docs/SECURITY_NOTES.md, 4 Sep 2026); taken anyway by ruling because it is one line with no
+  # behaviour change and clears four alerts. Drop when the lockfile resolves past it.
+  'fast-uri@<3.1.6': '^3.1.6'
 
 minimumReleaseAgeExclude:
   - '@vitest/coverage-v8@4.1.11'
