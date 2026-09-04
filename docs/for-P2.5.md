@@ -363,9 +363,119 @@ ate one of two same-type viruses on a node — the fan-of-types token stays and 
 so the driver now sums the badges. The driver: string scripts inside `page.evaluate`, per the
 CP1/CP2 pattern.
 
+> **The general form, registered at the CP3 review (Shantanu):** the driver did not lie — it
+> answered a different question than the one being asked. Fan-of-types means one token can
+> stand for several invaders, so *token count* and *invader count* are different quantities and
+> only one of them was the measurement. **When a display collapses many things into one, any
+> instrument reading the display is measuring the collapse, not the things.** The recurring
+> shape at yet another scale: a check that reads a summary is a check of the summary.
+
 **S25 list for CP3 (Shantanu, by finger):** (1) tap a resident token → its real name and
 "resident of the …" in the bar; two patrols then Undo. (2) A cell to step 3 of the Nose, Gut,
 Contact, Wound or Bite route → blue rings on the partner crossings → tap one → the cell slides
 across. (3) Recall from mid-route, then Undo. (4) A resident patrolled onto a virus (a branch
 with a red ring) → tap → Undo vanishes. (5) The Monocyte on a branch node with the resident →
 "What's here" → two rows, choose the resident, choose the Monocyte.
+
+## The board-state sweep — state the engine tracks that the board does not show (4 September 2026)
+
+**Asked for by Shantanu after the CP3 S25 check**, which found that a tagged bacterium looks
+exactly like an untagged one. Tagging is a two-step play — the B-cell coats, then a macrophage
+eats — and it cannot be planned if the coat cannot be seen. The same class as the resident
+distinction: state the engine tracks that the board does not show. This is the whole list, so
+the rest are not met one at a time. **Method:** every field of `Invader`, `Cell` and `Resident`
+in `packages/engine/src/state.ts`, classified by which engine gate or query reads it (so
+"affects what a player can do" is the engine's verdict, not a guess), against what `Board.tsx`
+draws, what the inspect sheet shows, and what the command bar says on selection.
+
+**Shown now, correctly:** invader type (art), position, count per type, the novel mask; cell
+identity and position; resident position; organ integrity (the hp number); AP (the bar); the
+antibody store, caps, boosts and the immunosuppression block (the panel); the reveal's
+"remembered" flag, once, at arrival. Not shown at all, on any surface, unless a cell is
+selected and a ring happens to appear: the rows marked **nowhere**.
+
+### Invader state
+
+| State | What it changes for the player (engine site) | Shown where | Weight |
+|---|---|---|---|
+| **`tagged`** (bacteria, worm, parasite) | Gates `engulf`/`resengulf` on a bacterium, `strike`/`degranulate` on a worm or parasite, and a parasite's edibility; ends `tag` offers (`canTag`, `macrophageEatable`, `wormStrikeable`, `residentEatable`) | **nowhere** — not the board, not the sheet | **The gap raised.** Two-step play, invisible |
+| **`stage`** (malaria: sporozoite / liver / blood) | Liver stage: antibodies, Monocyte and residents cannot touch it, only Killer T and NK (`canNeutralise`, `macrophageEatable`, `snipeTargets`, `nkTargets`); blood stage: the reverse | **nowhere** — the sheet says "Malaria" for all three | Same shape as `tagged`: who can act depends on it |
+| **`inMac`** (kala-azar inside a resident) | Tag, neutralise, engulf refused; only Killer T / NK reach it; the resident cannot eat | **nowhere on the board**; the resident's bar line says "parasite inside" when the resident is selected | Same shape; one fact seen from two sides (see `infectedBy` below) |
+| `remembered` | `memoryKill` (CP4, body-level), and the AP waiver on `neutralise`/`tag` | reveal dialog once; then nowhere | CP4's memory-response rings will show it while nothing is selected — a home exists |
+| `ade` (dengue enhancement) | `neutralise` refused (`canNeutralise`) | nowhere | One disease; belongs with the card's "what beats it" |
+| `blocksLymph` (filarial worm) | `hop` refused everywhere while it lives (`lymphBlocked`) | nowhere — hop rings simply vanish, with no reason line | Body-level: better shown on the lymph connectors than on the token |
+| `hp` / `maxhp` | Strike arithmetic; a parasite is edible only at hp ≤ 1 | sheet only ("hp 2/3"); legacy drew pips | Medium; the sheet is the precise surface and has it |
+| `lodged` (a worm settled in tissue) | Stops marching, chronic organ damage; strike still works | nowhere; legacy drew an anchor | Urgency, not legality |
+| `embed` (liver-stage countdown) | When malaria bursts out — turns until it becomes attackable by antibodies | nowhere | Informational; a sheet line |
+| `emitted`, `age`, `wormClock`, `justEnteredHub`, `amnesia`, `variant`, `forced`, `hidesInMac`, `drain`, `killsHelper` | Spread mechanics and body effects (toxin release, worm timers, arrival, memory wipe, AP drain, HIV) — not a gate on any player action; their EFFECTS surface elsewhere (`hivActive` un-primes the helper; `drain` lowers AP) | nowhere as flags | Out of scope for the board; the effects belong to the status/body panel (CP4) and the log (CP5) |
+
+### Cell state
+
+| State | What it changes | Shown where | Weight |
+|---|---|---|---|
+| **`alive === false`** (Neutrophil after NET, Eosinophil after degranulate) | The cell cannot act until `regenAt` | **nowhere on the board** — the spent cell is drawn at the hub identical to a live one; the bar says "spent" only when it is selected; the return turn is shown nowhere (legacy: "T7") | Same shape as the coat: a token that looks available and is not |
+| **`suppress`** (neutropenia / lymphopenia, N turns) | Neutrophil or Killer T offline | bar on selection only | Same shape |
+| Helper priming (`presentations > 0`, `helperWith`) | Production rate, snipe range, Eosinophil speed | the production detail's prose, when a family is selected; not the board | Medium; a status item, CP4 |
+| `freeEngulf` (the Monocyte's first engulf is free) | Cost | nowhere (the engulf ring carries no cost hint) | Low; a cost hint on the ring |
+| `free[cell]` (free actions granted by effects) | Cost | nowhere | Low |
+| `usedThisTurn` (helper) | Nothing — the engine resets it and never sets it | — | Dead field; not applicable |
+
+### Resident and body state, for completeness
+
+`ate` and `infectedBy` — nowhere on the board, the bar line on selection (CP3). `infectedBy` is
+the other side of `inMac` above, so one marker answers both: a parasite drawn INSIDE the
+resident token rather than beside it. `lymphBlocked` — the connectors. `fx.skipMarch` and the
+crisis/rare banners — the dialog decisions of APP_FLOW ruling 5, still open. Organ `failed` —
+the loss, not a board state. The hub-sanctuary knob (`hubSafe`) is **off** by default, so "in
+the bloodstream" is not an invisible gate; checked rather than assumed.
+
+### What the list says
+
+Three states are the coat's shape exactly — **who can act on this depends on it, and nothing
+shows it**: `tagged`, malaria `stage`, and `inMac`/`infectedBy`. Two cell states are its mirror
+— **this piece cannot act, and it looks as if it can**: spent and suppressed. Everything else
+either has a surface already (the sheet, the panel, a dialog) or is spread mechanics whose home
+is the status panel or the log. So the recommendation is one mechanism, not five markers: a
+**state badge slot** on the token, taken by the coat now and by the other four as their
+checkpoints arrive, and the same states as words in the sheet's rows.
+
+## The coat marker — proposal, not built (4 September 2026)
+
+**The constraint stated first.** A token is 20px (36.7u) with the count badge at its top-right
+corner (r = 10u, frame red, white numeral), the label beneath it, the selection ring 3u outside
+it and an attack ring 5u outside it; fanned tokens sit 26u apart, so neighbours overlap by ~10u
+and a badge on the wrong corner lands on the next token's art.
+
+**1. Split the collapse before marking it.** Fan-of-types groups a node's invaders by type, so a
+node with a tagged and an untagged bacterium is ONE token — and a coat marker on it would be
+measuring the collapse. The group key becomes **type + coated**: a coated bacterium is its own
+token beside the uncoated ones. This also fixes a CP2 ambiguity nobody has met yet: the
+Monocyte's engulf ring on a mixed group is drawn around a token that stands for both. The
+STACK_COLOCATION measurement (≤2 types per off-hub node ≥99.3%) gains at most one extra group
+where a coat exists; the sheet's rows are unaffected.
+
+**2. The marker: an antibody badge at the top-LEFT corner**, the corner the count badge does not
+use. A disc of the same radius as the count badge, antibody gold with a dark-gold stroke, and a
+**Y drawn as two strokes** rather than a letter — an antibody IS Y-shaped, which is the teaching
+point, and a drawn glyph stays legible at 6px where a glyph font does not. Gate 1's 3:1
+non-text contrast is met by the dark stroke against the paper, not by the gold fill; the number
+is checked at build time, not asserted here. The same badge coats a worm or a parasite, since it
+is the same flag with the same consequence.
+
+**3. The word in the sheet.** Each coated row says "coated" through the catalogue, beside the
+type and hp — the precise surface should carry the state in words, and it is where a player who
+does not know the badge yet finds out what it means.
+
+**Why not a ring.** Opsonisation is literally a coat, and a gold ring around the art reads as
+one — but rings are already the selection (orange), the resident (brown double) and the target
+(red), and a fourth ring at 20px would sit inside the target ring's 5u and disappear under it
+exactly when it matters, on a coated bacterium the Monocyte is about to eat.
+
+**What lands with it, and what waits.** With the coat: the group split and the sheet word, and
+the CP3 driver gains a coat check (the badge count must equal the tagged count in the state,
+measured through the engine, not the display). Waiting for their checkpoints, in the same slot:
+a **spent** cell drawn faded with its return turn in the sheet (CP4's status panel or earlier —
+it is the cheapest of the five and the one the S25 will hit next, the Neutrophil after a NET);
+malaria **stage** as a second badge glyph and a sheet word (with the card, which explains the
+stages); the parasite drawn **inside** the resident for `inMac`/`infectedBy` (with the card).
+`blocksLymph` is a connector state, not a token state, and goes with the lymph polish note above.
