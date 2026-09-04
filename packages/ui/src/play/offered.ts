@@ -10,7 +10,7 @@
  *   - `cell`: the selected cell's offers — its legal moves and the attacks its queries answer.
  *   - `body`: offers that belong to the body, not a cell, shown while NOTHING is selected —
  *     the memory response on a remembered pathogen, an antivenom dose on a venom (CP4). Empty
- *     in CP1; the code path exists and the shell renders it identically.
+ *     until then; the code path exists and the shell renders it identically.
  *
  * TWO SHAPES:
  *   - `board`: positioned targets — a MOVE at a node, or an ATTACK on an invader. Several
@@ -18,10 +18,12 @@
  *     acts directly when one offer is on the tapped pathogen and opens the sheet's precise
  *     rows when there are more.
  *   - `buttons`: offers with no position, or where the engine picks the target itself (`net`
- *     nets the whole swarm the Neutrophil stands on).
+ *     nets the whole swarm the Neutrophil stands on). `place: 'panel'` sends a button to a
+ *     panel instead of the bar — `produce` lives on the antibody panel's family rows.
  *
- * `reason` is the always-answers rule's other half: when a cell is selected and nothing is
- * offered, why — from the view, in the order a player most needs to hear.
+ * `reason` is the always-answers rule's other half, held to CP1's standard: it names what the
+ * cell CANNOT do here even when it can still move or produce — the test is whether the answer
+ * helps, not whether an answer exists.
  *
  * Every offer carries the exact `params` the shell sends; a spanning test in the session suite
  * (`offered.test.ts`) replays recorded games and requires the engine to ACCEPT every offer
@@ -31,6 +33,15 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
+
+/**
+ * THE ONE MIRRORED RULE (FINDINGS #52): neutralising a toxin costs 2 AP, and the 2 is a
+ * literal in `packages/engine/src/actions.ts`, not a content constant. Mirrored here so the
+ * offer is withheld at 1 AP, and pinned by `tests/session/src/neutralise-cost.test.ts`, which
+ * drives the engine directly: reject at NEUTRALISE_TOXIN_AP - 1, accept at NEUTRALISE_TOXIN_AP.
+ * A WORKAROUND, not a design — Phase 3 moves the number to content and deletes this.
+ */
+export const NEUTRALISE_TOXIN_AP = 2;
 
 export type OfferSource = 'cell' | 'body';
 
@@ -58,19 +69,26 @@ export interface ButtonOffer {
   cell: string | null;
   label: string;
   params: Record<string, unknown>;
+  /** Where the shell shows it: the command bar (default) or a panel. */
+  place?: 'bar' | 'panel';
+  /** For panel buttons: which family row. */
+  family?: string;
 }
 
 export interface Offered {
   source: OfferSource;
   board: BoardOffer[];
   buttons: ButtonOffer[];
-  /** Set only when a cell is selected and nothing is offered. */
+  /** Set when a cell is selected and no ATTACK is offered — muted beside a move/produce hint. */
   reason: string | null;
 }
 
 interface Invaderish {
   id?: unknown;
   disease?: unknown;
+  type?: unknown;
+  remembered?: unknown;
+  novel?: unknown;
 }
 
 const EMPTY_CELL: Offered = { source: 'cell', board: [], buttons: [], reason: null };
@@ -100,9 +118,34 @@ function isSpent(g: ViewState, cell: string): boolean {
   return cells?.[cell]?.alive === false;
 }
 
-/** Body-level offers while nothing is selected. CP1: none. CP4 adds memoryKill and antivenom. */
+/** Body-level offers while nothing is selected. CP1–2: none. CP4 adds memoryKill and antivenom. */
 export function bodyOffers(_view: SessionView): Offered {
   return { source: 'body', board: [], buttons: [], reason: null };
+}
+
+/** Which antibody families the B-cell may produce right now, with the reason it may not. */
+export function producibleFamilies(view: SessionView): {
+  family: string;
+  ok: boolean;
+  why: 'blocked' | 'full' | 'clone' | null;
+}[] {
+  const g = view.game;
+  const ab = (g['ab'] as Record<string, unknown> | undefined) ?? {};
+  const caps = (view.queries.perFamily['capFam'] ?? {}) as Record<string, unknown>;
+  const invaders = (g['invaders'] as Invaderish[] | undefined) ?? [];
+  const out: { family: string; ok: boolean; why: 'blocked' | 'full' | 'clone' | null }[] = [];
+  for (const [family, p] of Object.entries(view.queries.production)) {
+    let why: 'blocked' | 'full' | 'clone' | null = null;
+    if (p.blocked) why = 'blocked';
+    else if (num(ab[family]) >= num(caps[family])) why = 'full';
+    else if (
+      family === 'X' &&
+      !(g['cloneFound'] === true && invaders.some((iv) => iv.novel === true))
+    )
+      why = 'clone';
+    out.push({ family, ok: why === null, why });
+  }
+  return out;
 }
 
 export function offeredActions(view: SessionView): Offered {
@@ -131,14 +174,7 @@ export function offeredActions(view: SessionView): Offered {
         located: d,
         label: t('action.move'),
         cost: null,
-        params: {
-          action: 'move',
-          cell,
-          zone: d.zone,
-          lane: d.lane,
-          organ: d.organ,
-          step: d.step,
-        },
+        params: { action: 'move', cell, zone: d.zone, lane: d.lane, organ: d.organ, step: d.step },
       });
     }
   }
@@ -194,25 +230,63 @@ export function offeredActions(view: SessionView): Offered {
         if (ap >= 2) attack('degranulate', targets, `2 ${t('commandBar.ap')}`);
         break;
       }
+      case 'bcell': {
+        // ANTIBODIES act at a distance: the B-cell never moves, its store reaches any
+        // attackable pathogen. canTag / canNeutralise already include the store check.
+        const invaders = (g['invaders'] as Invaderish[] | undefined) ?? [];
+        const canTag = (view.queries.perInvader['canTag'] ?? []) as unknown[];
+        const canNeut = (view.queries.perInvader['canNeutralise'] ?? []) as unknown[];
+        const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
+        invaders.forEach((iv, i) => {
+          const target = { id: String(iv.id ?? ''), disease: String(iv.disease ?? '') };
+          if (canTag[i] === true) attack('tag', [target], null);
+          if (canNeut[i] === true) {
+            const toxin = iv.type === 'toxin';
+            const remembered = iv.remembered === true || memory[target.disease] === true;
+            const cost = toxin ? NEUTRALISE_TOXIN_AP : 1;
+            // The engine waives the AP cost for a remembered pathogen (memory response).
+            if (remembered || ap >= cost) {
+              attack(
+                'neutralise',
+                [target],
+                toxin && !remembered ? `${cost} ${t('commandBar.ap')}` : null,
+              );
+            }
+          }
+        });
+        for (const f of producibleFamilies(view)) {
+          if (!f.ok) continue;
+          buttons.push({
+            id: `produce:${f.family}`,
+            action: 'produce',
+            cell,
+            label: `${t('action.produce')} ${f.family}`,
+            params: { action: 'produce', family: f.family },
+            place: 'panel',
+            family: f.family,
+          });
+        }
+        break;
+      }
       default:
         break;
     }
   }
 
-  // The reason names what the cell CANNOT do here even when it can still move: a Helper T at
-  // the hub is offered moves and is still told it works by contact. The shell shows it muted
-  // beside the move hint and red when nothing at all is offered.
-  const canAttack = buttons.length > 0 || board.some((o) => o.kind === 'attack');
+  // The reason names what the cell CANNOT do here even when it can still move or produce.
+  // The shell shows it muted beside a hint and red when nothing at all is offered.
+  const canAttack =
+    board.some((o) => o.kind === 'attack') || buttons.some((b) => b.place !== 'panel');
   return {
     source: 'cell',
     board,
     buttons,
-    reason: canAttack ? null : noActionReason(g, cell, act),
+    reason: canAttack ? null : noActionReason(view, cell, act),
   };
 }
 
 /** Why no attack is offered — per-cell first, after the generic gates. */
-function noActionReason(g: ViewState, cell: string, act: boolean): string {
+function noActionReason(view: SessionView, cell: string, act: boolean): string {
   if (!act) return t('selection.noAp');
   switch (cell) {
     case 'neutrophil':
@@ -227,8 +301,13 @@ function noActionReason(g: ViewState, cell: string, act: boolean): string {
       return t('selection.nothingToEngulfHere');
     case 'helper':
       return t('selection.helperContact');
-    case 'bcell':
-      return t('selection.stationary');
+    case 'bcell': {
+      const fams = producibleFamilies(view);
+      if (fams.length > 0 && fams.every((f) => f.why === 'blocked'))
+        return t('selection.productionBlocked');
+      if (fams.length > 0 && fams.every((f) => f.why === 'full')) return t('selection.storesFull');
+      return t('selection.noMatchingAntibody');
+    }
     default:
       return t('selection.nothing');
   }

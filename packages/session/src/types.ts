@@ -81,6 +81,14 @@ export interface ProductionSummary {
   readonly net: number;
   readonly boosted: boolean;
   readonly reduced: boolean;
+  /**
+   * Immunosuppression: the engine refuses `produce` while `fx.noProduce` is set, and `fx` is
+   * one of the 13 keys the view drops. The engine's `productionBreakdown` already reports it
+   * as `blocked`; carrying the boolean here (seven booleans, no engine change) is what lets the
+   * antibody panel withhold Produce instead of offering what the engine will reject —
+   * COMMAND_SURFACE_PLAN §3.1, the one place the standing rule needed a session field.
+   */
+  readonly blocked: boolean;
 }
 
 /** Answers that exist only because something is selected. Null fields when nothing is. */
