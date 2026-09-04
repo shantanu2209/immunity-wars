@@ -2838,3 +2838,34 @@ never fired. It is now a pure function (`buildUiCatalogue`) with a mustFail/must
 error — it consumes whatever coverage data is on disk and does not check that the run producing
 it succeeded. CI is protected by step ordering (`set -e` stops the job), so the gap is local
 only; recorded as the property, not worked around.
+
+---
+
+## 52. A tuning number living as an engine literal: `neutralise` costs 2 AP for a toxin, and the 2 is in `actions.ts`
+
+**Found 4 September 2026, while planning the command surface** (`docs/COMMAND_SURFACE_PLAN.md`
+§3) — entered by Shantanu's ruling, so that the workaround it forces does not become permanent
+by default.
+
+`packages/engine/src/actions.ts` (`case 'neutralise'`): `const apCost = iv.type === 'toxin' ? 2
+: 1; // antitoxin is harder work`. That is a **tuning number**, and every other tuning number
+in this game lives in `packages/content/src/rules/tuning.json` — `VACCINE_COST`, `CLONE_COST`,
+`ANTIVENOM_ORDER`, the AP per difficulty, the snipe range. This one alone is a literal inside a
+rule. Nothing was wrong with it while the only consumer was the engine itself.
+
+**Why it matters now.** The UI's standing rule is to offer only legal actions, so the command
+bar must withhold *Neutralise* on a toxin when the player has 1 AP. To know that, the UI needs
+the 2 — and the engine is frozen in Phase 2, so the UI **mirrors the literal** (a duplicated
+rule, the hazard `CLAUDE.md` names under "rules live in `packages/engine` and nowhere else"),
+pinned by a spanning test in the session suite that drives the engine directly: a toxin at
+1 AP must be rejected, at 2 accepted, so the mirror cannot drift silently.
+
+> **That mirror is a WORKAROUND, not a design.** The correction is to move the number to
+> content — `tuning.json`, exported by `packages/content`, read by the engine like every other
+> tuning constant — after which the UI reads the same export and the duplicate disappears. It is
+> an engine edit with no behavioural change, verifiable against the corpus byte-for-byte, and it
+> is **Phase 3's** to make, because Phase 2's definition of done is "the engine is unchanged".
+
+**Disposition: OPEN — Phase 3.** The UI mirror ships in P2.5 CP2 with its spanning test; this
+entry is what keeps it from being mistaken for the intended shape. When the constant moves to
+content, delete the mirror and its test in the same commit.

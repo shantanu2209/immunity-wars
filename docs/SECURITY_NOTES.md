@@ -21,6 +21,89 @@ document is the finding.
 
 ---
 
+## Re-argued 4 September 2026: the structural sentence is FALSE, and the property survives on a different basis
+
+**Why this section exists.** GitHub showed seven high alerts on `main` while `CLAUDE.md` said
+`pnpm audit` was clean — a documented-but-false claim in the file every session reads first.
+And the acceptance below rests on *"this repository never starts a long-running server"*, which
+stopped being true at P2.2 commit 2: there is a Vite dev server (`pnpm --filter
+@immunity-wars/app dev`), and since the S25 touch passes there is `vite preview --host`, which
+serves the built app on the local network to a phone. Shantanu's ruling: the acceptance cannot
+be *assumed* to still hold; re-argue it per advisory. This is that argument. **Nothing has been
+upgraded on the strength of it; report first.**
+
+### What listens now, and what it loads
+
+Two things listen, both started deliberately by a developer, never by a player, never by CI:
+
+| Process | When | Listens on | Serves |
+|---|---|---|---|
+| Vite dev server | `pnpm --filter @immunity-wars/app dev` | `localhost:5173` | the workspace's own source, transformed |
+| Vite preview | `vite preview --host` for the phone check | the LAN, for the duration of the check | the built `dist/` — static files |
+
+Both are **vite 8.2.1**, which has **no open advisory**, and vite's resolved dependency tree
+contains **none** of the three packages below (checked with `pnpm ls vite --depth 6`). So the
+structural fact that replaces the old sentence is:
+
+> ### No open advisory is in a process that listens. Every open advisory is in a one-shot tool the maintainer runs on inputs the maintainer chose.
+
+That is weaker than the old sentence and it is the true one. It has to be re-checked whenever
+a listening process gains a dependency, or an advisory lands on vite itself — the automatic
+answer the old sentence gave is gone.
+
+### The seven alerts are five advisories
+
+GitHub counts one alert per (advisory × manifest): `sharp` appears twice (its declaring
+manifest and the lockfile), and four separate advisories name `fast-uri`.
+
+#### HIGH — `sharp` <0.35.0, libvips CVEs inherited (crafted-image parsing)
+
+[GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj) · installed
+**0.33.5** · devDependency of `tools/art-pipeline` only · patched in **0.35.0**
+
+**Not reachable by anyone but the maintainer, on inputs the maintainer chose.** `pnpm
+art:build` decodes the raw PNGs committed under the art pipeline — the assets Shantanu generated
+in Google Flow, downloaded, judged and committed. The vulnerable code path is *decoding a crafted
+image*; the images decoded are ours. One-shot; not in any server; not shipped (the app ships the
+pipeline's WebP output, not `sharp`). **Cost of upgrading anyway:** a libvips change can move
+WebP encoder bytes, and the pipeline's determinism is asserted byte-for-byte (`--verify`) —
+so the bump means regenerating the outputs, re-running the contrast gate, and re-verifying,
+not just bumping a version. Worth doing at a quiet moment; not a reason to stop.
+
+#### HIGH ×4 — `fast-uri` <3.1.6, SSRF / host confusion in URI normalisation
+
+[GHSA-jqff-g426-hqxp](https://github.com/advisories/GHSA-jqff-g426-hqxp),
+[GHSA-f65p-4m7j-42xc](https://github.com/advisories/GHSA-f65p-4m7j-42xc),
+[GHSA-fph4-wmhf-6fwf](https://github.com/advisories/GHSA-fph4-wmhf-6fwf),
+[GHSA-5jgf-p345-68v8](https://github.com/advisories/GHSA-5jgf-p345-68v8) · installed
+**3.1.5** · transitive, `dependency-cruiser → ajv → fast-uri` · patched in **3.1.6**
+
+**Not reachable.** Every one of the four is a URI-normalisation flaw that matters when
+*untrusted* URIs are normalised and then used to make requests. Here `fast-uri` is loaded by
+`ajv` to resolve `$ref`s while validating dependency-cruiser's configuration
+(`.dependency-cruiser.cjs`, ours) during `pnpm boundaries`. No network request is ever made
+from that URI; the process exits. **Cost of fixing:** a one-line `pnpm.overrides` entry to
+`>=3.1.6` — cheap, but the same caveat as before applies: an override outlives its reason.
+
+#### HIGH — `extract-zip` ≤2.0.1, symlink path traversal on extraction — NO PATCH
+
+[GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv) · installed
+**2.0.1** · transitive, `puppeteer-core → @puppeteer/browsers → extract-zip` · **no patched
+version exists**
+
+**Not reachable.** The vulnerable path runs when puppeteer *downloads and unpacks a browser*.
+`tools/perf/measure.ts` uses `puppeteer-core` with `executablePath` pointing at the system
+Chrome and never calls the install API; no archive is ever extracted. There is nothing to
+upgrade to; the only removal would be dropping puppeteer, which is the perf instrument.
+
+### Verdict
+
+**The acceptance stands, on the restated basis above, for all five.** Fixes are not required
+by it. Two are cheap and one is impossible; whether to take the cheap ones is a ruling, not a
+consequence of this document. `CLAUDE.md` is corrected the same day to say what is true.
+
+---
+
 ## The one thing to read
 
 > ### Every advisory currently open requires a long-running server accepting requests. This repository never starts one.

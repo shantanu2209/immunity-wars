@@ -225,13 +225,21 @@ contract Task B was measured against.
   the final 3.x — can fail a run in which every test passed, a false-red its closed line will
   never fix. `docs/FINDINGS.md` #43 and #44.
 
-  **Nothing remains accepted: `pnpm audit` is clean.** The last advisory (esbuild ≤0.24.2 via
-  `tools/legacy-harness`'s own pin) was cleared later the same day by ruling — the pin moved to
-  ^0.28, and the bump was verified the strong way: `build:single` rebuilt, both artifacts opened
-  in a browser and **played** through a full turn including a spread, with zero console errors.
-  If an advisory appears in future, the structural acceptance test in `docs/SECURITY_NOTES.md`
-  still applies — but note the dev server exists from P2.2 commit 2 onward, so "nothing listens
-  on a port" is no longer the automatic answer it was.
+  **Five advisories are open and ACCEPTED, re-argued 4 September 2026** (`docs/SECURITY_NOTES.md`,
+  "Re-argued"): `sharp` <0.35 (art pipeline, decodes our own committed art), four `fast-uri`
+  advisories (dependency-cruiser's config validation), and `extract-zip` (puppeteer's
+  browser-download path, never taken; no patch exists). **The old acceptance sentence — "this
+  repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
+  and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
+  is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
+  inputs the maintainer chose*. That is weaker and true, and it must be re-checked whenever a
+  listening process gains a dependency or vite itself gets an advisory.
+
+  *Corrected 4 September 2026.* This block previously said **"Nothing remains accepted:
+  `pnpm audit` is clean"** — true on 19 August, false by the time GitHub showed seven high
+  alerts on `main`, and in the file every session reads first. The esbuild clearance it
+  described (pin to ^0.28, `build:single` rebuilt and **played** through a full turn) still
+  stands as the record of how a bump is verified here.
 
   **The battery for any future runner or toolchain move, in full — learned the once-hard way
   when the P2.2 upgrade ran the coverage TESTS but not the coverage GATE, and the gate was where
