@@ -161,10 +161,43 @@ interface Invaderish extends Located {
   novel?: unknown;
   hp?: unknown;
   maxhp?: unknown;
+  tagged?: unknown;
 }
 
 interface Cellish extends Located {
   alive?: unknown;
+  regenAt?: unknown;
+}
+
+/**
+ * A cell that LOOKS available and is not (the board-state sweep, for-P2.5.md): spent after
+ * its big move and regenerating, or offline under a crisis. `backIn` is turns until it acts
+ * again, when the view carries it.
+ */
+export interface Unavailable {
+  kind: 'spent' | 'offline';
+  backIn: number | null;
+}
+
+/** The session's per-cell return turn (`queries.readyTurn`) — the ENGINE's answer, not `regenAt`. */
+export type ReadyTurn = Readonly<Record<string, number | null>>;
+
+function unavailability(
+  view: ViewState,
+  cell: string,
+  c: Cellish,
+  readyTurn: ReadyTurn,
+): Unavailable | null {
+  const turn = typeof view['turn'] === 'number' ? view['turn'] : null;
+  if (c.alive === false) {
+    const ready = readyTurn[cell];
+    const back = typeof ready === 'number' && turn !== null ? Math.max(0, ready - turn) : null;
+    return { kind: 'spent', backIn: back };
+  }
+  const sup = view['suppress'] as Record<string, unknown> | undefined;
+  const n = sup?.[cell];
+  if (typeof n === 'number' && n > 0) return { kind: 'offline', backIn: n };
+  return null;
 }
 
 interface Organish {
@@ -185,6 +218,13 @@ const fan = (p: Pt, i: number, n: number): Pt =>
  */
 const ART_URL = (key: string): string => `/art/${key}@3x.webp`;
 const TOKEN_ART_U = 36.7; // 20 CSS px at 360
+
+/** The antibody coat badge's colours — the legacy renderer's antibody gold, with the dark
+ *  stroke that carries the contrast (the fill alone is 1.8:1 against the paper). */
+const COAT = { fill: '#F2B705', stroke: '#7A5600' } as const;
+/** A Y in two strokes: the V, then the stem — an antibody's shape, at any size. */
+const yGlyph = (cx: number, cy: number): string =>
+  `M${cx - 4},${cy - 4.5} L${cx},${cy} L${cx + 4},${cy - 4.5} M${cx},${cy} L${cx},${cy + 5}`;
 const LARGE_ART_U = 55; // 30 CSS px at 360
 const CELL_ART = new Set([
   'macrophage',
@@ -215,6 +255,8 @@ export interface InspectInvader {
   novel: boolean;
   hp: number;
   maxhp: number;
+  /** Coated in antibody (`tagged`): what a macrophage may eat and a strike may hit. */
+  coated: boolean;
 }
 
 /** Everything standing on one node, handed to the shell when the node is tapped. */
@@ -223,6 +265,8 @@ export interface InspectInfo {
   x: number;
   y: number;
   cells: string[];
+  /** Spent or offline cells among `cells`, with turns until they are back. */
+  unavailable: Record<string, Unavailable>;
   /** Organ key when that organ's resident macrophage stands here. */
   resident: string | null;
   invaders: InspectInvader[];
@@ -244,6 +288,10 @@ export interface DisplayToken {
   resident?: boolean;
   /** For a resident token: its organ — how it is selected and addressed (CP3). */
   organ?: string;
+  /** A cell that looks available and is not — drawn dimmed, with its return in the badge slot. */
+  unavailable?: Unavailable;
+  /** An invader group coated in antibody — its own token, never mixed with uncoated ones. */
+  coated?: boolean;
   art: string | null;
   /** Invaders of this type on this node; a badge shows when >= 2. */
   count: number;
@@ -251,7 +299,7 @@ export interface DisplayToken {
   ids?: string[];
 }
 
-export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
+export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<string, NodeModel> {
   const invaders = (view['invaders'] as Invaderish[] | undefined) ?? [];
   const cells = (view['cells'] as Record<string, Cellish> | undefined) ?? {};
   const residents = (view['residents'] as Record<string, { step?: unknown }> | undefined) ?? {};
@@ -292,7 +340,14 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
       node = {
         pos: s.pos,
         display: [],
-        inspect: { x: s.pos.x, y: s.pos.y, cells: [], resident: null, invaders: [] },
+        inspect: {
+          x: s.pos.x,
+          y: s.pos.y,
+          cells: [],
+          unavailable: {},
+          resident: null,
+          invaders: [],
+        },
       };
       byNode.set(k, node);
     }
@@ -311,12 +366,16 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
         });
       } else if (s.cell !== undefined) {
         node.inspect.cells.push(s.cell);
+        const unavailable =
+          unavailability(view, s.cell, cells[s.cell] ?? {}, readyTurn) ?? undefined;
+        if (unavailable) node.inspect.unavailable[s.cell] = unavailable;
         node.display.push({
           key: `cell-${s.cell}`,
           label: s.cell.slice(0, 4),
           kind: 'cell',
           pos: s.pos,
           cell: s.cell,
+          unavailable,
           art: CELL_ART.has(s.cell) ? `cell-${s.cell}` : null,
           count: 1,
         });
@@ -329,14 +388,21 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
         novel: s.iv.novel === true,
         hp: typeof s.iv.hp === 'number' ? s.iv.hp : 1,
         maxhp: typeof s.iv.maxhp === 'number' ? s.iv.maxhp : 1,
+        coated: s.iv.tagged === true,
       });
     }
   }
   // Collapse each node's invaders into type groups (novel invaders group as 'novel', masked).
+  //
+  // THE GROUP KEY IS TYPE + COATED (the board-state sweep, 4 Sep 2026). A coated bacterium is
+  // its own token beside the uncoated ones: a coat badge on a mixed group would be measuring
+  // the collapse, not the invaders — and the Monocyte's engulf ring on a mixed group was
+  // drawn around a token standing for both. STACK_COLOCATION's ≤2-types measurement gains at
+  // most one extra group where a coat exists.
   for (const node of byNode.values()) {
     const groups = new Map<string, InspectInvader[]>();
     for (const iv of node.inspect.invaders) {
-      const gk = iv.novel ? 'novel' : iv.type;
+      const gk = iv.novel ? 'novel' : iv.coated ? `${iv.type}:coated` : iv.type;
       const list = groups.get(gk) ?? [];
       list.push(iv);
       groups.set(gk, list);
@@ -344,12 +410,14 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
     for (const [gk, list] of groups) {
       const first = list[0];
       if (!first) continue;
+      const type = gk === 'novel' ? 'novel' : first.type;
       node.display.push({
         key: `ivg-${node.pos.x}:${node.pos.y}:${gk}`,
-        label: list.length === 1 ? first.disease.slice(0, 6) : gk,
+        label: list.length === 1 ? first.disease.slice(0, 6) : type,
         kind: 'invader',
         pos: node.pos,
-        art: gk !== 'novel' && PATH_ART.has(gk) ? `path-${gk}` : null,
+        coated: gk !== 'novel' && first.coated,
+        art: gk !== 'novel' && PATH_ART.has(type) ? `path-${type}` : null,
         count: list.length,
         ids: list.map((x) => x.id),
       });
@@ -360,24 +428,36 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
 }
 
 /** The node the given invader stands on, as the inspect sheet would show it — or null. */
-export function inspectInfoForInvader(view: ViewState, invaderId: string): InspectInfo | null {
-  for (const node of buildNodeModel(view).values()) {
+export function inspectInfoForInvader(
+  view: ViewState,
+  invaderId: string,
+  readyTurn: ReadyTurn = {},
+): InspectInfo | null {
+  for (const node of buildNodeModel(view, readyTurn).values()) {
     if (node.inspect.invaders.some((iv) => iv.id === invaderId)) return node.inspect;
   }
   return null;
 }
 
 /** The node the given cell stands on, as the inspect sheet would show it — or null. */
-export function inspectInfoForCell(view: ViewState, cell: string): InspectInfo | null {
-  for (const node of buildNodeModel(view).values()) {
+export function inspectInfoForCell(
+  view: ViewState,
+  cell: string,
+  readyTurn: ReadyTurn = {},
+): InspectInfo | null {
+  for (const node of buildNodeModel(view, readyTurn).values()) {
     if (node.inspect.cells.includes(cell)) return node.inspect;
   }
   return null;
 }
 
 /** The node the given organ's resident stands on — or null. */
-export function inspectInfoForResident(view: ViewState, organ: string): InspectInfo | null {
-  for (const node of buildNodeModel(view).values()) {
+export function inspectInfoForResident(
+  view: ViewState,
+  organ: string,
+  readyTurn: ReadyTurn = {},
+): InspectInfo | null {
+  for (const node of buildNodeModel(view, readyTurn).values()) {
     if (node.inspect.resident === organ) return node.inspect;
   }
   return null;
@@ -411,8 +491,11 @@ export function Board({
   selectedResident = null,
   artMetrics,
   targets = [],
+  readyTurn = {},
   onTap,
 }: {
+  /** The session's per-cell return turn — what a spent cell's badge shows. */
+  readyTurn?: ReadyTurn;
   view: ViewState;
   /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
   selectedCell?: string | null;
@@ -435,7 +518,7 @@ export function Board({
   onTap?: (hit: BoardTap) => void;
 }): ReactElement {
   const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
-  const byNode = buildNodeModel(view);
+  const byNode = buildNodeModel(view, readyTurn);
 
   // Tap candidates, in the resolver's terms. Cells at their FANNED positions (a stack's cells
   // are individually addressable); a node is a candidate only if it has something to inspect.
@@ -737,6 +820,8 @@ export function Board({
               key={t.key}
               data-cell={t.cell}
               data-resident={t.resident === true ? t.organ : undefined}
+              data-coated={t.coated === true ? '1' : undefined}
+              data-unavailable={t.unavailable?.kind}
               style={(t.cell || t.resident === true) && onTap ? { cursor: 'pointer' } : undefined}
             >
               {selected ? (
@@ -774,12 +859,17 @@ export function Board({
                 </>
               ) : null}
               {t.art !== null ? (
+                // A SPENT or OFFLINE cell is drawn dimmed and desaturated (the board-state
+                // sweep): the message is "not this one", so it is the art that changes, not a
+                // badge added — the badge slot carries its return instead, below.
                 <image
                   href={ART_URL(t.art)}
                   x={p.x - TOKEN_ART_U / 2}
                   y={p.y - TOKEN_ART_U / 2}
                   width={TOKEN_ART_U}
                   height={TOKEN_ART_U}
+                  opacity={t.unavailable ? 0.38 : 1}
+                  style={t.unavailable ? { filter: 'grayscale(1)' } : undefined}
                 />
               ) : (
                 // No art (a novel invader stays masked): the placeholder circle.
@@ -811,6 +901,54 @@ export function Board({
                     fill="#fff"
                   >
                     {t.count}
+                  </text>
+                </>
+              ) : null}
+              {t.coated === true ? (
+                // THE COAT BADGE — top-LEFT, the corner the count badge does not use: antibody
+                // gold with a dark-gold stroke (6.5:1 against the paper, 3.7:1 against the
+                // fill — Gate 1's 3:1 for non-text UI, computed 4 Sep 2026) and a Y drawn as
+                // two strokes, because an antibody IS Y-shaped and a drawn glyph survives 6px
+                // where a letter does not. Opsonisation, made visible.
+                <g>
+                  <circle
+                    cx={p.x - TOKEN_ART_U / 2 + 3}
+                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    r={10}
+                    fill={COAT.fill}
+                    stroke={COAT.stroke}
+                    strokeWidth={1.6}
+                  />
+                  <path
+                    d={yGlyph(p.x - TOKEN_ART_U / 2 + 3, p.y - TOKEN_ART_U / 2 + 3)}
+                    fill="none"
+                    stroke={COAT.stroke}
+                    strokeWidth={2.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+              ) : null}
+              {t.unavailable && t.unavailable.backIn !== null ? (
+                // The return, in the badge slot: turns until the cell acts again.
+                <>
+                  <circle
+                    cx={p.x - TOKEN_ART_U / 2 + 3}
+                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    r={10}
+                    fill={CLASSIC.ink}
+                    stroke="#fff"
+                    strokeWidth={1.6}
+                  />
+                  <text
+                    x={p.x - TOKEN_ART_U / 2 + 3}
+                    y={p.y - TOKEN_ART_U / 2 + 7.2}
+                    textAnchor="middle"
+                    fontSize={12}
+                    fontWeight="bold"
+                    fill="#fff"
+                  >
+                    {t.unavailable.backIn}
                   </text>
                 </>
               ) : null}
