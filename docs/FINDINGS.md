@@ -2653,3 +2653,188 @@ The P2.3 instrumentation corrected itself twice before producing a number anyone
 **Disposition: FIXED before any figure was published.** Both corrections are recorded in
 `P2_3_MEASUREMENT.md` and commented at the code they correct (`packages/app/src/metrics.ts`,
 `packages/app/src/main.tsx`).
+
+## 49. The physical A2 board and `geometry.json` disagree on layout — parity is an aspiration, not a current fact
+
+**Found 20 August 2026, at the P2.4 restyle, by reading the located A2 PDFs' vector operators
+directly.**
+
+The physical board (`Immunity_Wars_BOARD_A2.pdf` / `_COLOUR.pdf`, generated July 2026 by a
+Python script that is now lost — the PDFs themselves are vector and fully recoverable) is
+**bilateral**: all six entry labels sit in the left half of the page (x 77–452 of 1191pt),
+all six organ labels in the right half (x 698–1054), head to toe, hub in the centre — the
+board's own rubric says "Entry routes on the LEFT · organs on the RIGHT". `geometry.json` is
+**radial**: entries and organs on all sides of a central hub.
+
+So the print was **not** produced from `geometry.json`, and the brief's "geometry.json is the
+single source for the on-screen board AND the printed A2 artwork" (PHASE2_BRIEF §5) describes
+the intended pipeline, not the existing artefacts. Two consequences already landed:
+
+1. **A reprint generated from `geometry.json` will not look like the board Kartik has been
+   presenting.** Reconciling the two layouts — move `geometry.json` to the bilateral design,
+   or accept the radial one for both — is a design decision for Kartik, not a Phase 2 styling
+   call.
+2. **Print elements whose shape assumes the bilateral layout do not transpose.** The lymph
+   arcs are the first: on the print they are short local arcs because lymph-linked entries are
+   adjacent *by layout*; on the radial board those entries are scattered, and the restyle could
+   only draw straight dashed connectors (`for-P2.5.md`).
+
+Also settles half of `ASSETS.md` open question 4: the A2 artwork is separately produced vector
+work, not the `art_data.js` icon set — only its 16 small embedded rasters share that provenance
+question.
+
+**Disposition: recorded; the layout reconciliation is Kartik's, at the point the print is next
+regenerated.** The P2.4 restyle carries the print's palette and stroke weights onto the
+existing radial geometry, which is what it could do without deciding layout.
+
+**RESOLVED 20 August 2026, same day, by Shantanu's direction: the app adopts the A2 layout.**
+`geometry.json` is now **generated from the A2 PDF itself** by `tools/geometry-from-a2/`
+(extraction of the PDF's vector operators; count assertions against `rules/board.json`, with a
+`--control` mode proving they fire; the content schema re-verifies independently). The
+generator and its input PDF are committed — the July script was lost, and this board's
+generator is not going to be lost twice. Consequence #1 above is thereby closed in the print's
+favour; consequence #2 dissolved — with the layouts matched, the lymph connectors are local
+again. What remains open moved to `for-P2.5.md` (connector curvature, arrowheads, the LYMPH
+label's i18n home).
+
+**RELAXED 20 August 2026, later the same day, by Shantanu: the printed A2 was an interim
+artefact for the exhibition**, not a fixed reference — so `geometry.json` is free to change
+for screen reasons from here. The A2 extraction stands as the layout's starting point and
+`tools/geometry-from-a2/` remains the record of where it came from, but parity now means "the
+NEXT print is generated from geometry.json" (the brief's original intent), not "the app must
+match the July print". First consequence: the print's organ boxes are not drawn on screen,
+and co-located tokens will stack with a count badge instead of fanning — both screen
+decisions the print never had to make.
+
+---
+
+## 50. Two verified components with an unverified join: the autosave that was documented in the commit that failed to implement it
+
+**Found 30 August 2026, at the minimum-shell walkthrough, by playing the app as a player
+would.** No instrument fired.
+
+`docs/APP_FLOW.md` ruling 4 says the save is written **by the session on every accepted
+action**. `packages/app/src/main.tsx` carried a header comment saying exactly that. And
+`LocalSession.sendAction` did not do it: the only `storage.put` in the session sat inside the
+explicit `save()` method, which nothing called. Playing a turn and quitting kept the save, as
+ruled — but there was no save. The IndexedDB store was empty, and Continue never appeared.
+
+A documented-but-false claim, roughly the dozenth in this project — with one property none of
+the others had: **the claim and the code that falsified it landed in the same commit.** The
+previous dozen drifted false over time (#2, #9, #25, #26). This one was born false. Drift is
+not the only way documentation and code disagree; they can simply never have met.
+
+### Why nothing caught it — the variant worth naming
+
+Every component on the path was individually verified, before the walkthrough and honestly:
+
+- **`save()` was tested** — the C2 control saves, resumes, and requires the resumed game to
+  equal the saved one, with the injected clock's stamp checked (`negative-control.test.ts`).
+- **`IndexedDbStorage` was exercised** — the dev-shell IDB exercise drives `session.save()`
+  through the Storage port to real IndexedDB on every load of `dev.html` (`idb-exercise.ts`).
+- **`sendAction` was tested** — the step 6 suite replays full games through it and requires
+  the projections to match the engine driven directly, step for step.
+
+What was never tested is that **`sendAction` CALLS `save`**. Both sides of the seam worked;
+the seam was never connected; and every test looked at one side or the other. A test of
+`save()` cannot see that nothing calls it. A test of `sendAction` that never reads storage
+cannot see what was not written. Green everywhere, and the join did not exist.
+
+> **The shape: two verified components with an unverified join.** It is a sibling of #47
+> (two instruments blind in the same place) but distinct — nothing here was blind, everything
+> was seen, and the gap was BETWEEN the seen things. The defence is a test that spans the
+> join and asserts the OUTCOME of the composition — "after an accepted action, the store
+> contains the state" — not the behaviour of either part. Component tests cannot compose
+> into an integration claim, however many of them are green.
+
+### How it was found, and what that licenses
+
+It was found by walking the app like a player: new game, draw, quit, return to the title —
+and Continue was not there. **That is the newcomer test's justification arriving three pieces
+early.** No instrument was pointed at the join, so no instrument could have found it; a
+person following the path a player follows found it in one pass. The newcomer test (P2.5
+piece 3) is not a courtesy to usability — it is the only check this project runs that walks
+joins nobody thought to instrument.
+
+### The fix, and why it is trustworthy
+
+The autosave moved into `LocalSession.sendAction` — Storage's consumer is Session
+(PHASE2_BRIEF §3), and the UI could not have done it: it never sees the `GameState`. Three
+tests were written FIRST and run RED against the unfixed session — accepted action writes the
+whole `GameState` (deck present) under the save id; rejected action writes nothing; a resumed
+session saves through the same path — then the fix went in and the suite went green. The red
+run is the negative control: the tests are known to be able to fail on exactly this bug.
+
+**Disposition: FIXED in the same session, tests first. The shape is named here so the next
+join gets a spanning test before a walkthrough has to find it.**
+
+---
+
+## 51. `pnpm verify` replayed a cached green over a red suite for thirteen days: the turbo test hash did not see workspace dependencies
+
+**Found 2 September 2026, by CI, on the first push of the Phase 2 branch — thirty-seven
+commits, every one of them verified green locally.** Entered by the instrument rule: everything
+measured with `pnpm verify` between 20 August and 2 September is untrustworthy on one axis.
+
+### What happened
+
+CI's `test` and `coverage` jobs failed seven assertions in
+`tests/equivalence/src/ui-content.test.ts` — the Phase 1 check that pins the content pack's
+board tables to the legacy `v2_ui.html` extraction. All seven were the A2 radialisation of
+20 August (#49): `VH` 660 versus legacy 930, the hub at (330,330) versus (330,462), and the
+five position tables. The parity claim had been **deliberately false for thirteen days**, by
+ruling, and the suite that asserts it had been green on every local run since.
+
+A forced run (`turbo run test --force`) was red immediately. Turbo's own dry run said why:
+
+```
+@immunity-wars/equivalence#test  cache: HIT  dependencies: []  inputs: 43 files
+```
+
+**The `test` task in `turbo.json` had no `dependsOn`, so a package's test hash covered only
+its own files.** `tests/equivalence` imports `@immunity-wars/content`; the content package
+changed; the equivalence task's 43 hashed files did not; turbo replayed the pass it had recorded
+before the change. CI caught it only because CI has no cache — the one environment that could
+not be fooled was the one nobody ran before pushing.
+
+### Why this is the instrument rule's case, not the product's
+
+`pnpm verify` is what "commit after verification" rests on. For any change confined to one
+package, it worked. **For any change in a package that another package's tests depend on — which
+is every content change, every engine change, every session change — it could replay a stale
+result for the dependents.** The equivalence corpus, the project's primary oracle, is a
+dependent of the engine. Phase 2 made no engine change, so nothing is known to have slipped
+through on that axis; but "nothing is known to have" is the smaller claim, and it is the one
+this entry makes.
+
+> **The shape: a cache that hashes the wrong set of inputs is a check that goes green on
+> exactly the changes it exists to catch.** It is a sibling of #45 (a rule written down and
+> not practised) and of the C5b lesson (a test that regenerates its own oracle): the check ran,
+> reported, and measured nothing. The defence is the same as always — a control that removes
+> the edge and requires the check to fire.
+
+### The fix, with its control
+
+- `turbo.json`: `test` now `dependsOn: ["^test"]`, so a test task's hash includes its
+  workspace dependencies' test tasks, which include their sources. Measured after the change:
+  `equivalence#test` depends on `content#test` and `engine#test` and reports a MISS.
+- `pnpm turbo:check` (`tools/ci/turbo-check.ts`, inside `pnpm verify`): from turbo's dry
+  run, every workspace package with a test script must depend on every workspace dependency's
+  test task. **27 edges** checked; a run that checks no edge exits non-zero.
+- Its negative control, `turbo-test-hash` in `tools/ci/selftest.ts`: the edge deleted from
+  `turbo.json`, the check must fail saying `TURBO TEST HASH BLIND`. **Fired on its first run.**
+- The seven expired assertions are retired **as a list, with the reason**, not deleted: they
+  now require the tables to exist and to still differ from legacy, so a table that becomes
+  equal again is sent back to the pinned set (`ui-content.test.ts`).
+
+**Disposition: FIXED inline, with a control. The cache-blindness window is 20 August – 2
+September 2026; the only known casualty is the parity suite above.**
+
+**Addendum, same day — two things the PR's coverage job then surfaced.** (1) The
+`UI_I18N_EN` loader's non-string throw was listed as an unreachable arm: a validator that had
+never fired. It is now a pure function (`buildUiCatalogue`) with a mustFail/mustPass pair in
+`load.test.ts`, and the arm is covered rather than excluded. (2) Observed while fixing it:
+`pnpm coverage:gate` printed GATE PASSES after a `coverage:all` that had exited 2 on a parse
+error — it consumes whatever coverage data is on disk and does not check that the run producing
+it succeeded. CI is protected by step ordering (`set -e` stops the job), so the gap is local
+only; recorded as the property, not worked around.

@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.4 · 19 August 2026
+**Version:** 1.5 · 30 August 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
@@ -54,6 +54,24 @@ the section that says what the number turned out to be:
   **Capacitor holds — CONFIRMED BY SCREENING, not decided.** Locked decision #1 stays formally
   open until the deciding pass on real 2–3GB hardware. §4 carries the ruling in place.
 - P2.2 and P2.3 are closed: [`P2_2_CLOSEOUT.md`](P2_2_CLOSEOUT.md).
+
+---
+
+## What v1.5 records
+
+v1.5 changes one detail of Gate 1's human-tested item, by ruling at the newcomer-test
+protocol review (30 August 2026, [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md)):
+
+- **The tester is not told to pick Training.** The difficulty screen is one of the screens
+  under test, and telling someone which button to press on a screen under test means that
+  screen is not tested. The interface carries the guidance instead (Training marked
+  "Recommended for your first game"), and **choosing a difficulty is part of "starting
+  unaided"**. Training remains the expected setting; a non-Training pick is a finding about
+  the difficulty screen, not a voided run. §1 carries the marked amendment in place.
+- The spread pacing decision §4 left open is **ruled**: 900ms standard / 1400ms dice with
+  tap-anywhere-to-advance, replacing the legacy 560/800ms. No measurement needed re-running —
+  none of §4's budget rows depend on the inter-frame delay
+  ([`for-P2.5.md`](for-P2.5.md)).
 
 ---
 
@@ -131,6 +149,15 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 > The review's two sub-questions are answered in the item itself: **a loss counts as finishing**,
 > and the test runs on **Training**. A full game is ~45 turns, which is a long first session to
 > ask of an unaided newcomer, and Training is the honest setting to ask it on.
+>
+> ⚠️ **Amended in v1.5 — the newcomer-test protocol review (30 August 2026).** "Runs on
+> Training" does not mean the tester is TOLD to pick Training: the difficulty screen is one of
+> the screens under test, and an instructed choice untests it. The interface carries the
+> guidance — Training is marked **"Recommended for your first game"** — and **choosing a
+> difficulty is part of "starting unaided"**. Training remains the expected setting because
+> the recommendation should produce it; whether it does is itself part of the test, and a
+> non-Training pick is a **finding about the screen**, not a voided run. Protocol:
+> [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md).
 
 > ⚠️ **Added in v1.1 — review item G.** Accessibility was **neither in Gate 1 nor explicitly
 > out** in v1.0. It is now a deliberate call in both directions.
@@ -437,6 +464,12 @@ row it came from is not finished.
 > constant, not a rule. Phase 2 owns whether to keep it. It is a **rendering decision** — it
 > affects how the spread reads to a player and nothing about what the engine does — and it should
 > be made by looking at the animation, not by copying a number forward.
+>
+> ✅ **RULED 30 August 2026 (v1.5): 900ms standard / 1400ms dice, plus tap-anywhere-to-advance.**
+> For a newcomer the frame headline is information, not confirmation, and 560ms does not fit
+> reading a label AND registering which tokens changed; the tap is what makes the exact numbers
+> low-stakes. No re-measurement was needed — none of the budget rows above depend on the
+> inter-frame delay. Record: [`for-P2.5.md`](for-P2.5.md).
 
 ### How, in order of cost
 

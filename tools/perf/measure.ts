@@ -86,6 +86,17 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
       initial.push(Math.round((m.initialRenderMs ?? NaN) * 10) / 10);
     }
 
+    // The goal dialog (P2.5 piece 3) opens once on a fresh game; a real player dismisses it
+    // before touching the board, so the measured taps and spreads run without it. Tolerant,
+    // like the reveal dismissal below; coupled to the catalogue's goal.begin text.
+    await page.evaluate(() => {
+      // Exact match on purpose: includes('Begin') would hit "Begin command" first.
+      const b = [...document.querySelectorAll('button')].find(
+        (x) => x.textContent?.trim() === 'Begin',
+      );
+      if (b) b.click();
+    });
+
     // --- tap -> visible: 24 alternating cell selections through Session ---
     const cells = ['macrophage', 'neutrophil', 'tcell', 'nk'];
     for (let i = 0; i < 24; i += 1) {
@@ -116,6 +127,16 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
         },
         { timeout: 30000 },
       );
+      // The card reveal (P2.5 piece 3) modalizes the draw. A real player dismisses it before
+      // commanding, so the measured spread must run without a lingering dialog. Tolerant on
+      // purpose — a mop-up draw shows no dialog. Coupled to the catalogue's reveal.continue
+      // text, the same kind of coupling as the button labels above.
+      await page.evaluate(() => {
+        const b = [...document.querySelectorAll('button')].find((x) =>
+          x.textContent?.includes('Continue'),
+        );
+        if (b) b.click();
+      });
       await clickButton(page, 'Begin command');
       await page.waitForFunction(
         () => {

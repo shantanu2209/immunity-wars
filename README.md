@@ -90,11 +90,10 @@ Repository hosted on Shantanu's GitHub account; Kartik does not have one.
 
 Source code is licensed under the **Apache License 2.0** — see [LICENSE](LICENSE).
 
-Game content — board artwork, card designs, rulebook and study materials — is **not yet licensed
-for redistribution.** We intend to release it under CC BY-SA 4.0 once we have confirmed that the
-terms of the tool used to generate the artwork permit it. Until that check is complete, please
-don't redistribute the game content. See [LICENSES.md](LICENSES.md).
+Game content — board artwork, card designs, rulebook and study materials — is **all rights
+reserved, by decision** (20 August 2026). No content licence is declared and none is pending:
+whether AI-generated artwork is copyrightable at all is legally unsettled, and rather than
+resolve that ourselves we grant nothing. The reasoning is in [LICENSES.md](LICENSES.md).
 
-If you are a teacher who wants to use this in a classroom: that is exactly what it is for, and
-the intent is that you'll be able to, freely, in any language. Finishing the licence check above
-is the last step before we can say so formally.
+If you are a teacher who wants to use this in a classroom: that is exactly what it is for.
+Go ahead — and if you want it in writing for your school, open an issue and ask.

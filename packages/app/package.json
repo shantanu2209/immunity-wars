@@ -22,11 +22,13 @@
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/ui": "workspace:*",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@immunity-wars/content": "workspace:*"
   },
   "devDependencies": {
     "vite": "^8.2.0",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "@types/node": "^22.0.0"
   }
 }

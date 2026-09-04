@@ -14,7 +14,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.4).
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.5).
 Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
 `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 
@@ -46,6 +46,11 @@ pnpm test:balance     # slow; run on engine/content changes
 pnpm build
 pnpm build:single     # self-contained HTML harness — double-click to play, no toolchain
 ```
+
+`pnpm test` is turbo-cached. A test task's hash includes its workspace dependencies through the
+`^test` edge in `turbo.json` — without it, `pnpm verify` replayed a cached green over a red
+suite for thirteen days (`docs/FINDINGS.md` #51). `pnpm turbo:check` (inside `verify`) asserts
+the edges exist; `pnpm turbo run test --force` bypasses the cache when the cache itself is in doubt.
 
 ## Layout
 

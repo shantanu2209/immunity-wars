@@ -141,6 +141,20 @@ const CONTROLS: readonly Control[] = [
     mustPass: true,
   },
   {
+    id: 'turbo-test-hash',
+    why: 'pnpm verify replayed a cached green over a red suite for thirteen days: with no ^test edge a test task hashes only its own package, so a change in a workspace dependency never invalidates it (docs/FINDINGS.md #51).',
+    file: 'turbo.json',
+    mutate: (t) => {
+      const j = JSON.parse(t) as { tasks: Record<string, { dependsOn?: unknown }> };
+      const test = j.tasks['test'];
+      if (test) delete test.dependsOn;
+      return `${JSON.stringify(j, null, 2)}
+`;
+    },
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND',
+  },
+  {
     id: 'docs-phase-marker',
     why: 'CLAUDE.md said "Current phase: Phase 1" for the whole first session of Phase 2, and ROADMAP.md agreed with it. A stale phase marker is not wrong enough to notice, so it survives.',
     file: 'CLAUDE.md',

@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 176 entries (9.4% of the 1876 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 176 entries (9.4% of the 1878 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 

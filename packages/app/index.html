@@ -3,13 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Immunity Wars — dev shell</title>
+    <title>The Immunity Wars</title>
     <!--
-      P2.2 dev shell. From commit 2 this page ran the IndexedDbStorage exercise; from step 3 the
-      board renders here through LocalSession, and the exercise lives in a collapsed section so
-      indexeddb.ts's "reruns on every load" promise stays true. Developer scaffolding, not the
-      player UI — that is P2.5's, catalogue duty and all.
+      THE APP (docs/APP_FLOW.md): Title -> Difficulty -> Play -> Result. The instrumented
+      dev shell lives at /dev.html and must keep building (ruling 6).
     -->
+    <style>
+      /* Nunito (variable, latin, OFL — public/fonts/OFL.txt): the board's typography,
+         decided at P2.5 piece 2 and bundled so it works fully offline (Gate 1). */
+      @font-face {
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

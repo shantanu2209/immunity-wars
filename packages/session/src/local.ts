@@ -136,6 +136,13 @@ export class LocalSession implements Session {
       this.emit({ kind: 'burst', frames: frames as readonly BurstFrame[] });
     }
     this.emit({ kind: 'view', view: this.cached });
+
+    // AUTOSAVE — docs/APP_FLOW.md ruling 4: the save is written by the session on every
+    // accepted action, and by the session only (the UI cannot: it never sees `g`). Awaited so
+    // a resolved `sendAction` means the write is ordered before any later one; the failure is
+    // swallowed rather than rejecting an action the engine has already applied — a device
+    // whose storage does not work degrades to no-save, not to an unplayable game.
+    await this.save().catch(() => undefined);
     return { ok: true };
   }
 

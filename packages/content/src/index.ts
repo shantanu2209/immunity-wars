@@ -133,6 +133,7 @@ export {
   FACT,
   HUB,
   ORGAN_ART,
+  UI_I18N_EN,
   ORGAN_POS,
   REGION_BOX,
   REGION_LABEL,
