@@ -71,21 +71,30 @@ dev-shell controls involved.** Concretely: every player action the engine accept
 single-player must be reachable by touch. The engine's action set is `activate`, `antivenom`,
 `clonalSelection`, `degranulate`, `engulf`, `hop`, `memoryKill`, `move`, `net`,
 `neutralise`, `nkkill`, `orderAntivenom`, `produce`, `recall`, `resengulf`, `resmove`,
-`snipe`, `strike`, `tag`, `vaccinate`, plus `undo` and the three turn actions. **As of
-4 September, two of the twenty are built.** Gate 1's human test needs the whole surface — a
+`snipe`, `strike`, `tag`, `vaccinate`, plus `undo` and the three turn actions. **As of 4 September, two of the twenty are built.** *Corrected the same day while planning the rest ([`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) §0): `activate` is an engine stub that always rejects, and "present" is a side effect of engulfing, not an action — so the surface is **nineteen** player actions, two built, **seventeen** to go.* Gate 1's human test needs the whole surface — a
 tester who cannot present an antigen or produce an antibody is not testing the game, and a run
 that cannot be finished by touch would be voided by the protocol's own rules.
 
-**Before the missing eighteen are built, cell selection gets reworked** (Shantanu, 4 September):
+**Before the missing actions are built, cell selection gets reworked** (Shantanu, 4 September):
 everything else is built on that pattern, and its weaknesses are recorded in
-[`for-P2.5.md`](for-P2.5.md) ahead of the ruling.
+[`for-P2.5.md`](for-P2.5.md) ahead of the ruling. **Done and approved the same day.**
+
+**Evidence for the bar, not an opinion about it (recorded at Shantanu's direction, 4 September):**
+verifying the selection model's engulf step headless took **ten fresh games to draw something
+the Monocyte could engulf unaided** — the first nine turn-1 draws were parasites, worms,
+bacteria, a venom and a hidden pathogen, none of which the two built actions can touch. On the
+S25 the same thing happened by hand: nothing spawned that could be acted on. That is an
+artefact of two actions existing rather than nineteen, not a design finding — but it is the
+concrete reason the newcomer test moved: a tester's first game is, more often than not, one
+the current surface cannot play. The seventeen are planned in
+[`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md), for ruling in pieces.
 
 ## What is left in P2.5
 
 | Work | State |
 |---|---|
 | **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
-| **The command surface** — the 18 player actions not yet reachable by touch, each offered from the view's legal-target queries | `move` and `engulf` only |
+| **The command surface** — the 17 player actions not yet reachable by touch, each offered from the view's legal-target queries | `move` and `engulf` only; plan for review in [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) (four checkpoints + the teaching-prose panel) |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
 | **Panels** — the log/teaching prose (currently invisible), production breakdown, status | Not started; the engine's teaching strings render nowhere today |
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |

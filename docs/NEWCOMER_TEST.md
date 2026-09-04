@@ -152,8 +152,7 @@ the day is a free fix, not a finding.*
 ### The readiness bar (ruled 4 September 2026)
 
 **A full game playable to a conclusion by touch, in the app shell, with no dev-shell controls
-involved.** Every player action the engine accepts in single-player must be reachable by touch —
-twenty actions plus undo and the turn controls (the list is in `P2_5_PROGRESS.md`). As of
+involved.** Every player action the engine accepts in single-player must be reachable by touch — nineteen actions plus undo and the turn controls (the list is in `P2_5_PROGRESS.md`; the engine also names `activate`, a stub that always rejects). As of
 4 September, `move` and `engulf` are the only two built. Until the bar is met, running the
 test spends a single-use tester on a gap already known, which is the one thing the protocol
 exists to prevent.
