@@ -22,7 +22,12 @@ import { useEffect, useRef, useState, type ReactElement, type ReactNode } from '
 import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
-import { Board, inspectInfoForCell, inspectInfoForInvader } from '../board/Board';
+import {
+  Board,
+  inspectInfoForCell,
+  inspectInfoForInvader,
+  inspectInfoForResident,
+} from '../board/Board';
 import { engineText } from '../engineText';
 import { offeredActions, type BoardOffer, type Offered } from './offered';
 import { GRACE_CLEAR } from '@immunity-wars/content';
@@ -34,7 +39,7 @@ import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
-import { cellDisplayName } from '../names';
+import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
@@ -46,7 +51,11 @@ const DICE_FRAME_MS = 1400;
 export interface PlaySessionLike {
   getView(): SessionView;
   sendAction(action: Record<string, unknown>): Promise<{ ok: boolean; error?: string }>;
-  setSelection(selection: { cell: string | null; family: string | null }): void;
+  setSelection(selection: {
+    cell: string | null;
+    family: string | null;
+    resident: string | null;
+  }): void;
   subscribe(
     listener: (
       ev:
@@ -259,16 +268,20 @@ export function PlayScreen({
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
-    session.setSelection({ cell, family: null });
+    session.setSelection({ cell, family: null, resident: null });
     onTap?.(from, cell);
   };
-  const deselect = (): void => session.setSelection({ cell: null, family: null });
+  // A resident selects like a cell and excludes one (CP3): the two fields are exclusive.
+  const tapResident = (organ: string): void =>
+    session.setSelection({ cell: null, family: null, resident: organ });
+  const deselect = (): void => session.setSelection({ cell: null, family: null, resident: null });
 
   const game = authView.game;
   const phase = String(game['phase']);
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
+  const selectedResident = authView.selection.resident;
 
   // WHAT IS LEGAL comes from one place (offered.ts) and nowhere else in the UI. During a
   // burst nothing is offered — input is disabled.
@@ -286,8 +299,8 @@ export function PlayScreen({
   }
   const boardTargets: BoardTarget[] = [
     ...offered.board
-      .filter((o) => o.kind === 'move')
-      .map((o) => ({ key: o.id, kind: 'move' as const, located: o.located, payload: [o] })),
+      .filter((o) => o.kind === 'move' || o.kind === 'hop')
+      .map((o) => ({ key: o.id, kind: o.kind, located: o.located, payload: [o] })),
     ...[...byInvader.entries()].map(([invaderId, offers]) => ({
       key: `attack:${invaderId}`,
       kind: 'attack' as const,
@@ -295,7 +308,7 @@ export function PlayScreen({
       payload: offers,
     })),
   ];
-  const moveCount = offered.board.filter((o) => o.kind === 'move').length;
+  const moveCount = offered.board.filter((o) => o.kind === 'move' || o.kind === 'hop').length;
   const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
   const barButtons = offered.buttons.filter((b) => b.place !== 'panel');
   const panelButtons = offered.buttons.filter((b) => b.place === 'panel');
@@ -377,15 +390,23 @@ export function PlayScreen({
         if (hit.cell === selectedCell) deselect();
         else tapCell(hit.cell);
         return;
+      case 'resident':
+        if (hit.organ === selectedResident) deselect();
+        else tapResident(hit.organ);
+        return;
       case 'node':
         setInspect(hit.node);
         return;
       default:
-        if (selectedCell) deselect();
+        if (selectedCell || selectedResident) deselect();
     }
   };
 
-  const selectedNode = selectedCell ? inspectInfoForCell(game, selectedCell) : null;
+  const selectedNode = selectedCell
+    ? inspectInfoForCell(game, selectedCell)
+    : selectedResident
+      ? inspectInfoForResident(game, selectedResident)
+      : null;
   const canInspect =
     selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
 
@@ -405,12 +426,22 @@ export function PlayScreen({
       <Board
         view={shown}
         selectedCell={selectedCell}
+        selectedResident={selectedResident}
         artMetrics={artMetrics}
         targets={boardTargets}
         onTap={playing ? undefined : handleBoardTap}
       />
       <CommandBar
-        selectedCellName={selectedCell ? cellDisplayName(selectedCell) : null}
+        selectedCellName={
+          selectedCell
+            ? cellDisplayName(selectedCell)
+            : selectedResident
+              ? residentDisplayName(selectedResident)
+              : null
+        }
+        qualifier={
+          selectedResident ? t('resident.of', { organ: organDisplayName(selectedResident) }) : null
+        }
         ap={Number(game['ap'] ?? 0)}
         hint={hint}
         buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
@@ -432,7 +463,9 @@ export function PlayScreen({
         detail={familyDetail}
         produce={produceOffers}
         disabled={playing}
-        onSelectFamily={(family) => session.setSelection({ cell: selectedCell, family })}
+        onSelectFamily={(family) =>
+          session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+        }
         onProduce={sendOffer}
       />
       {inspect ? (
@@ -447,6 +480,11 @@ export function PlayScreen({
           }}
           onSelectCell={(ck) => {
             tapCell(ck);
+            setInspect(null);
+          }}
+          selectedResident={selectedResident}
+          onSelectResident={(organ) => {
+            tapResident(organ);
             setInspect(null);
           }}
           onClose={() => setInspect(null)}

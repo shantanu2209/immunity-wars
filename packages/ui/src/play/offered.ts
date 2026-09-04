@@ -29,10 +29,12 @@
  * (`offered.test.ts`) replays recorded games and requires the engine to ACCEPT every offer
  * this module makes, with a deliberate over-offer as its negative control.
  */
+import { LYMPH_GROUP, LYMPH_STEP, ROUTES, ROUTE_KEYS } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
+import { residentDisplayName } from '../names';
 
 /**
  * THE ONE MIRRORED RULE (FINDINGS #52): neutralising a toxin costs 2 AP, and the 2 is a
@@ -45,12 +47,26 @@ export const NEUTRALISE_TOXIN_AP = 2;
 
 export type OfferSource = 'cell' | 'body';
 
+/**
+ * The repositioning actions — the session's undo MOVE_CLASS, seen from the offer side. The
+ * reason line is about ATTACKS: a cell that can only move, recall or patrol still gets told
+ * what it cannot do here, so these do not count as "something was offered".
+ */
+const MOVE_LIKE: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
+
 export interface BoardOffer {
   id: string;
-  kind: 'move' | 'attack';
+  /**
+   * `move` at a node; `hop` at the partner crossing of a lymph link (a move in every rule,
+   * drawn in lymph blue because the board already teaches lymph in blue — ruling 3, CP3);
+   * `attack` on an invader.
+   */
+  kind: 'move' | 'hop' | 'attack';
   action: string;
-  /** The acting cell, or null for a body-level offer. */
+  /** The acting cell, or null for a body-level or RESIDENT offer. */
   cell: string | null;
+  /** The acting resident's organ (CP3) — residents are keyed by organ, not by cell. */
+  organ?: string;
   /** MOVE: where. */
   located?: Located;
   /** ATTACK: whom. */
@@ -67,6 +83,7 @@ export interface ButtonOffer {
   id: string;
   action: string;
   cell: string | null;
+  organ?: string;
   label: string;
   params: Record<string, unknown>;
   /** Where the shell shows it: the command bar (default) or a panel. */
@@ -151,8 +168,11 @@ export function producibleFamilies(view: SessionView): {
 export function offeredActions(view: SessionView): Offered {
   const g = view.game;
   const cell = view.selection.cell;
-  if (!cell) return bodyOffers(view);
+  const resident = view.selection.resident;
+  if (!cell && !resident) return bodyOffers(view);
   if (String(g['phase']) !== 'command') return { ...EMPTY_CELL, reason: t('selection.notCommand') };
+  if (resident) return residentOffers(view, resident);
+  if (!cell) return bodyOffers(view);
   if (isSpent(g, cell)) return { ...EMPTY_CELL, reason: t('selection.spent') };
   if (isSuppressed(g, cell)) return { ...EMPTY_CELL, reason: t('selection.offline') };
 
@@ -176,6 +196,47 @@ export function offeredActions(view: SessionView): Offered {
         cost: null,
         params: { action: 'move', cell, zone: d.zone, lane: d.lane, organ: d.organ, step: d.step },
       });
+    }
+
+    // REPOSITIONING BEYOND MOVE (CP3). Both are engine gates read off the view: the B-cell is
+    // stationary for both; recall needs the cell off the hub; hop needs lymphatics on and
+    // unblocked, and the cell standing AT the crossing of a route that has a lymph link.
+    const cells = g['cells'] as Record<string, Record<string, unknown>> | undefined;
+    const c = cells?.[cell];
+    if (cell !== 'bcell' && c) {
+      if (c['zone'] !== 'hub') {
+        buttons.push({
+          id: 'recall',
+          action: 'recall',
+          cell,
+          label: t('action.recall'),
+          params: { action: 'recall', cell },
+        });
+      }
+      const flags = g['flags'] as Record<string, unknown> | undefined;
+      const lane = typeof c['lane'] === 'string' ? c['lane'] : null;
+      if (
+        flags?.['lymph'] === true &&
+        state['lymphBlocked'] !== true &&
+        c['zone'] === 'route' &&
+        c['step'] === LYMPH_STEP &&
+        lane !== null
+      ) {
+        for (const partner of lymphPartners(lane)) {
+          board.push({
+            id: `hop:${partner}`,
+            kind: 'hop',
+            action: 'hop',
+            cell,
+            located: { zone: 'route', lane: partner, step: LYMPH_STEP },
+            label: `${t('action.hop')} ${routeName(partner)}`,
+            cost: null,
+            // The lane is passed explicitly: the engine falls back to its first partner
+            // otherwise, and a ring on the Gut must not land the cell on the Contact route.
+            params: { action: 'hop', cell, lane: partner },
+          });
+        }
+      }
     }
   }
 
@@ -276,13 +337,118 @@ export function offeredActions(view: SessionView): Offered {
   // The reason names what the cell CANNOT do here even when it can still move or produce.
   // The shell shows it muted beside a hint and red when nothing at all is offered.
   const canAttack =
-    board.some((o) => o.kind === 'attack') || buttons.some((b) => b.place !== 'panel');
+    board.some((o) => o.kind === 'attack') ||
+    buttons.some((b) => b.place !== 'panel' && !MOVE_LIKE.has(b.action));
   return {
     source: 'cell',
     board,
     buttons,
     reason: canAttack ? null : noActionReason(view, cell, act),
   };
+}
+
+/**
+ * The routes a cell at the lymph crossing can slide to — the engine's `lymphPartners`,
+ * re-derived here from the CONTENT tables alone (same group, not this lane, long enough to
+ * have a crossing). `ui` may read content; it may not call the engine. The offered ⊆
+ * accepted harness is what keeps the two derivations agreeing.
+ */
+export function lymphPartners(lane: string): string[] {
+  const group = (LYMPH_GROUP as Record<string, string | null>)[lane];
+  if (!group) return [];
+  return (ROUTE_KEYS as readonly string[]).filter((l) => {
+    const route = (ROUTES as Record<string, { len: number } | undefined>)[l];
+    return (
+      l !== lane &&
+      (LYMPH_GROUP as Record<string, string | null>)[l] === group &&
+      route !== undefined &&
+      route.len >= LYMPH_STEP
+    );
+  });
+}
+
+const routeName = (lane: string): string =>
+  String((ROUTES as Record<string, { name?: string } | undefined>)[lane]?.name ?? lane);
+
+/**
+ * A RESIDENT MACROPHAGE'S OFFERS (CP3) — the one extension to the selection model. A resident
+ * is keyed by its organ; it patrols its own branch one step at a time (`resmove`, 1 AP, a
+ * move) and engulfs where it stands (`resengulf`, free, once per turn, a commit). Both gates
+ * are read off the view, in the engine's order.
+ *
+ * Two rulings (Shantanu, 4 September 2026) shape this function:
+ *   - `resengulf` is offered as ATTACK RINGS, one per eatable pathogen, because the engine
+ *     honours a supplied `invaderId` and only falls back to the first — so the choice is real
+ *     here in a way it is not for `net`, and the same action keeps one interaction shape
+ *     whichever macrophage performs it.
+ *   - An INFECTED resident may still patrol. The engine accepts `resmove` for it and refuses
+ *     only `resengulf`; the legacy UI blocked both, which made it a second rules source. The
+ *     parasite line shows muted beside the patrol rings.
+ */
+function residentOffers(view: SessionView, organ: string): Offered {
+  const g = view.game;
+  const residents = g['residents'] as Record<string, Record<string, unknown>> | undefined;
+  const r = residents?.[organ];
+  if (!r) return { ...EMPTY_CELL, reason: t('selection.nothing') };
+  const name = residentDisplayName(organ);
+  const flags = g['flags'] as Record<string, unknown> | undefined;
+  const perOrgan = view.queries.perOrgan;
+  const ap = num(g['ap']);
+  const step = num(r['step']);
+  const infected = r['infectedBy'] !== null && r['infectedBy'] !== undefined;
+  const ate = r['ate'] === true;
+  const canPatrol = flags?.['residentMove'] === true;
+  const board: BoardOffer[] = [];
+
+  // PATROL — residents never hold a free-action key, so the engine's gate is AP alone.
+  if (canPatrol && ap > 0) {
+    const L = num(perOrgan['branchLen']?.[organ]);
+    for (const s of [step - 1, step + 1]) {
+      if (s < 0 || s > L) continue;
+      board.push({
+        id: `resmove:${organ}:${String(s)}`,
+        kind: 'move',
+        action: 'resmove',
+        cell: null,
+        organ,
+        located: { zone: 'branch', organ, step: s },
+        label: t('action.patrol'),
+        cost: null,
+        params: { action: 'resmove', organ, step: s },
+      });
+    }
+  }
+
+  // ENGULF — free, so no AP gate; the engine refuses an infected or already-fed resident.
+  if (!infected && !ate) {
+    for (const iv of ids(perOrgan['residentEatable']?.[organ])) {
+      board.push({
+        id: `resengulf:${organ}:${iv.id}`,
+        kind: 'attack',
+        action: 'resengulf',
+        cell: null,
+        organ,
+        invaderId: iv.id,
+        label: `${t('action.engulf')} ${iv.disease}`,
+        cost: null,
+        params: { action: 'resengulf', organ, invaderId: iv.id },
+      });
+    }
+  }
+
+  // THE REASON, in the engine's own gate order, then what stops the patrol. The step-0 line
+  // is the one that earns its place: FINDINGS #5 measured that a resident at its organ can
+  // never eat anything, and the bot never worked that out — so the interface says it.
+  let reason: string | null = null;
+  if (!board.some((o) => o.kind === 'attack')) {
+    if (infected) reason = t('selection.residentInfected', { name });
+    else if (ate) reason = t('selection.residentAte', { name });
+    else if (!canPatrol) reason = t('selection.residentsCannotMove');
+    else if (ap <= 0) reason = t('selection.noAp');
+    else if (step === 0) reason = t('selection.residentAtOrgan', { name });
+    else reason = t('selection.residentNothingHere', { name });
+  }
+  return { source: 'cell', board, buttons: [], reason };
 }
 
 /** Why no attack is offered — per-cell first, after the generic gates. */

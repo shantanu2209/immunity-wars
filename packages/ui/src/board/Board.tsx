@@ -242,6 +242,8 @@ export interface DisplayToken {
   pos: Pt;
   cell?: string;
   resident?: boolean;
+  /** For a resident token: its organ — how it is selected and addressed (CP3). */
+  organ?: string;
   art: string | null;
   /** Invaders of this type on this node; a badge shows when >= 2. */
   count: number;
@@ -303,6 +305,7 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
           kind: 'cell',
           pos: s.pos,
           resident: true,
+          organ: s.resident,
           art: 'cell-macrophage',
           count: 1,
         });
@@ -372,6 +375,14 @@ export function inspectInfoForCell(view: ViewState, cell: string): InspectInfo |
   return null;
 }
 
+/** The node the given organ's resident stands on — or null. */
+export function inspectInfoForResident(view: ViewState, organ: string): InspectInfo | null {
+  for (const node of buildNodeModel(view).values()) {
+    if (node.inspect.resident === organ) return node.inspect;
+  }
+  return null;
+}
+
 /**
  * A positioned offer the shell wants drawn and tappable (from offered.ts). A MOVE is at a
  * node; an ATTACK is on an invader, drawn around the type-group token that stands for it.
@@ -379,7 +390,8 @@ export function inspectInfoForCell(view: ViewState, cell: string): InspectInfo |
  */
 export interface BoardTarget {
   key: string;
-  kind: 'move' | 'attack';
+  /** `hop` is a move drawn in lymph blue at the partner crossing (CP3, ruling 3). */
+  kind: 'move' | 'hop' | 'attack';
   located?: Located;
   invaderId?: string;
   payload: unknown;
@@ -389,12 +401,14 @@ export interface BoardTarget {
 export type BoardTap =
   | { kind: 'target'; target: BoardTarget }
   | { kind: 'cell'; cell: string; node: InspectInfo }
+  | { kind: 'resident'; organ: string; node: InspectInfo }
   | { kind: 'node'; node: InspectInfo }
   | { kind: 'nothing' };
 
 export function Board({
   view,
   selectedCell = null,
+  selectedResident = null,
   artMetrics,
   targets = [],
   onTap,
@@ -402,6 +416,8 @@ export function Board({
   view: ViewState;
   /** The cell whose selection the view carries — P2.3's real tap renders as a highlight. */
   selectedCell?: string | null;
+  /** The organ whose resident macrophage is selected (CP3). */
+  selectedResident?: string | null;
   /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
    *  spaced as full squares. */
   artMetrics?: ArtMetrics;
@@ -425,7 +441,7 @@ export function Board({
   // are individually addressable); a node is a candidate only if it has something to inspect.
   const candidates: TapCandidate<BoardTap>[] = [];
   const targetPos = (tg: BoardTarget): Pt | null => {
-    if (tg.kind === 'move') return tg.located ? tokenPos(tg.located) : null;
+    if (tg.kind === 'move' || tg.kind === 'hop') return tg.located ? tokenPos(tg.located) : null;
     for (const node of byNode.values()) {
       const i = node.display.findIndex((t) => t.ids?.includes(tg.invaderId ?? '') === true);
       if (i >= 0) return fan(node.pos, i, node.display.length);
@@ -447,6 +463,14 @@ export function Board({
           pos: fan(t.pos, i, node.display.length),
           payload: { kind: 'cell', cell: t.cell, node: node.inspect },
         });
+      } else if (t.resident === true && t.organ !== undefined) {
+        // A resident is a tap candidate of the CELL kind (CP3): selectable at its fanned
+        // position exactly like a player cell, so the one tap path needs no new priority.
+        candidates.push({
+          kind: 'cell',
+          pos: fan(t.pos, i, node.display.length),
+          payload: { kind: 'resident', organ: t.organ, node: node.inspect },
+        });
       }
     });
     if (node.inspect.invaders.length > 0 || node.inspect.resident !== null) {
@@ -462,13 +486,23 @@ export function Board({
     if (!onTap) return;
     // A direct hit on a cell token is unambiguous — and it is how the perf driver taps
     // (a click on [data-cell] with no coordinates).
-    const direct = (e.target as Element | null)?.closest?.('[data-cell]');
+    const direct = (e.target as Element | null)?.closest?.('[data-cell],[data-resident]');
     const directCell = direct?.getAttribute('data-cell');
     if (directCell) {
       const node = candidates.find(
         (c) => c.payload.kind === 'cell' && c.payload.cell === directCell,
       )?.payload;
       if (node && node.kind === 'cell') {
+        onTap(node);
+        return;
+      }
+    }
+    const directResident = direct?.getAttribute('data-resident');
+    if (directResident) {
+      const node = candidates.find(
+        (c) => c.payload.kind === 'resident' && c.payload.organ === directResident,
+      )?.payload;
+      if (node && node.kind === 'resident') {
         onTap(node);
         return;
       }
@@ -695,12 +729,15 @@ export function Board({
       {[...byNode.values()].map((node) =>
         node.display.map((t, i) => {
           const p = fan(t.pos, i, node.display.length);
-          const selected = t.cell !== undefined && t.cell === selectedCell;
+          const selected =
+            (t.cell !== undefined && t.cell === selectedCell) ||
+            (t.resident === true && t.organ !== undefined && t.organ === selectedResident);
           return (
             <g
               key={t.key}
               data-cell={t.cell}
-              style={t.cell && onTap ? { cursor: 'pointer' } : undefined}
+              data-resident={t.resident === true ? t.organ : undefined}
+              style={(t.cell || t.resident === true) && onTap ? { cursor: 'pointer' } : undefined}
             >
               {selected ? (
                 <circle
@@ -713,14 +750,28 @@ export function Board({
                 />
               ) : null}
               {t.resident === true ? (
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={TOKEN_ART_U / 2 + 2}
-                  fill="none"
-                  stroke={CLASSIC.organ}
-                  strokeWidth={2.5}
-                />
+                // A DOUBLE RING in the organ brown tells a resident from the Monocyte, which
+                // shares its art (CP3). No new colour: the primary distinction is the name in
+                // the bar and the sheet — Kupffer cell versus Monocyte — and distinct resident
+                // art is the real answer, recorded in for-P2.5.md for the art pass.
+                <>
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={TOKEN_ART_U / 2 + 2}
+                    fill="none"
+                    stroke={CLASSIC.organ}
+                    strokeWidth={1.8}
+                  />
+                  <circle
+                    cx={p.x}
+                    cy={p.y}
+                    r={TOKEN_ART_U / 2 + 6}
+                    fill="none"
+                    stroke={CLASSIC.organ}
+                    strokeWidth={1.8}
+                  />
+                </>
               ) : null}
               {t.art !== null ? (
                 <image
@@ -779,14 +830,16 @@ export function Board({
 
       {/* offers: move rings at nodes, attack rings around pathogen tokens — tap candidates all */}
       {drawn.map(({ tg, pos }) =>
-        tg.kind === 'move' ? (
+        tg.kind === 'move' || tg.kind === 'hop' ? (
+          // A hop is a move ring in LYMPH BLUE (ruling 3, CP3): the board already teaches
+          // lymph in blue through the dashed connectors, so this reuses an established signal.
           <circle
             key={tg.key}
             cx={pos.x}
             cy={pos.y}
             r={CLASSIC.rNode + 6}
-            fill="rgba(47,107,74,0.12)"
-            stroke="#2F6B4A"
+            fill={tg.kind === 'hop' ? 'rgba(31,111,139,0.14)' : 'rgba(47,107,74,0.12)'}
+            stroke={tg.kind === 'hop' ? CLASSIC.lymph : '#2F6B4A'}
             strokeWidth={3}
             strokeDasharray="6 4"
             style={onTap ? { cursor: 'pointer' } : undefined}

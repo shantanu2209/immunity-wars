@@ -31,6 +31,7 @@ export interface BarButton {
 
 export function CommandBar({
   selectedCellName,
+  qualifier = null,
   ap,
   hint = null,
   buttons = [],
@@ -46,6 +47,8 @@ export function CommandBar({
 }: {
   /** Display name of the selected cell, or null when nothing is selected. */
   selectedCellName: string | null;
+  /** Muted line after the name — a resident's "resident of the Liver" (CP3). */
+  qualifier?: string | null;
   ap: number;
   /** Localised line describing what the board is offering (tap a node / a pathogen). */
   hint?: string | null;
@@ -84,6 +87,9 @@ export function CommandBar({
         ) : (
           <>
             <span style={{ fontSize: 15, fontWeight: 700 }}>{selectedCellName}</span>
+            {qualifier !== null ? (
+              <span style={{ fontSize: 13, color: '#7C6A61' }}>{qualifier}</span>
+            ) : null}
             <span style={{ fontSize: 13, color: '#7C6A61' }}>
               {t('commandBar.ap')} {ap}
             </span>

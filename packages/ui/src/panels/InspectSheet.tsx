@@ -13,7 +13,12 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import type { InspectInfo } from '../board/Board';
 import { t } from '../i18n';
-import { cellDisplayName as cellName, typeDisplayName as typeName } from '../names';
+import {
+  cellDisplayName as cellName,
+  organDisplayName,
+  residentDisplayName,
+  typeDisplayName as typeName,
+} from '../names';
 
 const ROW: CSSProperties = {
   display: 'flex',
@@ -44,6 +49,8 @@ export function InspectSheet({
   offers = {},
   onOffer,
   onSelectCell,
+  onSelectResident,
+  selectedResident = null,
   onClose,
 }: {
   info: InspectInfo;
@@ -53,6 +60,9 @@ export function InspectSheet({
   offers?: Record<string, InvaderOffer[]>;
   onOffer?: (offerId: string) => void;
   onSelectCell?: (cell: string) => void;
+  /** CP3: the resident row selects the organ's resident, exactly like a cell row. */
+  onSelectResident?: (organ: string) => void;
+  selectedResident?: string | null;
   onClose: () => void;
 }): ReactElement {
   return (
@@ -121,13 +131,32 @@ export function InspectSheet({
         </button>
       ))}
       {info.resident !== null ? (
-        <div style={ROW}>
+        // The resident's REAL name, then "resident of the Liver" — the sheet is where a
+        // resident and the Monocyte on one node are told apart, as two ≥44px rows.
+        <button
+          onClick={() => {
+            if (info.resident !== null) onSelectResident?.(info.resident);
+          }}
+          disabled={disabled || !onSelectResident}
+          style={{
+            ...ROW,
+            width: '100%',
+            background: selectedResident === info.resident ? '#FBEAE5' : 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 14,
+            textAlign: 'left',
+          }}
+        >
           <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
-          <span style={{ fontSize: 14 }}>
-            {t('inspect.resident')}
-            <span style={{ color: '#7C6A61' }}> {info.resident}</span>
+          <span>
+            {residentDisplayName(info.resident)}
+            <span style={{ color: '#7C6A61' }}>
+              {' '}
+              {t('resident.of', { organ: organDisplayName(info.resident) })}
+            </span>
           </span>
-        </div>
+        </button>
       ) : null}
       <button
         onClick={onClose}

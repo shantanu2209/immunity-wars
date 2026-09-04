@@ -16,7 +16,7 @@ export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/P
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export { ResultScreen, type ResultStats } from './screens/ResultScreen';
-export { cellDisplayName, typeDisplayName } from './names';
+export { cellDisplayName, typeDisplayName, residentDisplayName, organDisplayName } from './names';
 export { t } from './i18n';
 export * as boardGeometry from './board/geometry';
 export {
