@@ -1,13 +1,14 @@
 /**
  * The command bar — SELECTION AS A MODE THAT ALWAYS ANSWERS (ruling of 4 September 2026).
  *
- * When a cell is selected this bar always says something actionable: the legal targets the
- * view already computed (moves as highlighted board nodes, engulf as buttons), or — when
- * there are none — WHY, as one localised line. Never silence. It also carries the two things
- * that are not about the selection: undo (moves only, from the session's rule) and the last
- * rejection, both localised by the shell. Dumb by design: the shell computes everything from
- * the session view and hands plain props in; nothing here reaches past the session boundary.
- * All text renders through the catalogue.
+ * When a cell is selected this bar always says something actionable: what the board is
+ * offering (a hint that highlighted nodes / pathogens are tappable), the offers that have no
+ * position (buttons), or — when there is nothing — WHY, as one localised line. Never silence.
+ * It also carries the two things that are not about the selection: undo (moves only, from the
+ * session's rule) and the last rejection, both localised by the shell.
+ *
+ * Dumb by design: it decides nothing. `offered.ts` decides what is legal; the shell hands the
+ * results in as plain props. All text renders through the catalogue.
  */
 import type { CSSProperties, ReactElement } from 'react';
 
@@ -23,7 +24,7 @@ const BTN: CSSProperties = {
   cursor: 'pointer',
 };
 
-export interface EngulfTarget {
+export interface BarButton {
   id: string;
   label: string;
 }
@@ -31,14 +32,14 @@ export interface EngulfTarget {
 export function CommandBar({
   selectedCellName,
   ap,
-  moveTargetCount,
-  engulfTargets = [],
+  hint = null,
+  buttons = [],
   noAction = null,
   undo = { available: false, moves: 0 },
   notice = null,
   canInspect = false,
   disabled = false,
-  onEngulf,
+  onButton,
   onUndo,
   onInspect,
   onDeselect,
@@ -46,9 +47,10 @@ export function CommandBar({
   /** Display name of the selected cell, or null when nothing is selected. */
   selectedCellName: string | null;
   ap: number;
-  /** How many destinations are highlighted on the board for the selected cell. */
-  moveTargetCount: number;
-  engulfTargets?: EngulfTarget[];
+  /** Localised line describing what the board is offering (tap a node / a pathogen). */
+  hint?: string | null;
+  /** Offers with no position — prepared by the shell, labels localised. */
+  buttons?: BarButton[];
   /** When the selected cell has no legal action: the reason, already localised. */
   noAction?: string | null;
   /** The session's undo availability — moves only. */
@@ -58,7 +60,7 @@ export function CommandBar({
   /** True when the selected cell stands with something worth inspecting. */
   canInspect?: boolean;
   disabled?: boolean;
-  onEngulf?: (invaderId: string) => void;
+  onButton?: (id: string) => void;
   onUndo?: () => void;
   onInspect?: () => void;
   onDeselect: () => void;
@@ -85,21 +87,23 @@ export function CommandBar({
             <span style={{ fontSize: 13, color: '#7C6A61' }}>
               {t('commandBar.ap')} {ap}
             </span>
-            {moveTargetCount > 0 ? (
-              <span style={{ fontSize: 13, color: '#2F6B4A' }}>{t('commandBar.moveHint')}</span>
-            ) : null}
-            {engulfTargets.map((e) => (
+            {hint !== null ? <span style={{ fontSize: 13, color: '#2F6B4A' }}>{hint}</span> : null}
+            {buttons.map((b) => (
               <button
-                key={e.id}
+                key={b.id}
                 style={BTN}
-                disabled={disabled || !onEngulf}
-                onClick={() => onEngulf?.(e.id)}
+                disabled={disabled || !onButton}
+                onClick={() => onButton?.(b.id)}
               >
-                {t('commandBar.engulf')} {e.label}
+                {b.label}
               </button>
             ))}
-            {noAction !== null && moveTargetCount === 0 && engulfTargets.length === 0 ? (
-              <span style={{ fontSize: 13, color: '#B03A2E' }}>{noAction}</span>
+            {noAction !== null ? (
+              // Muted when the board still offers moves (the cell can act, just not attack);
+              // red when nothing at all is offered.
+              <span style={{ fontSize: 13, color: hint !== null ? '#7C6A61' : '#B03A2E' }}>
+                {noAction}
+              </span>
             ) : null}
             {canInspect ? (
               <button style={BTN} disabled={disabled} onClick={onInspect}>

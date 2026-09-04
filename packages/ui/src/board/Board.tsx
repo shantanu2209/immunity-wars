@@ -209,6 +209,7 @@ const PATH_ART = new Set([
 
 /** One invader as the inspect view lists it — ungrouped: inspect is the precise view. */
 export interface InspectInvader {
+  id: string;
   disease: string;
   type: string;
   novel: boolean;
@@ -244,6 +245,8 @@ export interface DisplayToken {
   art: string | null;
   /** Invaders of this type on this node; a badge shows when >= 2. */
   count: number;
+  /** ATTACK targets are by invader id; a type-group token stands for every id in it. */
+  ids?: string[];
 }
 
 export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
@@ -317,6 +320,7 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
       }
     } else if (s.iv) {
       node.inspect.invaders.push({
+        id: String(s.iv.id ?? ''),
         disease: String(s.iv.disease ?? '?'),
         type: typeof s.iv.type === 'string' ? s.iv.type : '?',
         novel: s.iv.novel === true,
@@ -344,11 +348,20 @@ export function buildNodeModel(view: ViewState): Map<string, NodeModel> {
         pos: node.pos,
         art: gk !== 'novel' && PATH_ART.has(gk) ? `path-${gk}` : null,
         count: list.length,
+        ids: list.map((x) => x.id),
       });
     }
   }
 
   return byNode;
+}
+
+/** The node the given invader stands on, as the inspect sheet would show it — or null. */
+export function inspectInfoForInvader(view: ViewState, invaderId: string): InspectInfo | null {
+  for (const node of buildNodeModel(view).values()) {
+    if (node.inspect.invaders.some((iv) => iv.id === invaderId)) return node.inspect;
+  }
+  return null;
 }
 
 /** The node the given cell stands on, as the inspect sheet would show it — or null. */
@@ -359,9 +372,22 @@ export function inspectInfoForCell(view: ViewState, cell: string): InspectInfo |
   return null;
 }
 
+/**
+ * A positioned offer the shell wants drawn and tappable (from offered.ts). A MOVE is at a
+ * node; an ATTACK is on an invader, drawn around the type-group token that stands for it.
+ * `payload` is the shell's — the board never reads it.
+ */
+export interface BoardTarget {
+  key: string;
+  kind: 'move' | 'attack';
+  located?: Located;
+  invaderId?: string;
+  payload: unknown;
+}
+
 /** What a board tap resolved to — the ONE tap path (tap.ts). The shell decides what it means. */
 export type BoardTap =
-  | { kind: 'target'; target: Located }
+  | { kind: 'target'; target: BoardTarget }
   | { kind: 'cell'; cell: string; node: InspectInfo }
   | { kind: 'node'; node: InspectInfo }
   | { kind: 'nothing' };
@@ -370,7 +396,7 @@ export function Board({
   view,
   selectedCell = null,
   artMetrics,
-  moveTargets = [],
+  targets = [],
   onTap,
 }: {
   view: ViewState;
@@ -379,9 +405,9 @@ export function Board({
   /** The art manifest's per-asset metrics (fetched by the shell); absent means icons are
    *  spaced as full squares. */
   artMetrics?: ArtMetrics;
-  /** Legal destinations for the selected cell (the view's selection-scoped answer); each
-   *  renders as a highlight ring and is a tap candidate. */
-  moveTargets?: Located[];
+  /** Positioned offers (moves at nodes, attacks on invaders); each renders as a ring and is a
+   *  tap candidate. */
+  targets?: BoardTarget[];
   /**
    * THE ONE TAP PATH (ruling of 4 September 2026; tap.ts). Every board tap resolves to the
    * nearest candidate within 60u — a legal target, one of the player's cell tokens at its
@@ -398,9 +424,20 @@ export function Board({
   // Tap candidates, in the resolver's terms. Cells at their FANNED positions (a stack's cells
   // are individually addressable); a node is a candidate only if it has something to inspect.
   const candidates: TapCandidate<BoardTap>[] = [];
-  for (const mt of moveTargets) {
-    const pos = tokenPos(mt);
-    if (pos) candidates.push({ kind: 'target', pos, payload: { kind: 'target', target: mt } });
+  const targetPos = (tg: BoardTarget): Pt | null => {
+    if (tg.kind === 'move') return tg.located ? tokenPos(tg.located) : null;
+    for (const node of byNode.values()) {
+      const i = node.display.findIndex((t) => t.ids?.includes(tg.invaderId ?? '') === true);
+      if (i >= 0) return fan(node.pos, i, node.display.length);
+    }
+    return null;
+  };
+  const drawn: { tg: BoardTarget; pos: Pt }[] = [];
+  for (const tg of targets) {
+    const pos = targetPos(tg);
+    if (!pos) continue;
+    drawn.push({ tg, pos });
+    candidates.push({ kind: 'target', pos, payload: { kind: 'target', target: tg } });
   }
   for (const node of byNode.values()) {
     node.display.forEach((t, i) => {
@@ -740,13 +777,11 @@ export function Board({
         }),
       )}
 
-      {/* move-target highlights: tappable rings at each legal destination */}
-      {moveTargets.map((mt, i) => {
-        const pos = tokenPos(mt);
-        if (!pos) return null;
-        return (
+      {/* offers: move rings at nodes, attack rings around pathogen tokens — tap candidates all */}
+      {drawn.map(({ tg, pos }) =>
+        tg.kind === 'move' ? (
           <circle
-            key={`mt-${String(i)}`}
+            key={tg.key}
             cx={pos.x}
             cy={pos.y}
             r={CLASSIC.rNode + 6}
@@ -756,8 +791,19 @@ export function Board({
             strokeDasharray="6 4"
             style={onTap ? { cursor: 'pointer' } : undefined}
           />
-        );
-      })}
+        ) : (
+          <circle
+            key={tg.key}
+            cx={pos.x}
+            cy={pos.y}
+            r={TOKEN_ART_U / 2 + 5}
+            fill="rgba(176,58,46,0.10)"
+            stroke="#B03A2E"
+            strokeWidth={3.5}
+            style={onTap ? { cursor: 'pointer' } : undefined}
+          />
+        ),
+      )}
     </svg>
   );
 }

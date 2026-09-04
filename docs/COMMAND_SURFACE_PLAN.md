@@ -128,7 +128,7 @@ has never failed is not known to work — the mutation runs before it is trusted
 Each checkpoint is one PR, `pnpm verify` green, a headless walkthrough of every new action in
 the real app shell, and an S25 step/expect list like the selection model's.
 
-- **CP1 — attacks (5).** Reviewable: the generalised board-target mechanism (typed targets,
+- **CP1 — attacks (5). BUILT 4 September 2026; the two-sources design and the walkthrough are recorded in `for-P2.5.md`.** Reviewable: the generalised board-target mechanism (typed targets,
   one source now, designed for two); five actions; the offered-⊆-accepted harness with its
   control; reason lines for Neutrophil, Killer T, NK, Eosinophil.
   *S25 check:* Neutrophil onto a swarm → NET; Killer T at the hub → a hidden pathogen in

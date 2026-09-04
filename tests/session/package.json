@@ -16,7 +16,8 @@
     "@immunity-wars/content": "workspace:*",
     "@immunity-wars/engine": "workspace:*",
     "@immunity-wars/equivalence": "workspace:*",
-    "@immunity-wars/session": "workspace:*"
+    "@immunity-wars/session": "workspace:*",
+    "@immunity-wars/ui": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^4.1.11"

@@ -4,6 +4,10 @@
  * 20px token satisfies Gate 1's target rule. Moved into `ui` at piece 2 as the first player
  * component: all text renders through the catalogue (t()), under the negative-controlled
  * hardcoded-string check.
+ *
+ * CP1: when the shell has offers on the invaders shown here (an Eosinophil that can strike
+ * OR degranulate the same worm), each invader row carries its offers as buttons — the sheet
+ * is where a choice between attacks is made, because a 20px pathogen token cannot present two.
  */
 import type { CSSProperties, ReactElement } from 'react';
 
@@ -18,16 +22,36 @@ const ROW: CSSProperties = {
   minHeight: 44,
 };
 
+const BTN: CSSProperties = {
+  minHeight: 44,
+  padding: '0 12px',
+  fontSize: 14,
+  borderRadius: 8,
+  border: '1.5px solid #B03A2E',
+  background: '#FFFDF9',
+  cursor: 'pointer',
+};
+
+export interface InvaderOffer {
+  id: string;
+  label: string;
+}
+
 export function InspectSheet({
   info,
   selectedCell,
   disabled = false,
+  offers = {},
+  onOffer,
   onSelectCell,
   onClose,
 }: {
   info: InspectInfo;
   selectedCell?: string | null;
   disabled?: boolean;
+  /** Offers by invader id — prepared by the shell from `offered.ts`. */
+  offers?: Record<string, InvaderOffer[]>;
+  onOffer?: (offerId: string) => void;
   onSelectCell?: (cell: string) => void;
   onClose: () => void;
 }): ReactElement {
@@ -50,7 +74,7 @@ export function InspectSheet({
       }}
     >
       {info.invaders.map((iv, i) => (
-        <div key={`iv-${String(i)}`} style={ROW}>
+        <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
           <img
             src={`/art/path-${iv.novel ? 'virus' : iv.type}@3x.webp`}
             width={36}
@@ -58,13 +82,23 @@ export function InspectSheet({
             alt=""
             style={iv.novel ? { filter: 'brightness(0.2)' } : undefined}
           />
-          <span style={{ fontSize: 14 }}>
+          <span style={{ fontSize: 14, flex: '1 1 auto' }}>
             {iv.novel ? t('inspect.unknown') : iv.disease}
             <span style={{ color: '#7C6A61' }}>
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
             </span>
           </span>
+          {(offers[iv.id] ?? []).map((o) => (
+            <button
+              key={o.id}
+              style={BTN}
+              disabled={disabled || !onOffer}
+              onClick={() => onOffer?.(o.id)}
+            >
+              {o.label}
+            </button>
+          ))}
         </div>
       ))}
       {info.cells.map((ck) => (

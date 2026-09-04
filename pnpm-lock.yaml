@@ -208,6 +208,9 @@ importers:
       '@immunity-wars/session':
         specifier: workspace:*
         version: link:../../packages/session
+      '@immunity-wars/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
     devDependencies:
       vitest:
         specifier: ^4.1.11
