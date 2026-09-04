@@ -479,3 +479,81 @@ it is the cheapest of the five and the one the S25 will hit next, the Neutrophil
 malaria **stage** as a second badge glyph and a sheet word (with the card, which explains the
 stages); the parasite drawn **inside** the resident for `inMac`/`infectedBy` (with the card).
 `blocksLymph` is a connector state, not a token state, and goes with the lymph polish note above.
+
+## The coat and the spent cell: BUILT (4 September 2026), for review — before the card, as reordered
+
+**Approved as proposed, with one addition and one reorder (Shantanu):** the spent-cell
+indicator joins this piece rather than waiting for its checkpoint — a spent Neutrophil at the
+hub is not merely unlabelled, it LOOKS AVAILABLE, so a player taps it every game and is
+refused, and "always answers" was answering after the fact. The suppressed cell comes with it
+because it cost one branch in the same function. The piece lands before the pathogen card:
+smaller, it removes a mis-tap that happens every game, and the card's "what beats it" reads
+better once the board shows coats.
+
+**The split first.** `buildNodeModel`'s group key is now **type + coated**: a coated bacterium
+is its own token beside the uncoated ones. Without it any badge would be measuring the
+collapse — the badge-counting lesson arriving as a design decision rather than an instrument
+bug — and it resolves the CP2 ambiguity where the Monocyte's engulf ring surrounded a token
+standing for both. STACK_COLOCATION's ≤2-types measurement gains at most one extra group where
+a coat exists; the sheet's rows are unaffected.
+
+**The coat badge**, top-left (the count badge holds the top-right), r = 10u like the count
+badge: antibody gold `#F2B705` with a dark-gold stroke `#7A5600`, and a Y as two strokes — the
+V, then the stem. Contrast computed, not asserted: the stroke is **6.54:1** against the paper
+and **3.66:1** against the fill; Gate 1 asks 3:1 for non-text UI. The same badge coats a worm
+or a parasite. The sheet's row says **"Coated in antibody"** in the stroke colour, because the
+badge is a symbol nobody has been taught and the precise surface is where it is explained.
+
+**The spent cell — the treatment, stated so it can be ruled against.** The message is "not
+this one", so it is the ART that changes, not a badge added: the token's image at **opacity
+0.38 with a grayscale filter**, and the badge slot carrying **turns until it is back** as a
+grey numeral disc (`CLASSIC.ink`, 5.05:1) when the engine will say when (below). The sheet's row
+dims the same way and says **"Spent — back in 4 turns"** (one turn / next turn variants in the
+catalogue). The **suppressed** cell (neutropenia, lymphopenia) takes the same treatment with
+"Offline — back in N turns", the count being the engine's `suppress` counter. The bar's
+"spent and regenerating" line on selection is unchanged — the board now says it before the
+tap rather than after. A spent cell remains a tap candidate: selecting it still answers.
+
+**Corrected while building — the return turn is the ENGINE's, not `regenAt`.** The first
+headless run of the spent badge showed **4** and the Neutrophil was back in **2**. `regenAt` is
+what the cell records; what the engine DOES is `neutrophilReadyTurn`: `spentAt` plus
+`NEUTROPHIL_REGEN` (4), or `NEUTROPHIL_REGEN_HELPED` (2) when a primed Helper T stands in the
+blood — Th17 help, IL-17 → G-CSF, the marrow told to hurry — and never while the marrow is
+damaged. The legacy UI showed `regenAt` and was wrong under help. So the number now comes
+through the session (`queries.readyTurn`, the engine's own exported function; the marrow
+block from the view's organ data, withheld conservatively on Hard's compensated marrow rather
+than mirroring the unexported `damaged()`), and the Board never reads `regenAt`. Pinned by
+finding and driving both cases in the corpus: an unhelped NET reports 4, a helped NET reports
+2 — and the search itself taught something: **the NET presents antigen, which licenses a
+Helper T already standing in the blood, so a Neutrophil can halve its own wait by the act of
+NETting.** The badge now shows that; the log (CP5) will say it. A wrong number would have been
+worse than none, and it was caught only because the driver's expectation came from the engine,
+not from the display.
+
+**Pinned against engine-produced states** (`tests/session/src/board-state.test.ts`): on every
+recorded state, every invader token's ids are all coated or all uncoated and the token says
+which — with a vacuity guard that at least one recorded NODE held a coated and an uncoated
+token of one type, so the split was exercised, not merely present; a control re-collapses two
+real tokens by hand and the checker must fire; the Neutrophil on the constructed NET stand is
+available, then after the engine's own `net` is `{spent, backIn: regenAt − turn}` on the token
+and in the sheet's data; a recorded crisis supplies a suppressed cell, `{offline, backIn:
+suppress}`. States are found and driven, never hand-built: a hand-built state proves the UI
+agrees with our idea of the engine, not with the engine.
+
+**Verified in the real app, headless:** Meningitis drawn, EXB produced, tagged by ring → **coat
+badges 0 → 1** on its token; tap the token → the sheet's row reads "Meningitis · Bacteria hp
+… · Coated in antibody". Neutrophil walked onto a pathogen, NET → **the token dims, the badge
+slot reads 2** — the Helper T is at the hub and the NET's antigen presentation licensed it, so
+the wait is the helped one; the first run of the badge read 4 from `regenAt`, which is how the
+correction above was found; when a pathogen reached the blood, "What's here" → the row reads
+"Neutrophil · Spent — back in 2 turns". No ⟪missing key⟫.
+
+**S25 list:** (1) produce, tag a bacterium → the gold Y appears on it; open the node → "Coated
+in antibody". (2) Two bacteria of one type on a node, tag one → two tokens, one coated, the
+Monocyte's engulf ring on the coated one only. (3) NET with the Neutrophil → it greys out at
+the hub with a number — **2 if the Helper T stands in the blood, 4 if it does not**; "What's
+here" when something is in the blood → "Spent — back in N turns"; tap it anyway → the bar
+still answers; end turns and watch the number count down and the cell come back on time. (4) Under a neutropenia crisis, the Neutrophil
+greys with the turns remaining.
+
+**Stays with the card, as ruled:** malaria stage and the parasite inside a resident.

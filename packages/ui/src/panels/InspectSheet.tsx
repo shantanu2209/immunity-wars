@@ -11,7 +11,7 @@
  */
 import type { CSSProperties, ReactElement } from 'react';
 
-import type { InspectInfo } from '../board/Board';
+import type { InspectInfo, Unavailable } from '../board/Board';
 import { t } from '../i18n';
 import {
   cellDisplayName as cellName,
@@ -40,6 +40,19 @@ const BTN: CSSProperties = {
 export interface InvaderOffer {
   id: string;
   label: string;
+}
+
+/** "Spent · back in 2 turns" — the words for a dimmed cell, all through the catalogue. */
+export function unavailableText(u: Unavailable): string {
+  const what = t(u.kind === 'spent' ? 'inspect.spent' : 'inspect.offline');
+  if (u.backIn === null) return what;
+  const when =
+    u.backIn <= 0
+      ? t('inspect.backNow')
+      : u.backIn === 1
+        ? t('inspect.backInOne')
+        : t('inspect.backIn', { n: u.backIn });
+  return `${what} — ${when}`;
 }
 
 export function InspectSheet({
@@ -98,6 +111,13 @@ export function InspectSheet({
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
             </span>
+            {iv.coated ? (
+              // The badge is a symbol nobody has been taught; the precise surface says the word.
+              <span style={{ color: '#7A5600', fontWeight: 700 }}>
+                {' '}
+                {t('inspect.sep')} {t('inspect.coated')}
+              </span>
+            ) : null}
           </span>
           {(offers[iv.id] ?? []).map((o) => (
             <button
@@ -126,8 +146,22 @@ export function InspectSheet({
             textAlign: 'left',
           }}
         >
-          <img src={`/art/cell-${ck}@3x.webp`} width={36} height={36} alt="" />
-          {cellName(ck)}
+          <img
+            src={`/art/cell-${ck}@3x.webp`}
+            width={36}
+            height={36}
+            alt=""
+            style={info.unavailable[ck] ? { opacity: 0.38, filter: 'grayscale(1)' } : undefined}
+          />
+          <span>
+            {cellName(ck)}
+            {info.unavailable[ck] ? (
+              <span style={{ color: '#7C6A61' }}>
+                {' '}
+                {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
+              </span>
+            ) : null}
+          </span>
         </button>
       ))}
       {info.resident !== null ? (

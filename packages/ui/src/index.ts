@@ -8,7 +8,16 @@
 
 export const PACKAGE_NAME = '@immunity-wars/ui';
 
-export { Board, type ArtMetrics, type InspectInfo, type InspectInvader } from './board/Board';
+export {
+  Board,
+  buildNodeModel,
+  type ArtMetrics,
+  type InspectInfo,
+  type InspectInvader,
+  type DisplayToken,
+  type Unavailable,
+  type ReadyTurn,
+} from './board/Board';
 export { InspectSheet } from './panels/InspectSheet';
 export { CommandBar, type BarButton } from './panels/CommandBar';
 export { PauseSheet } from './panels/PauseSheet';

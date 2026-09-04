@@ -381,7 +381,7 @@ export function PlayScreen({
         if (!first) return;
         if (offers.length === 1) send(first.params);
         else if (first.invaderId) {
-          const node = inspectInfoForInvader(game, first.invaderId);
+          const node = inspectInfoForInvader(game, first.invaderId, authView.queries.readyTurn);
           if (node) setInspect(node);
         }
         return;
@@ -403,9 +403,9 @@ export function PlayScreen({
   };
 
   const selectedNode = selectedCell
-    ? inspectInfoForCell(game, selectedCell)
+    ? inspectInfoForCell(game, selectedCell, authView.queries.readyTurn)
     : selectedResident
-      ? inspectInfoForResident(game, selectedResident)
+      ? inspectInfoForResident(game, selectedResident, authView.queries.readyTurn)
       : null;
   const canInspect =
     selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
@@ -427,6 +427,7 @@ export function PlayScreen({
         view={shown}
         selectedCell={selectedCell}
         selectedResident={selectedResident}
+        readyTurn={authView.queries.readyTurn}
         artMetrics={artMetrics}
         targets={boardTargets}
         onTap={playing ? undefined : handleBoardTap}
