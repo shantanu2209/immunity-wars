@@ -164,3 +164,112 @@ and git history do not say by themselves:
   driving scripts crawl — use headless); the coverage exclusion list's denominator drifts with
   most code commits and must be regenerated before push; the S25 check is Shantanu's and each
   checkpoint's record carries its step/expect list.
+
+## Handoff for the next session — written at the clear, 4 September 2026
+
+What is known right now that the code and git history do not say. Everything below was
+verified against the engine source or the running app before it was written.
+
+### Where things are
+
+`main` has #31–#35 (selection model and undo; the plan and security re-argument; CP1; the
+security rulings; CP2). Open: **#36** (`phase2/p2-5-query-prose-sweep` — the FINDINGS #53 sweep
+and the card proposal, now RULED). Rulings taken at the clear: **the card is its own piece
+between CP3 and CP4, exactly as proposed; recall is CP3.** Order from here: **CP3 → the card →
+CP4 → CP5 → re-measure the readiness bar → schedule the newcomer test.**
+
+### CP3 — repositioning and residents, in enough detail to build without re-deriving
+
+All four go into `packages/ui/src/play/offered.ts` under the `cell` source; the harness
+(`tests/session/src/offered.test.ts`) checks them automatically once they are emitted.
+
+- **`recall`** — bar button (`buttons`, no position) when the selected cell is alive, not the
+  B-cell, and `cells[cell].zone !== 'hub'`; params `{ action: 'recall', cell }`; costs `spend`
+  (the generic AP-or-free gate applies). Move class (already in `MOVE_CLASS` in the session).
+- **`hop`** — a board target of kind `move` drawn at the PARTNER lane's crossing node. Gate:
+  `flags.lymph`, `!state.lymphBlocked`, the cell on a route at `step === LYMPH_STEP` whose
+  lane has a `LYMPH_GROUP` entry; partners are the other lanes in the same group (content:
+  `LYMPH_GROUP`, `LYMPH_STEP`). Params `{ action: 'hop', cell, lane: partner }` — pass the
+  lane explicitly; the engine falls back to `opts[0]` otherwise. Position: `tokenPos({zone:
+  'route', lane: partner, step: LYMPH_STEP})`. Move class.
+- **Residents become selectable — the one extension to the selection model.** The session's
+  `Selection` is `{cell, family}`; a resident is keyed by organ (`residents[organ]`, the
+  engine spends `res_<organ>`). Extend `Selection` with `resident: string | null` (a session
+  change: `types.ts`, `NO_SELECTION`, `setSelection`, and clear it at phase boundaries like
+  `cell`), rather than overloading `cell` — `scope()` calls `moveDestinations(g, cell)` and
+  must not be handed a resident key. Board: the resident token (`DisplayToken.resident ===
+  true`) becomes a tap candidate of kind `cell` with a payload `{ kind: 'resident', organ }`;
+  PlayScreen selects/deselects it like a cell. Reason lines for a selected resident: already
+  ate this turn (`residents[organ].ate`), infected (`infectedBy`), residents cannot move on
+  this difficulty (`!flags.residentMove`).
+- **`resmove`** — two move-kind targets at `step ± 1` within `0..perOrgan.branchLen[organ]`,
+  when `flags.residentMove`; params `{ action: 'resmove', organ, step }`; spends. Move class.
+- **`resengulf`** — a bar button when `perOrgan.residentEatable[organ]` is non-empty and the
+  resident has not `ate` and is not `infectedBy`; the engine picks the target (one button per
+  resident, not per invader); params `{ action: 'resengulf', organ }` (`invaderId` optional).
+  Free. **Commits** — ends undo.
+- **The harness must learn residents:** `judge()` loops `CELLS`; add a loop over
+  `Object.keys(state.residents)` selecting each as a resident. Its control still holds.
+- **S25 list for CP3:** two resident steps then Undo; a hop across a lymph link (the crossing
+  is step 3 of a lymph-linked route); recall a cell from mid-route; resengulf ends Undo.
+
+### The card piece — between CP3 and CP4, as ruled
+
+- **Entry points:** a pathogen row in the inspect sheet (already ≥44px), and the reveal
+  dialog's arrival rows; both open the same component. A novel pathogen (`novel === true`,
+  "Pathogen X") gets no card — it is masked everywhere as `inspect.unknown`.
+- **Data, all content, none engine:** `DZINFO[dz]` → `{d, c, w, p, r}` (discovered, causes,
+  found, prevent, treat; 106 diseases), `DZSTATS[dz]` → `[cg, sv, sp, cn, tier]` (contagion,
+  severity, speed, cunning, tier; 106), `FACT[dz]` (30 — absent for most; render nothing when
+  missing), `TROPISM[dz]` → organ keys or the string `'any'`, `FAMILY[dz]` → family key →
+  `FAMILIES[f].name` / `.bio`, `UI_[type].n` for the type name, art `path-<type>`,
+  `view.memory[dz]` for a MEMORY tag. The disease prose is the diseases namespace — Kartik's
+  science, translated separately; the card's ~12 labels are `ui.json` keys.
+- **THE BEAT-IT TEXT NEEDS MOVING INTO CONTENT.** `BEAT_BY_TYPE` — nine entries, one per
+  pathogen type (virus, hidden, bacteria, fungus, toxin, venom, worm, parasite, malaria) — is a
+  UI constant at `tools/legacy/v2_ui.html:1790`, **not in the content pack and never in the
+  string inventory or the C3 parity tables.** Legacy's fallback is "Tag it, then engulf." The
+  card piece extracts it into content (beside `FACT`, in `packages/content/src/diseases/` or
+  `labels/`), exports it from `load.ts`, and pins it byte-for-byte against legacy in
+  `ui-content.test.ts`'s TABLES like every other extracted table. `FAM_LONG`, the next
+  constant in the same file, needs the same check — `FAMILIES.bio` may already carry it.
+- **Shape on a phone:** one scrolling card, no flip — front (type, family, can infect, fact,
+  beat it) then back (tier, four stat bars, the five info rows).
+- **P2.6's library** is this component with an index over `DZINFO`'s keys.
+
+### offeredActions, the two sources and the harness — what a fresh session would rediscover
+
+- `offeredActions(view)` is the ONLY legality decision in the UI; components never decide.
+  `bodyOffers(view)` is the second source and returns empty until CP4; PlayScreen already
+  maps and dispatches it identically. CP4 fills it with `memoryKill` (attack rings on
+  `remembered` invaders while nothing is selected; 1 AP on Hard) and `antivenom`
+  (`state.antivenomTargets`, stock > 0, AP ≥ 3) — and the body panel's buttons
+  (`orderAntivenom`, `clonalSelection`, `vaccinate`) as `place: 'panel'` buttons.
+- `ButtonOffer.place === 'panel'` routes a button to a panel instead of the bar (`produce`
+  uses `family`); the bar filters them out; `reason` is set whenever no ATTACK is offered
+  (panel buttons do not count), muted when a hint exists and red when nothing is offered.
+- Board targets are typed `move` (at a node, green dashed) or `attack` (on an invader, red,
+  drawn around the type-group token that contains the id); several offers on one invader open
+  the sheet's rows; `inspectInfoForInvader` finds the node for that.
+- The harness: per recorded state, `LocalSession.resume(clone)` per cell, `setSelection`,
+  every offer applied to a fresh clone with `installRng(1)`; vacuity guards (>50 states,
+  >200 offers); control = the Killer T offered every invader. The neutralise-cost pin
+  (`neutralise-cost.test.ts`) searches eight seeds for an unremembered neutralisable toxin.
+- Two workarounds with expiry dates, Phase 3's: `NEUTRALISE_TOXIN_AP` (#52) and
+  `productionText.ts` (#53, now only the templated rate-ceiling substitution).
+
+### The S25 checks — by finger versus headless only
+
+- **By finger (Shantanu):** the minimum shell; goal dialog, reveal, spread, tap-to-advance;
+  the selection model steps 1–9 and 12 (tap-again, tap-away, move rings, Undo 1 → 2 → unwind
+  with AP restored, B-cell reason, no-AP reason, node → sheet, phase-boundary clear); CP1 and
+  CP2 "largely working — cells answer, NET works, the panel and produce work, rings appear and
+  resolve".
+- **Headless only, never by finger:** engulf via ring then Undo ending on the commit (steps
+  10–11); snipe by ring on a hidden pathogen; tag and neutralise by ring end-to-end (rings
+  were seen to resolve on the S25, but which action was not recorded); the loss-path Result
+  screen; every reason line beyond the B-cell's and the no-AP one.
+- **Verified by no one, only by the harness:** strike and degranulate (a coated worm never
+  occurred in any run — needs `tag` on a worm first, now possible), the Eosinophil's
+  two-offer sheet rows, the immunosuppression `blocked` state on screen.
+- **Crossed by nothing:** the WIN path (closeout checklist item).
