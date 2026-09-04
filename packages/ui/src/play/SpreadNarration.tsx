@@ -11,6 +11,7 @@
  */
 import type { ReactElement } from 'react';
 
+import { engineText } from '../engineText';
 import { t } from '../i18n';
 
 export interface DieResult {
@@ -54,7 +55,9 @@ export function SpreadNarration({
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 16, fontWeight: 700, color: '#2E2A28' }}>
-          {t(`spread.label.${label}`)}
+          {/* An engine string: the frame headline is a query-prose site in the engine
+              catalogue since FINDINGS #53 — one catalogue, loud on a miss. */}
+          {engineText(label)}
         </span>
         <span style={{ fontSize: 13, color: '#7C6A61' }}>{[String(n), String(of)].join('/')}</span>
         <span style={{ fontSize: 13, color: '#7C6A61', marginLeft: 'auto' }}>

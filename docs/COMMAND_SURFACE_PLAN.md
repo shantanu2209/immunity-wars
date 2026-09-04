@@ -141,6 +141,24 @@ the real app shell, and an S25 step/expect list like the selection model's.
 - **CP3 — repositioning and residents (4).** Reviewable: residents as selectable candidates;
   `hop` as a ring on the partner crossing; `recall`; undo classing (three moves, one commit).
   *S25 check:* two resident steps then Undo; hop across the lymph link; resengulf ends Undo.
+- **RULED 4 September 2026 (Shantanu): THE PATHOGEN CARD is its own piece between CP3 and
+  CP4, exactly as proposed; recall is CP3.** The proposal that carried it, kept as the record: The old build showed a full card per disease
+  — antigen class, the organs it can infect, what beats it, the disease facts, the four stat
+  bars and tier — and the reveal (name + route) and inspect sheet (disease, type, hp) are not
+  that card. It is most of Kartik's science and the thing that makes this teach rather than
+  play, and it sits between the inspect sheet and P2.6's disease library, where it could fall.
+  **Recommendation:** the inspect sheet is the entry (it is already "tell me about this" with
+  ≥44px rows): tapping a pathogen row opens the card as a second layer; the reveal dialog's
+  arrival rows open the same card. Every field is already content data — `DZINFO` (106),
+  `DZSTATS` (106), `FACT` (30), `TROPISM`, `FAMILY`, `UI_` — so the piece is rendering, with
+  no engine or session work and no new strings beyond ~12 catalogue labels; the disease prose
+  is the 666-string diseases namespace, Kartik's science, translated separately. **Own piece,
+  not CP5's:** CP5 is the log — engine prose, a different source and a different problem
+  (#53) — and bundling would double one review. Placed after CP3 because "what beats it" is
+  the reason line's question from the other side, and before CP4 because CP4's memory and
+  vaccine list refer to diseases the card explains. P2.6's library is then this component
+  with an index, not a second build. One thing to check at build time: legacy's "Beat it" text
+  (`BEAT_BY_TYPE`) was a UI constant, and its home in the content pack must be confirmed.
 - **CP4 — body-level (5) + the body panel.** Reviewable: the panel; the second target source
   (memory response, antivenom dose) while nothing is selected; the AP chooser. *S25 check:*
   needs Normal difficulty for vaccines; a remembered pathogen highlights on arrival.

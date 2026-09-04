@@ -32,7 +32,7 @@ import { dirname, resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildCatalogue, engineSites, type Site } from '../i18n-extract.js';
+import { buildCatalogue, engineSites, engineUnextracted, type Site } from '../i18n-extract.js';
 
 const CATALOGUE_PATH = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -77,6 +77,17 @@ describe('LEG 1 — completeness: sites and catalogue entries agree', () => {
     // assumed to have been regenerated.
     expect(meta['sites']).toBe(sites.length);
     expect(meta['messages']).toBe(Object.keys(catalogue).length);
+    expect(meta['queryProseSites']).toBe(sites.filter((s) => s.fn === 'query').length);
+  });
+
+  it('the UNEXTRACTED sites — messages composed elsewhere — are listed, and the list is current', () => {
+    // P2.5 CP2 (docs/FINDINGS.md #53): Phase 1's walker skipped a call whose argument was not a
+    // literal, silently. They are now listed in $meta so a new one is a visible diff, and each
+    // is a player-visible string that lives outside this catalogue until the engine emits ids.
+    const listed = meta['unextractedSites'] as string[];
+    const actual = engineUnextracted().map((u) => `${u.file}:${String(u.line)} ${u.fn}(${u.expr})`);
+    expect(listed).toEqual(actual);
+    expect(actual.length, 'the known-unextracted count moved; update FINDINGS #53').toBe(5);
   });
 
   it('identical text at several sites is ONE entry, not several', () => {
