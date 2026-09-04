@@ -94,9 +94,9 @@ the current surface cannot play. The seventeen are planned in
 | Work | State |
 |---|---|
 | **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
-| **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **CP1 built (4 Sep):** net, snipe, nkkill, strike, degranulate + the offered ⊆ accepted harness; 7 of 19 reachable by touch. CP2–CP4 per [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) |
+| **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **CP1 + CP2 built (4 Sep):** net, snipe, nkkill, strike, degranulate; tag, neutralise, produce + the antibody panel; the offered ⊆ accepted harness; **10 of 19 reachable by touch.** CP3–CP4 per [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
-| **Panels** — the log/teaching prose (currently invisible), production breakdown, status | Not started; the engine's teaching strings render nowhere today |
+| **Panels** — the log/teaching prose (currently invisible), production breakdown, status | **Antibody panel built (CP2).** Log/teaching prose: CP5, before the newcomer test; status/body panel: CP4 |
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
 | **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
 | **Resident-vs-Macrophage visual distinction; lymph connector polish** | Recorded in for-P2.5.md |
@@ -134,3 +134,33 @@ before the result exists so they can be checked against it:
 The expectation to hold loosely: findings will pull panel and dialog work forward (the
 teaching prose most of all) and push polish back. That is the point of running the test
 before the remaining work is sequenced.
+
+## State at the session boundary — after CP2, 4 September 2026
+
+Written because the session is cleared here (Shantanu's ruling: after CP2, where the two
+mechanisms everything later copies were settled). What a fresh session needs that the code
+and git history do not say by themselves:
+
+- **Where things are.** `main` carries P2.5 through the selection model and undo (#31), the
+  command-surface plan and the security re-argument (#32), CP1 (#33), and — if merged — the
+  security rulings (#34) and CP2 (the PR opened from `phase2/p2-5-cp2-antibodies`). Merge order
+  matters only for how GitHub shows diffs; each branch was built on the previous one.
+- **What comes next.** CP3 (hop, recall, resmove, resengulf — residents become selectable, the
+  one extension to the selection model; move-class undo for three of them), then CP4 (the
+  five body-level actions + the body panel — the `bodyOffers` source is already wired
+  end-to-end and empty), then CP5 (the teaching-prose panel), then the readiness bar is
+  re-measured and the newcomer test is scheduled. The standard for every reason line: does
+  the answer help, not does an answer exist.
+- **The instruments to keep pointing at each checkpoint.** `tests/session/src/offered.test.ts`
+  (every offer engine-accepted, with its over-offer control) extends itself as `offered.ts`
+  grows; the headless walkthroughs live only in the session scratchpad and are rewritten per
+  checkpoint — the pattern is a puppeteer-core script against `http://localhost:5173` that
+  starts fresh games until the turn-1 draw gives the scenario its pathogen (string scripts
+  inside `page.evaluate`, because tsx injects `__name` into named inner functions).
+- **Two workarounds with expiry dates**, both Phase 3's to remove: the neutralise-cost mirror
+  (FINDINGS #52) and the production-prose mapper (FINDINGS #53). Both are pinned by tests that
+  should be deleted with them.
+- **Known operating hazards, all recorded:** a hidden Browser pane throttles timers (bursts and
+  driving scripts crawl — use headless); the coverage exclusion list's denominator drifts with
+  most code commits and must be regenerated before push; the S25 check is Shantanu's and each
+  checkpoint's record carries its step/expect list.

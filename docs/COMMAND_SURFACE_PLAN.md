@@ -133,7 +133,7 @@ the real app shell, and an S25 step/expect list like the selection model's.
   control; reason lines for Neutrophil, Killer T, NK, Eosinophil.
   *S25 check:* Neutrophil onto a swarm → NET; Killer T at the hub → a hidden pathogen in
   range highlights; an uncoated worm → the Eosinophil's reason line.
-- **CP2 — antibodies (3) + the antibody panel.** Reviewable: the panel (store/cap/net/blocked
+- **CP2 — antibodies (3) + the antibody panel. BUILT 4 September 2026; record in `for-P2.5.md`.** Reviewable: the panel (store/cap/net/blocked
   per family); `produce` through it; `tag` and `neutralise` as board targets that appear only
   when a matching antibody is held; the session's `blocked` field; the neutralise-cost mirror
   with its spanning test. *S25 check:* produce ENV, tag a bacterium, watch the store fall;

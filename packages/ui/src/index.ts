@@ -26,3 +26,5 @@ export {
   type BoardOffer,
   type ButtonOffer,
 } from './play/offered';
+export { producibleFamilies, NEUTRALISE_TOXIN_AP } from './play/offered';
+export { AntibodyPanel, type FamilyRow, type FamilyDetail } from './panels/AntibodyPanel';

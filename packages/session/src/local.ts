@@ -318,6 +318,7 @@ export class LocalSession implements Session {
         net: Number(pb['net'] ?? 0),
         boosted: Boolean(pb['boosted']),
         reduced: Boolean(pb['reduced']),
+        blocked: pb['blocked'] !== null && pb['blocked'] !== undefined,
       };
     }
 
