@@ -557,3 +557,193 @@ still answers; end turns and watch the number count down and the cell come back 
 greys with the turns remaining.
 
 **Stays with the card, as ruled:** malaria stage and the parasite inside a resident.
+
+# The P2.5 batch — the card, CP4, CP5 (from 4 September 2026)
+
+**Change of approach (Shantanu, 4 September 2026):** the rest of P2.5 is built as ONE batch
+and tested once, properly — the checkpoints were sized when the interaction pattern was
+unsettled, and selection, offers, rings, badges and the reason-line standard have now all been
+through a finger test. In exchange: every checkpoint review goes into this record as it
+happens, each piece with its own decisions and evidence; any design question that would have
+been a mid-checkpoint ruling is still asked; the harness, the reason-line standard and the
+offered ⊆ accepted check apply per action with the per-action floor covering the new ones; and
+the closing report says exactly what was verified headless and what only by test.
+
+## Piece 1 — the pathogen card: BUILT (4 September 2026)
+
+**As ruled** (COMMAND_SURFACE_PLAN §4): the inspect sheet's pathogen row is the entry, the
+reveal's arrival rows are the second, both open the same component; a novel pathogen gets no
+card. One scrolling card, no flip: name, type and antigen class; "Right now" (below); the
+class's one-line biology; can infect; the fact where one exists; **Beat it**; tier and the
+four stat bars; the five information rows. All content, no engine: `DZINFO`, `DZSTATS`,
+`FACT`, `TROPISM`, `FAMILY` → `FAMILIES`, `UI_`, and `BEAT_BY_TYPE`.
+
+**BEAT_BY_TYPE moved into content** (`labels.json`, beside `UI_`; schema, loader, index) and
+**pinned byte-for-byte against legacy** in `ui-content.test.ts`'s TABLES like every other
+extracted table — extracted by evaluating legacy's initialiser, the same method the pin uses,
+not by retyping. `card-data.test.ts` cross-checks that every playable disease has every row the
+card renders and every type has its line: a missing row would be a silently blank card, which
+no per-table schema can see.
+
+**FAM_LONG, checked and NOT extracted, recorded:** legacy's second constant differs from
+`FAMILIES.bio` in wording ("grip the spikes" versus "target the spikes") and carries two things
+`FAMILIES` does not — the expanded acronym ("ENVeloped virus") and example diseases per class.
+Its legacy surface was the antigen-class legend, not the card. Home: the antibody panel's family
+detail, later; not this piece. The card shows `FAMILIES.name` and `.bio`.
+
+**The two deferred invader states, built as proposed — rule against it if the mark is wrong.**
+Liver-stage malaria and kala-azar inside a resident macrophage are one biological class —
+INTRACELLULAR, reachable only by the Killer T-Cell or NK Cell — so they share one mark: a
+**dashed ring in the organ brown** on the token, the words on the sheet's row ("Hiding inside
+liver cells — only the Killer T-Cell or NK Cell can reach it"; "Hiding inside the Kupffer cell
+— …"; the other two malaria stages say who CAN reach it), and the same words as the card's
+"Right now" line. The group key splits on hidden-inside-a-cell exactly as it does on the coat,
+for the same reason: a liver-stage and a blood-stage malaria on one node are different
+questions, and a ring must not stand for both. **Not a second badge glyph** as the sweep first
+suggested: the coat badge says "you can act on this", and a state that says "you cannot" is
+better carried by the token's outline than by a second symbol competing for the same slot.
+
+**Pinned on engine-produced states**, driven rather than found: `forceInjectCard` (the engine's
+dev-only entry point, one of the 67 exports) puts the card into play and the game is cycled
+idle through the engine until the state arises — kala-azar reaches its organ and moves inside
+the resident (`inMac`, and the resident's `infectedBy` names it back); malaria reaches the liver
+and embeds (`stage: liver`). Both tokens carry the mark and their sheet rows carry the state; a
+control re-collapses a hidden and an exposed token and shows the mix the split prevents.
+
+**Verified in the real app, headless** (`drive-card.ts`): the reveal's arrival row opens the
+card above the reveal, the card shows that disease's own "Discovered" line and its "Beat it",
+Close returns to the reveal; in command, tapping the pathogen's node opens the sheet, its
+**Card** button opens the same card. No ⟪missing key⟫. **Not verified headless:** the dashed
+ring and the "hiding inside" words on a live board — kala-azar and a liver-stage malaria did
+not occur in the driven games; they are covered by the driven tests only, and belong on the S25
+list.
+
+**S25 list for the card:** (1) draw → tap the arrival row → the card, scroll it, close. (2) In
+command, tap a pathogen's node → Card. (3) A Malaria game: its token gains the dashed ring when
+it embeds in the liver, the sheet says "hiding inside liver cells", the card's "Right now"
+agrees; when it bursts out the ring goes. (4) A Kala-azar game: the parasite at its organ gains
+the ring, the sheet names the resident it is inside, and that resident's own line (CP3) says a
+parasite is inside it.
+
+## Piece 2 — CP4, the body-level actions and the body panel: BUILT (4 September 2026)
+
+**The second source, filled.** `bodyOffers(view)` — wired end-to-end and empty since CP1 —
+now carries the five actions with no cell. Board rings while NOTHING is selected: the
+**memory response** on a remembered, reachable pathogen (free; 1 AP on Hard, the engine's
+own rule) and an **antivenom dose** on a venom (a dose in stock, 3 AP). The command bar, which
+shows only "tap one of your cells" while nothing is selected, now says what those rings are
+("Tap the highlighted pathogen — your body remembers it"; "Tap the venom to give antivenom —
+3 AP"), so a ring on an empty selection is never unexplained. The panel buttons — **order
+antivenom**, **clonal selection**, **vaccinate** — are offered regardless of selection: the
+panel is always visible, and ordering a vial should not require deselecting a cell first.
+
+**The amount chooser (plan §3.5), and the one rule it needed.** `vaccinate` and
+`orderAntivenom` take an amount, and the engine CLAMPS a larger one to what is left — so a
+"+2" at 1 AP would be ACCEPTED while spending 1, a mislabelled button that the offered ⊆
+accepted harness cannot see. Each amount (+1, +2, as legacy offered) is offered only when the
+AP is there AND the progress still needs it, so the label is always exactly what will be spent.
+Pinned in `body-offers.test.ts` on recorded states: every amount within the AP and within
+the need, with a guard that a +2 was actually offered somewhere; no vaccine on Training; no
+clone search without an unknown antigen; no dose without stock; no memory response on Hard
+at 0 AP.
+
+**The body panel** (`BodyPanel.tsx`, under the antibody panel): antivenom doses in stock and
+the order in progress toward the next vial (`avOrder`/`ANTIVENOM_ORDER`, with the buttons);
+"memory response ready" when a remembered pathogen is reachable, so the board's ring is
+explained; clonal selection, shown once an unknown antigen has been met, with its progress
+(`clone`/`CLONE_COST`) and the search button; the vaccine lab — every disease the body has
+seen and does not yet remember, with progress (`vaccine[dz]`/`VACCINE_COST`) and the buttons —
+and, on Training, the engine's own reason in place of the lab ("immunity comes from surviving
+an infection") rather than a hidden section; the immune list. The novel antigen stays masked
+in every list. Each row's why-not is in place: the body's "always answers".
+
+**Harness:** the judge gains the BODY as a subject (nothing selected), the floor gains the
+five actions, and a body over-offer control (the memory response on every invader) fires.
+The corpus reaches all five without construction: the bot vaccinates, searches for the clone
+and uses the memory response; `orderAntivenom` is offerable in any command state with AP; and
+an antivenom dose is offerable wherever a venom stands while stock and AP allow.
+
+**Verified in the real app, headless** (`drive-body.ts`): on Normal, order antivenom +1 →
+progress 0/4 → 1/4, AP 5 → 4; the drawn disease's (Impetigo) vaccine row → +1 AP → 1/5. On
+Training, a venom on the board (turn 2) → its red ring while nothing is selected and the bar
+reads "Tap the venom to give antivenom — 3 AP" → tap → AP 6 → 3, stock 2 doses → 1 dose. On
+Hard, idle until the unknown antigen broke in (turn 7) → the clone row appeared → "Search for
+the clone 0/3" → 1/3, AP −1. No ⟪missing key⟫. **Not verified headless: the memory response**
+— it needs a remembered pathogen back in the body, which no short driven game produced; the
+harness offers and the engine accepts it on recorded states (the bot uses it), and it is on
+the S25 list.
+
+**S25 list for CP4:** (1) order antivenom +1 / +2 and watch the vial arrive at 4; the +2
+button vanishes at 1 AP and when 1 AP is all that is needed. (2) Normal: vaccinate the first
+disease you see to 5 — it appears under "Immune"; when it comes back, its ring is there before
+you select anything and the bar says why. (3) Training: a snakebite → the venom's ring, the
+antivenom hint, tap → gone, 3 AP. (4) Hard: when the unknown antigen breaks in, the clone row
+appears; three searches; then X appears in the antibody panel and Produce X works.
+
+## Piece 3 — CP5, the log panel: BUILT (4 September 2026)
+
+**What it is.** The engine's log, newest first with its turn tag, under the body panel: the
+teaching prose that explains the biology as it happens ("1 virus(es) hid inside a cell —
+antibodies can no longer touch them. The Killer T-Cell (never misses) or the NK Cell (d6 3+)
+must kill the infected cell"). Eight lines shown, "Show all N" expands. Read from the SHOWN
+view, so a burst's frames narrate as they land. The engine's `<b>` and `<i>` render as
+emphasis through a tokenizer; nothing is injected as HTML.
+
+**The rendering decision, and the numbers behind it — for ruling, not yet ruled.** The
+engine's log lines are interpolated prose, so the exact-string lookup that rejections use
+cannot find them. `engineLogText` compiles each of the catalogue's 57 placeholder entries to
+a pattern, recovers the values, and re-renders the catalogue's template with them — which is
+how the Hindi edition will render the same line translated; in English the result equals the
+engine's text exactly, and `log-text.test.ts` pins that. **The five composed sites FINDINGS #53
+lists** — produce, strike, tag, engulf, and the draw's entry line — have no template and
+**render plainly, not loudly**. In a short driven Training game **8 of 14** log lines were
+composed sites, almost all the draw's "Infection: X entered via the Nose": a ⟪marker⟫ on
+more than half the log would teach a newcomer nothing, and the English edition is unaffected.
+What it means for the Hindi edition: those five lines will render in English until Phase 3
+makes the engine emit ids (#53's correction) — the draw's entry line above all, which is the
+most frequent line in the log. `log-text.test.ts` asserts on recorded states that the
+composed sites are the ONLY misses, with a control, so a new one fails a test rather than
+hiding in the panel. **Question for Shantanu:** is plain-render acceptable for the Hindi
+deliverable's first cut, or should the five composed lines be re-templated in the UI now
+(a duplicated-prose workaround in the class of #52/#53, deleted with them in Phase 3)?
+Built as plain-render; the workaround is a day's work if ruled.
+
+**Verified in the real app, headless** (`drive-log.ts`): the game-start line at turn 1; a
+move and a produce each add their line, newest first with turn tags; four idle turns then
+"Show all" 8 → 14 lines including the spread's prose ("Bacteria divided: 2 new", the
+hidden-virus line above); then the game idled on to its conclusion — **the Result screen
+("The body has fallen — lost to damage: Kidneys") reached by the app's own controls**. No
+⟪missing key⟫.
+
+## The readiness bar, re-measured (4 September 2026)
+
+**Every player action the engine accepts in single-player is now reachable by touch in the
+app shell, with no dev-shell controls:** move, engulf (CP0); net, snipe, nkkill, strike,
+degranulate (CP1); tag, neutralise, produce (CP2); hop, recall, resmove, resengulf (CP3);
+memoryKill, antivenom, orderAntivenom, clonalSelection, vaccinate (CP4) — **19 of 19** — plus
+undo and the three turn actions. Each is offered only from the view's queries, judged by the
+offered ⊆ accepted harness with its per-action floor, and carries a reason line or an
+in-place why-not. A full Training game has been played to its conclusion by the app's own
+controls, headless, on the LOSS path; **the WIN path remains uncrossed** (closeout item).
+
+**What has been verified headless in the app shell versus by test only** — so the S25 pass
+targets the gaps:
+
+| Verified headless (a driver did it in the app) | Verified by test only (harness + spanning tests; on the S25 list) |
+|---|---|
+| Card from the reveal row and from the sheet; close returns to the reveal | The dashed "hiding inside a cell" ring and its sheet words (kala-azar in a resident, liver-stage malaria) |
+| Order antivenom +1 (1/4, AP −1); vaccine row +1 on Normal (1/5); a venom's ring and bar hint while nothing is selected → antivenom given (AP −3, stock 2 → 1); the clone row on Hard → search 0/3 → 1/3 | **The memory response** (a remembered pathogen's ring while nothing is selected; free / 1 AP on Hard) |
+| The log: lines appear per action and per spread, turn tags, Show all; a full game to the Result screen (loss) | "+2" vanishing at 1 AP or at 1 needed (pinned by test on recorded states) |
+| Earlier pieces: the coat badge and sheet word; spent cell dimmed with the engine's return turn, sheet line; residents, patrol, hop, recall, resengulf, Undo | The suppressed (offline) cell's treatment; the vaccine completing into "Immune"; a vial arriving at 4/4; Produce X after the clone is found |
+
+**Found by the PR's code scanning, fixed before merge (4 September 2026).** GitHub's default
+CodeQL setup failed PR #40 on one new high-severity alert in the changed code:
+`js/polynomial-redos` on the log panel's emphasis tokenizer, whose regex stripped unknown tags
+with `<[^>]+>` and could run polynomially on a long run of `<`. A defect in the new code, not a
+pre-existing one — the 71 open alerts on `main` all date from 18 August and sit in
+`tools/legacy` and the string-inventory tooling, which is why earlier PRs passed this check.
+The engine's prose uses exactly four tokens (`<b>`, `</b>`, `<i>`, `</i>`; checked against the
+catalogue and the engine source), so the tokenizer is now a linear scan over those four and
+any other `<` is literal text — there is no sanitisation to get wrong. `richRuns.test.ts`
+pins the runs and gives a 200,000-character run of `<` a time bound. The CodeQL result is the
+one check in this project's CI that nothing local reproduces; it earned its place here.

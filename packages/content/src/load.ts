@@ -255,6 +255,8 @@ export const DZSTATS = pack['DZSTATS'] as Record<string, DiseaseStats>;
 /* --- labels and glyphs --- */
 export const UM = pack['UM'] as Record<CellKey, CellLabel>;
 export const UI_ = pack['UI_'] as Record<InvaderType, InvaderLabel>;
+/** How each pathogen type is beaten — the card's "Beat it" line. Legacy's BEAT_BY_TYPE. */
+export const BEAT_BY_TYPE = pack['BEAT_BY_TYPE'] as Record<InvaderType, string>;
 /**
  * Byte-identical to RESIDENT_NAME in the rules pack, and that is asserted rather than assumed —
  * see the parity test in load.test.ts. Two copies exist because legacy has two; Phase 2 collapses

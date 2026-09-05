@@ -162,6 +162,9 @@ interface Invaderish extends Located {
   hp?: unknown;
   maxhp?: unknown;
   tagged?: unknown;
+  stage?: unknown;
+  inMac?: unknown;
+  organ?: unknown;
 }
 
 interface Cellish extends Located {
@@ -257,6 +260,16 @@ export interface InspectInvader {
   maxhp: number;
   /** Coated in antibody (`tagged`): what a macrophage may eat and a strike may hit. */
   coated: boolean;
+  /** Malaria's life-cycle stage (sporozoite / liver / blood), or null for everything else. */
+  stage: string | null;
+  /**
+   * HIDING INSIDE A CELL — liver-stage malaria, or kala-azar inside a resident macrophage
+   * (`inMac`). Only the Killer T-Cell or NK Cell can reach it; antibodies and macrophages
+   * cannot. Drawn as a dashed ring, said in words by the sheet and the card.
+   */
+  hiddenIn: 'liver' | 'macrophage' | null;
+  /** The organ the invader is in (for "hiding inside the Kupffer cell"), or null. */
+  organ: string | null;
 }
 
 /** Everything standing on one node, handed to the shell when the node is tapped. */
@@ -292,6 +305,8 @@ export interface DisplayToken {
   unavailable?: Unavailable;
   /** An invader group coated in antibody — its own token, never mixed with uncoated ones. */
   coated?: boolean;
+  /** An invader group hiding inside a cell — its own token, drawn with a dashed ring. */
+  hiddenIn?: 'liver' | 'macrophage';
   art: string | null;
   /** Invaders of this type on this node; a badge shows when >= 2. */
   count: number;
@@ -389,6 +404,14 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
         hp: typeof s.iv.hp === 'number' ? s.iv.hp : 1,
         maxhp: typeof s.iv.maxhp === 'number' ? s.iv.maxhp : 1,
         coated: s.iv.tagged === true,
+        stage: typeof s.iv.stage === 'string' ? s.iv.stage : null,
+        hiddenIn:
+          s.iv.inMac === true
+            ? 'macrophage'
+            : s.iv.type === 'malaria' && s.iv.stage === 'liver'
+              ? 'liver'
+              : null,
+        organ: typeof s.iv.organ === 'string' ? s.iv.organ : null,
       });
     }
   }
@@ -402,7 +425,11 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
   for (const node of byNode.values()) {
     const groups = new Map<string, InspectInvader[]>();
     for (const iv of node.inspect.invaders) {
-      const gk = iv.novel ? 'novel' : iv.coated ? `${iv.type}:coated` : iv.type;
+      // …and by HIDDEN-INSIDE-A-CELL, for the same reason: a liver-stage malaria and a
+      // blood-stage one on a node are different questions, and the ring must not stand for both.
+      const gk = iv.novel
+        ? 'novel'
+        : `${iv.type}${iv.coated ? ':coated' : ''}${iv.hiddenIn ? `:in-${iv.hiddenIn}` : ''}`;
       const list = groups.get(gk) ?? [];
       list.push(iv);
       groups.set(gk, list);
@@ -417,6 +444,7 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
         kind: 'invader',
         pos: node.pos,
         coated: gk !== 'novel' && first.coated,
+        hiddenIn: gk !== 'novel' && first.hiddenIn !== null ? first.hiddenIn : undefined,
         art: gk !== 'novel' && PATH_ART.has(type) ? `path-${type}` : null,
         count: list.length,
         ids: list.map((x) => x.id),
@@ -821,6 +849,7 @@ export function Board({
               data-cell={t.cell}
               data-resident={t.resident === true ? t.organ : undefined}
               data-coated={t.coated === true ? '1' : undefined}
+              data-hidden={t.hiddenIn}
               data-unavailable={t.unavailable?.kind}
               style={(t.cell || t.resident === true) && onTap ? { cursor: 'pointer' } : undefined}
             >
@@ -903,6 +932,21 @@ export function Board({
                     {t.count}
                   </text>
                 </>
+              ) : null}
+              {t.hiddenIn !== undefined ? (
+                // HIDING INSIDE A CELL — a dashed ring in the organ brown: liver-stage malaria
+                // and kala-azar inside a resident are one biological class (intracellular —
+                // only the Killer T-Cell or NK Cell reach it), so they share one mark. The
+                // sheet and the card say it in words.
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={TOKEN_ART_U / 2 + 2}
+                  fill="none"
+                  stroke={CLASSIC.organ}
+                  strokeWidth={2.2}
+                  strokeDasharray="4 3"
+                />
               ) : null}
               {t.coated === true ? (
                 // THE COAT BADGE — top-LEFT, the corner the count badge does not use: antibody

@@ -29,7 +29,16 @@ import {
   inspectInfoForResident,
 } from '../board/Board';
 import { engineText } from '../engineText';
-import { offeredActions, type BoardOffer, type Offered } from './offered';
+import {
+  CLONE_TARGET,
+  bodyOffers,
+  diseaseLabel,
+  offeredActions,
+  type BoardOffer,
+  type Offered,
+} from './offered';
+import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
+import { LogPanel, type LogLine } from '../panels/LogPanel';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -39,6 +48,8 @@ import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
+import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
+import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
 
@@ -109,6 +120,8 @@ export function PlayScreen({
   } | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
+  // THE PATHOGEN CARD — a layer above the sheet and the dialogs, opened from either.
+  const [card, setCard] = useState<PathogenCardSubject | null>(null);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -246,15 +259,30 @@ export function PlayScreen({
       .filter((iv) => !prevIds.has(String(iv['id'] ?? '')))
       .map((iv) => ({
         disease: String(iv['disease'] ?? ''),
+        type: String(iv['type'] ?? ''),
         lane: typeof iv['lane'] === 'string' ? iv['lane'] : null,
         remembered: iv['remembered'] === true,
         novel: iv['novel'] === true,
       }));
     if (arrivals.length === 0) return;
+    const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
     enqueueDialog({
       id: `reveal-t${String(g['turn'])}`,
       title: t('reveal.title'),
-      body: <RevealBody arrivals={arrivals} />,
+      body: (
+        <RevealBody
+          arrivals={arrivals}
+          onCard={(a) =>
+            setCard({
+              disease: a.disease,
+              type: a.type,
+              remembered: a.remembered || memory[a.disease] === true,
+              // An arrival is at its route's entry: nothing invader-specific to say yet.
+              now: null,
+            })
+          }
+        />
+      ),
       dismissLabel: t('reveal.continue'),
     });
   }, [authView, enqueueDialog]);
@@ -363,8 +391,79 @@ export function PlayScreen({
       label: o.cost ? `${o.label} · ${o.cost}` : o.label,
     }));
   }
+  // THE BODY PANEL's data, all from the view, and its buttons from `bodyOffers` — computed
+  // regardless of selection, because the panel is always visible and ordering a vial should
+  // not need a cell deselected first. The body's BOARD rings come through `offered` (the
+  // second source) only while nothing is selected.
+  const body: Offered = playing
+    ? { source: 'body', board: [], buttons: [], reason: null }
+    : bodyOffers(authView);
+  const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+  const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
+  const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
+  const difficulty = String(game['difficulty']);
+  const attackable = (authView.queries.perInvader['attackable'] ?? []) as unknown[];
+  const bodyData: BodyPanelData = {
+    antivenom: Number(game['antivenom'] ?? 0),
+    avOrder: Number(game['avOrder'] ?? 0),
+    orderButtons: body.buttons
+      .filter((b) => b.action === 'orderAntivenom')
+      .map((b) => ({ id: b.id, label: b.label })),
+    memoryReady: ((game['invaders'] as { remembered?: unknown }[] | undefined) ?? []).filter(
+      (iv, i) => iv.remembered === true && attackable[i] === true,
+    ).length,
+    hard: difficulty === 'hard',
+    training: difficulty === 'training',
+    novelSeen: game['novelSeen'] === true,
+    cloneFound: game['cloneFound'] === true,
+    clone: Number(game['clone'] ?? 0),
+    cloneButton: (() => {
+      const b = body.buttons.find((x) => x.action === 'clonalSelection');
+      return b
+        ? {
+            id: b.id,
+            label: `${b.label} ${String(Number(game['clone'] ?? 0))}/${String(CLONE_TARGET)}`,
+          }
+        : null;
+    })(),
+    vaccines:
+      difficulty === 'training'
+        ? []
+        : Object.keys(seen)
+            .filter((dz) => seen[dz] === true && memory[dz] !== true)
+            .map((dz) => ({
+              disease: dz,
+              name: diseaseLabel(dz),
+              family: '',
+              put: Number(vaccine[dz] ?? 0),
+              buttons: body.buttons
+                .filter((b) => b.action === 'vaccinate' && b.disease === dz)
+                .map((b) => ({ id: b.id, label: b.label })),
+            })),
+    immune: Object.keys(memory)
+      .filter((dz) => memory[dz] === true)
+      .map(diseaseLabel),
+  };
+  const noSelectionHint =
+    selectedCell || selectedResident
+      ? null
+      : offered.board.some((o) => o.action === 'memoryKill')
+        ? t('commandBar.memoryHint')
+        : offered.board.some((o) => o.action === 'antivenom')
+          ? t('commandBar.antivenomHint')
+          : null;
+
+  // THE LOG — the engine's own prose, newest first (the view carries the latest 40). Read
+  // from the SHOWN view so a burst's frames narrate as they land.
+  const logLines: LogLine[] = (
+    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+
   const sendOffer = (id: string): void => {
-    const o = offered.board.find((x) => x.id === id) ?? offered.buttons.find((x) => x.id === id);
+    const o =
+      offered.board.find((x) => x.id === id) ??
+      offered.buttons.find((x) => x.id === id) ??
+      body.buttons.find((x) => x.id === id);
     if (o) send(o.params);
   };
 
@@ -443,6 +542,7 @@ export function PlayScreen({
         qualifier={
           selectedResident ? t('resident.of', { organ: organDisplayName(selectedResident) }) : null
         }
+        noSelectionHint={noSelectionHint}
         ap={Number(game['ap'] ?? 0)}
         hint={hint}
         buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
@@ -469,6 +569,8 @@ export function PlayScreen({
         }
         onProduce={sendOffer}
       />
+      <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+      <LogPanel lines={logLines} />
       {inspect ? (
         <InspectSheet
           info={inspect}
@@ -488,6 +590,17 @@ export function PlayScreen({
             tapResident(organ);
             setInspect(null);
           }}
+          onCard={(invaderId) => {
+            const iv = inspect.invaders.find((x) => x.id === invaderId);
+            if (!iv || iv.novel) return;
+            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+            setCard({
+              disease: iv.disease,
+              type: iv.type,
+              remembered: memory[iv.disease] === true,
+              now: invaderNowLine(iv),
+            });
+          }}
           onClose={() => setInspect(null)}
         />
       ) : null}
@@ -502,6 +615,7 @@ export function PlayScreen({
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
+      {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
     </div>
   );
 }
