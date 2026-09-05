@@ -55,7 +55,7 @@ has one, or a combination the view already carries.
 | `hop` | any mobile cell at the lymph crossing | `lane` | `flags.lymph`, `state.lymphBlocked`, cell at `LYMPH_STEP` on a lymph lane; partners from content `LYMPH_GROUP` | spends the cell | board target on the partner crossing |
 | `recall` | any mobile cell not at the hub | none | cell alive, `zone !== 'hub'` | spends the cell | bar button |
 | `resmove` | resident (by organ) | `organ`, `step` | `flags.residentMove`, step ± 1 within `perOrgan.branchLen` | spends | board targets (two rings) |
-| `resengulf` | resident (by organ) | `organ`, `invaderId` | `perOrgan.residentEatable[organ]`, `!ate`, `!infectedBy` (residents are in the view) | free, once per turn | bar button |
+| `resengulf` | resident (by organ) | `organ`, `invaderId` | `perOrgan.residentEatable[organ]`, `!ate`, `!infectedBy` (residents are in the view) | free, once per turn | ~~bar button~~ **board targets — ruled at CP3, see §3.4** |
 | `memoryKill` | **none** | `invaderId` | invader `remembered` && `perInvader.attackable`; 1 AP on Hard | free / 1 AP | **body-level target** — see §3 |
 | `antivenom` | **none** | `invaderId` | `state.antivenomTargets`, `antivenom > 0`, AP ≥ 3 | 3 AP + a dose | board target + **BODY PANEL** (stock) |
 | `orderAntivenom` | **none** | `ap` (1..n) | AP ≥ 1; progress `avOrder` / content `ANTIVENOM_ORDER` | chosen AP | **BODY PANEL** |
@@ -103,6 +103,12 @@ places that needed a decision, stated before anything is built:
    swarm; `resengulf` falls back to the first eatable invader. So the UI offers **one button
    per swarm / per resident**, not one per invader — which is also the honest shape, since the
    player is not choosing.
+   > ⚠️ **Corrected at CP3 (4 September 2026).** Half of this held. `net` takes no id, so one
+   > button per swarm is honest. But `resengulf` reads `a.invaderId` and only FALLS BACK to the
+   > first eatable invader when none is supplied — the player can choose, so a button would have
+   > hidden a real choice. **Ruled: `resengulf` is offered as attack rings per pathogen**, the
+   > same shape as the Monocyte's engulf, because the same action should not have two
+   > interaction shapes depending on which macrophage performs it.
 5. **`vaccinate` and `orderAntivenom` take an AMOUNT** (`ap`, 1..n). Legal amounts are
    1..min(AP, what is still needed). Legacy offered "+1 AP / +2" buttons; a small chooser in
    the body panel does the same. Not hard, but it is the only parameter that is not a target.
@@ -138,7 +144,13 @@ the real app shell, and an S25 step/expect list like the selection model's.
   when a matching antibody is held; the session's `blocked` field; the neutralise-cost mirror
   with its spanning test. *S25 check:* produce ENV, tag a bacterium, watch the store fall;
   neutralise a toxin at 1 AP is not offered.
-- **CP3 — repositioning and residents (4).** Reviewable: residents as selectable candidates;
+- **CP3 — repositioning and residents (4). BUILT 4 September 2026; record in `for-P2.5.md`.**
+  Four rulings taken before the build (Shantanu): `resengulf` as rings, not a button — the
+  engine honours a supplied `invaderId`, so §3.4's premise held for `net` only, and the same
+  action keeps one interaction shape whichever macrophage performs it; an infected resident may
+  still patrol (the engine accepts it; withholding it would make the UI a second rules source);
+  hop rings in lymph blue; and FINDINGS #54 — the harness had never offered `net`, so its global
+  vacuity guard is replaced by a per-action floor with constructed states. Reviewable: residents as selectable candidates;
   `hop` as a ring on the partner crossing; `recall`; undo classing (three moves, one commit).
   *S25 check:* two resident steps then Undo; hop across the lymph link; resengulf ends Undo.
 - **RULED 4 September 2026 (Shantanu): THE PATHOGEN CARD is its own piece between CP3 and
@@ -159,10 +171,16 @@ the real app shell, and an S25 step/expect list like the selection model's.
   vaccine list refer to diseases the card explains. P2.6's library is then this component
   with an index, not a second build. One thing to check at build time: legacy's "Beat it" text
   (`BEAT_BY_TYPE`) was a UI constant, and its home in the content pack must be confirmed.
-- **CP4 — body-level (5) + the body panel.** Reviewable: the panel; the second target source
+- **The card, CP4 and CP5 were BUILT AS ONE BATCH (4 September 2026, Shantanu's change of
+  approach: the interaction pattern had been through a finger test, so the checkpoints could
+  merge; every review went into `for-P2.5.md` per piece instead).** The card piece: record
+  there, with `BEAT_BY_TYPE` moved into content and pinned.
+- **CP4 — body-level (5) + the body panel. BUILT.** Reviewable: the panel; the second target source
   (memory response, antivenom dose) while nothing is selected; the AP chooser. *S25 check:*
   needs Normal difficulty for vaccines; a remembered pathogen highlights on arrival.
-- **CP5 — the teaching-prose panel**, then the readiness bar is re-measured (drive an idle
+- **CP5 — the teaching-prose panel. BUILT**, and the readiness bar re-measured: 19 of 19 by
+  touch, a Training game driven to the Result screen in the app shell (`for-P2.5.md`). As
+  planned: then the readiness bar is re-measured (drive an idle
   game and a played game to conclusion by touch, in the app shell) and the newcomer test is
   scheduled.
 

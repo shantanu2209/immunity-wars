@@ -451,6 +451,13 @@ export const LabelsS = z.strictObject({
     InvaderTypeS,
     z.strictObject({ n: z.string(), c: z.string(), g: z.string().min(1) }),
   ),
+  /**
+   * "Beat it" — how each pathogen TYPE is actually beaten, one sentence per type. A UI constant
+   * in legacy (`v2_ui.html`, BEAT_BY_TYPE) that the string inventory and the C3 parity tables
+   * never reached; moved into content for the pathogen card (P2.5, 4 Sep 2026) and pinned
+   * against legacy like every other extracted table. Kartik's science; the diseases namespace.
+   */
+  BEAT_BY_TYPE: z.record(InvaderTypeS, z.string().min(1)),
   RNAME: byOrgan(z.string().min(1)),
   RGLYPH: byOrgan(z.string().min(1)),
   ORGAN_ART: byOrgan(z.string().min(1)),

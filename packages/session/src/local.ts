@@ -322,7 +322,26 @@ export class LocalSession implements Session {
       };
     }
 
-    return { state, perInvader, perCell, perOrgan, perFamily, production };
+    // WHEN A SPENT CELL IS BACK — see `PrecomputedQueries.readyTurn`. The engine's own answer
+    // for the Neutrophil, withheld while the marrow is damaged (the engine will not regenerate
+    // it then, and `damaged()` is not exported — hp below max is the view's data, so no rule
+    // is mirrored; Hard's compensated marrow loses a number, never the truth).
+    const cells = (this.g['cells'] as Record<string, Record<string, unknown>> | undefined) ?? {};
+    const marrow = (this.g['organs'] as Record<string, Record<string, unknown>> | undefined)?.[
+      'marrow'
+    ];
+    const marrowDamaged =
+      marrow !== undefined && Number(marrow['hp'] ?? 0) < Number(marrow['max'] ?? 0);
+    const eos = cells['eosinophil'];
+    const readyTurn: Record<string, number | null> = {
+      neutrophil: marrowDamaged
+        ? null
+        : ((call('neutrophilReadyTurn', this.g) as number | null | undefined) ?? null),
+      eosinophil:
+        eos?.['alive'] === false && typeof eos['regenAt'] === 'number' ? eos['regenAt'] : null,
+    };
+
+    return { state, perInvader, perCell, perOrgan, perFamily, production, readyTurn };
   }
 
   private scope(): ScopedQueries {

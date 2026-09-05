@@ -94,12 +94,13 @@ the current surface cannot play. The seventeen are planned in
 | Work | State |
 |---|---|
 | **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
-| **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **CP1 + CP2 built (4 Sep):** net, snipe, nkkill, strike, degranulate; tag, neutralise, produce + the antibody panel; the offered ⊆ accepted harness; **10 of 19 reachable by touch.** CP3–CP4 per [`COMMAND_SURFACE_PLAN.md`](COMMAND_SURFACE_PLAN.md) |
+| **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **COMPLETE (4 Sep 2026): 19 of 19 reachable by touch.** CP1–CP3 as before; the P2.5 batch (Shantanu's change of approach: one batch, one test) added the pathogen card, CP4 (memoryKill, antivenom, orderAntivenom, clonalSelection, vaccinate + the body panel) and CP5 (the log panel). Record per piece in [`for-P2.5.md`](for-P2.5.md) ("The P2.5 batch"), with the headless-versus-test table the S25 pass targets |
 | **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
-| **Panels** — the log/teaching prose (currently invisible), production breakdown, status | **Antibody panel built (CP2).** Log/teaching prose: CP5, before the newcomer test; status/body panel: CP4 |
+| **Panels** — the log/teaching prose, production breakdown, status | **All built:** the antibody panel (CP2), the body panel (CP4), the log panel (CP5, with one rendering question open for Shantanu — the five composed engine lines render plainly, not loudly; numbers in the record) |
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
 | **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
-| **Resident-vs-Macrophage visual distinction; lymph connector polish** | Recorded in for-P2.5.md |
+| **Board state the engine tracks and the board did not show** — the sweep (for-P2.5.md) | **Coat and spent/offline cells BUILT (4 Sep 2026)**, before the card as reordered: fan-of-types split by type + coated, the antibody badge, "Coated in antibody" in the sheet; spent and suppressed cells dimmed with turns-until-back in the badge slot. Malaria stage and the parasite inside a resident stay with the card |
+| **Resident-vs-Macrophage visual distinction; lymph connector polish** | **Ruled at CP3:** the distinction leans on the biology — Monocyte versus Kupffer cell by name, in the bar and the sheet — plus a double ring; distinct resident art is the real answer, deferred with the pipeline (for-P2.5.md). Lymph connector polish still recorded there |
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
 | **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends) |
 | **Win path crossed** | Closeout checklist item |
@@ -179,6 +180,11 @@ between CP3 and CP4, exactly as proposed; recall is CP3.** Order from here: **CP
 CP4 → CP5 → re-measure the readiness bar → schedule the newcomer test.**
 
 ### CP3 — repositioning and residents, in enough detail to build without re-deriving
+
+> ✅ **BUILT 4 September 2026** on `phase2/p2-5-cp3-residents`, as below with four rulings
+> recorded in `for-P2.5.md` ("CP3") and `COMMAND_SURFACE_PLAN.md`: `resengulf` as rings (the
+> engine honours `invaderId`); an infected resident may still patrol; hop rings in lymph blue;
+> FINDINGS #54, the per-action floor. **Next: the card piece, then CP4.**
 
 All four go into `packages/ui/src/play/offered.ts` under the `cell` source; the harness
 (`tests/session/src/offered.test.ts`) checks them automatically once they are emitted.

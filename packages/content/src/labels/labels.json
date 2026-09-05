@@ -83,6 +83,17 @@
       "g": "✳"
     }
   },
+  "BEAT_BY_TYPE": {
+    "virus": "Antibody neutralises it, or the Monocyte engulfs it. If it hides inside a cell, only the Killer T-Cell or NK Cell can reach it.",
+    "hidden": "It is INSIDE one of your cells — antibodies cannot reach it there. Killer T-Cell (never misses) or NK Cell (d6 3+). Not all of these are viruses: Toxoplasmosis and Chagas disease are PROTOZOA that live inside your cells, which is why a Killer T-Cell is the answer for them too.",
+    "bacteria": "Coat it with a matching antibody, then engulf it — or trap the swarm in a Neutrophil NET. It divides if you ignore it!",
+    "fungus": "It CANNOT be coated — antibodies do not opsonise fungi here. The Monocyte engulfs it directly (it has 2 HP, so that chips it), and a Neutrophil NET kills it outright. Fungi are an INNATE problem: neutrophils and macrophages do this work.",
+    "toxin": "It is NOT alive — no cell can eat it, trap it or snipe it. ANTITOXIN antibodies are the only defence (2 AP to neutralise).",
+    "venom": "It is NOT alive and acts far too fast for your B-cells. Only an ANTIVENOM dose works — you cannot make antibodies in time.",
+    "worm": "Too big to swallow and immune to NETs. COAT it with an antibody, then the Eosinophil strikes (2 dmg) or degranulates (3 dmg, 2 AP, and it burns the organ).",
+    "parasite": "Coat it, then STRIKE it down with the Eosinophil (2 dmg) or Monocyte (1 dmg). Once it is on its last HP the Monocyte can finally engulf it. NETs do not hold it.",
+    "malaria": "In the blood: antibodies or the Monocyte. Inside liver cells: only the Killer T-Cell or NK Cell can reach it."
+  },
   "RNAME": {
     "heart": "Cardiac macrophage",
     "lungs": "Alveolar macrophage",

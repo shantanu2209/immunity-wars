@@ -248,7 +248,7 @@ describe('P2.1 step 4: the view is a function of (game state, selection)', () =>
         'unselected view carried destinations',
       ).toBeNull();
 
-      s.setSelection({ cell: 'macrophage', family: null });
+      s.setSelection({ cell: 'macrophage', family: null, resident: null });
       const scoped = s.getView().scoped.moveDestinations;
       expect(Array.isArray(scoped), 'selecting a cell did not produce its destinations').toBe(true);
 
@@ -269,7 +269,7 @@ describe('P2.1 step 4: the view is a function of (game state, selection)', () =>
       const s = LocalSession.createGame({ difficulty: 'normal' });
       await s.sendAction({ action: 'draw' });
       const before = canonical(s.getView().game);
-      s.setSelection({ cell: 'bcell', family: 'ENV' });
+      s.setSelection({ cell: 'bcell', family: 'ENV', resident: null });
       expect(canonical(s.getView().game), 'setSelection moved the game').toBe(before);
       s.dispose();
     } finally {

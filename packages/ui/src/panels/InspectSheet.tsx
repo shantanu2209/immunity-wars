@@ -11,9 +11,15 @@
  */
 import type { CSSProperties, ReactElement } from 'react';
 
-import type { InspectInfo } from '../board/Board';
+import type { InspectInfo, Unavailable } from '../board/Board';
 import { t } from '../i18n';
-import { cellDisplayName as cellName, typeDisplayName as typeName } from '../names';
+import { invaderNowLine } from './invaderNow';
+import {
+  cellDisplayName as cellName,
+  organDisplayName,
+  residentDisplayName,
+  typeDisplayName as typeName,
+} from '../names';
 
 const ROW: CSSProperties = {
   display: 'flex',
@@ -37,6 +43,19 @@ export interface InvaderOffer {
   label: string;
 }
 
+/** "Spent · back in 2 turns" — the words for a dimmed cell, all through the catalogue. */
+export function unavailableText(u: Unavailable): string {
+  const what = t(u.kind === 'spent' ? 'inspect.spent' : 'inspect.offline');
+  if (u.backIn === null) return what;
+  const when =
+    u.backIn <= 0
+      ? t('inspect.backNow')
+      : u.backIn === 1
+        ? t('inspect.backInOne')
+        : t('inspect.backIn', { n: u.backIn });
+  return `${what} — ${when}`;
+}
+
 export function InspectSheet({
   info,
   selectedCell,
@@ -44,8 +63,13 @@ export function InspectSheet({
   offers = {},
   onOffer,
   onSelectCell,
+  onSelectResident,
+  selectedResident = null,
+  onCard,
   onClose,
 }: {
+  /** Opens the pathogen card for an invader (never offered for a novel one). */
+  onCard?: (invaderId: string) => void;
   info: InspectInfo;
   selectedCell?: string | null;
   disabled?: boolean;
@@ -53,6 +77,9 @@ export function InspectSheet({
   offers?: Record<string, InvaderOffer[]>;
   onOffer?: (offerId: string) => void;
   onSelectCell?: (cell: string) => void;
+  /** CP3: the resident row selects the organ's resident, exactly like a cell row. */
+  onSelectResident?: (organ: string) => void;
+  selectedResident?: string | null;
   onClose: () => void;
 }): ReactElement {
   return (
@@ -88,7 +115,26 @@ export function InspectSheet({
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
             </span>
+            {iv.coated ? (
+              // The badge is a symbol nobody has been taught; the precise surface says the word.
+              <span style={{ color: '#7A5600', fontWeight: 700 }}>
+                {' '}
+                {t('inspect.sep')} {t('inspect.coated')}
+              </span>
+            ) : null}
+            {invaderNowLine(iv) !== null ? (
+              <span style={{ display: 'block', fontSize: 13, color: '#7A5600' }}>
+                {invaderNowLine(iv)}
+              </span>
+            ) : null}
           </span>
+          {!iv.novel && onCard ? (
+            // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
+            // novel pathogen gets no card — it is masked everywhere as unknown.
+            <button style={BTN} disabled={disabled} onClick={() => onCard(iv.id)}>
+              {t('inspect.card')}
+            </button>
+          ) : null}
           {(offers[iv.id] ?? []).map((o) => (
             <button
               key={o.id}
@@ -116,18 +162,51 @@ export function InspectSheet({
             textAlign: 'left',
           }}
         >
-          <img src={`/art/cell-${ck}@3x.webp`} width={36} height={36} alt="" />
-          {cellName(ck)}
+          <img
+            src={`/art/cell-${ck}@3x.webp`}
+            width={36}
+            height={36}
+            alt=""
+            style={info.unavailable[ck] ? { opacity: 0.38, filter: 'grayscale(1)' } : undefined}
+          />
+          <span>
+            {cellName(ck)}
+            {info.unavailable[ck] ? (
+              <span style={{ color: '#7C6A61' }}>
+                {' '}
+                {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
+              </span>
+            ) : null}
+          </span>
         </button>
       ))}
       {info.resident !== null ? (
-        <div style={ROW}>
+        // The resident's REAL name, then "resident of the Liver" — the sheet is where a
+        // resident and the Monocyte on one node are told apart, as two ≥44px rows.
+        <button
+          onClick={() => {
+            if (info.resident !== null) onSelectResident?.(info.resident);
+          }}
+          disabled={disabled || !onSelectResident}
+          style={{
+            ...ROW,
+            width: '100%',
+            background: selectedResident === info.resident ? '#FBEAE5' : 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: 14,
+            textAlign: 'left',
+          }}
+        >
           <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
-          <span style={{ fontSize: 14 }}>
-            {t('inspect.resident')}
-            <span style={{ color: '#7C6A61' }}> {info.resident}</span>
+          <span>
+            {residentDisplayName(info.resident)}
+            <span style={{ color: '#7C6A61' }}>
+              {' '}
+              {t('resident.of', { organ: organDisplayName(info.resident) })}
+            </span>
           </span>
-        </div>
+        </button>
       ) : null}
       <button
         onClick={onClose}

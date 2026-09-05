@@ -52,9 +52,20 @@ export interface Selection {
   readonly cell: string | null;
   /** The antibody family whose full production breakdown the view should carry. */
   readonly family: string | null;
+  /**
+   * The ORGAN whose resident macrophage is selected — CP3's one extension to the selection
+   * model (docs/COMMAND_SURFACE_PLAN.md §3.6). A resident is keyed by its organ, not by a cell
+   * key (the engine spends `res_<organ>`), and it is a separate field rather than an overload
+   * of `cell` because `scope()` hands `cell` to `moveDestinations`, which knows no residents.
+   * Nothing is selection-scoped for a resident: its patrol steps (± 1 within the branch) and
+   * what it can engulf (`perOrgan.residentEatable`) are already in the view. `cell` and
+   * `resident` are exclusive by convention — the UI sets one and nulls the other — and both
+   * clear at phase boundaries.
+   */
+  readonly resident: string | null;
 }
 
-export const NO_SELECTION: Selection = { cell: null, family: null };
+export const NO_SELECTION: Selection = { cell: null, family: null, resident: null };
 
 /**
  * Query answers the UI needs for EVERY subject on every render, to decide what is clickable.
@@ -75,6 +86,19 @@ export interface PrecomputedQueries {
   readonly perFamily: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   /** `{net, boosted, reduced}` per family — the three fields the always-on panel reads. */
   readonly production: Readonly<Record<string, ProductionSummary>>;
+  /**
+   * WHEN A SPENT CELL IS BACK — the turn it acts again, per cell key; null when it is not
+   * spent or when the engine will not say. The board-state sweep (for-P2.5.md, 4 Sep 2026)
+   * dims a spent cell and shows this in its badge slot, and the number must be the ENGINE's:
+   * the Neutrophil returns after NEUTROPHIL_REGEN turns, or NEUTROPHIL_REGEN_HELPED when a
+   * primed Helper T stands in the blood (Th17 help), and never while the marrow is damaged.
+   * `regenAt` on the cell says none of that — the legacy UI showed it and was wrong under
+   * help; the first headless run of the badge showed "4" and the cell came back in 2. So this
+   * is `neutrophilReadyTurn(g)` (one of the 67 exports), withheld when the marrow is damaged
+   * (hp below max in the view — conservative on Hard, where a compensated marrow would in
+   * fact regenerate: no number rather than a wrong one). The Eosinophil's `regenAt` is exact.
+   */
+  readonly readyTurn: Readonly<Record<string, number | null>>;
 }
 
 export interface ProductionSummary {

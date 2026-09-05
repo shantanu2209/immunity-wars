@@ -22,9 +22,23 @@ import { useEffect, useRef, useState, type ReactElement, type ReactNode } from '
 import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
-import { Board, inspectInfoForCell, inspectInfoForInvader } from '../board/Board';
+import {
+  Board,
+  inspectInfoForCell,
+  inspectInfoForInvader,
+  inspectInfoForResident,
+} from '../board/Board';
 import { engineText } from '../engineText';
-import { offeredActions, type BoardOffer, type Offered } from './offered';
+import {
+  CLONE_TARGET,
+  bodyOffers,
+  diseaseLabel,
+  offeredActions,
+  type BoardOffer,
+  type Offered,
+} from './offered';
+import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
+import { LogPanel, type LogLine } from '../panels/LogPanel';
 import { GRACE_CLEAR } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -34,7 +48,9 @@ import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
-import { cellDisplayName } from '../names';
+import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
+import { invaderNowLine } from '../panels/invaderNow';
+import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
@@ -46,7 +62,11 @@ const DICE_FRAME_MS = 1400;
 export interface PlaySessionLike {
   getView(): SessionView;
   sendAction(action: Record<string, unknown>): Promise<{ ok: boolean; error?: string }>;
-  setSelection(selection: { cell: string | null; family: string | null }): void;
+  setSelection(selection: {
+    cell: string | null;
+    family: string | null;
+    resident: string | null;
+  }): void;
   subscribe(
     listener: (
       ev:
@@ -100,6 +120,8 @@ export function PlayScreen({
   } | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
+  // THE PATHOGEN CARD — a layer above the sheet and the dialogs, opened from either.
+  const [card, setCard] = useState<PathogenCardSubject | null>(null);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -237,15 +259,30 @@ export function PlayScreen({
       .filter((iv) => !prevIds.has(String(iv['id'] ?? '')))
       .map((iv) => ({
         disease: String(iv['disease'] ?? ''),
+        type: String(iv['type'] ?? ''),
         lane: typeof iv['lane'] === 'string' ? iv['lane'] : null,
         remembered: iv['remembered'] === true,
         novel: iv['novel'] === true,
       }));
     if (arrivals.length === 0) return;
+    const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
     enqueueDialog({
       id: `reveal-t${String(g['turn'])}`,
       title: t('reveal.title'),
-      body: <RevealBody arrivals={arrivals} />,
+      body: (
+        <RevealBody
+          arrivals={arrivals}
+          onCard={(a) =>
+            setCard({
+              disease: a.disease,
+              type: a.type,
+              remembered: a.remembered || memory[a.disease] === true,
+              // An arrival is at its route's entry: nothing invader-specific to say yet.
+              now: null,
+            })
+          }
+        />
+      ),
       dismissLabel: t('reveal.continue'),
     });
   }, [authView, enqueueDialog]);
@@ -259,16 +296,20 @@ export function PlayScreen({
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
-    session.setSelection({ cell, family: null });
+    session.setSelection({ cell, family: null, resident: null });
     onTap?.(from, cell);
   };
-  const deselect = (): void => session.setSelection({ cell: null, family: null });
+  // A resident selects like a cell and excludes one (CP3): the two fields are exclusive.
+  const tapResident = (organ: string): void =>
+    session.setSelection({ cell: null, family: null, resident: organ });
+  const deselect = (): void => session.setSelection({ cell: null, family: null, resident: null });
 
   const game = authView.game;
   const phase = String(game['phase']);
   const playing = frame !== null;
   const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
+  const selectedResident = authView.selection.resident;
 
   // WHAT IS LEGAL comes from one place (offered.ts) and nowhere else in the UI. During a
   // burst nothing is offered — input is disabled.
@@ -286,8 +327,8 @@ export function PlayScreen({
   }
   const boardTargets: BoardTarget[] = [
     ...offered.board
-      .filter((o) => o.kind === 'move')
-      .map((o) => ({ key: o.id, kind: 'move' as const, located: o.located, payload: [o] })),
+      .filter((o) => o.kind === 'move' || o.kind === 'hop')
+      .map((o) => ({ key: o.id, kind: o.kind, located: o.located, payload: [o] })),
     ...[...byInvader.entries()].map(([invaderId, offers]) => ({
       key: `attack:${invaderId}`,
       kind: 'attack' as const,
@@ -295,7 +336,7 @@ export function PlayScreen({
       payload: offers,
     })),
   ];
-  const moveCount = offered.board.filter((o) => o.kind === 'move').length;
+  const moveCount = offered.board.filter((o) => o.kind === 'move' || o.kind === 'hop').length;
   const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
   const barButtons = offered.buttons.filter((b) => b.place !== 'panel');
   const panelButtons = offered.buttons.filter((b) => b.place === 'panel');
@@ -350,8 +391,79 @@ export function PlayScreen({
       label: o.cost ? `${o.label} · ${o.cost}` : o.label,
     }));
   }
+  // THE BODY PANEL's data, all from the view, and its buttons from `bodyOffers` — computed
+  // regardless of selection, because the panel is always visible and ordering a vial should
+  // not need a cell deselected first. The body's BOARD rings come through `offered` (the
+  // second source) only while nothing is selected.
+  const body: Offered = playing
+    ? { source: 'body', board: [], buttons: [], reason: null }
+    : bodyOffers(authView);
+  const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+  const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
+  const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
+  const difficulty = String(game['difficulty']);
+  const attackable = (authView.queries.perInvader['attackable'] ?? []) as unknown[];
+  const bodyData: BodyPanelData = {
+    antivenom: Number(game['antivenom'] ?? 0),
+    avOrder: Number(game['avOrder'] ?? 0),
+    orderButtons: body.buttons
+      .filter((b) => b.action === 'orderAntivenom')
+      .map((b) => ({ id: b.id, label: b.label })),
+    memoryReady: ((game['invaders'] as { remembered?: unknown }[] | undefined) ?? []).filter(
+      (iv, i) => iv.remembered === true && attackable[i] === true,
+    ).length,
+    hard: difficulty === 'hard',
+    training: difficulty === 'training',
+    novelSeen: game['novelSeen'] === true,
+    cloneFound: game['cloneFound'] === true,
+    clone: Number(game['clone'] ?? 0),
+    cloneButton: (() => {
+      const b = body.buttons.find((x) => x.action === 'clonalSelection');
+      return b
+        ? {
+            id: b.id,
+            label: `${b.label} ${String(Number(game['clone'] ?? 0))}/${String(CLONE_TARGET)}`,
+          }
+        : null;
+    })(),
+    vaccines:
+      difficulty === 'training'
+        ? []
+        : Object.keys(seen)
+            .filter((dz) => seen[dz] === true && memory[dz] !== true)
+            .map((dz) => ({
+              disease: dz,
+              name: diseaseLabel(dz),
+              family: '',
+              put: Number(vaccine[dz] ?? 0),
+              buttons: body.buttons
+                .filter((b) => b.action === 'vaccinate' && b.disease === dz)
+                .map((b) => ({ id: b.id, label: b.label })),
+            })),
+    immune: Object.keys(memory)
+      .filter((dz) => memory[dz] === true)
+      .map(diseaseLabel),
+  };
+  const noSelectionHint =
+    selectedCell || selectedResident
+      ? null
+      : offered.board.some((o) => o.action === 'memoryKill')
+        ? t('commandBar.memoryHint')
+        : offered.board.some((o) => o.action === 'antivenom')
+          ? t('commandBar.antivenomHint')
+          : null;
+
+  // THE LOG — the engine's own prose, newest first (the view carries the latest 40). Read
+  // from the SHOWN view so a burst's frames narrate as they land.
+  const logLines: LogLine[] = (
+    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+
   const sendOffer = (id: string): void => {
-    const o = offered.board.find((x) => x.id === id) ?? offered.buttons.find((x) => x.id === id);
+    const o =
+      offered.board.find((x) => x.id === id) ??
+      offered.buttons.find((x) => x.id === id) ??
+      body.buttons.find((x) => x.id === id);
     if (o) send(o.params);
   };
 
@@ -368,7 +480,7 @@ export function PlayScreen({
         if (!first) return;
         if (offers.length === 1) send(first.params);
         else if (first.invaderId) {
-          const node = inspectInfoForInvader(game, first.invaderId);
+          const node = inspectInfoForInvader(game, first.invaderId, authView.queries.readyTurn);
           if (node) setInspect(node);
         }
         return;
@@ -377,15 +489,23 @@ export function PlayScreen({
         if (hit.cell === selectedCell) deselect();
         else tapCell(hit.cell);
         return;
+      case 'resident':
+        if (hit.organ === selectedResident) deselect();
+        else tapResident(hit.organ);
+        return;
       case 'node':
         setInspect(hit.node);
         return;
       default:
-        if (selectedCell) deselect();
+        if (selectedCell || selectedResident) deselect();
     }
   };
 
-  const selectedNode = selectedCell ? inspectInfoForCell(game, selectedCell) : null;
+  const selectedNode = selectedCell
+    ? inspectInfoForCell(game, selectedCell, authView.queries.readyTurn)
+    : selectedResident
+      ? inspectInfoForResident(game, selectedResident, authView.queries.readyTurn)
+      : null;
   const canInspect =
     selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
 
@@ -405,12 +525,24 @@ export function PlayScreen({
       <Board
         view={shown}
         selectedCell={selectedCell}
+        selectedResident={selectedResident}
+        readyTurn={authView.queries.readyTurn}
         artMetrics={artMetrics}
         targets={boardTargets}
         onTap={playing ? undefined : handleBoardTap}
       />
       <CommandBar
-        selectedCellName={selectedCell ? cellDisplayName(selectedCell) : null}
+        selectedCellName={
+          selectedCell
+            ? cellDisplayName(selectedCell)
+            : selectedResident
+              ? residentDisplayName(selectedResident)
+              : null
+        }
+        qualifier={
+          selectedResident ? t('resident.of', { organ: organDisplayName(selectedResident) }) : null
+        }
+        noSelectionHint={noSelectionHint}
         ap={Number(game['ap'] ?? 0)}
         hint={hint}
         buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
@@ -432,9 +564,13 @@ export function PlayScreen({
         detail={familyDetail}
         produce={produceOffers}
         disabled={playing}
-        onSelectFamily={(family) => session.setSelection({ cell: selectedCell, family })}
+        onSelectFamily={(family) =>
+          session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+        }
         onProduce={sendOffer}
       />
+      <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+      <LogPanel lines={logLines} />
       {inspect ? (
         <InspectSheet
           info={inspect}
@@ -448,6 +584,22 @@ export function PlayScreen({
           onSelectCell={(ck) => {
             tapCell(ck);
             setInspect(null);
+          }}
+          selectedResident={selectedResident}
+          onSelectResident={(organ) => {
+            tapResident(organ);
+            setInspect(null);
+          }}
+          onCard={(invaderId) => {
+            const iv = inspect.invaders.find((x) => x.id === invaderId);
+            if (!iv || iv.novel) return;
+            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+            setCard({
+              disease: iv.disease,
+              type: iv.type,
+              remembered: memory[iv.disease] === true,
+              now: invaderNowLine(iv),
+            });
           }}
           onClose={() => setInspect(null)}
         />
@@ -463,6 +615,7 @@ export function PlayScreen({
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
+      {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
     </div>
   );
 }
