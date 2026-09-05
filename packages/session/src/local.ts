@@ -366,7 +366,16 @@ export class LocalSession implements Session {
         eos?.['alive'] === false && typeof eos['regenAt'] === 'number' ? eos['regenAt'] : null,
     };
 
-    return { state, perInvader, perCell, perOrgan, perFamily, production, readyTurn };
+    // THE CRISIS EFFECTS IN FORCE — the view drops `fx`; the strip needs its durations.
+    const fx = (this.g['fx'] as Record<string, unknown> | undefined) ?? {};
+    const effects = {
+      capTurns: Number(fx['capTurns'] ?? 0),
+      noProduce: fx['noProduce'] === true,
+      apMod: Number(fx['apMod'] ?? 0),
+      skipMarch: fx['skipMarch'] === true,
+    };
+
+    return { state, perInvader, perCell, perOrgan, perFamily, production, readyTurn, effects };
   }
 
   private scope(): ScopedQueries {

@@ -40,6 +40,8 @@ import {
   type Offered,
 } from './offered';
 import { ActionList } from '../panels/ActionList';
+import { EffectsStrip } from '../panels/EffectsStrip';
+import { effectChips } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
@@ -552,6 +554,7 @@ export function PlayScreen({
       {frame ? (
         <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
       ) : null}
+      <EffectsStrip chips={effectChips(authView)} />
       <Board
         view={shown}
         selectedCell={selectedCell}
