@@ -467,14 +467,15 @@ Everything below was true at the clear and is not in the code or git history by 
 
 ### Where things are, and the PR order
 
-`main` has #46, #47 and #48 (item 12 complete; the second S25 pass's six items and Q9). **One
-PR is open: #49**, on `phase2/p2-5-s25-round-2`, three commits in this order — the beneficial
-chips and the catalogue/cell-card dash sweep; the instrument change alone (the content parity
-pins re-baselined up to punctuation, with both controls); the content sweep itself. It merges
-on its own; nothing is stacked on it. **Lesson from today, twice:** a PR was merged while the
-branch was still being pushed to, and the later commits sat on the branch with no PR holding
-them. Check `gh pr view --json state` before pushing more to a branch, and open the next PR
-when the previous one is merged. The tree was clean and pushed at the clear.
+`main` has #46, #47, #48 and #49 (item 12 complete; the second S25 pass's six items and Q9;
+the beneficial chips and the catalogue/cell-card dash sweep). **One PR is open: #50**, on
+`phase2/p2-5-s25-round-2`, two commits in this order — the instrument change alone (the
+content parity pins re-baselined up to punctuation, with both controls), then the content
+sweep itself. It merges on its own; nothing is stacked on it. **Lesson from today, three
+times:** a PR was merged while the branch was still being pushed to, and the later commits
+sat on the branch with no PR holding them. Check `gh pr view --json state` before pushing
+more to a branch, and open the next PR when the previous one is merged. The tree was clean
+and pushed at the clear.
 
 ### The dash sweep — where it stands
 
