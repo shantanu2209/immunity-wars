@@ -25,6 +25,16 @@ export { actionRows, ACTION_CATALOGUE, MOVE_LIKE, type ActionRow } from './play/
 export { effectChips, turnLine, type EffectChip } from './play/effects';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
+export { CellCard, type CellCardSubject } from './panels/CellCard';
+export { PlanningScreen, type PlanningCell } from './play/PlanningScreen';
+export {
+  planningModel,
+  depthOf,
+  whereText,
+  type PlanningModel,
+  type PlanningGroup,
+  type Depth,
+} from './play/planning';
 export { invaderNowLine } from './panels/invaderNow';
 export { CommandBar, type BarButton } from './panels/CommandBar';
 export { PauseSheet } from './panels/PauseSheet';

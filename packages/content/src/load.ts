@@ -26,6 +26,7 @@
 
 import type {
   Card,
+  CellCard,
   CellKey,
   CellLabel,
   Difficulty,
@@ -36,6 +37,7 @@ import type {
   FamilyDef,
   FamilyKey,
   Flags,
+  FrameDef,
   InvaderLabel,
   InvaderType,
   OrganDef,
@@ -62,9 +64,11 @@ import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
 
+import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
+import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
 
 /**
@@ -97,8 +101,10 @@ function parseBoard(): Record<string, unknown> {
     ...packJson,
     ...geometryJson,
     ...regionsJson,
+    ...anatomyJson,
     ...diseasesJson,
     ...labelsJson,
+    ...cellsJson,
   };
   BoardPackS.parse(raw);
   return raw;
@@ -244,6 +250,10 @@ export const BRANCH = pack['BRANCH'] as Record<OrganKey, Record<string, Point>>;
 export const ROUTE = pack['ROUTE'] as Record<RouteKey, Record<string, Point>>;
 export const ENTRY = pack['ENTRY'] as Record<RouteKey, Point & { t: string }>;
 
+/* --- the anatomical layout (P2.5 item 12): the frame asset and organ positions in its pixel space --- */
+export const FRAME = pack['FRAME'] as FrameDef;
+export const ANATOMY_POS = pack['ANATOMY_POS'] as Record<OrganKey, Point>;
+
 /* --- regions (the phone-size zoom targets) --- */
 export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;
 export const REGION_BOX = pack['REGION_BOX'] as Record<RegionKey, RegionBox>;
@@ -268,6 +278,8 @@ export const BEAT_BY_TYPE = pack['BEAT_BY_TYPE'] as Record<InvaderType, string>;
 export const RNAME = pack['RNAME'] as Record<OrganKey, string>;
 export const RGLYPH = pack['RGLYPH'] as Record<OrganKey, string>;
 export const ORGAN_ART = pack['ORGAN_ART'] as Record<OrganKey, string>;
+/** The cell cards (P2.5 item 12): one entry per cell key, fields optional, Kartik fills them. */
+export const CELL_CARDS = pack['CELL_CARDS'] as Record<CellKey, CellCard>;
 
 /**
  * The UI's i18n catalogue (en), hand-authored as P2.5 builds screens. Validated at the trust

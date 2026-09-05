@@ -100,7 +100,7 @@ the current surface cannot play. The seventeen are planned in
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
 | **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
 | **Board state the engine tracks and the board did not show** — the sweep (for-P2.5.md) | **Coat and spent/offline cells BUILT (4 Sep 2026)**, before the card as reordered: fan-of-types split by type + coated, the antibody badge, "Coated in antibody" in the sheet; spent and suppressed cells dimmed with turns-until-back in the badge slot. Malaria stage and the parasite inside a resident stay with the card |
-| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | **In progress**, piece by piece in [`for-P2.5.md`](for-P2.5.md) ("After the S25 pass"). The silhouette for item 12 does not exist in usable form: an art task |
+| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) is PROPOSED and awaits a ruling** on how the entry lanes and the bloodstream are placed; step 5 waits on step 4 and a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
 | **Resident-vs-Macrophage visual distinction; lymph connector polish** | **Ruled at CP3:** the distinction leans on the biology — Monocyte versus Kupffer cell by name, in the bar and the sheet — plus a double ring; distinct resident art is the real answer, deferred with the pipeline (for-P2.5.md). Lymph connector polish still recorded there |
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
 | **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends) |
@@ -305,16 +305,29 @@ Every S25 observation and its ruling is in [`for-P2.5.md`](for-P2.5.md) under "A
 pass on the batch", one section per item, each ending with what was verified headless versus
 by test only. Still open from that list: the **window-closed chip and the countdown line**
 (test-only — an idle game loses before turn 16), the **memory response** ring (test-only), the
-**hiding-inside-a-cell** ring (test-only), and one **ruling not yet given**: whether the log's
-five composed engine lines (FINDINGS #53) render plainly, as built, or are re-templated in the
-UI for the Hindi first cut (CP5's record has the numbers: 8 of 14 lines in a short game).
+**hiding-inside-a-cell** ring (test-only), and one ruling that was still open at the clear:
+whether the log's five composed engine lines (FINDINGS #53) render plainly, as built, or are
+re-templated in the UI for the Hindi first cut (CP5's record has the numbers: 8 of 14 lines in
+a short game). **RULED 5 September 2026: plain, as built** — the reasons and the explicit Hindi
+consequence are in FINDINGS #53 and CP5's record.
 
-### Item 12 — the planning screen — is next, in this order (Shantanu, 5 September 2026)
+### Item 12 — the planning screen — in this order (Shantanu, 5 September 2026)
+
+> **Status at the end of the day, 5 September 2026:** steps 1, 2 and 3 are BUILT on
+> `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is a
+> written proposal awaiting Shantanu's ruling** (chips on the outline at the point of entry,
+> blood at the great vessels — option A — versus a circulation loop); step 5 waits on step 4
+> and a measurement. Two things to check by hand: Kartik checks the seven organ positions
+> against `pnpm art:anatomy`'s picture (the liver is on the viewer's LEFT — the handoff's
+> "as the viewer sees it" phrase below would have mirrored it), and Kartik fills
+> `packages/content/src/labels/cells.json`. By finger on the S25, still to do: the planning
+> screen itself (the step/expect list is at the end of the record).
 
 1. **The frame through the art pipeline as `frame/body`.** The source is committed at
    `tools/art-pipeline/raw/frame-body.jpeg` (from
    `Downloads/Human_torso_outline_medical_diagram_2K_202609051144.jpeg`), its provenance row is
-   in `ASSETS.md` (tier to confirm), and the brief is `ANATOMY_FRAME_BRIEF.md`. Shantanu
+   in `ASSETS.md` (tier **Google AI Pro**, confirmed by Shantanu 5 September 2026), and the
+   brief is `ANATOMY_FRAME_BRIEF.md`. Shantanu
    measured it: stroke `#786760`, 5.29:1 against the paper, interior provably empty, cropped
    mid-thigh, aspect 0.555; at 380px tall on a 360px screen the torso interior is 179 × 209px.
    It is a JPEG on white by choice — the PNG's alpha was a uniform 50%. **Check the keyed output

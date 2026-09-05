@@ -124,6 +124,29 @@ export interface Point {
   readonly y: number;
 }
 
+/**
+ * The planning screen's anatomical frame (P2.5 item 12): the keyed asset's key and its 1×
+ * pixel size — the space `ANATOMY_POS` is authored in. Measured off the art manifest, never typed
+ * from memory: `packages/app`'s anatomy-frame test holds the two equal.
+ */
+export interface FrameDef {
+  readonly asset: string;
+  readonly w: number;
+  readonly h: number;
+}
+
+/**
+ * A cell card's fields (P2.5 item 12, block c) — every one optional; the card renders nothing
+ * for a missing field. Kartik's science.
+ */
+export interface CellCard {
+  readonly role?: string;
+  readonly home?: string;
+  readonly bestAgainst?: string;
+  readonly deficiency?: string;
+  readonly fact?: string;
+}
+
 /** The seven zoom targets: six entry lanes plus the core. Not the same set as OrganKey. */
 export type RegionKey = 'nose' | 'gut' | 'contact' | 'wound' | 'bite' | 'blood' | 'core';
 

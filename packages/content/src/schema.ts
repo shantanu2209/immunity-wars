@@ -51,9 +51,11 @@ import { z } from 'zod';
  * it was green while the module was unloadable — so the guard is placement plus this note.
  */
 import boardRulesJson from './rules/board.json';
+import tuningRulesJson from './rules/tuning.json';
 
 const ORGANS_FOR_PARITY = boardRulesJson.ORGANS as Record<string, { branch: number }>;
 const ROUTES_FOR_PARITY = boardRulesJson.ROUTES as Record<string, { len: number }>;
+const CELL_KEYS_FOR_PARITY = tuningRulesJson.CELL_KEYS as readonly string[];
 
 /* ------------------------------------------------------------------ *
  * Key vocabularies — closed sets, mirroring the unions in types.ts
@@ -431,6 +433,46 @@ export const RegionsS = z.strictObject({
   REGION_LABEL: z.record(RegionKeyS, z.string().min(1)),
 });
 
+/**
+ * THE ANATOMICAL LAYOUT (P2.5 item 12, 5 September 2026) — the planning screen's second layout
+ * of the same seven organs, beside the board geometry for the same reason `geometry.json`
+ * exists: positions that live in a component drift; positions in content are checked.
+ *
+ * `FRAME` names the keyed frame asset and its 1× pixel size — the space `ANATOMY_POS` is
+ * authored in. That size is MEASURED, not judged: `packages/app`'s anatomy-frame test requires
+ * it to equal the art manifest's emitted size, so a regenerated frame cannot silently move
+ * every organ. The positions are anatomical (brain in the head, liver under the patient's
+ * RIGHT ribs — the viewer's left on a front-facing figure — spleen on the patient's left,
+ * kidneys lower and posterior, marrow in the pelvis); Kartik checks them against the picture
+ * `pnpm art:anatomy` renders.
+ */
+export const AnatomyS = z.strictObject({
+  FRAME: z.strictObject({
+    asset: z.string().regex(/^frame\/[a-z][a-z0-9-]*$/, 'a frame asset key is frame/<name>'),
+    w: z.number().int().positive(),
+    h: z.number().int().positive(),
+  }),
+  ANATOMY_POS: byOrgan(Point),
+});
+
+/**
+ * THE CELL CARDS (P2.5 item 12, block c) — the pathogen card's shape for the player's own
+ * pieces: one entry per cell key, every field optional, a missing field rendering nothing.
+ * Kartik's science; the file ships as a skeleton he fills. An entry may be empty; a field
+ * that is present may not be an empty string — that is a placeholder pretending to be prose.
+ */
+const CellCardS = z.strictObject({
+  role: z.string().min(1).optional(),
+  home: z.string().min(1).optional(),
+  bestAgainst: z.string().min(1).optional(),
+  deficiency: z.string().min(1).optional(),
+  fact: z.string().min(1).optional(),
+});
+
+export const CellCardsS = z.strictObject({
+  CELL_CARDS: z.record(CellKeyS, CellCardS),
+});
+
 export const DiseasesS = z.strictObject({
   /** One-line hook shown on the card. Only a subset of diseases carry one. */
   FACT: z.record(z.string(), z.string().min(1)),
@@ -490,16 +532,73 @@ export const LabelsS = z.strictObject({
 export function boardPackSchema(
   organs: Record<string, { branch: number }> = ORGANS_FOR_PARITY,
   routes: Record<string, { len: number }> = ROUTES_FOR_PARITY,
+  cells: readonly string[] = CELL_KEYS_FOR_PARITY,
 ) {
   return z
     .strictObject({
       ...PackStampS.shape,
       ...GeometryS.shape,
       ...RegionsS.shape,
+      ...AnatomyS.shape,
       ...DiseasesS.shape,
       ...LabelsS.shape,
+      ...CellCardsS.shape,
     })
     .superRefine((p, ctx) => {
+      /** Every cell the rules know has a card entry (possibly empty), and nothing else does. */
+      const carded = Object.keys(p.CELL_CARDS);
+      for (const c of cells) {
+        if (!carded.includes(c)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['CELL_CARDS', c],
+            message: `rules list the cell "${c}" but labels/cells.json has no card entry for it`,
+          });
+        }
+      }
+      for (const c of carded) {
+        if (!cells.includes(c)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['CELL_CARDS', c],
+            message: `labels/cells.json carries a card for "${c}", which the rules do not list as a cell`,
+          });
+        }
+      }
+      /**
+       * The anatomical layout: every organ the RULES know has a position, nothing else does,
+       * and every position is inside the frame. The key enum already rejects a stranger; the
+       * explicit set comparison is what names a rules organ that has no anatomy yet.
+       */
+      const ruleOrgans = Object.keys(organs).sort();
+      const placed = Object.keys(p.ANATOMY_POS).sort();
+      for (const o of ruleOrgans) {
+        if (!placed.includes(o)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ANATOMY_POS', o],
+            message: `rules/board.json lists the organ "${o}" but anatomy.json gives it no position`,
+          });
+        }
+      }
+      for (const o of placed) {
+        if (!ruleOrgans.includes(o)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ANATOMY_POS', o],
+            message: `anatomy.json places "${o}", which rules/board.json does not list as an organ`,
+          });
+        }
+      }
+      for (const [o, pt] of Object.entries(p.ANATOMY_POS)) {
+        if (pt.x < 0 || pt.x > p.FRAME.w || pt.y < 0 || pt.y > p.FRAME.h) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ANATOMY_POS', o],
+            message: `point (${pt.x}, ${pt.y}) is outside the ${p.FRAME.w}x${p.FRAME.h} frame`,
+          });
+        }
+      }
       /* Every drawn point must be inside the viewBox. Catches a transposed or mistyped coordinate. */
       const inBox = (pt: { x: number; y: number }, where: string): void => {
         if (pt.x < 0 || pt.x > p.VW || pt.y < 0 || pt.y > p.VH) {

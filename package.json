@@ -50,6 +50,8 @@
     "geometry:from-a2": "tsx tools/geometry-from-a2/generate.ts",
     "art:build": "tsx tools/art-pipeline/build.ts",
     "art:showcase": "tsx tools/art-pipeline/showcase.ts",
+    "comment:art:anatomy": "P2.5 item 12: the frame on paper with the seven organ icons at board/anatomy.json's positions, so the anatomy can be LOOKED AT (Kartik checks it). Not committed; regenerate after any position edit.",
+    "art:anatomy": "tsx tools/art-pipeline/anatomy-preview.ts",
     "comment:turbo:check": "The turbo hash guard. pnpm verify replayed a cached green over a red suite for thirteen days because the test task hashed only its own package (docs/FINDINGS.md #51). Asserts, from turbo's dry run, that every workspace test edge is in the hash graph. Control: pnpm ci:selftest turbo-test-hash.",
     "turbo:check": "tsx tools/ci/turbo-check.ts"
   },

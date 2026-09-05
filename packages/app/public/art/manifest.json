@@ -6,6 +6,10 @@
     "cell-macrophage": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 6.62,
         "dominant": "#24665A",
@@ -52,6 +56,10 @@
     "cell-neutrophil": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 4.93,
         "dominant": "#7C64A1",
@@ -98,6 +106,10 @@
     "cell-bcell": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 5.22,
         "dominant": "#28748B",
@@ -144,6 +156,10 @@
     "cell-tcell": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 5.82,
         "dominant": "#3C7030",
@@ -190,6 +206,10 @@
     "cell-helper": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 5.39,
         "dominant": "#3363D0",
@@ -236,6 +256,10 @@
     "cell-nk": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 6.8,
         "dominant": "#4E5B6D",
@@ -282,6 +306,10 @@
     "cell-eosinophil": {
       "cls": "cell",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 3.59,
         "dominant": "#D26279",
@@ -328,6 +356,10 @@
     "path-virus": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 8.87,
         "dominant": "#85253E",
@@ -374,6 +406,10 @@
     "path-hidden": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 8.56,
         "dominant": "#544757",
@@ -420,6 +456,10 @@
     "path-bacteria": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 6.35,
         "dominant": "#536526",
@@ -466,6 +506,10 @@
     "path-toxin": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 7.02,
         "dominant": "#784F24",
@@ -512,6 +556,10 @@
     "path-venom": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 7.47,
         "dominant": "#3C5B42",
@@ -558,6 +606,10 @@
     "path-fungus": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 10.71,
         "dominant": "#523250",
@@ -604,6 +656,10 @@
     "path-worm": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 10.46,
         "dominant": "#583719",
@@ -650,6 +706,10 @@
     "path-malaria": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 5.97,
         "dominant": "#5E5D93",
@@ -696,6 +756,10 @@
     "path-parasite": {
       "cls": "path",
       "displayPx": 20,
+      "size": {
+        "w": 20,
+        "h": 20
+      },
       "measured": {
         "contrast": 6.59,
         "dominant": "#7F4D61",
@@ -742,6 +806,10 @@
     "entry-nose": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.54,
         "dominant": "#454C56",
@@ -788,6 +856,10 @@
     "entry-contact": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 6.85,
         "dominant": "#2C6445",
@@ -834,6 +906,10 @@
     "entry-gut": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 4.85,
         "dominant": "#94673C",
@@ -880,6 +956,10 @@
     "entry-blood": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 10.47,
         "dominant": "#702520",
@@ -926,6 +1006,10 @@
     "entry-wound": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.82,
         "dominant": "#79342E",
@@ -972,6 +1056,10 @@
     "entry-bite": {
       "cls": "entry",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.45,
         "dominant": "#435039",
@@ -1018,6 +1106,10 @@
     "organ-brain": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 5.53,
         "dominant": "#835D6A",
@@ -1064,6 +1156,10 @@
     "organ-lungs": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.67,
         "dominant": "#783541",
@@ -1110,6 +1206,10 @@
     "organ-heart": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 7.72,
         "dominant": "#942E25",
@@ -1156,6 +1256,10 @@
     "organ-liver": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.86,
         "dominant": "#793427",
@@ -1202,6 +1306,10 @@
     "organ-spleen": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 8.71,
         "dominant": "#713945",
@@ -1248,6 +1356,10 @@
     "organ-kidneys": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 7.53,
         "dominant": "#834032",
@@ -1294,6 +1406,10 @@
     "organ-marrow": {
       "cls": "organ",
       "displayPx": 30,
+      "size": {
+        "w": 30,
+        "h": 30
+      },
       "measured": {
         "contrast": 7.45,
         "dominant": "#7F433E",
@@ -1335,6 +1451,56 @@
         "tosChecked": "2026-08-20 by Shantanu: Google does not claim ownership of generated content; commercial use permitted on all tiers. Dated copy of the terms saved locally by Shantanu.",
         "redistribution": "None declared — DECISION 2026-08-20 (LICENSES.md): content is all rights reserved; whether AI-generated images are copyrightable is unsettled, so no licence is granted.",
         "prompt": "ART_BRIEF.md prompt 29"
+      }
+    },
+    "frame/body": {
+      "cls": "frame",
+      "displayPx": 380,
+      "size": {
+        "w": 224,
+        "h": 380
+      },
+      "measured": {
+        "contrast": 5.29,
+        "dominant": "#786760",
+        "lightShare": 0,
+        "coverage": 0.045
+      },
+      "content": {
+        "w": 0.873,
+        "h": 0.926
+      },
+      "files": {
+        "1x": {
+          "file": "frame/body@1x.webp",
+          "px": 380,
+          "bytes": 17194,
+          "sha256": "c8a3dee17a0ce8623e9c06d84803462d42e71bc48092920c852ad6deddc5b29b"
+        },
+        "2x": {
+          "file": "frame/body@2x.webp",
+          "px": 760,
+          "bytes": 45138,
+          "sha256": "2df48e195f7afc06a334edef63dc49a408ac608e5a6bd0a6b6df4e867dbe6eb3"
+        },
+        "3x": {
+          "file": "frame/body@3x.webp",
+          "px": 1140,
+          "bytes": 84116,
+          "sha256": "7a0b4e2cec1373b4721255798f0dddab95252f41454c36b97bfe9db2fe603477"
+        }
+      },
+      "source": {
+        "file": "tools/art-pipeline/raw/frame-body.jpeg",
+        "sha256": "56afe807df5bf457cece6c0c91a9c294e7eb866a98dfe9961e186e477ec59cab"
+      },
+      "provenance": {
+        "tool": "Google Flow",
+        "date": "2026-09-05",
+        "account": "Google AI Pro",
+        "tosChecked": "2026-09-05 by Shantanu, before acceptance: stroke #786760, 5.29:1 against #FFFDF9; interior provably empty; cropped mid-thigh; aspect 0.555. Terms as the 20 Aug batch.",
+        "redistribution": "None declared — DECISION 2026-08-20 (LICENSES.md): content is all rights reserved; whether AI-generated images are copyrightable is unsettled, so no licence is granted.",
+        "prompt": "ANATOMY_FRAME_BRIEF.md anchor sentence, verbatim"
       }
     }
   }

@@ -44,6 +44,8 @@ export type {
   OrganKey,
   OrganKind,
   Point,
+  FrameDef,
+  CellCard,
   RareDef,
   Region,
   RegionBox,
@@ -125,9 +127,12 @@ export {
 
 /* --- TASK C3: the board pack — geometry, regions, disease text, labels --- */
 export {
+  ANATOMY_POS,
   BRANCH,
+  CELL_CARDS,
   CHIP_POS,
   DZINFO,
+  FRAME,
   DZSTATS,
   ENTRY,
   FACT,

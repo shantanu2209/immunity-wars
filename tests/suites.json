@@ -91,8 +91,11 @@
       "briefSuite": null,
       "proves": "That single-player goes through Session and not around it: a full bot game replayed through LocalSession produces the same projection, action for action, as the engine driven directly. Also that the subscription's view/burst split behaves as specified, that Session never hands out GameState, and that Storage round-trips a game.",
       "doesNotProve": "Anything about a UI, which does not exist yet. Anything about RelaySession, which is Phase 3's — this proves the interface has one working implementation, not that a second one is possible. And nothing about IndexedDbStorage, which NO TEST EXERCISES: there is no browser in the test environment and no IndexedDB shim among the dependencies, so the port is tested through MemoryStorage only. P2.2 is the first moment a browser exists to run it in.",
-      "negativeControls": 8,
-      "controlFiles": ["tests/session/src/negative-control.test.ts"],
+      "negativeControls": 9,
+      "controlFiles": [
+        "tests/session/src/negative-control.test.ts",
+        "tests/session/src/planning.test.ts"
+      ],
       "tiers": {
         "per-push": {
           "command": "pnpm test",
@@ -115,18 +118,18 @@
       "briefSuite": "schema",
       "proves": "Every bundled content pack validates against its Zod schema, and malformed packs are rejected loudly rather than half-loaded.",
       "doesNotProve": "That a pack AGREES with the engine reading it. The rulesVersion check is deliberately deferred to whoever builds the downloadable-pack loader — bundled packs ship in the same commit as their engine, so such a check would compare a constant against a constant. PHASE1_BRIEF §6 seam 7.",
-      "negativeControls": 27,
+      "negativeControls": 35,
       "controlFiles": ["packages/content/src/load.test.ts"],
       "tiers": {
         "per-push": {
           "command": "pnpm test",
-          "scale": "52 assertions over every bundled pack",
+          "scale": "71 assertions over every bundled pack",
           "blocking": true,
           "approxSeconds": 3
         },
         "nightly": {
           "command": "pnpm test",
-          "scale": "52 assertions over every bundled pack",
+          "scale": "71 assertions over every bundled pack",
           "blocking": true,
           "approxSeconds": 120
         }

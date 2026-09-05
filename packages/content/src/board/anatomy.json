@@ -1,0 +1,12 @@
+{
+  "FRAME": { "asset": "frame/body", "w": 224, "h": 380 },
+  "ANATOMY_POS": {
+    "heart": { "x": 120, "y": 202 },
+    "lungs": { "x": 112, "y": 170 },
+    "liver": { "x": 88, "y": 236 },
+    "brain": { "x": 112, "y": 52 },
+    "spleen": { "x": 142, "y": 232 },
+    "kidneys": { "x": 112, "y": 272 },
+    "marrow": { "x": 112, "y": 318 }
+  }
+}

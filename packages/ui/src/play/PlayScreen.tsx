@@ -56,6 +56,10 @@ import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/Anti
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
 import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
+import { CellCard, type CellCardSubject } from '../panels/CellCard';
+import { unavailableText } from '../panels/InspectSheet';
+import { PlanningScreen } from './PlanningScreen';
+import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
@@ -87,6 +91,12 @@ export interface PlayControlsCtx {
   game: ViewState;
   phase: string;
   playing: boolean;
+  /**
+   * The planning screen is showing (item 12): after the draw, before command. Its own bottom
+   * button begins command, so a shell may hide its duplicate; the dev shell keeps every
+   * button, because tools/perf/measure.ts drives it by button text.
+   */
+  planning: boolean;
   lastError: string | null;
   frameInfo: { n: number; of: number; label: string } | null;
   send: (action: Record<string, unknown>) => void;
@@ -129,6 +139,8 @@ export function PlayScreen({
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
   // THE PATHOGEN CARD — a layer above the sheet and the dialogs, opened from either.
   const [card, setCard] = useState<PathogenCardSubject | null>(null);
+  // THE CELL CARD (item 12, block c) — the same layer, opened from the planning screen.
+  const [cellCard, setCellCard] = useState<CellCardSubject | null>(null);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -541,12 +553,31 @@ export function PlayScreen({
   const canInspect =
     selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
 
+  // THE PLANNING SCREEN (item 12): between the draw's reveal and the command phase the board
+  // gives way to the body seen from the outside. Never while a burst plays — the spread is
+  // watched on the board — and the model, not this component, says when the moment is.
+  const planning = playing ? null : planningModel(authView);
+  const planningActive = planning !== null && planning.active;
+  const openPathogenCard = (invaderId: string): void => {
+    const node = inspectInfoForInvader(game, invaderId, authView.queries.readyTurn);
+    const iv = node?.invaders.find((x) => x.id === invaderId);
+    if (!iv || iv.novel) return;
+    const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+    setCard({
+      disease: iv.disease,
+      type: iv.type,
+      remembered: memory[iv.disease] === true,
+      now: invaderNowLine(iv),
+    });
+  };
+
   return (
     <div>
       {renderControls({
         game,
         phase,
         playing,
+        planning: planningActive,
         lastError,
         frameInfo: frame ? { n: frame.n, of: frame.of, label: frame.label } : null,
         send,
@@ -555,111 +586,144 @@ export function PlayScreen({
         <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
       ) : null}
       <EffectsStrip chips={effectChips(authView)} />
-      <Board
-        view={shown}
-        selectedCell={selectedCell}
-        selectedResident={selectedResident}
-        readyTurn={authView.queries.readyTurn}
-        artMetrics={artMetrics}
-        targets={boardTargets}
-        onTap={playing ? undefined : handleBoardTap}
-      />
-      <CommandBar
-        selectedCellName={
-          selectedCell
-            ? cellDisplayName(selectedCell)
-            : selectedResident
-              ? residentDisplayName(selectedResident)
-              : null
-        }
-        qualifier={
-          selectedResident ? t('resident.of', { organ: organDisplayName(selectedResident) }) : null
-        }
-        noSelectionHint={noSelectionHint}
-        ap={Number(game['ap'] ?? 0)}
-        hint={hint}
-        buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
-        noAction={offered.reason}
-        undo={authView.undo}
-        inCommand={phase === 'command'}
-        notice={lastError ? engineText(lastError) : null}
-        canInspect={canInspect}
-        disabled={playing}
-        onButton={sendOffer}
-        onUndo={() => send({ action: 'undo' })}
-        onInspect={() => {
-          if (selectedNode) setInspect(selectedNode);
-        }}
-        onDeselect={deselect}
-      />
-      <PieceStrip
-        pieces={pieces}
-        selectedCell={selectedCell}
-        selectedResident={selectedResident}
-        disabled={playing}
-        onSelectCell={tapCell}
-        onSelectResident={tapResident}
-        onDeselect={deselect}
-      />
-      <ActionList rows={rows} hasMovement={moveCount > 0} disabled={playing} onOffer={sendOffer} />
-      <AntibodyPanel
-        rows={familyRows}
-        selectedFamily={selectedFamily}
-        detail={familyDetail}
-        produce={produceOffers}
-        disabled={playing}
-        onSelectFamily={(family) =>
-          session.setSelection({ cell: selectedCell, family, resident: selectedResident })
-        }
-        onProduce={sendOffer}
-      />
-      <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-      <LogPanel lines={logLines} />
-      {inspect ? (
-        <InspectSheet
-          info={inspect}
-          selectedCell={selectedCell}
-          disabled={playing}
-          offers={sheetOffers}
-          onOffer={(id) => {
-            setInspect(null);
-            sendOffer(id);
-          }}
-          onSelectCell={(ck) => {
-            tapCell(ck);
-            setInspect(null);
-          }}
-          selectedResident={selectedResident}
-          onSelectResident={(organ) => {
-            tapResident(organ);
-            setInspect(null);
-          }}
-          onCard={(invaderId) => {
-            const iv = inspect.invaders.find((x) => x.id === invaderId);
-            if (!iv || iv.novel) return;
-            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
-            setCard({
-              disease: iv.disease,
-              type: iv.type,
-              remembered: memory[iv.disease] === true,
-              now: invaderNowLine(iv),
-            });
-          }}
-          onClose={() => setInspect(null)}
-        />
+      {planning !== null && planningActive ? (
+        <>
+          <PlanningScreen
+            model={planning}
+            cells={pieces
+              .filter((p) => p.kind === 'cell')
+              .map((p) => ({ key: p.key, unavailable: p.unavailable }))}
+            onCommand={send}
+            onPathogenCard={openPathogenCard}
+            onCellCard={(ck) =>
+              setCellCard({
+                cell: ck,
+                now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
+              })
+            }
+          />
+          <LogPanel lines={logLines} />
+          <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
+          {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
+          {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
+        </>
       ) : null}
-      {playing ? (
-        // The tap-to-advance surface (pacing ruling, 30 Aug 2026). Input is disabled during a
-        // burst anyway (APP_FLOW, Play states), so this reuses a dead surface: every tap while
-        // frames play means "next frame". Below the dialog layer (30) — a dialog never shows
-        // mid-burst, but the ordering should not depend on that.
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
-          onPointerDown={advanceFrame}
-        />
-      ) : null}
-      <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
-      {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
+      {planningActive ? null : (
+        <>
+          <Board
+            view={shown}
+            selectedCell={selectedCell}
+            selectedResident={selectedResident}
+            readyTurn={authView.queries.readyTurn}
+            artMetrics={artMetrics}
+            targets={boardTargets}
+            onTap={playing ? undefined : handleBoardTap}
+          />
+          <CommandBar
+            selectedCellName={
+              selectedCell
+                ? cellDisplayName(selectedCell)
+                : selectedResident
+                  ? residentDisplayName(selectedResident)
+                  : null
+            }
+            qualifier={
+              selectedResident
+                ? t('resident.of', { organ: organDisplayName(selectedResident) })
+                : null
+            }
+            noSelectionHint={noSelectionHint}
+            ap={Number(game['ap'] ?? 0)}
+            hint={hint}
+            buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
+            noAction={offered.reason}
+            undo={authView.undo}
+            inCommand={phase === 'command'}
+            notice={lastError ? engineText(lastError) : null}
+            canInspect={canInspect}
+            disabled={playing}
+            onButton={sendOffer}
+            onUndo={() => send({ action: 'undo' })}
+            onInspect={() => {
+              if (selectedNode) setInspect(selectedNode);
+            }}
+            onDeselect={deselect}
+          />
+          <PieceStrip
+            pieces={pieces}
+            selectedCell={selectedCell}
+            selectedResident={selectedResident}
+            disabled={playing}
+            onSelectCell={tapCell}
+            onSelectResident={tapResident}
+            onDeselect={deselect}
+          />
+          <ActionList
+            rows={rows}
+            hasMovement={moveCount > 0}
+            disabled={playing}
+            onOffer={sendOffer}
+          />
+          <AntibodyPanel
+            rows={familyRows}
+            selectedFamily={selectedFamily}
+            detail={familyDetail}
+            produce={produceOffers}
+            disabled={playing}
+            onSelectFamily={(family) =>
+              session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+            }
+            onProduce={sendOffer}
+          />
+          <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+          <LogPanel lines={logLines} />
+          {inspect ? (
+            <InspectSheet
+              info={inspect}
+              selectedCell={selectedCell}
+              disabled={playing}
+              offers={sheetOffers}
+              onOffer={(id) => {
+                setInspect(null);
+                sendOffer(id);
+              }}
+              onSelectCell={(ck) => {
+                tapCell(ck);
+                setInspect(null);
+              }}
+              selectedResident={selectedResident}
+              onSelectResident={(organ) => {
+                tapResident(organ);
+                setInspect(null);
+              }}
+              onCard={(invaderId) => {
+                const iv = inspect.invaders.find((x) => x.id === invaderId);
+                if (!iv || iv.novel) return;
+                const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+                setCard({
+                  disease: iv.disease,
+                  type: iv.type,
+                  remembered: memory[iv.disease] === true,
+                  now: invaderNowLine(iv),
+                });
+              }}
+              onClose={() => setInspect(null)}
+            />
+          ) : null}
+          {playing ? (
+            // The tap-to-advance surface (pacing ruling, 30 Aug 2026). Input is disabled during a
+            // burst anyway (APP_FLOW, Play states), so this reuses a dead surface: every tap while
+            // frames play means "next frame". Below the dialog layer (30) — a dialog never shows
+            // mid-burst, but the ordering should not depend on that.
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
+              onPointerDown={advanceFrame}
+            />
+          ) : null}
+          <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
+          {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
+        </>
+      )}
     </div>
   );
 }

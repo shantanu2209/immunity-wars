@@ -708,6 +708,15 @@ deliverable's first cut, or should the five composed lines be re-templated in th
 (a duplicated-prose workaround in the class of #52/#53, deleted with them in Phase 3)?
 Built as plain-render; the workaround is a day's work if ruled.
 
+> ✅ **RULED (Shantanu, 5 September 2026): the five composed lines stay PLAIN, as built.** A
+> marker on more than half the log makes the panel unreadable in exactly the edition it exists
+> to serve; and re-templating them in the UI is the neutralise-2-AP mirror's shape again — a
+> symptom patched in the wrong layer, with the same expiry date. The engine emitting ids is
+> Phase 3's. `log-text.test.ts` pinning that those five are the ONLY misses is what makes the
+> deferral safe. The Hindi consequence — those five lines render in English until Phase 3, the
+> draw's entry line above all — is now stated explicitly in FINDINGS #53, as a list the
+> translation brief inherits.
+
 **Verified in the real app, headless** (`drive-log.ts`): the game-start line at turn 1; a
 move and a produce each add their line, newest first with turn tags; four idle turns then
 "Show all" 8 → 14 lines including the spread's prose ("Bacteria divided: 2 new", the
@@ -919,3 +928,223 @@ by finger — the one you meant is the one selected.
 of the tissue slot, beside the branch's step-1 node number, and at phone size the two digits
 read as one ("1" and "3" as "13"). Pre-existing, not from this piece; a placement note for the
 label pass, with the lymph connector polish.
+
+## Item 12 — the planning screen, steps 1 and 2: the frame and the anatomy, BUILT (5 September 2026)
+
+Built in Shantanu's ruled order (P2_5_PROGRESS.md, "Item 12"). Each step's check was run
+before the next step leaned on it.
+
+### Step 1 — `frame/body` through the pipeline, with the halo looked at
+
+**The halo check found no halo, and found something else.** The raw JPEG's stroke is a clean
+`#786760` with a one-pixel blended edge; the census of the 2048² canvas shows **zero** light
+pixels with enough chroma to survive the key as speckle. But the outline is **closed**, so the
+pipeline's border flood — right for the 29 icons, whose enclosed light paint must survive —
+stops at the stroke and leaves the whole torso interior **opaque white: 23.9% of the canvas**, a
+white body on the cream paper, the compositing rectangle the PNG export was rejected for. So
+the frame is its own class in `build.ts`: keyed **globally**, aspect kept (no square padding —
+the organ positions live in its pixel space), sized by **height** (380px at 1×, the brief's
+phone-portrait figure), emitted under `art/frame/` so `/art/<key>@Nx.webp` holds for the
+slashed key. The manifest gains `size {w, h}` per asset (square for icons).
+
+**Two new controls on the real file**, beside the two synthetic ones: the frame keyed by the
+border flood must be REJECTED by a coverage gate (10% opaque bound; the stroke is 4.5%), and
+keyed globally must be ACCEPTED. Both fire as they should — `pnpm art:build --control`. The
+gate re-measured **5.29:1**, Shantanu's number exactly; `--verify` shows the other 29 assets'
+91 files byte-identical, so regenerating the frame drifted nothing. Then the keyed 3× output
+was composited on the paper and looked at, zoomed ×6 at the shoulder, crown and crotch: a
+smooth anti-aliased edge into the paper, no light ring, no speckle, the interior paper.
+
+Provenance tier corrected in `ASSETS.md`: **Google AI Pro** (Shantanu, 5 September 2026).
+
+### Step 2 — the seven positions in content: the schema, as proposed, then the numbers
+
+**The schema, proposed before writing and then written as proposed** (the handoff's shape,
+with one addition):
+
+```
+board/anatomy.json
+  FRAME:        { asset: "frame/body", w: 224, h: 380 }   the keyed frame's 1× pixel size
+  ANATOMY_POS:  byOrgan(Point)                            in that pixel space
+```
+
+Validated in the board pack (`AnatomyS`): the asset key must be `frame/<name>`; every
+position inside the frame; and — the addition — an explicit set comparison against the RULES'
+organs, so a rules organ with no position and a placed organ the rules do not know each fail
+by name (the key enum alone rejects strangers but does not say which organ is missing). Five
+controls in `load.test.ts` make each rule fire. **The frame size is measured, not judged:**
+`packages/app/src/anatomy-frame.test.ts` holds `FRAME.w × h` equal to the manifest's emitted
+1× size, with two controls (one pixel off; an asset the manifest lacks) — content cannot read
+the manifest and the pipeline does not read content, so the join lives in the one package that
+sees both. A regenerated frame therefore fails a test instead of silently moving every organ.
+
+**The positions, measured off the keyed frame's own outline** (row profile at 1×: crown row
+14, neck narrowest at row 96, shoulders from row 120, arm stumps end at row 216, torso
+interior 65–158 at the waist and 55–168 at the hips, crotch notch at row 360; midline x = 112):
+
+| Organ | x | y | Where that is on the figure |
+|---|---|---|---|
+| brain | 112 | 52 | the cranium, upper-middle of the head |
+| lungs | 112 | 170 | upper chest, centred, below the shoulder line |
+| heart | 120 | 202 | lower chest, between the lungs, to the **patient's left** (viewer's right) |
+| liver | 88 | 236 | under the **patient's right** ribs — the **viewer's left** |
+| spleen | 142 | 232 | under the patient's left ribs, a little higher than the liver's bulk |
+| kidneys | 112 | 272 | the waist, centred (posterior cannot be shown from the front; lower can) |
+| marrow | 112 | 318 | the pelvis, above the crotch notch |
+
+At 30px icons nothing overlaps (checked: every pair is ≥30px apart on at least one axis).
+
+⚠️ **One thing in the handoff was wrong and is not built as written.** It said *"liver
+upper-right of the abdomen AS THE VIEWER SEES IT; spleen upper-left."* On a front-facing
+figure the patient's right is the viewer's LEFT, so that sentence would have mirrored the liver
+and spleen. The liver is on the patient's right; it is placed on the viewer's left, the spleen
+on the viewer's right — the anatomy, not the sentence. **Kartik checks.** The picture to check
+against is `pnpm art:anatomy` → `tools/art-pipeline/showcase/anatomy-preview.png` (the frame
+on paper with the seven organ icons at these positions, 2×); a position edit is checked by
+running it again. Moving an organ is editing two numbers in `anatomy.json`.
+
+## Item 12 — step 3: blocks b, c and d, BUILT (5 September 2026); step 4 PROPOSED, not built
+
+### Where the screen sits, and what decides that
+
+After the draw and its reveal, before command: the view's phase is `infection` with a card
+drawn (a mop-up sentinel counts — the body still needs a plan), and, designed in for Phase 3,
+the engine's `allocation` phase. `planningModel(view)` (`packages/ui/src/play/planning.ts`)
+decides it, PlayScreen only obeys: while the moment holds, the board, command bar, piece
+strip, action list and the two panels give way to the planning screen with the effects strip
+above it and the log below; the dialogs and cards keep their layers. **View-only, one
+action:** the bottom button is `play.beginCommand` — "Command your cells", the catalogue's
+existing string — sending `beginCommand`; under allocation it is `planning.confirm` —
+"Confirm the plan" — sending `confirmAllocation`. The app shell hides its own Begin-command
+button while the screen shows (one button, not the same button twice); **the dev shell keeps
+every button**, because `tools/perf/measure.ts` drives it by button text. Never during a
+burst — the spread is watched on the board.
+
+### Block b — the pathogen summary
+
+Counts by type as chips, then **one row per board token group**: the rows are
+`buildNodeModel`'s own display groups (type + coated + hidden-inside, exactly the board's
+splits), so a row here IS a token there and the badge counts match by construction. Each row
+carries its **depth** in colour AND in words — never colour alone: green `#2F6B4A` *Entry
+lane* (a route at step ≥ 1), amber `#7A5600` *Bloodstream* (the hub; a route at step 0
+resolves there, as the board draws it), red `#B03A2E` *Organ lane* (a branch) — all three
+≥5.9:1 on the paper — and where it stands in words ("Gut lane, step 5" · "In the bloodstream"
+· "Liver branch, step 2" · "In the Liver itself"). **Deepest first**, then by place, then by
+step: the order a player plans in. Tap a row to expand its pathogens (disease, hp, the
+"right now" line the sheet shows); tap a pathogen's Card for the pathogen card — the same
+component, the same entry-point rule (a novel pathogen is masked and has no card).
+
+### Block c — the cell cards
+
+`CellCard` is the pathogen card's shape for the player's own pieces: name and one-line tag
+from `UM`, then `role` / `home` / `bestAgainst` / `deficiency` and an italic `fact`, every
+field optional, a missing field rendering nothing. **The content file ships as a skeleton
+Kartik fills:** `packages/content/src/labels/cells.json`, `CELL_CARDS`, one empty entry per
+cell key. The schema holds the keys equal to the rules' `CELL_KEYS` (a missing cell and a
+stranger each fail by name) and refuses an empty-string field — a placeholder pretending to
+be prose; three controls. Until Kartik writes them the card says so, through the catalogue
+(`cellCard.empty`), rather than showing seven blank cards. The card also carries the cell's
+"right now" — spent or offline and when it is back — the same line the strip and the sheet
+show. Opened from the screen's cell roster (seven 44px chips).
+
+### Block d — the Phase 3 allocation slot, designed in and left empty
+
+The model reads the view's `apPool`, `players`, `captain`, `apBudget` when the phase is
+`allocation` and the screen renders an *Allocation* section (pool, one line per player, the
+captain bold) between the summary and the cells, with the bottom button switched to "Confirm
+the plan". Single-player never reaches that phase, so **the section has never rendered; the
+model's branch is pinned by test** on a view constructed to carry the phase. Phase 3 adds the
+controls (`allocateAP` / `returnAP`); the slot, the button and the strings exist.
+
+### Checks
+
+`tests/session/src/planning.test.ts`, on recorded bot games (3 seeds × 3 difficulties): the
+model is active at every planning moment (>50) and at none of the command states; **the
+button sends what the engine accepts next** — `beginCommand` applied to a clone is accepted
+into `command` at every planning moment, and the **control** applies the same button to
+command-phase states and requires rejection, so the acceptance check is known to be able to
+fail; every invader is in exactly one row and the counts by type add up (vacuity guards: all
+three depths seen, at least one stacked row); each row's depth equals its members' own depth
+from their location, and `depthOf` is pinned on the three zones and on route step 0; every
+non-novel member has a `DZINFO` card; the allocation branch. `card-data.test.ts`:
+`CELL_CARDS` keys equal `CELL_KEYS`. The suite manifest carries the new control file.
+
+### Verified in the real app, headless — versus by test only
+
+**Headless (`drive-planning.ts`, the app shell at 360×780, a fresh Training game, six turns):**
+no planning screen before the draw and the board present; after Draw and the reveal's
+Continue, the planning screen present and the board absent on every one of six turns;
+**exactly one "Command your cells" button** on the page each time; the counts-by-type chips
+and the row badges **agreed on every turn** (1, 4, 6, 10, 11 and 16 invaders); the first row
+expanded to its two members and a member's Card opened the pathogen card (Leprosy); the
+B-Cell chip opened the cell card showing the "still being written" line; **a reload
+mid-planning offered Continue ("Training turn 1") and resumed onto the planning screen** —
+the autosave is written at the draw; the bottom button led to the command phase with the
+board back; End turn, the spread tapped through, Draw again — six cycles; **all three depths
+rendered** (turn 5: one organ row, two bloodstream rows, four entry rows; turn 6: three organ
+rows first, one bloodstream, four entry) in the ruled order. The turn-4 header read "8
+Action Points" — the engine's `apMax` under a crisis boost, so the number on the screen is
+the engine's, not a copy of the difficulty's base.
+
+**By test only:** the allocation slot and "Confirm the plan"; the beginCommand-rejected
+control; depth for a route at step 0; the per-member depth consistency across recorded
+corpora; DZINFO coverage; the three CELL_CARDS controls. **Verified by no one:** the
+*Allocation* section's rendering (no single-player path reaches it); a **coated** or
+**hidden-inside** row marker on this screen (needs a tag, or a hidden virus inside a cell,
+before a draw — not driven); a cell card with real prose (the file is empty until Kartik
+fills it); the screen at 200% text or under the contrast audit — Gate 1 hygiene, after the
+screens stop moving, as before.
+
+### S25 list for step 3 (by finger, Shantanu)
+
+Draw → Continue: the planning screen, no board, ONE "Command your cells" button · the chips'
+counts add up to the rows' badges · tap a row: it expands; tap Card: the pathogen card; Close
+· tap the B-Cell chip: the cell card says its notes are still being written; Close · lock
+the phone mid-planning, unlock, resume — still the planning screen · Command your cells: the
+board, End turn enabled · after a spread that carries something into an organ lane, the next
+plan lists that row first, in red, with the organ's name.
+
+### Step 4 — block a: PROPOSAL for ruling, not built
+
+Block a is the silhouette (the keyed frame) with the seven organs at `ANATOMY_POS`, each
+with its HP, and tap-to-expand a lane. Its data half exists (steps 1–2). What it needs ruled
+is the part the handoff flagged: **the six entry lanes and the bloodstream have no anatomical
+position.** Two shapes, with a recommendation:
+
+**A — chips on the outline, at the point of entry (recommended).** Each entry is a 30px chip
+(the existing `entry-*` art) sitting on the outline stroke where that route enters the body,
+so "outside meets body" is where the chip is: **nose** at the face centre — the one entry that
+must sit inside the outline, because a front-facing face has the nose in the middle; **gut**
+at the lower abdomen, on the patient's left (descending colon) so it clears the kidneys and
+the marrow; **contact** on the viewer's-left arm stump; **bite** on the viewer's-right arm
+stump (a bite is on a limb, and the stumps are the limbs the frame keeps); **wound** on the
+viewer's-left hip edge. **Blood** as a chip at the top of the chest on the midline — the great
+vessels, where the aortic arch sits — with the hub's count on it, since the bloodstream is
+"everywhere inside" and cannot honestly be one place. Proposed numbers in the frame's 1×
+space, measured off the outline like the organs and clearing every organ by ≥30px on one
+axis: nose (112, 82) · blood (112, 134) · contact (36, 172) · bite (188, 172) · wound (52, 296)
+· gut (146, 292). They would go into `anatomy.json` as `ENTRY_POS: byRoute(Point)` and
+`BLOOD_POS: Point`, validated as the organs are (inside the frame; keys equal the rules'
+routes), and looked at in the same preview picture before Kartik checks them.
+
+**B — the bloodstream as a circulation loop** drawn through the torso (a dashed ellipse
+linking the organs, its count at the top), entries as in A. It says "circulating" better and
+it is a Gate 2 item: it competes with the organ icons for the same 90px of interior width and
+needs a layout pass A does not.
+
+**HP per organ:** three pips under each organ icon (integrity is ≤3), filled and empty in the
+organ brown, plus the number — not colour alone. **Tap to expand a lane:** tapping an organ or
+an entry chip filters block b's rows to that place; no new data, no new component.
+
+**Why stop here rather than build A:** the handoff asked for the proposal first, and A's
+numbers put six more things on a figure Kartik has not yet checked — better ruled and checked
+once than moved twice.
+
+### Step 5 — block e: not measured, because it has nothing to measure yet
+
+Organs travelling from anatomical to radial positions on the command button needs block a's
+layout to travel from. Nothing was built or timed. When block a exists the cheap form is a
+CSS transform transition between the two coordinate sets on one SVG layer (compositor work,
+little main-thread cost, measurable through `onFrame`); the honest number comes from
+measuring that on the throttled screen, and Shantanu has said he will cut it without
+argument — so it waits for block a and a measurement, in that order.
