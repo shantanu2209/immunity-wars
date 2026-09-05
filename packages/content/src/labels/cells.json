@@ -1,0 +1,11 @@
+{
+  "CELL_CARDS": {
+    "macrophage": {},
+    "neutrophil": {},
+    "bcell": {},
+    "tcell": {},
+    "helper": {},
+    "nk": {},
+    "eosinophil": {}
+  }
+}

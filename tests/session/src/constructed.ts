@@ -49,6 +49,32 @@ export function commandStates(seed: number, difficulty: string, maxActions: numb
   return states;
 }
 
+/**
+ * PLANNING MOMENTS along a recorded bot game (P2.5 item 12): the infection phase with a card
+ * drawn — after the draw and its reveal, before `beginCommand`. One per turn the bot played.
+ */
+export function planningStates(seed: number, difficulty: string, maxActions: number): GameState[] {
+  const states: GameState[] = [];
+  installRng(seed);
+  try {
+    const g = PORT.newGame({ difficulty, science: false }) as GameState;
+    botGame(
+      PORT,
+      g,
+      (a) => {
+        const r = PORT.applyAction(g, a);
+        const raw = g as unknown as Raw;
+        if (raw['phase'] === 'infection' && raw['drawn']) states.push(clone(g));
+        return r;
+      },
+      maxActions,
+    );
+  } finally {
+    restoreRng();
+  }
+  return states;
+}
+
 export const SEARCH_SEEDS = [0x51de, 0x7f2a, 0x1234, 0x9abc, 0x2468, 0x1357, 0xbeef, 0xfeed];
 const DIFFICULTIES = ['training', 'normal', 'hard'];
 

@@ -68,10 +68,13 @@ work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (20 arms)
+## Uncategorised — still open (23 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
+- `schema.ts:551` `if (!carded.includes(c)) {`
+- `schema.ts:560` `if (!cells.includes(c)) {`
+- `schema.ts:576` `if (!placed.includes(o)) {`
 - `actions.ts:169` `if (g.phase !== 'command') return err('Not in command.');`
 - `actions.ts:240` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`

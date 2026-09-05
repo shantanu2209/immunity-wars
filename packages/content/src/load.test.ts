@@ -32,6 +32,7 @@ import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
+import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
 
 /** A deep, mutable copy of exactly what load.ts assembles. */
@@ -262,6 +263,7 @@ describe('the board pack', () => {
         ...anatomyJson,
         ...diseasesJson,
         ...labelsJson,
+        ...cellsJson,
       }),
     ) as Record<string, unknown>;
 
@@ -273,6 +275,31 @@ describe('the board pack', () => {
 
   it('validates as it ships', () => {
     expect(() => BoardPackS.parse(rawBoard())).not.toThrow();
+  });
+
+  /** THE CELL CARDS (P2.5 item 12): one entry per rules cell, nothing else, no empty prose. */
+  it('rejects a cell card for a cell the rules do not list', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['CELL_CARDS'] as Record<string, unknown>)['osteoclast'] = {};
+      }),
+    ).toThrow(/osteoclast/);
+  });
+
+  it('rejects a missing cell card entry', () => {
+    expect(
+      corruptBoard((p) => {
+        delete (p['CELL_CARDS'] as Record<string, unknown>)['helper'];
+      }),
+    ).toThrow(/helper/);
+  });
+
+  it('rejects a cell card field that is an empty string', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['CELL_CARDS'] as Record<string, Record<string, unknown>>)['bcell']!['role'] = '';
+      }),
+    ).toThrow();
   });
 
   /**

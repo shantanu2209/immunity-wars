@@ -143,8 +143,12 @@ P2.5 piece 1). All text through the i18n catalogue.
   quitting KEEPS the save) [P2.6 adds: Settings · How to play].**
 - Dialog queue mounts here (card reveal etc. — piece 3).
 - Spread narration overlay during bursts; input disabled while a burst plays.
-- States: infection (pre-draw) / infection (drawn) / command / burst-playing / dialog-open /
-  paused. Win or loss transitions to RESULT.
+- **The planning screen (P2.5 item 12, 5 Sep 2026)** occupies the *infection (drawn)* state:
+  after the reveal, the board gives way to the body seen from the outside — pathogen summary
+  with depth, the cell cards, the Phase 3 allocation slot — and its one button begins command.
+  Not a new screen in the machine's sense: a state of PLAY, decided by `planningModel(view)`.
+- States: infection (pre-draw) / infection (drawn: the planning screen) / command /
+  burst-playing / dialog-open / paused. Win or loss transitions to RESULT.
 
 ### RESULT
 - Outcome headline (win / loss — on loss: which organ fell, from the final view).

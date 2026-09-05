@@ -45,6 +45,7 @@ export type {
   OrganKind,
   Point,
   FrameDef,
+  CellCard,
   RareDef,
   Region,
   RegionBox,
@@ -128,6 +129,7 @@ export {
 export {
   ANATOMY_POS,
   BRANCH,
+  CELL_CARDS,
   CHIP_POS,
   DZINFO,
   FRAME,

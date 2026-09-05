@@ -12,6 +12,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   BEAT_BY_TYPE,
+  CELL_CARDS,
+  CELL_KEYS,
   DECK_MASTER,
   DZINFO,
   DZSTATS,
@@ -41,5 +43,11 @@ describe('the pathogen card has data for every disease it can be opened on', () 
     const missing = types.filter((ty) => !(ty in BEAT_BY_TYPE));
     expect(types.length).toBeGreaterThan(5);
     expect(missing).toEqual([]);
+  });
+});
+
+describe('the cell card has an entry for every cell it can be opened on (P2.5 item 12)', () => {
+  it('CELL_CARDS keys are exactly CELL_KEYS', () => {
+    expect(Object.keys(CELL_CARDS).sort()).toEqual([...CELL_KEYS].sort());
   });
 });

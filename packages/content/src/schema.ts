@@ -51,9 +51,11 @@ import { z } from 'zod';
  * it was green while the module was unloadable — so the guard is placement plus this note.
  */
 import boardRulesJson from './rules/board.json';
+import tuningRulesJson from './rules/tuning.json';
 
 const ORGANS_FOR_PARITY = boardRulesJson.ORGANS as Record<string, { branch: number }>;
 const ROUTES_FOR_PARITY = boardRulesJson.ROUTES as Record<string, { len: number }>;
+const CELL_KEYS_FOR_PARITY = tuningRulesJson.CELL_KEYS as readonly string[];
 
 /* ------------------------------------------------------------------ *
  * Key vocabularies — closed sets, mirroring the unions in types.ts
@@ -453,6 +455,24 @@ export const AnatomyS = z.strictObject({
   ANATOMY_POS: byOrgan(Point),
 });
 
+/**
+ * THE CELL CARDS (P2.5 item 12, block c) — the pathogen card's shape for the player's own
+ * pieces: one entry per cell key, every field optional, a missing field rendering nothing.
+ * Kartik's science; the file ships as a skeleton he fills. An entry may be empty; a field
+ * that is present may not be an empty string — that is a placeholder pretending to be prose.
+ */
+const CellCardS = z.strictObject({
+  role: z.string().min(1).optional(),
+  home: z.string().min(1).optional(),
+  bestAgainst: z.string().min(1).optional(),
+  deficiency: z.string().min(1).optional(),
+  fact: z.string().min(1).optional(),
+});
+
+export const CellCardsS = z.strictObject({
+  CELL_CARDS: z.record(CellKeyS, CellCardS),
+});
+
 export const DiseasesS = z.strictObject({
   /** One-line hook shown on the card. Only a subset of diseases carry one. */
   FACT: z.record(z.string(), z.string().min(1)),
@@ -512,6 +532,7 @@ export const LabelsS = z.strictObject({
 export function boardPackSchema(
   organs: Record<string, { branch: number }> = ORGANS_FOR_PARITY,
   routes: Record<string, { len: number }> = ROUTES_FOR_PARITY,
+  cells: readonly string[] = CELL_KEYS_FOR_PARITY,
 ) {
   return z
     .strictObject({
@@ -521,8 +542,29 @@ export function boardPackSchema(
       ...AnatomyS.shape,
       ...DiseasesS.shape,
       ...LabelsS.shape,
+      ...CellCardsS.shape,
     })
     .superRefine((p, ctx) => {
+      /** Every cell the rules know has a card entry (possibly empty), and nothing else does. */
+      const carded = Object.keys(p.CELL_CARDS);
+      for (const c of cells) {
+        if (!carded.includes(c)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['CELL_CARDS', c],
+            message: `rules list the cell "${c}" but labels/cells.json has no card entry for it`,
+          });
+        }
+      }
+      for (const c of carded) {
+        if (!cells.includes(c)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['CELL_CARDS', c],
+            message: `labels/cells.json carries a card for "${c}", which the rules do not list as a cell`,
+          });
+        }
+      }
       /**
        * The anatomical layout: every organ the RULES know has a position, nothing else does,
        * and every position is inside the frame. The key enum already rejects a stranger; the

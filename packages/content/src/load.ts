@@ -26,6 +26,7 @@
 
 import type {
   Card,
+  CellCard,
   CellKey,
   CellLabel,
   Difficulty,
@@ -67,6 +68,7 @@ import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
+import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
 
 /**
@@ -102,6 +104,7 @@ function parseBoard(): Record<string, unknown> {
     ...anatomyJson,
     ...diseasesJson,
     ...labelsJson,
+    ...cellsJson,
   };
   BoardPackS.parse(raw);
   return raw;
@@ -275,6 +278,8 @@ export const BEAT_BY_TYPE = pack['BEAT_BY_TYPE'] as Record<InvaderType, string>;
 export const RNAME = pack['RNAME'] as Record<OrganKey, string>;
 export const RGLYPH = pack['RGLYPH'] as Record<OrganKey, string>;
 export const ORGAN_ART = pack['ORGAN_ART'] as Record<OrganKey, string>;
+/** The cell cards (P2.5 item 12): one entry per cell key, fields optional, Kartik fills them. */
+export const CELL_CARDS = pack['CELL_CARDS'] as Record<CellKey, CellCard>;
 
 /**
  * The UI's i18n catalogue (en), hand-authored as P2.5 builds screens. Validated at the trust

@@ -200,13 +200,17 @@ function App(): ReactElement {
             >
               {t('play.draw')}
             </button>
-            <button
-              style={{ minHeight: 44, fontSize: 14 }}
-              disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
-              onClick={() => ctx.send({ action: 'beginCommand' })}
-            >
-              {t('play.beginCommand')}
-            </button>
+            {/* While the planning screen shows (item 12), its own bottom button begins
+                command; a second copy up here would be the same button twice. */}
+            {ctx.planning ? null : (
+              <button
+                style={{ minHeight: 44, fontSize: 14 }}
+                disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
+                onClick={() => ctx.send({ action: 'beginCommand' })}
+              >
+                {t('play.beginCommand')}
+              </button>
+            )}
             <button
               style={{ minHeight: 44, fontSize: 14 }}
               disabled={ctx.playing || ctx.phase !== 'command'}
