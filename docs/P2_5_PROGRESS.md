@@ -319,12 +319,17 @@ consequence are in FINDINGS #53 and CP5's record.
 > vessels; the layout approved by Shantanu after three looks): the figure with integrity pips,
 > depth-coloured count badges and tap-to-expand a lane. Its walkthrough found **FINDINGS #56**
 > (a resumed game reuses invader ids — fixed at the session's resume, filed as the engine's).
-> Step 5 waits on a measurement.
-> Shantanu's anatomy check moved the marrow to the iliac crest (the biology is in the record).
-> Two things for Kartik: **the mirroring convention** — medical (as built: the liver on the
-> viewer's LEFT) versus screen-intuitive — is his to settle, both sides stated in the record;
-> and he fills `packages/content/src/labels/cells.json`. By finger on the S25, still to do: the
-> planning screen itself (the step/expect list is in the record).
+> **Step 5 (block e, the organ flight) is BUILT and MEASURED — kept**: +2–6ms of main-thread
+> work at the median across 1×/4×/6×; the command tap's own board mount (~109ms at 6×, flight
+> or no flight) is a named item for the mandatory full-UI re-measure.
+> **Item 12 is complete**, pending the S25 pass by finger (the step/expect lists are in the
+> record). Shantanu's anatomy check moved the marrow to the iliac crest; the mirroring is
+> **ruled medical** (the liver on the viewer's left); the gut icon stays a stomach. **The seven
+> cell cards are written** (`labels/cells.json`) for Kartik to review and correct. Kartik's seven
+> rulings are recorded in FINDINGS and queued in `ENGINE_CHANGE_QUEUE.md`; the rulebook, study
+> packet and quick reference were corrected for the residents and the Heart — those .docx are
+> gitignored until the content licence resolves, so the corrected copies live in the working
+> tree, not in the PR.
 
 1. **The frame through the art pipeline as `frame/body`.** The source is committed at
    `tools/art-pipeline/raw/frame-body.jpeg` (from

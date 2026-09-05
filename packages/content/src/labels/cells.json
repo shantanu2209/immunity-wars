@@ -1,11 +1,53 @@
 {
   "CELL_CARDS": {
-    "macrophage": {},
-    "neutrophil": {},
-    "bcell": {},
-    "tcell": {},
-    "helper": {},
-    "nk": {},
-    "eosinophil": {}
+    "macrophage": {
+      "role": "The big eater. It engulfs one pathogen at a time — the first each turn free, then 1 Action Point each — and every meal raises antigen presentation, the bridge that switches on the adaptive cells.",
+      "home": "Made in the marrow. It circulates in the blood as a monocyte and enters tissue where it is needed, maturing into a macrophage there. In the game it starts in the Bloodstream and goes wherever you send it.",
+      "bestAgainst": "Viruses and coated bacteria on its own space, and blood-stage malaria. It cannot swallow a worm or a full-strength protozoan — those are physically too big and must be struck down first.",
+      "deficiency": "Without phagocytes, bacteria and fungi are never cleared, and nothing is ever presented to the adaptive team — so antibodies and killer cells never get their start.",
+      "fact": "A macrophage can engulf tuberculosis bacteria and still fail to kill them. It takes a helper T-cell signal to finish the job — which is why tuberculosis wakes up when helper T-cell counts fall."
+    },
+    "neutrophil": {
+      "role": "The first responder. It swarms a site and destroys every living microbe standing there at once — then it is spent, and the marrow takes four turns to replace it (two with a primed Helper T-Cell in the Bloodstream).",
+      "home": "The bloodstream, in enormous numbers: the most abundant white cell in the body, made and replaced by the marrow continuously. In the game it starts in the Bloodstream and moves two steps per Action Point.",
+      "bestAgainst": "A swarm — bacteria, fungi and viruses standing together on one space. Not worms, not toxins, and nothing hiding inside one of your own cells.",
+      "deficiency": "Neutropenia — too few neutrophils, as after chemotherapy — leaves the body open to bacterial and fungal infections that are normally stopped within hours.",
+      "fact": "Neutrophils live only a day or so, and the marrow makes about a hundred billion of them every day. Their NETs are webs of their own DNA, thrown out to trap and kill microbes."
+    },
+    "bcell": {
+      "role": "The antibody factory. It produces antibodies of one class at a time; the antibodies then coat or neutralise pathogens of that class wherever they are.",
+      "home": "Made in the marrow (the B). In the game it starts in the Bloodstream and produces from wherever it stands — best beside a primed Helper T-Cell, which adds one antibody per action.",
+      "bestAgainst": "Anything with an antigen class. Its antibodies tag bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it.",
+      "deficiency": "No B-cells means no antibodies: bacteria and toxins outside cells run unchecked, and there is nothing for a vaccine to build on. The human version is X-linked agammaglobulinaemia.",
+      "fact": "Your body already carries B-cells for antigens it has never met. Finding the one that fits a new pathogen — clonal selection — is why a first response takes days, and why the second time is fast."
+    },
+    "tcell": {
+      "role": "The sniper. It kills infected cells — anything hiding inside one of your own cells — from a distance, and it never misses.",
+      "home": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell.",
+      "bestAgainst": "Hidden viruses and the protozoa that live inside cells — Toxoplasma, Chagas, liver-stage malaria, a parasite inside a resident macrophage. Useless against anything out in the open.",
+      "deficiency": "Without killer T-cells, a virus that hides inside cells is never cleared, because the infected cell is never destroyed. Reactivating viruses like shingles are what a weakened T-cell system lets through.",
+      "fact": "A killer T-cell recognises an infected cell by the fragments of virus that cell displays on its own surface — the cell reports its own infection."
+    },
+    "helper": {
+      "role": "The conductor. It kills nothing and takes no attacking action; it licenses other cells by standing with them — but only once it has been primed by antigen presentation.",
+      "home": "The Bloodstream at the start. Where it stands afterwards is the whole game: beside the B-Cell, beside the Killer T-Cell, beside the Eosinophil, or parked in the blood.",
+      "bestAgainst": "Nothing directly. Beside the B-Cell: +1 antibody per action. Beside the Killer T-Cell: +1 range. Beside the Eosinophil: +1 step. Standing in the Bloodstream: the Neutrophil returns in 2 turns instead of 4.",
+      "deficiency": "HIV destroys helper T-cells, and the whole adaptive system collapses with them. That is what AIDS is — not the virus's own damage but the loss of the coordinating layer, leaving the body open to infections it would normally handle easily.",
+      "fact": "Its three bonuses are real T-helper subsets: Th2 releases IL-5 to recruit eosinophils; Th17 releases IL-17, which drives G-CSF and steps up neutrophil production in the marrow; and direct contact is what licenses a B-cell to make antibodies properly."
+    },
+    "nk": {
+      "role": "The innate killer. It needs no antigen and no priming — it attacks an infected cell at once — but it rolls a die, and hits on a 3 or more.",
+      "home": "The bloodstream, patrolling on its own. In the game it starts in the Bloodstream, moves two steps per Action Point, and reaches one step around it.",
+      "bestAgainst": "The same hidden targets as the Killer T-Cell — viruses and protozoa inside your own cells — earlier and less reliably. Its reach is one step; the Killer T-Cell reaches further and never misses.",
+      "deficiency": "People born without NK cells suffer repeated, severe herpesvirus infections — the viruses that hide inside cells early, before the T-cells are ready.",
+      "fact": "NK cells kill cells that have stopped showing their identity papers. A virus that hides a cell's surface markers from T-cells makes that cell a target for NK cells instead."
+    },
+    "eosinophil": {
+      "role": "The anti-parasite specialist. It strikes a coated worm or parasite for 2 damage, or degranulates for 3 — enough to kill a worm outright — at the price of burning the organ it stands in and four turns spent.",
+      "home": "Made in the marrow, circulating in small numbers and recruited to wherever a parasite is. In the game it starts in the Bloodstream and gains a step beside a primed Helper T-Cell — that is IL-5.",
+      "bestAgainst": "Worms and large parasites, once antibodies have coated them. It cannot touch an uncoated one, and it is no use against bacteria or viruses.",
+      "deficiency": "Without eosinophils, worm infections are never cleared. Where they are over-active, the same granules turn on the body's own airways — that is asthma and allergy.",
+      "fact": "Eosinophil granules are indiscriminate poison. That is why parasitic infections cause chronic inflammation and scarring, and why degranulating should feel like a decision rather than a free hit."
+    }
   }
 }

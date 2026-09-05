@@ -219,6 +219,7 @@ function unavailability(
 
 interface Organish {
   hp?: unknown;
+  max?: unknown;
 }
 
 /** Fan a node's DISPLAY tokens out horizontally. With fan-of-types this list is short
@@ -837,6 +838,7 @@ export function Board({
               return (
                 <>
                   <image
+                    data-organ-icon={o}
                     href={ART_URL(`organ-${o}`)}
                     x={p.icon.x - LARGE_ART_U / 2}
                     y={p.icon.y - LARGE_ART_U / 2}
@@ -855,15 +857,35 @@ export function Board({
                 </>
               );
             })()}
-            {/* hp sits just inward of the tissue slot — a resident usually stands ON it. */}
+            {/* INTEGRITY AS PIPS under the organ icon (S25, ruled 5 September 2026): the digit
+                that sat inward of the tissue slot read as one number with step 1's label
+                ("13") at phone size. The digit is dropped; the pips are the planning screen's
+                own (block a), in the annotation area where no play token ever stands — one per
+                point at full, filled while it holds: shape, not colour. */}
             {(() => {
-              const d = Math.hypot(pos.x - HUB_POS.x, pos.y - HUB_POS.y) || 1;
-              const hx = pos.x - ((pos.x - HUB_POS.x) / d) * (CLASSIC.rNode + 14);
-              const hy = pos.y - ((pos.y - HUB_POS.y) / d) * (CLASSIC.rNode + 14);
+              const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
+              const max = Number((organs[o] ?? {}).max ?? 0);
+              if (max <= 0) return null;
+              const pip = 9;
+              const gap = 3;
+              const x0 = p.icon.x - (max * pip + (max - 1) * gap) / 2;
+              const y0 = p.icon.y + LARGE_ART_U / 2 + 3;
               return (
-                <text x={hx} y={hy + 4} textAnchor="middle" fontSize={12} fill={CLASSIC.ink}>
-                  {hp}
-                </text>
+                <g data-organ-pips={o} data-hp={hp} data-max={max}>
+                  {Array.from({ length: max }, (_, i) => (
+                    <rect
+                      key={i}
+                      x={x0 + i * (pip + gap)}
+                      y={y0}
+                      width={pip}
+                      height={5}
+                      rx={1.5}
+                      fill={i < hp ? CLASSIC.organ : CLASSIC.paper}
+                      stroke={CLASSIC.organ}
+                      strokeWidth={1}
+                    />
+                  ))}
+                </g>
               );
             })()}
           </g>

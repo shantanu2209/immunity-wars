@@ -3107,3 +3107,22 @@ changes, and the workaround and its test are deleted with it — the same expiry
 **Disposition: OPEN — Phase 3 (engine). Workaround shipped in the session.** A save written
 BEFORE today's workaround by a game that had already been resumed once may carry duplicate
 ids; no such save exists outside the developers' own devices.
+
+## Kartik's rulings on his open design questions — 5 September 2026, relayed by Shantanu
+
+Recorded here beside the findings they close, and queued together in
+[`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md) where they are engine changes, because
+they will be measured against the corpus in one Phase 3 pass.
+
+| Finding | Ruling | What happens |
+|---|---|---|
+| **#5** residents cannot act from the organ box | **Option (a), the wording changes, PLUS a mechanic:** a resident must step forward onto its branch to attack; it gets a **Recall** that returns it to its organ box (not to the bloodstream); a pathogen that reaches step 0, strikes and is removed means the player missed the intercept — **correct and expected** | Rulebook, study packet and quick reference corrected the same day (the setup line, the resident action table, the strategy tip, the packet's "already in position", the reference card). Recall is engine work — queue **Q6**, shape proposed there |
+| **#4** antigenic variation unreachable | **Option (a):** let antibodies attempt trypanosomes | Engine change — queue **Q1**, balance re-measure against the corpus |
+| **#18** degranulate at the Brain | **No change.** Kartik: it is a risk you live with. The real danger is worms; there can only be two per game, and on Hard they spawn at the organ but you still have three turns before damage, so degranulate may not be needed at all. Using it means accepting its cost | Nothing; the reasoning is the answer to a judge asking why |
+| **#15** the Heart's 2-step branch | **Intended.** Kartik: pathogens travel from the bloodstream outward, so the heart is genuinely the quickest to reach | The rulebook's strategy section now carries "Watch the Heart" beside "Watch the Brain", so players know their most fragile organ |
+| **#29** the Helper's free-action slot | **Remove the slot, conditional on a check** — Kartik's Helper effects (snipe range, the speed-up, antibody production) must be untouched, and free actions are NOT being added | The check is done: every Helper effect enumerated in the queue under **Q2**, none reads `g.free`. Removal is a view-key change, so it is engine work — queue **Q2** |
+| **#13** Pathogen X's missing `TROPISM` entry | **Generalist on purpose** — a novel pathogen, nobody should know where it will go. **Declared**, not left as a lookup miss | Queue **Q3**: `"Pathogen X": "any"`, which changes no behaviour and breaks only the byte-identical table pin, so it lands with the pass |
+| **#55** antivenom grants memory | **Option (a), fix it:** memory-on-kill checks the killer; antivenom kills grant nothing | Engine change — queue **Q4**, full suite and balance re-measure |
+
+Two more rulings the same day, Shantanu's: the **mirroring convention is medical** (the liver on
+the patient's right, the viewer's left — already built), and the **gut icon stays a stomach**.

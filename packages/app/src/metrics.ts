@@ -27,10 +27,19 @@ export interface IwMetrics {
   initialRenderMs: number | null;
   taps: { ms: number; busyMs: number; cell: string }[];
   frames: { ms: number; busyMs: number; label: string; dice: boolean }[];
+  /** Block e (item 12 step 5): the command tap's main-thread work with the organ flight
+   *  prepared, and how many organs flew (0 = the flight was skipped, e.g. reduced motion). */
+  transitions: { ms: number; busyMs: number; organs: number; at: number }[];
   longTasks: { start: number; ms: number }[];
 }
 
-const metrics: IwMetrics = { initialRenderMs: null, taps: [], frames: [], longTasks: [] };
+const metrics: IwMetrics = {
+  initialRenderMs: null,
+  taps: [],
+  frames: [],
+  transitions: [],
+  longTasks: [],
+};
 (globalThis as { __iwMetrics?: IwMetrics }).__iwMetrics = metrics;
 
 const t0 = performance.now();
@@ -77,6 +86,16 @@ export const recordTap = (from: number, cell: string): void => {
 export const recordFrame = (from: number, busyMs: number, label: string, dice: boolean): void => {
   toNextPaint(from, (ms) => {
     metrics.frames.push({ ms, busyMs, label, dice });
+  });
+};
+
+/** Block e: busy time is measured by the shell (a 0ms timer after the board's commit). */
+export const recordTransition = (from: number, busyMs: number, organs: number): void => {
+  toNextPaint(from, (ms) => {
+    metrics.transitions.push({ ms, busyMs, organs, at: from });
+    console.log(
+      `[metrics] transition busy ${busyMs.toFixed(1)}ms, to-paint ${ms.toFixed(1)}ms (${String(organs)} organs flew)`,
+    );
   });
 };
 

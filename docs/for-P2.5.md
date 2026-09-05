@@ -1302,3 +1302,82 @@ the fix the walkthrough's counts agreed on all six turns.
 This is outside item 12's scope and is recorded as such: it was fixed rather than only filed
 because the newcomer test's resume path — lock the phone, unlock, continue — depends on it,
 and the fix is a dozen lines at the seam that owns the behaviour.
+
+## Rulings of 5 September 2026 (Shantanu), applied
+
+- **The cell cards are written**, not waited for: `labels/cells.json` now carries role, home,
+  best-against, deficiency and a fact for all seven cells, at the pathogen cards' standard —
+  from the immunology the rulebook and study packet already teach, with the game's own
+  numbers (range 3/2, +1 beside the Helper; two steps for the Neutrophil and NK Cell; four turns
+  spent, two with the Helper in the blood; 2 and 3 damage; d6 3+). Kartik reviews and corrects;
+  the schema refuses an empty field, so a correction is an edit, never a blank.
+- **The "13" digit collision is fixed as ruled: the digit is dropped.** The alternative taken
+  with it, stated so it can be cut: the organ's integrity is drawn as **pips under the organ
+  icon** on the board — the planning screen's own pips, in the annotation area where no token
+  ever stands. Dropping the digit alone would have left the command screen with no integrity
+  at all, and the command screen is where a player decides what to defend. Seven pips-groups
+  render (`data-organ-pips`), a resident standing on the tissue slot no longer shares a pixel
+  with a number.
+- **Mirroring: RULED — medical convention**, the liver on the patient's right. The earlier
+  entries above that list it as open for Kartik are superseded by this line.
+- **Gut icon: keep the stomach. No change.** The lower-abdomen placement stands with it.
+- **Block e (the transition): build it if it can be done well, measure first, cut only on the
+  measurement.** Built and measured below.
+- Kartik's seven rulings: recorded in FINDINGS ("Kartik's rulings") and queued in
+  `ENGINE_CHANGE_QUEUE.md`; the rulebook, study packet and quick reference corrected for the
+  residents and the Heart.
+
+## Item 12 — step 5, block e: BUILT and MEASURED (5 September 2026) — kept, on the measurement
+
+**What it is.** When "Command your cells" is tapped from the planning screen, the seven organ
+icons travel from their anatomical positions on the figure to their radial positions on the
+board. A FLIP flight (`PlayScreen.tsx`): the figure's organ rectangles are read at the tap;
+in the commit that replaces the planning screen with the board, seven ghost images are placed
+at those rectangles and animated by **transform only** — so the compositor moves them and the
+main thread does nothing during the 450ms — onto the board's icons, which stay hidden (a data
+attribute on the root, one CSS rule) until the ghosts land. Skipped under
+`prefers-reduced-motion`. The cost that CAN land on the main thread — the rectangle reads and
+seven `animate()` calls, inside the board's own commit — is what was measured.
+
+**Measured**, as the brief requires: numbers, device, throttle. Windows PC (the P2.3 screening
+device), headless system Chrome over CDP, the dev shell at 360×780 @2×, `emulateCPUThrottling`;
+`__iwMetrics.transitions` — main-thread busy time from the command TAP until the board's
+commit with the flight prepared has yielded (the same 0ms-timer probe as the tap row), so the
+figure is the whole command tap's work; the baseline is the same tap under reduced motion,
+where the flight is skipped and the tap otherwise identical. Five taps per arm (eight for the
+6× flight arm, rerun to check a tail).
+
+| Throttle | Flight | Busy p50 | Busy p95 | Wall to paint p50 | Long tasks in the 600ms after the tap (max) |
+|---|---|---|---|---|---|
+| 1× | on | 14.0ms | 20.3ms | 41ms | 0 |
+| 1× | off | 12.0ms | 13.0ms | 28ms | 0 |
+| 4× | on | 66.9ms | 84.9ms | 76ms | 13 (71ms) |
+| 4× | off | 62.9ms | 70.7ms | 94ms | 9 (64ms) |
+| 6× | on (n=8) | 115.1ms | 165.2ms | 125ms | 17 (129ms) |
+| 6× | off | 109.1ms | 112.0ms | 135ms | 21 (120ms) |
+
+**Reading it.** The flight's marginal main-thread cost is **+2ms at 1×, +4ms at 4×, +6ms at
+6× at the median** — the rectangle reads and the seven animations — with no long task at 1×
+and no motion work on the main thread at all. Its tail at 6× is one tap in eight at 165ms
+against 112ms without it: the rectangle reads force the freshly mounted board's layout inside
+the commit rather than before the paint, and at 6× that shows. **Verdict, by the ruled test
+(cut only if the measurement says so): KEEP.** The measurement does not say cut; it says the
+flight is a few milliseconds on a tap that is expensive for another reason.
+
+**That other reason is the finding, and it is not the flight's.** The command tap from the
+planning screen **mounts the whole board** — it is a screen switch, not a selection tap — and
+it costs **~63ms at 4× and ~109ms at 6× with the flight off**, against the §4 tap row's 100ms.
+P2.3 measured selection taps (a highlighted node) and the initial render (~1s row); this tap is
+a third shape, new with item 12, and it goes to the **mandatory per-redraw re-measure with the
+full UI** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note) as a named item. The
+candidate that would make it cheap, not built: keep the board mounted and hidden while the
+planning screen shows, so the switch is a visibility toggle rather than a mount — at the cost
+of the board's memory and its render on every draw.
+
+**Verified headless:** seven organs flew on every one of 26 command taps across the arms
+(`organs: 7`), the ghosts were created and removed every time (the driver waits for zero
+`[data-flight-ghost]` before ending the turn), and the mid-flight frame at 1× shows the ghosts
+between the two layouts. **Verified by no one:** the flight by eye on the S25 — whether it
+reads as the organs going to their places or as seven things flying about — which is a Gate 2
+question and the reason Shantanu said he would cut it without argument. The S25 item: *tap
+Command your cells and watch whether the organs land where the board has them.*

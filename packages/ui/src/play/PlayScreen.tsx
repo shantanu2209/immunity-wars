@@ -18,7 +18,14 @@
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
 import type { SessionView, ViewState } from '@immunity-wars/session';
-import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
@@ -69,6 +76,21 @@ import { SpreadNarration, diceOf } from './SpreadNarration';
 const FRAME_MS = 900;
 const DICE_FRAME_MS = 1400;
 
+/**
+ * BLOCK E — the organs travel from their anatomical positions to their radial ones when the
+ * player taps "Command your cells" (item 12, step 5; built to be measured, cut if the
+ * measurement says so). A FLIP flight: the figure's organ icons' screen rectangles are read at
+ * the tap, and once the board has committed, seven ghost <img>s are placed at those rectangles
+ * and animated — transform only, so the compositor moves them — onto the board's icons, which
+ * stay hidden until the ghosts land. The main-thread cost is the rectangle reads and the seven
+ * `animate()` calls; the flight itself costs the main thread nothing. Reported through
+ * `onTransition` (the dev shell records it into `__iwMetrics.transitions`), measured from the
+ * TAP, so the number is the whole command tap's work with the flight included — comparable
+ * against the same tap under reduced motion, where the flight is skipped.
+ */
+const FLIGHT_MS = 450;
+const FLIGHT_CSS = '[data-flight] [data-organ-icon]{opacity:0}';
+
 /** What PlayScreen needs from a session — structural, so RelaySession fits it too. */
 export interface PlaySessionLike {
   getView(): SessionView;
@@ -109,6 +131,7 @@ export function PlayScreen({
   onCheck,
   onFrame,
   onTap,
+  onTransition,
   onGameEnd,
   renderControls,
 }: {
@@ -122,6 +145,9 @@ export function PlayScreen({
   onFrame?: (start: number, busy: number, label: string, dice: boolean) => void;
   /** Tap instrumentation hook. */
   onTap?: (from: number, cell: string) => void;
+  /** Block e instrumentation: the command tap's main-thread work with the flight prepared, and
+   *  how many organs flew (0 when the flight was skipped). */
+  onTransition?: (from: number, busyMs: number, organs: number) => void;
   /** Fired once when the authoritative view first shows a finished game. */
   onGameEnd?: (finalView: ViewState) => void;
   /** The shell's turn controls (player buttons, or the dev shell's instrumented ones). */
@@ -159,6 +185,11 @@ export function PlayScreen({
   onFrameRef.current = onFrame;
   const onGameEndRef = useRef(onGameEnd);
   onGameEndRef.current = onGameEnd;
+  const onTransitionRef = useRef(onTransition);
+  onTransitionRef.current = onTransition;
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  /** The flight in waiting: the figure's organ rectangles, read at the command tap. */
+  const flightRef = useRef<{ from: Map<string, DOMRect>; start: number } | null>(null);
 
   useEffect(() => {
     const playNext = (): void => {
@@ -558,6 +589,87 @@ export function PlayScreen({
   // watched on the board — and the model, not this component, says when the moment is.
   const planning = playing ? null : planningModel(authView);
   const planningActive = planning !== null && planning.active;
+
+  /** The command tap from the planning screen: read the organs' rectangles, then send. */
+  const commandFromPlanning = (params: Record<string, unknown>): void => {
+    const start = performance.now();
+    const from = new Map<string, DOMRect>();
+    const reduce =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      rootRef.current
+        ?.querySelectorAll<SVGGElement>('[data-anatomy-place][data-anatomy-hp]')
+        .forEach((g) => {
+          const img = g.querySelector('image');
+          const place = g.getAttribute('data-anatomy-place');
+          if (img && place) from.set(place, img.getBoundingClientRect());
+        });
+    }
+    flightRef.current = { from, start };
+    send(params);
+  };
+
+  // THE FLIGHT: runs in the commit that replaces the planning screen with the board.
+  useLayoutEffect(() => {
+    const f = flightRef.current;
+    const root = rootRef.current;
+    if (planningActive || !f || !root) return;
+    flightRef.current = null;
+    const ghosts: HTMLImageElement[] = [];
+    if (f.from.size > 0) {
+      root.setAttribute('data-flight', '1');
+      root.querySelectorAll<SVGImageElement>('[data-organ-icon]').forEach((target) => {
+        const organ = target.getAttribute('data-organ-icon') ?? '';
+        const from = f.from.get(organ);
+        if (!from) return;
+        const to = target.getBoundingClientRect();
+        const ghost = document.createElement('img');
+        ghost.src = `/art/organ-${organ}@3x.webp`;
+        ghost.alt = '';
+        ghost.setAttribute('data-flight-ghost', organ);
+        Object.assign(ghost.style, {
+          position: 'fixed',
+          left: `${String(from.left)}px`,
+          top: `${String(from.top)}px`,
+          width: `${String(from.width)}px`,
+          height: `${String(from.height)}px`,
+          transformOrigin: 'top left',
+          pointerEvents: 'none',
+          zIndex: '20',
+          willChange: 'transform',
+        });
+        document.body.appendChild(ghost);
+        ghosts.push(ghost);
+        const dx = to.left - from.left;
+        const dy = to.top - from.top;
+        const sx = to.width / from.width;
+        const sy = to.height / from.height;
+        ghost.animate(
+          [
+            { transform: 'translate(0px, 0px) scale(1, 1)' },
+            {
+              transform: `translate(${String(dx)}px, ${String(dy)}px) scale(${String(sx)}, ${String(sy)})`,
+            },
+          ],
+          { duration: FLIGHT_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
+        );
+      });
+    }
+    const landed = window.setTimeout(() => {
+      root.removeAttribute('data-flight');
+      for (const g of ghosts) g.remove();
+    }, FLIGHT_MS);
+    // Main-thread work from the tap until this commit (flight prepared) yields — the same
+    // 0ms-timer probe metrics.ts uses for taps.
+    const n = ghosts.length;
+    window.setTimeout(() => onTransitionRef.current?.(f.start, performance.now() - f.start, n), 0);
+    return () => {
+      window.clearTimeout(landed);
+      root.removeAttribute('data-flight');
+      for (const g of ghosts) g.remove();
+    };
+  }, [planningActive]);
   const openPathogenCard = (invaderId: string): void => {
     const node = inspectInfoForInvader(game, invaderId, authView.queries.readyTurn);
     const iv = node?.invaders.find((x) => x.id === invaderId);
@@ -572,7 +684,8 @@ export function PlayScreen({
   };
 
   return (
-    <div>
+    <div ref={rootRef}>
+      <style>{FLIGHT_CSS}</style>
       {renderControls({
         game,
         phase,
@@ -593,7 +706,7 @@ export function PlayScreen({
             cells={pieces
               .filter((p) => p.kind === 'cell')
               .map((p) => ({ key: p.key, unavailable: p.unavailable }))}
-            onCommand={send}
+            onCommand={commandFromPlanning}
             onPathogenCard={openPathogenCard}
             onCellCard={(ck) =>
               setCellCard({
