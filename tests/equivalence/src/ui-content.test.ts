@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest';
 import * as content from '@immunity-wars/content';
 
 import { canonical } from './hash.js';
+import { skeleton, sweepDashes, upToPunctuation } from './punctuation.js';
 import { legacyUiTable } from './legacy-ui.js';
 
 /**
@@ -63,12 +64,58 @@ const TABLES: Record<string, string> = {
 
 const at = (k: string): unknown => (content as unknown as Record<string, unknown>)[k];
 
-describe('C3: extracted UI content matches v2_ui.html exactly (non-geometry tables)', () => {
+/**
+ * THE PROSE TABLES ARE PINNED UP TO PUNCTUATION (re-baselined 5 September 2026, Shantanu's
+ * ruling; the reasoning and what the comparison still guarantees are in punctuation.ts). The
+ * migration these pins proved is finished; the prose is the source of record now, and the
+ * no-dashes preference applies to it before the Hindi extraction. Everything else stays exact.
+ */
+const PROSE_TABLES = new Set(['FACT', 'DZINFO', 'BEAT_BY_TYPE']);
+
+describe('C3: extracted UI content matches v2_ui.html (exactly, or up to punctuation for prose)', () => {
   for (const [ours, theirs] of Object.entries(TABLES)) {
-    it(`${ours} — same values, same key order`, () => {
-      expect(canonical(at(ours))).toBe(canonical(legacyUiTable(theirs)));
+    const loose = PROSE_TABLES.has(ours);
+    it(`${ours} — same values, same key order${loose ? ', up to punctuation' : ''}`, () => {
+      const mine = loose ? upToPunctuation(at(ours)) : at(ours);
+      const legacy = loose ? upToPunctuation(legacyUiTable(theirs)) : legacyUiTable(theirs);
+      expect(canonical(mine)).toBe(canonical(legacy));
     });
   }
+});
+
+describe('C3 CONTROL: the loosened pin still catches everything but punctuation', () => {
+  const legacyInfo = legacyUiTable('DZINFO') as Record<string, Record<string, string>>;
+  const [dz, fields] = Object.entries(legacyInfo).find(([, f]) =>
+    Object.values(f).some((v) => v.includes('—')),
+  ) as [string, Record<string, string>];
+  const field = Object.keys(fields).find((k) => fields[k]?.includes('—')) as string;
+
+  it('found a legacy string with a dash to mutate (vacuity guard)', () => {
+    expect(dz).toBeDefined();
+    expect(field).toBeDefined();
+  });
+
+  it('mustPass: a dash-only rewrite of a legacy string is still parity', () => {
+    const original = fields[field] as string;
+    const rewritten = sweepDashes(original);
+    expect(rewritten).not.toBe(original);
+    expect(skeleton(rewritten)).toBe(skeleton(original));
+  });
+
+  it('mustFail: one changed letter in the same string breaks parity', () => {
+    const original = fields[field] as string;
+    const m = /\p{L}/u.exec(original) as RegExpExecArray;
+    const i = m.index;
+    const swapped =
+      original.slice(0, i) + (original[i] === 'x' ? 'y' : 'x') + original.slice(i + 1);
+    expect(skeleton(swapped)).not.toBe(skeleton(original));
+  });
+
+  it('mustFail: a dropped word breaks parity', () => {
+    const original = fields[field] as string;
+    const dropped = original.replace(/\p{L}+\s*/u, '');
+    expect(skeleton(dropped)).not.toBe(skeleton(original));
+  });
 });
 
 describe('C3: the geometry tables retired from legacy parity (FINDINGS #49)', () => {
