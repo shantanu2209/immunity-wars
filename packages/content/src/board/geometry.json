@@ -318,5 +318,26 @@
       "y": 392.6,
       "t": "Blood"
     }
+  },
+  "LABEL_SIDE": {
+    "nose": "right",
+    "contact": "right",
+    "gut": "below",
+    "blood": "below",
+    "wound": "right",
+    "bite": "right",
+    "brain": "right",
+    "lungs": "right",
+    "heart": "below",
+    "liver": "below",
+    "spleen": "below",
+    "kidneys": "right",
+    "marrow": "right"
+  },
+  "VIEWBOX": {
+    "x": 28.4,
+    "y": 28.4,
+    "w": 612.6,
+    "h": 603.1
   }
 }

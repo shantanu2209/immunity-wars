@@ -234,6 +234,9 @@ export const MEMORY_BOOST = pack['MEMORY_BOOST'] as number;
 /* --- geometry --- */
 export const VW = pack['VW'] as number;
 export const VH = pack['VH'] as number;
+/** S25 item 11: the crop of the canvas to the annotations plus a margin, and each label's side. */
+export const VIEWBOX = pack['VIEWBOX'] as { x: number; y: number; w: number; h: number };
+export const LABEL_SIDE = pack['LABEL_SIDE'] as Record<string, 'below' | 'right'>;
 export const HUB = pack['HUB'] as Point;
 export const ORGAN_POS = pack['ORGAN_POS'] as Record<OrganKey, Point>;
 export const CHIP_POS = pack['CHIP_POS'] as Record<OrganKey, Point>;

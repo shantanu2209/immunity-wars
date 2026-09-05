@@ -523,7 +523,26 @@ function main(): void {
         ]),
       ),
     ),
+    ...annotationLayout(
+      {
+        ...Object.fromEntries(routeOrder.map((k) => [k, current.ENTRY[k]?.t ?? k])),
+        ...organNames,
+      },
+      { ...routeAngle, ...organAngle },
+      CENTER,
+      R_PLAY,
+    ),
   };
+
+  console.log(
+    `label sides: ${Object.entries(geometry.LABEL_SIDE)
+      .map(([k, v]) => `${k}:${v}`)
+      .join(' ')}`,
+  );
+  console.log(
+    `VIEWBOX ${geometry.VIEWBOX.x} ${geometry.VIEWBOX.y} ${geometry.VIEWBOX.w} ${geometry.VIEWBOX.h} ` +
+      `(${((geometry.VIEWBOX.w * 100) / VW).toFixed(0)}% of the ${VW} canvas wide)`,
+  );
 
   // ---------------------------------------------------------------------------
   // 4. Report — the numbers Board.tsx's authored constants derive from
@@ -567,6 +586,74 @@ function main(): void {
     writeFileSync(GEOMETRY_OUT, json);
     console.log(`\nwrote ${GEOMETRY_OUT}`);
   }
+}
+
+/**
+ * ANNOTATION LAYOUT (S25 item 11, ruled 4 September 2026): where each organ's and entry's label
+ * sits, and the viewBox that crops the canvas to the annotations plus a safe margin.
+ *
+ * Labels BELOW the icon for annotations at the board's left and right (the horizontal
+ * component of the ray dominates), to the RIGHT of the icon for those at top and bottom —
+ * that frees the side margins, and the crop then leaves no wasted space. The print follows
+ * the same data. Icon extent is the 30px annotation square (55u); label width is estimated
+ * at 7.2u per character of the 13u label (Nunito's average advance), the same estimate the
+ * renderer has no better than — a generous margin absorbs the difference.
+ */
+function annotationLayout(
+  names: Record<string, string>,
+  angles: Record<string, number>,
+  center: Pt,
+  rPlay: number,
+): {
+  LABEL_SIDE: Record<string, 'below' | 'right'>;
+  VIEWBOX: { x: number; y: number; w: number; h: number };
+} {
+  const ICON = 55; // 30px at 360 — LARGE_ART_U in Board.tsx
+  const GAP = 8; // play circle -> icon's nearest edge
+  const LABEL_GAP = 14;
+  const CHAR = 7.2;
+  const LABEL_H = 13;
+  const MARGIN = 6;
+  const side: Record<string, 'below' | 'right'> = {};
+  let minX = center.x;
+  let minY = center.y;
+  let maxX = center.x;
+  let maxY = center.y;
+  const grow = (x0: number, y0: number, x1: number, y1: number): void => {
+    minX = Math.min(minX, x0);
+    minY = Math.min(minY, y0);
+    maxX = Math.max(maxX, x1);
+    maxY = Math.max(maxY, y1);
+  };
+  // The play circle itself is inside the crop.
+  grow(center.x - rPlay, center.y - rPlay, center.x + rPlay, center.y + rPlay);
+  for (const [k, theta] of Object.entries(angles)) {
+    const ux = Math.cos(theta);
+    const uy = Math.sin(theta);
+    side[k] = Math.abs(ux) > Math.abs(uy) ? 'below' : 'right';
+    const iconDist = rPlay + GAP + ICON / 2;
+    const ix = center.x + ux * iconDist;
+    const iy = center.y + uy * iconDist;
+    grow(ix - ICON / 2, iy - ICON / 2, ix + ICON / 2, iy + ICON / 2);
+    const w = (names[k] ?? k).length * CHAR;
+    if (side[k] === 'below') {
+      const ly = iy + ICON / 2 + LABEL_GAP;
+      grow(ix - w / 2, ly - LABEL_H, ix + w / 2, ly + 4);
+    } else {
+      const lx = ix + ICON / 2 + LABEL_GAP / 2;
+      grow(lx, iy - LABEL_H / 2, lx + w, iy + LABEL_H / 2);
+    }
+  }
+  const r1 = (v: number): number => Math.round(v * 10) / 10;
+  return {
+    LABEL_SIDE: side,
+    VIEWBOX: {
+      x: r1(minX - MARGIN),
+      y: r1(minY - MARGIN),
+      w: r1(maxX - minX + 2 * MARGIN),
+      h: r1(maxY - minY + 2 * MARGIN),
+    },
+  };
 }
 
 main();

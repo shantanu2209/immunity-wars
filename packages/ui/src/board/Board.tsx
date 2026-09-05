@@ -13,7 +13,7 @@
  * print is in docs/for-P2.5.md.
  */
 
-import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ROUTES } from '@immunity-wars/content';
+import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ROUTES, LABEL_SIDE } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
 import type { MouseEvent as ReactMouseEvent, ReactElement } from 'react';
 
@@ -97,7 +97,7 @@ function annotationPlacement(
   anchor: Pt,
   metrics: ArtMetrics | undefined,
   key: string,
-): { icon: Pt; label: Pt } {
+): { icon: Pt; label: Pt; anchor: 'start' | 'middle' } {
   const dx = anchor.x - HUB_POS.x;
   const dy = anchor.y - HUB_POS.y;
   const d = Math.hypot(dx, dy) || 1;
@@ -108,14 +108,28 @@ function annotationPlacement(
   // Half-extent of the icon's content rectangle along the radial ray (support function).
   const ext = ((Math.abs(ux) * cw + Math.abs(uy) * ch) / 2) * LARGE_ART_U;
   const GAP = 8; // uniform clearance: play circle -> nearest content edge
-  const LABEL_GAP = 14; // uniform clearance: far content edge -> label baseline
+  const LABEL_GAP = 14; // uniform clearance: content edge -> label
   // Annotations sit off the PLAY CIRCLE, not off their anchor: the organ tissue slot is
   // inside the circle, and measuring from it would pull organ icons off the uniform ring.
   const iconDist = R_PLAY + GAP + ext;
-  const labelDist = iconDist + ext + LABEL_GAP;
+  const icon = { x: HUB_POS.x + ux * iconDist, y: HUB_POS.y + uy * iconDist };
+  // THE LABEL'S SIDE comes from the geometry pack (S25 item 11): BELOW the icon at the board's
+  // left and right, to the RIGHT of it at top and bottom — the side margins freed, the print
+  // following the same data. Side extents use the icon's content box in that direction.
+  const side = (LABEL_SIDE as Record<string, 'below' | 'right' | undefined>)[
+    key.replace(/^(organ|entry)-/, '')
+  ];
+  if (side === 'right') {
+    return {
+      icon,
+      label: { x: icon.x + (cw * LARGE_ART_U) / 2 + LABEL_GAP / 2, y: icon.y + 4 },
+      anchor: 'start',
+    };
+  }
   return {
-    icon: { x: HUB_POS.x + ux * iconDist, y: HUB_POS.y + uy * iconDist },
-    label: { x: HUB_POS.x + ux * labelDist, y: HUB_POS.y + uy * labelDist + 4 },
+    icon,
+    label: { x: icon.x, y: icon.y + (ch * LARGE_ART_U) / 2 + LABEL_GAP },
+    anchor: 'middle',
   };
 }
 
@@ -212,6 +226,49 @@ interface Organish {
  *  visible. The HUB still piles: its grouped-zone display is its own P2.5 piece. */
 const fan = (p: Pt, i: number, n: number): Pt =>
   n <= 1 ? p : { x: p.x + (i - (n - 1) / 2) * 26, y: p.y };
+
+/**
+ * THE HUB IS A ZONE, NOT A NODE — VARIANT B (ruled 20 Aug 2026, built at S25 item 8): invader
+ * type-tokens clustered in the centre (a 2×2 grid, the most legible region — threats are the
+ * decision-relevant information), the player's cells ringed at the inner edge (cells LEAVING
+ * the hub is the normal state of a game, so a ring degrades gracefully where an arc would
+ * lopside). Proportions follow the ruled mock-up (`pnpm art:showcase`): cluster tokens ~22u,
+ * ring tokens ~16u on a 38u ring inside the 42u inner circle. Everywhere else: fan-of-types.
+ */
+const HUB_CLUSTER_U = 22;
+const HUB_RING_U = 16;
+const HUB_RING_R = 38;
+export function tokenLayout(node: NodeModel, i: number): { pos: Pt; size: number } {
+  const t = node.display[i];
+  if (!t) return { pos: node.pos, size: TOKEN_ART_U };
+  if (node.pos.x !== HUB_POS.x || node.pos.y !== HUB_POS.y) {
+    return { pos: fan(t.pos, i, node.display.length), size: TOKEN_ART_U };
+  }
+  const invaders = node.display.filter((d) => d.kind === 'invader');
+  const cells = node.display.filter((d) => d.kind === 'cell');
+  if (t.kind === 'invader') {
+    const k = invaders.indexOf(t);
+    const n = invaders.length;
+    const cols = n <= 1 ? 1 : 2;
+    const rows = Math.ceil(n / cols);
+    const col = k % cols;
+    const row = Math.floor(k / cols);
+    const step = HUB_CLUSTER_U + 4;
+    return {
+      pos: {
+        x: HUB_POS.x + (col - (cols - 1) / 2) * step,
+        y: HUB_POS.y + (row - (rows - 1) / 2) * step,
+      },
+      size: HUB_CLUSTER_U,
+    };
+  }
+  const k = cells.indexOf(t);
+  const a = (2 * Math.PI * k) / Math.max(1, cells.length) - Math.PI / 2;
+  return {
+    pos: { x: HUB_POS.x + HUB_RING_R * Math.cos(a), y: HUB_POS.y + HUB_RING_R * Math.sin(a) },
+    size: HUB_RING_U,
+  };
+}
 
 /**
  * P2.4 art, emitted by tools/art-pipeline into the app's public dir and served at /art/.
@@ -555,7 +612,7 @@ export function Board({
     if (tg.kind === 'move' || tg.kind === 'hop') return tg.located ? tokenPos(tg.located) : null;
     for (const node of byNode.values()) {
       const i = node.display.findIndex((t) => t.ids?.includes(tg.invaderId ?? '') === true);
-      if (i >= 0) return fan(node.pos, i, node.display.length);
+      if (i >= 0) return tokenLayout(node, i).pos;
     }
     return null;
   };
@@ -571,7 +628,7 @@ export function Board({
       if (t.cell !== undefined) {
         candidates.push({
           kind: 'cell',
-          pos: fan(t.pos, i, node.display.length),
+          pos: tokenLayout(node, i).pos,
           payload: { kind: 'cell', cell: t.cell, node: node.inspect },
         });
       } else if (t.resident === true && t.organ !== undefined) {
@@ -579,7 +636,7 @@ export function Board({
         // position exactly like a player cell, so the one tap path needs no new priority.
         candidates.push({
           kind: 'cell',
-          pos: fan(t.pos, i, node.display.length),
+          pos: tokenLayout(node, i).pos,
           payload: { kind: 'resident', organ: t.organ, node: node.inspect },
         });
       }
@@ -703,7 +760,7 @@ export function Board({
               <text
                 x={placed.label.x}
                 y={placed.label.y}
-                textAnchor="middle"
+                textAnchor={placed.anchor}
                 fontSize={13}
                 fill={CLASSIC.ink}
               >
@@ -789,7 +846,7 @@ export function Board({
                   <text
                     x={p.label.x}
                     y={p.label.y}
-                    textAnchor="middle"
+                    textAnchor={p.anchor}
                     fontSize={13}
                     fill={CLASSIC.inkDark}
                   >
@@ -839,7 +896,7 @@ export function Board({
       {/* tokens: fan-of-types per node (cells individual, invaders one token per type) */}
       {[...byNode.values()].map((node) =>
         node.display.map((t, i) => {
-          const p = fan(t.pos, i, node.display.length);
+          const { pos: p, size: SZ } = tokenLayout(node, i);
           const selected =
             (t.cell !== undefined && t.cell === selectedCell) ||
             (t.resident === true && t.organ !== undefined && t.organ === selectedResident);
@@ -857,7 +914,7 @@ export function Board({
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={TOKEN_ART_U / 2 + 3}
+                  r={SZ / 2 + 3}
                   fill="none"
                   stroke="#e80"
                   strokeWidth={4}
@@ -872,7 +929,7 @@ export function Board({
                   <circle
                     cx={p.x}
                     cy={p.y}
-                    r={TOKEN_ART_U / 2 + 2}
+                    r={SZ / 2 + 2}
                     fill="none"
                     stroke={CLASSIC.organ}
                     strokeWidth={1.8}
@@ -880,7 +937,7 @@ export function Board({
                   <circle
                     cx={p.x}
                     cy={p.y}
-                    r={TOKEN_ART_U / 2 + 6}
+                    r={SZ / 2 + 6}
                     fill="none"
                     stroke={CLASSIC.organ}
                     strokeWidth={1.8}
@@ -893,10 +950,10 @@ export function Board({
                 // badge added — the badge slot carries its return instead, below.
                 <image
                   href={ART_URL(t.art)}
-                  x={p.x - TOKEN_ART_U / 2}
-                  y={p.y - TOKEN_ART_U / 2}
-                  width={TOKEN_ART_U}
-                  height={TOKEN_ART_U}
+                  x={p.x - SZ / 2}
+                  y={p.y - SZ / 2}
+                  width={SZ}
+                  height={SZ}
                   opacity={t.unavailable ? 0.38 : 1}
                   style={t.unavailable ? { filter: 'grayscale(1)' } : undefined}
                 />
@@ -914,16 +971,16 @@ export function Board({
               {t.count >= 2 ? (
                 <>
                   <circle
-                    cx={p.x + TOKEN_ART_U / 2 - 3}
-                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    cx={p.x + SZ / 2 - 3}
+                    cy={p.y - SZ / 2 + 3}
                     r={10}
                     fill={CLASSIC.frame}
                     stroke="#fff"
                     strokeWidth={1.6}
                   />
                   <text
-                    x={p.x + TOKEN_ART_U / 2 - 3}
-                    y={p.y - TOKEN_ART_U / 2 + 7.2}
+                    x={p.x + SZ / 2 - 3}
+                    y={p.y - SZ / 2 + 7.2}
                     textAnchor="middle"
                     fontSize={12}
                     fontWeight="bold"
@@ -941,7 +998,7 @@ export function Board({
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={TOKEN_ART_U / 2 + 2}
+                  r={SZ / 2 + 2}
                   fill="none"
                   stroke={CLASSIC.organ}
                   strokeWidth={2.2}
@@ -956,15 +1013,15 @@ export function Board({
                 // where a letter does not. Opsonisation, made visible.
                 <g>
                   <circle
-                    cx={p.x - TOKEN_ART_U / 2 + 3}
-                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    cx={p.x - SZ / 2 + 3}
+                    cy={p.y - SZ / 2 + 3}
                     r={10}
                     fill={COAT.fill}
                     stroke={COAT.stroke}
                     strokeWidth={1.6}
                   />
                   <path
-                    d={yGlyph(p.x - TOKEN_ART_U / 2 + 3, p.y - TOKEN_ART_U / 2 + 3)}
+                    d={yGlyph(p.x - SZ / 2 + 3, p.y - SZ / 2 + 3)}
                     fill="none"
                     stroke={COAT.stroke}
                     strokeWidth={2.2}
@@ -977,16 +1034,16 @@ export function Board({
                 // The return, in the badge slot: turns until the cell acts again.
                 <>
                   <circle
-                    cx={p.x - TOKEN_ART_U / 2 + 3}
-                    cy={p.y - TOKEN_ART_U / 2 + 3}
+                    cx={p.x - SZ / 2 + 3}
+                    cy={p.y - SZ / 2 + 3}
                     r={10}
                     fill={CLASSIC.ink}
                     stroke="#fff"
                     strokeWidth={1.6}
                   />
                   <text
-                    x={p.x - TOKEN_ART_U / 2 + 3}
-                    y={p.y - TOKEN_ART_U / 2 + 7.2}
+                    x={p.x - SZ / 2 + 3}
+                    y={p.y - SZ / 2 + 7.2}
                     textAnchor="middle"
                     fontSize={12}
                     fontWeight="bold"
@@ -996,15 +1053,19 @@ export function Board({
                   </text>
                 </>
               ) : null}
-              <text
-                x={p.x}
-                y={p.y + TOKEN_ART_U / 2 + 10}
-                textAnchor="middle"
-                fontSize={10}
-                fill={t.kind === 'invader' ? '#711' : '#236'}
-              >
-                {t.label}
-              </text>
+              {/* No label under hub tokens (Variant B): the ring and cluster are dense, and the strip,
+                  the bar and the sheet name every piece there. */}
+              {SZ === TOKEN_ART_U ? (
+                <text
+                  x={p.x}
+                  y={p.y + SZ / 2 + 10}
+                  textAnchor="middle"
+                  fontSize={10}
+                  fill={t.kind === 'invader' ? '#711' : '#236'}
+                >
+                  {t.label}
+                </text>
+              ) : null}
             </g>
           );
         }),

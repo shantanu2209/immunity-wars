@@ -146,5 +146,7 @@ export {
   BEAT_BY_TYPE,
   UM,
   VH,
+  VIEWBOX,
+  LABEL_SIDE,
   VW,
 } from './load.js';
