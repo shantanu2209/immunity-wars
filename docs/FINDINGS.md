@@ -2920,6 +2920,42 @@ composed argument is required to be listed rather than skipped. The `$meta` list
 unextracted sites is asserted equal to a fresh walk, and its count (5) is pinned so a new one
 must be acknowledged in this entry.
 
+### RULED 5 September 2026 (Shantanu): the five composed log lines stay PLAIN — and the Hindi consequence, stated explicitly
+
+The log panel (CP5) renders the catalogue's templates for every log line it can match and
+renders the five composed sites **plainly, not loudly** — no ⟪marker⟫. Two reasons, recorded so
+the deferral is argued rather than inherited:
+
+1. In a short driven Training game **8 of 14** log lines were composed sites (for-P2.5.md,
+   "Piece 3 — CP5"), almost all the draw's entry line. A marker on more than half the log makes
+   the panel unreadable in exactly the edition it exists to serve — it teaches nothing and costs
+   everything.
+2. Re-templating the five in the UI is the same shape as the neutralise-cost mirror (#52):
+   patching a symptom in the wrong layer, with the same expiry date. The engine emitting ids is
+   the real fix and it is Phase 3's. A day's work now buys a second workaround.
+
+**What makes the deferral safe** is `tests/session/src/log-text.test.ts`: on recorded states it
+asserts that the composed sites are the ONLY lines the catalogue misses, with a control, so a
+new miss fails a test rather than hiding in the panel. The extractor's `$meta.unextractedSites`
+count is pinned at five beside it.
+
+**THE HINDI CONSEQUENCE, so the translation brief inherits a known list rather than a
+surprise.** Until Phase 3 makes the engine emit ids, **these five log lines render in ENGLISH
+in the Hindi edition**, whatever the catalogue says:
+
+| Site (`packages/engine/src/actions.ts`) | The line, in the player's terms | How often |
+|---|---|---|
+| the draw's entry line | "Infection: *X* entered via the *Nose*" | **the most frequent line in the log** — once per arrival |
+| `produce` | "B-Cell produced *n* *ENV* antibodies (*have*/*cap*)" | once per produce |
+| `tag` | "Antibodies coated/tagged …" | once per tag |
+| `engulf` | "Monocyte engulfed/chipped …" | once per engulf |
+| `strike` | "… killed/struck the …" | rare — never occurred in the recorded corpus |
+
+Everything else in the log — the spread's frame headlines, the crisis and rare event prose,
+every rejection — translates through `engine.json`. The translator should be told the five
+above are out of reach, and why, before starting; when Phase 3 lands the ids, this list, the
+`$meta` list and `log-text.test.ts` go together.
+
 ## 54. A generator's capability gap propagates to every instrument built on it: the harness was green over `net` without ever offering it
 
 **Found 4 September 2026, while planning CP3.** Before residents were added to the offered ⊆

@@ -36,6 +36,7 @@ import type {
   FamilyDef,
   FamilyKey,
   Flags,
+  FrameDef,
   InvaderLabel,
   InvaderType,
   OrganDef,
@@ -62,6 +63,7 @@ import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
 
+import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
@@ -97,6 +99,7 @@ function parseBoard(): Record<string, unknown> {
     ...packJson,
     ...geometryJson,
     ...regionsJson,
+    ...anatomyJson,
     ...diseasesJson,
     ...labelsJson,
   };
@@ -243,6 +246,10 @@ export const CHIP_POS = pack['CHIP_POS'] as Record<OrganKey, Point>;
 export const BRANCH = pack['BRANCH'] as Record<OrganKey, Record<string, Point>>;
 export const ROUTE = pack['ROUTE'] as Record<RouteKey, Record<string, Point>>;
 export const ENTRY = pack['ENTRY'] as Record<RouteKey, Point & { t: string }>;
+
+/* --- the anatomical layout (P2.5 item 12): the frame asset and organ positions in its pixel space --- */
+export const FRAME = pack['FRAME'] as FrameDef;
+export const ANATOMY_POS = pack['ANATOMY_POS'] as Record<OrganKey, Point>;
 
 /* --- regions (the phone-size zoom targets) --- */
 export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;

@@ -708,6 +708,15 @@ deliverable's first cut, or should the five composed lines be re-templated in th
 (a duplicated-prose workaround in the class of #52/#53, deleted with them in Phase 3)?
 Built as plain-render; the workaround is a day's work if ruled.
 
+> ✅ **RULED (Shantanu, 5 September 2026): the five composed lines stay PLAIN, as built.** A
+> marker on more than half the log makes the panel unreadable in exactly the edition it exists
+> to serve; and re-templating them in the UI is the neutralise-2-AP mirror's shape again — a
+> symptom patched in the wrong layer, with the same expiry date. The engine emitting ids is
+> Phase 3's. `log-text.test.ts` pinning that those five are the ONLY misses is what makes the
+> deferral safe. The Hindi consequence — those five lines render in English until Phase 3, the
+> draw's entry line above all — is now stated explicitly in FINDINGS #53, as a list the
+> translation brief inherits.
+
 **Verified in the real app, headless** (`drive-log.ts`): the game-start line at turn 1; a
 move and a produce each add their line, newest first with turn tags; four idle turns then
 "Show all" 8 → 14 lines including the spread's prose ("Bacteria divided: 2 new", the
@@ -919,3 +928,77 @@ by finger — the one you meant is the one selected.
 of the tissue slot, beside the branch's step-1 node number, and at phone size the two digits
 read as one ("1" and "3" as "13"). Pre-existing, not from this piece; a placement note for the
 label pass, with the lymph connector polish.
+
+## Item 12 — the planning screen, steps 1 and 2: the frame and the anatomy, BUILT (5 September 2026)
+
+Built in Shantanu's ruled order (P2_5_PROGRESS.md, "Item 12"). Each step's check was run
+before the next step leaned on it.
+
+### Step 1 — `frame/body` through the pipeline, with the halo looked at
+
+**The halo check found no halo, and found something else.** The raw JPEG's stroke is a clean
+`#786760` with a one-pixel blended edge; the census of the 2048² canvas shows **zero** light
+pixels with enough chroma to survive the key as speckle. But the outline is **closed**, so the
+pipeline's border flood — right for the 29 icons, whose enclosed light paint must survive —
+stops at the stroke and leaves the whole torso interior **opaque white: 23.9% of the canvas**, a
+white body on the cream paper, the compositing rectangle the PNG export was rejected for. So
+the frame is its own class in `build.ts`: keyed **globally**, aspect kept (no square padding —
+the organ positions live in its pixel space), sized by **height** (380px at 1×, the brief's
+phone-portrait figure), emitted under `art/frame/` so `/art/<key>@Nx.webp` holds for the
+slashed key. The manifest gains `size {w, h}` per asset (square for icons).
+
+**Two new controls on the real file**, beside the two synthetic ones: the frame keyed by the
+border flood must be REJECTED by a coverage gate (10% opaque bound; the stroke is 4.5%), and
+keyed globally must be ACCEPTED. Both fire as they should — `pnpm art:build --control`. The
+gate re-measured **5.29:1**, Shantanu's number exactly; `--verify` shows the other 29 assets'
+91 files byte-identical, so regenerating the frame drifted nothing. Then the keyed 3× output
+was composited on the paper and looked at, zoomed ×6 at the shoulder, crown and crotch: a
+smooth anti-aliased edge into the paper, no light ring, no speckle, the interior paper.
+
+Provenance tier corrected in `ASSETS.md`: **Google AI Pro** (Shantanu, 5 September 2026).
+
+### Step 2 — the seven positions in content: the schema, as proposed, then the numbers
+
+**The schema, proposed before writing and then written as proposed** (the handoff's shape,
+with one addition):
+
+```
+board/anatomy.json
+  FRAME:        { asset: "frame/body", w: 224, h: 380 }   the keyed frame's 1× pixel size
+  ANATOMY_POS:  byOrgan(Point)                            in that pixel space
+```
+
+Validated in the board pack (`AnatomyS`): the asset key must be `frame/<name>`; every
+position inside the frame; and — the addition — an explicit set comparison against the RULES'
+organs, so a rules organ with no position and a placed organ the rules do not know each fail
+by name (the key enum alone rejects strangers but does not say which organ is missing). Five
+controls in `load.test.ts` make each rule fire. **The frame size is measured, not judged:**
+`packages/app/src/anatomy-frame.test.ts` holds `FRAME.w × h` equal to the manifest's emitted
+1× size, with two controls (one pixel off; an asset the manifest lacks) — content cannot read
+the manifest and the pipeline does not read content, so the join lives in the one package that
+sees both. A regenerated frame therefore fails a test instead of silently moving every organ.
+
+**The positions, measured off the keyed frame's own outline** (row profile at 1×: crown row
+14, neck narrowest at row 96, shoulders from row 120, arm stumps end at row 216, torso
+interior 65–158 at the waist and 55–168 at the hips, crotch notch at row 360; midline x = 112):
+
+| Organ | x | y | Where that is on the figure |
+|---|---|---|---|
+| brain | 112 | 52 | the cranium, upper-middle of the head |
+| lungs | 112 | 170 | upper chest, centred, below the shoulder line |
+| heart | 120 | 202 | lower chest, between the lungs, to the **patient's left** (viewer's right) |
+| liver | 88 | 236 | under the **patient's right** ribs — the **viewer's left** |
+| spleen | 142 | 232 | under the patient's left ribs, a little higher than the liver's bulk |
+| kidneys | 112 | 272 | the waist, centred (posterior cannot be shown from the front; lower can) |
+| marrow | 112 | 318 | the pelvis, above the crotch notch |
+
+At 30px icons nothing overlaps (checked: every pair is ≥30px apart on at least one axis).
+
+⚠️ **One thing in the handoff was wrong and is not built as written.** It said *"liver
+upper-right of the abdomen AS THE VIEWER SEES IT; spleen upper-left."* On a front-facing
+figure the patient's right is the viewer's LEFT, so that sentence would have mirrored the liver
+and spleen. The liver is on the patient's right; it is placed on the viewer's left, the spleen
+on the viewer's right — the anatomy, not the sentence. **Kartik checks.** The picture to check
+against is `pnpm art:anatomy` → `tools/art-pipeline/showcase/anatomy-preview.png` (the frame
+on paper with the seven organ icons at these positions, 2×); a position edit is checked by
+running it again. Moving an organ is editing two numbers in `anatomy.json`.

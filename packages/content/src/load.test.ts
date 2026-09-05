@@ -28,6 +28,7 @@ import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
 
+import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
@@ -258,6 +259,7 @@ describe('the board pack', () => {
         ...packJson,
         ...geometryJson,
         ...regionsJson,
+        ...anatomyJson,
         ...diseasesJson,
         ...labelsJson,
       }),
@@ -271,6 +273,51 @@ describe('the board pack', () => {
 
   it('validates as it ships', () => {
     expect(() => BoardPackS.parse(rawBoard())).not.toThrow();
+  });
+
+  /**
+   * THE ANATOMICAL LAYOUT (P2.5 item 12). The same discipline as the geometry: an organ the
+   * rules know must have a position, a position must name a real organ, and every position
+   * must be inside the frame it is authored against. Each rule is made to fire once here.
+   */
+  it('rejects an anatomy that gives a rules organ no position', () => {
+    expect(
+      corruptBoard((p) => {
+        delete (p['ANATOMY_POS'] as Record<string, unknown>)['spleen'];
+      }),
+    ).toThrow(/spleen/);
+  });
+
+  it('rejects an anatomy that places an organ the rules do not list', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['ANATOMY_POS'] as Record<string, unknown>)['pancreas'] = { x: 100, y: 250 };
+      }),
+    ).toThrow(/pancreas/);
+  });
+
+  it('rejects an anatomy position outside the frame', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['ANATOMY_POS'] as Record<string, Record<string, number>>)['brain']!['y'] = 9999;
+      }),
+    ).toThrow(/frame/);
+  });
+
+  it('rejects a frame asset that is not under frame/', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['FRAME'] as Record<string, unknown>)['asset'] = 'organ-brain';
+      }),
+    ).toThrow(/frame\//);
+  });
+
+  it('rejects a frame with no size', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['FRAME'] as Record<string, unknown>)['w'] = 0;
+      }),
+    ).toThrow();
   });
 
   /**

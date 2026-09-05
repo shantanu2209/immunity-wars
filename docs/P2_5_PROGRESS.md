@@ -305,16 +305,19 @@ Every S25 observation and its ruling is in [`for-P2.5.md`](for-P2.5.md) under "A
 pass on the batch", one section per item, each ending with what was verified headless versus
 by test only. Still open from that list: the **window-closed chip and the countdown line**
 (test-only — an idle game loses before turn 16), the **memory response** ring (test-only), the
-**hiding-inside-a-cell** ring (test-only), and one **ruling not yet given**: whether the log's
-five composed engine lines (FINDINGS #53) render plainly, as built, or are re-templated in the
-UI for the Hindi first cut (CP5's record has the numbers: 8 of 14 lines in a short game).
+**hiding-inside-a-cell** ring (test-only), and one ruling that was still open at the clear:
+whether the log's five composed engine lines (FINDINGS #53) render plainly, as built, or are
+re-templated in the UI for the Hindi first cut (CP5's record has the numbers: 8 of 14 lines in
+a short game). **RULED 5 September 2026: plain, as built** — the reasons and the explicit Hindi
+consequence are in FINDINGS #53 and CP5's record.
 
 ### Item 12 — the planning screen — is next, in this order (Shantanu, 5 September 2026)
 
 1. **The frame through the art pipeline as `frame/body`.** The source is committed at
    `tools/art-pipeline/raw/frame-body.jpeg` (from
    `Downloads/Human_torso_outline_medical_diagram_2K_202609051144.jpeg`), its provenance row is
-   in `ASSETS.md` (tier to confirm), and the brief is `ANATOMY_FRAME_BRIEF.md`. Shantanu
+   in `ASSETS.md` (tier **Google AI Pro**, confirmed by Shantanu 5 September 2026), and the
+   brief is `ANATOMY_FRAME_BRIEF.md`. Shantanu
    measured it: stroke `#786760`, 5.29:1 against the paper, interior provably empty, cropped
    mid-thigh, aspect 0.555; at 380px tall on a 360px screen the torso interior is 179 × 209px.
    It is a JPEG on white by choice — the PNG's alpha was a uniform 50%. **Check the keyed output
