@@ -397,6 +397,19 @@ export const GeometryS = z.strictObject({
   BRANCH: byOrgan(z.record(stepKey, Point)),
   ROUTE: byRoute(z.record(stepKey, Point)),
   ENTRY: byRoute(z.strictObject({ x: z.number(), y: z.number(), t: z.string() })),
+  /**
+   * S25 item 11 (4 September 2026): where each organ's and entry's label sits — below the icon
+   * at the board's left and right, to the right of it at top and bottom — and the viewBox that
+   * crops the canvas to the annotations plus a safe margin. Both derived by the generator from
+   * the angles; the print follows the same data. Keys are the organ and route keys.
+   */
+  LABEL_SIDE: z.record(z.string(), z.enum(['below', 'right'])),
+  VIEWBOX: z.strictObject({
+    x: z.number(),
+    y: z.number(),
+    w: z.number().positive(),
+    h: z.number().positive(),
+  }),
 });
 
 const RegionKeyS = z.enum(['nose', 'gut', 'contact', 'wound', 'bite', 'blood', 'core']);

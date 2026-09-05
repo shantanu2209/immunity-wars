@@ -747,3 +747,175 @@ catalogue and the engine source), so the tokenizer is now a linear scan over tho
 any other `<` is literal text — there is no sanitisation to get wrong. `richRuns.test.ts`
 pins the runs and gives a 200,000-character run of `<` a time bound. The CodeQL result is the
 one check in this project's CI that nothing local reproduces; it earned its place here.
+
+# After the S25 pass on the batch (4 September 2026) — twelve observations, ruled
+
+The readiness bar was met on the S25: a complete Training game played to a conclusion by
+touch. Twelve observations came back, several of them real bugs; the rulings are recorded here
+piece by piece as they land. **Order (Shantanu's, adopted):** item 2's undo instrumentation and
+item 6's record first, because the readout needs the longest observation window; then item 1
+(the command panel, scope reduced to action buttons); then 7 and 5 together as one effects
+strip; then 11 and 8 together as one geometry change; then 12, the planning screen.
+
+## Item 6 — antivenom grants memory on Training: CONFIRMED A BUG, DEFERRED (FINDINGS #55)
+
+Driven through the engine before anything was assumed: after an antivenom dose, the body
+remembers the venom, and the log contradicts itself in two consecutive lines. The text is the
+correct half — antivenom is passive immunity, it teaches the immune system nothing, and that is
+exactly why a second snakebite needs a second dose; **Kartik designed that distinction
+deliberately.** Phase 3's engine change, because it touches play (a remembered venom destroyed
+free on a later arrival) and the engine is frozen. Recorded so nobody "fixes" it in the wrong
+direction. Full shape in FINDINGS #55.
+
+## Item 2 — undo says WHY it is unavailable: BUILT (4 September 2026)
+
+Undo was seen unavailable when it should not have been, unreproducibly. Instrumented rather
+than guessed at: `UndoAvailability` gains `reason` — `no-moves`, `committed` (with
+`committedBy`, the FIRST committing action's name), `resumed` (the game was resumed mid-command
+and the session has no history of the phase), `not-command` — and the command bar shows it as a
+muted line whenever undo is unavailable during command. Visible, not behind a flag: it doubles
+as a teaching line ("only moves can be undone"; "Undo ended for this turn — Produce
+committed"). Pinned in `undo-rule.test.ts`: the reason through a phase, the first committing
+action keeping its name, the resumed case from a real autosave. **What to do at the next
+sighting:** read the line. If it says `no-moves` after a move was made, or `committed` naming
+an action that was not taken, that is the bug and the line is its capture.
+
+## Item 12, first block — the silhouette does not exist in usable form
+
+Checked before designing around it: `tools/legacy/public/body.png` and `tools/legacy/body_crop.png`
+are the same 583KB file, a neon torso OUTLINE — no organs, no organ positions — and not among
+the 29 generated assets; its provenance is unknown (ASSETS.md #5). An anatomical figure with
+organ positions is therefore an **art task** with a data half (organ positions in the content
+pack, beside the board geometry), not a rendering one. The planning screen's other blocks do
+not depend on it.
+
+## Item 1 — the command panel, action buttons only: BUILT (4 September 2026)
+
+**Scope as ruled:** the piece strip and the selected piece's full action set; movement stays on
+the board (no destination list, no move buttons — Shantanu decides after testing whether action
+buttons alone resolve the ambiguity); the board stays at 360px. The correctness point: a player
+must always know WHICH action they are performing — with two cells on a node, tapping a pathogen
+performed something unnamed, which is how item 9's dimmed Neutrophil happened.
+
+**The piece strip** (`PieceStrip.tsx`): one horizontally scrolling row of fourteen 44px chips —
+the seven cells, then the seven residents by their real names with their organ under them.
+Tapping a chip selects through the session exactly as a board tap does; tap-again deselects.
+Spent and offline cells are dimmed with their return number in the chip; the selected chip is
+ringed. The board tap keeps working.
+
+**The action list** (`ActionList.tsx`, from `actionRows` in `offered.ts`): the selected piece's
+FULL set of non-movement actions from a fixed per-piece catalogue, always visible. An available
+action is expanded per target as a row that names it and its cost — "Engulf Rotavirus", "NET the
+swarm", "Degranulate Hookworm · 2 AP" — and sends exactly the offer the ring would (the same
+offer id, so the row and the ring are one action). An unavailable action is a greyed row that
+gives its reason when tapped, inline: "Move the Neutrophil onto a swarm of bacteria or viruses to
+NET them"; "Needs 2 AP"; "No antibody you hold matches a virus or toxin in reach". That completes
+the "always answers" rule per action; the command bar's line still answers for the piece. Two
+homes stay where they were, named in the list: Produce's row says "in the antibody panel below",
+and the body panel keeps order antivenom, clonal selection and vaccinate. The body's own rows
+(the memory response, antivenom) appear while nothing is selected. The bar now holds only the
+movement button (recall).
+
+**Pinned** (`action-rows.test.ts`, on recorded states, every piece): the rows cover the piece's
+whole catalogue; every non-movement, non-panel offer has an available row with the same label;
+every available row points at a real offer; every greyed row has a usable reason. The first run
+caught the seam it exists for: the body's panel-homed offers had no row, because their rows are
+in the body panel — the list now excludes panel-homed offers and the test says so.
+
+**Verified in the real app, headless** (`drive-panel.ts`): see the run recorded below.
+Fourteen chips in the strip. Nothing selected → the body's rows, "Memory response" and
+"Antivenom", both greyed. Tap the Neutrophil's chip → the bar names it, the chip is ringed, its
+one row "NET the swarm" greyed → tapped → "Move the Neutrophil onto a swarm of bacteria or
+viruses to NET them"; tap the chip again → deselected. The Kupffer cell's chip → "Engulf"
+greyed → the step-0 patrol line. The B-Cell → "Tag", "Neutralise", "Produce" greyed, Produce's
+reason "Produce antibodies in the panel below"; Produce ICB in the panel → the row **"Tag
+Brucellosis"** appears available → tapped → the bacterium's coat badge appears (1), the
+invader count unchanged. No ⟪missing key⟫.
+
+**S25 list for item 1:** (1) with the Neutrophil and the Monocyte on one node holding a virus,
+select each from the strip and read the rows — the action a ring would perform is the one named.
+(2) Tap a greyed row and read why. (3) Tap an available row and watch the same effect a ring
+tap gives. (4) Decide whether movement needs rows too.
+
+## Items 5 and 7 — the effects strip and the turn line: BUILT (4 September 2026)
+
+**The sweep, approved as reported, built as one strip** (`EffectsStrip.tsx` from `effectChips`
+in `effects.ts`), at the top of the play surface, one chip per effect in force for as long as
+it is in force, each saying what it is doing and for how long. The sources, and where the
+state comes from:
+
+| Chip | State | Duration shown |
+|---|---|---|
+| Immunosuppression, antibody shortage (cap 2), fewer or extra AP, fever (no march) | the session's new `effects` summary of `fx` — one of the 13 keys the view drops, carried like `blocked` and `readyTurn` | this turn / N more turns |
+| Neutrophil or Killer T offline | `suppress` | N more turns |
+| Organ damaged — with the organ's own effect text from content ("Antibody storage capped at 2 per class") | `organs` hp below max; Hard's compensated organ excluded, as the engine excludes it | for the rest of the game |
+| Lymphatics blocked; HIV (Helper T destroyed); Helper T not yet primed | the `lymphBlocked` and `hivActive` queries; `presentations` | none |
+| A parasite inside a resident | `residents[o].infectedBy` | none |
+| This turn's crisis event; next turn's forecast; a rare event | `banner`, `warning`, `rareBanner` — the content's own words | none |
+| **The arrival window closed** (item 7): "No more pathogens will arrive — clear the body to win by turn {last}" | `turn > maxTurn`; `last = maxTurn + GRACE_CLEAR` | none |
+
+**Item 7's display.** The shell's turn line read "16/15". It now reads "Turn 3 of 15" inside
+the window and "Turn 16 · 14 turns to clear the body" after it, both numbers from the view and
+content (`GRACE_CLEAR`), never a difficulty's literals — 15/30, 20/35, 30/45 fall out of the
+data.
+
+**Pinned** (`effects.test.ts`, recorded states): every chip mirrors the state it claims,
+chip-if-and-only-if-state for the cap, offline, organ and window chips; the session's `effects`
+equals the engine's `fx`; the window chip carries the deadline and the turn line the countdown;
+no chip text is empty or a missing key; each source occurred somewhere in the corpus.
+
+**Verified in the real app, headless** (`drive-effects.ts`, six idle Training games): "Turn 1
+of 15"; chips for the Helper T unprimed, the forecast, the crisis banner, HIV, the lymphatics
+blocked, immunosuppression, organ damage (permanent), fewer AP, extra AP, the Killer T
+offline, the antibody cap — eleven kinds, every one rendered with its text and duration, no
+⟪missing key⟫. **Not verified headless: the window-closed chip and the "turns to clear" line**
+— an idle game loses by turn 7–10, so no driver reaches turn 16; both are pinned by the test on
+recorded states that pass the window, and they are on the S25 list.
+
+**S25 list for items 5 and 7:** (1) when an organ is hit, its chip appears and stays; (2) a
+crisis fires — the chip says the effect and how long, and counts down; (3) past turn 15 on
+Training, the window chip appears and the turn line reads "Turn 16 · 14 turns to clear the
+body"; check the same on Normal reads 21 · 14 and on Hard 31 · 14.
+
+## Items 11 and 8 — organ labels, the zoom, and the hub as Variant B: BUILT (4 September 2026)
+
+**Item 11, through the generator as ruled.** `tools/geometry-from-a2` now emits two more keys
+into `geometry.json`, both derived from the annotation angles, so the print follows the same
+data: **`LABEL_SIDE`** — `below` where the annotation's ray is more horizontal than vertical
+(the board's left and right: Gut, Blood, Heart, Liver, Spleen), `right` where it is more
+vertical (top and bottom: Nose, Contact, Wound, Bite, Lungs, Brain, Kidneys, Bone Marrow) —
+and **`VIEWBOX`**, the canvas cropped to the annotations plus a 6u margin: `28.4 28.4 612.6
+603.1`, 93% of the 660 canvas wide, so the board fills the phone's width with no wasted side
+margin and every element is correspondingly larger. Positions stay in the 660-unit canvas;
+only the window tightens. The generator's report prints both; its `--control` still fires.
+`Board.tsx` reads the side and the crop from content and places the label accordingly (right
+labels start at the icon's edge; below labels centre under it). Pinned: the schema validates
+both keys; `geometry-crop.test.ts` asserts the side follows the ray for every organ and route,
+and the crop is inside the canvas, smaller than it, and contains every annotation anchor.
+
+**Item 8, Variant B on the real board.** The hub was still fanning (scaffolding since P2.2).
+`tokenLayout` lays the hub out as ruled 20 Aug 2026: invader type-tokens clustered at the
+centre in a 2×2 grid (~22u), the player's cells ringed at 38u inside the inner circle (~16u)
+— the mock-up's proportions — and everywhere else the fan-of-types stands. Tap candidates,
+target rings and rendering all use the one layout, so a hub cell is tapped where it is drawn.
+`hubLayout.test.ts` pins distinct positions, the ring radius, the cluster's bound, the sizes,
+and that off the hub nothing changed.
+
+**Verified in the real app, headless** (`drive-geometry.ts`, at 360px): the SVG's viewBox is
+the generator's crop; eight labels are anchored `start` to the right of their icon and five
+`middle` below, exactly the generator's sides; at a fresh game the seven cells sit at seven
+distinct positions on the hub ring at 16u; tapping the hub's Killer T selects it. Screenshot sent
+with the report. No ⟪missing key⟫.
+
+**For the print:** the next A2 export should place labels by `LABEL_SIDE` and crop to
+`VIEWBOX`; that is the print pipeline's change, recorded here so it is not rediscovered.
+
+**S25 list for items 11 and 8:** (1) the board fills the width; every label sits beside or
+below its icon without crowding the edge; (2) at setup the seven cells ring the hub and read at
+a glance; a pathogen reaching the blood sits in the centre with its badge; (3) tap a hub cell
+by finger — the one you meant is the one selected.
+
+**Seen in the screenshot and noted, not built:** the organ integrity number sits just inward
+of the tissue slot, beside the branch's step-1 node number, and at phone size the two digits
+read as one ("1" and "3" as "13"). Pre-existing, not from this piece; a placement note for the
+label pass, with the lymph connector polish.

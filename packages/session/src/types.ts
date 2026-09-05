@@ -99,6 +99,18 @@ export interface PrecomputedQueries {
    * fact regenerate: no number rather than a wrong one). The Eosinophil's `regenAt` is exact.
    */
   readonly readyTurn: Readonly<Record<string, number | null>>;
+  /**
+   * THE CRISIS EFFECTS IN FORCE — `fx`, one of the 13 keys the view drops (brief §3), summarised
+   * so the effects strip can say what an event is still doing and for how long (S25 item 5:
+   * "when my antibody capacity was reduced I learned it once, in the log, and it scrolled
+   * away"). `capTurns` is turns of the antibody cap remaining; the other three last this turn.
+   */
+  readonly effects: Readonly<{
+    capTurns: number;
+    noProduce: boolean;
+    apMod: number;
+    skipMarch: boolean;
+  }>;
 }
 
 export interface ProductionSummary {
@@ -151,6 +163,18 @@ export interface UndoAvailability {
   readonly available: boolean;
   /** Accepted moves this command phase — what an undo would unwind. 0 when unavailable. */
   readonly moves: number;
+  /**
+   * WHY undo is unavailable — instrumentation asked for at the S25 pass (Shantanu, 4 Sep 2026,
+   * item 2): undo was seen unavailable when it should not have been, unreproducibly. The
+   * session says which of its four gates closed, so the next sighting is read, not guessed:
+   * `not-command` (no command phase in progress), `no-moves` (nothing accepted this phase that
+   * undo could unwind), `committed` (a committing action ended it — `committedBy` names it),
+   * `resumed` (the game was resumed mid-command and the session has no history of the phase).
+   * `available` when it is.
+   */
+  readonly reason: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed';
+  /** The action that ended undo this phase, when `reason` is `committed`. */
+  readonly committedBy: string | null;
 }
 
 /** What `sendAction` resolves to. Mirrors the engine's own result, minus the frames. */

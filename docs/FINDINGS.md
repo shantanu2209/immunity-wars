@@ -2988,3 +2988,39 @@ harness looked; it does not prove the offer set is representative. The corpus st
 bot's shape, and the competent bot that would change that is Phase 3's (#6, brief §6).
 
 **Disposition: FIXED INLINE at CP3** (the instrument rule, CLAUDE.md "when a control fires").
+
+## 55. On Training, a kill by ANTIVENOM grants memory for the venom — the engine contradicts its own text, and it is Kartik's mechanic being contradicted
+
+**Found 4 September 2026 at the S25 pass on the P2.5 batch** (Shantanu's item 6: "Russell's
+viper venom arrived and the message suggested the body REMEMBERED it"). Investigated before
+anything was assumed, by driving the engine: a Training game, Russell's viper venom forced into
+play, an antivenom dose given. Memory before: `{}`. Memory after: `{ "Russell's viper venom":
+true }`. The log's two consecutive lines:
+
+> **Antivenom** given — Russell's viper venom neutralised instantly. These are borrowed
+> antibodies (made in horses): fast, but they do not last and **your body learns nothing**.
+>
+> **Russell's viper venom defeated.** Memory cells for it now survive in your body — if it ever
+> returns, your response will be immediate.
+
+On Normal, nothing is granted. **The shape:** `killInvader` (`effects.ts`) grants memory on
+Training for any killed disease whenever no other copy is on the board, and it does not look at
+`by` — so `by === 'antivenom'` grants memory like a Monocyte's engulf would. The next arrival of
+the same venom is then marked `remembered` at the draw (the "MEMORY RESPONSE" line and the
+reveal's flag), and the memory response can destroy it **free**. Not a UI bleed: the UI reports
+the engine's own flag. Not related to the memory kill used the same turn: memory is keyed by
+disease. The only path to Shantanu's sighting is an earlier Russell's viper venom in that game
+killed by antivenom, or a resumed save carrying the memory.
+
+**Which half is right — ruled (Shantanu, 4 September 2026):** the TEXT. Antivenom is passive
+immunity; it teaches the immune system nothing, and that is exactly why a second snakebite
+needs a second dose. **Kartik designed that distinction deliberately**, and the engine's own
+message states it correctly before the code does the opposite. This entry exists so that
+nobody later "fixes" the mismatch in the wrong direction by softening the text.
+
+**Disposition: DEFERRED TO PHASE 3, an engine change.** The engine is frozen for Phase 2, and
+this changes play — a remembered venom destroyed free on a later arrival touches balance — so
+it lands as a deliberate, isolated change measured against the corpus (the corpus WILL move:
+any Training game with an antivenom kill followed by the same venom). The probable fix is one
+condition in `killInvader`'s memory grant, `by !== 'antivenom'`; whether a memory response
+should ever apply to a venom at all is Kartik's call at the same time.

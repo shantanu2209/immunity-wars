@@ -22,6 +22,7 @@ import {
   ResultScreen,
   TitleScreen,
   t,
+  turnLine,
   type ArtMetrics,
   type SaveSummary,
 } from '@immunity-wars/ui';
@@ -189,9 +190,8 @@ function App(): ReactElement {
             }}
           >
             <span style={{ fontSize: 13, color: '#7C6A61' }}>
-              {t('play.turn')} {String(ctx.game['turn'])}
-              {['/', String(ctx.game['maxTurn'])].join('')} {t('commandBar.ap')}{' '}
-              {String(ctx.game['ap'])} {t('play.deck')} {String(ctx.game['deckCount'])}
+              {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])} {t('play.deck')}{' '}
+              {String(ctx.game['deckCount'])}
             </span>
             <button
               style={{ minHeight: 44, fontSize: 14 }}
