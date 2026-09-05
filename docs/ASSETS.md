@@ -79,6 +79,7 @@ For every asset, we need:
 | `tools/art-pipeline/raw/organ-spleen.jpeg` (organ, Spleen) | Google Flow | 20 Aug 2026 | Pro | `ART_BRIEF.md` prompt 27, verbatim | 20 Aug 2026 — see batch note above the register | None declared — DECISION, see Resolution log |
 | `tools/art-pipeline/raw/organ-kidneys.jpeg` (organ, Kidneys) | Google Flow | 20 Aug 2026 | Pro | `ART_BRIEF.md` prompt 28, verbatim | 20 Aug 2026 — see batch note above the register | None declared — DECISION, see Resolution log |
 | `tools/art-pipeline/raw/organ-marrow.jpeg` (organ, Bone Marrow) | Google Flow | 20 Aug 2026 | Pro | `ART_BRIEF.md` prompt 29, verbatim | 20 Aug 2026 — see batch note above the register | None declared — DECISION, see Resolution log |
+| `tools/art-pipeline/raw/frame-body.jpeg` (planning screen, the anatomical FRAME — asset key `frame/body`; NOT yet through the pipeline) | Google Flow | 5 Sep 2026 | Pro (as the 20 Aug batch — Shantanu to confirm) | `ANATOMY_FRAME_BRIEF.md` anchor sentence, verbatim | 5 Sep 2026 — measured by Shantanu before acceptance: stroke #786760, 5.29:1 against #FFFDF9 (needed 3:1); interior provably empty; head–torso–pelvis cropped mid-thigh; aspect 0.555. A JPEG on white was chosen over the PNG, whose alpha was a uniform 50% (3.99:1, a visible compositing rectangle). CHECK the keyed output for a JPEG halo around the stroke before accepting | None declared — DECISION, see Resolution log |
 
 ---
 
