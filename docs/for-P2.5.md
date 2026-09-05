@@ -1216,3 +1216,11 @@ shows the organ above it. If Kartik would rather the icon sit at the stomach, th
 laterally onto the flank and the check says whether it still fits.
 
 **Block a itself is not yet built** — the ruling was to show the positions first.
+
+### The second look (Shantanu, 5 September 2026): six moves, all applied
+
+Brain up to (112, 42) to make room; nose to the middle of the face, (112, 78); the needle
+inside the shoulder, (50, 140); the hand and the mosquito centred in their arm stumps and
+near the stumps' bottoms — equidistant from the bottom and both sides — (40, 194) and
+(184, 194); the wound down into the right thigh on the same rule, (146, 338). The spacing
+check holds (closest pair 32px); the picture was re-rendered and looked at.
