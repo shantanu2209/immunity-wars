@@ -59,7 +59,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "dependency-cruiser": "^18.2.0",
     "eslint": "^10.9.1",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.4.2",
     "tsx": "^4.23.7",
     "turbo": "^2.10.12",
