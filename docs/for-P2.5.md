@@ -747,3 +747,44 @@ catalogue and the engine source), so the tokenizer is now a linear scan over tho
 any other `<` is literal text — there is no sanitisation to get wrong. `richRuns.test.ts`
 pins the runs and gives a 200,000-character run of `<` a time bound. The CodeQL result is the
 one check in this project's CI that nothing local reproduces; it earned its place here.
+
+# After the S25 pass on the batch (4 September 2026) — twelve observations, ruled
+
+The readiness bar was met on the S25: a complete Training game played to a conclusion by
+touch. Twelve observations came back, several of them real bugs; the rulings are recorded here
+piece by piece as they land. **Order (Shantanu's, adopted):** item 2's undo instrumentation and
+item 6's record first, because the readout needs the longest observation window; then item 1
+(the command panel, scope reduced to action buttons); then 7 and 5 together as one effects
+strip; then 11 and 8 together as one geometry change; then 12, the planning screen.
+
+## Item 6 — antivenom grants memory on Training: CONFIRMED A BUG, DEFERRED (FINDINGS #55)
+
+Driven through the engine before anything was assumed: after an antivenom dose, the body
+remembers the venom, and the log contradicts itself in two consecutive lines. The text is the
+correct half — antivenom is passive immunity, it teaches the immune system nothing, and that is
+exactly why a second snakebite needs a second dose; **Kartik designed that distinction
+deliberately.** Phase 3's engine change, because it touches play (a remembered venom destroyed
+free on a later arrival) and the engine is frozen. Recorded so nobody "fixes" it in the wrong
+direction. Full shape in FINDINGS #55.
+
+## Item 2 — undo says WHY it is unavailable: BUILT (4 September 2026)
+
+Undo was seen unavailable when it should not have been, unreproducibly. Instrumented rather
+than guessed at: `UndoAvailability` gains `reason` — `no-moves`, `committed` (with
+`committedBy`, the FIRST committing action's name), `resumed` (the game was resumed mid-command
+and the session has no history of the phase), `not-command` — and the command bar shows it as a
+muted line whenever undo is unavailable during command. Visible, not behind a flag: it doubles
+as a teaching line ("only moves can be undone"; "Undo ended for this turn — Produce
+committed"). Pinned in `undo-rule.test.ts`: the reason through a phase, the first committing
+action keeping its name, the resumed case from a real autosave. **What to do at the next
+sighting:** read the line. If it says `no-moves` after a move was made, or `committed` naming
+an action that was not taken, that is the bug and the line is its capture.
+
+## Item 12, first block — the silhouette does not exist in usable form
+
+Checked before designing around it: `tools/legacy/public/body.png` and `tools/legacy/body_crop.png`
+are the same 583KB file, a neon torso OUTLINE — no organs, no organ positions — and not among
+the 29 generated assets; its provenance is unknown (ASSETS.md #5). An anatomical figure with
+organ positions is therefore an **art task** with a data half (organ positions in the content
+pack, beside the board geometry), not a rendering one. The planning screen's other blocks do
+not depend on it.

@@ -13,6 +13,7 @@
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { actionDisplayName } from '../names';
 
 const BTN: CSSProperties = {
   minHeight: 44,
@@ -38,6 +39,7 @@ export function CommandBar({
   buttons = [],
   noAction = null,
   undo = { available: false, moves: 0 },
+  inCommand = false,
   notice = null,
   canInspect = false,
   disabled = false,
@@ -59,8 +61,15 @@ export function CommandBar({
   buttons?: BarButton[];
   /** When the selected cell has no legal action: the reason, already localised. */
   noAction?: string | null;
-  /** The session's undo availability — moves only. */
-  undo?: { available: boolean; moves: number };
+  /** The session's undo availability — moves only — with WHY when it is unavailable. */
+  undo?: {
+    available: boolean;
+    moves: number;
+    reason?: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed';
+    committedBy?: string | null;
+  };
+  /** True during the command phase — when the undo reason line is worth showing. */
+  inCommand?: boolean;
   /** The last rejection or notice, already localised; null when there is none. */
   notice?: string | null;
   /** True when the selected cell stands with something worth inspecting. */
@@ -139,6 +148,21 @@ export function CommandBar({
         ) : null}
       </div>
       {notice !== null ? <div style={{ fontSize: 13, color: '#B03A2E' }}>{notice}</div> : null}
+      {inCommand &&
+      !undo.available &&
+      undo.reason !== undefined &&
+      undo.reason !== 'not-command' ? (
+        // WHY undo is unavailable — S25 item 2's instrumentation, visible rather than behind a
+        // flag because it doubles as a teaching line: only moves can be undone, and the first
+        // committing action names itself.
+        <div data-undo-reason={undo.reason} style={{ fontSize: 12, color: '#7C6A61' }}>
+          {undo.reason === 'committed'
+            ? t('undo.committed', { action: actionDisplayName(undo.committedBy ?? '') })
+            : undo.reason === 'resumed'
+              ? t('undo.resumed')
+              : t('undo.noMoves')}
+        </div>
+      ) : null}
     </div>
   );
 }

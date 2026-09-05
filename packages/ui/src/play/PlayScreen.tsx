@@ -548,6 +548,7 @@ export function PlayScreen({
         buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
         noAction={offered.reason}
         undo={authView.undo}
+        inCommand={phase === 'command'}
         notice={lastError ? engineText(lastError) : null}
         canInspect={canInspect}
         disabled={playing}

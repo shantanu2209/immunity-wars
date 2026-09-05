@@ -30,5 +30,8 @@ export const residentDisplayName = (organ: string): string => {
   return known !== undefined ? String(known) : t(`resident.${organ}`);
 };
 
+/** An engine action name as the player knows it — `action.<name>` in the catalogue, loud on a miss. */
+export const actionDisplayName = (action: string): string => t(`action.${action}`);
+
 export const organDisplayName = (organ: string): string =>
   String((ORGANS as Record<string, { name?: string }>)[organ]?.name ?? organ);
