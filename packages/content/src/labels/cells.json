@@ -46,7 +46,7 @@
       "role": "The anti-parasite specialist. It strikes a coated worm or parasite for 2 damage, or degranulates for 3, enough to kill a worm outright, at the price of burning the organ it stands in and four turns spent.",
       "home": "Made in the marrow, circulating in small numbers and recruited to wherever a parasite is. In the game it starts in the Bloodstream and gains a step beside a primed Helper T-Cell. That is IL-5.",
       "bestAgainst": "Worms and large parasites, once antibodies have coated them. It cannot touch an uncoated one, and it is no use against bacteria or viruses.",
-      "deficiency": "Without eosinophils, worm infections are never cleared. Where they are over-active, the same granules turn on the body's own airways. That is asthma and allergy.",
+      "deficiency": "Without eosinophils the body loses its specialist weapon against worms, and some worm infections take longer to clear. Where they are over-active, the same granules turn on the body's own airways. That is asthma and allergy.",
       "fact": "Eosinophil granules are indiscriminate poison. That is why parasitic infections cause chronic inflammation and scarring, and why degranulating should feel like a decision rather than a free hit."
     }
   }

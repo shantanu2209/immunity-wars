@@ -1604,3 +1604,153 @@ numeric range becomes "to". `no-dashes.test.ts` now holds every one of those tab
 pinned, and correctly so:** EVENTS and RARE (their `tell` and `why` reach the banner, the
 warning and the log, so the equivalence corpus pins them — 7 dashes) and `engine.json` (70).
 Both go with Phase 3's Q8. The board's own text (the rulebook .docx) is outside this sweep.
+
+
+# After the third S25 pass (6 September 2026): passed, and five rulings taken with it
+
+## The pass
+
+Shantanu ran the seven steps on the S25 and every one behaved as expected: the pips above every
+organ and their colours, the three-per-row piece grid, the single selection box with "About
+this cell", the green chips, the "{Organ} damaged / When damaged:" line, the planning screen
+with no roster and the spent-cell line under the AP, and no dashes anywhere. Nothing was
+found. **Kartik approved the seven organ positions** ("It is fine") and **read the seven cell
+cards and passed them**, with two edits ruled below. Still verified by no one: a coated
+planning row, a bloodstream badge tap, a failed organ.
+
+## The rulings (Shantanu, 6 September 2026)
+
+1. **Dashes.** The 220 dashes in tables pinned to legacy or the engine go to Phase 3 as Q8.
+   Confirmed; nothing more to sweep in Phase 2. The rulebook .docx question is still his and
+   Kartik's.
+2. **Per-event dialogs are ruled by a test, not event by event:** *does this change what the
+   player can do THIS TURN?* If yes, it may deserve a dialog; if it is information they can act
+   on later or merely notice, it is a log line. The classification is below; Shantanu overrules
+   individual lines rather than being asked each one.
+3. **The 46 ambiguous strings** are listed for him in
+   [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md): string, legacy location, the screen it now
+   appears on, and the call each needs. He works through them in one sitting.
+4. **The permanent "Helper T-Cell primed" chip is noise, and so is the pattern behind it.** The
+   principle, which changes a design rather than confirming one: **do not show a cause as a
+   banner. Show the effect where the number appears, and let the player drill into the number to
+   see what is making it that way.** Positive minus negative equals the number already on
+   screen. Applied everywhere a number is the result of several effects: antibody production,
+   AP totals, snipe range, regeneration time, antibody caps. Checked first against what exists,
+   below; the strip is swept against it, below.
+5. **The cell cards.** The Eosinophil's deficiency line is softened (eosinophil-deficient
+   animals clear several helminths, so "never cleared" overstated the evidence); it now reads
+   "the body loses its specialist weapon against worms, and some worm infections take longer to
+   clear". The Eosinophil's role line is **left as written** on purpose: it describes what Kartik
+   ruled and what the engine does once Q9 lands, and it disagrees with the engine until then.
+   FINDINGS #57 carries the note so nobody corrects the card in the wrong direction.
+
+## Item 4, the check before the design: what already exists
+
+**The antibody panel already does exactly what the principle asks, and has since CP2.** Tap a
+family and the detail block shows the base rate, the net rate per action, a blocked line when
+production is shut down, every effect on the rate signed and coloured (+1 Helper T-cell
+licensing; 0 "Helper T-cell present but NOT yet primed"; the rate ceiling as a negative delta;
++1 affinity maturation on Training), and the store's cap reasons ("liver damaged", "a
+temporary effect"). The source is the engine's own `productionBreakdown`, selection-scoped per
+the P2.1 ruling; the UI mirrors nothing. So the antibody case needs **no new mechanism**. One
+gap only: nothing on the panel says the detail exists. The per-family arrows (↑ ↓) are the
+whole hint, and a newcomer has no reason to tap a family. Whether "tap a family for why" needs
+saying is a Gate 2 question, noted here.
+
+The other numbers the ruling names, and whether the engine explains them:
+
+| Number | Where it shows | What makes it (engine) | Breakdown exists? |
+|---|---|---|---|
+| **AP this turn** | the command bar; the planning screen's "You will have N" | difficulty base, minus 1 per Giardia's drain, minus 1 if the lungs are damaged, minus 1 if the heart is, plus the crisis modifier (fatigue −1, surge +2, fever −1), floor 1 (`apFor`) | **No.** `apFor` returns a number and nothing lists its terms |
+| **Antibody store cap** | the antibody panel, per family | the difficulty's cap; 2 while the liver is damaged; 2 during an antibody shortage (`capFam`) | **Yes**, `storage.capReasons`, rendered |
+| **Snipe range** | not shown as a number; the rings show reach | the difficulty's range, +1 beside a primed Helper | No, and **no surface to attach one to**. The Killer T-Cell's card states the rule |
+| **Turns until a spent cell returns** | the piece badge and the inspect sheet's "back in N" | 4 turns, or 2 with a primed Helper in the Bloodstream; never while the marrow is damaged (`neutrophilReadyTurn`, `marrowBroken`) | **The turn, not the why.** The session withholds the count under marrow damage (`local.ts`), correctly; nothing says "2 because the Helper is in the blood" or "not returning: marrow damaged" |
+| **Bacteria divide on** | nowhere | 2 or 3 by difficulty, +1 with the spleen damaged (`divideOn`) | No surface |
+
+**Proposal, for ruling, not built.** The AP figure gets a drill-in: tapping the AP in the
+command bar, or the planning screen's AP line, lists the terms, base for the difficulty, each
+organ penalty by name, one line per Giardia, the crisis modifier by event name, and the floor
+when it bites, summing to the number shown. Every input is on the view already (the organs,
+each invader's `drain`, `queries.effects.apMod`), but the deltas are the engine's literals, so
+the list is a **mirror of `apFor`**, the hazard CLAUDE.md names. It is pinned the way the
+neutralise-cost mirror is (#52): a spanning test in the session suite that, for every recorded
+command-phase state, sums the UI's terms and requires equality with the engine's `apFor`, with a
+control that breaks one delta. It expires when Phase 3 gives the engine an AP breakdown query
+(Q8's family). The spent badge gets one line of why from the same inputs, pinned the same way.
+Snipe range and division: nothing, because no number is shown and the cards state the rules.
+When the AP drill-in exists, the fatigue and surge chips leave the strip (below), because the
+AP number then explains itself.
+
+## The strip, swept against the principle
+
+The rule the sweep applies, derived from the ruling: **a chip survives if it is happening NOW
+and either counts down or ends by a player's action. A state that is permanent or indefinite
+comes out, and its meaning lives on the surface where its number shows, one tap in.**
+
+| Chip | Verdict | Where its meaning lives instead |
+|---|---|---|
+| Arrival window closed (info) | **OUT** | the turn line already reads "Turn N · K turns to clear the body"; the engine's log line announces the change once |
+| Immunosuppression, this turn | **STAYS** | a crisis in force this turn; the antibody panel's blocked line carries the effect |
+| Antibody shortage, 3 turns | **STAYS** | counts down; also a cap reason in the panel |
+| Fewer / extra Action Points, this turn | **STAYS until the AP drill-in exists, then OUT** | they become terms of the AP breakdown |
+| Fever: pathogens do not march | **STAYS** | this turn; no number carries it |
+| Neutrophil / Killer T-Cell offline, 2 turns | **STAYS** | counts down. The piece badge shows the same count; the chip is where the WHY (neutropenia, lymphopenia) goes |
+| {Organ} damaged, permanent | **OUT** | the pips are the surface. "When damaged: …" needs a home one tap in: the organ's own row in the inspect sheet at its step-0 node, or the planning figure's tap. **Neither exists today** (the sheet has no organ row; the figure's tap filters the pathogen list), so this is a small build, not a deletion |
+| Lymphatics blocked | **OUT** | indefinite. The hop is simply not offered; the selected cell's reason line says why (a new `selection.*` key); the worm's card explains |
+| HIV | **OUT by the rule, and FLAGGED** | indefinite. The one line I would argue to keep: it is the most consequential state in the game and no number carries it. The engine's production breakdown shows no helper effect under HIV and says nothing about why. If it goes, the Helper's selection reason must say "HIV has destroyed the helper T-cells" |
+| Helper T-Cell not yet primed | **OUT** | the production breakdown already lists "present but NOT yet primed" as a 0 effect when it stands beside the B-Cell; the Helper's selection reason says the same |
+| Helper T-Cell primed | **OUT, ruled** | the breakdown's +1; the AP and regen drill-ins when built |
+| Memory response ready for … | **STAYS** | happening now, ends by the player's action. It is currently said three times (chip, body panel line, board ring); the body panel's line is the one to drop |
+| {Resident} disabled: a parasite inside | **OUT** | indefinite. The resident's token is dimmed and its selection reason says why |
+| This turn's crisis (folded into its effect chip) | **STAYS for the turn** | it is the effect chip's name and why |
+| Next turn: {event} | **STAYS** | the player can prepare now |
+| A rare event | **STAYS for the turn after it fired, then OUT** | today `rareBanner` persists indefinitely (`firedTurn` is set and unused). **Gap found by the sweep:** `fireRare` writes NO log line, so the chip is the rare event's only trace. Its why is Kartik's best teaching text. Proposal: the log panel gets a UI-authored entry for a rare event from `RARE[key].why` (content, already dash-pinned to Phase 3) when the chip retires |
+
+**What survives:** this turn's crisis effects carrying the event's name and why; the two- and
+three-turn effects counting down; the forecast; the memory response; a rare event for one turn.
+**What comes out:** every permanent or indefinite state: organ damage, lymphatics blocked, the
+unprimed and primed Helper, an infected resident, the closed window, and HIV unless Shantanu
+keeps it. `effects.test.ts` holds every chip to its state and will need its expectations
+changed chip by chip, with the same vacuity guards.
+
+## Per-event dialogs: the classification
+
+**Timing first, because it decides the shape.** Crisis events fire at the start of the turn
+(`fireTurnStart`, before the draw), so they are in force when the reveal dialog opens at the
+draw. Rare events fire at the END of the spread (`checkRareTriggers`, called from
+`resolveSpread`), after the player's commands are spent. Spread events are narrated frame by
+frame with tap-to-advance.
+
+**Every crisis event passes the test**, because every one takes effect on the turn it is drawn.
+But nine events do not earn nine dialogs: the reveal already interrupts at the same moment. **So
+crisis events become a section of the reveal dialog, never a dialog of their own. One
+interruption per turn, at the draw, and nothing else stops play.**
+
+| Event | Changes what you can do THIS turn? | Disposition |
+|---|---|---|
+| Immunosuppression | yes: no antibodies this turn | a section in the reveal, name and why |
+| Neutropenia | yes: the Neutrophil is offline for 2 turns and is pulled to the hub | reveal section |
+| Lymphopenia | yes: the Killer T-Cell is offline for 2 turns, pulled to the hub | reveal section |
+| Antibody shortage | yes: stores are cut to 2 now, capped for 3 turns | reveal section |
+| Fatigue | yes: 1 fewer AP | reveal section |
+| Co-infection | yes: an extra invader is in the body now. It **already appears** in the reveal's arrival list (arrivals are diffed by invader id) | reveal section naming it as the co-infection; no other change |
+| Acute-phase surge | yes: 2 extra AP | reveal section |
+| Passive antibodies | yes: every store is full now | reveal section |
+| Fever | yes: 1 fewer AP; pathogens will not march at the spread | reveal section |
+| Next turn's forecast | no: next turn | the strip chip and the log; no dialog |
+| The seven rare events | **no for this turn**: they fire after commands. Next turn they are state: a new invader on the board (relapse, TB, shingles, pneumonia), a damaged heart or organ (rheumatic fever, cytokine storm), or a changed rule for one invader (dengue ADE) | no dialog. The spawned invader will **not** appear in the next reveal (the diff is against the post-spread view, which already holds it), so the rare chip for one turn and the proposed log entry are its whole announcement |
+| Spread events: bacteria divide, cells burst, viruses hide, toxin released, malaria bursts or hides, worms feed or lodge, lymphatic spread, fever's march, the march, organ damage, complement | no: the turn is over; the frames narrate them with tap-to-advance and the log records them | as built; no dialog |
+| Organ failure, victory | end the game | the Result screen, as built |
+| Pathogen X arrives | yes: no antibody fits; clonal selection becomes available | already a line in the reveal (`reveal.novel`); no separate dialog |
+| A remembered pathogen arrives | yes: a free kill this turn | already a line in the reveal (`reveal.remembered`) and the strip chip; no separate dialog |
+| The arrival window closes | **no by the test**: the goal changes, not this turn's actions | the turn line and the engine's log line. Flagged as the one line I would hear an argument for; the goal dialog already told the player this turn was coming |
+| The Helper T-Cell is primed | it enables bonuses now, but the player caused it by engulfing | the engine's log line; no dialog |
+| The Neutrophil regenerates | no: it is back, that is all | the engine's log line |
+| Quit, overwrite-a-save | not events; confirmations | dialogs, as built |
+
+**Result:** the dialog set is the goal dialog, the reveal (arrivals, a crisis section, the
+novel and memory lines), and the two confirmations. Nothing else interrupts. The build this
+implies is one thing: a crisis section in `RevealBody`, from the view's banner (name, why) and
+the folded effect text the strip already composes. `APP_FLOW.md`'s dialog list ("crisis events ·
+rare events · Pathogen X reveal") is superseded by this table once Shantanu has overruled what
+he disagrees with.

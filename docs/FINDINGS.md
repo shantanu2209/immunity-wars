@@ -3148,3 +3148,10 @@ Not fixed in Phase 2 (the engine is frozen; it is a rule change and it moves the
 panel). The proposed rule: the burn applies when the fight is at branch step 0. Nothing in the
 UI pretends otherwise meanwhile — the strike's own log line says the organ was burned, which
 is true of what the engine did.
+
+**One deliberate disagreement, recorded so nobody "corrects" it the wrong way (Shantanu and
+Kartik, 6 September 2026).** The Eosinophil's cell card (`labels/cells.json`, `role`) says
+degranulating burns "the organ it stands in". That is Kartik's ruling and the rule Q9 lands;
+it is NOT what the engine does today, which burns the target's organ from anywhere on its
+branch. The card is left as written on purpose. Until Q9 lands, the card and the engine
+disagree, and the card is the one that is right. Do not edit the card to match the engine.

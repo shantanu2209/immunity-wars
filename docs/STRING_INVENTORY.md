@@ -144,6 +144,11 @@ wrong, the catalogue is short by exactly that many strings and this table says w
 
 ### The 46 that need a human call
 
+> ⚠️ **Corrected 6 September 2026.** The line numbers in this table (and in the table of 154
+> below) count from the start of the file's `<script>`, not from the top of `v2_ui.html`; the
+> real line is the number shown **plus 543**. The 46 are located, classified and listed for
+> ruling in [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md), with the real lines.
+
 Neither clearly prose nor clearly code. **Someone has to read these and decide** — which is
 the point of listing them rather than folding them into a number in either direction.
 
