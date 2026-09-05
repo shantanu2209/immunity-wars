@@ -150,12 +150,46 @@ export function effectChips(view: SessionView): EffectChip[] {
   if (state['hivActive'] === true)
     out.push({ id: 'hiv', kind: 'bad', text: t('effects.hiv'), duration: null });
   const flags = (g['flags'] as Record<string, unknown> | undefined) ?? {};
-  if (flags['helperT'] === true && flags['dendritic'] === true && num(g['presentations']) === 0)
+  const helperT = flags['helperT'] === true;
+  const licensed = helperT && (flags['dendritic'] !== true || num(g['presentations']) > 0);
+  if (helperT && !licensed)
     out.push({
       id: 'helperUnprimed',
       kind: 'info',
       text: t('effects.helperUnprimed'),
       duration: null,
+    });
+  // THE BENEFICIAL CHIPS (ruled 5 September 2026, after the second S25 pass): the strip had
+  // four colours all along, and Shantanu's session happened to hold only harmful effects —
+  // the real gap was beneficial STATES having no chip at all. A primed Helper T-Cell is an
+  // effect in force (every bonus it gives is live from that turn on), so it is a chip for
+  // the rest of the game, gone only while HIV has destroyed the helper T-cells (the engine's
+  // `helperWith` and `helperInBlood` return false under `hivActive`).
+  if (licensed && state['hivActive'] !== true)
+    out.push({
+      id: 'helperPrimed',
+      kind: 'good',
+      text: t('effects.helperPrimed'),
+      duration: null,
+      detail: t('effects.helperPrimedDetail'),
+    });
+  // A memory response ready: a pathogen the body remembers is in the body. An effect in force
+  // for as long as it stands there; the body panel's line and the board's ring say the same.
+  const remembered = [
+    ...new Set(
+      ((g['invaders'] as { remembered?: unknown; disease?: unknown }[] | undefined) ?? [])
+        .filter((iv) => iv.remembered === true)
+        .map((iv) => String(iv.disease ?? '')),
+    ),
+  ];
+  if (remembered.length > 0)
+    out.push({
+      id: 'memoryReady',
+      kind: 'good',
+      text: t('effects.memoryReady', { list: remembered.join(', ') }),
+      duration: null,
+      detail:
+        g['difficulty'] === 'hard' ? t('effects.memoryReadyHard') : t('effects.memoryReadyFree'),
     });
 
   // A parasite inside a resident.

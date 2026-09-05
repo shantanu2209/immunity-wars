@@ -339,12 +339,27 @@ consequence are in FINDINGS #53 and CP5's record.
 > Six are built — pips above the organs coloured by state, the piece grid, the actions in the
 > selection box (with "About this cell" as the cards' always-reachable entry), banners folded
 > one-per-effect, the planning roster removed — and the seventh is an engine bug, degranulate
-> burning the organ from the lane, confirmed and queued as **Q9** (FINDINGS #57). Two things
-> await Shantanu: the **classification of every effect chip** (in the record, "5 — banners")
-> before any colour changes, and the proposal there to add "Helper T-Cell primed" and "Memory
-> response ready" as beneficial chips. The record: [`for-P2.5.md`](for-P2.5.md), "After the S25
-> pass of 5 September 2026 (the second pass)". Still unverified by anyone: a coated planning
-> row, a bloodstream badge tap, a failed organ.
+> burning the organ from the lane, confirmed and queued as **Q9** (FINDINGS #57). **Ruled the
+> same evening:** the two beneficial chips are built (Helper T-Cell primed; memory response
+> ready), vaccine immunity stays out of the strip with the reason recorded, and the "all red"
+> report is corrected in the record (four colours existed; the gap was beneficial states with
+> no chip). **A standing preference from here: no dashes in player-facing text** — the
+> catalogue and the cell cards are swept and held by `no-dashes.test.ts`; **220 dashes remain
+> in tables pinned to legacy or the engine, and whether to re-baseline those pins is
+> Shantanu's ruling** (the record, "the dash sweep"). The record: [`for-P2.5.md`](for-P2.5.md),
+> "After the S25 pass of 5 September 2026 (the second pass)". Still unverified by anyone: a
+> coated planning row, a bloodstream badge tap, a failed organ.
+>
+> **S25 list for this round (the third pass):** (1) the pips sit above every organ, green at
+> full; damage an organ and one empties and the row turns amber, or red at one left; the Brain
+> goes green to red. (2) "Your pieces" is a grid, three per row, every box the same width, no
+> horizontal scroll. (3) Select a cell: one box, with its rows inside and "About this cell"
+> beside Deselect; the card opens from there. (4) After your first engulf, a green "Helper
+> T-Cell primed" chip appears and stays; when a remembered pathogen arrives, a green "Memory
+> response ready for …" chip; a crisis event shows ONE chip, its name on the effect's chip and
+> its why beneath. (5) An organ hit shows "{Organ} damaged" with "When damaged: …" beneath,
+> not a spliced sentence. (6) The planning screen has no roster; with a spent cell, a line
+> under the AP says which and when it is back. (7) No dashes anywhere you read.
 >
 > **The S25 list for everything built since the last pass** (the first pass — kept as the
 > record of what was checked) — one session, in this order:

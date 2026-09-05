@@ -1514,3 +1514,66 @@ turns); the worn and critical pip states and the Brain's missing amber
 idle game). **Verified by no one:** the merged box with a piece that has several available
 rows, on the phone; the grid with all fourteen chips on a 360px screen by eye; a folded chip
 on the phone (draw until a crisis fires); the "When damaged" line under a real organ hit.
+
+## The rulings on the second pass (Shantanu, 5 September 2026, late): the beneficial chips, and the dash sweep
+
+### A correction to what was reported, recorded as one
+
+Shantanu's pass reported the effects strip as "all red". It was not: the strip has carried
+four colours since it was built (harmful red, beneficial green, neutral blue, permanent
+brown), and his session happened to hold only harmful effects. **The real gap was beneficial
+STATES having no chip at all** — a primed Helper T-Cell and a memory response being ready
+were shown only by the absence of the unprimed chip and by a line in the body panel. Both
+are now green chips, ruled and built:
+
+- **Helper T-Cell primed** — for the rest of the game once priming happens, since every bonus
+  it gives is an effect in force from then on; off while HIV has destroyed the helper T-cells
+  (the engine's own `helperWith` returns false under `hivActive`). Its detail line lists the
+  four bonuses.
+- **Memory response ready for {diseases}** — while a remembered pathogen stands in the body,
+  with the free / 1 AP (Hard) instruction beneath.
+
+`effects.test.ts` holds each chip to its state on recorded games (chip ⇔ the engine's
+licensing rule, chip ⇔ a remembered invader) with vacuity guards that both occurred.
+
+**Vaccine immunity does NOT belong in the strip.** It is permanent and per disease, so a chip
+would be a growing list that says nothing new turn to turn — the strip is for effects in
+force *now*. It is already shown where it matters: the body panel's "Immune" list, the
+pathogen card's "your body remembers this one", the reveal's "memory response" line, and now
+the memory chip the moment a remembered pathogen arrives. Left there.
+
+### The dash sweep: a standing preference, and where it stops
+
+**The rule (Shantanu, 5 September 2026):** no em dashes, no en dashes, no hyphens used as
+punctuation in any player-facing text; commas, full stops, or a restructured sentence. Cheap
+now, expensive after the Hindi extraction, since a dash in an English string becomes a dash
+in every translation derived from it.
+
+**Swept, and now a check:** the UI catalogue (52 em dashes, every one rewritten by hand —
+colons where the dash introduced an explanation, full stops where it joined two sentences,
+commas where it was a pause) and the seven cell cards (27). `packages/content/src/no-dashes.test.ts`
+holds both surfaces dash-free, with a control that catches an em dash, an en dash and a
+spaced hyphen and permits the compound word (T-Cell, blood-stage, +1). The engine's own
+`<b>`/`<i>` prose is untouched, being the engine's.
+
+**Not swept, because those tables are PINNED, and that is a ruling to take rather than a
+test to loosen quietly.** Counted rather than hidden:
+
+| Surface | Dashes | Pinned to | By |
+|---|---|---|---|
+| `diseases.json` — `DZINFO` and `FACT`, the pathogen card's prose (Kartik's science) | 130 | legacy `v2_ui.html`, byte-identical | `tests/equivalence/src/ui-content.test.ts` |
+| `labels.json` — `BEAT_BY_TYPE` | 5 | legacy `v2_ui.html` | the same |
+| `rules/board.json` — `ORGANS.effect` and `.bio` | 6 | legacy `v2_engine.js`, byte-identical (one of the 22 tables) | `tests/equivalence/src/data.test.ts` |
+| `rules/events.json` — `tell` and `why` | 7 | legacy `v2_engine.js` | the same |
+| `rules/families.json` — `bio` | 2 | legacy `v2_engine.js` | the same |
+| `i18n/en/engine.json` — the engine's rejections, log lines and frame headlines | 70 | the engine's source strings | the i18n drift test |
+
+Two ways to sweep them, both a decision: (a) re-baseline the pins — make the parity and drift
+comparisons dash-insensitive (normalise both sides before comparing), sweep the content, and
+record that the extraction is now faithful up to punctuation; or (b) sweep them in Phase 3
+with Q8, when the engine emits ids and the prose tables stop being the engine's. (a) is a day
+and keeps the Hindi extraction clean; (b) costs nothing now and puts 220 dashes into the first
+Hindi cut. **Recommendation: (a) for the content tables** (Kartik's prose is content, and
+punctuation is not science) **and (b) for `engine.json`**, whose text the frozen engine
+emits; the drift test exists to say the catalogue IS the engine's text, and it should not be
+taught to look away while that is the contract. Shantanu rules.
