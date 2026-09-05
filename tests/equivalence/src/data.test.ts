@@ -18,6 +18,7 @@ import * as port from '@immunity-wars/engine';
 import * as internal from '@immunity-wars/engine/internal';
 
 import { canonical } from './hash.js';
+import { skeleton, sweepDashes, upToPunctuation } from './punctuation.js';
 import { loadLegacy } from './engine.js';
 
 const legacy = loadLegacy();
@@ -61,15 +62,36 @@ describe('B1: data tables match legacy exactly', () => {
     expect([...DATA_EXPORTS].sort()).toEqual(legacyData.sort());
   });
 
+  /**
+   * ORGANS and FAMILIES carry prose the engine never emits (bio, effect), pinned UP TO
+   * PUNCTUATION since 5 September 2026 (punctuation.ts has the ruling and the guarantee).
+   * EVENTS and RARE stay exact: their tell and why reach the banner and the log, so the corpus
+   * pins them too.
+   */
+  const PROSE_TABLES = new Set(['ORGANS', 'FAMILIES']);
   for (const name of DATA_EXPORTS) {
-    it(`${name} — same values, same key order`, () => {
+    const loose = PROSE_TABLES.has(name);
+    it(`${name} — same values, same key order${loose ? ', up to punctuation' : ''}`, () => {
       const mine = portTable(name);
       expect(mine, `${name} is not exported by the port`).toBeDefined();
-      expect(canonical(comparable(mine))).toBe(
-        canonical(comparable((legacy as unknown as Record<string, unknown>)[name])),
-      );
+      const theirs = (legacy as unknown as Record<string, unknown>)[name];
+      const a = loose ? upToPunctuation(comparable(mine)) : comparable(mine);
+      const b = loose ? upToPunctuation(comparable(theirs)) : comparable(theirs);
+      expect(canonical(a)).toBe(canonical(b));
     });
   }
+
+  it('CONTROL for the loosened pin: a dash-only rewrite passes, a changed word fails', () => {
+    const organs = (legacy as unknown as { ORGANS: Record<string, { bio: string }> }).ORGANS;
+    // The first organ whose legacy bio carries a dash (the heart's does; the brain's does not).
+    const bio = Object.values(organs).find((o) => o.bio.includes('—'))?.bio ?? '';
+    expect(bio).toContain('—');
+    expect(skeleton(sweepDashes(bio))).toBe(skeleton(bio));
+    const m = /\p{L}/u.exec(bio) as RegExpExecArray;
+    const i = m.index;
+    const swapped = bio.slice(0, i) + (bio[i] === 'x' ? 'y' : 'x') + bio.slice(i + 1);
+    expect(skeleton(swapped)).not.toBe(skeleton(bio));
+  });
 });
 
 describe('B1: the tables cover exactly the keys the types promise', () => {

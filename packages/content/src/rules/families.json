@@ -10,7 +10,7 @@
       "name": "Naked virus",
       "short": "NAK",
       "col": "#f97316",
-      "bio": "No envelope — a bare protein shell. Tough, survives on surfaces, and antibodies must grip the capsid itself."
+      "bio": "No envelope. A bare protein shell. Tough, survives on surfaces, and antibodies must grip the capsid itself."
     },
     "EXB": {
       "name": "Extracellular bacterium",
@@ -34,7 +34,7 @@
       "name": "Eukaryotic parasite",
       "short": "EUK",
       "col": "#e879f9",
-      "bio": "Fungi, worms and protozoa — complex cells like ours, so they are hard to target without harming yourself."
+      "bio": "Fungi, worms and protozoa. Complex cells like ours, so they are hard to target without harming yourself."
     }
   },
   "FAM_KEYS": ["ENV", "NAK", "EXB", "ICB", "TOX", "EUK"],
