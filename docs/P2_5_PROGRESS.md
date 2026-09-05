@@ -93,14 +93,14 @@ the current surface cannot play. The seventeen are planned in
 
 | Work | State |
 |---|---|
-| **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026)**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Awaiting Shantanu's S25 check before any action is added |
+| **Cell selection rework** — FIRST, before any further action is built on the pattern | **BUILT (4 September 2026) and S25-CHECKED the same day**: selection always answers, clears at phase boundaries, one coarse tap path (tap-again/tap-away deselect), undo for moves only as a session rule, rejections through the engine catalogue. Every action since is built on it |
 | **The command surface** — the 17 player actions, each offered from the view's legal-target queries | **COMPLETE (4 Sep 2026): 19 of 19 reachable by touch.** CP1–CP3 as before; the P2.5 batch (Shantanu's change of approach: one batch, one test) added the pathogen card, CP4 (memoryKill, antivenom, orderAntivenom, clonalSelection, vaccinate + the body panel) and CP5 (the log panel). Record per piece in [`for-P2.5.md`](for-P2.5.md) ("The P2.5 batch"), with the headless-versus-test table the S25 pass targets |
-| **Hub zone, Variant B, on the real board** | Mock-up ruled; build not started |
-| **Panels** — the log/teaching prose, production breakdown, status | **All built:** the antibody panel (CP2), the body panel (CP4), the log panel (CP5, with one rendering question open for Shantanu — the five composed engine lines render plainly, not loudly; numbers in the record) |
-| **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
-| **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
+| **Hub zone, Variant B, on the real board** | **BUILT (4 September 2026, #44)**: cells ring the hub, a pathogen reaching the blood sits in the centre with its badge; S25-checked on the second pass |
+| **Panels** — the log/teaching prose, production breakdown, status | **All built:** the antibody panel (CP2), the body panel (CP4), the log panel (CP5). The one open rendering question, whether the five composed engine lines render plainly or are re-templated, was **RULED plain, as built** (5 September 2026; FINDINGS #53) |
+| **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | **CLASSIFIED (6 September 2026)** by Shantanu's test, "does it change what the player can do THIS TURN?": crisis events become a section of the reveal, nothing else interrupts. The table is in [`for-P2.5.md`](for-P2.5.md) ("Per-event dialogs: the classification"), awaiting his overrules; the build it implies is one crisis section in the reveal |
+| **The 46 ambiguous strings** | **LISTED (6 September 2026)** in [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md) with the legacy location, the screen each now appears on, and the call it needs; Shantanu rules in one sitting |
 | **Board state the engine tracks and the board did not show** — the sweep (for-P2.5.md) | **Coat and spent/offline cells BUILT (4 Sep 2026)**, before the card as reordered: fan-of-types split by type + coated, the antibody badge, "Coated in antibody" in the sheet; spent and suppressed cells dimmed with turns-until-back in the badge slot. Malaria stage and the parasite inside a resident stay with the card |
-| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) BUILT** on the approved layout; its walkthrough found and fixed FINDINGS #56 (ids after a resume). Step 5 waits on a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
+| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) BUILT** on the approved layout; its walkthrough found and fixed FINDINGS #56 (ids after a resume). **Step 5 (the flight) BUILT and MEASURED, kept.** Item 12 is complete and S25-passed twice. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
 | **Resident-vs-Macrophage visual distinction; lymph connector polish** | **Ruled at CP3:** the distinction leans on the biology — Monocyte versus Kupffer cell by name, in the bar and the sheet — plus a double ring; distinct resident art is the real answer, deferred with the pipeline (for-P2.5.md). Lymph connector polish still recorded there |
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
 | **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends). **It now also carries a breach to RESOLVE**: the command tap from the planning screen, 109ms at 6× against the 100ms tap row — [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 5 September 2026" |
@@ -282,7 +282,14 @@ All four go into `packages/ui/src/play/offered.ts` under the `cell` source; the 
 - **Crossed by nothing:** the WIN path (closeout checklist item).
 
 
-## Handoff for the next session — written at the clear, 5 September 2026
+## Handoff for the next session — written at the clear, 5 September 2026 (morning)
+
+> **Superseded, 6 September 2026.** Two handoffs carry this date. This one is the MORNING
+> clear; the evening one below supersedes it. Every step/expect list in this section (the
+> seven-step "third pass" list, and lists A to E of the first pass) **has been run and passed**:
+> the first pass on 5 September, the second the same evening, the third on 6 September. They
+> are kept as the record of what was checked, not as work owed. The current state is in the
+> section dated 6 September 2026 at the end of this document.
 
 Everything below was true at the clear and is not in the code or git history by itself.
 
@@ -463,7 +470,9 @@ Report at the end separating headless-verified from test-only, as before.
 
 ## Handoff for the next session — written at the clear, 5 September 2026 (evening)
 
-Everything below was true at the clear and is not in the code or git history by itself.
+Everything below was true at the clear and is not in the code or git history by itself. **The
+S25 list it hands over was run on 6 September and passed; the current state is in the section
+that follows this one.**
 
 ### Where things are, and the PR order
 
@@ -539,6 +548,44 @@ row, a bloodstream badge tap, a failed organ.
 - **Kartik:** the seven organ positions (against `pnpm art:anatomy`); the seven cell cards'
   prose (`labels/cells.json`); the gut icon question is closed (stays); the mirroring is
   closed (medical). His seven rulings are recorded and queued (`ENGINE_CHANGE_QUEUE.md`,
-  Q1–Q9).
-- **Shantanu:** the third-pass S25; whether the rulebook .docx get the no-dashes preference;
-  nothing else is blocked on him.
+  Q1–Q9). **Both delivered 6 September 2026: positions approved, cards passed with two edits.**
+- **Shantanu:** the third-pass S25 (**passed, 6 September 2026**); whether the rulebook .docx
+  get the no-dashes preference (still open); nothing else is blocked on him.
+
+## Handoff for the next session — written 6 September 2026
+
+The third S25 pass passed on every step; Kartik approved the organ positions and the cell
+cards; five rulings were taken and three reports written for Shantanu to rule on. Record:
+[`for-P2.5.md`](for-P2.5.md), "After the third S25 pass (6 September 2026)". `main` had #46 to
+#50 at the start of the day and the PR queue was empty; this session's PR carries the records,
+the softened Eosinophil line, and [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md). No component
+changed.
+
+### Ruled today, and what each ruling now asks for
+
+- **Dashes:** the 220 pinned dashes go to Phase 3 as Q8. Closed for Phase 2.
+- **The primed chip comes out, and a principle replaces the pattern:** a cause is never a
+  banner; the effect shows where its number appears and the number drills into its causes.
+  **Checked first:** the antibody panel already does this from the engine's own breakdown, and
+  needs nothing. The proposal awaiting his ruling: an AP drill-in mirrored from `apFor` and
+  pinned by a spanning test (the #52 shape), a why-line on the spent badge, and the strip
+  reduced to what is happening now and ends. The sweep table names every chip's fate; HIV is
+  flagged as the one to argue about. Removing the organ-damage chip needs a home for "When
+  damaged" first (an organ row in the inspect sheet), so that is a small build, not a deletion.
+- **Dialogs:** ruled by the test "does it change what the player can do THIS TURN?". Every
+  crisis event passes, so crisis events become a section of the reveal dialog, and nothing else
+  interrupts play. Awaiting his overrules line by line; the build is one section in
+  `RevealBody`. The sweep also found that a rare event writes no log line and its chip is its
+  only trace: proposed, a UI-authored log entry from `RARE[key].why`.
+- **The 46 strings:** listed with location, screen and the call each needs. He rules in one
+  sitting with the screens open.
+- **The cell cards:** the Eosinophil's deficiency line softened; its role line kept on purpose
+  against the engine until Q9 (FINDINGS #57 says why).
+
+### What remains in P2.5
+
+The rulings above once taken and built; Gate 1 hygiene (touch targets, 200% text, contrast
+against the pipeline's numbers, offline); the mandatory per-redraw re-measure with the 109ms
+breach to resolve; the WIN path uncrossed; the newcomer test, two staggered runs. Three things
+are still verified by no one: a coated planning row, a bloodstream badge tap, a failed organ.
+Then the P2.5 closeout.
