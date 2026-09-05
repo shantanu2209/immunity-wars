@@ -151,6 +151,18 @@ export interface UndoAvailability {
   readonly available: boolean;
   /** Accepted moves this command phase — what an undo would unwind. 0 when unavailable. */
   readonly moves: number;
+  /**
+   * WHY undo is unavailable — instrumentation asked for at the S25 pass (Shantanu, 4 Sep 2026,
+   * item 2): undo was seen unavailable when it should not have been, unreproducibly. The
+   * session says which of its four gates closed, so the next sighting is read, not guessed:
+   * `not-command` (no command phase in progress), `no-moves` (nothing accepted this phase that
+   * undo could unwind), `committed` (a committing action ended it — `committedBy` names it),
+   * `resumed` (the game was resumed mid-command and the session has no history of the phase).
+   * `available` when it is.
+   */
+  readonly reason: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed';
+  /** The action that ended undo this phase, when `reason` is `committed`. */
+  readonly committedBy: string | null;
 }
 
 /** What `sendAction` resolves to. Mirrors the engine's own result, minus the frames. */

@@ -55,7 +55,7 @@ describe('P2.5: undo is for moves only — a session rule', () => {
     installRng(0x51de);
     try {
       const s = await atCommandPhase();
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       const out = await s.sendAction({ action: 'undo' });
       expect(out.ok).toBe(false);
       s.dispose();
@@ -74,13 +74,13 @@ describe('P2.5: undo is for moves only — a session rule', () => {
       await moveOnce(s);
       await moveOnce(s);
       expect(Number(s.getView().game['ap']), 'moves should have spent AP').toBe(apStart - 2);
-      expect(s.getView().undo).toEqual({ available: true, moves: 2 });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: 2 });
 
       const out = await s.sendAction({ action: 'undo' });
       expect(out.ok).toBe(true);
       expect(Number(s.getView().game['ap']), 'AP is part of the undo').toBe(apStart);
       expect(canonical(s.getView().game), 'not back at the start of the phase').toBe(start);
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       s.dispose();
     } finally {
       restoreRng();
@@ -95,7 +95,7 @@ describe('P2.5: undo is for moves only — a session rule', () => {
       expect(s.getView().undo.available).toBe(true);
       const commit = await s.sendAction({ action: 'produce', family: 'ENV' });
       expect(commit.ok, 'the control committing action was supposed to be accepted').toBe(true);
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       expect((await s.sendAction({ action: 'undo' })).ok).toBe(false);
       // A later move does not bring it back: the die has been cast this phase.
       await moveOnce(s, 'neutrophil');
@@ -128,7 +128,7 @@ describe('P2.5: undo is for moves only — a session rule', () => {
       const start = canonical(s.getView().game);
       const bad = await s.sendAction({ action: 'strike', cell: 'tcell' });
       expect(bad.ok, 'the control action was supposed to be rejected').toBe(false);
-      expect(s.getView().undo).toEqual({ available: true, moves: 1 });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: 1 });
       // And the rejected produce (no family) leaves an engine snapshot behind; undo must still
       // land exactly at the phase start, not one snapshot short.
       const bad2 = await s.sendAction({ action: 'produce' });
@@ -151,7 +151,7 @@ describe('P2.5: undo is for moves only — a session rule', () => {
       await s.sendAction({ action: 'endCommand' });
       await s.sendAction({ action: 'draw' });
       await s.sendAction({ action: 'beginCommand' });
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       s.dispose();
     } finally {
       restoreRng();
@@ -212,13 +212,13 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
       expect((await s.sendAction({ action: 'resmove', organ: 'liver', step: 2 })).ok).toBe(true);
       expect(residentOf(s, 'liver')['step']).toBe(2);
       expect(Number(s.getView().game['ap'])).toBe(apStart - 2);
-      expect(s.getView().undo).toEqual({ available: true, moves: 2 });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: 2 });
 
       expect((await s.sendAction({ action: 'undo' })).ok).toBe(true);
       expect(residentOf(s, 'liver')['step']).toBe(0);
       expect(Number(s.getView().game['ap'])).toBe(apStart);
       expect(canonical(s.getView().game)).toBe(start);
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       s.dispose();
     } finally {
       restoreRng();
@@ -238,7 +238,7 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
       expect(hop.ok, `hop rejected: ${hop.error ?? ''}`).toBe(true);
       expect(cellOf(s, 'macrophage')['lane']).toBe('gut');
       expect(cellOf(s, 'macrophage')['step']).toBe(3);
-      expect(s.getView().undo).toEqual({ available: true, moves: 4 });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: 4 });
 
       expect((await s.sendAction({ action: 'undo' })).ok).toBe(true);
       expect(cellOf(s, 'macrophage')['zone']).toBe('hub');
@@ -259,7 +259,7 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
       expect((await s.sendAction({ action: 'recall', cell: 'macrophage' })).ok).toBe(true);
       expect(cellOf(s, 'macrophage')['zone']).toBe('hub');
       expect(Number(s.getView().game['ap'])).toBe(apStart - 2);
-      expect(s.getView().undo).toEqual({ available: true, moves: 2 });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: 2 });
 
       expect((await s.sendAction({ action: 'undo' })).ok).toBe(true);
       expect(Number(s.getView().game['ap'])).toBe(apStart);
@@ -286,7 +286,7 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
         const r = await s.sendAction({ action: 'resmove', organ: meal.organ, step: k });
         expect(r.ok, `patrol ${String(k)} rejected: ${r.error ?? ''}`).toBe(true);
       }
-      expect(s.getView().undo).toEqual({ available: true, moves: meal.steps });
+      expect(s.getView().undo).toMatchObject({ available: true, moves: meal.steps });
       const eat = await s.sendAction({
         action: 'resengulf',
         organ: meal.organ,
@@ -295,7 +295,7 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
       expect(eat.ok, `resengulf rejected: ${eat.error ?? ''}`).toBe(true);
       const ids = ((s.getView().game['invaders'] as { id?: unknown }[]) ?? []).map((iv) => iv.id);
       expect(ids).not.toContain(meal.invaderId);
-      expect(s.getView().undo).toEqual({ available: false, moves: 0 });
+      expect(s.getView().undo).toMatchObject({ available: false, moves: 0 });
       expect((await s.sendAction({ action: 'undo' })).ok).toBe(false);
       s.dispose();
     } finally {
@@ -316,6 +316,54 @@ describe('CP3: the move class is move, hop, recall and resmove; resengulf commit
       await s.sendAction({ action: 'endCommand' });
       expect(s.getView().selection.resident).toBeNull();
       s.dispose();
+    } finally {
+      restoreRng();
+    }
+  });
+});
+
+describe('S25 item 2: undo says WHY it is unavailable', () => {
+  it('no moves yet → no-moves; a committing action → committed, naming it; end of command → not-command', async () => {
+    installRng(0x51de);
+    try {
+      const s = await atCommandPhase();
+      expect(s.getView().undo).toMatchObject({ reason: 'no-moves', committedBy: null });
+      await moveOnce(s);
+      expect(s.getView().undo).toMatchObject({ reason: 'available', committedBy: null });
+      const commit = await s.sendAction({ action: 'produce', family: 'ENV' });
+      expect(commit.ok).toBe(true);
+      expect(s.getView().undo).toMatchObject({ reason: 'committed', committedBy: 'produce' });
+      // A second committing action does not overwrite the FIRST name — that is what ended it.
+      await moveOnce(s, 'neutrophil');
+      expect(s.getView().undo).toMatchObject({ reason: 'committed', committedBy: 'produce' });
+      await s.sendAction({ action: 'endCommand' });
+      expect(s.getView().undo).toMatchObject({ reason: 'not-command', committedBy: null });
+      s.dispose();
+    } finally {
+      restoreRng();
+    }
+  });
+
+  it('a game resumed mid-command with an engine stack → resumed, until the next command phase', async () => {
+    installRng(0x51de);
+    try {
+      // A session with a storage this test can read: the autosave after the move is the state
+      // Continue would resume from.
+      const storage = new MemoryStorage();
+      const s = LocalSession.createGame({ difficulty: 'training' }, { storage, now: () => 0 });
+      await s.sendAction({ action: 'draw' });
+      await s.sendAction({ action: 'beginCommand' });
+      await moveOnce(s);
+      const saved = await storage.get('current');
+      expect(saved, 'no autosave after the move').not.toBeNull();
+      const s2 = LocalSession.resume(saved?.state, { storage: new MemoryStorage(), now: () => 0 });
+      expect(s2.getView().undo).toMatchObject({ available: false, reason: 'resumed' });
+      await s2.sendAction({ action: 'endCommand' });
+      await s2.sendAction({ action: 'draw' });
+      await s2.sendAction({ action: 'beginCommand' });
+      expect(s2.getView().undo).toMatchObject({ reason: 'no-moves' });
+      s.dispose();
+      s2.dispose();
     } finally {
       restoreRng();
     }

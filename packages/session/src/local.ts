@@ -88,6 +88,10 @@ export class LocalSession implements Session {
   private movesThisPhase = 0;
   /** True once any accepted non-move action has happened this command phase. */
   private committedThisPhase = false;
+  /** The committing action's name — for the undo reason line. */
+  private committedBy: string | null = null;
+  /** True when the game was resumed mid-command: the session has no history of the phase. */
+  private resumedMidCommand = false;
 
   private constructor(g: Record<string, unknown>, opts: LocalSessionOptions) {
     this.g = g;
@@ -99,6 +103,7 @@ export class LocalSession implements Session {
     // a committing action happened is unknowable from the state, so undo is conservatively
     // unavailable for the rest of that phase. A fresh game has an empty stack and is clean.
     this.committedThisPhase = ((g['undo'] as unknown[] | undefined)?.length ?? 0) > 0;
+    this.resumedMidCommand = this.committedThisPhase;
     this.cached = this.build();
   }
 
@@ -152,14 +157,19 @@ export class LocalSession implements Session {
     if (name === 'beginCommand') {
       this.movesThisPhase = 0;
       this.committedThisPhase = false;
+      this.committedBy = null;
+      this.resumedMidCommand = false;
     } else if (PHASE_BOUNDARY.has(name)) {
       // Selection clears at phase boundaries — in the session, so every consumer agrees.
       this.selection = NO_SELECTION;
       this.movesThisPhase = 0;
       this.committedThisPhase = false;
+      this.committedBy = null;
+      this.resumedMidCommand = false;
     } else if (MOVE_CLASS.has(name)) {
       this.movesThisPhase += 1;
     } else {
+      if (!this.committedThisPhase) this.committedBy = name;
       this.committedThisPhase = true;
     }
 
@@ -256,9 +266,24 @@ export class LocalSession implements Session {
   }
 
   private undoAvailability(): UndoAvailability {
-    const available =
-      String(this.g['phase']) === 'command' && !this.committedThisPhase && this.movesThisPhase > 0;
-    return { available, moves: available ? this.movesThisPhase : 0 };
+    const inCommand = String(this.g['phase']) === 'command';
+    const available = inCommand && !this.committedThisPhase && this.movesThisPhase > 0;
+    // The gates in the order they are checked, so the reason is the FIRST closed one.
+    const reason: UndoAvailability['reason'] = available
+      ? 'available'
+      : !inCommand
+        ? 'not-command'
+        : this.resumedMidCommand
+          ? 'resumed'
+          : this.committedThisPhase
+            ? 'committed'
+            : 'no-moves';
+    return {
+      available,
+      moves: available ? this.movesThisPhase : 0,
+      reason,
+      committedBy: reason === 'committed' ? this.committedBy : null,
+    };
   }
 
   private build(): SessionView {
