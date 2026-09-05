@@ -61,7 +61,7 @@ export type OfferSource = 'cell' | 'body';
  * reason line is about ATTACKS: a cell that can only move, recall or patrol still gets told
  * what it cannot do here, so these do not count as "something was offered".
  */
-const MOVE_LIKE: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
+export const MOVE_LIKE: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
 
 export interface BoardOffer {
   id: string;
@@ -611,4 +611,145 @@ function noActionReason(view: SessionView, cell: string, act: boolean): string {
     default:
       return t('selection.nothing');
   }
+}
+
+/* ------------------------------------------------------------------------------------------ *
+ * THE ACTION LIST (S25 item 1, ruled 4 September 2026: action buttons only; movement stays on
+ * the board). A player must always know WHICH action they are performing: with two cells on a
+ * node, tapping a pathogen performed something unnamed. So the selected piece's FULL set of
+ * non-movement actions is always visible as rows — available rows name their target and cost
+ * and send exactly the offer the ring would; unavailable rows are greyed and carry the reason
+ * for that action. "Always answers", per action.
+ * ------------------------------------------------------------------------------------------ */
+
+/** The non-movement actions each piece can ever take — fixed, so a row exists even when greyed. */
+export const ACTION_CATALOGUE: Readonly<Record<string, readonly string[]>> = {
+  macrophage: ['engulf', 'strike'],
+  neutrophil: ['net'],
+  tcell: ['snipe'],
+  nk: ['nkkill'],
+  eosinophil: ['strike', 'degranulate'],
+  helper: [],
+  bcell: ['tag', 'neutralise', 'produce'],
+  resident: ['resengulf'],
+  body: ['memoryKill', 'antivenom'],
+};
+
+export interface ActionRow {
+  /** `${action}` for a greyed row, `${action}:${target}` for an available one. */
+  id: string;
+  action: string;
+  /** Localised: "Engulf Rotavirus" / "Engulf" (greyed). */
+  label: string;
+  cost: string | null;
+  available: boolean;
+  /** For an available row: the offer it sends (board or button), by id. */
+  offerId: string | null;
+  /** For a greyed row: why, localised. */
+  reason: string | null;
+}
+
+function actionReason(view: SessionView, piece: string, action: string, act: boolean): string {
+  const g = view.game;
+  const ap = num(g['ap']);
+  if (piece !== 'body' && piece !== 'resident' && !act) return t('selection.noAp');
+  switch (action) {
+    case 'engulf':
+      return t('selection.nothingToEngulfHere');
+    case 'strike':
+      return t('selection.nothingCoatedHere');
+    case 'degranulate':
+      return ap < 2 ? t('selection.needsAp', { n: 2 }) : t('selection.nothingCoatedHere');
+    case 'net':
+      return t('selection.notOnSwarm');
+    case 'snipe':
+      return t('selection.noHiddenInRange');
+    case 'nkkill': {
+      const flags = g['flags'] as Record<string, unknown> | undefined;
+      return flags?.['nkCell'] === true
+        ? t('selection.noInfectedCellInRange')
+        : t('selection.nkNotInScenario');
+    }
+    case 'tag':
+      return t('selection.noAntibodyToTag');
+    case 'neutralise':
+      return t('selection.noAntibodyToNeutralise');
+    case 'produce': {
+      const fams = producibleFamilies(view);
+      if (fams.length > 0 && fams.every((f) => f.why === 'blocked'))
+        return t('selection.productionBlocked');
+      return t('selection.storesFull');
+    }
+    case 'resengulf':
+      return (
+        residentOffers(view, piece === 'resident' ? (view.selection.resident ?? '') : '').reason ??
+        t('selection.nothing')
+      );
+    case 'memoryKill':
+      return t('selection.noMemoryTarget');
+    case 'antivenom': {
+      const stock = num(g['antivenom']);
+      if (stock <= 0) return t('selection.noAntivenomStock');
+      if (ap < 3) return t('selection.needsAp', { n: 3 });
+      return t('selection.noVenom');
+    }
+    default:
+      return t('selection.nothing');
+  }
+}
+
+/**
+ * The rows for what is selected (a cell, a resident, or the body when nothing is): every
+ * catalogue action, available ones expanded per target from the offers, the rest greyed with
+ * their reason. Movement is not here — it stays on the board, as ruled.
+ */
+export function actionRows(view: SessionView): ActionRow[] {
+  const g = view.game;
+  const offered = offeredActions(view);
+  const cell = view.selection.cell;
+  const resident = view.selection.resident;
+  const piece = cell ?? (resident ? 'resident' : 'body');
+  const catalogue = ACTION_CATALOGUE[piece] ?? [];
+  const inCommand = String(g['phase']) === 'command';
+  const act = cell ? canAct(g, cell) : true;
+  const rows: ActionRow[] = [];
+  for (const action of catalogue) {
+    // Panel-homed offers (produce, the body panel's buttons) have their rows in their panel;
+    // the list's rows are the board's actions, named.
+    const offers = [
+      ...offered.board.filter((o) => o.action === action),
+      ...offered.buttons.filter((o) => o.action === action && o.place !== 'panel'),
+    ];
+    const inPanel = offered.buttons.some((o) => o.action === action && o.place === 'panel');
+    if (offers.length > 0) {
+      for (const o of offers) {
+        rows.push({
+          id: `${action}:${o.id}`,
+          action,
+          label: o.label,
+          cost: 'cost' in o ? (o.cost ?? null) : null,
+          available: true,
+          offerId: o.id,
+          reason: null,
+        });
+      }
+      continue;
+    }
+    let reason: string;
+    if (inPanel) reason = t('commandBar.producePanel');
+    else if (!inCommand) reason = t('selection.notCommand');
+    else if (cell && isSpent(g, cell)) reason = t('selection.spent');
+    else if (cell && isSuppressed(g, cell)) reason = t('selection.offline');
+    else reason = actionReason(view, piece, action, act);
+    rows.push({
+      id: action,
+      action,
+      label: t(`action.${action}`),
+      cost: null,
+      available: false,
+      offerId: null,
+      reason,
+    });
+  }
+  return rows;
 }
