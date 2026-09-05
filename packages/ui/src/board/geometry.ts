@@ -11,7 +11,7 @@
  * the whole module.
  */
 
-import { BRANCH, ENTRY, HUB, ORGAN_POS, ROUTE, VH, VW } from '@immunity-wars/content';
+import { BRANCH, ENTRY, HUB, ORGAN_POS, ROUTE, VIEWBOX as CROP } from '@immunity-wars/content';
 
 export interface Pt {
   readonly x: number;
@@ -23,7 +23,10 @@ const branchTable = BRANCH as Record<string, Record<string, Pt>>;
 const entryTable = ENTRY as Record<string, Pt & { t: string }>;
 const organTable = ORGAN_POS as Record<string, Pt>;
 
-export const VIEWBOX = `0 0 ${VW as number} ${VH as number}`;
+/** The board's viewBox: the generator's crop to the annotations plus a safe margin (S25 item
+ *  11) — positions stay in the 660-unit canvas; only the visible window tightens. */
+const crop = CROP as { x: number; y: number; w: number; h: number };
+export const VIEWBOX = `${crop.x} ${crop.y} ${crop.w} ${crop.h}`;
 export const HUB_POS = HUB as Pt;
 export const LANES: readonly string[] = Object.keys(routeTable);
 export const BOARD_ORGANS: readonly string[] = Object.keys(organTable);

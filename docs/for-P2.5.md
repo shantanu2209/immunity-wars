@@ -876,3 +876,46 @@ recorded states that pass the window, and they are on the S25 list.
 crisis fires — the chip says the effect and how long, and counts down; (3) past turn 15 on
 Training, the window chip appears and the turn line reads "Turn 16 · 14 turns to clear the
 body"; check the same on Normal reads 21 · 14 and on Hard 31 · 14.
+
+## Items 11 and 8 — organ labels, the zoom, and the hub as Variant B: BUILT (4 September 2026)
+
+**Item 11, through the generator as ruled.** `tools/geometry-from-a2` now emits two more keys
+into `geometry.json`, both derived from the annotation angles, so the print follows the same
+data: **`LABEL_SIDE`** — `below` where the annotation's ray is more horizontal than vertical
+(the board's left and right: Gut, Blood, Heart, Liver, Spleen), `right` where it is more
+vertical (top and bottom: Nose, Contact, Wound, Bite, Lungs, Brain, Kidneys, Bone Marrow) —
+and **`VIEWBOX`**, the canvas cropped to the annotations plus a 6u margin: `28.4 28.4 612.6
+603.1`, 93% of the 660 canvas wide, so the board fills the phone's width with no wasted side
+margin and every element is correspondingly larger. Positions stay in the 660-unit canvas;
+only the window tightens. The generator's report prints both; its `--control` still fires.
+`Board.tsx` reads the side and the crop from content and places the label accordingly (right
+labels start at the icon's edge; below labels centre under it). Pinned: the schema validates
+both keys; `geometry-crop.test.ts` asserts the side follows the ray for every organ and route,
+and the crop is inside the canvas, smaller than it, and contains every annotation anchor.
+
+**Item 8, Variant B on the real board.** The hub was still fanning (scaffolding since P2.2).
+`tokenLayout` lays the hub out as ruled 20 Aug 2026: invader type-tokens clustered at the
+centre in a 2×2 grid (~22u), the player's cells ringed at 38u inside the inner circle (~16u)
+— the mock-up's proportions — and everywhere else the fan-of-types stands. Tap candidates,
+target rings and rendering all use the one layout, so a hub cell is tapped where it is drawn.
+`hubLayout.test.ts` pins distinct positions, the ring radius, the cluster's bound, the sizes,
+and that off the hub nothing changed.
+
+**Verified in the real app, headless** (`drive-geometry.ts`, at 360px): the SVG's viewBox is
+the generator's crop; eight labels are anchored `start` to the right of their icon and five
+`middle` below, exactly the generator's sides; at a fresh game the seven cells sit at seven
+distinct positions on the hub ring at 16u; tapping the hub's Killer T selects it. Screenshot sent
+with the report. No ⟪missing key⟫.
+
+**For the print:** the next A2 export should place labels by `LABEL_SIDE` and crop to
+`VIEWBOX`; that is the print pipeline's change, recorded here so it is not rediscovered.
+
+**S25 list for items 11 and 8:** (1) the board fills the width; every label sits beside or
+below its icon without crowding the edge; (2) at setup the seven cells ring the hub and read at
+a glance; a pathogen reaching the blood sits in the centre with its badge; (3) tap a hub cell
+by finger — the one you meant is the one selected.
+
+**Seen in the screenshot and noted, not built:** the organ integrity number sits just inward
+of the tissue slot, beside the branch's step-1 node number, and at phone size the two digits
+read as one ("1" and "3" as "13"). Pre-existing, not from this piece; a placement note for the
+label pass, with the lymph connector polish.
