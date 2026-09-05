@@ -223,7 +223,7 @@ describe('P2.1 step 4: Session owns the state and never hands it out', () => {
       ]) {
         expect(Object.keys(view.game), `viewState leaked ${k}`).not.toContain(k);
       }
-      expect(Object.keys(view)).toEqual(['game', 'selection', 'queries', 'scoped']);
+      expect(Object.keys(view)).toEqual(['game', 'selection', 'queries', 'scoped', 'undo']);
       expect(
         view.game['deckCount'],
         'deckCount should be present — the count, not the cards',
@@ -248,7 +248,7 @@ describe('P2.1 step 4: the view is a function of (game state, selection)', () =>
         'unselected view carried destinations',
       ).toBeNull();
 
-      s.setSelection({ cell: 'macrophage', family: null });
+      s.setSelection({ cell: 'macrophage', family: null, resident: null });
       const scoped = s.getView().scoped.moveDestinations;
       expect(Array.isArray(scoped), 'selecting a cell did not produce its destinations').toBe(true);
 
@@ -269,9 +269,92 @@ describe('P2.1 step 4: the view is a function of (game state, selection)', () =>
       const s = LocalSession.createGame({ difficulty: 'normal' });
       await s.sendAction({ action: 'draw' });
       const before = canonical(s.getView().game);
-      s.setSelection({ cell: 'bcell', family: 'ENV' });
+      s.setSelection({ cell: 'bcell', family: 'ENV', resident: null });
       expect(canonical(s.getView().game), 'setSelection moved the game').toBe(before);
       s.dispose();
+    } finally {
+      restoreRng();
+    }
+  });
+});
+
+/**
+ * P2.5 — AUTOSAVE. docs/APP_FLOW.md ruling 4: "written by the session on every accepted action".
+ *
+ * This existed as a comment in the app shell before it existed in the session, and the live
+ * walkthrough caught the gap: quit kept the save, but there was no save — the store was empty
+ * after an accepted draw. This suite was written first and ran RED against the unfixed session
+ * (0 rows in storage after an accepted action), which is its negative control.
+ */
+describe('P2.5: the session autosaves on accepted actions', () => {
+  it('an accepted action writes the whole GameState under saveId, stamped by the injected clock', async () => {
+    installRng(0x51de);
+    try {
+      const storage = new MemoryStorage();
+      let t = 100;
+      const s = LocalSession.createGame(
+        { difficulty: 'training' },
+        { storage, saveId: 'autosave', now: () => t },
+      );
+      await s.sendAction({ action: 'draw' });
+
+      const saved = await storage.get('autosave');
+      expect(saved, 'accepted action wrote no save').not.toBeNull();
+      expect(saved?.savedAt).toBe(100);
+      const state = saved?.state as Record<string, unknown>;
+      expect(
+        Array.isArray(state['deck']),
+        'the save has no deck — a ViewState was saved, not the GameState',
+      ).toBe(true);
+
+      // And it keeps saving: a later accepted action overwrites with the newer stamp.
+      t = 200;
+      await s.sendAction({ action: 'beginCommand' });
+      expect((await storage.get('autosave'))?.savedAt).toBe(200);
+      s.dispose();
+    } finally {
+      restoreRng();
+    }
+  });
+
+  it('a rejected action writes nothing', async () => {
+    installRng(0x51de);
+    try {
+      const storage = new MemoryStorage();
+      const s = LocalSession.createGame(
+        { difficulty: 'training' },
+        { storage, saveId: 'autosave', now: () => 0 },
+      );
+      const out = await s.sendAction({ action: 'beginCommand' }); // before draw: rejected
+      expect(out.ok, 'the control action was supposed to be rejected').toBe(false);
+      expect(await storage.get('autosave'), 'a rejected action saved').toBeNull();
+      s.dispose();
+    } finally {
+      restoreRng();
+    }
+  });
+
+  it('a resumed session autosaves too — same path, not a fork', async () => {
+    installRng(0x51de);
+    try {
+      const storage = new MemoryStorage();
+      const first = LocalSession.createGame(
+        { difficulty: 'training' },
+        { storage, saveId: 'autosave', now: () => 1 },
+      );
+      await first.sendAction({ action: 'draw' });
+      first.dispose();
+
+      const saved = await storage.get('autosave');
+      expect(saved).not.toBeNull();
+      const resumed = LocalSession.resume(saved?.state, {
+        storage,
+        saveId: 'autosave',
+        now: () => 2,
+      });
+      await resumed.sendAction({ action: 'beginCommand' });
+      expect((await storage.get('autosave'))?.savedAt).toBe(2);
+      resumed.dispose();
     } finally {
       restoreRng();
     }

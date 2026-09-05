@@ -19,6 +19,7 @@ export type {
   Session,
   SessionEvent,
   SessionView,
+  UndoAvailability,
   Unsubscribe,
   ViewState,
 } from './types.js';

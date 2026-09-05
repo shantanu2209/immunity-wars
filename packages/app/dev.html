@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Immunity Wars — dev shell</title>
+    <!--
+      THE INSTRUMENTED ENTRY (docs/APP_FLOW.md ruling 6): same PlayScreen as the app, plus
+      the tail-assertion panel, skip toggle, IDB exercise and metrics. The perf driver
+      (tools/perf/measure.ts) targets THIS page. A build-check test fails if this entry
+      stops building — it must not rot quietly.
+    -->
+    <style>
+      @font-face {
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/dev.tsx"></script>
+  </body>
+</html>

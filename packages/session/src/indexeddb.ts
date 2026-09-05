@@ -2,27 +2,29 @@
  * `Storage` over IndexedDB — the browser implementation.
  *
  * ============================================================================================
- * ⚠️ NOTHING EXERCISES THIS FILE. It is written and it is NOT KNOWN TO WORK.
+ * FIRST EXECUTED 19 August 2026, at P2.2 commit 2 — 9/9 checks PASS in a real browser.
  * ============================================================================================
  *
- * Said at the top rather than discovered later, because this repository's standing rule is that a
- * check which has never failed is not known to work, and the same reasoning applies with more
- * force to code that has never RUN. There is no browser in the test environment and no IndexedDB
- * shim among the dependencies, so every assertion about this file today is a reading of it.
+ * This header said "NOTHING EXERCISES THIS FILE. It is written and it is NOT KNOWN TO WORK"
+ * from the day it was written at P2.1 until the dev server existed — deliberately, because the
+ * standing rule is that code which has never run is not known to work, and the P2.1 closeout
+ * listed it as unproven. The exercise is `packages/app/src/main.ts`, run against a live page:
  *
- * `MemoryStorage` is the implementation the `Storage` port is actually tested through, and it
- * round-trips through JSON on purpose so that it shares this one's failure modes rather than
- * being an easier fake that proves nothing.
+ *   - the PORT directly: put/get fidelity through a real structured clone, two reads agreeing,
+ *     list, delete-then-null;
+ *   - the SEAM as the UI drives it: `session.save()` → `LocalSession.resume` from what Storage
+ *     handed back, projections identical, and the saved state carrying the 96-card `deck` — the
+ *     field a `ViewState` save would silently lose;
+ *   - confirmed independently by a raw `indexedDB` read outside the exercised code path
+ *     (one row, 50 state keys, deckLen 96).
  *
- * **The first thing P2.2 does with a browser is exercise this.** It is the natural moment: P2.2
- * introduces a dev server, which is also what pulls the `vitest 2 -> 3` trigger
- * (`docs/SECURITY_NOTES.md`), so the browser, the upgrade and this file's first execution belong
- * in one change.
+ * WHAT THIS DOES NOT PROVE, kept honest: one browser (desktop Chromium), one profile, no
+ * quota-pressure or concurrent-tab behaviour, no schema migration (`version` is still 1). The
+ * exercise page reruns on every load of the dev shell, so regressions here surface the first
+ * time anyone opens it.
  *
- * WHAT IS BEING RISKED BY WRITING IT NOW ANYWAY: very little. It is ~60 lines behind a four-method
- * port with a working alternative implementation, so if it turns out to be wrong the blast radius
- * is this file. What would NOT be acceptable is shipping it as though it were verified — hence
- * this header, and hence the P2.1 closeout listing it as unproven.
+ * `MemoryStorage` remains the implementation the port's TESTS run through, round-tripping JSON
+ * on purpose so it shares this one's failure modes rather than being an easier fake.
  *
  * ONE REAL CONSTRAINT IT IS BUILT AGAINST, from the measurement that justified `Storage` at all:
  * a `GameState` is stored, not a `ViewState`. IndexedDB's structured clone would happily store

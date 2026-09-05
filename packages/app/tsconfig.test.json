@@ -8,7 +8,10 @@
   // guarantee on source while still typechecking the tests.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    // Node types for the TEST program only (entries-build.test.ts spawns the vite build);
+    // the production program above keeps "types": [] and never sees them.
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

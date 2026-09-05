@@ -52,9 +52,20 @@ export interface Selection {
   readonly cell: string | null;
   /** The antibody family whose full production breakdown the view should carry. */
   readonly family: string | null;
+  /**
+   * The ORGAN whose resident macrophage is selected — CP3's one extension to the selection
+   * model (docs/COMMAND_SURFACE_PLAN.md §3.6). A resident is keyed by its organ, not by a cell
+   * key (the engine spends `res_<organ>`), and it is a separate field rather than an overload
+   * of `cell` because `scope()` hands `cell` to `moveDestinations`, which knows no residents.
+   * Nothing is selection-scoped for a resident: its patrol steps (± 1 within the branch) and
+   * what it can engulf (`perOrgan.residentEatable`) are already in the view. `cell` and
+   * `resident` are exclusive by convention — the UI sets one and nulls the other — and both
+   * clear at phase boundaries.
+   */
+  readonly resident: string | null;
 }
 
-export const NO_SELECTION: Selection = { cell: null, family: null };
+export const NO_SELECTION: Selection = { cell: null, family: null, resident: null };
 
 /**
  * Query answers the UI needs for EVERY subject on every render, to decide what is clickable.
@@ -75,12 +86,45 @@ export interface PrecomputedQueries {
   readonly perFamily: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
   /** `{net, boosted, reduced}` per family — the three fields the always-on panel reads. */
   readonly production: Readonly<Record<string, ProductionSummary>>;
+  /**
+   * WHEN A SPENT CELL IS BACK — the turn it acts again, per cell key; null when it is not
+   * spent or when the engine will not say. The board-state sweep (for-P2.5.md, 4 Sep 2026)
+   * dims a spent cell and shows this in its badge slot, and the number must be the ENGINE's:
+   * the Neutrophil returns after NEUTROPHIL_REGEN turns, or NEUTROPHIL_REGEN_HELPED when a
+   * primed Helper T stands in the blood (Th17 help), and never while the marrow is damaged.
+   * `regenAt` on the cell says none of that — the legacy UI showed it and was wrong under
+   * help; the first headless run of the badge showed "4" and the cell came back in 2. So this
+   * is `neutrophilReadyTurn(g)` (one of the 67 exports), withheld when the marrow is damaged
+   * (hp below max in the view — conservative on Hard, where a compensated marrow would in
+   * fact regenerate: no number rather than a wrong one). The Eosinophil's `regenAt` is exact.
+   */
+  readonly readyTurn: Readonly<Record<string, number | null>>;
+  /**
+   * THE CRISIS EFFECTS IN FORCE — `fx`, one of the 13 keys the view drops (brief §3), summarised
+   * so the effects strip can say what an event is still doing and for how long (S25 item 5:
+   * "when my antibody capacity was reduced I learned it once, in the log, and it scrolled
+   * away"). `capTurns` is turns of the antibody cap remaining; the other three last this turn.
+   */
+  readonly effects: Readonly<{
+    capTurns: number;
+    noProduce: boolean;
+    apMod: number;
+    skipMarch: boolean;
+  }>;
 }
 
 export interface ProductionSummary {
   readonly net: number;
   readonly boosted: boolean;
   readonly reduced: boolean;
+  /**
+   * Immunosuppression: the engine refuses `produce` while `fx.noProduce` is set, and `fx` is
+   * one of the 13 keys the view drops. The engine's `productionBreakdown` already reports it
+   * as `blocked`; carrying the boolean here (seven booleans, no engine change) is what lets the
+   * antibody panel withhold Produce instead of offering what the engine will reject —
+   * COMMAND_SURFACE_PLAN §3.1, the one place the standing rule needed a session field.
+   */
+  readonly blocked: boolean;
 }
 
 /** Answers that exist only because something is selected. Null fields when nothing is. */
@@ -101,6 +145,36 @@ export interface SessionView {
   readonly selection: Selection;
   readonly queries: PrecomputedQueries;
   readonly scoped: ScopedQueries;
+  /**
+   * UNDO IS FOR MOVES ONLY — a SESSION rule, ruled 4 September 2026 (docs/for-P2.5.md).
+   *
+   * Movement is repositioning: no dice, no hidden information. Everything else is commitment —
+   * attacks roll dice, engulf consumes a target, produce changes the pool — and undoing those
+   * would re-roll a bad die. So undo is available during the command phase only while every
+   * accepted action this phase has been a move; the first accepted committing action ends it
+   * for the phase; a REJECTED committing action does not (nothing happened). An undo unwinds
+   * ALL the moves back to the start of the phase, action points included. The engine's own
+   * snapshot stack knows none of this and is frozen; `LocalSession` tracks it.
+   */
+  readonly undo: UndoAvailability;
+}
+
+export interface UndoAvailability {
+  readonly available: boolean;
+  /** Accepted moves this command phase — what an undo would unwind. 0 when unavailable. */
+  readonly moves: number;
+  /**
+   * WHY undo is unavailable — instrumentation asked for at the S25 pass (Shantanu, 4 Sep 2026,
+   * item 2): undo was seen unavailable when it should not have been, unreproducibly. The
+   * session says which of its four gates closed, so the next sighting is read, not guessed:
+   * `not-command` (no command phase in progress), `no-moves` (nothing accepted this phase that
+   * undo could unwind), `committed` (a committing action ended it — `committedBy` names it),
+   * `resumed` (the game was resumed mid-command and the session has no history of the phase).
+   * `available` when it is.
+   */
+  readonly reason: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed';
+  /** The action that ended undo this phase, when `reason` is `committed`. */
+  readonly committedBy: string | null;
 }
 
 /** What `sendAction` resolves to. Mirrors the engine's own result, minus the frames. */

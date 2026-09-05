@@ -1,0 +1,11 @@
+{
+  // Build instrument: runs on Node (sharp for decode/encode). Node types for the same reason
+  // the other tools packages have them; nothing in packages/ gains them.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}

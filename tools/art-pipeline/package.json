@@ -1,0 +1,17 @@
+{
+  "name": "@immunity-wars/art-pipeline",
+  "version": "0.0.0",
+  "private": true,
+  "description": "P2.4 art pipeline: keys raw generated art, trims, gates on measured contrast, emits WebP at 1x/2x/3x with a manifest that is the contract.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "comment:why-a-package": "The contrast gate is the check the entire token set depends on, and an instrument nobody typechecks is the known failure shape. Workspace member so typecheck and lint reach it; its negative controls run via `pnpm art:build --control`.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "build": "echo \"no build output\""
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

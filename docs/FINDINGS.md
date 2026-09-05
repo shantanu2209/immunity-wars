@@ -2275,6 +2275,18 @@ reading the failure is being told about the boundary.
 (`boundaries-ui-engine`, `boundaries-ui-engine-bare`), and the permitted edge carries a third —
 see **#42**.
 
+*The pattern, named at P2.2 step 3 after its third instance, by ruling.* First the rule could
+not see **resolved paths** (this entry); then it could not see **permitted edges** (#42); then —
+when the first `.tsx` files entered `packages/ui` — dependency-cruiser's resolver listed only
+`.js/.ts/.mjs/.cjs`, and eslint's custom blocks matched `**/*.ts`, so the boundary rule
+protecting Phase 3 from a fork could not see **the file type the entire UI phase is written
+in**. Three instances, one shape: **a boundary rule is only as wide as its matcher, and every
+widening of the codebase is a chance for the matcher to fall behind it silently.** The `.tsx`
+instance was caught before any component existed and carries its own control
+(`boundaries-ui-engine-tsx`, which mutates a real `.tsx` file and requires the rule to fire).
+When the codebase next gains a file type, a package root, or an import style, check the
+matchers first.
+
 ---
 
 ## 42. "Forbid X" is a half-specified rule, and a fail-only control set cannot tell
@@ -2308,3 +2320,707 @@ covers only one direction. This is its other half: **a check that has never been
 on purpose is not known to permit anything.**
 
 **Disposition: FIXED at P2.1**, and generalised into the standing rules.
+
+---
+
+## 43. vitest 2 never enforced `testTimeout` on a synchronous test — a limit that could never fire, trusted implicitly
+
+**Found at P2.2 commit 1, 19 August 2026**, by the `vitest 2 → 3` upgrade the security note
+required (`docs/SECURITY_NOTES.md`), landed alone and before the dev server so that exactly this
+kind of break could be attributed to the runner and nothing else.
+
+**The whole finding is visible in one contrast inside `tests/equivalence`: an 81.6-second test
+passed the upgrade while a 7-second test failed it.** `spread.test.ts` and `simulate.test.ts`
+declare per-test timeouts — 120s to 600s, as bare third arguments a grep for "timeout" does not
+find — and `actions.test.ts` inherited the 5,000ms default. **Declared budgets survived the
+instrument change; inherited ones did not.**
+
+The first symptom was two tests in `tests/balance/src/metrics-control.test.ts` going red with
+*"Test timed out in 5000ms"* — the two compute-heavy E2 controls: the baseline held-out arm,
+which pays the full 1,600-game calibration, and the blind-spot control, which pays a second
+calibration plus two mutated-legacy arms (11.5–13.3s observed across runs). Both had been green
+under vitest 2 at that morning's merge, unchanged.
+
+**The full extent was three suites, revealed serially.** turbo cancels queued tasks on the first
+failure, so each fix unmasked the next: `tests/balance` (2 tests), then `tests/property` (3 —
+the fast-check property at 25.8s, the per-difficulty sweep, the non-vacuity counts), then
+`tests/equivalence` (3 — the B4b/B4c/B4d action fuzzers, 7.0–10.9s). A run that reports one red
+suite under turbo's default scheduling is reporting a lower bound, not a census.
+
+### The mechanism, established by a controlled experiment rather than a changelog
+
+A test file containing nothing but a synchronous 6-second busy-loop and one trivial assertion,
+run under both runners with the default 5,000ms `testTimeout`:
+
+| runner | verdict |
+|---|---|
+| vitest 2.1.9 | **passes**, 6.0s |
+| vitest 3.2.7 | **fails** — *"Test timed out in 5000ms"*, the exact error the suite shows |
+
+So vitest 2 never enforced `testTimeout` against a synchronous test. The timer cannot fire while
+the event loop is blocked, and v2 never checked elapsed time after the test returned. Vitest 3
+checks retroactively — confirmed in `@vitest/runner`'s source, not inferred: `runWithTimeout`'s
+resolve path now carries `if (now() - startTime >= timeout) rejectTimeoutError()`, added against
+upstream issue vitest#2920, with `now` a `Date.now` reference captured at module load. Vitest 4
+keeps the same enforcement, re-measured with the same experiment before commit 1 landed on it
+(see #44 for why the commit lands on 4).
+
+### The key detail: the verdict was retroactive, and nothing about the statistics changed
+
+The failing tests **ran to completion and their assertions held** — the recorded 13.3s duration
+and the absence of any assertion error prove it. A synchronous test cannot be interrupted; vitest
+3 lets it finish and then fails it on elapsed time alone. Every statistical claim the E2 controls
+assert was as true under the new runner as under the old. What broke was purely a time budget —
+one that had never actually been applied to these tests.
+
+**That is the finding: the 5,000ms limit was fictional for every synchronous test in this
+repository, for the entire life of the project.** A limit that can never fire is the same class
+as a check that has never failed — trusted, not known. The suite's own header says its sizes were
+chosen to keep the tier "inside ~30s"; individual tests were over the per-test budget the whole
+time, and no instrument could say so.
+
+### The fix, and why it is a migration fix rather than a patch to green
+
+**Ruled by Shantanu:** a suite-level `testTimeout`, not per-test values. Per-test values would
+fix the tests that failed and leave their siblings — 1.4–4.5s on a 20-core i7-12700F — to cross
+5s later on a 4-core CI runner, looking like a new and unrelated problem. The suite-level budget
+states the truth about the suite: these tests do real computation and 5s was never their real
+ceiling. Applied at five entry points, each sized from its own measurements: `tests/balance`
+60s, `tests/property` 120s, `tests/equivalence` 60s (where the existing larger per-test
+declarations override it), `vitest.coverage.config.ts` 120s — the root config that runs the
+equivalence files itself, out of reach of the package config and with v8 instrumentation
+multiplying compute — and `tests/session` 60s. Each config carries the observed durations and
+the hardware they were measured on, so whoever finds it slow later has the baseline rather than
+a bare number.
+
+**The fifth entry point is the ruling's own prediction, observed.** `tests/session` needed no
+budget on the 20-core development machine — its longest test sat just under 5s — so it got
+none, and PR #21's first CI run failed exactly there: 5,769ms on a 4-core GitHub runner, red in
+one run and green in the other, a race at the exact boundary. That is the scenario the ruling
+named when it chose suite-level over per-test ("leave the siblings to cross 5s later on a
+slower machine, looking like a new and unrelated problem"), at suite granularity instead of
+test granularity.
+
+The assertions are untouched, and a declared real budget is more honest than an undeclared
+fictional one — the same shape as the sd floor (#35), where the correction was making the
+instrument say what was actually true.
+
+**Disposition: FIXED at P2.2 commit 1.** The budgets are correct on any runner; the commit lands
+them on vitest 4.1.11 (#44), where all four entry points are green and the retroactive
+enforcement they exist to satisfy is confirmed still present.
+
+*Corrected later the same day, twice, by CI — the same lesson at two more removes.* First, the
+fifth entry point: `tests/session` needed no budget on the 20-core machine and PR #21's first CI
+run failed exactly there (5,769ms on a 4-core runner), the scenario the ruling predicted.
+Second, the SIZES: every budget was sized from 20-core SOLO observations, and the binding
+environment turned out to be the 4-core CI runner executing the whole workspace concurrently —
+where the B4b fuzzer stretched to 65.1s against its 60s budget (red in one run, green in the
+other) and the balance blind-spot control to 50.5s of its 60s. All five entry points now carry
+**300s**, ~4.5–6x the worst CI-concurrent observation: wall clock under contention is what
+vitest measures, and a test at five minutes has changed or hung. The general form: **a budget is
+sized against its binding environment, not its convenient one — and the binding environment is
+found by being bitten in it.**
+
+---
+
+## 44. vitest 3's worker RPC can fail a run in which every test passed
+
+**Found at P2.2 commit 1, 19 August 2026**, while verifying the `vitest 2 → 3` upgrade — and it
+is the reason that upgrade became `2 → 4`. A separate defect from #43: that one made a fictional
+budget real; this one fails runs for a reason that has nothing to do with any test.
+
+Two forced fully-concurrent runs of `pnpm test` under vitest 3.2.7 went red with
+`tests/equivalence` at **315/315 tests passed**. The exit code was flipped by unhandled
+`[vitest-worker]: Timeout calling "onTaskUpdate"` errors — two per run.
+
+### The mechanism, read from the dist and then reproduced
+
+- vitest's worker talks to the main process over birpc, whose response timeout is a hardcoded
+  `DEFAULT_TIMEOUT = 60_000`. No config option or environment variable reaches it in 3.2.7 —
+  every `VITEST_*` knob in the dist was enumerated to check.
+- A worker issues `onTaskUpdate` after finishing a test, then the next **synchronous** test
+  blocks the event loop. If the block outlasts 60s, Node's timers phase runs **before** its poll
+  phase when the loop unblocks — so the expired timer fires before the response, which arrived
+  long ago, is ever read. A spurious timeout, manufactured by the worker's own blocked loop.
+- **Controlled reproduction:** one quick test (so an RPC is in flight), then a 70s sync
+  busy-loop. Both tests pass; the run exits 1 with the exact production signature. Deterministic.
+- **Why solo runs looked safe:** the forks pool starts each file in a fresh worker, so a file's
+  *first* test — the 81.6s corpus run — has nothing in flight. The danger is a *later* test in a
+  file stretching past 60s, which is what turbo's 15 concurrent vitest instances on 20 cores
+  did: ~285 forked processes, and 4–14s tests stretch past the timer. It also retroactively
+  explains one earlier anomalous red on `tests/property` that could not be reproduced solo.
+
+**This is a false-red generator in the instrument itself.** A gate that goes red on a coin flip
+cannot anchor "commit after verification" — it teaches people to re-run until green, which is
+the failure culture this project least survives.
+
+### The ruling
+
+**vitest 2 → 4.1.11, superseding 2 → 3.** Three facts decided it:
+
+1. 3.2.7 is the **final 3.x release** — the line is closed and no fix is coming to it.
+2. 4.1.11 runs the identical reproduction **clean, exit 0**, and two forced fully-concurrent
+   census runs of the whole repository under it show 15/15 tasks green with no RPC errors.
+3. The security note's intent (`docs/SECURITY_NOTES.md`) was a current, maintained runner before
+   any dev server exists. 3.2.7 is neither. Patching a dead major's RPC layer by hand would have
+   made this repository the maintainer of its own test runner.
+
+The #43 suite budgets carry over unchanged — they are correct on any runner, and vitest 4 still
+enforces the retroactive sync-test timeout (measured: the 6s busy-loop controls still fail under
+4.1.11). One v4 behaviour was verified rather than assumed: `coverage.all`'s promise — every
+file in scope reported, never-loaded files at 0% — still holds, measured at 18/18 source files
+with `simulate.ts` correctly at 0% in the generators tier.
+
+**Disposition: FIXED at P2.2 commit 1**, by the version the commit lands.
+
+---
+
+## 45. The first documented-but-UNPRACTISED claim: a written cadence rule, not followed, and no check to notice
+
+**Found at P2.2 commit 1, 19 August 2026**, by running `pnpm test:manifest-controls` as part of
+the vitest-upgrade battery. Two of the harness's controls expected the test title *"is **four**
+suites and three cross-cutting properties"*; P2.1 (`7ee6eee`) had renamed it to *"is **five**
+suites…"* when the session suite joined the manifest. The expectations sat stale for the whole
+gap — the controls still reddened the right *number* of assertions, but one of the assertions
+they were watching for no longer existed, so that half of each control could never fire again.
+
+**This is a different failure shape from the usual one.** This project has found roughly a dozen
+documented-but-**false** claims — sentences that stated something untrue. Here every sentence was
+true: the harness worked, the cadence rule existed and was written down in the root
+`package.json` — *"Run it when the manifest or its schema changes."* The manifest changed; the
+rule was not followed. **The controls did not drift. The practice did.** A practice that lives in
+prose fails exactly the way the pre-`docs:check` documentation sweep failed: silently, and in
+the gap between the sessions where anyone would look.
+
+### The fix, same argument as `docs:check`: the cadence became a check
+
+The coupling the cadence protected — expectation strings in the harness naming test titles in
+`manifest.test.ts` — is now asserted **in the fast tier**, so it breaks the build the moment it
+breaks, with no practice to remember:
+
+- `tests/manifest/controls-data.ts` — the control definitions, split from the runner so a test
+  can import them without executing mutations;
+- `tests/manifest/coupling.test.ts` — every `expectFailing` entry must match some `it(...)`
+  title, by the same substring relation the harness itself uses, plus a floor on extracted
+  titles so a broken extraction cannot pass as vacuously green;
+- a `manifest-coupling` control in `tools/ci/selftest.ts` — the stale-title mutation replayed on
+  purpose, required to redden with *"no longer matches any test title"*. Demonstrated firing on
+  its first run.
+
+**What the check does not replace:** the harness. Coupling proves the names still refer to
+something; only running `pnpm test:manifest-controls` proves the assertions still *fire*. The
+cadence rule stands for that half — but a stale name can no longer wait for it.
+
+**Disposition: FIXED at P2.2 commit 1**, with the check and its control both demonstrated.
+
+---
+
+## 46. The v4-provider reconciliation: a finer arm universe, honestly reclassified — and the target did not move
+
+**Found and executed at P2.2, 19 August 2026**, after PR #21's coverage job went red at 92.53%
+against the 95% target. `@vitest/coverage-v8` 4 derives branch arms from the AST where v2
+derived them from V8 ranges: the raw universe grew 1,526 → 1,876 with behaviour provably
+unchanged (the corpus stayed byte-identical in the same runs), the deferred lists doubled on
+unchanged pinned lines, and three text-keyed exclusions stopped matching. **Ruled: recalibrate
+before merging — some of the new arms might be reach we thought we had and did not.**
+
+### The classification, all 78 uncategorised arms read in source context
+
+- **53 unreachable with a reason.** Overwhelmingly rule A's own class in a spelling rule A
+  cannot see: defensive presence-handling required by `noUncheckedIndexedAccess`, written as
+  `if (x)` instead of `??`. Now excluded by **rule C** — three mechanical shapes (total-member
+  presence guards; `indexOf` on the list the element was filtered from; exhausted tails of
+  closed-set zone chains), each carrying its class argument and corpus evidence at the rule and
+  **watched by the churn report from day one** — plus 30 new rule-B entries, every one
+  demonstrated in `demonstrate-dead-arms.ts` (30/30 DEAD).
+- **25 reachable but uncovered.** Six were **NEW REACH** — code the v2 provider never showed
+  anyone (see #47 for the significant one) — and became both-engine scenarios immediately, per
+  the ruling, rather than being absorbed into a recalibrated number. The rest are **named test
+  debt**, individually:
+  `actions.ts:169` endCommand out of phase · `actions.ts:240` hop with an unknown cell ·
+  `actions.ts:270` recall with an unknown cell · `actions.ts:309` clonalSelection at 0 AP ·
+  `actions.ts:337` vaccinate when already immune · `actions.ts:339` vaccinate at 0 AP ·
+  `actions.ts:450` antivenom at 0 AP · `actions.ts:480` strike with a wrong cell ·
+  `actions.ts:597` memoryKill on a missing id · `actions.ts:602` memoryKill unattackable ·
+  `actions.ts:605` memoryKill at 0 AP on Hard · `construct.ts:126` coInfection with an empty
+  deck · `effects.ts:65` Cellulitis killed by antibody (rare-trigger seed) · `queries.ts:274`
+  productionBreakdown without dendritic · `queries.ts:365` canNeutralise unattackable ·
+  `queries.ts:379` canTag unattackable · `spread.ts:66` fireRare unarmed · `spread.ts:69`
+  fireRare with an unknown key. Two switch `default:` arms (construct.ts:164, spread.ts:166)
+  stay uncategorised deliberately: dead by closed key sets, but a `default:` text key would
+  over-match, and two arms are not worth a rule.
+
+### What the reconciliation itself surfaced — four instrument findings inside one
+
+1. **405 arms had no identity at all**: the v4 mapper emits implicit-else arms with an empty
+   `start`, and the gate mapped them to line `undefined`, text `''`. Fixed by anchoring on the
+   `if`-line, with a loud throw replacing any silent drop — a throw that fired on its own first
+   version.
+2. **Line-level exclusion keys leaked a deferred arm**: excluding one arm at a line silently
+   removed its sibling from the denominator — at `simulate.ts:368`, a bot-reachable arm vanished
+   from the list Phase 3 inherits. Keys are now arm-precise; found by balancing the bot list's
+   ledger (19 → 17: exactly the two absent-path arms, which are dead at any bot strength).
+3. **Rule C's first draft ate live paths in never-called code**: a presence guard there has BOTH
+   arms uncovered and only the absent-path arm is dead. All three C shapes now discriminate on
+   arm index.
+4. **Two demonstrations corrected their own claims while being written**: the lymph-continuation
+   scan came back LIVE until narrowed to lymph-*linked* routes (blood is 3 steps but has no
+   lymph group), and the unknown-cell exhibit **crashed legacy** — legacy's `moveDestinations`
+   reads `cell.zone` unguarded and throws on an unknown cell key where the port returns
+   *"Illegal move."* A real malformed-input divergence, unreachable through the corpus (the
+   fuzzer's vocabulary never held an unknown cell key), recorded here rather than smoothed over.
+
+### The rulings, and which kind of change each was
+
+- **TARGET UNCHANGED at 95%.** Classification alone brings the gate to **96.46%** — it crosses
+  its existing target as a consequence of honest work, the sd-floor case (#35), not a moved
+  goalpost (#34).
+- **Cap restated as a ratio: 9.4% of raw arms** (176 today, 168 used), both numbers printed
+  every run so a future universe change shows as a number that moved. ⚠️ **Deviation from the
+  ruling's estimate, stated rather than fitted quietly:** the ruled figure was 7.9% (~147),
+  derived by holding exclusion *density* constant across the universe change. Measured, the v4
+  universe's new arms are disproportionately defensive — 29 of the 35 newly visible
+  uncategorised arms classified dead — so the honest exclusion set landed at 168 and the
+  constant-density rescale was an undercount. The ratio is set from the measured set plus the
+  old cap's proportional headroom (~9 arms).
+- **The `while`-loop exclusion: dropped, demonstration kept.** AST mapping emits no branch arm
+  for a loop condition; the property is still proven — the instrument stopped charging for it.
+
+**Disposition: EXECUTED.** Gate green at 96.46%, `pnpm audit` clean, every demonstration DEAD,
+and the deferred lists Phase 3 inherits are two arms more honest than before.
+
+---
+
+## 47. Two instruments, blind in the same place: the NET path
+
+**Named at the v4 reconciliation, 19 August 2026, by ruling.** The most significant of the six
+new-reach arms: **everything past `net`'s hub guard — the success path AND its own "nothing
+here a NET can catch" rejection — had zero test coverage**, because every test attempt at `net`
+sat at the hub.
+
+That is not a new gap. It is **FINDINGS #1's bot blindness seen from the coverage side**: the
+reference bot never moves the Neutrophil, so it can never NET, so no recorded game ever entered
+the success path — and the v2 coverage provider had merged those arms away, so no coverage
+report ever showed them uncovered. **Each instrument's blind spot hid the other's.** The corpus
+could not miss what it never entered; the coverage gate could not name what its provider never
+split out; and the gap sat in the intersection for the life of the project.
+
+> **The shape worth naming: where two instruments are blind in the same place, their overlap is
+> where the unknown lives — and no amount of green from either one says anything about it.**
+> When a blind spot is found in one instrument, check the same location in the others.
+
+The NET success path executed for the first time in this repository's history during this
+reconciliation — first by hand in the esbuild verification (a spread played in the browser),
+then as a permanent both-engine scenario (`coverage-scenarios.test.ts`, "new reach under
+coverage-v8 4"). The bot half of the gap remains, deliberately: a competent bot is Phase 3's
+work (#6, PHASE2_BRIEF v1.1 §6), and the bot-deferred coverage list now carries the honest
+count of what it will make reachable.
+
+**Disposition: the coverage half is CLOSED; the bot half is Phase 3's, tracked in
+`COVERAGE_DEFERRED.md`.**
+
+---
+
+## 48. A timing probe measures whatever clock it is attached to
+
+**Found at P2.3, 19 August 2026, by the instrument's own first two runs — and entered here by
+ruling, because both defects produced confident, well-formatted, WRONG figures rather than
+errors.**
+
+The P2.3 instrumentation corrected itself twice before producing a number anyone saw:
+
+1. **The wall measurement was pinned to a two-vsync floor.** Tap-to-paint via double-rAF read
+   ~32ms at 1× CPU throttling *and* ~32ms at 6× — and 32.3ms is two 60Hz compositor frames.
+   The probe was attached to the **vsync clock**: it measured how long the page waits for the
+   compositor, quantized, with the actual work invisible beneath the floor. What exposed it was
+   the throttle sweep — **a number that does not move when the CPU gets six times slower is not
+   measuring the CPU.** A busy-time channel (main-thread work) now carries §4's budget metric,
+   with wall-to-paint kept, labelled with its floor.
+2. **The busy probe raced React's scheduler.** The first busy channel read 0.1ms for a
+   full-board redraw where an identical tree cost 3ms from a tap. The probe (a 0ms timer)
+   assumed the render+commit ran in the current task; for timer-driven updates React renders in
+   a scheduler task that can run *after* the probe fires, so the probe measured an empty
+   interval. What exposed it was the asymmetry between two paths through the same tree. Burst
+   frames now render under `flushSync` and are timed directly.
+
+> **The general form, for any future timing work: a timing probe measures whatever clock it is
+> attached to — vsync, a scheduler queue, a timer wheel — and attaching it to the wrong one
+> produces a plausible number rather than an error.** The defences that worked here, both
+> cheap: sweep a variable the number MUST respond to (the throttle sweep caught #1), and
+> measure the same thing two ways (the tap/frame asymmetry caught #2). A single-condition,
+> single-channel timing figure has survived neither check.
+
+**Disposition: FIXED before any figure was published.** Both corrections are recorded in
+`P2_3_MEASUREMENT.md` and commented at the code they correct (`packages/app/src/metrics.ts`,
+`packages/app/src/main.tsx`).
+
+## 49. The physical A2 board and `geometry.json` disagree on layout — parity is an aspiration, not a current fact
+
+**Found 20 August 2026, at the P2.4 restyle, by reading the located A2 PDFs' vector operators
+directly.**
+
+The physical board (`Immunity_Wars_BOARD_A2.pdf` / `_COLOUR.pdf`, generated July 2026 by a
+Python script that is now lost — the PDFs themselves are vector and fully recoverable) is
+**bilateral**: all six entry labels sit in the left half of the page (x 77–452 of 1191pt),
+all six organ labels in the right half (x 698–1054), head to toe, hub in the centre — the
+board's own rubric says "Entry routes on the LEFT · organs on the RIGHT". `geometry.json` is
+**radial**: entries and organs on all sides of a central hub.
+
+So the print was **not** produced from `geometry.json`, and the brief's "geometry.json is the
+single source for the on-screen board AND the printed A2 artwork" (PHASE2_BRIEF §5) describes
+the intended pipeline, not the existing artefacts. Two consequences already landed:
+
+1. **A reprint generated from `geometry.json` will not look like the board Kartik has been
+   presenting.** Reconciling the two layouts — move `geometry.json` to the bilateral design,
+   or accept the radial one for both — is a design decision for Kartik, not a Phase 2 styling
+   call.
+2. **Print elements whose shape assumes the bilateral layout do not transpose.** The lymph
+   arcs are the first: on the print they are short local arcs because lymph-linked entries are
+   adjacent *by layout*; on the radial board those entries are scattered, and the restyle could
+   only draw straight dashed connectors (`for-P2.5.md`).
+
+Also settles half of `ASSETS.md` open question 4: the A2 artwork is separately produced vector
+work, not the `art_data.js` icon set — only its 16 small embedded rasters share that provenance
+question.
+
+**Disposition: recorded; the layout reconciliation is Kartik's, at the point the print is next
+regenerated.** The P2.4 restyle carries the print's palette and stroke weights onto the
+existing radial geometry, which is what it could do without deciding layout.
+
+**RESOLVED 20 August 2026, same day, by Shantanu's direction: the app adopts the A2 layout.**
+`geometry.json` is now **generated from the A2 PDF itself** by `tools/geometry-from-a2/`
+(extraction of the PDF's vector operators; count assertions against `rules/board.json`, with a
+`--control` mode proving they fire; the content schema re-verifies independently). The
+generator and its input PDF are committed — the July script was lost, and this board's
+generator is not going to be lost twice. Consequence #1 above is thereby closed in the print's
+favour; consequence #2 dissolved — with the layouts matched, the lymph connectors are local
+again. What remains open moved to `for-P2.5.md` (connector curvature, arrowheads, the LYMPH
+label's i18n home).
+
+**RELAXED 20 August 2026, later the same day, by Shantanu: the printed A2 was an interim
+artefact for the exhibition**, not a fixed reference — so `geometry.json` is free to change
+for screen reasons from here. The A2 extraction stands as the layout's starting point and
+`tools/geometry-from-a2/` remains the record of where it came from, but parity now means "the
+NEXT print is generated from geometry.json" (the brief's original intent), not "the app must
+match the July print". First consequence: the print's organ boxes are not drawn on screen,
+and co-located tokens will stack with a count badge instead of fanning — both screen
+decisions the print never had to make.
+
+---
+
+## 50. Two verified components with an unverified join: the autosave that was documented in the commit that failed to implement it
+
+**Found 30 August 2026, at the minimum-shell walkthrough, by playing the app as a player
+would.** No instrument fired.
+
+`docs/APP_FLOW.md` ruling 4 says the save is written **by the session on every accepted
+action**. `packages/app/src/main.tsx` carried a header comment saying exactly that. And
+`LocalSession.sendAction` did not do it: the only `storage.put` in the session sat inside the
+explicit `save()` method, which nothing called. Playing a turn and quitting kept the save, as
+ruled — but there was no save. The IndexedDB store was empty, and Continue never appeared.
+
+A documented-but-false claim, roughly the dozenth in this project — with one property none of
+the others had: **the claim and the code that falsified it landed in the same commit.** The
+previous dozen drifted false over time (#2, #9, #25, #26). This one was born false. Drift is
+not the only way documentation and code disagree; they can simply never have met.
+
+### Why nothing caught it — the variant worth naming
+
+Every component on the path was individually verified, before the walkthrough and honestly:
+
+- **`save()` was tested** — the C2 control saves, resumes, and requires the resumed game to
+  equal the saved one, with the injected clock's stamp checked (`negative-control.test.ts`).
+- **`IndexedDbStorage` was exercised** — the dev-shell IDB exercise drives `session.save()`
+  through the Storage port to real IndexedDB on every load of `dev.html` (`idb-exercise.ts`).
+- **`sendAction` was tested** — the step 6 suite replays full games through it and requires
+  the projections to match the engine driven directly, step for step.
+
+What was never tested is that **`sendAction` CALLS `save`**. Both sides of the seam worked;
+the seam was never connected; and every test looked at one side or the other. A test of
+`save()` cannot see that nothing calls it. A test of `sendAction` that never reads storage
+cannot see what was not written. Green everywhere, and the join did not exist.
+
+> **The shape: two verified components with an unverified join.** It is a sibling of #47
+> (two instruments blind in the same place) but distinct — nothing here was blind, everything
+> was seen, and the gap was BETWEEN the seen things. The defence is a test that spans the
+> join and asserts the OUTCOME of the composition — "after an accepted action, the store
+> contains the state" — not the behaviour of either part. Component tests cannot compose
+> into an integration claim, however many of them are green.
+
+### How it was found, and what that licenses
+
+It was found by walking the app like a player: new game, draw, quit, return to the title —
+and Continue was not there. **That is the newcomer test's justification arriving three pieces
+early.** No instrument was pointed at the join, so no instrument could have found it; a
+person following the path a player follows found it in one pass. The newcomer test (P2.5
+piece 3) is not a courtesy to usability — it is the only check this project runs that walks
+joins nobody thought to instrument.
+
+### The fix, and why it is trustworthy
+
+The autosave moved into `LocalSession.sendAction` — Storage's consumer is Session
+(PHASE2_BRIEF §3), and the UI could not have done it: it never sees the `GameState`. Three
+tests were written FIRST and run RED against the unfixed session — accepted action writes the
+whole `GameState` (deck present) under the save id; rejected action writes nothing; a resumed
+session saves through the same path — then the fix went in and the suite went green. The red
+run is the negative control: the tests are known to be able to fail on exactly this bug.
+
+**Disposition: FIXED in the same session, tests first. The shape is named here so the next
+join gets a spanning test before a walkthrough has to find it.**
+
+---
+
+## 51. `pnpm verify` replayed a cached green over a red suite for thirteen days: the turbo test hash did not see workspace dependencies
+
+**Found 2 September 2026, by CI, on the first push of the Phase 2 branch — thirty-seven
+commits, every one of them verified green locally.** Entered by the instrument rule: everything
+measured with `pnpm verify` between 20 August and 2 September is untrustworthy on one axis.
+
+### What happened
+
+CI's `test` and `coverage` jobs failed seven assertions in
+`tests/equivalence/src/ui-content.test.ts` — the Phase 1 check that pins the content pack's
+board tables to the legacy `v2_ui.html` extraction. All seven were the A2 radialisation of
+20 August (#49): `VH` 660 versus legacy 930, the hub at (330,330) versus (330,462), and the
+five position tables. The parity claim had been **deliberately false for thirteen days**, by
+ruling, and the suite that asserts it had been green on every local run since.
+
+A forced run (`turbo run test --force`) was red immediately. Turbo's own dry run said why:
+
+```
+@immunity-wars/equivalence#test  cache: HIT  dependencies: []  inputs: 43 files
+```
+
+**The `test` task in `turbo.json` had no `dependsOn`, so a package's test hash covered only
+its own files.** `tests/equivalence` imports `@immunity-wars/content`; the content package
+changed; the equivalence task's 43 hashed files did not; turbo replayed the pass it had recorded
+before the change. CI caught it only because CI has no cache — the one environment that could
+not be fooled was the one nobody ran before pushing.
+
+### Why this is the instrument rule's case, not the product's
+
+`pnpm verify` is what "commit after verification" rests on. For any change confined to one
+package, it worked. **For any change in a package that another package's tests depend on — which
+is every content change, every engine change, every session change — it could replay a stale
+result for the dependents.** The equivalence corpus, the project's primary oracle, is a
+dependent of the engine. Phase 2 made no engine change, so nothing is known to have slipped
+through on that axis; but "nothing is known to have" is the smaller claim, and it is the one
+this entry makes.
+
+> **The shape: a cache that hashes the wrong set of inputs is a check that goes green on
+> exactly the changes it exists to catch.** It is a sibling of #45 (a rule written down and
+> not practised) and of the C5b lesson (a test that regenerates its own oracle): the check ran,
+> reported, and measured nothing. The defence is the same as always — a control that removes
+> the edge and requires the check to fire.
+
+### The fix, with its control
+
+- `turbo.json`: `test` now `dependsOn: ["^test"]`, so a test task's hash includes its
+  workspace dependencies' test tasks, which include their sources. Measured after the change:
+  `equivalence#test` depends on `content#test` and `engine#test` and reports a MISS.
+- `pnpm turbo:check` (`tools/ci/turbo-check.ts`, inside `pnpm verify`): from turbo's dry
+  run, every workspace package with a test script must depend on every workspace dependency's
+  test task. **27 edges** checked; a run that checks no edge exits non-zero.
+- Its negative control, `turbo-test-hash` in `tools/ci/selftest.ts`: the edge deleted from
+  `turbo.json`, the check must fail saying `TURBO TEST HASH BLIND`. **Fired on its first run.**
+- The seven expired assertions are retired **as a list, with the reason**, not deleted: they
+  now require the tables to exist and to still differ from legacy, so a table that becomes
+  equal again is sent back to the pinned set (`ui-content.test.ts`).
+
+**Disposition: FIXED inline, with a control. The cache-blindness window is 20 August – 2
+September 2026; the only known casualty is the parity suite above.**
+
+**Addendum, same day — two things the PR's coverage job then surfaced.** (1) The
+`UI_I18N_EN` loader's non-string throw was listed as an unreachable arm: a validator that had
+never fired. It is now a pure function (`buildUiCatalogue`) with a mustFail/mustPass pair in
+`load.test.ts`, and the arm is covered rather than excluded. (2) Observed while fixing it:
+`pnpm coverage:gate` printed GATE PASSES after a `coverage:all` that had exited 2 on a parse
+error — it consumes whatever coverage data is on disk and does not check that the run producing
+it succeeded. CI is protected by step ordering (`set -e` stops the job), so the gap is local
+only; recorded as the property, not worked around.
+
+---
+
+## 52. A tuning number living as an engine literal: `neutralise` costs 2 AP for a toxin, and the 2 is in `actions.ts`
+
+**Found 4 September 2026, while planning the command surface** (`docs/COMMAND_SURFACE_PLAN.md`
+§3) — entered by Shantanu's ruling, so that the workaround it forces does not become permanent
+by default.
+
+`packages/engine/src/actions.ts` (`case 'neutralise'`): `const apCost = iv.type === 'toxin' ? 2
+: 1; // antitoxin is harder work`. That is a **tuning number**, and every other tuning number
+in this game lives in `packages/content/src/rules/tuning.json` — `VACCINE_COST`, `CLONE_COST`,
+`ANTIVENOM_ORDER`, the AP per difficulty, the snipe range. This one alone is a literal inside a
+rule. Nothing was wrong with it while the only consumer was the engine itself.
+
+**Why it matters now.** The UI's standing rule is to offer only legal actions, so the command
+bar must withhold *Neutralise* on a toxin when the player has 1 AP. To know that, the UI needs
+the 2 — and the engine is frozen in Phase 2, so the UI **mirrors the literal** (a duplicated
+rule, the hazard `CLAUDE.md` names under "rules live in `packages/engine` and nowhere else"),
+pinned by a spanning test in the session suite that drives the engine directly: a toxin at
+1 AP must be rejected, at 2 accepted, so the mirror cannot drift silently.
+
+> **That mirror is a WORKAROUND, not a design.** The correction is to move the number to
+> content — `tuning.json`, exported by `packages/content`, read by the engine like every other
+> tuning constant — after which the UI reads the same export and the duplicate disappears. It is
+> an engine edit with no behavioural change, verifiable against the corpus byte-for-byte, and it
+> is **Phase 3's** to make, because Phase 2's definition of done is "the engine is unchanged".
+
+**Disposition: OPEN — Phase 3.** The UI mirror ships in P2.5 CP2 with its spanning test; this
+entry is what keeps it from being mistaken for the intended shape. When the constant moves to
+content, delete the mirror and its test in the same commit.
+
+---
+
+## 53. The engine's QUERIES return prose, and the Phase 1 catalogue never reached them
+
+**Found 4 September 2026, at CP2, by the loud missing-key marker** — the first tap on an
+antibody family rendered "⟪engine: Helper T-cell present but NOT yet primed — no antigen has
+been presented to it yet⟫" in the new panel.
+
+`productionBreakdown` (`packages/engine/src/queries.ts`) returns its effects as
+`{label, delta, kind}` with the label composed as an English sentence, and its cap reasons as
+English fragments ("liver damaged", "a temporary effect"). The Phase 1 extraction that built
+`engine.json` walked rejection (`err`) and log (`pushLog`) sites — 164 of them — and a query's
+return value is neither, so these strings were never catalogued. `engineText()` therefore
+had nothing to map them to and did what it is built to do: rendered them loudly.
+
+**Why it is the same finding as #52 in a different place.** A query that returns prose is a
+rule module deciding presentation. The correct shape is an id (`'effect.helperUnprimed'`) the
+UI renders through its catalogue; the engine is frozen in Phase 2, so the UI maps the fixed
+set the query can produce (`packages/ui/src/productionText.ts` — six static labels and one
+templated by its number), loud on anything new so a label added to the query announces
+itself. **The mapper is a workaround.** Phase 3 makes the engine emit ids and deletes it.
+
+**What it says about the Hindi edition:** any engine string that reaches a player through a
+QUERY rather than a log or a rejection is outside the 157-key `engine.json`, and this is the
+first one found — the P2.5 panels (CP4's body panel, CP5's log) should expect more.
+
+**Disposition: OPEN — Phase 3, alongside #52.** Workaround shipped in CP2; the loud fallback
+stays so the next one is found the same way.
+
+### The sweep, same day — the size of the class, and the instrument fixed inline
+
+Shantanu's ruling: enumerate the whole class before it is met one panel at a time. The
+extractor (`tests/equivalence/i18n-extract.ts`) was extended rather than the sweep done by
+hand, so the enumeration is the drift test's and cannot go stale:
+
+| Class | What | Count | Where it is now |
+|---|---|---|---|
+| **Query prose** — returned as data | `label:` / `disease:` properties, `capReasons.push`, `blocked =`, `.why +=`, `snap('…')` frame headlines | **34 sites** (7 in `queries.ts` — the breakdown; 19 frame headlines incl. `Victory`; 6 engine-invented disease names — "Malaria (relapse)", "Dengue (ADE)", "Tuberculosis (reactivated)", "Pneumococcal pneumonia", "Malaria (blood)", "Shingles"; 1 rare-banner append; 1 other) | **In `engine.json`** (198 sites → 181 messages). The UI renders frame headlines and breakdown prose through `engineText()`; only the templated rate ceiling still needs its number put back (`productionText.ts`). |
+| **Composed arguments** — `pushLog`/`err` whose message is an identifier or a conditional | `pushLog(msg)` (produce), `pushLog(entryMsg)` (draw), and three ternary arguments (strike, tag, engulf) | **5 sites**, carrying ~10 distinct sentences | **Listed in `$meta.unextractedSites`**, pinned by the drift test and by a count assertion. Outside the catalogue until the engine emits ids. |
+| **Log fragments from a helper** | `placeName()` in `effects.ts`: "the bloodstream", "{route} {step}", "the {organ} itself", "{organ} branch {step}" | 4 fragments, interpolated into 2 log sites | Uncatalogued; reach the player as `{placeName}` inside catalogued messages. Phase 3. |
+| **Content-layer prose in view fields** | `banner` / `warning` / `rareBanner` carry `name`, `tell`, `why` from `events.json` | 38 fields | Content, not engine: translated with the content pack, like the diseases namespace. Not a catalogue gap. |
+| **Keys the UI must map, not prose** | `drawn.__sentinel` texts "(mop-up)" / "(no new infection)", `lost.reason === 'attrition'`, "Pathogen X" | 4 | Sentinels and the novel name are handled; **`attrition` is not** — the Result screen shows a loss with no organ and no reason. UI item for CP5. |
+
+The extractor's new rules carry their own controls
+(`tests/equivalence/src/i18n-query-prose.control.test.ts`): a synthetic source makes every
+shape fire, a `label:` that is an identifier is required NOT to (the permitted case), and a
+composed argument is required to be listed rather than skipped. The `$meta` list of
+unextracted sites is asserted equal to a fresh walk, and its count (5) is pinned so a new one
+must be acknowledged in this entry.
+
+## 54. A generator's capability gap propagates to every instrument built on it: the harness was green over `net` without ever offering it
+
+**Found 4 September 2026, while planning CP3.** Before residents were added to the offered ⊆
+accepted harness (`tests/session/src/offered.test.ts`), the corpus it judges was counted per
+action rather than in total:
+
+| Action | Offers in 652 recorded command states |
+|---|---|
+| move | 56,814 |
+| tag | 4,115 |
+| produce | 2,118 |
+| neutralise | 516 |
+| engulf | 51 |
+| snipe | 39 |
+| strike | 20 |
+| degranulate | 9 |
+| nkkill | 5 |
+| **net** | **0** |
+
+**The harness had been green over `net` since CP1 without once checking it.** The corpus is
+generated by the reference bot, and the bot never moves the Neutrophil (#1, the audit's
+"self-sealing" line), so no recorded state has the Neutrophil standing on anything it can NET.
+The harness's vacuity guard was global — more than 200 offers in total — and 64,000 offers of
+other actions satisfied it while one action was silently absent. Residents were about to be
+the fourth instance: in the same 652 states no resident ever left step 0, none was infected,
+and `residentEatable` was never non-empty (#5), so `resengulf` and two of the resident reason
+lines would have been unreachable from the corpus as well.
+
+### The propagation, named
+
+This is the **third instrument the same root cause has reached**, and each looked healthy on
+its own terms:
+
+1. **#1** — the bot never emits 8 of the engine's 27 actions and never moves the Neutrophil.
+   A bot-capability finding.
+2. **#47** — the coverage arms reachable only through those actions: a coverage blind spot,
+   deferred with the bot to Phase 3.
+3. **This entry** — the offered ⊆ accepted harness, built on the same recorded games, with
+   `net` at zero offers. A harness blind spot.
+
+> **The general form:** when a generator has a known capability gap, every instrument built on
+> that generator inherits it, and each one looks healthy on its own terms. A global vacuity guard
+> cannot see it — only a per-subject floor can. That is why the floor REPLACES the guard rather
+> than joining it. *(Shantanu, 4 September 2026, at the CP3 ruling.)*
+
+### The fix, inline, because it is the instrument
+
+- **A per-action floor** in the harness: every action `offered.ts` can emit (`OFFERABLE`, 14 at
+  CP3) must be offered at least once somewhere the harness looks, and the failure prints the
+  per-action table. The global guard is gone.
+- **Constructed states** for what the corpus cannot reach (`tests/session/src/constructed.ts`):
+  found in the corpus and DRIVEN through the engine — the Neutrophil moved onto a pathogen it can
+  NET; a resident patrolled up its branch to a virus. Never hand-built: every state is one the
+  engine produced, and a search that finds nothing fails loudly. **This is the detail that
+  matters** (Shantanu, at the CP3 review): *a hand-built state proves the UI agrees with our
+  idea of the engine, not with the engine.* Only a state the engine produced can be the oracle.
+- **Two controls.** The floor must FIRE on the corpus alone — `net` and `resengulf` at zero —
+  which is also the proof that the constructed states are what covers them (the mustPass half:
+  the floor is required to pass on purpose, with the constructed states, and to fail on purpose
+  without them). And a resident over-offer (engulf offered on every invader in the organ while
+  the resident stands at step 0, where #5 says nothing is ever eatable) must produce rejections,
+  so the resident loop is known to be able to fail.
+
+**What is NOT claimed:** the floor is at least one offer per action. A single offer proves the
+harness looked; it does not prove the offer set is representative. The corpus still carries the
+bot's shape, and the competent bot that would change that is Phase 3's (#6, brief §6).
+
+**Disposition: FIXED INLINE at CP3** (the instrument rule, CLAUDE.md "when a control fires").
+
+## 55. On Training, a kill by ANTIVENOM grants memory for the venom — the engine contradicts its own text, and it is Kartik's mechanic being contradicted
+
+**Found 4 September 2026 at the S25 pass on the P2.5 batch** (Shantanu's item 6: "Russell's
+viper venom arrived and the message suggested the body REMEMBERED it"). Investigated before
+anything was assumed, by driving the engine: a Training game, Russell's viper venom forced into
+play, an antivenom dose given. Memory before: `{}`. Memory after: `{ "Russell's viper venom":
+true }`. The log's two consecutive lines:
+
+> **Antivenom** given — Russell's viper venom neutralised instantly. These are borrowed
+> antibodies (made in horses): fast, but they do not last and **your body learns nothing**.
+>
+> **Russell's viper venom defeated.** Memory cells for it now survive in your body — if it ever
+> returns, your response will be immediate.
+
+On Normal, nothing is granted. **The shape:** `killInvader` (`effects.ts`) grants memory on
+Training for any killed disease whenever no other copy is on the board, and it does not look at
+`by` — so `by === 'antivenom'` grants memory like a Monocyte's engulf would. The next arrival of
+the same venom is then marked `remembered` at the draw (the "MEMORY RESPONSE" line and the
+reveal's flag), and the memory response can destroy it **free**. Not a UI bleed: the UI reports
+the engine's own flag. Not related to the memory kill used the same turn: memory is keyed by
+disease. The only path to Shantanu's sighting is an earlier Russell's viper venom in that game
+killed by antivenom, or a resumed save carrying the memory.
+
+**Which half is right — ruled (Shantanu, 4 September 2026):** the TEXT. Antivenom is passive
+immunity; it teaches the immune system nothing, and that is exactly why a second snakebite
+needs a second dose. **Kartik designed that distinction deliberately**, and the engine's own
+message states it correctly before the code does the opposite. This entry exists so that
+nobody later "fixes" the mismatch in the wrong direction by softening the text.
+
+**Disposition: DEFERRED TO PHASE 3, an engine change.** The engine is frozen for Phase 2, and
+this changes play — a remembered venom destroyed free on a later arrival touches balance — so
+it lands as a deliberate, isolated change measured against the corpus (the corpus WILL move:
+any Training game with an antivenom kill followed by the same venom). The probable fix is one
+condition in `killInvader`'s memory grant, `by !== 'antivenom'`; whether a memory response
+should ever apply to a venom at all is Kartik's call at the same time.

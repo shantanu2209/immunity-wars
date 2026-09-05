@@ -41,25 +41,30 @@
     "boundaries": "depcruise packages --config .dependency-cruiser.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm boundaries && pnpm docs:check && pnpm test",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm boundaries && pnpm docs:check && pnpm turbo:check && pnpm test",
     "harness:frames": "tsx tools/legacy-harness/frames.ts",
     "harness:controls": "tsx tools/legacy-harness/controls.ts",
     "harness:drift": "tsx tools/legacy-harness/drift.ts",
     "comment:seam:homes": "P2.1 step 2. Classifies the 49 names v2_ui.html reads out of the engine into the three homes Phase 2's boundary rule leaves open, from the engine's own module grouping rather than from a second hand-written list. REPORTS ONLY — exits non-zero on a name with no home or a cross-check disagreement, and the query group is a decision for Shantanu, not an output of this script.",
-    "seam:homes": "tsx tools/legacy-harness/homes.ts"
+    "seam:homes": "tsx tools/legacy-harness/homes.ts",
+    "geometry:from-a2": "tsx tools/geometry-from-a2/generate.ts",
+    "art:build": "tsx tools/art-pipeline/build.ts",
+    "art:showcase": "tsx tools/art-pipeline/showcase.ts",
+    "comment:turbo:check": "The turbo hash guard. pnpm verify replayed a cached green over a red suite for thirteen days because the test task hashed only its own package (docs/FINDINGS.md #51). Asserts, from turbo's dry run, that every workspace test edge is in the hash graph. Control: pnpm ci:selftest turbo-test-hash.",
+    "turbo:check": "tsx tools/ci/turbo-check.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@types/node": "^22.10.5",
-    "@vitest/coverage-v8": "^2.1.9",
-    "dependency-cruiser": "^16.9.0",
-    "eslint": "^9.18.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "dependency-cruiser": "^18.2.0",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.4.2",
     "tsx": "^4.23.7",
-    "turbo": "^2.3.3",
+    "turbo": "^2.10.12",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0",
-    "vitest": "^2.1.8"
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
   }
 }

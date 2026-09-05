@@ -286,5 +286,36 @@ flag-stripped experiment), plus five schema-rejection cases in
 
 ---
 
+## 6. An unknown cell key errs in the port and CRASHES legacy
+
+**Legacy behaviour.** `moveDestinations` (`v2_engine.js`, the `brainSlow` helper it calls) reads
+`cell.zone` with no guard. An action whose `cell` is not a roster key — `{action: 'move', cell:
+'zzz', …}` — therefore **throws a `TypeError` out of `applyAction`** instead of returning an
+error result.
+
+**Port behaviour.** `packages/engine/src/queries.ts` opens `moveDestinations` with
+`if (!c || ck === 'bcell') return [];`, so the same action flows to the `!d` guard in `move` and
+returns `err('Illegal move.')` like every other rejected action.
+
+**Why not preserve it.** The contract is bug-for-bug, but this bug is UNREACHABLE through the
+proof: the corpus's action vocabulary — the bot's and the fuzzer's — never contains an unknown
+cell key, so no recorded game can distinguish the engines here, and `noUncheckedIndexedAccess`
+forces the port to write *something* for the miss. Reproducing a crash that nothing can reach
+would mean hand-writing a `throw` the compiler otherwise forbids, to be faithful to behaviour no
+test can observe. An engine boundary that errs beats one that throws, and Phase 3 puts network
+input behind this exact surface.
+
+**How it was found** — worth recording because nothing was looking for it: a rule-B
+demonstration at the v4-provider reconciliation ([`FINDINGS.md`](FINDINGS.md) #46) exhibited the
+port's guard by replaying the action against legacy, and legacy crashed. The demonstration was
+rewritten to exhibit the port and the crash became this entry.
+
+**Decided by:** Shantanu — "leave it recorded and unfixed; it is legacy behaviour and the port's
+is better", at the P2.2 board session.
+**Test:** `tests/equivalence/src/queries.test.ts`, `deviation #6` describe block — both
+directions asserted: the port errs `'Illegal move.'`, legacy throws `TypeError`.
+
+---
+
 *Entries are appended as they are decided, never retroactively edited — if a decision is
 reversed, add a new entry saying so.*

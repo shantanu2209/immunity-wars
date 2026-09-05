@@ -6,6 +6,123 @@ and why we have accepted them rather than upgraded.
 This is a public repository. Anyone can see the alert count, and a count is not a finding. This
 document is the finding.
 
+> **Updated later the same day, at P2.2 commit 1: the vitest trigger fired, deliberately early.**
+> vitest moved `2 → 4.1.11` — not `2 → 3` as §"The trigger" anticipated, because 3.2.7 (the
+> final 3.x) carries an unfixable run-level false-red of its own (`FINDINGS.md` #43, #44). The
+> upgrade landed *before* any server exists, alone, so a runner break could be attributed to the
+> runner. **`pnpm audit` now reports zero advisories and zero unmet peers.** The final one —
+> esbuild ≤0.24.2, via `tools/legacy-harness`'s directly pinned esbuild for `build:single` — was
+> cleared by ruling in its own commit: pin moved to ^0.28 (also what vite 8 wants as a peer),
+> verified by rebuilding `build:single` and **playing** both output artifacts in a browser
+> through a full turn, not by the build exiting zero. A `pnpm` override also pins transitive
+> `nanoid >= 3.3.18` (GHSA-2v37-7h3g-55p8), which the lockfile's stale in-range resolution would
+> otherwise keep vulnerable. The counts and tables below are the 19 Aug 2026 *morning* state,
+> kept as the record this acceptance was argued from.
+
+---
+
+## Re-argued 4 September 2026: the structural sentence is FALSE, and the property survives on a different basis
+
+**Why this section exists.** GitHub showed seven high alerts on `main` while `CLAUDE.md` said
+`pnpm audit` was clean — a documented-but-false claim in the file every session reads first.
+And the acceptance below rests on *"this repository never starts a long-running server"*, which
+stopped being true at P2.2 commit 2: there is a Vite dev server (`pnpm --filter
+@immunity-wars/app dev`), and since the S25 touch passes there is `vite preview --host`, which
+serves the built app on the local network to a phone. Shantanu's ruling: the acceptance cannot
+be *assumed* to still hold; re-argue it per advisory. This is that argument. **Nothing has been
+upgraded on the strength of it; report first.**
+
+### What listens now, and what it loads
+
+Two things listen, both started deliberately by a developer, never by a player, never by CI:
+
+| Process | When | Listens on | Serves |
+|---|---|---|---|
+| Vite dev server | `pnpm --filter @immunity-wars/app dev` | `localhost:5173` | the workspace's own source, transformed |
+| Vite preview | `vite preview --host` for the phone check | the LAN, for the duration of the check | the built `dist/` — static files |
+
+Both are **vite 8.2.1**, which has **no open advisory**, and vite's resolved dependency tree
+contains **none** of the three packages below (checked with `pnpm ls vite --depth 6`). So the
+structural fact that replaces the old sentence is:
+
+> ### No open advisory is in a process that listens. Every open advisory is in a one-shot tool the maintainer runs on inputs the maintainer chose.
+
+That is weaker than the old sentence and it is the true one. It has to be re-checked whenever
+a listening process gains a dependency, or an advisory lands on vite itself — the automatic
+answer the old sentence gave is gone.
+
+### The seven alerts are five advisories
+
+GitHub counts one alert per (advisory × manifest): `sharp` appears twice (its declaring
+manifest and the lockfile), and four separate advisories name `fast-uri`.
+
+#### HIGH — `sharp` <0.35.0, libvips CVEs inherited (crafted-image parsing)
+
+[GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj) · installed
+**0.33.5** · devDependency of `tools/art-pipeline` only · patched in **0.35.0**
+
+**Not reachable by anyone but the maintainer, on inputs the maintainer chose.** `pnpm
+art:build` decodes the raw PNGs committed under the art pipeline — the assets Shantanu generated
+in Google Flow, downloaded, judged and committed. The vulnerable code path is *decoding a crafted
+image*; the images decoded are ours. One-shot; not in any server; not shipped (the app ships the
+pipeline's WebP output, not `sharp`). **Cost of upgrading anyway:** a libvips change can move
+WebP encoder bytes, and the pipeline's determinism is asserted byte-for-byte (`--verify`) —
+so the bump means regenerating the outputs, re-running the contrast gate, and re-verifying,
+not just bumping a version. Worth doing at a quiet moment; not a reason to stop.
+
+#### HIGH ×4 — `fast-uri` <3.1.6, SSRF / host confusion in URI normalisation
+
+[GHSA-jqff-g426-hqxp](https://github.com/advisories/GHSA-jqff-g426-hqxp),
+[GHSA-f65p-4m7j-42xc](https://github.com/advisories/GHSA-f65p-4m7j-42xc),
+[GHSA-fph4-wmhf-6fwf](https://github.com/advisories/GHSA-fph4-wmhf-6fwf),
+[GHSA-5jgf-p345-68v8](https://github.com/advisories/GHSA-5jgf-p345-68v8) · installed
+**3.1.5** · transitive, `dependency-cruiser → ajv → fast-uri` · patched in **3.1.6**
+
+**Not reachable.** Every one of the four is a URI-normalisation flaw that matters when
+*untrusted* URIs are normalised and then used to make requests. Here `fast-uri` is loaded by
+`ajv` to resolve `$ref`s while validating dependency-cruiser's configuration
+(`.dependency-cruiser.cjs`, ours) during `pnpm boundaries`. No network request is ever made
+from that URI; the process exits. **Cost of fixing:** a one-line `pnpm.overrides` entry to
+`>=3.1.6` — cheap, but the same caveat as before applies: an override outlives its reason.
+
+#### HIGH — `extract-zip` ≤2.0.1, symlink path traversal on extraction — NO PATCH
+
+[GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv) · installed
+**2.0.1** · transitive, `puppeteer-core → @puppeteer/browsers → extract-zip` · **no patched
+version exists**
+
+**Not reachable.** The vulnerable path runs when puppeteer *downloads and unpacks a browser*.
+`tools/perf/measure.ts` uses `puppeteer-core` with `executablePath` pointing at the system
+Chrome and never calls the install API; no archive is ever extracted. There is nothing to
+upgrade to; the only removal would be dropping puppeteer, which is the perf instrument.
+
+### Verdict
+
+**The acceptance stands, on the restated basis above, for all five.** Fixes are not required
+by it. Two are cheap and one is impossible; whether to take the cheap ones is a ruling, not a
+consequence of this document. `CLAUDE.md` is corrected the same day to say what is true.
+
+### Rulings, 4 September 2026 (Shantanu), and what each leaves open
+
+- **`fast-uri` — FIXED by override.** `pnpm-workspace.yaml` pins `'fast-uri@<3.1.6': '^3.1.6'`
+  (resolved 3.1.7). Kept inside ajv's 3.x range on purpose: the first attempt (`>=3.1.6`) pulled
+  4.1.4, a major past what ajv declares, which is more than "no behaviour change" promises.
+  Verified by running `pnpm boundaries` — dependency-cruiser on the new version, same one
+  warning as before. Four alerts cleared. Drop the override when the lockfile resolves past it.
+- **`sharp` — DEFERRED, with the reasoning recorded so the deferral is a decision and not a
+  default.** The pipeline asserts byte-for-byte determinism across its 29 assets (`--verify`),
+  and a libvips change can move WebP encoder bytes. So the bump means regenerating and
+  re-gating every asset — real work — against an advisory about decoding *crafted* images,
+  when the only images decoded are our own committed art. **Revisit when the pipeline next
+  runs for another reason** (a new or changed asset), and take the bump inside that run.
+- **`extract-zip` — ACCEPTED WITH NO ACTION, not open.** No patched version exists and the
+  vulnerable path (browser download and extraction) is never taken: the perf driver uses the
+  system Chrome. There is nothing to schedule; this line is the disposition.
+
+After the override, `pnpm audit` reports **two** advisories: `sharp` (deferred as above) and
+`extract-zip` (accepted, no action). GitHub will show three alerts for those two, because
+`sharp` is counted once per manifest.
+
 ---
 
 ## The one thing to read
@@ -164,6 +281,21 @@ re-reading this file**, and the honest expectation is that they will find it no 
 
 Nothing here is a reason to avoid a dev server. It is a reason to upgrade vitest in the same change
 that introduces one.
+
+> ⚠️ **Sequenced 19 Aug 2026, at the close of P2.1. "Same change" means two commits, in this
+> order:**
+>
+> 1. **`vitest 2 → 3`, alone.** Every suite green under it, every `pnpm ci:selftest` control still
+>    behaving. **Nothing listens on a port yet, so the acceptance above still holds while this
+>    lands** — the reasoning is repaired *before* it is needed rather than at the moment it
+>    collapses.
+> 2. **The dev server.** This is what pulls the trigger, and by then the runner is known good.
+>
+> **Why not one commit.** `vitest` is the instrument every suite in this repository runs on, so a
+> break there is stop-the-line under the instrument-versus-product rule in
+> [`CLAUDE.md`](../CLAUDE.md) — and bundling it with the first UI code means a red suite cannot be
+> attributed to the runner or to the new code. Two commits cost nothing and make the bisect
+> trivial. Plan: [`P2_2_PLAN.md`](P2_2_PLAN.md) §0.
 
 ---
 

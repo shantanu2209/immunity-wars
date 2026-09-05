@@ -123,6 +123,15 @@ const CONTROLS: readonly Control[] = [
     expect: 'ui-app-no-unresolvable',
   },
   {
+    id: 'boundaries-ui-engine-tsx',
+    why: 'P2.2 step 3: the first .tsx files entered packages/ui, and dependency-cruiser resolved only .js/.ts/.mjs/.cjs until the same change — a UI component was invisible to the exact gate built to watch the UI. This control proves the boundary fires INSIDE a .tsx file, so the extension list can never quietly regress.',
+    file: 'packages/ui/src/board/Board.tsx',
+    mutate: (t) =>
+      `import { applyAction } from '../../../engine/src/index.js';\nvoid applyAction;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'ui-app-no-engine',
+  },
+  {
     id: 'boundaries-ui-content-permitted',
     why: 'The rule must permit what the brief says it permits. ui -> content is legitimate: content is validated data, not behaviour, which is exactly what content-stays-data and exports.test.ts jointly keep true. A boundary that also blocked this would be discovered by the first person to render an organ name.',
     file: 'packages/ui/src/index.ts',
@@ -130,6 +139,20 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm boundaries',
     expect: '(unused — mustPass control)',
     mustPass: true,
+  },
+  {
+    id: 'turbo-test-hash',
+    why: 'pnpm verify replayed a cached green over a red suite for thirteen days: with no ^test edge a test task hashes only its own package, so a change in a workspace dependency never invalidates it (docs/FINDINGS.md #51).',
+    file: 'turbo.json',
+    mutate: (t) => {
+      const j = JSON.parse(t) as { tasks: Record<string, { dependsOn?: unknown }> };
+      const test = j.tasks['test'];
+      if (test) delete test.dependsOn;
+      return `${JSON.stringify(j, null, 2)}
+`;
+    },
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND',
   },
   {
     id: 'docs-phase-marker',
@@ -148,6 +171,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'does not resolve',
   },
   {
+    id: 'docs-bad-inline-path',
+    why: 'CLAUDE.md named packages/content/board/geometry.json in its hard rules; it has always been packages/content/src/board/. A code span is not a markdown link, so the link check could never have seen it.',
+    file: 'CLAUDE.md',
+    mutate: (t) =>
+      t.replace(
+        '`packages/content/src/board/geometry.json`',
+        '`packages/content/board/geometry.json`',
+      ),
+    gate: 'pnpm docs:check',
+    expect: 'which does not exist',
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',
@@ -162,6 +197,18 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) => t.replace('There is no unit suite. ', ''),
     gate: 'npx vitest run --root tests/manifest',
     expect: 'reconciliation sentence verbatim',
+  },
+  {
+    id: 'manifest-coupling',
+    why: 'FINDINGS #45: a control expectation naming a renamed test title strands the control silently, and the harness cadence rule proved unpractised at P2.1. coupling.test.ts must redden the fast tier the moment an expectation and a title disagree.',
+    file: 'tests/manifest/controls-data.ts',
+    mutate: (t) =>
+      t.replace(
+        "'is five suites and three cross-cutting properties',\n      'records the absent unit suite as absent',",
+        "'is four suites and three cross-cutting properties',\n      'records the absent unit suite as absent',",
+      ),
+    gate: 'npx vitest run --root tests/manifest',
+    expect: 'no longer matches any test title',
   },
   {
     id: 'aggregate',

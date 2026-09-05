@@ -556,6 +556,124 @@ const KILLS: Case[] = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * NEW REACH under coverage-v8 4 — docs/FINDINGS.md #46
+ *
+ * The v4 provider's AST-based mapping surfaced six reachable arms the v2 range-based mapper had
+ * merged away — code that could always run and that no instrument had ever shown as uncovered.
+ * Per the ruling, they become scenarios rather than being absorbed into a recalibrated number.
+ *
+ * The NET pair is the significant one: every previous test attempt at `net` sat at the hub, so
+ * everything past the hub guard — the success path AND its own rejection — had zero coverage.
+ * That is the SAME gap as FINDINGS #1's bot blindness (the bot never moves the Neutrophil, so
+ * it can never NET), visible from the coverage side — docs/FINDINGS.md #47.
+ * ------------------------------------------------------------------ */
+
+const NEW_REACH_V4: Case[] = [
+  {
+    name: 'NET succeeds — neutrophil on a route swarm (the success path had zero coverage)',
+    setup: (g) => {
+      command(g);
+      const n = g.cells.neutrophil;
+      if (n) {
+        n.zone = 'route';
+        n.lane = 'gut' as never;
+        n.step = 1;
+      }
+      g.invaders = [
+        inv({
+          id: 'b1',
+          type: 'bacteria',
+          disease: 'Cholera',
+          zone: 'route',
+          lane: 'gut',
+          step: 1,
+        }),
+        inv({
+          id: 'b2',
+          type: 'bacteria',
+          disease: 'Typhoid',
+          zone: 'route',
+          lane: 'gut',
+          step: 1,
+        }),
+      ];
+    },
+    actions: [{ action: 'net' }],
+  },
+  {
+    name: 'NET off the hub with nothing catchable — the "far too big" rejection',
+    setup: (g) => {
+      command(g);
+      const n = g.cells.neutrophil;
+      if (n) {
+        n.zone = 'route';
+        n.lane = 'gut' as never;
+        n.step = 1;
+      }
+      g.invaders = [
+        inv({
+          id: 'w1',
+          type: 'worm',
+          disease: 'Hookworm',
+          zone: 'route',
+          lane: 'gut',
+          step: 1,
+          hp: 3,
+          maxhp: 3,
+        }),
+      ];
+    },
+    actions: [{ action: 'net' }],
+  },
+  {
+    name: 'degranulate against a target NOT in an organ branch — the route case of the signature move',
+    setup: (g) => {
+      command(g);
+      const e = g.cells.eosinophil;
+      if (e) {
+        e.zone = 'route';
+        e.lane = 'gut' as never;
+        e.step = 1;
+      }
+      g.invaders = [
+        inv({
+          id: 'p1',
+          type: 'parasite',
+          disease: 'Giardia',
+          zone: 'route',
+          lane: 'gut',
+          step: 1,
+          tagged: true,
+          hp: 2,
+          maxhp: 2,
+        }),
+      ];
+    },
+    actions: [{ action: 'degranulate', invaderId: 'p1' }],
+  },
+  {
+    name: 'worm cap substitution finds a non-worm only after reshuffling the discard',
+    setup: (g) => {
+      const raw = g as unknown as {
+        phase: string;
+        wormsThisTurn: number;
+        seen: Record<string, boolean>;
+        deck: { type: string }[];
+        discard: { type: string }[];
+      };
+      raw.phase = 'infection';
+      raw.wormsThisTurn = 1; // per-turn cap reached: the popped worm must be substituted
+      raw.seen = {}; // no known diseases, so the spawn cannot take the reinfection shortcut
+      const worms = raw.deck.filter((c) => c.type === 'worm');
+      const nonWorm = raw.deck.find((c) => c.type !== 'worm');
+      raw.deck = worms;
+      raw.discard = nonWorm ? [nonWorm] : [];
+    },
+    actions: [{ action: 'draw' }],
+  },
+];
+
+/* ------------------------------------------------------------------ *
  * run them
  * ------------------------------------------------------------------ */
 
@@ -566,6 +684,7 @@ const GROUPS: [string, Case[]][] = [
   ['combat', COMBAT],
   ['residents', RESIDENTS],
   ['kill bookkeeping', KILLS],
+  ['new reach under coverage-v8 4', NEW_REACH_V4],
 ];
 
 for (const [group, cases] of GROUPS) {
@@ -575,3 +694,41 @@ for (const [group, cases] of GROUPS) {
     }
   });
 }
+
+/**
+ * The sixth new-reach arm is not an action, so it cannot ride a `Case`: `fireRare('dengueADE')`
+ * with no Dengue in play — the rare event's no-op arm. In real play the trigger implies a
+ * Dengue is present, so only a direct call reaches the else, and every existing direct-call
+ * test set the Dengue up first.
+ */
+describe('coverage scenarios — new reach under coverage-v8 4 (rare events)', () => {
+  it('dengueADE fired with no Dengue in play no-ops identically', () => {
+    const run = (E: Engine): { fired: unknown; state: string } => {
+      installRng(880001);
+      try {
+        const g = E.newGame({ difficulty: 'normal', science: false }) as GameState;
+        const raw = g as unknown as {
+          flags: Record<string, unknown>;
+          rare: Record<string, unknown>;
+          invaders: unknown[];
+        };
+        raw.flags.rareEvents = true;
+        raw.rare.armed = true;
+        raw.rare.fired = false;
+        raw.invaders = []; // no Dengue anywhere
+        const fired = (
+          E as unknown as Record<string, unknown> & {
+            fireRare: (g: GameState, k: string) => unknown;
+          }
+        ).fireRare(g, 'dengueADE');
+        return { fired, state: canonical(normalise(g)) };
+      } finally {
+        restoreRng();
+      }
+    };
+    const a = run(legacy);
+    const b = run(portEngine);
+    expect(b.fired).toEqual(a.fired);
+    expect(b.state).toEqual(a.state);
+  });
+});

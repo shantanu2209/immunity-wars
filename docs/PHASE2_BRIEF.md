@@ -1,12 +1,77 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.1 · 18 August 2026
+**Version:** 1.5 · 30 August 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
 Read alongside [`PHASE2_INPUTS.md`](PHASE2_INPUTS.md), [`SEAM_DECISIONS.md`](SEAM_DECISIONS.md)
 and [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md). This brief makes decisions; those documents
 supply the measurements behind them.
+
+---
+
+## What v1.2 adds
+
+v1.2 changes no ruling. It records three things settled while P2.1 was built, so that the spec and
+the work do not drift apart:
+
+- **Decision C is RULED** — selection-scoped, with both its conditions measured. §3.
+- **Two standing rules** earned during P2.1: the documentation sweep as a check, and
+  instrument-versus-product when a control fires. §6.
+- **P2.2's scope, stated before it starts.** §2 and §5. It is the sub-phase most likely to grow,
+  because it is the first one with something to look at.
+
+---
+
+## What v1.3 records
+
+v1.3 changes no ruling of v1.2. It records what happened when P2.2's first step executed the
+vitest plan, because the plan's premise did not survive contact and the decision that replaced it
+belongs in the versioned document:
+
+- **`vitest 2 → 3` became `2 → 4.1.11`, in a commit BEFORE the dev server rather than the same
+  change.** §6 carries the correction and the reasoning.
+- **The security trigger is now FIRED.** The advisory acceptance rested on nothing listening on
+  a port; the dev server (P2.2 commit 2) changes that, and the runner it was waiting on moved
+  first. `pnpm audit` is clean at the time of this revision —
+  [`SECURITY_NOTES.md`](SECURITY_NOTES.md) holds the current state.
+- Three findings came out of the upgrade battery: [`FINDINGS.md`](FINDINGS.md) **#43** (vitest 2
+  never enforced `testTimeout` on synchronous tests — eight tests across three suites ran on a
+  fictional budget, and the tests with *declared* budgets sailed through the change that broke
+  the ones on the *inherited* default), **#44** (vitest 3.2.7 can fail a run in which every test
+  passed, and 3.x is a closed line), **#45** (the manifest-controls cadence rule was written
+  down and not practised — now a fast-tier check).
+
+---
+
+## What v1.4 records
+
+v1.4 changes no ruling of v1.3. It records the P2.3 screening result and the ruling on it,
+because §4 is the section that defined "acceptable" before the number existed and it should be
+the section that says what the number turned out to be:
+
+- **The screening budget passed at every throttle level** ([`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md)).
+  **Capacitor holds — CONFIRMED BY SCREENING, not decided.** Locked decision #1 stays formally
+  open until the deciding pass on real 2–3GB hardware. §4 carries the ruling in place.
+- P2.2 and P2.3 are closed: [`P2_2_CLOSEOUT.md`](P2_2_CLOSEOUT.md).
+
+---
+
+## What v1.5 records
+
+v1.5 changes one detail of Gate 1's human-tested item, by ruling at the newcomer-test
+protocol review (30 August 2026, [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md)):
+
+- **The tester is not told to pick Training.** The difficulty screen is one of the screens
+  under test, and telling someone which button to press on a screen under test means that
+  screen is not tested. The interface carries the guidance instead (Training marked
+  "Recommended for your first game"), and **choosing a difficulty is part of "starting
+  unaided"**. Training remains the expected setting; a non-Training pick is a finding about
+  the difficulty screen, not a voided run. §1 carries the marked amendment in place.
+- The spread pacing decision §4 left open is **ruled**: 900ms standard / 1400ms dice with
+  tap-anywhere-to-advance, replacing the legacy 560/800ms. No measurement needed re-running —
+  none of §4's budget rows depend on the inter-frame delay
+  ([`for-P2.5.md`](for-P2.5.md)).
 
 ---
 
@@ -84,6 +149,15 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 > The review's two sub-questions are answered in the item itself: **a loss counts as finishing**,
 > and the test runs on **Training**. A full game is ~45 turns, which is a long first session to
 > ask of an unaided newcomer, and Training is the honest setting to ask it on.
+>
+> ⚠️ **Amended in v1.5 — the newcomer-test protocol review (30 August 2026).** "Runs on
+> Training" does not mean the tester is TOLD to pick Training: the difficulty screen is one of
+> the screens under test, and an instructed choice untests it. The interface carries the
+> guidance — Training is marked **"Recommended for your first game"** — and **choosing a
+> difficulty is part of "starting unaided"**. Training remains the expected setting because
+> the recommendation should produce it; whether it does is itself part of the test, and a
+> non-Training pick is a **finding about the screen**, not a voided run. Protocol:
+> [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md).
 
 > ⚠️ **Added in v1.1 — review item G.** Accessibility was **neither in Gate 1 nor explicitly
 > out** in v1.0. It is now a deliberate call in both directions.
@@ -137,12 +211,25 @@ Sequenced so the decision that could invalidate everything happens in week two, 
 | # | Stage | Why here |
 |---|---|---|
 | **P2.1** | **Seam 1 + the dependency rule** | Nothing else may start. See §3 |
-| **P2.2** | **Thin vertical slice** — SVG board from `geometry.json`, one animated spread **driven through `Session` against the real engine**, no game logic | The cheapest artefact that can answer P2.3 |
+| **P2.2** | **Thin vertical slice** ([plan](P2_2_PLAN.md)) — SVG board from `geometry.json`, one animated spread **driven through `Session` against the real engine**, no game logic | The cheapest artefact that can answer P2.3 |
 | **P2.3** | **Performance measurement** on that slice | The decision point. See §4 |
 | **P2.4** | Art pipeline | Runs alongside from here; blocks nothing |
 | **P2.5** | Full UI build, screen by screen | See §5 |
 | **P2.6** | Onboarding, empty/error/offline states, settings | The screens an exhibition demo never needed |
 | **P2.7** | Polish rounds, then Gate 2 | §1 |
+
+> ⚠️ **Scope, fixed in v1.2 before P2.2 starts — and it is the sub-phase most likely to grow,
+> because it is the first one with something to look at.**
+>
+> **P2.2's deliverable is a MEASURABLE ARTEFACT, not a beautiful one.** It exists to answer the
+> performance question at P2.3 and for no other reason. Visual quality is **Gate 2's** business
+> and Gate 2 comes much later (§1).
+>
+> **The signal that the slice has grown past its purpose:** deciding how something should *look*
+> rather than whether it *renders*. The board's layout is already determined by `geometry.json` —
+> P2.2 is a data-to-code transformation with nothing to design. **Make no layout or styling
+> decision beyond what is needed to render and measure.** Anything worth deciding visually is
+> noted for **P2.5** and left there.
 
 > ⚠️ **Settled in v1.1 — review item G, first bullet.** v1.0 did not say whether the thin slice
 > drives the real engine or replays a canned `Frame[]`, and the two measure different things:
@@ -333,6 +420,17 @@ so this is informed rather than forced.
 Whether **Capacitor holds or React Native becomes necessary** — the one locked decision Phase 2
 can reopen.
 
+> ✅ **RULED on the screening numbers, 19 August 2026 — Capacitor holds; React Native is not
+> needed on this evidence. CONFIRMED BY SCREENING, not decided.** The screening pass
+> ([`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), every number carrying its device and throttle
+> level) passed the budget at every level; at 6× — the harshest screen — initial render has ~8×
+> headroom, tap ~3×, and per-redraw work ~30%. **The deciding pass on a 2–3GB handset has not
+> happened, and locked decision #1 stays formally open until it does.** Two of the ruling's
+> notes are recorded with the numbers rather than here: the unmemoised full-tree re-render
+> measured at 22.7ms p50 at 6× — so not memoising pre-emptively is now measured rather than
+> argued — and row 3's ~30% headroom is what the rest of the UI will spend, so that row's
+> re-measure when the full UI lands is **expected, not optional**.
+
 ### Define "acceptable" BEFORE the number exists
 
 Non-negotiable, and it is [`FINDINGS.md`](FINDINGS.md) #34's lesson: a threshold fitted to the
@@ -366,6 +464,12 @@ row it came from is not finished.
 > constant, not a rule. Phase 2 owns whether to keep it. It is a **rendering decision** — it
 > affects how the spread reads to a player and nothing about what the engine does — and it should
 > be made by looking at the animation, not by copying a number forward.
+>
+> ✅ **RULED 30 August 2026 (v1.5): 900ms standard / 1400ms dice, plus tap-anywhere-to-advance.**
+> For a newcomer the frame headline is information, not confirmation, and 560ms does not fit
+> reading a label AND registering which tokens changed; the tap is what makes the exact numbers
+> low-stakes. No re-measurement was needed — none of the budget rows above depend on the
+> inter-frame delay. Record: [`for-P2.5.md`](for-P2.5.md).
 
 ### How, in order of cost
 
@@ -406,7 +510,8 @@ confirmed pass on real low-end hardware. It stays because an honest gap beats a 
 ### The board is SVG; the illustrations stay raster
 
 **Geometry** — vessels, step nodes, lane curves, organ positions — is *generated from*
-`content/board/geometry.json`. No drawing, no design tool: a data-to-code transformation.
+`packages/content/src/board/geometry.json`. No drawing, no design tool: a data-to-code
+transformation.
 
 **Illustrations** — cells, pathogens, organs — remain raster, dropped into the SVG via `<image>`.
 Every pixel of the existing contrast-tuned art is preserved.
@@ -466,7 +571,19 @@ Everything goes through the pipeline and then it does not matter which tool made
 [`ASSETS.md`](ASSETS.md). The content licence is still pending exactly this question. If the
 terms turn out not to permit CC BY-SA redistribution, you need to know which assets are affected.
 
-### Tools
+### Tools — and the division of labour, explicit from the start
+
+> ⚠️ **Stated in v1.2**, so it is not discovered by someone doing the wrong half.
+>
+> **Claude builds the working UI** — React components, the SVG board, state wiring, tests. That is
+> the application, and it lives in the repository.
+>
+> **Claude Design is for EXPLORING screens that do not exist yet and have no prior version to
+> copy** — mode select, room lobby, onboarding, settings, store screenshots. Shantanu directs it
+> separately and brings back a direction; Claude builds to that direction.
+>
+> **P2.2 needs neither.** The board's layout comes out of `geometry.json`, so there is nothing to
+> design and nothing to explore.
 
 - **Claude Design** for screens that do not yet exist: mode select, lobby, onboarding, settings,
   store screenshots. Directed through chat; no drawing skill required.
@@ -511,6 +628,12 @@ fine when a control was pointed at it.**
 - **The smaller true claim.** Kartik may have to defend any sentence to a judge.
 - **One task per session, plan before code, commit after verification, `pnpm verify` before
   commit.**
+- **When a control fires: fix inline if it is in the INSTRUMENT, file if it is in the PRODUCT.**
+  A control firing on a check means the measuring apparatus is wrong and everything measured with
+  it is untrustworthy — a stop-the-line condition, not scope. A control firing on the thing being
+  built is ordinary work and queues in [`FINDINGS.md`](FINDINGS.md). **The test: does anything
+  downstream depend on this being right?** Added at the close of P2.1, where three of the four
+  unplanned pieces of work were controls firing on instruments.
 - **Every sub-phase ends with a documentation sweep before its closing commit** — `pnpm docs:check`,
   inside `pnpm verify`, with two controls. Added at the close of P2.1 because the habit had already
   failed: `CLAUDE.md` said "Current phase: Phase 1" for the whole first session of Phase 2.
@@ -520,10 +643,21 @@ fine when a control was pointed at it.**
 
 ### Also inherited
 
-⚠️ **`vitest 2 → 3` upgrades in the same change that introduces a Vite dev server.** Every open
-Dependabot advisory requires a long-running server accepting requests, and nothing currently
-starts one. A dev server collapses that reasoning ([`SECURITY_NOTES.md`](SECURITY_NOTES.md)).
-P2.1 needs no dev server and so does not pull this trigger; P2.2 probably does.
+⚠️ **CORRECTED in v1.3 — the upgrade happened, early, and landed on 4.** This block read:
+*"`vitest 2 → 3` upgrades in the same change that introduces a Vite dev server."* What happened
+instead, recorded rather than silently rewritten:
+
+- The upgrade landed **alone, before the server** (P2.2 commit 1), so a runner break could be
+  attributed to the runner and nothing else. That sequencing was [`P2_2_PLAN.md`](P2_2_PLAN.md)
+  §0's, and it earned its keep twice over — the runner broke twice, in two unrelated ways.
+- The landing version is **4.1.11, not 3**: vitest 3.2.7 is the final release of a closed line,
+  and it carries a worker-RPC race that false-reds a run in which every test passed —
+  deterministically reproduced, unreachable from config, fixed upstream in 4
+  ([`FINDINGS.md`](FINDINGS.md) #44). A gate that goes red on a coin flip cannot anchor "commit
+  after verification", which is the property the upgrade existed to protect.
+- The trigger this note guarded is therefore **fired before it was pulled**: when the dev server
+  arrives in P2.2 commit 2, the runner it was waiting on has already moved, and the advisory set
+  the acceptance covered is empty.
 
 TypeScript 6.0.3 (Dependabot PR #2) remains deliberately deferred.
 

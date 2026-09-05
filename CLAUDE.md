@@ -14,7 +14,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.1).
+**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.5).
 Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
 `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
 
@@ -28,7 +28,7 @@ No API keys or secrets, ever.
   If a change would make the biology wrong, stop and say so — do not ship it and flag it later.
 - **Rules live in `packages/engine/` and nowhere else.** No game logic in UI, server, or content.
 - **Physical/digital parity.** The printed board and the app must agree. Board geometry has one
-  source: `packages/content/board/geometry.json`. Never hardcode coordinates elsewhere.
+  source: `packages/content/src/board/geometry.json`. Never hardcode coordinates elsewhere.
 - **No personal data.** No accounts, no emails, no persistent user identifiers, no analytics IDs.
   Users are under 18; India's DPDP Act treats them as children. Staying out of scope is a
   design constraint, not a preference.
@@ -46,6 +46,11 @@ pnpm test:balance     # slow; run on engine/content changes
 pnpm build
 pnpm build:single     # self-contained HTML harness — double-click to play, no toolchain
 ```
+
+`pnpm test` is turbo-cached. A test task's hash includes its workspace dependencies through the
+`^test` edge in `turbo.json` — without it, `pnpm verify` replayed a cached green over a red
+suite for thirteen days (`docs/FINDINGS.md` #51). `pnpm turbo:check` (inside `verify`) asserts
+the edges exist; `pnpm turbo run test --force` bypasses the cache when the cache itself is in doubt.
 
 ## Layout
 
@@ -133,6 +138,26 @@ contract Task B was measured against.
   depends on someone remembering to sweep would have been the thirteenth documented-but-false
   claim in a repository that has found twelve.
 
+- **When a control fires: FIX INLINE IF IT IS IN THE INSTRUMENT. FILE IF IT IS IN THE PRODUCT.**
+
+  A control firing on a **check** — a boundary rule that cannot see the violation, a manifest
+  missing a package, a gate sitting below its floor — means **the measuring apparatus is wrong,
+  and everything measured with it until it is fixed is untrustworthy.** That is a stop-the-line
+  condition, not scope creep. Fix it before continuing, in the same change.
+
+  A control firing on **the thing being built** — a component, a layout, a rendering bug — is
+  ordinary work. It goes in `docs/FINDINGS.md` and waits its turn.
+
+  > **The test: does anything downstream depend on this being right?**
+  > Instrument defects poison results. Product defects do not.
+
+  *Agreed 19 Aug 2026, at the close of P2.1.* P2.1 absorbed four unplanned pieces of work and
+  three of them were controls firing — the two-rule boundary defect, the permitted edge the gate
+  was rejecting, the suite missing from the manifest. Each was fixed inline and each was right to
+  fix inline, because all three were instruments. The rule exists so that the next sub-phase can
+  stay scoped **without** teaching anyone to ignore a firing control, which is the failure this
+  project would least survive.
+
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the
   first kind freely — the negative-control rule qualifies, because it catches a *class* of error
@@ -187,17 +212,45 @@ contract Task B was measured against.
   oracle during a renderer rewrite is the worst available timing. The 9 coverage arms move with
   it (`docs/COVERAGE_DEFERRED.md`). Record: `docs/PHASE2_BRIEF.md` v1.1 §6, review item A.
 
-- **Open Dependabot advisories are accepted, and the acceptance has a TRIGGER.** GitHub shows
-  criticals; it is one advisory counted once per manifest, in test tooling. Every open advisory
-  requires a long-running server accepting requests, and nothing here starts one — every test
-  command is one-shot. Full reasoning: `docs/SECURITY_NOTES.md`.
+- **The vitest trigger has FIRED, deliberately early: vitest is on 4.1.11.** The advisory
+  acceptance below survives with one advisory left, and the dev server no longer waits on a
+  runner move.
 
-  > ⚠️ **If you are about to add a Vite dev server for the Phase 2 UI, or `vitest --ui`, or
-  > anything else that listens on a port — that reasoning collapses and `vitest 2 → 3` becomes
-  > urgent. Upgrade it in the same change that introduces the server.**
+  *Corrected 19 Aug 2026, at P2.2 commit 1.* This block previously said `vitest 2 → 3` becomes
+  urgent the moment anything listens on a port, and to upgrade in the same change that introduces
+  the server. The upgrade landed **before** the server instead, alone, so a runner break could be
+  attributed to the runner — and it broke twice, which is why the landing version is 4 and not 3:
+  vitest 2 had never enforced `testTimeout` on synchronous tests (8 tests across 3 suites ran on
+  a fictional budget; suite-level budgets now declared at four entry points), and vitest 3.2.7 —
+  the final 3.x — can fail a run in which every test passed, a false-red its closed line will
+  never fix. `docs/FINDINGS.md` #43 and #44.
 
-  This is not a reason to avoid a dev server. Phase 2 will want one. It is a reason not to add one
-  without also moving vitest.
+  **Two advisories are open, both dispositioned, re-argued 4 September 2026**
+  (`docs/SECURITY_NOTES.md`, "Re-argued" and "Rulings"): `sharp` <0.35 is DEFERRED (the art
+  pipeline decodes only our own committed art; a bump means regenerating and re-gating all 29
+  assets, so it is taken when the pipeline next runs for another reason), and `extract-zip` is
+  ACCEPTED WITH NO ACTION (puppeteer's browser-download path, never taken; no patch exists).
+  Four `fast-uri` advisories were cleared by a `pnpm` override the same day. **The old
+  acceptance sentence — "this
+  repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
+  and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
+  is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
+  inputs the maintainer chose*. That is weaker and true, and it must be re-checked whenever a
+  listening process gains a dependency or vite itself gets an advisory.
+
+  *Corrected 4 September 2026.* This block previously said **"Nothing remains accepted:
+  `pnpm audit` is clean"** — true on 19 August, false by the time GitHub showed seven high
+  alerts on `main`, and in the file every session reads first. The esbuild clearance it
+  described (pin to ^0.28, `build:single` rebuilt and **played** through a full turn) still
+  stands as the record of how a bump is verified here.
+
+  **The battery for any future runner or toolchain move, in full — learned the once-hard way
+  when the P2.2 upgrade ran the coverage TESTS but not the coverage GATE, and the gate was where
+  the provider change was hiding:** `pnpm verify` · `pnpm ci:selftest` reading every control's
+  own line, not the exit code · `pnpm test:manifest-controls` · `rm -rf coverage && pnpm
+  coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
+  --force`), because turbo cancels queued tasks on first failure and a single red suite is a
+  lower bound, not a census.
 
 - **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
   before the Brain fix. They still contain `branch:4` and contradict the current rules.

@@ -230,6 +230,45 @@ describe('B2: private helpers, tested behaviourally', () => {
  * the knob deviation
  * ------------------------------------------------------------------ */
 
+describe('deviation #6: an unknown cell key errs in the port and CRASHES legacy', () => {
+  // docs/DEVIATIONS.md #6, found by a rule-B demonstration at the v4 reconciliation
+  // (docs/FINDINGS.md #46): legacy's moveDestinations reads cell.zone without a guard, so an
+  // action carrying a cell key that is not on the roster THROWS a TypeError out of applyAction;
+  // the port's guard returns [] and the action errs 'Illegal move.'. Outside the corpus's
+  // vocabulary — the fuzzer never held an unknown cell key — and the port's behaviour is the
+  // one an engine boundary should have, so the divergence is kept, asserted in BOTH directions.
+  const fresh = (E: typeof legacy): GameState => {
+    const g = E.newGame({ difficulty: 'normal', science: false }) as GameState;
+    (g as unknown as { phase: string }).phase = 'command';
+    (g as unknown as { ap: number }).ap = 9;
+    return g;
+  };
+
+  it("port: moveDestinations of an unknown cell is [], and move errs 'Illegal move.'", () => {
+    const g = fresh(port as unknown as typeof legacy);
+    expect(port.moveDestinations(g as never, 'zzz' as never)).toEqual([]);
+    const r = port.applyAction(
+      g as never,
+      {
+        action: 'move',
+        cell: 'zzz',
+        zone: 'route',
+        lane: 'gut',
+        step: 1,
+      } as never,
+    ) as { ok: boolean; error?: string };
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe('Illegal move.');
+  });
+
+  it('legacy: the same action throws — the divergence this entry records', () => {
+    const g = fresh(legacy);
+    expect(() =>
+      legacy.applyAction(g, { action: 'move', cell: 'zzz', zone: 'route', lane: 'gut', step: 1 }),
+    ).toThrow(TypeError);
+  });
+});
+
 describe('B2: setKnobs', () => {
   it("throws a named error for the unimplemented 'heal' knob", () => {
     // docs/DEVIATIONS.md #1. Legacy's real behaviour here is a SILENT no-op — it assigns to an

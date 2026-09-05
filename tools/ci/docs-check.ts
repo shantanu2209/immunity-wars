@@ -172,16 +172,59 @@ for (const file of SWEEP) {
   }
 }
 
+// --- 4. inline file paths resolve -----------------------------------------------------------------
+
+/**
+ * Backtick-quoted repository paths must exist.
+ *
+ * Added at the close of P2.1, after `CLAUDE.md`'s hard rules turned out to name
+ * `packages/content/board/geometry.json` — which has been `packages/content/src/board/` all along.
+ * It is the single source for the on-screen board AND the printed A2 artwork, so it is the first
+ * file P2.2 opens, and the path was wrong in the document a newcomer reads first.
+ *
+ * Check 3 could never have caught it: that one validates markdown LINKS, and this was a code span.
+ * The two are different syntaxes carrying the same kind of claim, and only one was being checked.
+ *
+ * Deliberately narrow — anchored at a top-level directory and required to end in a known
+ * extension — so that prose mentioning `something/like/this` is not dragged in. Measured at 137
+ * paths across 34 documents when it was written, of which exactly one was wrong.
+ */
+const INLINE_PATH =
+  /`((?:packages|tests|tools|docs|scripts)\/[A-Za-z0-9_./-]+\.(?:ts|tsx|js|cjs|mjs|json|md|html))`/g;
+let inlineChecked = 0;
+for (const file of SWEEP) {
+  for (const m of read(file).matchAll(INLINE_PATH)) {
+    const target = m[1] ?? '';
+    inlineChecked += 1;
+    if (!existsSync(join(REPO, target))) {
+      note(`${file}: names \`${target}\`, which does not exist`);
+    }
+  }
+}
+
 // --- report ---------------------------------------------------------------------------------------
 
 console.log('='.repeat(95));
 console.log('DOCUMENTATION SWEEP — the parts a machine can falsify');
 console.log('='.repeat(95));
-console.log(`  swept ${SWEEP.length} documents, ${testDirs.length} test packages\n`);
+console.log(
+  `  swept ${SWEEP.length} documents, ${testDirs.length} test packages, ${inlineChecked} inline paths\n`,
+);
+
+// Vacuity guard. A sweep that matched no paths reports exactly as green as one that matched 137,
+// and a regex anchored on directory names is precisely the kind of thing that silently stops
+// matching after a rename.
+if (inlineChecked < 50) {
+  console.log(
+    `  !! only ${inlineChecked} inline paths matched, against 137 when this was written.\n` +
+      '     That is a collapse in the pattern, not a sudden improvement in the documentation.',
+  );
+  process.exit(1);
+}
 
 if (problems.length === 0) {
   console.log('  Phase marker resolves and agrees. Every test package is in the manifest.');
-  console.log('  Every relative link resolves.');
+  console.log('  Every relative link resolves, and every path named in a code span exists.');
   console.log(
     '\n  This says nothing about whether the PROSE is true. That is still a person`s job.',
   );

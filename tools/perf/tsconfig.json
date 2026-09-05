@@ -1,0 +1,13 @@
+{
+  // Measurement instrument: runs on Node, drives Chrome over CDP. Node types for the same
+  // reason the other tools packages have them; nothing in packages/ gains them.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // DOM alongside Node: the `page.evaluate` callbacks are code this script INJECTS into the
+    // page, so their bodies typecheck against the browser's globals while the rest runs on Node.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["*.ts"]
+}
