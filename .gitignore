@@ -55,19 +55,10 @@ yarn-error.log*
 playwright-report/
 test-results/
 
-# Game content documents — DELIBERATELY NOT COMMITTED.
-#
-# The rulebook, quick reference and study packet are Kartik's design work. This repository is
-# PUBLIC, and docs/PHASE1_BRIEF.md holds the game-content licence pending an assets-provenance
-# check — so committing these would publish them under no licence at all.
-#
-# Ignored rather than merely left untracked, on purpose: untracked is one careless `git add -A`
-# away from publication, and that has already happened once in this repo. The rule is written
-# down so it does not depend on anyone remembering it.
-#
-# To publish them, resolve the content licence first (docs/LICENSES.md), then remove this rule
-# in the same commit that records the decision.
-docs/*.docx
+# Game content documents (the rulebook, quick reference and study packet) ARE committed, since
+# 5 September 2026: the content licence is settled — all rights reserved, none declared
+# (docs/LICENSES.md) — and a corrected rulebook that exists on one machine is a rulebook waiting
+# to be lost. They were ignored while the licence was pending; that reason has expired.
 
 # Coverage output
 coverage/

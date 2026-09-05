@@ -32,6 +32,13 @@ This covers the board artwork, card designs, organ and cell illustrations, the r
 and the study materials — everything that makes up the game as a played object, as opposed
 to the software that runs it.
 
+**The game's documents are in the repository under this same status** (decided 5 September
+2026): `docs/Immunity_Wars_Rulebook_v3_1.docx`, `docs/Immunity_Wars_Quick_Reference_v3.docx`
+and `docs/Immunity_Wars_Study_Packet_v3_1.docx` are Kartik's design work, committed so that
+his rulings on the rules are durable rather than living on one machine, and **all rights
+reserved** like the rest of the content. They were kept out of git while the content licence
+was pending; that reason expired with the decision above.
+
 ### Why there is no licence, and why that is the answer rather than a delay
 
 The artwork was generated with Google Flow, and the provenance check was completed on

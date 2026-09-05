@@ -123,3 +123,47 @@ run is reproducible with:*
 pnpm --filter @immunity-wars/app dev
 npx tsx tools/perf/measure.ts http://localhost:5173 1,4,6 out.json
 ```
+
+---
+
+## Added 5 September 2026 — a new tap shape, and a BUDGET BREACH stated as one
+
+**Row 2's budget is exceeded at 6× by the command tap from the planning screen. Exceeded,
+not "noted": 109ms busy against the 100ms row.** Found while measuring item 12's organ flight
+(block e; the flight itself is +2–6ms and is not the cause — `for-P2.5.md`, "step 5").
+
+**What was measured.** The same conditions as above (i7-12700F, headless system Chrome, CDP
+throttling, the dev shell, Training through `LocalSession`), a fresh instrument channel
+(`__iwMetrics.transitions`), the tap being "Command your cells" on the planning screen — the
+tap that ends planning and shows the board. Busy time is main-thread work from the tap until
+the board's commit yields, the row 2 probe. Five taps per arm; the 6× arm with the flight
+rerun at eight.
+
+| device · throttle | flight | busy p50 | busy p95 | to-paint p50 | row 2 budget |
+|---|---|---|---|---|---|
+| i7-12700F · 1× | off | 12.0ms | 13.0ms | 28ms | within |
+| i7-12700F · 4× | off | 62.9ms | 70.7ms | 94ms | within |
+| i7-12700F · **6×** | off | **109.1ms** | 112.0ms | 135ms | **EXCEEDED** |
+| i7-12700F · 6× | on | 115.1ms | 165.2ms | 125ms | exceeded |
+
+**Why it is different from row 2 above, and why the breach is accepted for now.** Row 2 was
+measured on **selection taps** on the play screen — a cell highlighted, the view rebuilt, the
+same board redrawn — and the budget was set against that screen before any other existed. The
+command tap is a **screen switch**: the planning screen (item 12, built after the budget was
+written) is unmounted and the whole board — its lanes, its annotations, every token — is
+mounted from nothing. That is closer to row 1 (the initial render, budget 1s, measured here at
+46–132ms at 6×) than to a selection tap, and it did not exist when row 2 was written. The
+argument is made explicitly so the closeout can show that we knew, why we accepted it, and
+what closes it — not left as an implication in a note.
+
+**The named fix.** Keep the board mounted and hidden while the planning screen shows, so the
+command tap is a visibility toggle and the board's redraw for the new turn, not a mount — at
+the cost of the board's memory and its render on every draw. An alternative is to mount the
+board behind the planning screen's own paint (a deferred mount during planning). Either makes
+the tap a row-2 tap again.
+
+**The point at which it must be RESOLVED, not re-deferred: the mandatory full-UI per-redraw
+re-measure** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note, "expected, not
+optional"). That pass re-measures this tap with the fix in place, or states the shortfall in
+the closeout in the brief's own words — but it does not carry the breach forward as an open
+note a third time.

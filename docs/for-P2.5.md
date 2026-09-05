@@ -1369,7 +1369,7 @@ planning screen **mounts the whole board** — it is a screen switch, not a sele
 it costs **~63ms at 4× and ~109ms at 6× with the flight off**, against the §4 tap row's 100ms.
 P2.3 measured selection taps (a highlighted node) and the initial render (~1s row); this tap is
 a third shape, new with item 12, and it goes to the **mandatory per-redraw re-measure with the
-full UI** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note) as a named item. The
+full UI** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note) as a named item — **and it is recorded as a BUDGET BREACH, not a note** (Shantanu, 5 September 2026): exceeded, reason, named fix and the point of resolution are in [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 5 September 2026". The
 candidate that would make it cheap, not built: keep the board mounted and hidden while the
 planning screen shows, so the switch is a visibility toggle rather than a mount — at the cost
 of the board's memory and its render on every draw.
