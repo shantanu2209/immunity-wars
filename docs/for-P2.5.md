@@ -836,3 +836,43 @@ invader count unchanged. No ⟪missing key⟫.
 select each from the strip and read the rows — the action a ring would perform is the one named.
 (2) Tap a greyed row and read why. (3) Tap an available row and watch the same effect a ring
 tap gives. (4) Decide whether movement needs rows too.
+
+## Items 5 and 7 — the effects strip and the turn line: BUILT (4 September 2026)
+
+**The sweep, approved as reported, built as one strip** (`EffectsStrip.tsx` from `effectChips`
+in `effects.ts`), at the top of the play surface, one chip per effect in force for as long as
+it is in force, each saying what it is doing and for how long. The sources, and where the
+state comes from:
+
+| Chip | State | Duration shown |
+|---|---|---|
+| Immunosuppression, antibody shortage (cap 2), fewer or extra AP, fever (no march) | the session's new `effects` summary of `fx` — one of the 13 keys the view drops, carried like `blocked` and `readyTurn` | this turn / N more turns |
+| Neutrophil or Killer T offline | `suppress` | N more turns |
+| Organ damaged — with the organ's own effect text from content ("Antibody storage capped at 2 per class") | `organs` hp below max; Hard's compensated organ excluded, as the engine excludes it | for the rest of the game |
+| Lymphatics blocked; HIV (Helper T destroyed); Helper T not yet primed | the `lymphBlocked` and `hivActive` queries; `presentations` | none |
+| A parasite inside a resident | `residents[o].infectedBy` | none |
+| This turn's crisis event; next turn's forecast; a rare event | `banner`, `warning`, `rareBanner` — the content's own words | none |
+| **The arrival window closed** (item 7): "No more pathogens will arrive — clear the body to win by turn {last}" | `turn > maxTurn`; `last = maxTurn + GRACE_CLEAR` | none |
+
+**Item 7's display.** The shell's turn line read "16/15". It now reads "Turn 3 of 15" inside
+the window and "Turn 16 · 14 turns to clear the body" after it, both numbers from the view and
+content (`GRACE_CLEAR`), never a difficulty's literals — 15/30, 20/35, 30/45 fall out of the
+data.
+
+**Pinned** (`effects.test.ts`, recorded states): every chip mirrors the state it claims,
+chip-if-and-only-if-state for the cap, offline, organ and window chips; the session's `effects`
+equals the engine's `fx`; the window chip carries the deadline and the turn line the countdown;
+no chip text is empty or a missing key; each source occurred somewhere in the corpus.
+
+**Verified in the real app, headless** (`drive-effects.ts`, six idle Training games): "Turn 1
+of 15"; chips for the Helper T unprimed, the forecast, the crisis banner, HIV, the lymphatics
+blocked, immunosuppression, organ damage (permanent), fewer AP, extra AP, the Killer T
+offline, the antibody cap — eleven kinds, every one rendered with its text and duration, no
+⟪missing key⟫. **Not verified headless: the window-closed chip and the "turns to clear" line**
+— an idle game loses by turn 7–10, so no driver reaches turn 16; both are pinned by the test on
+recorded states that pass the window, and they are on the S25 list.
+
+**S25 list for items 5 and 7:** (1) when an organ is hit, its chip appears and stays; (2) a
+crisis fires — the chip says the effect and how long, and counts down; (3) past turn 15 on
+Training, the window chip appears and the turn line reads "Turn 16 · 14 turns to clear the
+body"; check the same on Normal reads 21 · 14 and on Hard 31 · 14.

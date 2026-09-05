@@ -99,6 +99,18 @@ export interface PrecomputedQueries {
    * fact regenerate: no number rather than a wrong one). The Eosinophil's `regenAt` is exact.
    */
   readonly readyTurn: Readonly<Record<string, number | null>>;
+  /**
+   * THE CRISIS EFFECTS IN FORCE — `fx`, one of the 13 keys the view drops (brief §3), summarised
+   * so the effects strip can say what an event is still doing and for how long (S25 item 5:
+   * "when my antibody capacity was reduced I learned it once, in the log, and it scrolled
+   * away"). `capTurns` is turns of the antibody cap remaining; the other three last this turn.
+   */
+  readonly effects: Readonly<{
+    capTurns: number;
+    noProduce: boolean;
+    apMod: number;
+    skipMarch: boolean;
+  }>;
 }
 
 export interface ProductionSummary {
