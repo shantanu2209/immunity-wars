@@ -331,6 +331,22 @@ describe('the board pack', () => {
     ).toThrow(/frame/);
   });
 
+  it('rejects an anatomy that gives a rules route no entry position', () => {
+    expect(
+      corruptBoard((p) => {
+        delete (p['ANATOMY_ENTRY'] as Record<string, unknown>)['bite'];
+      }),
+    ).toThrow(/bite/);
+  });
+
+  it('rejects an entry position outside the frame', () => {
+    expect(
+      corruptBoard((p) => {
+        (p['ANATOMY_ENTRY'] as Record<string, Record<string, number>>)['gut']!['x'] = -5;
+      }),
+    ).toThrow(/frame/);
+  });
+
   it('rejects a frame asset that is not under frame/', () => {
     expect(
       corruptBoard((p) => {

@@ -127,6 +127,8 @@ export {
 
 /* --- TASK C3: the board pack — geometry, regions, disease text, labels --- */
 export {
+  ANATOMY_ENTRY,
+  ANATOMY_HUB,
   ANATOMY_POS,
   BRANCH,
   CELL_CARDS,

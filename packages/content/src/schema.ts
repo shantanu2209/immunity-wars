@@ -453,6 +453,13 @@ export const AnatomyS = z.strictObject({
     h: z.number().int().positive(),
   }),
   ANATOMY_POS: byOrgan(Point),
+  /**
+   * The six entry lanes and the bloodstream have no anatomy of their own (step 4, ruled
+   * 5 September 2026 — option A): each entry is a chip ON the outline at its point of entry,
+   * and the bloodstream a chip at the great vessels, top of the chest. Same pixel space.
+   */
+  ANATOMY_ENTRY: byRoute(Point),
+  ANATOMY_HUB: Point,
 });
 
 /**
@@ -590,12 +597,26 @@ export function boardPackSchema(
           });
         }
       }
-      for (const [o, pt] of Object.entries(p.ANATOMY_POS)) {
+      const inFrame = (pt: { x: number; y: number }, where: string[]): void => {
         if (pt.x < 0 || pt.x > p.FRAME.w || pt.y < 0 || pt.y > p.FRAME.h) {
           ctx.addIssue({
             code: 'custom',
-            path: ['ANATOMY_POS', o],
+            path: where,
             message: `point (${pt.x}, ${pt.y}) is outside the ${p.FRAME.w}x${p.FRAME.h} frame`,
+          });
+        }
+      };
+      for (const [o, pt] of Object.entries(p.ANATOMY_POS)) inFrame(pt, ['ANATOMY_POS', o]);
+      for (const [r, pt] of Object.entries(p.ANATOMY_ENTRY)) inFrame(pt, ['ANATOMY_ENTRY', r]);
+      inFrame(p.ANATOMY_HUB, ['ANATOMY_HUB']);
+      const ruleRoutes = Object.keys(routes).sort();
+      const placedRoutes = Object.keys(p.ANATOMY_ENTRY).sort();
+      for (const r of ruleRoutes) {
+        if (!placedRoutes.includes(r)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ANATOMY_ENTRY', r],
+            message: `rules/board.json lists the route "${r}" but anatomy.json gives its entry no position`,
           });
         }
       }

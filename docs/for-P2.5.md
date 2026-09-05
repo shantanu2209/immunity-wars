@@ -1148,3 +1148,71 @@ CSS transform transition between the two coordinate sets on one SVG layer (compo
 little main-thread cost, measurable through `onFrame`); the honest number comes from
 measuring that on the throttled screen, and Shantanu has said he will cut it without
 argument — so it waits for block a and a measurement, in that order.
+
+## Item 12 — the anatomy check (Shantanu, 5 September 2026): one correction, one question for Kartik, step 4 RULED
+
+### The marrow moves to the iliac crest — the biology, so it is defended and not just moved
+
+The first picture had the marrow in the groin. **Corrected:** it sits on the **iliac crest** —
+the flared upper wing of the pelvis, off to one side, where a hand rests on a hip — at
+(74, 298) in the frame's space, on the **patient's right** (the viewer's left; one side is
+enough, symmetry is not required). That is where an adult's **red** marrow lives and where a
+bone-marrow biopsy is taken from. The femoral shaft has marrow too, but in adults it is mostly
+fatty **yellow** marrow, not the blood-cell-producing red marrow the game models — so the pelvis
+is both the correct answer and the one that fixes the placement. The spleen also moved two
+pixels, to (144, 234), so that it clears the heart by more than a touch.
+
+### THE MIRRORING QUESTION — Kartik's to settle, stated with both sides
+
+On a front-facing figure, anatomical right is the viewer's left. The liver is placed on the
+patient's right, so it appears on the **left of the screen**, with the spleen on the right.
+That is **medically correct** — it is how every anatomy chart and every X-ray is read — and it
+**reads backwards to anyone thinking in screen terms**. A game could reasonably choose either:
+
+- **Medical convention** (as built): the figure faces you, its right is your left. Teaches the
+  real thing; every doctor and every textbook agrees with the screen.
+- **Screen-intuitive**: mirror the figure so "the liver is on the right" is also on the right
+  of the screen. Reads instantly; disagrees with every chart the player will later see.
+
+**Kartik decides**, and the pick is recorded here with his reason, so it is a decision rather
+than an inheritance. Shantanu's preference, stated for the record: **keep it medically
+correct**, bending only where two icons would otherwise touch. Until Kartik rules it stays as
+built.
+
+### "Not touching" is now a check, not a promise
+
+Shantanu's rule — keep it medically correct, but organs must not touch or intersect, and if
+they do, anatomy bends for UX — is a rule about numbers, so `packages/content/src/anatomy.test.ts`
+holds every pair of the fourteen placed icons (seven organs, six entry chips, the bloodstream)
+at least **32px apart on one axis** at the 30px display size, naming any pair that fails; its
+control puts two icons on one point and requires the pair reported by name. The current
+layout's closest pairs are 32px (brain–nose, lungs–heart, kidneys–gut, spleen–heart).
+
+### Step 4 — RULED: option A. The positions, proposed as a picture before building
+
+Shantanu ruled option A — entry chips on the outline at the point of entry, the bloodstream
+at the great vessels — because the whole value of the screen is that things sit where they
+are in a body, and a circulation loop would be a second diagram competing with the first. The
+positions are now in `anatomy.json` as `ANATOMY_ENTRY: byRoute(Point)` and `ANATOMY_HUB:
+Point`, validated like the organs (inside the frame; every rules route placed — two more
+controls), and drawn in `pnpm art:anatomy`'s picture **for a look before block a is built**:
+
+| Chip | x | y | Where, and why there |
+|---|---|---|---|
+| nose | 112 | 84 | the face, below the brain — the one entry that must be inside the outline |
+| blood (the needle) | 34 | 140 | the deltoid, on the outline of the shoulder — a needle in the arm |
+| contact | 36 | 176 | the arm stump, patient's right — skin contact by the hand |
+| bite | 188 | 172 | the arm stump, patient's left — a bite is on a limb, and the stumps are the limbs the frame keeps |
+| wound | 170 | 300 | the thigh edge, patient's left — a cut where the skin meets the outside |
+| gut | 132 | 304 | the lower abdomen, patient's left — where enteric pathogens act |
+| bloodstream (the hub) | 112 | 134 | the great vessels at the top of the chest; an amber disc, since it has no art and cannot honestly be one place |
+
+⚠️ **One place where anatomy bends, stated:** the `entry-gut` art draws a **stomach**, and the
+stomach's true position — under the left ribs, medial to the spleen — cannot hold a third 30px
+icon beside the liver and the spleen in a 93px-wide waist. The chip stands for the digestive
+tract as a ROUTE, and the intestines are where cholera, typhoid and the E. coli toxins act, so
+the lower abdomen is the defensible place for a gut *infection's* entry even though the icon
+shows the organ above it. If Kartik would rather the icon sit at the stomach, the spleen moves
+laterally onto the flank and the check says whether it still fits.
+
+**Block a itself is not yet built** — the ruling was to show the positions first.

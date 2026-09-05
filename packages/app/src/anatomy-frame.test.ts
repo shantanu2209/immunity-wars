@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ANATOMY_POS, FRAME, ORGANS } from '@immunity-wars/content';
+import { ANATOMY_ENTRY, ANATOMY_POS, FRAME, ORGANS } from '@immunity-wars/content';
 import { describe, expect, it } from 'vitest';
 
 const APP = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -58,9 +58,12 @@ describe('the anatomical frame agrees with the art manifest', () => {
     expect(frameMismatch({ ...FRAME, asset: 'frame/nobody' }, manifest)).toMatch(/no asset/);
   });
 
-  it('every placed organ has its art emitted, so the planning screen can draw it', () => {
+  it('every placed organ and entry has its art emitted, so the planning screen can draw it', () => {
     for (const organ of Object.keys(ANATOMY_POS)) {
       expect(manifest.assets[`organ-${organ}`], organ).toBeDefined();
+    }
+    for (const route of Object.keys(ANATOMY_ENTRY)) {
+      expect(manifest.assets[`entry-${route}`], route).toBeDefined();
     }
     expect(Object.keys(ANATOMY_POS).sort()).toEqual(Object.keys(ORGANS).sort());
   });

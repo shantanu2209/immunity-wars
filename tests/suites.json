@@ -118,18 +118,18 @@
       "briefSuite": "schema",
       "proves": "Every bundled content pack validates against its Zod schema, and malformed packs are rejected loudly rather than half-loaded.",
       "doesNotProve": "That a pack AGREES with the engine reading it. The rulesVersion check is deliberately deferred to whoever builds the downloadable-pack loader — bundled packs ship in the same commit as their engine, so such a check would compare a constant against a constant. PHASE1_BRIEF §6 seam 7.",
-      "negativeControls": 35,
-      "controlFiles": ["packages/content/src/load.test.ts"],
+      "negativeControls": 38,
+      "controlFiles": ["packages/content/src/load.test.ts", "packages/content/src/anatomy.test.ts"],
       "tiers": {
         "per-push": {
           "command": "pnpm test",
-          "scale": "71 assertions over every bundled pack",
+          "scale": "76 assertions over every bundled pack",
           "blocking": true,
           "approxSeconds": 3
         },
         "nightly": {
           "command": "pnpm test",
-          "scale": "71 assertions over every bundled pack",
+          "scale": "76 assertions over every bundled pack",
           "blocking": true,
           "approxSeconds": 120
         }

@@ -253,6 +253,9 @@ export const ENTRY = pack['ENTRY'] as Record<RouteKey, Point & { t: string }>;
 /* --- the anatomical layout (P2.5 item 12): the frame asset and organ positions in its pixel space --- */
 export const FRAME = pack['FRAME'] as FrameDef;
 export const ANATOMY_POS = pack['ANATOMY_POS'] as Record<OrganKey, Point>;
+/** Entry chips on the outline at the point of entry, and the bloodstream at the great vessels. */
+export const ANATOMY_ENTRY = pack['ANATOMY_ENTRY'] as Record<RouteKey, Point>;
+export const ANATOMY_HUB = pack['ANATOMY_HUB'] as Point;
 
 /* --- regions (the phone-size zoom targets) --- */
 export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;

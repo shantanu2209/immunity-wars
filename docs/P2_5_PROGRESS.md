@@ -314,14 +314,15 @@ consequence are in FINDINGS #53 and CP5's record.
 ### Item 12 — the planning screen — in this order (Shantanu, 5 September 2026)
 
 > **Status at the end of the day, 5 September 2026:** steps 1, 2 and 3 are BUILT on
-> `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is a
-> written proposal awaiting Shantanu's ruling** (chips on the outline at the point of entry,
-> blood at the great vessels — option A — versus a circulation loop); step 5 waits on step 4
-> and a measurement. Two things to check by hand: Kartik checks the seven organ positions
-> against `pnpm art:anatomy`'s picture (the liver is on the viewer's LEFT — the handoff's
-> "as the viewer sees it" phrase below would have mirrored it), and Kartik fills
-> `packages/content/src/labels/cells.json`. By finger on the S25, still to do: the planning
-> screen itself (the step/expect list is at the end of the record).
+> `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is
+> RULED — option A** (chips on the outline at the point of entry, the bloodstream at the great
+> vessels); its positions are in content and shown in `pnpm art:anatomy`'s picture, **block a
+> itself waits for Shantanu's look at that picture**; step 5 waits on step 4 and a measurement.
+> Shantanu's anatomy check moved the marrow to the iliac crest (the biology is in the record).
+> Two things for Kartik: **the mirroring convention** — medical (as built: the liver on the
+> viewer's LEFT) versus screen-intuitive — is his to settle, both sides stated in the record;
+> and he fills `packages/content/src/labels/cells.json`. By finger on the S25, still to do: the
+> planning screen itself (the step/expect list is in the record).
 
 1. **The frame through the art pipeline as `frame/body`.** The source is committed at
    `tools/art-pipeline/raw/frame-body.jpeg` (from
