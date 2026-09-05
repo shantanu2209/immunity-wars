@@ -29,7 +29,17 @@ function view(state: GameState): SessionView {
 }
 
 describe('S25 items 5 and 7: the effects in force', () => {
-  const seen = { cap: 0, offline: 0, organ: 0, window: 0, forecast: 0, banner: 0, apMod: 0 };
+  const seen = {
+    cap: 0,
+    offline: 0,
+    organ: 0,
+    window: 0,
+    forecast: 0,
+    banner: 0,
+    apMod: 0,
+    primed: 0,
+    memory: 0,
+  };
   const problems: string[] = [];
   let states = 0;
   for (const seed of SEARCH_SEEDS.slice(0, 4)) {
@@ -97,6 +107,22 @@ describe('S25 items 5 and 7: the effects in force', () => {
         } else if (has('banner')) {
           problems.push('a banner chip without a banner');
         }
+        // THE BENEFICIAL CHIPS (ruled 5 September 2026): a primed Helper T-Cell — the engine's
+        // own licensing rule, off under HIV — and a memory response ready while a remembered
+        // pathogen stands in the body. Chip ⇔ state, like every other chip here.
+        const flags = (g['flags'] as Raw | undefined) ?? {};
+        const licensed =
+          flags['helperT'] === true &&
+          (flags['dendritic'] !== true || Number(g['presentations'] ?? 0) > 0);
+        const hiv = v.queries.state['hivActive'] === true;
+        if (has('helperPrimed') !== (licensed && !hiv))
+          problems.push('primed chip ≠ the licensing rule');
+        if (has('helperPrimed')) seen.primed += 1;
+        const remembered = (((g['invaders'] as Raw[] | undefined) ?? []) as Raw[]).some(
+          (iv) => iv['remembered'] === true,
+        );
+        if (has('memoryReady') !== remembered) problems.push('memory chip ≠ a remembered invader');
+        if (remembered) seen.memory += 1;
         for (const c of chips)
           if (c.text.includes('⟪') || c.text.trim() === '') problems.push(`bad chip text: ${c.id}`);
       }
