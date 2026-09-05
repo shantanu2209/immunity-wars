@@ -21,21 +21,31 @@ export interface PieceChip {
   unavailable: Unavailable | null;
 }
 
+/**
+ * A GRID, three per row, every chip the same width (S25 second pass, 5 September 2026: a
+ * single scrolling line was poor). The chip's text is one line each, clipped with an ellipsis
+ * rather than wrapped, so fourteen chips of unequal names keep fourteen equal boxes.
+ */
 const CHIP: CSSProperties = {
   minHeight: 44,
-  minWidth: 64,
-  padding: '3px 8px',
+  minWidth: 0,
+  padding: '3px 6px',
   borderRadius: 10,
   border: '1.5px solid #8E6E53',
   background: '#FFFDF9',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
-  gap: 6,
-  flex: '0 0 auto',
+  gap: 5,
   fontSize: 12,
   lineHeight: 1.15,
   textAlign: 'left',
+};
+const CLIP: CSSProperties = {
+  display: 'block',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 export function PieceStrip({
@@ -60,7 +70,14 @@ export function PieceStrip({
       <div style={{ fontSize: 12, color: '#7C6A61', fontWeight: 700, marginBottom: 2 }}>
         {t('pieces.title')}
       </div>
-      <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gap: 6,
+          paddingBottom: 4,
+        }}
+      >
         {pieces.map((p) => {
           const selected = p.kind === 'cell' ? p.key === selectedCell : p.key === selectedResident;
           const art = p.kind === 'cell' ? `cell-${p.key}` : 'cell-macrophage';
@@ -87,14 +104,14 @@ export function PieceStrip({
             >
               <img
                 src={`/art/${art}@3x.webp`}
-                width={28}
-                height={28}
+                width={26}
+                height={26}
                 alt=""
-                style={p.unavailable ? { filter: 'grayscale(1)' } : undefined}
+                style={{ flex: '0 0 auto', ...(p.unavailable ? { filter: 'grayscale(1)' } : {}) }}
               />
-              <span>
-                <span style={{ fontWeight: 700 }}>{name}</span>
-                <span style={{ display: 'block', color: '#7C6A61' }}>
+              <span style={{ minWidth: 0, flex: '1 1 auto' }}>
+                <span style={{ ...CLIP, fontWeight: 700 }}>{name}</span>
+                <span style={{ ...CLIP, color: '#7C6A61' }}>
                   {p.kind === 'resident'
                     ? organDisplayName(p.key)
                     : p.unavailable

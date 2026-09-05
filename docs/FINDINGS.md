@@ -3126,3 +3126,25 @@ they will be measured against the corpus in one Phase 3 pass.
 
 Two more rulings the same day, Shantanu's: the **mirroring convention is medical** (the liver on
 the patient's right, the viewer's left — already built), and the **gut icon stays a stomach**.
+
+## 57. Degranulate burns the organ from anywhere on its branch — the damage is keyed to the target's lane, not to where the fight is
+
+**Found by Shantanu on the S25, 5 September 2026:** the Eosinophil degranulated at **step 1 of
+the Brain branch** and the Brain lost a point of integrity. Confirmed in the engine before
+anything was proposed: `packages/engine/src/actions.ts`, `case 'degranulate'` — after the 3
+damage, `if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ])` burns `g.organs[iv.organ]`
+by one. The condition is on the **target invader's zone**, any step; the Eosinophil must be on
+the same space, so the burn fires anywhere on the branch, and only the hub and the routes are
+safe. Step 0 — the organ itself — is not what the code asks.
+
+**The biology, which is the reason.** Eosinophil degranulation damages the tissue it happens
+**in**. Releasing granule proteins on a lane is not releasing them in the brain. Kartik's ruling
+of the same day that degranulate's cost is "a risk you live with" (#18) assumed the damage
+happens where the fight happens — and today it does not: a worm met on its way in costs the
+organ as much as a worm lodged in it.
+
+**Disposition: OPEN — Phase 3, queued as Q9 in [`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md).**
+Not fixed in Phase 2 (the engine is frozen; it is a rule change and it moves the balance
+panel). The proposed rule: the burn applies when the fight is at branch step 0. Nothing in the
+UI pretends otherwise meanwhile — the strike's own log line says the organ was burned, which
+is true of what the engine did.

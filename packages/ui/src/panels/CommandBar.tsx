@@ -14,6 +14,8 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { actionDisplayName } from '../names';
+import type { ActionRow } from '../play/offered';
+import { ActionList } from './ActionList';
 
 const BTN: CSSProperties = {
   minHeight: 44,
@@ -43,11 +45,28 @@ export function CommandBar({
   notice = null,
   canInspect = false,
   disabled = false,
+  rows = [],
+  hasMovement = false,
+  onOffer,
+  onCard,
   onButton,
   onUndo,
   onInspect,
   onDeselect,
 }: {
+  /**
+   * THE ACTIONS LIVE IN THIS BOX (S25 second pass, 5 September 2026: one box per cell, not a
+   * selection box and a second box of actions below the pieces). The selected piece's rows —
+   * `actionRows` — render here between the hint and the footer; the body's rows while nothing
+   * is selected.
+   */
+  rows?: ActionRow[];
+  hasMovement?: boolean;
+  onOffer?: (offerId: string) => void;
+  /** Opens the selected CELL's card (item 12's cards; residents have none). The box is "the
+   *  cell, its state, its actions" — and what it is, which must be reachable from anywhere,
+   *  not only where the cell stands with something the inspect sheet can show. */
+  onCard?: () => void;
   /** Display name of the selected cell, or null when nothing is selected. */
   selectedCellName: string | null;
   /** Muted line after the name — a resident's "resident of the Liver" (CP3). */
@@ -127,14 +146,6 @@ export function CommandBar({
                 {noAction}
               </span>
             ) : null}
-            {canInspect ? (
-              <button style={BTN} disabled={disabled} onClick={onInspect}>
-                {t('commandBar.inspect')}
-              </button>
-            ) : null}
-            <button style={BTN} disabled={disabled} onClick={onDeselect}>
-              {t('commandBar.deselect')}
-            </button>
           </>
         )}
         {undo.available ? (
@@ -147,6 +158,29 @@ export function CommandBar({
           </button>
         ) : null}
       </div>
+      {/* The actions: the selected piece's rows, or the body's while nothing is selected. */}
+      {onOffer ? (
+        <ActionList rows={rows} hasMovement={hasMovement} disabled={disabled} onOffer={onOffer} />
+      ) : null}
+      {selectedCellName !== null ? (
+        // The footer: what is about the SELECTION rather than an action — inspect what it
+        // stands with, and let it go.
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {canInspect ? (
+            <button style={BTN} disabled={disabled} onClick={onInspect}>
+              {t('commandBar.inspect')}
+            </button>
+          ) : null}
+          {onCard ? (
+            <button data-bar-card="1" style={BTN} disabled={disabled} onClick={onCard}>
+              {t('commandBar.card')}
+            </button>
+          ) : null}
+          <button style={BTN} disabled={disabled} onClick={onDeselect}>
+            {t('commandBar.deselect')}
+          </button>
+        </div>
+      ) : null}
       {notice !== null ? <div style={{ fontSize: 13, color: '#B03A2E' }}>{notice}</div> : null}
       {inCommand &&
       !undo.available &&

@@ -47,6 +47,11 @@ export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement |
                   {t('inspect.sep')} {c.duration}
                 </span>
               ) : null}
+              {c.detail ? (
+                <span data-effect-detail="1" style={{ display: 'block', color: '#7C6A61' }}>
+                  {c.detail}
+                </span>
+              ) : null}
             </div>
           );
         })}

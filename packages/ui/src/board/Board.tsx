@@ -280,6 +280,24 @@ export function tokenLayout(node: NodeModel, i: number): { pos: Pt; size: number
 const ART_URL = (key: string): string => `/art/${key}@3x.webp`;
 const TOKEN_ART_U = 36.7; // 20 CSS px at 360
 
+/**
+ * INTEGRITY STATE, derived from the organ's own max (S25, 5 September 2026): full is green,
+ * one point left (or none) is red, anything between is amber. The Brain's max of 2 therefore
+ * has no amber state — green straight to red — with no special case, and it stays right if
+ * any organ's integrity ever changes in content. The three colours all clear 3:1 on the paper.
+ */
+export type IntegrityState = 'full' | 'worn' | 'critical';
+export function integrityState(hp: number, max: number): IntegrityState {
+  if (hp >= max) return 'full';
+  if (hp <= 1) return 'critical';
+  return 'worn';
+}
+export const INTEGRITY_COLOUR: Record<IntegrityState, string> = {
+  full: '#2F6B4A',
+  worn: '#7A5600',
+  critical: '#B03A2E',
+};
+
 /** The antibody coat badge's colours — the legacy renderer's antibody gold, with the dark
  *  stroke that carries the contrast (the fill alone is 1.8:1 against the paper). */
 const COAT = { fill: '#F2B705', stroke: '#7A5600' } as const;
@@ -857,11 +875,13 @@ export function Board({
                 </>
               );
             })()}
-            {/* INTEGRITY AS PIPS under the organ icon (S25, ruled 5 September 2026): the digit
-                that sat inward of the tissue slot read as one number with step 1's label
-                ("13") at phone size. The digit is dropped; the pips are the planning screen's
-                own (block a), in the annotation area where no play token ever stands — one per
-                point at full, filled while it holds: shape, not colour. */}
+            {/* INTEGRITY AS PIPS ABOVE the organ icon (S25, ruled 5 September 2026; moved
+                above at the second pass — below, they met the organ names). The digit that sat
+                inward of the tissue slot read as one number with step 1's label ("13") at phone
+                size and is gone. One pip per point at full, filled while it holds, coloured by
+                STATE from the organ's own max — green at full, red at one left, amber between,
+                so the Brain's 2 goes green straight to red without a special case. Shape and
+                colour both carry it. */}
             {(() => {
               const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
               const max = Number((organs[o] ?? {}).max ?? 0);
@@ -869,9 +889,10 @@ export function Board({
               const pip = 9;
               const gap = 3;
               const x0 = p.icon.x - (max * pip + (max - 1) * gap) / 2;
-              const y0 = p.icon.y + LARGE_ART_U / 2 + 3;
+              const y0 = p.icon.y - LARGE_ART_U / 2 - 8;
+              const state = integrityState(hp, max);
               return (
-                <g data-organ-pips={o} data-hp={hp} data-max={max}>
+                <g data-organ-pips={o} data-hp={hp} data-max={max} data-state={state}>
                   {Array.from({ length: max }, (_, i) => (
                     <rect
                       key={i}
@@ -880,8 +901,8 @@ export function Board({
                       width={pip}
                       height={5}
                       rx={1.5}
-                      fill={i < hp ? CLASSIC.organ : CLASSIC.paper}
-                      stroke={CLASSIC.organ}
+                      fill={i < hp ? INTEGRITY_COLOUR[state] : CLASSIC.paper}
+                      stroke={INTEGRITY_COLOUR[state]}
                       strokeWidth={1}
                     />
                   ))}

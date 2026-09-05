@@ -18,6 +18,7 @@ than inherited. The workarounds that expire with them are listed at the end.
 | **Q6** | **Resident RECALL** — a new action returning a resident to its organ box (branch step 0) from any step, for 1 AP, move-class (undoable) | Kartik, ruling 1 | A resident must step forward onto its branch to intercept; it needs a way back that is not `resmove` one step at a time. Proposed shape below | #5 |
 | **Q7** | **`neutralise`'s 2-AP toxin cost into content** | Shantanu, at CP2 | The 2 is a literal in the engine, mirrored in the UI with a spanning test | #52 |
 | **Q8** | **Queries and log sites emit ids, not prose** | Shantanu, at CP2/CP5 | The Hindi edition renders five composed log lines in English until then | #53 |
+| **Q9** | **Degranulate burns the organ only when the fight is IN the organ** — organ damage when the Eosinophil (and its target) stand at branch step 0, not anywhere on the branch | Shantanu, S25 pass of 5 September 2026 | Eosinophil degranulation damages the tissue it happens in; granule proteins released on a lane are not released in the brain. Today  keys the burn to the TARGET being on a branch at any step, so a strike at step 1 of the Brain branch cost the Brain a point. Kartik's ruling that degranulate's cost is a risk you accept assumed the damage happens where the fight happens | #57 |
 
 ## Q2 — the check Kartik asked for: everything the Helper T-Cell does, and whether any of it uses the free slot
 
