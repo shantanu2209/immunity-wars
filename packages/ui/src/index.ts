@@ -19,6 +19,9 @@ export {
   type ReadyTurn,
 } from './board/Board';
 export { InspectSheet } from './panels/InspectSheet';
+export { PieceStrip, type PieceChip } from './panels/PieceStrip';
+export { ActionList } from './panels/ActionList';
+export { actionRows, ACTION_CATALOGUE, MOVE_LIKE, type ActionRow } from './play/offered';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
 export { invaderNowLine } from './panels/invaderNow';
 export { CommandBar, type BarButton } from './panels/CommandBar';

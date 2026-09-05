@@ -788,3 +788,51 @@ the 29 generated assets; its provenance is unknown (ASSETS.md #5). An anatomical
 organ positions is therefore an **art task** with a data half (organ positions in the content
 pack, beside the board geometry), not a rendering one. The planning screen's other blocks do
 not depend on it.
+
+## Item 1 — the command panel, action buttons only: BUILT (4 September 2026)
+
+**Scope as ruled:** the piece strip and the selected piece's full action set; movement stays on
+the board (no destination list, no move buttons — Shantanu decides after testing whether action
+buttons alone resolve the ambiguity); the board stays at 360px. The correctness point: a player
+must always know WHICH action they are performing — with two cells on a node, tapping a pathogen
+performed something unnamed, which is how item 9's dimmed Neutrophil happened.
+
+**The piece strip** (`PieceStrip.tsx`): one horizontally scrolling row of fourteen 44px chips —
+the seven cells, then the seven residents by their real names with their organ under them.
+Tapping a chip selects through the session exactly as a board tap does; tap-again deselects.
+Spent and offline cells are dimmed with their return number in the chip; the selected chip is
+ringed. The board tap keeps working.
+
+**The action list** (`ActionList.tsx`, from `actionRows` in `offered.ts`): the selected piece's
+FULL set of non-movement actions from a fixed per-piece catalogue, always visible. An available
+action is expanded per target as a row that names it and its cost — "Engulf Rotavirus", "NET the
+swarm", "Degranulate Hookworm · 2 AP" — and sends exactly the offer the ring would (the same
+offer id, so the row and the ring are one action). An unavailable action is a greyed row that
+gives its reason when tapped, inline: "Move the Neutrophil onto a swarm of bacteria or viruses to
+NET them"; "Needs 2 AP"; "No antibody you hold matches a virus or toxin in reach". That completes
+the "always answers" rule per action; the command bar's line still answers for the piece. Two
+homes stay where they were, named in the list: Produce's row says "in the antibody panel below",
+and the body panel keeps order antivenom, clonal selection and vaccinate. The body's own rows
+(the memory response, antivenom) appear while nothing is selected. The bar now holds only the
+movement button (recall).
+
+**Pinned** (`action-rows.test.ts`, on recorded states, every piece): the rows cover the piece's
+whole catalogue; every non-movement, non-panel offer has an available row with the same label;
+every available row points at a real offer; every greyed row has a usable reason. The first run
+caught the seam it exists for: the body's panel-homed offers had no row, because their rows are
+in the body panel — the list now excludes panel-homed offers and the test says so.
+
+**Verified in the real app, headless** (`drive-panel.ts`): see the run recorded below.
+Fourteen chips in the strip. Nothing selected → the body's rows, "Memory response" and
+"Antivenom", both greyed. Tap the Neutrophil's chip → the bar names it, the chip is ringed, its
+one row "NET the swarm" greyed → tapped → "Move the Neutrophil onto a swarm of bacteria or
+viruses to NET them"; tap the chip again → deselected. The Kupffer cell's chip → "Engulf"
+greyed → the step-0 patrol line. The B-Cell → "Tag", "Neutralise", "Produce" greyed, Produce's
+reason "Produce antibodies in the panel below"; Produce ICB in the panel → the row **"Tag
+Brucellosis"** appears available → tapped → the bacterium's coat badge appears (1), the
+invader count unchanged. No ⟪missing key⟫.
+
+**S25 list for item 1:** (1) with the Neutrophil and the Monocyte on one node holding a virus,
+select each from the strip and read the rows — the action a ring would perform is the one named.
+(2) Tap a greyed row and read why. (3) Tap an available row and watch the same effect a ring
+tap gives. (4) Decide whether movement needs rows too.

@@ -31,12 +31,17 @@ import {
 import { engineText } from '../engineText';
 import {
   CLONE_TARGET,
+  MOVE_LIKE,
+  actionRows,
   bodyOffers,
   diseaseLabel,
   offeredActions,
   type BoardOffer,
   type Offered,
 } from './offered';
+import { ActionList } from '../panels/ActionList';
+import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
+import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
 import { GRACE_CLEAR } from '@immunity-wars/content';
@@ -338,7 +343,9 @@ export function PlayScreen({
   ];
   const moveCount = offered.board.filter((o) => o.kind === 'move' || o.kind === 'hop').length;
   const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
-  const barButtons = offered.buttons.filter((b) => b.place !== 'panel');
+  // The bar keeps only the MOVEMENT buttons (recall); every other action is a row in the
+  // action list, named with its target (S25 item 1).
+  const barButtons = offered.buttons.filter((b) => b.place !== 'panel' && MOVE_LIKE.has(b.action));
   const panelButtons = offered.buttons.filter((b) => b.place === 'panel');
   let hint: string | null = null;
   if (byInvader.size > 0)
@@ -501,6 +508,29 @@ export function PlayScreen({
     }
   };
 
+  // THE PIECE STRIP and THE ACTION LIST (S25 item 1). Pieces: the seven cells in their fixed
+  // order, then the residents the view carries; a cell's spent/offline state from the same
+  // model the board draws. Rows: the selected piece's full non-movement action set.
+  const unavailableByCell: Record<string, PieceChip['unavailable']> = {};
+  for (const node of buildNodeModel(game, authView.queries.readyTurn).values()) {
+    for (const [ck, u] of Object.entries(node.inspect.unavailable)) unavailableByCell[ck] = u;
+  }
+  const pieces: PieceChip[] = [
+    ...['macrophage', 'neutrophil', 'bcell', 'tcell', 'helper', 'nk', 'eosinophil']
+      .filter((ck) => (game['cells'] as Record<string, unknown> | undefined)?.[ck] !== undefined)
+      .map((ck) => ({
+        kind: 'cell' as const,
+        key: ck,
+        unavailable: unavailableByCell[ck] ?? null,
+      })),
+    ...Object.keys((game['residents'] as Record<string, unknown> | undefined) ?? {}).map((o) => ({
+      kind: 'resident' as const,
+      key: o,
+      unavailable: null,
+    })),
+  ];
+  const rows = playing ? [] : actionRows(authView);
+
   const selectedNode = selectedCell
     ? inspectInfoForCell(game, selectedCell, authView.queries.readyTurn)
     : selectedResident
@@ -559,6 +589,16 @@ export function PlayScreen({
         }}
         onDeselect={deselect}
       />
+      <PieceStrip
+        pieces={pieces}
+        selectedCell={selectedCell}
+        selectedResident={selectedResident}
+        disabled={playing}
+        onSelectCell={tapCell}
+        onSelectResident={tapResident}
+        onDeselect={deselect}
+      />
+      <ActionList rows={rows} hasMovement={moveCount > 0} disabled={playing} onOffer={sendOffer} />
       <AntibodyPanel
         rows={familyRows}
         selectedFamily={selectedFamily}
