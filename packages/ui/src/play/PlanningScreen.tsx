@@ -10,7 +10,8 @@
  *   b — the pathogen summary: counts by type, then one row per board token group with its
  *       DEPTH in colour and in words (green entry lane, amber bloodstream, red organ lane);
  *       tap a row to expand its pathogens, tap a pathogen for its card.
- *   c — the cells: seven chips, tap one for its cell card.
+ *   c — the cells: a FACT beside the AP line (which are spent, and when they are back), not a
+ *       roster — removed at the S25 second pass; the cell cards open from the inspect sheet.
  *   d — the Phase 3 allocation slot: designed in, rendered only when the view carries an
  *       allocation phase, which single-player never does.
  *
@@ -77,22 +78,6 @@ const CARD_BUTTON: CSSProperties = {
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
   cursor: 'pointer',
-};
-const CHIP: CSSProperties = {
-  minHeight: 44,
-  minWidth: 64,
-  padding: '3px 8px',
-  borderRadius: 10,
-  border: '1.5px solid #C8877B',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  flex: '0 0 auto',
-  fontSize: 12,
-  lineHeight: 1.15,
-  textAlign: 'left',
 };
 const BIG: CSSProperties = {
   display: 'block',
@@ -255,7 +240,6 @@ export function PlanningScreen({
   disabled = false,
   onCommand,
   onPathogenCard,
-  onCellCard,
 }: {
   model: PlanningModel;
   cells: PlanningCell[];
@@ -263,7 +247,6 @@ export function PlanningScreen({
   /** Sends the model's button params — `beginCommand`, or `confirmAllocation` under allocation. */
   onCommand: (params: Record<string, unknown>) => void;
   onPathogenCard: (invaderId: string) => void;
-  onCellCard: (cell: string) => void;
 }): ReactElement {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const toggle = (k: string): void => setOpen((o) => ({ ...o, [k]: !o[k] }));
@@ -276,6 +259,20 @@ export function PlanningScreen({
       <div style={{ fontSize: 13, color: '#7C6A61' }}>
         {t('planning.apNext', { n: model.apNext })}
       </div>
+      {/* THE CELLS AS A FACT, not a roster (S25 second pass, 5 September 2026): the planning
+          screen is about the body and the threats; which cells are spent belongs beside the
+          AP line, and the cell cards open from the inspect sheet. */}
+      {cells.some((c) => c.unavailable !== null) ? (
+        <div data-planning-cell-facts="1" style={{ fontSize: 13, color: '#7A5600' }}>
+          {cells
+            .filter((c) => c.unavailable !== null)
+            .map(
+              (c) =>
+                `${cellDisplayName(c.key)} ${t('inspect.sep')} ${c.unavailable ? unavailableText(c.unavailable) : ''}`,
+            )
+            .join(` ${t('inspect.sep')} `)}
+        </div>
+      ) : null}
       {/* BLOCK A — the body from the outside: organs with integrity, entries, the bloodstream. */}
       <section data-block="anatomy" data-planning-focus={focus ?? undefined} style={PANEL}>
         <AnatomyView
@@ -354,34 +351,6 @@ export function PlanningScreen({
         )}
       </section>
       {model.allocation ? <AllocationBlock slot={model.allocation} /> : null}
-      <section data-block="cells" style={PANEL}>
-        <div style={TITLE}>{t('planning.cells')}</div>
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
-          {cells.map((c) => (
-            <button
-              key={c.key}
-              data-cell-card={c.key}
-              disabled={disabled}
-              onClick={() => onCellCard(c.key)}
-              style={{ ...CHIP, opacity: c.unavailable ? 0.55 : 1 }}
-            >
-              <img
-                src={`/art/cell-${c.key}@3x.webp`}
-                width={28}
-                height={28}
-                alt=""
-                style={c.unavailable ? { filter: 'grayscale(1)' } : undefined}
-              />
-              <span>
-                <span style={{ fontWeight: 700 }}>{cellDisplayName(c.key)}</span>
-                <span style={{ display: 'block', color: '#7C6A61' }}>
-                  {c.unavailable ? unavailableText(c.unavailable) : ''}
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </section>
       <button
         data-planning-button={model.mode}
         style={BIG}

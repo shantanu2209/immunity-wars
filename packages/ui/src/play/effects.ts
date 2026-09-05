@@ -24,7 +24,29 @@ export interface EffectChip {
   text: string;
   /** Localised duration, or null when the text already says it. */
   duration: string | null;
+  /** A muted second line: the event's own why, or an organ's "when damaged" column. */
+  detail?: string | null;
 }
+
+/**
+ * WHICH CHIPS AN EVENT'S BANNER IS ALREADY SAYING (S25 second pass, 5 September 2026: two
+ * banners both about antibody shortage). The engine sets the event's `fx` AND its banner in the
+ * same draw, so the strip showed the effect chip and the banner chip for one event. One
+ * effect, one chip: the banner folds into the chip its event produced — the event's name
+ * becomes the chip's text and its `why` the detail — and the banner chip is shown only for an
+ * event with no chip of its own (co-infection, passive antibodies). Fever is the one event
+ * with two effects, and it keeps two chips because they are two effects: the invaders slowed
+ * (good) and an Action Point lost (bad). Map from the engine's `applyEvent` (construct.ts).
+ */
+const EVENT_CHIPS: Readonly<Record<string, readonly string[]>> = {
+  immunosuppression: ['noProduce'],
+  neutropenia: ['neutrophilOffline'],
+  lymphopenia: ['tcellOffline'],
+  antibodyShortage: ['capTurns'],
+  fatigue: ['apDown'],
+  surge: ['apUp'],
+  fever: ['skipMarch', 'apDown'],
+};
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
 const turnsLeft = (n: number): string =>
@@ -109,11 +131,16 @@ export function effectChips(view: SessionView): EffectChip[] {
     if (num(organ['hp']) >= num(organ['max'])) continue;
     if (g['difficulty'] === 'hard' && organ['compensated'] === true) continue;
     const def = (ORGANS as Record<string, { name?: string; effect?: string } | undefined>)[o];
+    // The organ's `effect` is the rulebook's "when damaged" COLUMN — a table cell, not a
+    // clause ("None — but fragile & slow to defend"), so it is rendered as a labelled value,
+    // never spliced into a sentence that assumed a clause (S25 second pass: "Brain damaged —
+    // None — but…" did not parse). The class is recorded in for-P2.5.md.
     out.push({
       id: `organ:${o}`,
       kind: 'permanent',
-      text: t('effects.organDamaged', { organ: def?.name ?? o, effect: def?.effect ?? '' }),
+      text: t('effects.organDamaged', { organ: def?.name ?? o }),
       duration: t('effects.permanent'),
+      detail: def?.effect ? t('effects.organEffect', { effect: def.effect }) : null,
     });
   }
 
@@ -145,32 +172,55 @@ export function effectChips(view: SessionView): EffectChip[] {
   }
 
   // This turn's crisis event, next turn's forecast, a rare event — the content's own words.
-  const banner = g['banner'] as { name?: unknown; bad?: unknown; why?: unknown } | null;
-  if (banner && typeof banner.name === 'string')
-    out.push({
-      id: 'banner',
-      kind: banner.bad === true ? 'bad' : 'good',
-      text: `${banner.name}${typeof banner.why === 'string' ? ` — ${banner.why}` : ''}`,
-      duration: null,
-    });
+  const banner = g['banner'] as {
+    key?: unknown;
+    name?: unknown;
+    bad?: unknown;
+    why?: unknown;
+  } | null;
+  if (banner && typeof banner.name === 'string') {
+    const folded = EVENT_CHIPS[typeof banner.key === 'string' ? banner.key : ''] ?? [];
+    const why = typeof banner.why === 'string' ? banner.why : null;
+    const carriers = out.filter((c) => folded.includes(c.id));
+    if (carriers.length > 0) {
+      // The event's own chip(s) say it: name on the chip, why beneath, no second banner.
+      for (const c of carriers) {
+        c.text = `${banner.name} ${t('inspect.sep')} ${c.text}`;
+        c.detail = why;
+      }
+    } else {
+      out.push({
+        id: 'banner',
+        kind: banner.bad === true ? 'bad' : 'good',
+        text: banner.name,
+        duration: null,
+        detail: why,
+      });
+    }
+  }
   const warning = g['warning'] as { name?: unknown; text?: unknown } | null;
-  if (warning && typeof warning.name === 'string')
+  if (warning && typeof warning.name === 'string') {
+    // The same class as the organ column: `tell` is empty for three events, and a template
+    // that assumed it would be filled would print a dangling dash. Only bad events forecast,
+    // and every bad event has a tell today — the guard is for the shape, not today's data.
+    const text =
+      typeof warning.text === 'string' && warning.text.trim() !== '' ? warning.text : null;
     out.push({
       id: 'forecast',
       kind: 'info',
-      text: t('effects.forecast', {
-        name: warning.name,
-        text: typeof warning.text === 'string' ? warning.text : '',
-      }),
+      text: t('effects.forecast', { name: warning.name }),
       duration: null,
+      detail: text,
     });
+  }
   const rare = g['rareBanner'] as { name?: unknown; why?: unknown } | null;
   if (rare && typeof rare.name === 'string')
     out.push({
       id: 'rare',
       kind: 'bad',
-      text: `${rare.name}${typeof rare.why === 'string' ? ` — ${rare.why}` : ''}`,
+      text: rare.name,
       duration: null,
+      detail: typeof rare.why === 'string' && rare.why.trim() !== '' ? rare.why : null,
     });
 
   return out;

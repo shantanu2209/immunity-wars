@@ -18,6 +18,7 @@
 import { ANATOMY_ENTRY, ANATOMY_HUB, ANATOMY_POS, FRAME } from '@immunity-wars/content';
 import type { PointerEvent as ReactPointerEvent, ReactElement } from 'react';
 
+import { INTEGRITY_COLOUR, integrityState } from '../board/Board';
 import { t } from '../i18n';
 import { organDisplayName } from '../names';
 import type { Depth, PlaceMarker } from './planning';
@@ -137,18 +138,23 @@ export function AnatomyView({
               />
             )}
             {m.hp ? (
-              // INTEGRITY PIPS: one per point at full, filled while it holds — shape, not colour.
-              <g data-anatomy-pips={m.hp.max}>
+              // INTEGRITY PIPS, ABOVE the icon (S25, 5 September 2026): one per point at full,
+              // filled while it holds, coloured by state from the organ's own max (board rule).
+              <g data-anatomy-pips={m.hp.max} data-state={integrityState(m.hp.hp, m.hp.max)}>
                 {Array.from({ length: m.hp.max }, (_, i) => (
                   <rect
                     key={i}
                     x={p.x - (m.hp!.max * 7 - 1) / 2 + i * 7}
-                    y={p.y + ICON / 2 + 2}
+                    y={p.y - ICON / 2 - 6}
                     width={6}
                     height={4}
                     rx={1}
-                    fill={i < m.hp!.hp ? '#8E6E53' : '#FFFDF9'}
-                    stroke="#8E6E53"
+                    fill={
+                      i < m.hp!.hp
+                        ? INTEGRITY_COLOUR[integrityState(m.hp!.hp, m.hp!.max)]
+                        : '#FFFDF9'
+                    }
+                    stroke={INTEGRITY_COLOUR[integrityState(m.hp!.hp, m.hp!.max)]}
                     strokeWidth={0.8}
                   />
                 ))}

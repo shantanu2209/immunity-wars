@@ -1381,3 +1381,136 @@ between the two layouts. **Verified by no one:** the flight by eye on the S25 �
 reads as the organs going to their places or as seven things flying about — which is a Gate 2
 question and the reason Shantanu said he would cut it without argument. The S25 item: *tap
 Command your cells and watch whether the organs land where the board has them.*
+
+# After the S25 pass of 5 September 2026 (the second pass) — seven items, one an engine bug
+
+Shantanu's pass covered the command panel, the effects strip, the crop and hub, the whole
+planning screen and the flight: "working well", seven observations. Rulings and what was
+built, item by item. Not seen on this pass and still unverified by anyone: a coated row on
+the planning screen, a tap on the bloodstream's badge, a failed organ.
+
+## 7 — degranulate damages the organ from the lane: CONFIRMED, an engine bug, queued (Q9, FINDINGS #57)
+
+Confirmed in `actions.ts` before anything was proposed: the burn is keyed to the TARGET's
+zone being a branch at any step, and the Eosinophil must be on the same space, so a
+degranulation at step 1 of the Brain branch burns the Brain. The biology says the tissue
+the fight is IN takes the damage; on a lane nothing is in the brain. Not fixed in Phase 2 —
+queued as **Q9** with the proposed rule (the burn at branch step 0 only). Kartik's #18
+ruling stands on its premise once Q9 lands.
+
+**The "None" message, and the class it belongs to.** "Brain damaged — None — but fragile and
+slow to defend for the rest of the game" was the strip splicing the organ's `effect` field —
+the rulebook's *when damaged* table COLUMN, a cell not a clause — into a sentence template
+that assumed a clause. Swept every place a content field renders inside a UI sentence:
+
+| Template | Field spliced in | Filled today? | Verdict |
+|---|---|---|---|
+| `effects.organDamaged` "{organ} damaged — {effect}" | `ORGANS[o].effect` | 6 of 7 read as clauses; the Brain's is "None — but fragile & slow to defend" | **The live instance.** Fixed by shape: the chip says "{organ} damaged"; the column renders beneath it as a labelled value, "When damaged: None — but fragile & slow to defend", which is exactly what the rulebook's table says |
+| `effects.forecast` "Next turn: {name} — {text}" | the event's `tell` | Only bad events forecast, and every bad event has a tell; the three good events (surge, passive antibodies, fever) have an EMPTY tell | **Latent** — the same shape, one data change from a dangling dash. Guarded: the tell renders as the detail line only when present |
+| The banner chip "{name} — {why}" and the rare chip | `why` | every event and every rare has one | Same guard applied (detail line, not a spliced dash) |
+| `planning.where*`, `effects.residentInfected`, `resident.of`, `inspect.hiddenInMacrophage` | organ, route and resident NAMES | always filled | fine — names are values, not prose |
+| The pathogen and cell cards | `FACT`, `DZINFO.*`, `CELL_CARDS.*` | optional by design | fine — a missing field renders nothing, and the schema refuses an empty string |
+
+So: one live instance, one latent; both now render the field as a value under a label rather
+than as a clause inside a sentence. The rule for the class: a content field that is a table
+cell is displayed as a table cell.
+
+## 1 and 2 — the integrity pips: ABOVE the organ, coloured by state
+
+Moved above the icon on the board and on the planning figure (below, they met the organ
+names). Colour by state, derived from the organ's OWN max: green at full, red at one point
+left, amber for anything between — so the Brain's 2 goes green straight to red with no
+special case, and it stays right if any organ's integrity ever changes in content
+(`integrityState` in `Board.tsx`, shared by both drawings). Shape still carries it: filled
+versus empty pips.
+
+## 3 — the cell list: a grid, three per row, uniform width
+
+`PieceStrip` is a three-column grid with every chip the same width; each chip's two lines
+clip with an ellipsis rather than wrap, so fourteen chips of unequal names keep fourteen
+equal boxes. The icon shrank to 26px to leave the text room.
+
+## 4 — the actions belong in the selection box: one box
+
+Proposed layout, then built, since it was not tight — the rows are the same rows, only
+moved. The command bar is now: header (the cell, its qualifier, AP, the board hint, undo on
+the right) · the reason line · **the action rows** (available ones send what a ring would;
+greyed ones say why when tapped; "movement is on the board" when the board offers moves) ·
+a footer with Inspect and Deselect. While nothing is selected the bar carries the body's rows
+under the select prompt. The separate "Actions" box below the pieces is gone; `ActionList`
+survives as the rows' renderer inside the bar.
+
+## 5 — banners: the duplicate, and the classification (reported, not built)
+
+**Why it duplicated.** The engine sets an event's `fx` and its banner in the same draw, and
+the strip had a chip for each: "Antibody shortage — every store is capped at 2 · 3 more
+turns" (from `fx.capTurns`) AND "Antibody shortage — Plasma cells can't keep up" (the
+banner). One effect, two chips. Not two distinct effects — the liver's antibody cap is a
+third, different thing and keeps its own organ chip. **Fixed by folding:** the banner's name
+heads the chip its event produced and its `why` becomes the chip's detail line; the banner
+chip is shown only for an event with no chip of its own (co-infection, passive antibodies).
+The one event with two effects — fever slows the invaders (good) and costs an Action Point
+(bad) — keeps two chips, because they are two effects.
+
+**The classification — every chip the strip can show, as asked, before any colour changes.**
+The strip already has four kinds with four colours (red / green / blue / brown); Shantanu's
+pass met only harmful ones, which is why it read as all red. What each chip is:
+
+| Chip | Source | Class | Colour today |
+|---|---|---|---|
+| Arrival window closed, clear by turn N | turn > maxTurn | **neutral** (a deadline) | blue |
+| Immunosuppression — no antibodies | event fx | **harmful** | red |
+| Antibody shortage — stores capped at 2 | event fx | **harmful** | red |
+| N fewer Action Points (fatigue; fever's cost) | event fx | **harmful** | red |
+| N extra Action Points (acute-phase surge) | event fx | **beneficial** | green |
+| Fever — pathogens do not march | event fx | **beneficial** | green |
+| Neutropenia / Lymphopenia — a cell offline | suppress | **harmful** | red |
+| {Organ} damaged · When damaged: … | organs | **harmful, permanent** | brown |
+| Lymphatics blocked (filarial worms) | query | **harmful** | red |
+| HIV — Helper T-cells destroyed | query | **harmful** | red |
+| Helper T-Cell not yet primed | presentations = 0 | **neutral** (the starting state, not a penalty) | blue |
+| {Resident} disabled — a parasite inside it | residents | **harmful** | red |
+| Co-infection (banner only) | event | **harmful** | red |
+| Passive antibodies (banner only) | event | **beneficial** | green |
+| Next turn: {event} (forecast) | warning | **neutral** (information about a bad event) | blue |
+| A rare event (malaria relapse, dengue ADE, TB reactivation, shingles, post-flu pneumonia, rheumatic fever, cytokine storm) | rareBanner | **harmful** — all seven | red |
+
+**What is beneficial and is NOT a chip today**, which is Shantanu's real point: the memory
+response ready (in the body panel), the Helper T-Cell PRIMED (only its absence is a chip),
+immunity from a vaccine or from surviving (the body panel's "Immune" list), a coated pathogen
+(a badge on the board). Proposal, for ruling: (a) add **"Helper T-Cell primed"** as a green
+chip the turn priming happens (it disappears next turn — the strip is for effects in force,
+and priming is permanent, so a one-turn announcement, or none); (b) add **"Memory response
+ready — {disease}"** as a green chip while a remembered pathogen is in the body, since it IS
+an effect in force and the body panel's line is easy to miss; (c) leave immunity and the coat
+where they are. No colour changes were made: the four kinds already map harmful → red,
+beneficial → green, neutral → blue, permanent → brown, and the list above is what to argue
+with.
+
+## 6 — the cell list on the planning screen: removed
+
+Nothing else depended on it except the cell cards, whose ONLY entry point it was — so the
+cards are re-homed on the **inspect sheet**, which is "tell me about this" for cells as for
+pathogens: every cell row there now has a Card button. On the planning screen, which cells
+are spent or offline is a fact beside the AP line ("Neutrophil · Spent — back in 2 turns"),
+shown only when it is true of some cell. The roster's catalogue key is retired.
+
+## Verified in the real app, headless — versus by test only (the second pass)
+
+**Headless (`drive-round2.ts`, the app shell at 360×780, a fresh Training game, six turns):**
+the seven organs' pips render ABOVE their icons on the board (bottom of the pips at or above
+the icon's top, every organ), with the Brain's two and everyone else's three, all `full` at
+setup; the piece list is a three-column grid, fourteen chips, one width; selecting the
+Neutrophil produces ONE actions panel, inside the selection box, with Deselect after the rows;
+"About this cell" in that box opens the Neutrophil's card with its role prose; the planning
+screen has no roster on any turn and the figure's pips sit above their icons; a banner-only
+event (passive antibodies, turn 4) rendered as ONE green chip with its why as a detail line
+and no duplicate. **By test only:** the fold of an event's banner into its effect chip
+(`effects.test.ts`: a banner is carried by exactly one chip, never a banner chip beside its
+effect chip); the organ chip's "When damaged:" detail line (the organ chip is asserted per
+damaged organ; its text was not read headless because no organ was damaged in six idle
+turns); the worn and critical pip states and the Brain's missing amber
+(`integrity.test.ts`); the planning screen's spent-cell facts line (no cell was spent in an
+idle game). **Verified by no one:** the merged box with a piece that has several available
+rows, on the phone; the grid with all fourteen chips on a 360px screen by eye; a folded chip
+on the phone (draw until a crisis fires); the "When damaged" line under a real organ hit.

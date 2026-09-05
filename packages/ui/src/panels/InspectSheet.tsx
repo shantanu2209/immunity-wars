@@ -66,10 +66,13 @@ export function InspectSheet({
   onSelectResident,
   selectedResident = null,
   onCard,
+  onCellCard,
   onClose,
 }: {
   /** Opens the pathogen card for an invader (never offered for a novel one). */
   onCard?: (invaderId: string) => void;
+  /** Opens the cell card for a cell standing here (item 12's cards, re-homed here). */
+  onCellCard?: (cell: string) => void;
   info: InspectInfo;
   selectedCell?: string | null;
   disabled?: boolean;
@@ -148,37 +151,49 @@ export function InspectSheet({
         </div>
       ))}
       {info.cells.map((ck) => (
-        <button
-          key={`cell-${ck}`}
-          onClick={() => onSelectCell?.(ck)}
-          disabled={disabled || !onSelectCell}
-          style={{
-            ...ROW,
-            width: '100%',
-            background: selectedCell === ck ? '#FBEAE5' : 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: 14,
-            textAlign: 'left',
-          }}
-        >
-          <img
-            src={`/art/cell-${ck}@3x.webp`}
-            width={36}
-            height={36}
-            alt=""
-            style={info.unavailable[ck] ? { opacity: 0.38, filter: 'grayscale(1)' } : undefined}
-          />
-          <span>
-            {cellName(ck)}
-            {info.unavailable[ck] ? (
-              <span style={{ color: '#7C6A61' }}>
-                {' '}
-                {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
-              </span>
-            ) : null}
-          </span>
-        </button>
+        <div key={`cell-${ck}`} style={{ ...ROW, width: '100%' }}>
+          <button
+            data-sheet-cell={ck}
+            onClick={() => onSelectCell?.(ck)}
+            disabled={disabled || !onSelectCell}
+            style={{
+              ...ROW,
+              flex: '1 1 auto',
+              background: selectedCell === ck ? '#FBEAE5' : 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 14,
+              textAlign: 'left',
+            }}
+          >
+            <img
+              src={`/art/cell-${ck}@3x.webp`}
+              width={36}
+              height={36}
+              alt=""
+              style={info.unavailable[ck] ? { opacity: 0.38, filter: 'grayscale(1)' } : undefined}
+            />
+            <span>
+              {cellName(ck)}
+              {info.unavailable[ck] ? (
+                <span style={{ color: '#7C6A61' }}>
+                  {' '}
+                  {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
+                </span>
+              ) : null}
+            </span>
+          </button>
+          {onCellCard ? (
+            <button
+              data-cell-card={ck}
+              style={BTN}
+              disabled={disabled}
+              onClick={() => onCellCard(ck)}
+            >
+              {t('inspect.card')}
+            </button>
+          ) : null}
+        </div>
       ))}
       {info.resident !== null ? (
         // The resident's REAL name, then "resident of the Liver" — the sheet is where a

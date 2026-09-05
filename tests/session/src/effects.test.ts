@@ -84,8 +84,19 @@ describe('S25 items 5 and 7: the effects in force', () => {
         }
         if (g['warning']) seen.forecast += 1;
         if (g['warning'] && !has('forecast')) problems.push('a warning without a forecast chip');
-        if (g['banner']) seen.banner += 1;
-        if (g['banner'] && !has('banner')) problems.push('a banner without a chip');
+        // THE FOLD (S25 second pass, 5 September 2026): an event's banner is carried by the
+        // chip its effect produced — the event's name heads that chip — and by a banner chip
+        // only when the event has no chip of its own. Never by both: one effect, one chip.
+        const banner = g['banner'] as { name?: unknown } | null;
+        if (banner) {
+          seen.banner += 1;
+          const name = String(banner.name ?? '');
+          const carried = chips.filter((c) => c.text.includes(name));
+          if (carried.length === 0) problems.push('a banner without a chip');
+          if (has('banner') && carried.length > 1) problems.push('a banner AND its effect chip');
+        } else if (has('banner')) {
+          problems.push('a banner chip without a banner');
+        }
         for (const c of chips)
           if (c.text.includes('⟪') || c.text.trim() === '') problems.push(`bad chip text: ${c.id}`);
       }

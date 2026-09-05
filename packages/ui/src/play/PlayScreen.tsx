@@ -46,7 +46,6 @@ import {
   type BoardOffer,
   type Offered,
 } from './offered';
-import { ActionList } from '../panels/ActionList';
 import { EffectsStrip } from '../panels/EffectsStrip';
 import { effectChips } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
@@ -713,12 +712,6 @@ export function PlayScreen({
               .map((p) => ({ key: p.key, unavailable: p.unavailable }))}
             onCommand={commandFromPlanning}
             onPathogenCard={openPathogenCard}
-            onCellCard={(ck) =>
-              setCellCard({
-                cell: ck,
-                now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
-              })
-            }
           />
           <LogPanel lines={logLines} />
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
@@ -760,11 +753,25 @@ export function PlayScreen({
             notice={lastError ? engineText(lastError) : null}
             canInspect={canInspect}
             disabled={playing}
+            rows={rows}
+            hasMovement={moveCount > 0}
+            onOffer={sendOffer}
             onButton={sendOffer}
             onUndo={() => send({ action: 'undo' })}
             onInspect={() => {
               if (selectedNode) setInspect(selectedNode);
             }}
+            onCard={
+              selectedCell
+                ? () =>
+                    setCellCard({
+                      cell: selectedCell,
+                      now: unavailableByCell[selectedCell]
+                        ? unavailableText(unavailableByCell[selectedCell])
+                        : null,
+                    })
+                : undefined
+            }
             onDeselect={deselect}
           />
           <PieceStrip
@@ -775,12 +782,6 @@ export function PlayScreen({
             onSelectCell={tapCell}
             onSelectResident={tapResident}
             onDeselect={deselect}
-          />
-          <ActionList
-            rows={rows}
-            hasMovement={moveCount > 0}
-            disabled={playing}
-            onOffer={sendOffer}
           />
           <AntibodyPanel
             rows={familyRows}
@@ -814,6 +815,14 @@ export function PlayScreen({
                 tapResident(organ);
                 setInspect(null);
               }}
+              // THE CELL CARD's entry point (S25 second pass): the sheet is "tell me about
+              // this", for cells as for pathogens — the planning screen's roster is gone.
+              onCellCard={(ck) =>
+                setCellCard({
+                  cell: ck,
+                  now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
+                })
+              }
               onCard={(invaderId) => {
                 const iv = inspect.invaders.find((x) => x.id === invaderId);
                 if (!iv || iv.novel) return;
@@ -840,6 +849,7 @@ export function PlayScreen({
           ) : null}
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
           {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
+          {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
         </>
       )}
     </div>

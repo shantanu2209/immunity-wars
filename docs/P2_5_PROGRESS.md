@@ -335,7 +335,19 @@ consequence are in FINDINGS #53 and CP5's record.
 > exceeded, reason and named fix in `P2_3_MEASUREMENT.md`, to be resolved at the full-UI
 > re-measure, not re-deferred.
 >
-> **The S25 list for everything built since the last pass** — one session, in this order:
+> **The second S25 pass is done (5 September 2026, evening): "working well", seven items.**
+> Six are built — pips above the organs coloured by state, the piece grid, the actions in the
+> selection box (with "About this cell" as the cards' always-reachable entry), banners folded
+> one-per-effect, the planning roster removed — and the seventh is an engine bug, degranulate
+> burning the organ from the lane, confirmed and queued as **Q9** (FINDINGS #57). Two things
+> await Shantanu: the **classification of every effect chip** (in the record, "5 — banners")
+> before any colour changes, and the proposal there to add "Helper T-Cell primed" and "Memory
+> response ready" as beneficial chips. The record: [`for-P2.5.md`](for-P2.5.md), "After the S25
+> pass of 5 September 2026 (the second pass)". Still unverified by anyone: a coated planning
+> row, a bloodstream badge tap, a failed organ.
+>
+> **The S25 list for everything built since the last pass** (the first pass — kept as the
+> record of what was checked) — one session, in this order:
 >
 > *A. The command panel (item 1).* (1) With the Neutrophil and the Monocyte on one node that
 > holds a virus, tap each chip under "Your pieces": the bar names the cell, the chip is ringed,
