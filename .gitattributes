@@ -37,3 +37,6 @@
 *.woff2  binary
 *.ttf    binary
 *.pdf    binary
+
+# Word documents are binary: never normalise their line endings.
+*.docx binary

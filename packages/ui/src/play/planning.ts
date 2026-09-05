@@ -20,7 +20,7 @@
  * STACKING AS THE BOARD: the rows are the board's own node model — one row per type group
  * per node, with the same coat and hidden-inside splits — so a row here IS a token there.
  */
-import { ORGANS, ROUTES } from '@immunity-wars/content';
+import { ORGANS, ROUTES, ROUTE_KEYS } from '@immunity-wars/content';
 import type { SessionView } from '@immunity-wars/session';
 
 import { buildNodeModel, type InspectInvader, type Located } from '../board/Board';
@@ -72,6 +72,8 @@ export interface PlanningModel {
   byType: TypeCount[];
   /** Deepest first: organ lanes, then the bloodstream, then the entry lanes. */
   groups: PlanningGroup[];
+  /** Block a: the figure's markers, organs (with integrity) then entries then the bloodstream. */
+  places: PlaceMarker[];
   button: { label: string; params: Record<string, unknown> };
   allocation: AllocationSlot | null;
 }
@@ -95,10 +97,39 @@ export const DEPTH_LABEL: Record<Depth, string> = {
   organ: 'planning.depthOrgan',
 };
 
+/**
+ * The PLACE a group stands in: an organ key, a route key, or `hub` for the bloodstream. `hub`
+ * rather than `blood`, because `blood` is a route — the needle lane — and block a's
+ * silhouette keys its markers by place.
+ */
+export const HUB_PLACE = 'hub';
+
 function placeOf(loc: Located): string {
   if (loc.zone === 'branch' && typeof loc.organ === 'string') return loc.organ;
   if (depthOf(loc) === 'entry' && typeof loc.lane === 'string') return loc.lane;
-  return 'blood';
+  return HUB_PLACE;
+}
+
+/** A place's name for the player: the organ, "{Route} lane", or the bloodstream. */
+export function placeName(place: string): string {
+  if (place === HUB_PLACE) return t('planning.depthBlood');
+  if ((ROUTE_KEYS as readonly string[]).includes(place))
+    return t('planning.laneName', { lane: routeName(place) });
+  return organName(place);
+}
+
+/**
+ * BLOCK A's markers — one per organ the game has, one per entry lane, one for the bloodstream:
+ * how many invaders stand there (the rows' counts, summed by place — so a badge on the figure
+ * is the same number as the rows behind it) and, for an organ, its integrity from the view.
+ */
+export interface PlaceMarker {
+  place: string;
+  kind: 'organ' | 'entry' | 'hub';
+  depth: Depth;
+  count: number;
+  /** Organs only: integrity now and at full, and whether the organ has failed. */
+  hp: { hp: number; max: number; failed: boolean } | null;
 }
 
 export function whereText(loc: Located): string {
@@ -180,6 +211,35 @@ export function planningModel(view: SessionView): PlanningModel {
 
   const total = invaders.length;
   const placed = groups.reduce((s, x) => s + x.count, 0);
+
+  const countAt = (place: string): number =>
+    groups.filter((x) => x.place === place).reduce((s, x) => s + x.count, 0);
+  const organs =
+    (g['organs'] as
+      Record<string, { hp?: unknown; max?: unknown; failed?: unknown }> | undefined) ?? {};
+  const organList = ((g['organList'] as unknown[] | undefined) ?? Object.keys(organs)).map(String);
+  const places: PlaceMarker[] = [
+    ...organList.map((o): PlaceMarker => {
+      const org = organs[o];
+      return {
+        place: o,
+        kind: 'organ',
+        depth: 'organ',
+        count: countAt(o),
+        hp: org
+          ? { hp: num(org.hp), max: num(org.max), failed: org.failed === true || num(org.hp) <= 0 }
+          : null,
+      };
+    }),
+    ...(ROUTE_KEYS as readonly string[]).map((r): PlaceMarker => ({
+      place: r,
+      kind: 'entry',
+      depth: 'entry',
+      count: countAt(r),
+      hp: null,
+    })),
+    { place: HUB_PLACE, kind: 'hub', depth: 'blood', count: countAt(HUB_PLACE), hp: null },
+  ];
   const button =
     mode === 'allocate'
       ? { label: t('planning.confirm'), params: { action: 'confirmAllocation' } }
@@ -204,6 +264,7 @@ export function planningModel(view: SessionView): PlanningModel {
     placed,
     byType,
     groups,
+    places,
     button,
     allocation,
   };

@@ -1148,3 +1148,236 @@ CSS transform transition between the two coordinate sets on one SVG layer (compo
 little main-thread cost, measurable through `onFrame`); the honest number comes from
 measuring that on the throttled screen, and Shantanu has said he will cut it without
 argument — so it waits for block a and a measurement, in that order.
+
+## Item 12 — the anatomy check (Shantanu, 5 September 2026): one correction, one question for Kartik, step 4 RULED
+
+### The marrow moves to the iliac crest — the biology, so it is defended and not just moved
+
+The first picture had the marrow in the groin. **Corrected:** it sits on the **iliac crest** —
+the flared upper wing of the pelvis, off to one side, where a hand rests on a hip — at
+(74, 298) in the frame's space, on the **patient's right** (the viewer's left; one side is
+enough, symmetry is not required). That is where an adult's **red** marrow lives and where a
+bone-marrow biopsy is taken from. The femoral shaft has marrow too, but in adults it is mostly
+fatty **yellow** marrow, not the blood-cell-producing red marrow the game models — so the pelvis
+is both the correct answer and the one that fixes the placement. The spleen also moved two
+pixels, to (144, 234), so that it clears the heart by more than a touch.
+
+### THE MIRRORING QUESTION — Kartik's to settle, stated with both sides
+
+On a front-facing figure, anatomical right is the viewer's left. The liver is placed on the
+patient's right, so it appears on the **left of the screen**, with the spleen on the right.
+That is **medically correct** — it is how every anatomy chart and every X-ray is read — and it
+**reads backwards to anyone thinking in screen terms**. A game could reasonably choose either:
+
+- **Medical convention** (as built): the figure faces you, its right is your left. Teaches the
+  real thing; every doctor and every textbook agrees with the screen.
+- **Screen-intuitive**: mirror the figure so "the liver is on the right" is also on the right
+  of the screen. Reads instantly; disagrees with every chart the player will later see.
+
+**Kartik decides**, and the pick is recorded here with his reason, so it is a decision rather
+than an inheritance. Shantanu's preference, stated for the record: **keep it medically
+correct**, bending only where two icons would otherwise touch. Until Kartik rules it stays as
+built.
+
+### "Not touching" is now a check, not a promise
+
+Shantanu's rule — keep it medically correct, but organs must not touch or intersect, and if
+they do, anatomy bends for UX — is a rule about numbers, so `packages/content/src/anatomy.test.ts`
+holds every pair of the fourteen placed icons (seven organs, six entry chips, the bloodstream)
+at least **32px apart on one axis** at the 30px display size, naming any pair that fails; its
+control puts two icons on one point and requires the pair reported by name. The current
+layout's closest pairs are 32px (brain–nose, lungs–heart, kidneys–gut, spleen–heart).
+
+### Step 4 — RULED: option A. The positions, proposed as a picture before building
+
+Shantanu ruled option A — entry chips on the outline at the point of entry, the bloodstream
+at the great vessels — because the whole value of the screen is that things sit where they
+are in a body, and a circulation loop would be a second diagram competing with the first. The
+positions are now in `anatomy.json` as `ANATOMY_ENTRY: byRoute(Point)` and `ANATOMY_HUB:
+Point`, validated like the organs (inside the frame; every rules route placed — two more
+controls), and drawn in `pnpm art:anatomy`'s picture **for a look before block a is built**:
+
+| Chip | x | y | Where, and why there |
+|---|---|---|---|
+| nose | 112 | 84 | the face, below the brain — the one entry that must be inside the outline |
+| blood (the needle) | 34 | 140 | the deltoid, on the outline of the shoulder — a needle in the arm |
+| contact | 36 | 176 | the arm stump, patient's right — skin contact by the hand |
+| bite | 188 | 172 | the arm stump, patient's left — a bite is on a limb, and the stumps are the limbs the frame keeps |
+| wound | 170 | 300 | the thigh edge, patient's left — a cut where the skin meets the outside |
+| gut | 132 | 304 | the lower abdomen, patient's left — where enteric pathogens act |
+| bloodstream (the hub) | 112 | 134 | the great vessels at the top of the chest; an amber disc, since it has no art and cannot honestly be one place |
+
+⚠️ **One place where anatomy bends, stated:** the `entry-gut` art draws a **stomach**, and the
+stomach's true position — under the left ribs, medial to the spleen — cannot hold a third 30px
+icon beside the liver and the spleen in a 93px-wide waist. The chip stands for the digestive
+tract as a ROUTE, and the intestines are where cholera, typhoid and the E. coli toxins act, so
+the lower abdomen is the defensible place for a gut *infection's* entry even though the icon
+shows the organ above it. If Kartik would rather the icon sit at the stomach, the spleen moves
+laterally onto the flank and the check says whether it still fits.
+
+**Block a itself is not yet built** — the ruling was to show the positions first.
+
+### The second look (Shantanu, 5 September 2026): six moves, all applied
+
+Brain up to (112, 42) to make room; nose to the middle of the face, (112, 78); the needle
+inside the shoulder, (50, 140); the hand and the mosquito centred in their arm stumps and
+near the stumps' bottoms — equidistant from the bottom and both sides — (40, 194) and
+(184, 194); the wound down into the right thigh on the same rule, (146, 338). The spacing
+check holds (closest pair 32px); the picture was re-rendered and looked at.
+
+**Third look:** the hand was intersecting the stump's bottom stroke; raised to (40, 186).
+**Everything else approved by Shantanu (5 September 2026) — the layout block a builds on.**
+Still open for Kartik: the mirroring convention, and whether the gut icon should sit at the
+stomach.
+
+### For Kartik's queue, beside the mirroring question: the gut ICON, not the gut position (Shantanu, 5 September 2026)
+
+"Gut" as an entry route is not the stomach. Food- and water-borne pathogens are mostly
+**intestinal** — cholera colonises the small intestine, salmonella and shigella the gut wall,
+rotavirus the intestinal lining. The stomach's main role is killing them with acid: it is a
+barrier, not the site of infection. So the lower abdomen may be the MORE correct position,
+and it is the icon that is wrong. **Question for Kartik:** should the gut art be intestines
+rather than a stomach — which would make placement and biology agree, and cost one
+regeneration through the pipeline (a new `entry-gut` raw, its provenance row, `pnpm
+art:build`) rather than a layout compromise? Until he answers, the chip stays at the lower
+abdomen and the icon stays as it is.
+
+**Layout APPROVED (Shantanu, 5 September 2026). Block a builds against it.**
+
+## Item 12 — step 4, block a: BUILT (5 September 2026), and the defect its walkthrough found
+
+### What it is
+
+`AnatomyView` (`packages/ui/src/play/AnatomyView.tsx`), at the top of the planning screen: the
+keyed frame as an SVG whose viewBox IS the frame's pixel space, the seven organs at
+`ANATOMY_POS`, the six entry chips at `ANATOMY_ENTRY`, the bloodstream as an amber disc at
+`ANATOMY_HUB` — no coordinate authored in the component. Each organ carries its **integrity as
+pips** (one per point at full, filled while it holds — shape, not colour; a failed organ dims).
+Each place carries a **badge** with the count of invaders standing there, in the depth colour
+with the number inside it: the model's `places` sum the rows by place, so a badge on the figure
+is the same number as the rows behind it, by construction and by test. **Tap to expand a
+lane:** the tap is coarse pointing, the board's own pattern — the nearest marker within 24
+frame-px takes it, resolved in one handler on the SVG, because thirty-pixel icons cannot each be
+a 44px target on a figure this size — and the rows below filter to that place, headed
+"Showing: {place}" with a 44px Show-all; tap-again or a tap on nothing clears. The bloodstream's
+place key is `hub`, not `blood`: `blood` is a route, the needle lane.
+
+### Verified in the real app, headless (`drive-planning.ts`, 360×780, six turns) — versus by test only
+
+**Headless:** the figure rendered at 280×475 CSS px with **all seven organs' pips** on every
+turn; **the markers' sum equalled the counts-by-type chips on every turn** (1, 2, 3, 5, 8, 9
+invaders); tapping a marked place (gut, nose, and on turns 5–6 the **marrow, an organ lane with
+a red badge**) filtered the rows to exactly that marker's count, with the "Showing: Bone
+Marrow" header; Show all restored every row; the board's SVG stayed absent while planning and
+returned on Command; everything from the step-3 walkthrough held (one command button, both
+cards, the mid-planning reload).
+
+**By test only** (`planning.test.ts`, on recorded games): every marker's place is an organ, a
+route or `hub`; the markers' counts sum to the body's total; organ markers carry the view's
+own `hp`/`max`; exactly one hub marker. **Verified by no one:** a **failed organ's** dimmed
+icon and empty pips (no idle game lost an organ inside six turns); a **hub badge tap** (the
+bloodstream held something only on turn 6, and the driver tapped the first marked place); the
+figure at 200% text; the touch feel of the 24px hit radius — an S25 item: *tap each organ, an
+entry chip and the bloodstream; the rows should follow the finger, and a tap between icons
+should clear.* One thing seen and left for Gate 2: the nose chip's badge sits close under the
+brain's pips.
+
+### FINDINGS #56 — found by the walkthrough, fixed at the session's resume, filed as the engine's
+
+The first block a run counted **7 invaders in the rows against 5 by type** on the turns after
+the driver's mid-game reload. The figure agreed with the rows, which is what pointed at the
+data rather than the drawing: after a reload the engine's **invader id counter** — a
+module-level counter no `GameState` carries — restarts at zero, and the next arrivals reuse ids
+already in the body; the node model's id filter then puts one invader in two groups. Every
+id-keyed path shares the fault: the attack rings, the sheet, the memory response, antivenom.
+The corpus never sees it because the counter never restarts inside one process. It is an
+**engine** defect (Phase 3 puts the counter in `GameState`), worked around **at the join that
+owns resume**: `LocalSession.resume` advances the counter past the save's largest id, never
+lowering it. `tests/session/src/resume-ids.test.ts` spans the join with a **control that drives
+the engine alone after a simulated fresh process and requires the collision** — it went red
+once for the right reason (the sampled states' first invaders were already dead, so nothing
+collided) and was resampled to states that still hold `i1`. Full record: FINDINGS #56. After
+the fix the walkthrough's counts agreed on all six turns.
+
+This is outside item 12's scope and is recorded as such: it was fixed rather than only filed
+because the newcomer test's resume path — lock the phone, unlock, continue — depends on it,
+and the fix is a dozen lines at the seam that owns the behaviour.
+
+## Rulings of 5 September 2026 (Shantanu), applied
+
+- **The cell cards are written**, not waited for: `labels/cells.json` now carries role, home,
+  best-against, deficiency and a fact for all seven cells, at the pathogen cards' standard —
+  from the immunology the rulebook and study packet already teach, with the game's own
+  numbers (range 3/2, +1 beside the Helper; two steps for the Neutrophil and NK Cell; four turns
+  spent, two with the Helper in the blood; 2 and 3 damage; d6 3+). Kartik reviews and corrects;
+  the schema refuses an empty field, so a correction is an edit, never a blank.
+- **The "13" digit collision is fixed as ruled: the digit is dropped.** The alternative taken
+  with it, stated so it can be cut: the organ's integrity is drawn as **pips under the organ
+  icon** on the board — the planning screen's own pips, in the annotation area where no token
+  ever stands. Dropping the digit alone would have left the command screen with no integrity
+  at all, and the command screen is where a player decides what to defend. Seven pips-groups
+  render (`data-organ-pips`), a resident standing on the tissue slot no longer shares a pixel
+  with a number.
+- **Mirroring: RULED — medical convention**, the liver on the patient's right. The earlier
+  entries above that list it as open for Kartik are superseded by this line.
+- **Gut icon: keep the stomach. No change.** The lower-abdomen placement stands with it.
+- **Block e (the transition): build it if it can be done well, measure first, cut only on the
+  measurement.** Built and measured below.
+- Kartik's seven rulings: recorded in FINDINGS ("Kartik's rulings") and queued in
+  `ENGINE_CHANGE_QUEUE.md`; the rulebook, study packet and quick reference corrected for the
+  residents and the Heart.
+
+## Item 12 — step 5, block e: BUILT and MEASURED (5 September 2026) — kept, on the measurement
+
+**What it is.** When "Command your cells" is tapped from the planning screen, the seven organ
+icons travel from their anatomical positions on the figure to their radial positions on the
+board. A FLIP flight (`PlayScreen.tsx`): the figure's organ rectangles are read at the tap;
+in the commit that replaces the planning screen with the board, seven ghost images are placed
+at those rectangles and animated by **transform only** — so the compositor moves them and the
+main thread does nothing during the 450ms — onto the board's icons, which stay hidden (a data
+attribute on the root, one CSS rule) until the ghosts land. Skipped under
+`prefers-reduced-motion`. The cost that CAN land on the main thread — the rectangle reads and
+seven `animate()` calls, inside the board's own commit — is what was measured.
+
+**Measured**, as the brief requires: numbers, device, throttle. Windows PC (the P2.3 screening
+device), headless system Chrome over CDP, the dev shell at 360×780 @2×, `emulateCPUThrottling`;
+`__iwMetrics.transitions` — main-thread busy time from the command TAP until the board's
+commit with the flight prepared has yielded (the same 0ms-timer probe as the tap row), so the
+figure is the whole command tap's work; the baseline is the same tap under reduced motion,
+where the flight is skipped and the tap otherwise identical. Five taps per arm (eight for the
+6× flight arm, rerun to check a tail).
+
+| Throttle | Flight | Busy p50 | Busy p95 | Wall to paint p50 | Long tasks in the 600ms after the tap (max) |
+|---|---|---|---|---|---|
+| 1× | on | 14.0ms | 20.3ms | 41ms | 0 |
+| 1× | off | 12.0ms | 13.0ms | 28ms | 0 |
+| 4× | on | 66.9ms | 84.9ms | 76ms | 13 (71ms) |
+| 4× | off | 62.9ms | 70.7ms | 94ms | 9 (64ms) |
+| 6× | on (n=8) | 115.1ms | 165.2ms | 125ms | 17 (129ms) |
+| 6× | off | 109.1ms | 112.0ms | 135ms | 21 (120ms) |
+
+**Reading it.** The flight's marginal main-thread cost is **+2ms at 1×, +4ms at 4×, +6ms at
+6× at the median** — the rectangle reads and the seven animations — with no long task at 1×
+and no motion work on the main thread at all. Its tail at 6× is one tap in eight at 165ms
+against 112ms without it: the rectangle reads force the freshly mounted board's layout inside
+the commit rather than before the paint, and at 6× that shows. **Verdict, by the ruled test
+(cut only if the measurement says so): KEEP.** The measurement does not say cut; it says the
+flight is a few milliseconds on a tap that is expensive for another reason.
+
+**That other reason is the finding, and it is not the flight's.** The command tap from the
+planning screen **mounts the whole board** — it is a screen switch, not a selection tap — and
+it costs **~63ms at 4× and ~109ms at 6× with the flight off**, against the §4 tap row's 100ms.
+P2.3 measured selection taps (a highlighted node) and the initial render (~1s row); this tap is
+a third shape, new with item 12, and it goes to the **mandatory per-redraw re-measure with the
+full UI** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note) as a named item — **and it is recorded as a BUDGET BREACH, not a note** (Shantanu, 5 September 2026): exceeded, reason, named fix and the point of resolution are in [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 5 September 2026". The
+candidate that would make it cheap, not built: keep the board mounted and hidden while the
+planning screen shows, so the switch is a visibility toggle rather than a mount — at the cost
+of the board's memory and its render on every draw.
+
+**Verified headless:** seven organs flew on every one of 26 command taps across the arms
+(`organs: 7`), the ghosts were created and removed every time (the driver waits for zero
+`[data-flight-ghost]` before ending the turn), and the mid-flight frame at 1× shows the ghosts
+between the two layouts. **Verified by no one:** the flight by eye on the S25 — whether it
+reads as the organs going to their places or as seven things flying about — which is a Gate 2
+question and the reason Shantanu said he would cut it without argument. The S25 item: *tap
+Command your cells and watch whether the organs land where the board has them.*

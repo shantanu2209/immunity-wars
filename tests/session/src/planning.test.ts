@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { DZINFO } from '@immunity-wars/content';
+import { DZINFO, ORGANS, ROUTE_KEYS } from '@immunity-wars/content';
 import * as engine from '@immunity-wars/engine';
 import { installRng, restoreRng } from '@immunity-wars/equivalence/rng';
 import type { Engine, GameState } from '@immunity-wars/equivalence/types';
@@ -135,6 +135,31 @@ describe('item 12: the planning screen model', () => {
         if (a && b) expect(order[a.depth]).toBeLessThanOrEqual(order[b.depth]);
       }
     }
+  });
+
+  it("block a: the figure's markers account for every invader by place, with organ integrity from the view", () => {
+    const valid = new Set([...Object.keys(ORGANS), ...(ROUTE_KEYS as readonly string[]), 'hub']);
+    let organsWithHp = 0;
+    let markedPlaces = 0;
+    for (const [i, m] of models.entries()) {
+      expect(m.places.reduce((s, p) => s + p.count, 0)).toBe(m.total);
+      const organs = ((plans[i]?.st as unknown as Raw)['organs'] as Record<string, Raw>) ?? {};
+      for (const p of m.places) {
+        expect(valid.has(p.place), p.place).toBe(true);
+        if (p.count > 0) markedPlaces += 1;
+        if (p.kind === 'organ') {
+          expect(p.hp, p.place).not.toBeNull();
+          expect(p.hp?.hp).toBe(organs[p.place]?.['hp']);
+          expect(p.hp?.max).toBe(organs[p.place]?.['max']);
+          organsWithHp += 1;
+        } else {
+          expect(p.hp).toBeNull();
+        }
+      }
+      expect(m.places.filter((p) => p.kind === 'hub').length).toBe(1);
+    }
+    expect(organsWithHp).toBeGreaterThan(0);
+    expect(markedPlaces, 'no marker ever carried a count').toBeGreaterThan(0);
   });
 
   it('every pathogen a row can open a card on has a card', () => {

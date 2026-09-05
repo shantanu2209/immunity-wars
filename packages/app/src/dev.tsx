@@ -17,7 +17,7 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { runIdbExercise } from './idb-exercise';
-import { markInitialRender, recordFrame, recordTap } from './metrics';
+import { markInitialRender, recordFrame, recordTap, recordTransition } from './metrics';
 
 const session = LocalSession.createGame(
   { difficulty: 'training' },
@@ -54,6 +54,7 @@ function DevApp(): ReactElement {
         onCheck={(line) => setChecks((c) => [...c, line])}
         onFrame={recordFrame}
         onTap={recordTap}
+        onTransition={recordTransition}
         renderControls={(ctx) => (
           <p>
             <span style={{ fontSize: 13 }}>

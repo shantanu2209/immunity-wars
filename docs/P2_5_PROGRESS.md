@@ -100,10 +100,10 @@ the current surface cannot play. The seventeen are planned in
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
 | **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
 | **Board state the engine tracks and the board did not show** — the sweep (for-P2.5.md) | **Coat and spent/offline cells BUILT (4 Sep 2026)**, before the card as reordered: fan-of-types split by type + coated, the antibody badge, "Coated in antibody" in the sheet; spent and suppressed cells dimmed with turns-until-back in the badge slot. Malaria stage and the parasite inside a resident stay with the card |
-| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) is PROPOSED and awaits a ruling** on how the entry lanes and the bloodstream are placed; step 5 waits on step 4 and a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
+| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) BUILT** on the approved layout; its walkthrough found and fixed FINDINGS #56 (ids after a resume). Step 5 waits on a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
 | **Resident-vs-Macrophage visual distinction; lymph connector polish** | **Ruled at CP3:** the distinction leans on the biology — Monocyte versus Kupffer cell by name, in the bar and the sheet — plus a double ring; distinct resident art is the real answer, deferred with the pipeline (for-P2.5.md). Lymph connector polish still recorded there |
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
-| **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends) |
+| **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends). **It now also carries a breach to RESOLVE**: the command tap from the planning screen, 109ms at 6× against the 100ms tap row — [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 5 September 2026" |
 | **Win path crossed** | Closeout checklist item |
 | **Newcomer test, two staggered runs** | Protocol approved; **not ready to run** — after the command surface and the panels (bar above) |
 
@@ -314,14 +314,73 @@ consequence are in FINDINGS #53 and CP5's record.
 ### Item 12 — the planning screen — in this order (Shantanu, 5 September 2026)
 
 > **Status at the end of the day, 5 September 2026:** steps 1, 2 and 3 are BUILT on
-> `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is a
-> written proposal awaiting Shantanu's ruling** (chips on the outline at the point of entry,
-> blood at the great vessels — option A — versus a circulation loop); step 5 waits on step 4
-> and a measurement. Two things to check by hand: Kartik checks the seven organ positions
-> against `pnpm art:anatomy`'s picture (the liver is on the viewer's LEFT — the handoff's
-> "as the viewer sees it" phrase below would have mirrored it), and Kartik fills
-> `packages/content/src/labels/cells.json`. By finger on the S25, still to do: the planning
-> screen itself (the step/expect list is at the end of the record).
+> `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is
+> BUILT — option A** (chips on the outline at the point of entry, the bloodstream at the great
+> vessels; the layout approved by Shantanu after three looks): the figure with integrity pips,
+> depth-coloured count badges and tap-to-expand a lane. Its walkthrough found **FINDINGS #56**
+> (a resumed game reuses invader ids — fixed at the session's resume, filed as the engine's).
+> **Step 5 (block e, the organ flight) is BUILT and MEASURED — kept**: +2–6ms of main-thread
+> work at the median across 1×/4×/6×; the command tap's own board mount (~109ms at 6×, flight
+> or no flight) is a named item for the mandatory full-UI re-measure.
+> **Item 12 is complete**, pending the S25 pass by finger (the step/expect lists are in the
+> record). Shantanu's anatomy check moved the marrow to the iliac crest; the mirroring is
+> **ruled medical** (the liver on the viewer's left); the gut icon stays a stomach. **The seven
+> cell cards are written** (`labels/cells.json`) for Kartik to review and correct. Kartik's seven
+> rulings are recorded in FINDINGS and queued in `ENGINE_CHANGE_QUEUE.md`; the rulebook, study
+> packet and quick reference were corrected for the residents and the Heart, and **committed**
+> (Shantanu, 5 September 2026: the ignore rule's reason — the pending content licence — had
+> expired; `LICENSES.md` records the documents as all rights reserved with the rest of the
+> content). **One budget breach is on the record**, stated as one: the command tap from the
+> planning screen mounts the whole board and costs 109ms at 6× against the 100ms tap row —
+> exceeded, reason and named fix in `P2_3_MEASUREMENT.md`, to be resolved at the full-UI
+> re-measure, not re-deferred.
+>
+> **The S25 list for everything built since the last pass** — one session, in this order:
+>
+> *A. The command panel (item 1).* (1) With the Neutrophil and the Monocyte on one node that
+> holds a virus, tap each chip under "Your pieces": the bar names the cell, the chip is ringed,
+> "Actions" lists that cell's actions by name, and the named action is the one a ring tap would
+> perform. (2) Tap a greyed row: its reason appears inline. (3) Tap an available row: the same
+> effect as the ring. (4) Tap the selected chip again: deselected. (5) Decide whether movement
+> needs rows too or "Movement is on the board" is enough.
+>
+> *B. The effects strip (items 5 + 7).* (1) When an organ is hit, its chip appears under "In
+> force" and stays while the damage lasts. (2) When a crisis fires, its chip names the effect and
+> the duration, and counts down turn by turn. (3) Past turn 15 on Training the window chip
+> appears and the turn line reads "Turn 16 · 14 turns to clear the body" (Normal 21 · 14, Hard
+> 31 · 14).
+>
+> *C. The board crop, the hub as Variant B, the pips (items 11 + 8, and the digit).* (1) The
+> board fills the width; every label sits beside or below its icon without crowding the edge.
+> (2) At setup the seven cells ring the hub and read at a glance; a pathogen reaching the blood
+> sits in the centre with its badge. (3) Tap a hub cell by finger: the one you meant is selected.
+> (4) Under each organ icon: pips — three filled at full, two for the Brain; after an organ is
+> hit, one empties; the old digit beside step 1 is gone.
+>
+> *D. The planning screen (item 12).* (1) Draw → the reveal → Continue: the planning screen,
+> no board, ONE "Command your cells" button; the top row shows Draw, End turn and Menu only.
+> (2) "You will have N Action Points": N equals the AP shown after Command. (3) The figure:
+> seven organs with pips, six entry chips, the bloodstream disc; a badge on every place that
+> holds a pathogen, green on an entry, amber on the bloodstream, red on an organ, and the
+> number in it equals that place's rows below. (4) Tap a marked organ or entry: a ring,
+> "Showing: {place}", the rows filtered to it; tap it again or tap empty figure: cleared; "Show
+> all" restores. (5) The type chips' counts add up to the rows' badges. (6) Tap a row: it
+> expands; "Card" opens the pathogen card; Close. (7) Tap the B-Cell chip: the cell card with
+> role, where it lives, best against, when it is missing, and a fact; Close. Read the Helper's
+> and the NK Cell's too — this is Kartik's review of the prose. (8) Lock the phone
+> mid-planning, unlock, Continue from Title: the planning screen again with the same pathogens;
+> after the next spread no pathogen is listed twice (FINDINGS #56). (9) After a spread carries
+> something into an organ lane, the next plan lists that row FIRST, red, with the organ's name,
+> and the organ's badge is red. (10) Command your cells: the board, End turn enabled.
+>
+> *E. The flight (block e).* (1) Tap Command your cells and watch: the seven organs travel
+> from the figure to their board positions in under half a second, land on the board's icons,
+> no organ doubled, nothing left behind. (2) The Gate 2 question: does it read as the organs
+> going to their places, or as seven things flying about? (3) The board is live the moment it
+> appears — a tap during the flight should behave normally.
+>
+> *Seen by no one yet, if the game offers them:* a coated row ("· Coated in antibody") on the
+> planning screen after a tag; a tap on the bloodstream's badge; a failed organ's dimmed icon.
 
 1. **The frame through the art pipeline as `frame/body`.** The source is committed at
    `tools/art-pipeline/raw/frame-body.jpeg` (from
