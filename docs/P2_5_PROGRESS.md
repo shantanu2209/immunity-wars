@@ -459,3 +459,85 @@ Report at the end separating headless-verified from test-only, as before.
   pattern (puppeteer-core from `tools/perf` against `http://localhost:5173`, string scripts in
   `page.evaluate`, fresh games until the draw gives the scenario, badges summed not tokens
   counted) is in the memory notes and in for-P2.5's CP records.
+
+
+## Handoff for the next session — written at the clear, 5 September 2026 (evening)
+
+Everything below was true at the clear and is not in the code or git history by itself.
+
+### Where things are, and the PR order
+
+`main` has #46, #47 and #48 (item 12 complete; the second S25 pass's six items and Q9). **One
+PR is open: #49**, on `phase2/p2-5-s25-round-2`, three commits in this order — the beneficial
+chips and the catalogue/cell-card dash sweep; the instrument change alone (the content parity
+pins re-baselined up to punctuation, with both controls); the content sweep itself. It merges
+on its own; nothing is stacked on it. **Lesson from today, twice:** a PR was merged while the
+branch was still being pushed to, and the later commits sat on the branch with no PR holding
+them. Check `gh pr view --json state` before pushing more to a branch, and open the next PR
+when the previous one is merged. The tree was clean and pushed at the clear.
+
+### The dash sweep — where it stands
+
+Swept and held by `packages/content/src/no-dashes.test.ts`: the UI catalogue, the cell
+cards, DZINFO, FACT, BEAT_BY_TYPE, ORGANS (effect, bio), FAMILIES (bio). **Still pinned, on
+purpose:** EVENTS and RARE (their tell and why reach the banner and the log, so the equivalence
+corpus pins them) and `engine.json` (the drift test asserts it IS the engine's text) — both go
+with Phase 3's Q8, when the engine emits ids. The rulebook, study packet and quick reference
+(.docx, now in git) were not swept; they are Kartik's documents, and whether to apply the
+preference there is his and Shantanu's call. The parity comparison for the swept tables is
+"up to punctuation" (`tests/equivalence/src/punctuation.ts` says what it still guarantees).
+
+### The S25 list for the third pass
+
+In the status paragraph above ("S25 list for this round (the third pass)"), seven steps: pips
+above and their colours, the piece grid, the one-box selection with "About this cell", the
+green chips (primed after the first engulf; memory response ready on a remembered arrival;
+one chip per crisis with its why beneath), an organ hit's "When damaged:" line, the planning
+screen's spent-cell facts line, and no dashes anywhere. Add: whether the permanent "Helper
+T-Cell primed" chip reads as useful or as noise after a few turns — that was a judgment, not
+a ruling, and the phone decides.
+
+### What a fresh session would otherwise rediscover
+
+- **The selection box** (`CommandBar.tsx`) now renders the action rows itself (`ActionList`
+  inside it, props `rows`/`hasMovement`/`onOffer`), with a footer of What's here · About this
+  cell · Deselect. PlayScreen no longer mounts a separate ActionList. The body's rows show
+  under the select prompt while nothing is selected.
+- **The effects strip** (`effects.ts`): four kinds, four colours; `EVENT_CHIPS` folds an event's
+  banner into the chip its `fx` produced (fever keeps two); chips carry an optional `detail`
+  line (an organ's "When damaged:" column, an event's why, the forecast's tell); the two
+  beneficial chips are `helperPrimed` (the licensing rule, off under `hivActive`) and
+  `memoryReady` (any remembered invader in the body). `effects.test.ts` holds every chip to
+  its state with vacuity guards.
+- **The planning screen**: no roster; a facts line under the AP when a cell is spent; cards
+  open from the selection box and the inspect sheet's cell rows (`onCellCard`); the figure
+  (`AnatomyView`) draws pips ABOVE the icon via `integrityState`/`INTEGRITY_COLOUR` from
+  `Board.tsx`, the same rule the board uses.
+- **The flight** (`PlayScreen.tsx`, `FLIGHT_ORGANS`): rectangles are looked up BY the content
+  pack's organ keys, never read out of the DOM — CodeQL flagged the DOM-read version as text
+  reinterpreted as HTML, and the fix was better code anyway. Keep it that way.
+- **The headless drivers** lived in the session scratchpad and are gone at the clear; the
+  shapes are recorded in the for-P2.5 records: puppeteer-core from `tools/perf` against
+  `localhost:5173`, string scripts in `page.evaluate`, badges summed not tokens counted, and
+  for the flight the dev shell's `__iwMetrics.transitions` with `emulateCPUThrottling` and a
+  reduced-motion arm as the baseline.
+- **The budget breach** (the command tap's 109ms at 6×) is on record in `P2_3_MEASUREMENT.md`
+  with its fix; it is resolved at the full-UI re-measure, not re-deferred.
+
+### What remains in P2.5
+
+The table above still holds: the per-event dialog decisions (memory response, novel
+pathogen, crises); the 46 ambiguous strings; Gate 1 hygiene (touch targets, 200% text,
+contrast against the pipeline's numbers, offline); the mandatory per-redraw re-measure with
+the breach to resolve; the WIN path uncrossed; the newcomer test, two staggered runs, now
+that the surface is complete. Three things are still verified by no one: a coated planning
+row, a bloodstream badge tap, a failed organ.
+
+### Rulings and checks owed across the boundary
+
+- **Kartik:** the seven organ positions (against `pnpm art:anatomy`); the seven cell cards'
+  prose (`labels/cells.json`); the gut icon question is closed (stays); the mirroring is
+  closed (medical). His seven rulings are recorded and queued (`ENGINE_CHANGE_QUEUE.md`,
+  Q1–Q9).
+- **Shantanu:** the third-pass S25; whether the rulebook .docx get the no-dashes preference;
+  nothing else is blocked on him.

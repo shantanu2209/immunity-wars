@@ -1577,3 +1577,30 @@ Hindi cut. **Recommendation: (a) for the content tables** (Kartik's prose is con
 punctuation is not science) **and (b) for `engine.json`**, whose text the frozen engine
 emits; the drift test exists to say the catalogue IS the engine's text, and it should not be
 taught to look away while that is the contract. Shantanu rules.
+
+## The dash sweep, completed as ruled (5 September 2026, late): the content tables re-baselined, the engine catalogue left exact
+
+**The ruling, and the reasoning stated because the two pins do different jobs.** The engine
+catalogue's pin (the i18n drift test) asserts the catalogue IS the engine's text; making it
+punctuation-insensitive would weaken the exact comparison it exists for. It stays exact;
+Phase 3 emits ids and the question dissolves. The content tables' pin was a finished
+migration: it proved the tables came across from the legacy files unchanged, and it
+succeeded. Kartik's disease prose is the source of record now, not a copy of one, and holding
+it byte-identical to a file nobody edits would let a legacy build govern punctuation in the
+Hindi edition. The extraction has not happened yet, so this was nearly free today.
+
+**Two conditions, both met.** (1) The instrument change is its own commit (`ed8c610`), with
+nothing else in the diff: `tests/equivalence/src/punctuation.ts` and the two parity tests.
+(2) Both control halves, in both tests: a dash-only rewrite of a real legacy string is still
+parity; one changed letter, and a dropped word, break it. What the loosened comparison still
+guarantees — every letter and digit in order, every key and its order, every number — is
+written in `punctuation.ts` so nobody reads a punctuation-insensitive parity check as a weak
+one. It ignores exactly punctuation, whitespace and letter case (a full stop capitalises the
+next word), and reads a numeric range as one range whether "1–3" or "1 to 3".
+
+**The sweep (the second commit):** DZINFO and FACT (130), BEAT_BY_TYPE (5), ORGANS effect and
+bio (6), FAMILIES bio (2) — an em dash becomes a full stop with the next word capitalised, a
+numeric range becomes "to". `no-dashes.test.ts` now holds every one of those tables. **Still
+pinned, and correctly so:** EVENTS and RARE (their `tell` and `why` reach the banner, the
+warning and the log, so the equivalence corpus pins them — 7 dashes) and `engine.json` (70).
+Both go with Phase 3's Q8. The board's own text (the rulebook .docx) is outside this sweep.

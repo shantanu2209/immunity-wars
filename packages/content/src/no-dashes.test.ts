@@ -16,7 +16,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { CELL_CARDS, UI_I18N_EN } from './index.js';
+import { BEAT_BY_TYPE, CELL_CARDS, DZINFO, FACT, FAMILIES, ORGANS, UI_I18N_EN } from './index.js';
 
 const DASH = /[—–]| - /;
 
@@ -39,6 +39,24 @@ describe('no dashes in player-facing text', () => {
       }
     }
     expect(Object.keys(flat).length).toBeGreaterThan(30);
+    expect(dashed(flat)).toEqual([]);
+  });
+
+  it('the content prose the UI renders (re-baselined from legacy parity, 5 September 2026)', () => {
+    const flat: Record<string, string> = {};
+    for (const [dz, info] of Object.entries(DZINFO)) {
+      for (const [k, v] of Object.entries(info as unknown as Record<string, string>))
+        flat[`DZINFO.${dz}.${k}`] = v;
+    }
+    for (const [dz, v] of Object.entries(FACT)) flat[`FACT.${dz}`] = v;
+    for (const [ty, v] of Object.entries(BEAT_BY_TYPE)) flat[`BEAT.${ty}`] = v;
+    for (const [o, def] of Object.entries(ORGANS)) {
+      flat[`ORGANS.${o}.effect`] = def.effect;
+      flat[`ORGANS.${o}.bio`] = def.bio;
+    }
+    for (const [f, def] of Object.entries(FAMILIES))
+      flat[`FAMILIES.${f}.bio`] = String(def.bio ?? '');
+    expect(Object.keys(flat).length).toBeGreaterThan(500);
     expect(dashed(flat)).toEqual([]);
   });
 
