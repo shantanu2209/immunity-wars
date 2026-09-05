@@ -735,3 +735,15 @@ targets the gaps:
 | Order antivenom +1 (1/4, AP −1); vaccine row +1 on Normal (1/5); a venom's ring and bar hint while nothing is selected → antivenom given (AP −3, stock 2 → 1); the clone row on Hard → search 0/3 → 1/3 | **The memory response** (a remembered pathogen's ring while nothing is selected; free / 1 AP on Hard) |
 | The log: lines appear per action and per spread, turn tags, Show all; a full game to the Result screen (loss) | "+2" vanishing at 1 AP or at 1 needed (pinned by test on recorded states) |
 | Earlier pieces: the coat badge and sheet word; spent cell dimmed with the engine's return turn, sheet line; residents, patrol, hop, recall, resengulf, Undo | The suppressed (offline) cell's treatment; the vaccine completing into "Immune"; a vial arriving at 4/4; Produce X after the clone is found |
+
+**Found by the PR's code scanning, fixed before merge (4 September 2026).** GitHub's default
+CodeQL setup failed PR #40 on one new high-severity alert in the changed code:
+`js/polynomial-redos` on the log panel's emphasis tokenizer, whose regex stripped unknown tags
+with `<[^>]+>` and could run polynomially on a long run of `<`. A defect in the new code, not a
+pre-existing one — the 71 open alerts on `main` all date from 18 August and sit in
+`tools/legacy` and the string-inventory tooling, which is why earlier PRs passed this check.
+The engine's prose uses exactly four tokens (`<b>`, `</b>`, `<i>`, `</i>`; checked against the
+catalogue and the engine source), so the tokenizer is now a linear scan over those four and
+any other `<` is literal text — there is no sanitisation to get wrong. `richRuns.test.ts`
+pins the runs and gives a 200,000-character run of `<` a time bound. The CodeQL result is the
+one check in this project's CI that nothing local reproduces; it earned its place here.

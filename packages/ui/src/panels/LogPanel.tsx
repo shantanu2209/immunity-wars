@@ -29,36 +29,71 @@ export interface LogLine {
 
 const SHOWN = 8;
 
-/** `<b>`/`<i>` → emphasis; every other tag dropped. A tokenizer, not an HTML parser. */
-export function RichText({ text }: { text: string }): ReactElement {
-  const out: ReactElement[] = [];
-  const re = /<(\/?)(b|i)>|<[^>]+>/g;
+export interface RichRun {
+  text: string;
+  bold: boolean;
+  italic: boolean;
+}
+
+/** The four tokens the engine's prose uses. Anything else is text, including any other `<`. */
+const TOKENS: readonly { tag: string; bold: number; italic: number }[] = [
+  { tag: '<b>', bold: 1, italic: 0 },
+  { tag: '</b>', bold: -1, italic: 0 },
+  { tag: '<i>', bold: 0, italic: 1 },
+  { tag: '</i>', bold: 0, italic: -1 },
+];
+
+/**
+ * `<b>`/`<i>` → emphasis runs. A LINEAR scan over the four tokens, not a regex and not an
+ * HTML parser: the engine's messages carry only these (checked against the catalogue and the
+ * engine source), and any other `<` is literal text. The first version stripped unknown tags
+ * with `<[^>]+>`, which CodeQL flagged as polynomial ReDoS on a run of `<` — a defect in the
+ * new code, found by the PR's code scanning and fixed before merge (for-P2.5.md, CP5).
+ */
+export function richRuns(text: string): RichRun[] {
+  const out: RichRun[] = [];
   let bold = 0;
   let italic = 0;
-  let last = 0;
-  let m: RegExpExecArray | null;
-  let n = 0;
-  const push = (s: string): void => {
-    if (!s) return;
-    const style: CSSProperties = {
-      fontWeight: bold > 0 ? 700 : undefined,
-      fontStyle: italic > 0 ? 'italic' : undefined,
-    };
-    out.push(
-      <span key={n} style={style}>
-        {s}
-      </span>,
-    );
-    n += 1;
+  let buf = '';
+  const flush = (): void => {
+    if (buf) out.push({ text: buf, bold: bold > 0, italic: italic > 0 });
+    buf = '';
   };
-  while ((m = re.exec(text)) !== null) {
-    push(text.slice(last, m.index));
-    last = m.index + m[0].length;
-    if (m[2] === 'b') bold += m[1] === '/' ? -1 : 1;
-    else if (m[2] === 'i') italic += m[1] === '/' ? -1 : 1;
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '<') {
+      const tok = TOKENS.find((tk) => text.startsWith(tk.tag, i));
+      if (tok) {
+        flush();
+        bold += tok.bold;
+        italic += tok.italic;
+        i += tok.tag.length;
+        continue;
+      }
+    }
+    buf += text[i];
+    i += 1;
   }
-  push(text.slice(last));
-  return <>{out}</>;
+  flush();
+  return out;
+}
+
+export function RichText({ text }: { text: string }): ReactElement {
+  return (
+    <>
+      {richRuns(text).map((r, n) => {
+        const style: CSSProperties = {
+          fontWeight: r.bold ? 700 : undefined,
+          fontStyle: r.italic ? 'italic' : undefined,
+        };
+        return (
+          <span key={n} style={style}>
+            {r.text}
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 const COLOUR: Record<string, string> = {
