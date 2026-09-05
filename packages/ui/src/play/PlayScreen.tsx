@@ -53,7 +53,7 @@ import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
-import { GRACE_CLEAR } from '@immunity-wars/content';
+import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { GoalBody } from '../dialogs/GoalBody';
@@ -90,6 +90,8 @@ const DICE_FRAME_MS = 1400;
  */
 const FLIGHT_MS = 450;
 const FLIGHT_CSS = '[data-flight] [data-organ-icon]{opacity:0}';
+/** The organs that fly: the content pack's keys, the only strings that reach a ghost's src. */
+const FLIGHT_ORGANS: readonly string[] = Object.keys(ORGANS);
 
 /** What PlayScreen needs from a session — structural, so RelaySession fits it too. */
 export interface PlaySessionLike {
@@ -597,14 +599,17 @@ export function PlayScreen({
     const reduce =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduce) {
-      rootRef.current
-        ?.querySelectorAll<SVGGElement>('[data-anatomy-place][data-anatomy-hp]')
-        .forEach((g) => {
-          const img = g.querySelector('image');
-          const place = g.getAttribute('data-anatomy-place');
-          if (img && place) from.set(place, img.getBoundingClientRect());
-        });
+    // The organ keys come from the CONTENT PACK, never read back out of the DOM: each element
+    // is looked up BY the known key, so nothing the page carries ever flows into an image
+    // source (the shape CodeQL flags as DOM text reinterpreted as HTML — and rightly, in
+    // general; here the keys are ours, and this keeps that provable rather than argued).
+    if (!reduce && rootRef.current) {
+      for (const organ of FLIGHT_ORGANS) {
+        const img = rootRef.current.querySelector<SVGImageElement>(
+          `[data-anatomy-place="${organ}"] image`,
+        );
+        if (img) from.set(organ, img.getBoundingClientRect());
+      }
     }
     flightRef.current = { from, start };
     send(params);
@@ -619,10 +624,10 @@ export function PlayScreen({
     const ghosts: HTMLImageElement[] = [];
     if (f.from.size > 0) {
       root.setAttribute('data-flight', '1');
-      root.querySelectorAll<SVGImageElement>('[data-organ-icon]').forEach((target) => {
-        const organ = target.getAttribute('data-organ-icon') ?? '';
+      for (const organ of FLIGHT_ORGANS) {
+        const target = root.querySelector<SVGImageElement>(`[data-organ-icon="${organ}"]`);
         const from = f.from.get(organ);
-        if (!from) return;
+        if (!target || !from) continue;
         const to = target.getBoundingClientRect();
         const ghost = document.createElement('img');
         ghost.src = `/art/organ-${organ}@3x.webp`;
@@ -654,7 +659,7 @@ export function PlayScreen({
           ],
           { duration: FLIGHT_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' },
         );
-      });
+      }
     }
     const landed = window.setTimeout(() => {
       root.removeAttribute('data-flight');
