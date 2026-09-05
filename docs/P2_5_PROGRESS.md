@@ -280,3 +280,83 @@ All four go into `packages/ui/src/play/offered.ts` under the `cell` source; the 
   occurred in any run — needs `tag` on a worm first, now possible), the Eosinophil's
   two-offer sheet rows, the immunosuppression `blocked` state on screen.
 - **Crossed by nothing:** the WIN path (closeout checklist item).
+
+
+## Handoff for the next session — written at the clear, 5 September 2026
+
+Everything below was true at the clear and is not in the code or git history by itself.
+
+### Where things are
+
+`main` has the whole P2.5 batch (#40), the post-S25 pieces (#41 undo reason + FINDINGS #55;
+#42 the command panel; #43 the effects strip + turn line; #44 label sides, the viewBox crop
+and the Variant B hub), and two Dependabot bumps (#26 dependency-cruiser 18.2, #4
+eslint-config-prettier 10, whose conflict was resolved by hand — lint green on all 17
+packages). **The PR queue is empty.** Two Dependabot PRs were CLOSED deliberately with the
+reasons on them: #30 `sharp` (deferred by SECURITY_NOTES) and #2 TypeScript 6 (deferred by the
+brief §6); a later proposal of either gets the same treatment unless the ruling changes.
+
+**Practice ruled at the clear: one PR at a time, against `main`.** The stacked PRs (#41→#44)
+made GitHub ask Shantanu to "update branch" after each merge and re-run CI each time. For a
+conflicted Dependabot PR, a comment reading `@dependabot rebase` makes the bot resolve its own
+lockfile.
+
+Every S25 observation and its ruling is in [`for-P2.5.md`](for-P2.5.md) under "After the S25
+pass on the batch", one section per item, each ending with what was verified headless versus
+by test only. Still open from that list: the **window-closed chip and the countdown line**
+(test-only — an idle game loses before turn 16), the **memory response** ring (test-only), the
+**hiding-inside-a-cell** ring (test-only), and one **ruling not yet given**: whether the log's
+five composed engine lines (FINDINGS #53) render plainly, as built, or are re-templated in the
+UI for the Hindi first cut (CP5's record has the numbers: 8 of 14 lines in a short game).
+
+### Item 12 — the planning screen — is next, in this order (Shantanu, 5 September 2026)
+
+1. **The frame through the art pipeline as `frame/body`.** The source is committed at
+   `tools/art-pipeline/raw/frame-body.jpeg` (from
+   `Downloads/Human_torso_outline_medical_diagram_2K_202609051144.jpeg`), its provenance row is
+   in `ASSETS.md` (tier to confirm), and the brief is `ANATOMY_FRAME_BRIEF.md`. Shantanu
+   measured it: stroke `#786760`, 5.29:1 against the paper, interior provably empty, cropped
+   mid-thigh, aspect 0.555; at 380px tall on a 360px screen the torso interior is 179 × 209px.
+   It is a JPEG on white by choice — the PNG's alpha was a uniform 50%. **Check the keyed output
+   for a JPEG halo around the stroke before accepting it.** `tools/art-pipeline/build.ts` is the
+   pipeline; look at how it maps a raw filename to an asset key (the others are `cell-x.jpeg` →
+   `cell-x`; `frame/body` may need the key written explicitly).
+2. **The seven organ positions into the CONTENT pack, beside the board geometry — propose the
+   schema first.** Anatomical, not decorative: brain in the head; lungs and heart in the chest;
+   liver upper-right of the abdomen AS THE VIEWER SEES IT; spleen upper-left; kidneys posterior
+   and lower; marrow in the pelvis. Kartik checks the anatomy. A shape that fits beside
+   `geometry.json`: a new `board/anatomy.json` with `FRAME: { asset, w, h }` (the keyed frame's
+   pixel size) and `ANATOMY_POS: byOrgan(Point)` in the frame's own pixel space, validated with
+   the same `byOrgan` helper so a missing or extra organ fails the load, plus a cross-check that
+   its keys equal `ORGANS`'s — measured off the keyed frame, not judged.
+3. **Blocks b, c, d:** the pathogen summary (counts by type, where by lane and slot, GREEN in
+   entry lanes / AMBER in the bloodstream / RED in organ lanes, stacking as the board, tap to
+   expand, tap a pathogen for its card); the **cell cards** — the same component shape as the
+   pathogen card, fields `role`, `home`, `bestAgainst`, `deficiency`, optional `fact`, one entry
+   per cell key in a content file Kartik fills, a missing field rendering nothing; the **Phase 3
+   allocation slot** designed in and left empty (the engine's `allocation` phase and
+   `allocateAP`/`returnAP`/`confirmAllocation` already exist; the bottom button becomes "Confirm
+   the plan" there). The screen sits after the reveal and the spread, immediately before
+   command; view-only; its button is "Command your cells".
+4. **Block a**, the silhouette with organs placed and HP per organ, tap to expand a lane.
+   **Propose first** how the entry lanes and the bloodstream are reached — they have no
+   anatomical position (a lean, unruled: entries as chips around the figure at the body region
+   they enter — nose at the head, gut at the abdomen, skin routes at the outline's edge, blood as
+   a central chip on the torso).
+5. **Block e**, organs travelling from anatomical to radial positions on the command button —
+   only if measured cheap (the instrumentation exists); a Gate 2 item Shantanu will cut without
+   argument.
+
+Report at the end separating headless-verified from test-only, as before.
+
+### Small things noticed, recorded, not built
+
+- The organ integrity digit sits beside the branch's step-1 number and reads as one ("13") at
+  phone size — for the label pass (for-P2.5, items 11 and 8).
+- `FAM_LONG` (legacy) differs from `FAMILIES.bio` and carries the expanded acronym and example
+  diseases; home: the antibody panel's family detail, later.
+- The WIN path remains uncrossed (closeout checklist).
+- The headless drivers live only in the session scratchpad and are rewritten per piece; the
+  pattern (puppeteer-core from `tools/perf` against `http://localhost:5173`, string scripts in
+  `page.evaluate`, fresh games until the draw gives the scenario, badges summed not tokens
+  counted) is in the memory notes and in for-P2.5's CP records.
