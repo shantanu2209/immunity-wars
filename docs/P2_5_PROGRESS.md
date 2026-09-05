@@ -100,7 +100,7 @@ the current surface cannot play. The seventeen are planned in
 | **Dialogs beyond the reveal** — per-event modalize-vs-log decisions (memory response, novel pathogen, crisis events, …) | Queue ready; decisions not yet made, per ruling 5 |
 | **The 46 ambiguous strings** | Undecided; cheapest screen-by-screen as each is built |
 | **Board state the engine tracks and the board did not show** — the sweep (for-P2.5.md) | **Coat and spent/offline cells BUILT (4 Sep 2026)**, before the card as reordered: fan-of-types split by type + coated, the antibody badge, "Coated in antibody" in the sheet; spent and suppressed cells dimmed with turns-until-back in the badge slot. Malaria stage and the parasite inside a resident stay with the card |
-| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) is PROPOSED and awaits a ruling** on how the entry lanes and the bloodstream are placed; step 5 waits on step 4 and a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
+| **After the S25 pass on the batch (4 Sep 2026)** — twelve observations, ruled; order: undo instrumentation + FINDINGS #55 → the command panel (action buttons) → the effects strip (items 5 + 7) → geometry (11 + 8) → the planning screen (12) | Items 2, 1, 5+7, 11+8 **merged**. **Item 12 steps 1–3 BUILT (5 Sep 2026)**: the frame through the pipeline as its own class, the seven positions in content (Kartik checks), the planning screen with the pathogen summary, the cell-card shell and the empty Phase 3 slot. **Step 4 (block a) BUILT** on the approved layout; its walkthrough found and fixed FINDINGS #56 (ids after a resume). Step 5 waits on a measurement. Record: [`for-P2.5.md`](for-P2.5.md) ("Item 12") |
 | **Resident-vs-Macrophage visual distinction; lymph connector polish** | **Ruled at CP3:** the distinction leans on the biology — Monocyte versus Kupffer cell by name, in the bar and the sheet — plus a double ring; distinct resident art is the real answer, deferred with the pipeline (for-P2.5.md). Lymph connector polish still recorded there |
 | **Gate 1 hygiene** — touch-target audit (≥44px), 200% text scaling, contrast audit vs the pipeline's measured values, offline verification | Not started; belongs after the screens stop moving |
 | **Per-redraw re-measure with the full UI** | **Mandatory, not optional** (brief §4: row 3's ~30% headroom is what the rest of the UI spends) |
@@ -315,9 +315,11 @@ consequence are in FINDINGS #53 and CP5's record.
 
 > **Status at the end of the day, 5 September 2026:** steps 1, 2 and 3 are BUILT on
 > `phase2/p2-5-planning-screen`, with the record in `for-P2.5.md` ("Item 12"). **Step 4 is
-> RULED — option A** (chips on the outline at the point of entry, the bloodstream at the great
-> vessels); its positions are in content and shown in `pnpm art:anatomy`'s picture, **block a
-> itself waits for Shantanu's look at that picture**; step 5 waits on step 4 and a measurement.
+> BUILT — option A** (chips on the outline at the point of entry, the bloodstream at the great
+> vessels; the layout approved by Shantanu after three looks): the figure with integrity pips,
+> depth-coloured count badges and tap-to-expand a lane. Its walkthrough found **FINDINGS #56**
+> (a resumed game reuses invader ids — fixed at the session's resume, filed as the engine's).
+> Step 5 waits on a measurement.
 > Shantanu's anatomy check moved the marrow to the iliac crest (the biology is in the record).
 > Two things for Kartik: **the mirroring convention** — medical (as built: the liver on the
 > viewer's LEFT) versus screen-intuitive — is his to settle, both sides stated in the record;

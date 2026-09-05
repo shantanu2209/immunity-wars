@@ -8,6 +8,7 @@
  */
 
 import * as engine from '@immunity-wars/engine';
+import { uid } from '@immunity-wars/engine/internal';
 
 import { newPlayerRef } from './player-ref.js';
 import {
@@ -126,6 +127,7 @@ export class LocalSession implements Session {
         'resume() needs a GameState. A ViewState cannot resume a game: it has no deck.',
       );
     }
+    advanceIdsPast(state as Record<string, unknown>);
     return new LocalSession(state as Record<string, unknown>, opts);
   }
 
@@ -387,4 +389,38 @@ export class LocalSession implements Session {
       productionDetail: family ? call('productionBreakdown', this.g, family) : null,
     };
   }
+}
+
+/**
+ * THE ENGINE'S ID COUNTER IS NOT IN THE STATE (FINDINGS #56, found 5 September 2026 by the
+ * planning screen's walkthrough). Invader ids come from a module-level counter that `newGame`
+ * resets; a saved game carries the ids but not the counter, so in a fresh process — a page
+ * reload, a phone unlocked hours later — the counter starts at zero and the next arrival is
+ * `i1` again, colliding with an invader already in the body. Every id-keyed path then answers
+ * for the wrong pathogen: attack rings, the inspect sheet, the memory response, the planning
+ * rows. `gamestate-round-trip` cannot see it: the counter is outside the state it round-trips.
+ *
+ * WORKAROUND, at the join that owns resume: read the largest id the save carries (in the body
+ * and in the undo snapshots) and advance the counter past it. Only ever ADVANCE — the counter
+ * is shared by every session in the process, and lowering it for one would poison another.
+ * One id is consumed to read the counter; ids need only be unique, so that costs nothing.
+ * The engine is frozen in Phase 2; Phase 3 puts the counter in `GameState` and deletes this.
+ */
+function advanceIdsPast(g: Record<string, unknown>): void {
+  let max = 0;
+  const seen = (id: unknown): void => {
+    const m = /^i(\d+)$/.exec(String(id));
+    if (m) max = Math.max(max, Number(m[1]));
+  };
+  for (const iv of (g['invaders'] as { id?: unknown }[] | undefined) ?? []) seen(iv.id);
+  for (const snap of (g['undo'] as { invaders?: { id?: unknown }[] }[] | undefined) ?? []) {
+    for (const iv of snap.invaders ?? []) seen(iv.id);
+  }
+  for (const r of Object.values(
+    (g['residents'] as Record<string, { infectedBy?: unknown }> | undefined) ?? {},
+  )) {
+    if (r.infectedBy) seen(r.infectedBy);
+  }
+  let current = Number(uid().slice(1));
+  while (current < max) current = Number(uid().slice(1));
 }

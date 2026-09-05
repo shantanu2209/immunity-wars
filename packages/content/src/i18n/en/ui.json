@@ -232,5 +232,10 @@
   "cellCard.home": "Where it lives",
   "cellCard.bestAgainst": "Best against",
   "cellCard.deficiency": "When it is missing",
-  "cellCard.empty": "Notes on this cell are still being written"
+  "cellCard.empty": "Notes on this cell are still being written",
+  "planning.laneName": "{lane} lane",
+  "planning.showing": "Showing: {place}",
+  "planning.showAll": "Show all",
+  "planning.emptyPlace": "Nothing here right now",
+  "planning.figureHint": "Tap an organ, an entry or the bloodstream to see what is there"
 }

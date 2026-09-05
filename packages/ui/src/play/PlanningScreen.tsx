@@ -24,8 +24,10 @@ import { t } from '../i18n';
 import { cellDisplayName, typeDisplayName } from '../names';
 import { unavailableText } from '../panels/InspectSheet';
 import { invaderNowLine } from '../panels/invaderNow';
+import { AnatomyView } from './AnatomyView';
 import {
   DEPTH_LABEL,
+  placeName,
   type AllocationSlot,
   type Depth,
   type PlanningGroup,
@@ -265,13 +267,42 @@ export function PlanningScreen({
 }): ReactElement {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const toggle = (k: string): void => setOpen((o) => ({ ...o, [k]: !o[k] }));
+  // BLOCK A's expand-a-lane: the figure's focused place filters the rows; tap-again clears.
+  const [focus, setFocus] = useState<string | null>(null);
+  const rows = focus === null ? model.groups : model.groups.filter((grp) => grp.place === focus);
   return (
     <div data-screen="planning" style={{ marginTop: 6 }}>
       <div style={{ fontSize: 18, fontWeight: 700, color: '#2E2A28' }}>{t('planning.title')}</div>
       <div style={{ fontSize: 13, color: '#7C6A61' }}>
         {t('planning.apNext', { n: model.apNext })}
       </div>
-      {/* BLOCK A — the silhouette with organs and HP — lands with step 4. */}
+      {/* BLOCK A — the body from the outside: organs with integrity, entries, the bloodstream. */}
+      <section data-block="anatomy" data-planning-focus={focus ?? undefined} style={PANEL}>
+        <AnatomyView
+          markers={model.places}
+          focus={focus}
+          disabled={disabled}
+          onTap={(place) => setFocus((f) => (place === null || place === f ? null : place))}
+        />
+        <div style={{ fontSize: 12, color: '#7C6A61', textAlign: 'center' }}>
+          {focus === null ? (
+            t('planning.figureHint')
+          ) : (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 700, color: '#2E2A28' }}>
+                {t('planning.showing', { place: placeName(focus) })}
+              </span>
+              <button
+                data-planning-show-all="1"
+                style={{ ...CARD_BUTTON, border: '1.5px solid #8E6E53' }}
+                onClick={() => setFocus(null)}
+              >
+                {t('planning.showAll')}
+              </button>
+            </span>
+          )}
+        </div>
+      </section>
       <section data-block="pathogens" style={PANEL}>
         <div style={TITLE}>{t('planning.pathogens')}</div>
         {model.total === 0 ? (
@@ -302,7 +333,14 @@ export function PlanningScreen({
                 </span>
               ))}
             </div>
-            {model.groups.map((grp) => (
+            {rows.length === 0 ? (
+              <div
+                style={{ color: '#7C6A61', minHeight: 44, display: 'flex', alignItems: 'center' }}
+              >
+                {t('planning.emptyPlace')}
+              </div>
+            ) : null}
+            {rows.map((grp) => (
               <GroupRow
                 key={grp.key}
                 group={grp}

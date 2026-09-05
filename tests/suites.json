@@ -91,10 +91,11 @@
       "briefSuite": null,
       "proves": "That single-player goes through Session and not around it: a full bot game replayed through LocalSession produces the same projection, action for action, as the engine driven directly. Also that the subscription's view/burst split behaves as specified, that Session never hands out GameState, and that Storage round-trips a game.",
       "doesNotProve": "Anything about a UI, which does not exist yet. Anything about RelaySession, which is Phase 3's — this proves the interface has one working implementation, not that a second one is possible. And nothing about IndexedDbStorage, which NO TEST EXERCISES: there is no browser in the test environment and no IndexedDB shim among the dependencies, so the port is tested through MemoryStorage only. P2.2 is the first moment a browser exists to run it in.",
-      "negativeControls": 9,
+      "negativeControls": 10,
       "controlFiles": [
         "tests/session/src/negative-control.test.ts",
-        "tests/session/src/planning.test.ts"
+        "tests/session/src/planning.test.ts",
+        "tests/session/src/resume-ids.test.ts"
       ],
       "tiers": {
         "per-push": {

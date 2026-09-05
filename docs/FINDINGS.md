@@ -3060,3 +3060,50 @@ it lands as a deliberate, isolated change measured against the corpus (the corpu
 any Training game with an antivenom kill followed by the same venom). The probable fix is one
 condition in `killInvader`'s memory grant, `by !== 'antivenom'`; whether a memory response
 should ever apply to a venom at all is Kartik's call at the same time.
+
+## 56. The engine's invader id counter is not in `GameState` — a resumed game reuses ids, and every id-keyed path can then act on the wrong pathogen
+
+**Found 5 September 2026, by the planning screen's headless walkthrough** (P2.5 item 12, block
+a): the driver reloaded the page mid-game to check that a save resumes onto the planning
+screen — it did — and two turns later the summary's rows counted **7** invaders while the
+counts-by-type chips counted **5**. The figure's markers agreed with the rows. Reproduced in
+Node with a simulated fresh process: `resetUid()` after a draw, then the next spread's
+arrivals are `i1`, `i2` … — ids already in the body — and the board's node model, filtering a
+group's members by id, puts the same invader in two groups (`hidden[i2, i1, i2]`).
+
+**The cause.** `packages/engine/src/primitives.ts` hands out invader ids from a **module-level
+counter** (`uid()`), which `newGame` resets and which nothing stores. A saved `GameState`
+carries every id and not the counter. In the same process that is invisible — the counter
+keeps counting — which is why the corpus, the property suite and 50-plus recorded planning
+states never showed it. In a **fresh process** — a page reload, a phone unlocked hours later,
+the packaged app relaunched — the counter starts at zero.
+
+**Why it matters more than a count.** Every id-keyed path answers for the first invader with
+that id: the attack rings (`snipe`, `nkkill`, `tag`, `neutralise`, `engulf` by `invaderId`), the
+inspect sheet's rows, the memory response, antivenom's target. A player who resumed a game and
+tapped a ring could act on a different pathogen than the one under their finger, and the
+engine would accept it. **The newcomer test's resume path** (the protocol asks the tester to
+lock and unlock the phone) would have walked straight into it.
+
+**What the round-trip property cannot see.** `gamestate-round-trip` asserts that the state
+survives JSON; the counter is outside the state, so the property is true and the game still
+does not resume faithfully. The smaller true claim: **the state round-trips; the engine's
+process does not.**
+
+**Workaround, shipped in the session (the join that owns resume), 5 September 2026:**
+`LocalSession.resume` reads the largest id the save carries — in the body, in the undo
+snapshots, in a resident's `infectedBy` — and **advances** the counter past it, never lowering
+it (the counter is shared by every session in the process). One id is consumed to read the
+counter; ids need only be unique. `tests/session/src/resume-ids.test.ts` spans the join: the
+**control** drives the engine alone after `resetUid()` and requires the collision, the check
+resumes through the session and requires unique ids, and a third case holds that resuming an
+old save beside a live game does not disturb the live game's ids.
+
+**The real fix is Phase 3's and is an engine change:** the counter belongs in `GameState`
+(and then in the relay's authoritative state, where the same reset would otherwise happen on
+every server restart). It breaks the corpus by adding a key, so it lands with the other engine
+changes, and the workaround and its test are deleted with it — the same expiry as #52 and #53.
+
+**Disposition: OPEN — Phase 3 (engine). Workaround shipped in the session.** A save written
+BEFORE today's workaround by a game that had already been resumed once may carry duplicate
+ids; no such save exists outside the developers' own devices.
