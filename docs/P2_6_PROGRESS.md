@@ -43,9 +43,26 @@ the closeout's two corrections (the pass-through items, the library citation); t
 field into the Phase 3 queue as Q10; the roadmap's Phase 2 status, which had said "P2.1
 complete" and "v1.1" since August.
 
+## The two proposals (written 6 September 2026, awaiting rulings; nothing built)
+
+Shantanu reordered the two: **How to play first**, since it is cheaper and unblocks a
+conversation with Kartik that can run in parallel with anything else; then Settings. Both are
+in [`for-P2.6.md`](for-P2.6.md) as PROPOSAL 1 and PROPOSAL 2:
+
+- **How to play:** ten sections, about 750 words against the rulebook's 4,320, each one to two
+  phone screens, with what each answers and which rulebook or quick-reference passages already
+  fit as they are; the division of labour with the cards and the library; three things left for
+  the ruling (a tips section, a home for the "why it works this way" boxes, the crisis section's
+  shape).
+- **Settings:** three rows in two groups, a rows table so adding one is trivial; the three
+  pieces named and sized (the scaling mechanism with the audit's third pass; the preference
+  store, `localStorage` for the synchronous read before first paint; reset), one piece in two
+  PRs; and what reset resets, confirmed from the code: the autosave and nothing else the
+  player's path writes, with the two dev-shell stores and the precache listed as the things
+  that also persist and are left alone.
+
 ## What is next
 
-The proposed order is in `for-P2.6.md` and is provisional until the newcomer test. Next:
-**Settings**, beginning with the layout proposal for Shantanu (text size is more than a row;
-reset progress must say what it resets), then the build, then the audit's third scaling pass
-for the in-app text size. Then How to play, structure before prose.
+Rulings on the two proposals. Everything else proceeds on the proposed order in
+`for-P2.6.md`: after Settings, the disease library, About, the error boundary and the
+storage-failure notice, then onboarding held for a direction.

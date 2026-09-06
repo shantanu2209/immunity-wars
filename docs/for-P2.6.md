@@ -100,3 +100,150 @@ a tester does.
   its own output, that the page had been 180 px wide.
 - The Result screen is reached in the 180 px walk by the same idle loss as at 360 px, and the
   walk's click-by-label driving holds at half width.
+- **The walk reached the inspect sheet by luck.** Found in the first piece by reading the
+  JSON's screen list rather than the verdict: two green runs had never measured the sheet.
+  Fixed inline (an instrument); the habit is the lesson. Seventeen screens deterministically is
+  the difference between "clean" and "clean over everything" (Shantanu, at the merge of #58).
+
+---
+
+## PROPOSAL 1 — the structure of How to play (for ruling; no prose here)
+
+**Asked for by Shantanu, 6 September 2026:** the sections, their order, what each answers,
+and roughly how long each is on a phone. He takes the shape to Kartik and the two of them
+settle the words. Nothing below is player text; the section names are working labels.
+
+### The division of labour between Help and the two other places words already live
+
+Help answers **how do I play**. The **cards** answer **why is it like this** (the cell card's
+role and deficiency lines, the pathogen card's fact and "beat it" lines, Kartik's science,
+already in the app). The **library** answers **what is this pathogen** (the card with an
+index). So Help carries no biology beyond the one clause a rule needs to be memorable, and
+every section that touches a cell or a pathogen ends by pointing at its card. This keeps Help
+short and keeps the science in one place, which is also the place that is translated with the
+diseases namespace rather than the UI one.
+
+### Two readers, one document
+
+A newcomer on the Title screen reads top to bottom before a first game. A player in the pause
+menu wants one answer and back to the game. The structure serves both if every section is
+**self-contained, one to two phone screens at 360 px, and reachable from an index**. Lean, for
+the build rather than for this ruling: an index screen listing the sections, each opening as
+its own page with Back to the index and Next to the following section, as a `help` state of
+the shell machine carrying the section key. A single long page with anchors is the
+alternative; it reads worse at 200%.
+
+### The sections, in order
+
+| # | Section (working label) | What it answers | Rough length on a phone | Where words already exist that fit as they are |
+|---|---|---|---|---|
+| 1 | **The idea** | What am I? What wins? What loses? When does it end? | 60 words, under one screen | The goal dialog's three sentences (in the app, approved); rulebook §1 "How you win / How you lose", trimmed of the attrition clause's reasoning |
+| 2 | **A turn** | Why did the screen change? Which part is mine? What does the app do for me? | 80 words, one screen | Quick Reference "The turn", three lines, nearly as they are; plus one line that the app draws, places and spreads, and the player commands |
+| 3 | **The board** | What is this map? What are routes, the bloodstream, the organ branches, the pips? What does "when damaged" mean? The Brain rule | 100 words, one to two screens, plus "tap a node for what stands there" | Rulebook §3's four openers, each cut to its first sentence; the organ table's "when damaged" column verbatim (already in the inspect sheet's organ row) |
+| 4 | **Action Points** | Why do I have fewer this turn? What costs one? | 50 words, under one screen | Rulebook §5 Phase 2's two lines; the AP drill-in already lists the terms in the app, so this section says only that it exists |
+| 5 | **Your cells** | Who does what? Who moves, who does not? What is a resident? | 120 words, two screens, the longest section: seven one-liners plus one for residents | Quick Reference "What it does" column, each cut to its verb clause; the biology column stays on the cell card |
+| 6 | **Beating each invader** | What do I do about THIS thing? | 110 words, two screens: nine one-liners | Quick Reference "How you beat it" column, mostly as it is; the malaria stages stay on the card |
+| 7 | **Antibodies** | Why does my antibody not work on that? Produce, then coat or neutralise; classes; the cap; Pathogen X in one line | 80 words, one screen | Quick Reference "Antibodies are specific" opener; rulebook §7's class table is the library's, not Help's |
+| 8 | **Memory and vaccines** | What is a memory response? What does Vaccinate do? What differs by difficulty, in one line | 60 words, under one screen | Rulebook §8 "Immunological memory", cut to the rule; the "why" paragraph stays out |
+| 9 | **Crisis events** | What was that section in the reveal? What does HIV do to me? | 50 words, under one screen | Rulebook §8's event table, one line per event, or only the principle plus "the reveal names each one" |
+| 10 | **Difficulty** | Which should I pick? What changes? | 40 words, under one screen | The difficulty screen's three descriptions (in the app, approved), plus the antivenom and memory differences in one line each |
+
+Ten sections, about 750 words, against the rulebook's 4,320 and the quick reference's 1,616.
+Every section fits one to two screens at 360 px and two to four at 200%, which is the bound the
+audit holds Help to like every other screen.
+
+### Three things for the ruling, stated rather than decided
+
+- **A tips section, or not.** "If you are stuck: tag then engulf; coat then strike; keep the
+  Helper with the B-Cell" is the section a newcomer test would most likely ask for and the one
+  that is strategy rather than rules. Kartik's call whether Help teaches play or only rules; the
+  newcomer test is the evidence, and the section can be added later without reordering.
+- **Whether the "why it works this way" boxes get a home in the app at all.** They are the
+  rulebook's best writing and Help is the wrong place for them by the division above. The
+  natural home is the library and the cards, which already carry Kartik's science; if he wants
+  them reachable, that is a library decision, not a Help one.
+- **Section 9's shape.** One line per crisis event duplicates the reveal, which already names
+  and explains each event when it fires. The principle alone ("a crisis changes what you can do
+  this turn; the reveal tells you how") is shorter and never drifts from the engine's text.
+
+No dashes in any of it: the no-dashes test covers Help's catalogue keys like every other.
+
+---
+
+## PROPOSAL 2 — the Settings layout, with its pieces named separately (for ruling)
+
+**Asked for by Shantanu, 6 September 2026**, with the rows ruled in ruling 5: text size,
+language, reset progress; sound left out because there is none. Built so that adding a row is
+trivial. What follows is the layout, then the three pieces the layout needs, each sized, then
+what reset actually resets, confirmed from the code rather than assumed.
+
+### The screen
+
+Reached from the Title slot and from the pause menu; Back returns to where it was opened.
+A list of rows, each a label on the left and its control on the right, every control at
+least 44 px, the row wrapping to two lines at 180 px. Rows are grouped under two short
+headings so that later rows have an obvious home:
+
+| Group | Row | Control | Notes |
+|---|---|---|---|
+| **Reading** | Text size | four choices in a segmented control that wraps: Standard, Large, Larger, Largest (100%, 125%, 150%, 200%) | The whole screen rescales live as the choice changes, which is its own preview. 200% is the WCAG 1.4.4 bound and the size the audit already proves every screen survives |
+| **Reading** | Language | a choice control whose options are the catalogue's available locales; one today, English | Display-only until a second catalogue exists; the row is there so that Hindi is an addition. The switch mechanism is not built with one locale, since nothing could test it |
+| **Progress** | Reset progress | a button, then a confirm on the same screen: what it deletes, Delete, Keep | Disabled with a "no saved game" note when there is nothing to delete, so it never does nothing |
+
+Adding a row is one entry in a `rows` table with a kind (`choice` or `action`), its catalogue
+keys, and its handler; the screen renders the table. No row is special-cased in the layout.
+About is not a row here: it is its own Title slot by APP_FLOW.
+
+### The three pieces, named separately, with sizes
+
+**A. The in-app scaling mechanism.** A root font-size multiplier: the shell writes the chosen
+percentage to the document root's font size before the first render, and every `rem` size
+follows, which is exactly what the P2.5 sweep made possible. The board's SVG text stays at the
+board's scale, by the standing ruling. **Small in code, wide in effect** (it touches every
+screen), so it lands as its own commit with the audit's third pass in the same PR. **The third
+audit pass** is cheap and it is the point: the same auditor as FONT200, but the root is set by
+driving the Settings control through the UI rather than by the instrument, so the pass proves
+the control does what the instrument did by hand; its controls are FONT200's. Two things stated
+rather than smoothed over: the mechanism is physically the same as the default-font-size
+preference (a root size), which is why the audit already knows the layout survives it; and a
+player who stacks it on page zoom reaches 400%, beyond the bound, which is not a requirement and
+is not measured.
+
+**B. The device-local preference store.** Nothing in the app persists a preference today
+(checked: no `localStorage`, `sessionStorage` or cookie use anywhere in `app`, `ui` or
+`session`). Requirements: device-local; no personal data (a size and a locale code); readable
+**synchronously before the first paint**, or the first frame renders at the wrong size; Zod at
+the read, since a stored value is a trust boundary like a saved game; survives a build update;
+works in the Capacitor WebView. `localStorage` meets all five and IndexedDB fails the third,
+so the recommendation is one `localStorage` key holding a versioned, schema-validated object,
+with a negative control: a malformed stored value must fall back to defaults. **Small; its own
+commit.** It is deliberately not the `Storage` seam: that seam serialises `GameState` and is
+Session's; settings are the shell's, and mixing them would put a preference in the save's
+trust boundary.
+
+**C. Reset progress.** `storage.delete('autosave')` already exists (the Result screen calls
+it); the row adds the confirm and re-reads the save on return to Title so that Continue
+disappears. **Trivial.** The confirm's text says what it deletes and that settings stay.
+
+**Is any of the three its own piece?** No; none is large. The recommendation is **one piece, two
+PRs**: the store, the screen and reset first (B, the rows, C), then text size with the audit's
+third pass (A), since A is the one that touches every screen and deserves its own verify and
+its own audit run.
+
+### What reset resets, confirmed from the code
+
+Shantanu's expectation: the autosave and nothing else, since nothing else persists. **True for
+everything the player's path writes.** The full list of what can persist on a device, so the
+claim is checked rather than assumed:
+
+| What | Where | Written by | Reset touches it? |
+|---|---|---|---|
+| The autosave | IndexedDB `immunity-wars`, store `saves`, key `autosave` | the app shell (`main.tsx`) on every accepted action | **Yes, the only thing** |
+| The dev shell's save | the same store, key `dev-shell` | `dev.html`, which ships in `dist` as a build input by APP_FLOW ruling 6, so it exists on any device where someone opened `/dev.html` | No: it is the maintainer's, and the dev shell is where it is cleared |
+| The dev shell's IndexedDB exercise | a separate database, `immunity-wars-dev-exercise` | the dev shell's checks panel, on demand | No, same reason |
+| The build's precache | Cache Storage, the service worker's | the worker at the first visit; replaced at the next build | No: it is the app, not progress |
+| The settings themselves | piece B's `localStorage` key, once it exists | the Settings screen | No, and the confirm says so |
+
+Nothing else: no cookies, no `sessionStorage`, no other database. So the row's name is honest
+as "Reset progress" only if progress means the saved game; if Shantanu would rather it read
+"Delete saved game", that is the more literal label and the smaller true claim.
