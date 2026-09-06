@@ -284,5 +284,10 @@
   "settings.deleteSaveInPlay": "You are playing the saved game. Quit to the title to delete it.",
   "settings.deleteSaveConfirm": "This deletes your saved game. Your settings stay.",
   "settings.deleteSaveDo": "Delete",
-  "settings.deleteSaveKeep": "Keep"
+  "settings.deleteSaveKeep": "Keep",
+  "settings.textSize": "Text size",
+  "settings.textSize.100": "Standard",
+  "settings.textSize.125": "Large",
+  "settings.textSize.150": "Larger",
+  "settings.textSize.200": "Largest"
 }

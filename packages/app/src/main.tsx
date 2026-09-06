@@ -30,14 +30,26 @@ import {
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { LOCALES, browserStore, readSettings, writeSettings, type Settings } from './settings';
+import {
+  LOCALES,
+  TEXT_SIZES,
+  applyTextSize,
+  browserStore,
+  readSettings,
+  writeSettings,
+  type Locale,
+  type Settings,
+  type TextSize,
+} from './settings';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
 // The preference store is read once, synchronously, before the first render (settings.ts says
-// why); a write that fails keeps the in-memory value for the session.
+// why); a write that fails keeps the in-memory value for the session. The text size is applied
+// to the root here, before the first paint, so the first frame is already at the chosen size.
 const prefStore = browserStore();
 const initialSettings = readSettings(prefStore);
+applyTextSize(initialSettings.textSize);
 
 type Screen =
   | { name: 'title' }
@@ -67,6 +79,7 @@ function App(): ReactElement {
   const [settings, setSettings] = useState<Settings>(initialSettings);
   const saveSettings = (s: Settings): void => {
     setSettings(s);
+    applyTextSize(s.textSize);
     writeSettings(prefStore, s);
   };
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
@@ -151,9 +164,17 @@ function App(): ReactElement {
 
   const settingsScreen = (from: 'title' | 'play'): ReactElement => (
     <SettingsScreen
+      textSize={settings.textSize}
+      textSizes={TEXT_SIZES}
       language={settings.language}
       languages={LOCALES}
-      onLanguage={(l) => saveSettings({ ...settings, language: l as Settings['language'] })}
+      onChoose={(row, v) =>
+        saveSettings(
+          row === 'textSize'
+            ? { ...settings, textSize: v as TextSize }
+            : { ...settings, language: v as Locale },
+        )
+      }
       deleteSaveBlock={from === 'play' ? 'inPlay' : save ? null : 'none'}
       onDeleteSave={deleteSave}
       onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}

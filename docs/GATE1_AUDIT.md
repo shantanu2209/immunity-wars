@@ -45,7 +45,15 @@ computed size must be at least 1.9× its size at 100%; and **ZOOM200**, a 180 ×
 page at a doubled device scale, the layout Chrome for Android's page zoom gives a 360 px
 phone, where scaling is given because a zoom scales everything. Under both, the layout must
 survive: no horizontal scrolling, every control in the viewport, no text clipped to an
-ellipsis. Then the network is cut.
+ellipsis. Then, from P2.6 piece 2 PR 2, a **third mechanism, SIZE200: the app's own text size
+setting**, the one a player will actually find (Settings › Text size › Largest). Physically it
+is the default-font-size lever again, the app writing the root font size from a stored
+preference, but it is pulled by a control the app ships, which can appear to work and not.
+So the pass drives the real control, checks that the option shown pressed, the stored value
+and the size the root renders at agree, reloads to prove the choice persisted (the walk's own
+first load), then measures every screen under FONT200's scaling and layout auditors, and ends
+by choosing Standard through the same control so the offline pass runs at the default. Then
+the network is cut.
 
 *The inspect sheet, corrected in P2.6's first piece.* This paragraph said "sixteen screens"
 and listed "the inspect sheet where the piece stands with something". That sheet has two
@@ -57,7 +65,8 @@ token groups carry a `data-invader` address for the drivers, rendering nothing),
 is measured on every run; when the deck also offers "What's here", that variant is recorded
 under its own name.
 
-**Eighteen controls, nine pairs, run before any screen is measured, or the run stops.** For
+**Twenty-four controls, twelve pairs, run before any screen is measured, or the run stops.**
+*Eighteen until P2.6 piece 2 PR 2 added the six for the app's own text size, below.* For
 every check a planted defect must be flagged (fires) and a planted sound element must not be
 (passes) — "forbid X" is half a specification, since a check that forbade everything would
 satisfy every fires-control ever aimed at it (ruled for this instrument by Shantanu, 6
@@ -69,9 +78,17 @@ mechanism at 180 px: a 600 px block, a block that fits; a control past the viewp
 one inside; an ellipsis that clips its text, one whose text fits. Offline: a fetch of a fresh
 URL with the network cut must fail, and a fetch of the precached bundle must be served by the
 worker (on an origin with no worker that half cannot run, says so, and the offline item
-reports not met). **All eighteen fired the right way on the first run of the rebuilt
-instrument and on every run since.** *Before P2.6 this read "seven planted defects": every
-check had a fires-control and only the scale check had a passes-control.*
+reports not met). **The app's own text size (SIZE200), six controls planted on the real
+control rather than on a planted element, because the failure they guard is a control that
+appears to work (FINDINGS #60's shape; Shantanu's requirement for this pass):** the control
+must be reachable (Title › Settings › Largest); Largest chosen through it stores 200, renders
+the root at 32 px and shows pressed: not flagged; **stored 200 and shown pressed but rendered
+at 16 px** (the root put back under it): flagged; a choice that did not persist (the stored
+value removed, then a reload): flagged; Largest surviving a reload with store, root and
+applied agreeing: not flagged; Standard through the same control clearing the root and
+storing 100: not flagged. **All twenty-four fired the right way on the first run of the
+instrument that carried them and on every run since.** *Before P2.6 this read "seven planted
+defects": every check had a fires-control and only the scale check had a passes-control.*
 
 ## What the audit found, in the order it found it
 
@@ -100,25 +117,36 @@ found the instrument's own second defect (the title screen measured before the 2
 applied, because the app renders from a module script before DOMContentLoaded) and the root is
 now set explicitly before the first screen.
 
-## The numbers (the shipped build, the P2.6 piece 2 run, 6 September 2026)
+## The numbers (the shipped build, the P2.6 piece 2 PR 2 run, 6 September 2026)
 
-Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 21 screens; every
+Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 21 screens, and 23
+under the app's own text size (the two Settings bookends where it is chosen and reset); every
 row's width and root font size are the instrument's own readings, recorded per screen in the
-JSON. Eighteen controls fired the right way first.
+JSON. Twenty-four controls fired the right way first. Every pass reached the inspect sheet and
+the Result, read from the per-screen list, not the totals.
 
 | Check | Mechanism it models | Measured | Findings |
 |---|---|---|---|
-| Touch targets ≥ 44 × 44 CSS px | — | 369 controls across 21 screens at 360 px | **0** |
-| Text contrast (4.5:1, 3:1 large) | — | 936 text runs | **0** |
-| Non-text contrast (3:1, control boundaries) | — | 369 controls | **0** |
-| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 937 text runs across 21 screens, root 32 px at 360 px | **0** unscaled |
+| Touch targets ≥ 44 × 44 CSS px | — | 385 controls across 21 screens at 360 px | **0** |
+| Text contrast (4.5:1, 3:1 large) | — | 966 text runs | **0** |
+| Non-text contrast (3:1, control boundaries) | — | 385 controls | **0** |
+| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 1,028 text runs across 21 screens, root 32 px at 360 px | **0** unscaled |
 | Layout under FONT200 | the default-font-size preference | 21 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
 | **Layout under ZOOM200** | Chrome for Android's page zoom | 21 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
-| **Offline** | — | first visit online, then the network cut | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
+| **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 966 text runs across 23 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
+| **Offline** | — | first visit online, then the network cut, at Standard | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
 
-*The P2.6 piece 1 run read 357 controls and 911 text runs across 17 screens; the difference is
-the four Settings screens (10 controls, 33 text runs) and the deck. P2.5's final run read 327
-controls and 825 text runs across 16 screens, 836 runs scaled, with no ZOOM200 row.*
+*The PR 1 run read 369 controls and 936 text runs across 21 screens; the difference is the
+text-size row (four options) and the deck. The piece 1 run read 357 and 911 across 17; P2.5's
+final run 327 and 825 across 16, with no ZOOM200 row.*
+
+**One more walk defect, found by the per-screen list on this pass's first run.** The inspect
+sheet's node door taps the first invader token, and the board resolves a tap to the NEAREST
+node, so a token placed beside an organ's resident resolves to the resident: a selection, no
+sheet. One pass of four missed the sheet that way while the totals read zero. The walk now
+tries every token until one opens the sheet, undoing a stray selection with the same tap
+again, and a run in which none does records the sheet as NOT REACHED, a red line in the JSON
+rather than an absence from the list.
 
 **Two instrument defects found by the first run over the Settings screens, fixed inline.**
 The walk now quits to the Title mid-game to measure Settings with a save; its Continue click

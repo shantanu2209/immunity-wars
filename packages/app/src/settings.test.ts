@@ -10,11 +10,42 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_SETTINGS,
   SETTINGS_KEY,
+  applyTextSize,
   readSettings,
   writeSettings,
   type KeyValueStore,
+  type RootLike,
   type Settings,
 } from './settings.js';
+
+describe('applyTextSize', () => {
+  const root = (fontSize = ''): RootLike => ({ style: { fontSize }, dataset: {} });
+
+  it('PASSES: a size writes the root as a percentage and records what it applied', () => {
+    const r = root();
+    applyTextSize('200', r);
+    expect(r.style.fontSize).toBe('200%');
+    expect(r.dataset.textSize).toBe('200');
+  });
+
+  it('back to Standard clears a size it set itself', () => {
+    const r = root();
+    applyTextSize('150', r);
+    applyTextSize('100', r);
+    expect(r.style.fontSize).toBe('');
+    expect(r.dataset.textSize).toBe('100');
+  });
+
+  it('FIRES-SHAPE GUARD: Standard leaves alone a root size it did not set (the audit sets one to model the browser preference)', () => {
+    const r = root('200%');
+    applyTextSize('100', r);
+    expect(r.style.fontSize).toBe('200%');
+  });
+
+  it('a missing root is a no-op, never a throw', () => {
+    expect(() => applyTextSize('200', null)).not.toThrow();
+  });
+});
 
 function memoryStore(
   initial: Record<string, string> = {},

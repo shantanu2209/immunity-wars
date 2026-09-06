@@ -98,9 +98,38 @@ sources as the reveal rather than copies, with the effect line pinned by firing 
 **Not in this PR, by ruling 2:** text size, with the scaling mechanism and the audit's third
 pass. That is PR 2.
 
+## Piece 2, PR 2 — text size: the mechanism, the row, the audit's third pass (done, 6 September 2026)
+
+- **The mechanism** (`applyTextSize` in `packages/app/src/settings.ts`): the chosen size written
+  to the document root as a percentage, before the first paint and on every change, so every
+  `rem` follows. At Standard it clears only a size it set itself, recorded in `data-text-size`,
+  and leaves alone a root size something else set: the audit's FONT200 pass sets the root by
+  the same inline style to model the browser preference, and an app that cleared it at every
+  load would fight its own instrument. Tests both ways, including that guard.
+- **The row:** Text size, four options (Standard, Large, Larger, Largest: 100 to 200 percent),
+  first in Reading; the option buttons carry addresses for the drivers.
+- **The audit's third pass, SIZE200,** drives the real control and checks that the option shown
+  pressed, the stored value and the rendered root agree, reloads to prove persistence, then
+  measures every screen under FONT200's own auditors, and ends by choosing Standard through the
+  control. **Its six controls are planted on the real control**, because the failure they guard
+  is a control that appears to work: Shantanu's requirement, FINDINGS #60's shape. Stored 200
+  and shown pressed but rendered at 16 px is flagged; a choice that did not persist is flagged;
+  the three honest states are not. All six fired the right way on the first run.
+- **One more walk defect, from the per-screen list:** the inspect sheet's token door can
+  resolve to a resident standing beside the token; the walk now tries every token and records
+  NOT REACHED when none opens the sheet. Recorded in [`GATE1_AUDIT.md`](GATE1_AUDIT.md).
+- **The run on the shipped build:** 385 controls and 966 text runs across 21 screens; 1,028
+  runs scaled under FONT200 and 966 under the app's own setting across 23; every check 0 under
+  all four mechanisms; every pass reached every screen; offline met at Standard.
+- **Recorded as a standing rule** (`CLAUDE.md`, "How to work here"): read the instrument that
+  reports coverage, not the one that reports a verdict.
+
+**Stated, not measured:** a player who stacks Largest on the browser's own 200% reaches 400%,
+beyond WCAG 1.4.4's bound; not a requirement, not audited. Settings is complete for its ruled
+first set; adding a row is one entry in the table.
+
 ## What is next
 
-PR 2 of Settings: text size. Then Help's prose, whose structure is agreed with Kartik, whenever
-it fits the order; then the library, which now also carries the rulebook's "why it works this
-way" boxes; About; the error boundary and the storage-failure notice; onboarding held for a
-direction.
+Help's prose, whose structure is agreed with Kartik; then the library, which now also carries
+the rulebook's "why it works this way" boxes; About; the error boundary and the
+storage-failure notice; onboarding held for a direction.
