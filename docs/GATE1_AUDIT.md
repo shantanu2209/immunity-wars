@@ -1,5 +1,16 @@
 # Gate 1 hygiene — the headless audit (6 September 2026)
 
+> ⚠️ **Corrected the same evening (FINDINGS #61).** The scaling pass below sets the root font
+> size to 200% by an inline style. That models the browser DEFAULT-FONT-SIZE preference
+> (desktop Chrome, Firefox), which the `rem` sweep made the app follow; it does not model
+> Chrome for Android, whose user-facing setting is PAGE ZOOM (Settings › Accessibility), a zoom
+> that scales everything and lays a 360 px phone out at 180 CSS px, which is the pass this
+> document's earlier runs used and #60 removed as a proxy. Android's SYSTEM font size reaches
+> neither, and that is what the phone session changed. Two mechanisms, two passes: both are to
+> be carried, named for what they model; not built here. The "0 unscaled" row is true of the
+> first mechanism only. The offline row's phone-session confirmation is struck (it tested the
+> network); the headless check stands, and offline is checked by hand on the Android build.
+
 **What this is.** [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §1's Gate 1 has four items a machine can
 check and one it cannot. This is the record of the machine's half, produced by
 `pnpm gate1:audit <url>` (`tools/perf/gate1-audit.ts`). The numbers below are from the

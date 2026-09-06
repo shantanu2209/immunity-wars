@@ -676,11 +676,14 @@ than the thing. Both fixed: 121 sizes to `rem`; the audit now sets the root to 2
 requires every text run to double, with controls (FINDINGS #60). Record:
 [`for-P2.5.md`](for-P2.5.md), "The phone session's result".
 
-**What remains in P2.5 now:** the closeout, in the usual discipline (what is proven, what is
-accepted on test, what is not, what P2.6 inherits: the handset pass as the deciding one, with
-the command tap's 3.6% headroom at 6× and the p95s named first); the newcomer test, landing
-against the closeout when testers exist and not blocking it; one phone item, Android font size
-at 200% on this build. Nothing else is open on Shantanu.
+**CLOSED, 6 September 2026: [`P2_5_CLOSEOUT.md`](P2_5_CLOSEOUT.md)** — what is proven, what
+is accepted on test, what is not, what P2.6 inherits. Two things were struck or reopened at
+the close, both recorded there and in FINDINGS #59 (corrected) and #61: the phone's offline
+observation tested the network and offline is checked on the Android build; the audit's 200%
+pass models the default-font-size mechanism, not Chrome-on-Android's page zoom, and the
+phone's system font size reaches neither. The newcomer test lands against the closeout when
+testers exist. **Owed by Shantanu:** the two-minute check, Chrome › Settings › Accessibility ›
+Page zoom at 200% on the shipped build.
 
 ### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu; updated late that day, see above)
 
