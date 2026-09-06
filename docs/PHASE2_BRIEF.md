@@ -88,6 +88,13 @@ v1.6 changes one sentence of §8, by ruling (Shantanu, 6 September 2026, recorde
   same ruling forbade. The condition on any such addition: it retires a UI mirror or gives a
   number its explanation, it is pinned to the number it explains on the corpus, and the
   functions it explains are left untouched. §8 carries the marked amendment in place.
+- **One deliberate exception to "the engine is unchanged", ruled the same evening:** `apFor`
+  became a wrapper over `apBreakdown(g).total`. Two functions agreeing by test are still two
+  calculations of one rule, and one rule in one place was the point of the addition. It
+  removes a duplicate calculation rather than adding behaviour, and **the corpus is the
+  proof**: the B2 differential holds `apFor` to legacy's `apMax` on the state corpus, and the
+  breakdown suite holds the terms to legacy's number directly, since holding them to the
+  port's `apFor` would now prove nothing. The risk is bounded and visible.
 
 ## What v1.1 changes, and why the changes are marked rather than folded in
 
@@ -724,9 +731,12 @@ land as deliberate, isolated changes measured against the corpus, not as part of
 - [ ] **`Storage` serialises `GameState` and is consumed by `Session`**, and the `GameState`
       round-trip was asserted with a negative control **before** `Storage` depended on it
 - [ ] SVG board generated from `geometry.json`; no coordinate hardcoded anywhere else
-- [ ] **The UI renders all player-visible text through the i18n catalogue**, with a check that
+- [x] **The UI renders all player-visible text through the i18n catalogue**, with a check that
       fails on a hardcoded string in a component, and a negative control proving that check
-      fires. The 46 ambiguous strings decided
+      fires. The 46 ambiguous strings decided. ✅ *Both halves true, 6 September 2026: the
+      `iw/no-hardcoded-jsx-text` rule with both control halves (P2.5 piece 2), and the 46
+      decided 46 of 46 ([`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md); the organ's kind, the
+      last two, ruled in the same evening)*
 - [ ] Art pipeline deterministic; provenance recorded for every asset
 - [ ] Corpus still green; **the engine's behaviour is unchanged and its root surface is exactly
       legacy's 67 names** — no carve-out, because the one thing that would have needed one is

@@ -14,6 +14,10 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import type { InspectInfo, Unavailable } from '../board/Board';
 
+/** The organ's kind from the rules pack: `vital` or `defence` (a miss renders loudly through t()). */
+const organKind = (organ: string): string =>
+  String((ORGANS as Record<string, { kind?: unknown } | undefined>)[organ]?.kind ?? organ);
+
 /** The organ's "when damaged" column from the rules pack, or null when it has none. */
 export const organEffect = (organ: string): string | null => {
   const e = (ORGANS as Record<string, { effect?: unknown } | undefined>)[organ]?.effect;
@@ -241,6 +245,10 @@ export function InspectSheet({
           <span style={{ fontSize: 14 }}>
             {t('inspect.organ', {
               organ: organDisplayName(info.organ.key),
+              // THE ORGAN'S KIND (strings 45 and 46, ruled IN 6 September 2026): the rulebook's
+              // own words, "vital organ" or "defence organ", from the rules pack. It carries no
+              // rule (the engine never reads it) so it cannot drift; a miss renders loudly.
+              kind: t(`organ.${organKind(info.organ.key)}`),
               hp: info.organ.hp,
               max: info.organ.max,
             })}

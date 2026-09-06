@@ -74,9 +74,10 @@ legacy keeps private are published, one at a time on demonstrated need), and the
 see a pure query nothing in the engine calls. They exist so the UI lists the causes of a number
 instead of re-deriving the rule, which retired one mirror nobody had counted (the session's own
 reading of the marrow). Pinned by `tests/equivalence/src/breakdowns.test.ts`; the reasoning in
-[`for-P2.5.md`](for-P2.5.md), 6 September, "The question, answered from the constraints". One
-choice left for Shantanu: `apFor` as a wrapper over `apBreakdown(g).total`, one calculation
-rather than two agreeing ones; a one-line change the corpus would prove behaviour-identical.
+[`for-P2.5.md`](for-P2.5.md), 6 September, "The question, answered from the constraints".
+**Ruled the same evening: `apFor` IS a wrapper over `apBreakdown(g).total`** — one calculation,
+not two agreeing ones — recorded in the brief (v1.6) as the one deliberate exception to "the
+engine is unchanged", with the corpus as the proof.
 
 ## What is NOT queued — ruled "no change", with the reasoning a judge would ask for
 

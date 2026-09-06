@@ -3,11 +3,13 @@
  *
  * `apBreakdown` and `regenBreakdown` are additive engine queries on the `./internal` entry
  * point: they return the TERMS behind two numbers the UI shows (the Action Point total, and
- * the turn a spent cell returns) so the UI lists causes instead of re-deriving them. The
- * numbers themselves still come from `apFor` and `neutrophilReadyTurn`, untouched. Shantanu's
- * condition on the addition (6 September 2026): the explanation must not be able to drift from
- * the number it explains. This is the check that makes that a property rather than a hope —
- * on every harvested and synthetic state, the terms sum to the total and the total IS `apFor`.
+ * the turn a spent cell returns) so the UI lists causes instead of re-deriving them.
+ * `neutrophilReadyTurn` is untouched; `apFor` became a wrapper over `apBreakdown(g).total`
+ * (ruled the same day: one rule in one place). Shantanu's condition on the addition (6
+ * September 2026): the explanation must not be able to drift from the number it explains.
+ * This is the check that makes that a property rather than a hope — on every harvested and
+ * synthetic state, the terms sum to the total and the total is what LEGACY reports as
+ * `apMax`, the oracle that computed it the old way and never changes.
  *
  * Coverage: this suite is inside `vitest.coverage.config.ts`'s include list, so the new
  * functions count toward the engine gate through it, and every term kind is required to occur
@@ -31,9 +33,15 @@ type Eng = Parameters<typeof internal.apFor>[0];
 const eng = (s: GameState): Eng => JSON.parse(JSON.stringify(s)) as Eng;
 const sum = (terms: readonly { delta: number }[]): number => terms.reduce((n, t) => n + t.delta, 0);
 
-/** The predicate the suite applies — named so the control can aim a wrong breakdown at it. */
-function agrees(g: Eng, b: { total: number; terms: readonly { delta: number }[] }): boolean {
-  return b.total === internal.apFor(g) && sum(b.terms) === b.total;
+/**
+ * The predicate the suite applies — named so the control can aim a wrong breakdown at it.
+ * The oracle is LEGACY's number (its `viewState.apMax`), not the port's `apFor`: since the
+ * wrapper ruling of 6 September 2026 `apFor` IS `apBreakdown(g).total`, so comparing the two
+ * would prove nothing. Legacy computed the total the old way and never changes.
+ */
+function agrees(s: GameState, b: { total: number; terms: readonly { delta: number }[] }): boolean {
+  const view = legacy.viewState(JSON.parse(JSON.stringify(s)) as GameState) as { apMax: number };
+  return b.total === view.apMax && sum(b.terms) === b.total;
 }
 
 /* Constructed states for the term kinds a bot game rarely produces. Found, then edited. */
@@ -67,7 +75,7 @@ describe('apBreakdown: the terms sum to the total, and the total is apFor', () =
   for (const s of all) {
     const g = eng(s);
     const b = internal.apBreakdown(g);
-    if (!agrees(g, b))
+    if (!agrees(s, b))
       problems.push(
         `turn ${String(s.turn)} ${s.difficulty}: total ${String(b.total)} apFor ${String(internal.apFor(g))} sum ${String(sum(b.terms))}`,
       );
@@ -103,8 +111,8 @@ describe('apBreakdown: the terms sum to the total, and the total is apFor', () =
       total: honest.total + 1,
       terms: honest.terms.filter((t) => !(t.kind === 'organ' && t.organ === 'heart')),
     };
-    expect(agrees(g, honest)).toBe(true);
-    expect(agrees(g, forgetful)).toBe(false);
+    expect(agrees(damagedHeart, honest)).toBe(true);
+    expect(agrees(damagedHeart, forgetful)).toBe(false);
   });
 });
 

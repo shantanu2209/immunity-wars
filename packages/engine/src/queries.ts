@@ -198,22 +198,27 @@ export function helperInBlood(g: GameState): boolean {
  * action points and antibody production
  * ------------------------------------------------------------------ */
 
+/**
+ * ONE RULE IN ONE PLACE (ruled by Shantanu, 6 September 2026): `apFor` is the total of
+ * `apBreakdown`'s terms, not a second calculation that agrees with it by test. The rule lived
+ * here as five lines until that day; they moved into `apBreakdown` unchanged, in the same
+ * order, and the equivalence corpus is the proof that nothing about the number moved — the B2
+ * differential still holds `apFor` to legacy's `apMax` on the state corpus. Recorded in the
+ * brief (v1.6) as the one deliberate exception to "the engine is unchanged": it removes a
+ * duplicate calculation rather than adding behaviour.
+ */
 export function apFor(g: GameState): number {
-  let ap = knobs.apOverride ?? g.apMax;
-  // Giardia blocks absorption. You eat, but you starve — so you have less energy to spend.
-  if (g.flags.specials) ap -= g.invaders.reduce((n, iv) => n + (iv.drain ?? 0), 0);
-  if (g.organs.lungs && damaged(g, 'lungs')) ap -= 1;
-  if (g.organs.heart && damaged(g, 'heart')) ap -= 1;
-  if (g.fx) ap += g.fx.apMod ?? 0;
-  return Math.max(1, ap);
+  return apBreakdown(g).total;
 }
 
 /**
- * THE ACTION POINT TOTAL AS TERMS (P2.5, 6 September 2026). The same rule as `apFor`, in the
- * same order, reading the same fields — `apFor` is left exactly as it is, and the equivalence
- * suite asserts `apBreakdown(g).total === apFor(g)` on every state it holds, so the two
- * cannot drift apart without a test going red. Published on the `./internal` entry point,
- * never the root: the root is legacy's 67 names and this is not one of them.
+ * THE ACTION POINT TOTAL AS TERMS (P2.5, 6 September 2026). THE rule for Action Points: the
+ * difficulty's budget, minus Giardia's drain (it blocks absorption: you eat, but you starve, so
+ * you have less energy to spend), minus one for damaged Lungs and one for a damaged Heart,
+ * plus this turn's crisis modifier, floored at 1. `apFor` returns this total and nothing else
+ * (ruled 6 September 2026: one rule in one place). The equivalence suite holds the total to
+ * legacy's `apMax` on every state it holds, and the terms to the total. Published on the
+ * `./internal` entry point, never the root: the root is legacy's 67 names and this is not one.
  *
  * Why it exists: a player must be able to see why they have the number they have. Antibody
  * production already explains itself through `productionBreakdown`; this gives the AP figure
