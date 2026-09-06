@@ -189,12 +189,12 @@ function App(): ReactElement {
               padding: '8px 0',
             }}
           >
-            <span style={{ fontSize: 13, color: '#7C6A61' }}>
+            <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
               {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])} {t('play.deck')}{' '}
               {String(ctx.game['deckCount'])}
             </span>
             <button
-              style={{ minHeight: 44, fontSize: 14 }}
+              style={{ minHeight: 44, fontSize: '0.875rem' }}
               disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
               onClick={() => ctx.send({ action: 'draw' })}
             >
@@ -204,7 +204,7 @@ function App(): ReactElement {
                 command; a second copy up here would be the same button twice. */}
             {ctx.planning ? null : (
               <button
-                style={{ minHeight: 44, fontSize: 14 }}
+                style={{ minHeight: 44, fontSize: '0.875rem' }}
                 disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
                 onClick={() => ctx.send({ action: 'beginCommand' })}
               >
@@ -212,20 +212,20 @@ function App(): ReactElement {
               </button>
             )}
             <button
-              style={{ minHeight: 44, fontSize: 14 }}
+              style={{ minHeight: 44, fontSize: '0.875rem' }}
               disabled={ctx.playing || ctx.phase !== 'command'}
               onClick={() => ctx.send({ action: 'endCommand' })}
             >
               {t('play.endCommand')}
             </button>
             <button
-              style={{ minHeight: 44, fontSize: 14, marginLeft: 'auto' }}
+              style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
               onClick={() => setPaused(true)}
             >
               {t('play.pause')}
             </button>
             {ctx.frameInfo ? (
-              <span style={{ fontSize: 13, color: '#B03A2E' }}>{ctx.frameInfo.label}</span>
+              <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>{ctx.frameInfo.label}</span>
             ) : null}
             {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
           </div>

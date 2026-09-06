@@ -740,7 +740,13 @@ export function PlayScreen({
           {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
         </>
       ) : null}
-      {planningActive ? null : (
+      {/* THE COMMAND STAGE STAYS MOUNTED behind the planning screen (ruled 6 September 2026,
+          the mount fix for the command tap's breach): hidden, not unmounted, so the tap that
+          ends planning is a visibility toggle and the board's redraw for the new turn, not a
+          mount of every panel from nothing. The flight reads its landing rectangles after
+          this commit, when the stage is visible again; the memoised static layers make the
+          extra render per draw cheap. Measured in P2_3_MEASUREMENT.md, "Added 6 September". */}
+      <div data-command-stage="1" hidden={planningActive}>
         <>
           <LiveBoard
             store={frameStore}
@@ -882,7 +888,7 @@ export function PlayScreen({
           {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
           {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
         </>
-      )}
+      </div>
     </div>
   );
 }

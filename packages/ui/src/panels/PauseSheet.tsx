@@ -11,7 +11,7 @@ const BTN: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 48,
-  fontSize: 15,
+  fontSize: '0.9375rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -51,7 +51,7 @@ export function PauseSheet({
       >
         {confirming ? (
           <>
-            <p style={{ fontSize: 14, color: '#78665D' }}>{t('pause.quitNote')}</p>
+            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('pause.quitNote')}</p>
             <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onQuit}>
               {t('pause.quitConfirm')}
             </button>

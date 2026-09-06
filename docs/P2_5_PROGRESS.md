@@ -665,8 +665,22 @@ expect:
    feels late. The instrument says 119ms at 6× throttling on the PC; your phone is faster than
    6× and slower than 1×, and the deciding number is a low-end handset's.
 
-**Rulings this round asks for:** the command tap's fix (keep the board mounted and hidden,
-recommended, or the deferred mount); the service worker for the web build.
+**Rulings this round asked for, both taken and applied the same evening (Shantanu):** the
+command tap's mount fix — built, **resolved at 96.4ms p50 at 6× against 100**, recorded with
+the measurement; the service worker — built, **offline MET on the shipped web build**, the
+audit requiring a reload with no network to render and play. **The phone session's results:**
+the WIN path is crossed by a person (several full games won); offline as measured; no flicker
+in spreads; no perceptible command tap. **Its finding:** text did not scale at 200% at all —
+every font size was a fixed pixel, and the audit had passed a proxy (a 180px layout) rather
+than the thing. Both fixed: 121 sizes to `rem`; the audit now sets the root to 200% and
+requires every text run to double, with controls (FINDINGS #60). Record:
+[`for-P2.5.md`](for-P2.5.md), "The phone session's result".
+
+**What remains in P2.5 now:** the closeout, in the usual discipline (what is proven, what is
+accepted on test, what is not, what P2.6 inherits: the handset pass as the deciding one, with
+the command tap's 3.6% headroom at 6× and the p95s named first); the newcomer test, landing
+against the closeout when testers exist and not blocking it; one phone item, Android font size
+at 200% on this build. Nothing else is open on Shantanu.
 
 ### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu; updated late that day, see above)
 

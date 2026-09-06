@@ -307,3 +307,14 @@ so a two-person project is not buried in them.
 
 **This pipeline uses no repository secrets at all.** If a step ever appears to need one, that is a
 design change to discuss, not a value to paste in.
+
+## Added 6 September 2026 — `vite-plugin-pwa`, and what a service worker is and is not
+
+The web build now ships a service worker (`vite-plugin-pwa`, Workbox `generateSW`) so it is
+offline, a Gate 1 item (FINDINGS #59). Two facts for the property this file keeps: the plugin
+and Workbox run at BUILD time in the maintainer's process, on inputs the maintainer chose, so
+they are in the one-shot-tool class, not the listening-process class; and the worker itself
+runs in the player's browser, serving the build's own files from a cache, and opens no port.
+`pnpm audit` after the addition: the same two dispositioned advisories, nothing new. What
+would change this: an advisory on `workbox-*` or the plugin, re-checked whenever
+`packages/app`'s dependencies move.

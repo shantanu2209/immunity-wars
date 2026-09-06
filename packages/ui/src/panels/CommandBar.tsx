@@ -23,7 +23,7 @@ import { ApTerms } from './ApTerms';
 const BTN: CSSProperties = {
   minHeight: 44,
   padding: '0 14px',
-  fontSize: 14,
+  fontSize: '0.875rem',
   borderRadius: 8,
   border: '1.5px solid #8E6E53',
   background: '#FFFDF9',
@@ -135,19 +135,27 @@ export function CommandBar({
         {selectedCellName === null ? (
           // Nothing selected: the prompt — or, when the BODY has rings on the board (a memory
           // response, an antivenom dose), what those rings are.
-          <span style={{ fontSize: 14, color: noSelectionHint !== null ? '#1F6F8B' : '#78665D' }}>
+          <span
+            style={{
+              fontSize: '0.875rem',
+              color: noSelectionHint !== null ? '#1F6F8B' : '#78665D',
+            }}
+          >
             {noSelectionHint ?? t('commandBar.selectPrompt')}
           </span>
         ) : (
           <>
-            <span style={{ fontSize: 15, fontWeight: 700 }}>{selectedCellName}</span>
+            <span style={{ fontSize: '0.9375rem', fontWeight: 700 }}>{selectedCellName}</span>
             {qualifier !== null ? (
-              <span style={{ fontSize: 13, color: '#78665D' }}>{qualifier}</span>
+              <span style={{ fontSize: '0.8125rem', color: '#78665D' }}>{qualifier}</span>
             ) : null}
             {speed !== null ? (
               // The cell's speed beside its name (ruled 6 September 2026): content's table,
               // where the rule lives, not a number retyped here.
-              <span data-bar-speed={String(speed)} style={{ fontSize: 13, color: '#78665D' }}>
+              <span
+                data-bar-speed={String(speed)}
+                style={{ fontSize: '0.8125rem', color: '#78665D' }}
+              >
                 {t('commandBar.speed', { n: speed })}
               </span>
             ) : null}
@@ -159,7 +167,7 @@ export function CommandBar({
               style={{
                 minHeight: 44,
                 padding: '0 6px',
-                fontSize: 13,
+                fontSize: '0.8125rem',
                 color: '#78665D',
                 background: 'transparent',
                 border: 'none',
@@ -170,7 +178,9 @@ export function CommandBar({
             >
               {t('commandBar.ap')} {ap}
             </button>
-            {hint !== null ? <span style={{ fontSize: 13, color: '#2F6B4A' }}>{hint}</span> : null}
+            {hint !== null ? (
+              <span style={{ fontSize: '0.8125rem', color: '#2F6B4A' }}>{hint}</span>
+            ) : null}
             {buttons.map((b) => (
               <button
                 key={b.id}
@@ -184,7 +194,7 @@ export function CommandBar({
             {noAction !== null ? (
               // Muted when the board still offers moves (the cell can act, just not attack);
               // red when nothing at all is offered.
-              <span style={{ fontSize: 13, color: hint !== null ? '#78665D' : '#B03A2E' }}>
+              <span style={{ fontSize: '0.8125rem', color: hint !== null ? '#78665D' : '#B03A2E' }}>
                 {noAction}
               </span>
             ) : null}
@@ -204,7 +214,7 @@ export function CommandBar({
         <ApTerms terms={apTerms} total={ap} />
       ) : null}
       {note !== null && selectedCellName !== null ? (
-        <div data-bar-note="1" style={{ fontSize: 12, color: '#7A5600' }}>
+        <div data-bar-note="1" style={{ fontSize: '0.75rem', color: '#7A5600' }}>
           {note}
         </div>
       ) : null}
@@ -231,7 +241,9 @@ export function CommandBar({
           </button>
         </div>
       ) : null}
-      {notice !== null ? <div style={{ fontSize: 13, color: '#B03A2E' }}>{notice}</div> : null}
+      {notice !== null ? (
+        <div style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>{notice}</div>
+      ) : null}
       {inCommand &&
       !undo.available &&
       undo.reason !== undefined &&
@@ -239,7 +251,7 @@ export function CommandBar({
         // WHY undo is unavailable — S25 item 2's instrumentation, visible rather than behind a
         // flag because it doubles as a teaching line: only moves can be undone, and the first
         // committing action names itself.
-        <div data-undo-reason={undo.reason} style={{ fontSize: 12, color: '#78665D' }}>
+        <div data-undo-reason={undo.reason} style={{ fontSize: '0.75rem', color: '#78665D' }}>
           {undo.reason === 'committed'
             ? t('undo.committed', { action: actionDisplayName(undo.committedBy ?? '') })
             : undo.reason === 'resumed'

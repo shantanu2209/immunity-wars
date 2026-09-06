@@ -15,7 +15,7 @@ import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
 
-const LINE = { fontSize: 15, color: '#2E2A28', margin: '8px 0' } as const;
+const LINE = { fontSize: '0.9375rem', color: '#2E2A28', margin: '8px 0' } as const;
 
 export function GoalBody({
   maxTurn,

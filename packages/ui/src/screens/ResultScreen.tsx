@@ -11,7 +11,7 @@ const BTN: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 52,
-  fontSize: 16,
+  fontSize: '1rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -43,15 +43,15 @@ export function ResultScreen({
 }): ReactElement {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: 26, color: won ? '#2F6B4A' : '#B03A2E' }}>
+      <h1 style={{ fontSize: '1.625rem', color: won ? '#2F6B4A' : '#B03A2E' }}>
         {won ? t('result.win') : t('result.loss')}
       </h1>
       {!won && lossOrgan !== null ? (
-        <p style={{ fontSize: 15 }}>
+        <p style={{ fontSize: '0.9375rem' }}>
           {t('result.lossOrgan')} <span style={{ fontWeight: 700 }}>{lossOrgan}</span>
         </p>
       ) : null}
-      <div style={{ fontSize: 15, margin: '18px 0', color: '#2E2A28' }}>
+      <div style={{ fontSize: '0.9375rem', margin: '18px 0', color: '#2E2A28' }}>
         <div>
           {t('result.turns')} <span style={{ fontWeight: 700 }}>{stats.turns}</span>
         </div>

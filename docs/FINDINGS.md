@@ -3191,9 +3191,15 @@ the browser caches what its heuristics happen to keep and nothing is precached. 
 fetched by `<img>` and `<image>` on first render of each icon, so a turn that first shows an
 organ, an entry or a pathogen type fetches it then.
 
-**Disposition: OPEN — a build-and-caching decision for Shantanu, recommended and not built.**
-The web fix is a service worker with a precache manifest (`vite-plugin-pwa`, `generateSW`,
-`registerType: 'autoUpdate'`): the bundle, the art and the font precached at first visit, after
+**Disposition: FIXED, ruled and built the same evening (Shantanu, 6 September 2026: "it
+cannot ship unmet").** The service worker with a precache manifest (`vite-plugin-pwa`,
+`generateSW`, `registerType: 'autoUpdate'`) precaches the bundle, the art at every scale, the
+anatomy frame and the fonts at the first visit — 193 entries, 985 KiB — after which the app
+loads and plays with no network and the reload works. The dev server does not register it;
+`build:web` then `preview` serves the build, and the Gate 1 audit against it requires a reload
+with the network cut to render and play a turn: met (`GATE1_AUDIT.md`). What follows is the
+record of the recommendation as it stood before the ruling. The web fix is a service worker
+with a precache manifest: the bundle, the art and the font precached at first visit, after
 which the app loads and plays with no network and the reload works. It is one dependency and
 one config block, and it changes the app's loading behaviour (a stale worker serves the last
 build until the next visit), so it is not a component change and it needs the production build
@@ -3201,3 +3207,37 @@ build until the next visit), so it is not a component change and it needs the pr
 build bundles every asset inside the app and is offline by construction; the web build is
 what P2.5 ships and what the newcomer test runs on. Until one of the two lands, the closeout
 states the gate's offline item as NOT MET on the web build, in those words.
+
+
+## 60. Text did not scale at all, and the Gate 1 audit had passed it: the check measured a proxy for the thing rather than the thing
+
+**Found by Shantanu on the S25, 6 September 2026, one hour after the audit reported 200% text
+green.** Android's font size at 200% changed the address bar and nothing on the page. Gate 1
+says text scales to 200% without loss of content or function (WCAG 1.4.4); it did not scale,
+which is a different failure from breaking and a worse one for anyone who needs larger text.
+
+**The cause, in the code, before anything was proposed.** Every font size in the UI was a
+fixed pixel number: 109 inline `fontSize: N` in `packages/ui`, 12 in the app shell, no
+relative unit anywhere, no root size set. The viewport tag is the ordinary
+`width=device-width, initial-scale=1.0` and there is no `text-size-adjust` rule, so nothing
+suppressed scaling; there was simply nothing that could scale. A phone's font size setting
+changes the browser's default font size, which only `rem`, `em` and percentages follow.
+
+**The instrument's defect, which is the finding.** `tools/perf/gate1-audit.ts` tested 200%
+text by re-running every screen at a 180 px viewport, the LAYOUT that doubled text produces
+on a 360 px phone, and it found and fixed four real layout faults that way. It never asked
+whether the text doubled. So it confirmed that the layout survives a thing that does not
+happen, and it would have passed this build forever. The same shape this project keeps
+finding (#51's cached green, #34's fitted threshold, C5b's self-regenerating oracle): a check
+that measures a proxy has no way to fail on the property.
+
+**Disposition: FIXED, both halves, the same day.** (1) The thing: all 121 font sizes are
+`rem` (16 px root, so 13 → 0.8125rem), the piece grid's minimum column is `7rem`, and the
+layout fixes stand. The board's SVG text is left in board units on purpose: it is the drawn
+board at the board's scale, like the print, and the inspect sheet is its text surface; that
+is stated here as a decision, not missed. (2) The instrument: the audit sets the root font
+size to 200% on every load at the full 360 px width and, on every screen, requires each text
+run's computed size to be at least 1.9× its size at 100% (listing by name any that is not),
+and the layout to survive it. Its controls: a planted 13 px span must be flagged as not
+scaling, a planted 0.8125rem span must not be, and a 600 px block must overflow; all three
+fire before any screen is measured. The 180 px proxy pass is gone.

@@ -46,7 +46,7 @@ function DevApp(): ReactElement {
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 700, margin: '0 auto' }}>
-      <h1 style={{ fontSize: 18 }}>Immunity Wars — dev shell (instrumented)</h1>
+      <h1 style={{ fontSize: '1.125rem' }}>Immunity Wars — dev shell (instrumented)</h1>
       <PlayScreen
         session={session}
         artMetrics={artMetrics}
@@ -57,7 +57,7 @@ function DevApp(): ReactElement {
         onTransition={recordTransition}
         renderControls={(ctx) => (
           <p>
-            <span style={{ fontSize: 13 }}>
+            <span style={{ fontSize: '0.8125rem' }}>
               turn {String(ctx.game['turn'])}/{String(ctx.game['maxTurn'])} · phase {ctx.phase} · AP{' '}
               {String(ctx.game['ap'])} · deck {String(ctx.game['deckCount'])}
               {ctx.frameInfo
@@ -84,17 +84,19 @@ function DevApp(): ReactElement {
             >
               End command (spread)
             </button>{' '}
-            <label style={{ fontSize: 13 }}>
+            <label style={{ fontSize: '0.8125rem' }}>
               <input type="checkbox" checked={skip} onChange={(e) => setSkip(e.target.checked)} />{' '}
               skip bursts (render authoritative views only)
             </label>
           </p>
         )}
       />
-      <pre style={{ fontSize: 12 }}>{checks.join('\n')}</pre>
+      <pre style={{ fontSize: '0.75rem' }}>{checks.join('\n')}</pre>
       <details>
-        <summary style={{ fontSize: 13 }}>IndexedDbStorage exercise (reruns every load)</summary>
-        <pre style={{ fontSize: 12 }}>{idbLines.join('\n')}</pre>
+        <summary style={{ fontSize: '0.8125rem' }}>
+          IndexedDbStorage exercise (reruns every load)
+        </summary>
+        <pre style={{ fontSize: '0.75rem' }}>{idbLines.join('\n')}</pre>
       </details>
     </div>
   );

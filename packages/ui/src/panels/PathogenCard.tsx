@@ -42,7 +42,7 @@ export interface PathogenCardSubject {
   now: string | null;
 }
 
-const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
 const ROW: CSSProperties = {
   display: 'flex',
   gap: 10,
@@ -53,7 +53,7 @@ const CLOSE: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 44,
-  fontSize: 16,
+  fontSize: '1rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -78,7 +78,7 @@ function StatBar({ label, value }: { label: string; value: number }): ReactEleme
           />
         ))}
       </span>
-      <span style={{ fontSize: 13, color: '#2E2A28' }}>{value}</span>
+      <span style={{ fontSize: '0.8125rem', color: '#2E2A28' }}>{value}</span>
     </div>
   );
 }
@@ -137,15 +137,15 @@ export function PathogenCard({
           border: '2px solid #B03A2E',
           borderRadius: 12,
           padding: 14,
-          fontSize: 14,
+          fontSize: '0.875rem',
           color: '#2E2A28',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={`/art/path-${type}@3x.webp`} width={48} height={48} alt="" />
           <div style={{ flex: '1 1 auto' }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#B03A2E' }}>{disease}</div>
-            <div style={{ fontSize: 13, color: '#78665D' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#B03A2E' }}>{disease}</div>
+            <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>
               {typeDisplayName(type)}
               {famLine !== null ? (
                 <>
@@ -157,7 +157,7 @@ export function PathogenCard({
           </div>
         </div>
         {subject.remembered ? (
-          <div style={{ marginTop: 8, fontSize: 13, color: '#1F6F8B', fontWeight: 700 }}>
+          <div style={{ marginTop: 8, fontSize: '0.8125rem', color: '#1F6F8B', fontWeight: 700 }}>
             {t('card.memory')}
           </div>
         ) : null}
