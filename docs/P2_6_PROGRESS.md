@@ -128,8 +128,20 @@ pass. That is PR 2.
 beyond WCAG 1.4.4's bound; not a requirement, not audited. Settings is complete for its ruled
 first set; adding a row is one entry in the table.
 
+## Piece 3 — How to play: the prose, drafted for review (6 September 2026; nothing in the app)
+
+[`HELP_DRAFT.md`](HELP_DRAFT.md): the ten sections on the agreed structure, as a readable
+document for Shantanu and Kartik to read together, Kartik checking the science and Shantanu
+how it reads on a phone. Every paragraph carries a provenance tag (the rulebook as it is, the
+rulebook repunctuated because no player text carries a dash, the quick reference, text the
+app already shows, or fresh), so Kartik knows which sentences are his. Help follows the app
+where the app and the rulebook differ, and the differences are listed for him: resident
+recall is Phase 3's and left out; the crisis pool is the content pack's nine; fever halts the
+march and costs a point; degranulate's burn is stated as designed. Four points are put to him
+beyond the words. The catalogue entries are cut from the settled words, not before.
+
 ## What is next
 
-Help's prose, whose structure is agreed with Kartik; then the library, which now also carries
-the rulebook's "why it works this way" boxes; About; the error boundary and the
+The rulings on the Help draft, then its catalogue entries and screen; the library, which now
+also carries the rulebook's "why it works this way" boxes; About; the error boundary and the
 storage-failure notice; onboarding held for a direction.
