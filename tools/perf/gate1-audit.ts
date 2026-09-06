@@ -18,34 +18,56 @@
  *            >= 3:1 — 1.4.11 (a top-only border is a divider, not a boundary). Text inside
  *            the SVG board and text over images are NOT measured here; they are the art
  *            pipeline's measured values (ASSETS.md) and the finger pass.
- *   TEXT200  THE THING, NOT A PROXY (Shantanu's finding on the S25, 6 September 2026: the
- *            phone's font size at 200% changed nothing on the page, and the audit's earlier
- *            180px-viewport pass had "passed" the layout consequence of a scaling that never
- *            happened). The root font size is set to 200% on every load, at the full 360px
- *            width, and on every screen: (1) every text run's computed size must be >= 1.9x
- *            what it is at 100% — text that does not scale is listed by name; (2) the layout
- *            must survive it: no horizontal scrolling, every control still in the viewport,
- *            no text clipped to an ellipsis.
+ *   TEXT AT 200% — TWO MECHANISMS, TWO PASSES, EACH NAMED FOR WHAT IT MODELS (FINDINGS #60,
+ *   #61). A person reaches "text at 200%" by whichever mechanism their browser offers, and a
+ *   pass that models one of them says nothing about the other:
+ *
+ *   FONT200  models the browser DEFAULT-FONT-SIZE preference (desktop Chrome, Settings >
+ *            Appearance > Font size; Firefox on every platform). The root font size is set
+ *            to 200% on every load, at the full 360px width — `rem` and `em` follow, `px`
+ *            does not — and on every screen: (1) every text run's computed size must be
+ *            >= 1.9x what it is at 100%, text that does not scale listed by name; (2) the
+ *            layout must survive it (below). This is the pass #60 built after the phone's
+ *            font size changed nothing and every size in the UI turned out to be a fixed px.
+ *   ZOOM200  models Chrome for Android's PAGE ZOOM (Settings > Accessibility > Page zoom),
+ *            the mechanism a Chrome-on-Android user actually has: a zoom scales everything,
+ *            `px` included, and narrows the CSS viewport to match, so a 360x780 phone at
+ *            200% lays the page out at 180x390 CSS px. Scaling is therefore given, and the
+ *            layout at 180px is the thing measured. This pass ran in the first audit, was
+ *            removed by #60 as "a proxy" — wrongly: it was the right instrument for THIS
+ *            mechanism and no instrument for the other — and is restored by #61 after
+ *            Shantanu's check by hand (page zoom at 200% on the shipped build: the text
+ *            doubled and everything he checked stayed playable).
+ *   LAYOUT   the same checks under both mechanisms: no horizontal scrolling, every control
+ *            still in the viewport, no text clipped to an ellipsis.
  *   OFFLINE  after the first load, the network is cut: a full turn is played and every
  *            failed request recorded; then a reload with no network, which MUST render the
  *            app and let a turn be played (the service worker's precache; FINDINGS #59).
  *
- * EVERY CHECK HAS A CONTROL that runs first, on the title screen: a 20px button, a #999-on-
- * white span, a #eee-bordered button, a 13px span that must be flagged as NOT scaling beside
- * a 0.8125rem span that must not be, a 600px block that must overflow, and a request to a
- * fresh URL while offline that must fail. Each must fire, or the audit stops and says the
- * instrument is broken. A check that has never failed is not known to work — and a check
- * that measured a proxy had never failed on the thing (this one's own history).
+ * EVERY CHECK HAS A CONTROL BOTH WAYS, run first on the title screen: a planted defect that
+ * MUST be flagged (fires) beside a planted sound element that MUST NOT be (passes). "Forbid
+ * X" is half a specification — a check that forbade everything would satisfy every fires-
+ * control ever aimed at it (CLAUDE.md, the rule P2.1 earned; taken for this instrument by
+ * ruling, 6 September 2026, P2.6's first piece). Touch: a 20px button, a 44px one. Contrast:
+ * #999 on white, #000 on white. Non-text: a #eee border, a #000 border. Scale: a 13px span,
+ * a 0.8125rem span. Layout, under each mechanism: a 600px block, a block that fits; a control
+ * past the edge, one inside; an ellipsis that clips, one that does not. Offline: a fresh URL
+ * must fail, a precached one must be served (on an origin with no worker that half cannot
+ * run and says so). Any control failing stops the audit and says the instrument is broken.
+ * A check that has never failed is not known to work, and a check that has never been
+ * required to pass is not known to permit anything.
  *
  * Output: a JSON report (every finding with its screen, selector path, values) on stdout and
  * to outJson; the summary is written by whoever runs it into GATE1_AUDIT.md. Numbers only.
+ * The URL defaults to the PREVIEW of the shipped build (`build:web` then `preview`, port
+ * 4173): the offline item can only be true of a build with its service worker.
  */
 
 import { writeFileSync } from 'node:fs';
 
 import puppeteer, { type Page } from 'puppeteer-core';
 
-const URL = process.argv[2] ?? 'http://localhost:5173';
+const URL = process.argv[2] ?? 'http://localhost:4173';
 const OUT = process.argv[3] ?? '';
 const CHROME =
   process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
@@ -62,6 +84,9 @@ interface ScreenResult {
   screen: string;
   controls: number;
   textRuns: number;
+  /** The layout passes only: the CSS width and root font size the screen was measured at. */
+  width?: number;
+  rootFontPx?: number;
   findings: Finding[];
 }
 
@@ -156,9 +181,9 @@ const AUDITOR = `
 })()
 `;
 
-/** Runs with the root at 200%: scaling per text run (toggling the root to 100% to compare),
- *  then the layout at that size. */
-const TEXT200_AUDITOR = `
+/** FONT200's scaling half. Runs with the root at 200%: every text run's size, against its size
+ *  with the root toggled to 100% for the comparison. */
+const SCALE_AUDITOR = `
 (() => {
   const out = { findings: [], runs: 0 };
   const inSvg = (el) => !!el.closest('svg');
@@ -188,7 +213,19 @@ const TEXT200_AUDITOR = `
       out.findings.push({ check: 'scale', path: s, text: (el.textContent || '').trim().slice(0, 40), detail: at100[i] + 'px at 100%, ' + at200[i] + 'px at 200% (x' + k.toFixed(2) + ')' });
     }
   });
+  return out;
+})()
+`;
+
+/** The layout checks, run unchanged under BOTH mechanisms (the root at 200% on a 360px page;
+ *  a 180px page): horizontal overflow naming the outermost elements past the edge, controls
+ *  outside the viewport, text clipped to an ellipsis. */
+const LAYOUT_AUDITOR = `
+(() => {
+  const root = document.documentElement;
   const w = root.clientWidth;
+  const out = { findings: [], width: w, rootFontPx: parseFloat(getComputedStyle(root).fontSize) };
+  const inSvg = (el) => !!el.closest('svg');
   if (root.scrollWidth > w + 1) {
     const over = [...document.querySelectorAll('body *')]
       .map((e) => ({ e, r: e.getBoundingClientRect() }))
@@ -256,16 +293,44 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
   });
 }
 
-async function text200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
-  const r = (await page.evaluate(TEXT200_AUDITOR)) as {
+/** FONT200: scaling per text run, then the layout, with the root at 200% on a 360px page. */
+async function font200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
+  const s = (await page.evaluate(SCALE_AUDITOR)) as {
     findings: Omit<Finding, 'screen'>[];
     runs: number;
   };
+  const l = (await page.evaluate(LAYOUT_AUDITOR)) as Layout;
+  const name = `${screen} @200% font size`;
   results.push({
-    screen: `${screen} @200% text`,
+    screen: name,
     controls: 0,
-    textRuns: r.runs,
-    findings: r.findings.map((f) => ({ ...f, screen: `${screen} @200% text` })),
+    textRuns: s.runs,
+    width: l.width,
+    rootFontPx: l.rootFontPx,
+    findings: [...s.findings, ...l.findings].map((f) => ({ ...f, screen: name })),
+  });
+}
+
+/** What the layout auditor returns: its findings, and the width and root font size it
+ *  measured at — so the record carries the mechanism's numbers, not just the verdict. */
+interface Layout {
+  findings: Omit<Finding, 'screen'>[];
+  width: number;
+  rootFontPx: number;
+}
+
+/** ZOOM200: the layout alone, on a 180x390 page — a zoom scales everything, so scaling is
+ *  given and the layout is the thing. */
+async function zoom200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
+  const l = (await page.evaluate(LAYOUT_AUDITOR)) as Layout;
+  const name = `${screen} @200% page zoom`;
+  results.push({
+    screen: name,
+    controls: 0,
+    textRuns: 0,
+    width: l.width,
+    rootFontPx: l.rootFontPx,
+    findings: l.findings.map((f) => ({ ...f, screen: name })),
   });
 }
 
@@ -315,6 +380,24 @@ async function walk(
   await click(page, 'Command your cells');
   await sleep(900);
   await step(page, 'command, nothing selected', results);
+  // The inspect sheet by its node door: a tap on an invader token with NOTHING selected (with
+  // a cell selected the same tap picks a target instead). The deck decides whether the bar's
+  // other door, "What's here", is offered, so the first audits reached the sheet by luck and
+  // some runs never did. A puppeteer click, not `.click()`: the board resolves the hit from
+  // real pointer coordinates.
+  const token = await page.$('[data-invader]');
+  if (token) {
+    await token.click();
+    await sleep(300);
+    const sheet = await page.evaluate(() =>
+      [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Close'),
+    );
+    if (sheet) {
+      await step(page, 'inspect sheet', results);
+      await click(page, 'Close');
+      await sleep(200);
+    }
+  }
   await clickSel(page, '[data-piece="cell:bcell"]');
   await sleep(300);
   await clickSel(page, '[data-bar-ap]');
@@ -336,10 +419,12 @@ async function walk(
   await clickSel(page, '[data-piece="cell:neutrophil"]');
   await sleep(300);
   await step(page, 'command, Neutrophil selected', results);
+  // The sheet's other door, offered only when the selected cell stands with something: a
+  // per-run screen, recorded under its own name when the deck offers it.
   const opened = await click(page, "What's here");
   if (opened) {
     await sleep(300);
-    await step(page, 'inspect sheet', results);
+    await step(page, "inspect sheet, from What's here", results);
     await click(page, 'Close');
     await sleep(200);
   }
@@ -415,67 +500,231 @@ async function rootFontSize(page: Page, pct: string | null): Promise<void> {
   }, pct);
 }
 
-/** The controls: each check must flag a planted defect on the title screen, or the audit stops. */
+type Planted = Omit<Finding, 'screen'>[];
+
+/** Plants elements at the START of the body, so a document-order cap in an auditor's list of
+ *  named elements (the overflow finding names the first five) cannot drop them. */
+const PLANT = `
+(function (specs) {
+  for (const s of specs.slice().reverse()) {
+    const el = document.createElement(s.tag);
+    el.textContent = s.text;
+    el.setAttribute('data-control', s.id);
+    Object.assign(el.style, s.style);
+    document.body.prepend(el);
+  }
+})
+`;
+const UNPLANT = `document.querySelectorAll('[data-control]').forEach((e) => e.remove())`;
+
+interface Spec {
+  tag: string;
+  id: string;
+  text: string;
+  style: Record<string, string>;
+}
+
+/** THE CONTROLS, BOTH WAYS FOR EVERY CHECK: a planted defect must be flagged (fires) and a
+ *  planted sound element must not be (passes), on the title screen, before anything is
+ *  measured. Any control failing stops the audit: the instrument is broken, and everything it
+ *  would have measured is untrustworthy. */
 async function controls(page: Page): Promise<string[]> {
   const lines: string[] = [];
+  const ok: boolean[] = [];
+  const line = (text: string, pass: boolean): void => {
+    lines.push(`CONTROL ${text}: ${pass ? 'YES' : 'NO'}`);
+    ok.push(pass);
+  };
+  const plant = async (specs: Spec[]): Promise<void> => {
+    await page.evaluate(`(${PLANT})(${JSON.stringify(specs)})`);
+  };
+  const unplant = async (): Promise<void> => {
+    await page.evaluate(UNPLANT);
+  };
+  const has = (fs: Planted, check: Finding['check'], text: string, detail = ''): boolean =>
+    fs.some((f) => f.check === check && f.text === text && f.detail.startsWith(detail));
+  const overflowNames = (fs: Planted, id: string): boolean =>
+    fs.some(
+      (f) =>
+        f.check === 'layout' &&
+        f.detail.startsWith('horizontal overflow') &&
+        f.text.includes(`data-control=${id}`),
+    );
+  const box = (extra: Record<string, string>): Record<string, string> => ({
+    background: '#fff',
+    color: '#000',
+    fontSize: '13px',
+    padding: '0',
+    margin: '0',
+    ...extra,
+  });
+
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
-  await page.evaluate(() => {
-    const b = document.createElement('button');
-    b.textContent = 'planted small';
-    Object.assign(b.style, {
-      width: '20px',
-      height: '20px',
-      border: '1px solid #eee',
-      background: '#fff',
-    });
-    document.body.appendChild(b);
-    const s = document.createElement('span');
-    s.textContent = 'planted faint';
-    Object.assign(s.style, { color: '#999', background: '#fff', fontSize: '13px' });
-    document.body.appendChild(s);
-  });
-  const r = (await page.evaluate(AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
-  const small = r.findings.some((f) => f.check === 'touch' && f.text === 'planted small');
-  const faint = r.findings.some((f) => f.check === 'contrast' && f.text === 'planted faint');
-  const border = r.findings.some((f) => f.check === 'nontext' && f.text === 'planted small');
-  lines.push(`CONTROL touch: a 20px button is flagged: ${small ? 'YES' : 'NO'}`);
-  lines.push(`CONTROL contrast: #999 on white (2.85:1) is flagged: ${faint ? 'YES' : 'NO'}`);
-  lines.push(`CONTROL nontext: a #eee border on white is flagged: ${border ? 'YES' : 'NO'}`);
-  // TEXT200: a px span must be flagged as not scaling; a rem span must not; a 600px block overflows.
+
+  // TOUCH, CONTRAST, NON-TEXT: a defective button and span beside a sound button and span.
+  await plant([
+    {
+      tag: 'button',
+      id: 'small',
+      text: 'planted small',
+      style: box({ width: '20px', height: '20px', border: '1px solid #eee' }),
+    },
+    { tag: 'span', id: 'faint', text: 'planted faint', style: box({ color: '#999' }) },
+    {
+      tag: 'button',
+      id: 'sound',
+      text: 'planted sound',
+      style: box({ width: '44px', height: '44px', border: '1px solid #000' }),
+    },
+    { tag: 'span', id: 'clear', text: 'planted clear', style: box({}) },
+  ]);
+  const r = (await page.evaluate(AUDITOR)) as { findings: Planted };
+  line('touch fires: a 20px button is flagged', has(r.findings, 'touch', 'planted small'));
+  line('touch passes: a 44px button is NOT flagged', !has(r.findings, 'touch', 'planted sound'));
+  line(
+    'contrast fires: #999 on white (2.85:1) is flagged',
+    has(r.findings, 'contrast', 'planted faint'),
+  );
+  line(
+    'contrast passes: #000 on white (21:1) is NOT flagged',
+    !has(r.findings, 'contrast', 'planted clear'),
+  );
+  line(
+    'nontext fires: a #eee border on white is flagged',
+    has(r.findings, 'nontext', 'planted small'),
+  );
+  line(
+    'nontext passes: a #000 border on white is NOT flagged',
+    !has(r.findings, 'nontext', 'planted sound'),
+  );
+  await unplant();
+
+  // FONT200 (the default-font-size mechanism): the root at 200%. A px span must be flagged as
+  // not scaling, a rem span must not; a block that fits must not be named as overflow, a 600px
+  // block must.
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%';
-    const px = document.createElement('span');
-    px.textContent = 'planted px';
-    px.style.fontSize = '13px';
-    document.body.appendChild(px);
-    const rem = document.createElement('span');
-    rem.textContent = 'planted rem';
-    rem.style.fontSize = '0.8125rem';
-    document.body.appendChild(rem);
-    const d = document.createElement('div');
-    d.textContent = 'planted wide';
-    Object.assign(d.style, { width: '600px', height: '10px' });
-    document.body.appendChild(d);
   });
-  const z = (await page.evaluate(TEXT200_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
-  const pxFlagged = z.findings.some((f) => f.check === 'scale' && f.text === 'planted px');
-  const remFlagged = z.findings.some((f) => f.check === 'scale' && f.text === 'planted rem');
-  const wide = z.findings.some(
-    (f) => f.check === 'layout' && f.detail.startsWith('horizontal overflow'),
+  await plant([
+    { tag: 'span', id: 'px', text: 'planted px', style: box({}) },
+    { tag: 'span', id: 'rem', text: 'planted rem', style: box({ fontSize: '0.8125rem' }) },
+    { tag: 'div', id: 'fits', text: 'planted fits', style: box({ width: '100%', height: '10px' }) },
+  ]);
+  const s = (await page.evaluate(SCALE_AUDITOR)) as { findings: Planted };
+  const f1 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'scale fires: a 13px span is flagged as not scaling at 200%',
+    has(s.findings, 'scale', 'planted px'),
   );
-  lines.push(
-    `CONTROL scale: a 13px span is flagged as not scaling at 200%: ${pxFlagged ? 'YES' : 'NO'}`,
+  line(
+    'scale passes: a 0.8125rem span is NOT flagged (it scales)',
+    !has(s.findings, 'scale', 'planted rem'),
   );
-  lines.push(
-    `CONTROL scale: a 0.8125rem span is NOT flagged (it scales): ${remFlagged ? 'NO' : 'YES'}`,
+  line(
+    'font-size layout passes: a block that fits at 360px is NOT named as overflow',
+    !overflowNames(f1.findings, 'fits'),
   );
-  lines.push(
-    `CONTROL layout: a 600px block at 360px is flagged as overflow: ${wide ? 'YES' : 'NO'}`,
+  await plant([
+    {
+      tag: 'div',
+      id: 'wide',
+      text: 'planted wide',
+      style: box({ width: '600px', height: '10px' }),
+    },
+  ]);
+  const f2 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'font-size layout fires: a 600px block at 360px is flagged as overflow',
+    overflowNames(f2.findings, 'wide'),
   );
+  await unplant();
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '';
   });
+
+  // ZOOM200 (the page-zoom mechanism): a 180x390 page. The same layout auditor, each of its
+  // three detections both ways: overflow, a control past the edge, an ellipsis that clips.
+  await page.setViewport({ width: 180, height: 390, deviceScaleFactor: 2 });
+  await sleep(200);
+  const fixed = (left: string): Record<string, string> =>
+    box({
+      position: 'fixed',
+      top: '0',
+      left,
+      width: '44px',
+      height: '44px',
+      border: '1px solid #000',
+    });
+  const ellipsis = (width: string): Record<string, string> =>
+    box({
+      display: 'block',
+      width,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
+  await plant([
+    { tag: 'div', id: 'fits', text: 'planted fits', style: box({ width: '100%', height: '10px' }) },
+    { tag: 'button', id: 'in', text: 'planted in', style: fixed('0') },
+    { tag: 'div', id: 'short', text: 'planted short', style: ellipsis('160px') },
+  ]);
+  const z1 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'zoom layout passes: a block that fits at 180px is NOT named as overflow',
+    !overflowNames(z1.findings, 'fits'),
+  );
+  line(
+    'zoom layout passes: a control inside the viewport is NOT flagged',
+    !has(z1.findings, 'layout', 'planted in', 'control outside'),
+  );
+  line(
+    'zoom layout passes: an ellipsis whose text fits is NOT flagged as clipped',
+    !has(z1.findings, 'layout', 'planted short', 'clipped'),
+  );
+  await plant([
+    {
+      tag: 'div',
+      id: 'wide',
+      text: 'planted wide',
+      style: box({ width: '600px', height: '10px' }),
+    },
+    { tag: 'button', id: 'out', text: 'planted out', style: fixed('300px') },
+    { tag: 'div', id: 'long', text: 'planted long', style: ellipsis('40px') },
+  ]);
+  const z2 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'zoom layout fires: a 600px block at 180px is flagged as overflow',
+    overflowNames(z2.findings, 'wide'),
+  );
+  line(
+    'zoom layout fires: a control past the viewport edge is flagged',
+    has(z2.findings, 'layout', 'planted out', 'control outside'),
+  );
+  line(
+    'zoom layout fires: an ellipsis that clips its text is flagged',
+    has(z2.findings, 'layout', 'planted long', 'clipped'),
+  );
+  await unplant();
+  await page.setViewport({ width: 360, height: 780 });
+
+  // OFFLINE, both ways: with the network cut a fresh URL must fail, and a URL the build
+  // precached must be served by the worker. On an origin with no worker (the dev server) the
+  // passes-half cannot run: it says so, and the offline check will report not met.
+  const precached = (await page.evaluate(async () => {
+    if (!('serviceWorker' in navigator)) return null;
+    for (let i = 0; i < 80; i += 1) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg?.active && navigator.serviceWorker.controller) break;
+      await new Promise((res) => setTimeout(res, 250));
+    }
+    if (!navigator.serviceWorker.controller) return null;
+    const js = performance
+      .getEntriesByType('resource')
+      .map((e) => e.name)
+      .find((n) => /\.js(\?|$)/.test(n));
+    return js ?? null;
+  })) as string | null;
   await page.setOfflineMode(true);
   const failed = await page.evaluate(async () => {
     try {
@@ -485,10 +734,25 @@ async function controls(page: Page): Promise<string[]> {
       return true;
     }
   });
+  const served =
+    precached === null
+      ? null
+      : await page.evaluate(async (u: string) => {
+          try {
+            return (await fetch(u, { cache: 'no-store' })).ok;
+          } catch {
+            return false;
+          }
+        }, precached);
   await page.setOfflineMode(false);
-  lines.push(`CONTROL offline: a fresh fetch fails with the network cut: ${failed ? 'YES' : 'NO'}`);
-  if (!(small && faint && border && pxFlagged && !remFlagged && wide && failed))
-    throw new Error(`A CONTROL DID NOT FIRE:\n${lines.join('\n')}`);
+  line('offline fires: a fresh URL fails with the network cut', failed);
+  if (served === null)
+    lines.push(
+      'CONTROL offline passes: NOT RUN — no service worker controls this origin (the dev server has none); the offline check will report not met',
+    );
+  else line('offline passes: a precached bundle URL is served with the network cut', served);
+
+  if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
   return lines;
 }
 
@@ -650,16 +914,28 @@ try {
     await walkToResult(page, results, audit);
   }
 
-  // TEXT200: the same screens at 360px with the root font size at 200%.
+  // FONT200: the same screens at 360px with the root font size at 200% — the browser
+  // default-font-size preference.
   const page2 = await browser.newPage();
   await page2.setViewport({ width: 360, height: 780 });
   await rootFontSize(page2, '200%');
-  const text200: ScreenResult[] = [];
+  const font200: ScreenResult[] = [];
   if (!offlineOnly) {
-    await walk(page2, text200, text200Audit, '200%');
-    await walkToResult(page2, text200, text200Audit);
+    await walk(page2, font200, font200Audit, '200%');
+    await walkToResult(page2, font200, font200Audit);
   }
   await page2.close();
+
+  // ZOOM200: the same screens on a 180x390 page at a doubled device scale — the layout
+  // Chrome for Android's page zoom at 200% gives a 360x780 phone (FINDINGS #61).
+  const page4 = await browser.newPage();
+  await page4.setViewport({ width: 180, height: 390, deviceScaleFactor: 2 });
+  const zoom200: ScreenResult[] = [];
+  if (!offlineOnly) {
+    await walk(page4, zoom200, zoom200Audit);
+    await walkToResult(page4, zoom200, zoom200Audit);
+  }
+  await page4.close();
 
   const page3 = await browser.newPage();
   await page3.setViewport({ width: 360, height: 780 });
@@ -671,20 +947,23 @@ try {
   const out = {
     url: URL,
     when: new Date().toISOString(),
-    viewport: '360x780 CSS px; the text pass at the same width with the root font size at 200%',
+    viewport:
+      '360x780 CSS px; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2',
     controls: controlLines,
     screens: results,
-    text200,
+    font200,
+    zoom200,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
       textRunsMeasured: results.reduce((n, s) => n + s.textRuns, 0),
-      textRunsScaled: text200.reduce((n, s) => n + s.textRuns, 0),
+      textRunsScaled: font200.reduce((n, s) => n + s.textRuns, 0),
       touch: count(results, 'touch'),
       contrast: count(results, 'contrast'),
       nontext: count(results, 'nontext'),
-      scale: count(text200, 'scale'),
-      layout200: count(text200, 'layout'),
+      scale: count(font200, 'scale'),
+      layoutFont200: count(font200, 'layout'),
+      layoutZoom200: count(zoom200, 'layout'),
       offlineMet: off['met'],
     },
   };

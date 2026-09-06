@@ -12,7 +12,7 @@ affordable. Each phase ends with something you can hold, open, or install.
 
 ```
 Phase 1  Foundations ─────────── CLOSED (docs/PHASE1_CLOSEOUT.md)
-Phase 2  The app people see ──── in progress (P2.1 seam + boundary done)
+Phase 2  The app people see ──── in progress (P2.1 to P2.5 closed; P2.6 under way)
 Phase 3  Playing together
 Phase 4  Android
 Phase 5  iOS
@@ -68,14 +68,20 @@ breaks the corpus during a renderer rewrite ([`FINDINGS.md`](docs/FINDINGS.md) #
 ## Phase 2 — The app people see
 
 **Goal:** stop being a browser page and become an application.
-**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v1.1. **Status:** P2.1 complete — seam 1,
-the boundary rule and its controls, the `GameState` round-trip. P2.2 is the first visible pixel.
+**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v1.7. **Status:** P2.1 to P2.5 closed
+(the seam and boundary, the slice, the screening measurement, the art pipeline, the full UI:
+[`docs/P2_5_CLOSEOUT.md`](docs/P2_5_CLOSEOUT.md)). **P2.6 in progress** from 6 September 2026.
+*This line said "P2.1 complete" and "v1.1" until 6 September 2026; the documentation sweep
+checks only that the roadmap is not calling an earlier phase current, so the sub-phase and
+version here are a person's to keep true.*
 
 - UI rebuilt in React; the board becomes SVG generated from the geometry content pack, so
   one source drives screen **and** printed board
 - Mobile-first, built for a 360px screen and a thumb, not a mouse
-- The screens an exhibition demo never needed: first-run tutorial, mode select, settings,
-  offline and error states, empty states
+- The screens an exhibition demo never needed: first-run onboarding, how to play, the disease
+  library, settings, about, error and empty states. *Corrected 6 September 2026:* this listed
+  mode select, which is Phase 3's insertion point with multiplayer, and offline states, of
+  which there are none — offline is the app's normal state (`docs/APP_FLOW.md`)
 - Art pipeline: deterministic icon normalisation, WebP, consistent contrast
 - **The performance spike** — full board, worst case, in a WebView on a ₹6–8k Android phone
 

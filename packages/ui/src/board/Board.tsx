@@ -854,6 +854,10 @@ export function Board({
               key={t.key}
               data-cell={t.cell}
               data-resident={t.resident === true ? t.organ : undefined}
+              // An address for the headless drivers only (the Gate 1 audit opens the inspect
+              // sheet by clicking an invader token, so the sheet is measured on every run and
+              // not only when the deck stands something beside a cell). Nothing renders it.
+              data-invader={t.kind === 'invader' ? t.label : undefined}
               data-coated={t.coated === true ? '1' : undefined}
               data-hidden={t.hiddenIn}
               data-unavailable={t.unavailable?.kind}

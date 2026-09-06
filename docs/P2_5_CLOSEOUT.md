@@ -75,9 +75,13 @@ badge tap; a failed organ. Shantanu raises any of them if a later run shows a pr
 
 ## What P2.6 inherits
 
-- Offline on the Android build (the one phone item still open above), and the audit's
-  page-zoom pass to restore beside the default-font-size pass, each named for its mechanism.
-- The handset pass, and the per-redraw p95 at 6× (52.6 ms) named ahead of it.
+- The audit's page-zoom pass to restore beside the default-font-size pass, each named for its
+  mechanism.
+- ⚠️ **Passing THROUGH P2.6 to Phase 4, not P2.6's to close** (ruled by Shantanu, 6 September
+  2026, at the P2.6 kickoff): offline on the Android build, and the handset pass with the
+  per-redraw p95 at 6× (52.6 ms) named ahead of it. These two read as P2.6 inheritances here;
+  neither can be closed before the Android build and a low-end handset exist, and both are
+  Phase 4's. Nobody should read them as owed in P2.6.
 - FINDINGS #57 (degranulate burns from the lane; Q9), #58 (rare events unlogged; Q8), the
   literal-mirror family (Q7: neutralise cost, antivenom, degranulate, memory response on Hard,
   and the damage figures the rows may not show), all Phase 3's engine changes.
@@ -87,8 +91,12 @@ badge tap; a failed organ. Shantanu raises any of them if a later run shows a pr
 - The instruments: `pnpm gate1:audit`, `pnpm perf:full`, the offered-subset-of-accepted
   harness, the effects and breakdown pins, `no-dashes.test.ts`, the state-injection pattern
   through the autosave. Each one's controls are its warrant.
-- What P2.6 is for (brief §2): onboarding, the empty, error and offline states, settings; the
-  disease library (the pathogen card with an index).
+- What P2.6 is for: the brief §2's onboarding, empty and error states, and settings; and
+  [`APP_FLOW.md`](APP_FLOW.md)'s four Title slots (How to play, Disease library, Settings,
+  About), its onboarding hook, error boundary and storage-failure notice. ⚠️ *Corrected 6
+  September 2026:* this cited the brief for the disease library, which the brief does not
+  list; the library is APP_FLOW's, the pathogen card with an index. It also listed "offline
+  states": there is no offline state, by APP_FLOW's ruling, recorded in the brief at v1.7.
 
 ## Lessons this sub-phase paid for
 

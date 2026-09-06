@@ -7,14 +7,18 @@
 > that scales everything and lays a 360 px phone out at 180 CSS px, which is the pass this
 > document's earlier runs used and #60 removed as a proxy. Android's SYSTEM font size reaches
 > neither, and that is what the phone session changed. Two mechanisms, two passes: both are to
-> be carried, named for what they model; not built here. The "0 unscaled" row is true of the
+> be carried, named for what they model. The "0 unscaled" row is true of the
 > first mechanism only. The offline row's phone-session confirmation is struck (it tested the
 > network); the headless check stands, and offline is checked by hand on the Android build.
 >
 > **Checked by hand later that day (FINDINGS #61):** Page zoom at 200% on the shipped build,
 > Chrome for Android, doubled the text and everything Shantanu checked was still playable.
-> The page-zoom mechanism is proven for what he checked and measured by this audit for
-> nothing; the 180 px pass comes back beside the root-200% pass as P2.6's first piece.
+>
+> ✅ **Both passes carried from P2.6's first piece (6 September 2026), each named for its
+> mechanism:** FONT200 (the root at 200% on a 360 px page: the default-font-size preference)
+> and ZOOM200 (a 180 × 390 CSS px page at a doubled device scale: Chrome for Android's page
+> zoom). The same layout auditor runs under both. Every check now has a control both ways.
+> The numbers below are from that run.
 
 **What this is.** [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §1's Gate 1 has four items a machine can
 check and one it cannot. This is the record of the machine's half, produced by
@@ -23,25 +27,48 @@ SHIPPED WEB BUILD (`pnpm --filter @immunity-wars/app build:web`, served by `prev
 4173), not the dev server, because the offline item can only be true of a build with its
 service worker. Every number is the instrument's.
 
-**The instrument, and its controls.** Sixteen screens are driven in a real game on the app
+**The instrument, and its controls.** Seventeen screens are driven in a real game on the app
 shell: title, difficulty, the goal dialog, the play screen in the infection phase, the reveal,
 the planning screen with and without the AP terms open, the command screen with nothing, the
-B-Cell and the Neutrophil selected, the antibody family detail, the cell card, the inspect
-sheet where the piece stands with something, the pause sheet, a spread frame, the next turn,
-and the Result screen (an idle Training game is lost within a handful of turns). On each it
-measures every visible control outside the SVG board (the board is coarse pointing by ruling;
-the inspect sheet is its precise surface, P2.5 piece 1), every visible text run outside the
-board against the first opaque background behind it, and every control's full border against
-the surface behind it. Then the same sixteen screens again at the same 360 px width **with the
-root font size at 200%**, and on each: every text run's computed size must be at least 1.9×
-its size at 100%, and the layout must survive (no horizontal scrolling, every control in the
-viewport, no text clipped to an ellipsis). Then the network is cut.
+inspect sheet, the B-Cell and the Neutrophil selected, the antibody family detail, the cell
+card, the pause sheet, a spread frame, the next turn, and the Result screen (an idle Training
+game is lost within a handful of turns). On each it measures every visible control outside the
+SVG board (the board is coarse pointing by ruling; the inspect sheet is its precise surface,
+P2.5 piece 1), every visible text run outside the board against the first opaque background
+behind it, and every control's full border against the surface behind it. Then the same
+seventeen screens twice more, once under each mechanism a person has for text at 200%:
+**FONT200**, the same 360 px width with the root font size at 200%, where every text run's
+computed size must be at least 1.9× its size at 100%; and **ZOOM200**, a 180 × 390 CSS px
+page at a doubled device scale, the layout Chrome for Android's page zoom gives a 360 px
+phone, where scaling is given because a zoom scales everything. Under both, the layout must
+survive: no horizontal scrolling, every control in the viewport, no text clipped to an
+ellipsis. Then the network is cut.
 
-**Seven planted defects must be flagged before any screen is measured, or the run stops:** a
-20 px button; #999 text on white (2.85:1); a #eee border on white; a 13 px span, which must be
-flagged as NOT scaling at 200%, beside a 0.8125rem span, which must not be; a 600 px block,
-which must overflow; and a fetch of a fresh URL with the network cut, which must fail. All
-seven fired on every run.
+*The inspect sheet, corrected in P2.6's first piece.* This paragraph said "sixteen screens"
+and listed "the inspect sheet where the piece stands with something". That sheet has two
+doors: the bar's "What's here", offered only when the selected cell stands with something,
+which the deck decides — so the first runs reached the sheet by luck and the first two runs of
+the rebuilt instrument did not reach it at all, which the screen list in the JSON showed. The
+walk now opens it by its other door, a click on an invader token with nothing selected (the
+token groups carry a `data-invader` address for the drivers, rendering nothing), so the sheet
+is measured on every run; when the deck also offers "What's here", that variant is recorded
+under its own name.
+
+**Eighteen controls, nine pairs, run before any screen is measured, or the run stops.** For
+every check a planted defect must be flagged (fires) and a planted sound element must not be
+(passes) — "forbid X" is half a specification, since a check that forbade everything would
+satisfy every fires-control ever aimed at it (ruled for this instrument by Shantanu, 6
+September 2026, at the P2.6 kickoff; the rule is P2.1's). Touch: a 20 px button, a 44 px one.
+Contrast: #999 on white (2.85:1), #000 on white (21:1). Non-text: a #eee border on white, a
+#000 one. Scale, at the root's 200%: a 13 px span, a 0.8125rem span. Layout under the
+font-size mechanism at 360 px: a 600 px block, a block that fits. Layout under the page-zoom
+mechanism at 180 px: a 600 px block, a block that fits; a control past the viewport edge,
+one inside; an ellipsis that clips its text, one whose text fits. Offline: a fetch of a fresh
+URL with the network cut must fail, and a fetch of the precached bundle must be served by the
+worker (on an origin with no worker that half cannot run, says so, and the offline item
+reports not met). **All eighteen fired the right way on the first run of the rebuilt
+instrument and on every run since.** *Before P2.6 this read "seven planted defects": every
+check had a fires-control and only the scale check had a passes-control.*
 
 ## What the audit found, in the order it found it
 
@@ -70,16 +97,28 @@ found the instrument's own second defect (the title screen measured before the 2
 applied, because the app renders from a module script before DOMContentLoaded) and the root is
 now set explicitly before the first screen.
 
-## The numbers (the shipped build, final run)
+## The numbers (the shipped build, the P2.6 first-piece run, 6 September 2026)
 
-| Check | Measured | Findings |
-|---|---|---|
-| Touch targets ≥ 44 × 44 CSS px | 327 controls across 16 screens | **0** |
-| Text contrast (4.5:1, 3:1 large) | 825 text runs | **0** |
-| Non-text contrast (3:1, control boundaries) | 327 controls | **0** |
-| **Text scales at 200%** (≥ 1.9× per run) | 836 text runs across 16 screens | **0** unscaled |
-| Layout at 200% text, 360 px | 16 screens | **0**: no overflow, no control off-screen, nothing clipped |
-| **Offline** | first visit online, then the network cut | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
+Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 17 screens; every
+row's width and root font size are the instrument's own readings, recorded per screen in the
+JSON. Eighteen controls fired the right way first.
+
+| Check | Mechanism it models | Measured | Findings |
+|---|---|---|---|
+| Touch targets ≥ 44 × 44 CSS px | — | 357 controls across 17 screens at 360 px | **0** |
+| Text contrast (4.5:1, 3:1 large) | — | 911 text runs | **0** |
+| Non-text contrast (3:1, control boundaries) | — | 357 controls | **0** |
+| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 911 text runs across 17 screens, root 32 px at 360 px | **0** unscaled |
+| Layout under FONT200 | the default-font-size preference | 17 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
+| **Layout under ZOOM200** | Chrome for Android's page zoom | 17 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
+| **Offline** | — | first visit online, then the network cut | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
+
+*The previous record (P2.5's final run) read 327 controls and 825 text runs across 16
+screens, 836 runs scaled; the difference is the inspect sheet (30 controls, 65 text runs) and
+the deck. It had no ZOOM200 row.* The layout faults the first 180 px pass found and fixed
+in P2.5 (the reveal dialog, the piece grid, the planning row; the table above) are what a
+zero here rests on, and this is the first machine measurement of the layout at 180 px since
+the `rem` sweep, which changes nothing at a 16 px root.
 
 What the instrument does not reach: text inside the SVG board (the print ink, 5.05:1 on paper
 by the same formula; at the board's scale, not the text setting's) and the art, whose contrast
@@ -96,8 +135,13 @@ must see the network), so the offline item is only ever measured on the build. P
 Capacitor build bundles the same files and is offline by construction. The security posture
 is recorded in [`SECURITY_NOTES.md`](SECURITY_NOTES.md) ("Added 6 September 2026").
 
-## For the phone (one item left)
+## For the phone
 
-Android font size at 200% on this build: every screen's text should be twice its size, the
-layout should hold, and the board's own labels stay at the board's scale. If anything is cut
-or overlaps, name the screen. Contrast, touch targets and offline need no finger.
+*This section read "one item left": Android font size at 200%.* That item produced FINDINGS
+#60 and #61 — the phone's system font size reaches no web page, and the setting a
+Chrome-on-Android user has is page zoom — and Shantanu's page-zoom check on the shipped build
+passed by hand (the head note). Nothing is left for the phone from this record. **What comes
+next is a third scaling mechanism:** P2.6's Settings carry an in-app text size, ruled 6
+September 2026 because neither of the two mechanisms above is one a player will find, and the
+audit gains a pass for it, named for its mechanism, built with the setting
+([`for-P2.6.md`](for-P2.6.md), ruling 5).
