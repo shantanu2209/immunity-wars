@@ -17,6 +17,7 @@ import { LocalSession, IndexedDbStorage } from '@immunity-wars/session';
 import type { ViewState } from '@immunity-wars/session';
 import {
   DifficultyScreen,
+  HelpScreen,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -25,6 +26,7 @@ import {
   t,
   turnLine,
   type ArtMetrics,
+  type HelpSectionKey,
   type SaveSummary,
 } from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
@@ -58,7 +60,9 @@ type Screen =
   | { name: 'result'; finalView: ViewState; difficulty: string }
   /** Settings, and where Back returns to. From play, the game stays mounted underneath
    *  (hidden), so nothing about the session, the selection or a queued dialog is disturbed. */
-  | { name: 'settings'; from: 'title' | 'play' };
+  | { name: 'settings'; from: 'title' | 'play' }
+  /** How to play: the index (section null) or one section; the same two doors as Settings. */
+  | { name: 'help'; from: 'title' | 'play'; section: HelpSectionKey | null };
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -181,7 +185,16 @@ function App(): ReactElement {
     />
   );
 
+  const helpScreen = (from: 'title' | 'play', section: HelpSectionKey | null): ReactElement => (
+    <HelpScreen
+      section={section}
+      onOpen={(s) => setScreen({ name: 'help', from, section: s })}
+      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
+    />
+  );
+
   if (screen.name === 'settings' && screen.from === 'title') return settingsScreen('title');
+  if (screen.name === 'help' && screen.from === 'title') return helpScreen('title', screen.section);
 
   if (screen.name === 'title') {
     return (
@@ -190,6 +203,7 @@ function App(): ReactElement {
         onContinue={continueSave}
         onNewGame={() => setScreen({ name: 'difficulty' })}
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
+        onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
       />
     );
   }
@@ -232,15 +246,18 @@ function App(): ReactElement {
         onContinue={continueSave}
         onNewGame={() => setScreen({ name: 'difficulty' })}
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
+        onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
       />
     );
   }
 
-  const settingsOverPlay = screen.name === 'settings';
+  // Settings or Help over the paused game: the game stays mounted underneath, hidden.
+  const overPlay = screen.name === 'settings' || screen.name === 'help';
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
-      {settingsOverPlay ? settingsScreen('play') : null}
-      <div hidden={settingsOverPlay}>
+      {screen.name === 'settings' ? settingsScreen('play') : null}
+      {screen.name === 'help' ? helpScreen('play', screen.section) : null}
+      <div hidden={overPlay}>
         <PlayScreen
           session={session}
           artMetrics={artMetrics}
@@ -306,6 +323,10 @@ function App(): ReactElement {
             onSettings={() => {
               setPaused(false);
               setScreen({ name: 'settings', from: 'play' });
+            }}
+            onHelp={() => {
+              setPaused(false);
+              setScreen({ name: 'help', from: 'play', section: null });
             }}
           />
         ) : null}
