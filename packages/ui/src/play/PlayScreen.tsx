@@ -47,16 +47,16 @@ import {
   type Offered,
 } from './offered';
 import { EffectsStrip } from '../panels/EffectsStrip';
-import { effectChips } from './effects';
+import { apTermLines, effectChips, rareLogLine } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
-import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { GRACE_CLEAR, ORGANS, SPEED } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { GoalBody } from '../dialogs/GoalBody';
-import { RevealBody, type RevealArrival } from '../dialogs/RevealBody';
+import { RevealBody, revealCrisis, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
@@ -323,6 +323,9 @@ export function PlayScreen({
       body: (
         <RevealBody
           arrivals={arrivals}
+          // THE CRISIS SECTION (ruled 6 September 2026): the turn's event rides the one
+          // interruption the turn already has, never a dialog of its own.
+          crisis={revealCrisis(g, effectChips(authView))}
           onCard={(a) =>
             setCard({
               disease: a.disease,
@@ -455,16 +458,12 @@ export function PlayScreen({
   const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
   const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
   const difficulty = String(game['difficulty']);
-  const attackable = (authView.queries.perInvader['attackable'] ?? []) as unknown[];
   const bodyData: BodyPanelData = {
     antivenom: Number(game['antivenom'] ?? 0),
     avOrder: Number(game['avOrder'] ?? 0),
     orderButtons: body.buttons
       .filter((b) => b.action === 'orderAntivenom')
       .map((b) => ({ id: b.id, label: b.label })),
-    memoryReady: ((game['invaders'] as { remembered?: unknown }[] | undefined) ?? []).filter(
-      (iv, i) => iv.remembered === true && attackable[i] === true,
-    ).length,
     hard: difficulty === 'hard',
     training: difficulty === 'training',
     novelSeen: game['novelSeen'] === true,
@@ -508,9 +507,18 @@ export function PlayScreen({
 
   // THE LOG — the engine's own prose, newest first (the view carries the latest 40). Read
   // from the SHOWN view so a burst's frames narrate as they land.
-  const logLines: LogLine[] = (
+  const engineLines: LogLine[] = (
     (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
   ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+  // THE RARE EVENT'S LINE (6 September 2026): the engine banners a rare event and never logs
+  // it, so the UI authors one entry from the content's own words, dated to the turn it fired,
+  // and files it among the engine's lines by turn (newest first, stable within a turn).
+  const rare = rareLogLine(shown);
+  const logLines: LogLine[] = rare
+    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
+        (a, b) => b.t - a.t,
+      )
+    : engineLines;
 
   const sendOffer = (id: string): void => {
     const o =
@@ -561,20 +569,46 @@ export function PlayScreen({
   for (const node of buildNodeModel(game, authView.queries.readyTurn).values()) {
     for (const [ck, u] of Object.entries(node.inspect.unavailable)) unavailableByCell[ck] = u;
   }
+  // HIV IN THE PANEL, NOT THE STRIP (ruled 6 September 2026): while HIV has destroyed the
+  // helper T-cells the Helper's own chip is dimmed and says so — the engine's `hivActive`.
+  const hiv = authView.queries.state['hivActive'] === true;
+  const residentsNow =
+    (game['residents'] as Record<string, { infectedBy?: unknown } | undefined> | undefined) ?? {};
   const pieces: PieceChip[] = [
     ...['macrophage', 'neutrophil', 'bcell', 'tcell', 'helper', 'nk', 'eosinophil']
       .filter((ck) => (game['cells'] as Record<string, unknown> | undefined)?.[ck] !== undefined)
       .map((ck) => ({
         kind: 'cell' as const,
         key: ck,
-        unavailable: unavailableByCell[ck] ?? null,
+        unavailable:
+          ck === 'helper' && hiv
+            ? { kind: 'hiv' as const, backIn: null }
+            : (unavailableByCell[ck] ?? null),
       })),
-    ...Object.keys((game['residents'] as Record<string, unknown> | undefined) ?? {}).map((o) => ({
-      kind: 'resident' as const,
-      key: o,
-      unavailable: null,
-    })),
+    ...Object.keys(residentsNow).map((o) => {
+      const infectedBy = residentsNow[o]?.infectedBy;
+      return {
+        kind: 'resident' as const,
+        key: o,
+        unavailable:
+          infectedBy !== null && infectedBy !== undefined
+            ? { kind: 'infected' as const, backIn: null }
+            : null,
+      };
+    }),
   ];
+  // WHY A SPENT CELL IS BACK WHEN IT IS (6 September 2026): the engine's `regenBreakdown`,
+  // worded once here for the piece strip, the planning screen's facts line and the bar.
+  const why: Record<string, string> = {};
+  for (const ck of ['neutrophil', 'eosinophil'] as const) {
+    const r = authView.queries.regen[ck];
+    if (!r) continue;
+    why[ck] = r.marrowBroken
+      ? t('regen.marrow')
+      : r.helped
+        ? t('regen.helped')
+        : t('regen.wait', { n: r.wait });
+  }
   const rows = playing ? [] : actionRows(authView);
 
   const selectedNode = selectedCell
@@ -710,6 +744,8 @@ export function PlayScreen({
             cells={pieces
               .filter((p) => p.kind === 'cell')
               .map((p) => ({ key: p.key, unavailable: p.unavailable }))}
+            apTerms={apTermLines(authView)}
+            why={why}
             onCommand={commandFromPlanning}
             onPathogenCard={openPathogenCard}
           />
@@ -743,6 +779,13 @@ export function PlayScreen({
                 ? t('resident.of', { organ: organDisplayName(selectedResident) })
                 : null
             }
+            speed={
+              selectedCell
+                ? ((SPEED as Record<string, number | undefined>)[selectedCell] ?? null)
+                : null
+            }
+            apTerms={apTermLines(authView)}
+            note={offered.note ?? (selectedCell ? (why[selectedCell] ?? null) : null)}
             noSelectionHint={noSelectionHint}
             ap={Number(game['ap'] ?? 0)}
             hint={hint}
@@ -778,6 +821,7 @@ export function PlayScreen({
             pieces={pieces}
             selectedCell={selectedCell}
             selectedResident={selectedResident}
+            why={why}
             disabled={playing}
             onSelectCell={tapCell}
             onSelectResident={tapResident}

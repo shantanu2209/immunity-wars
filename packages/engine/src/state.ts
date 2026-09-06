@@ -319,4 +319,37 @@ export interface ProductionBreakdown {
   reduced: boolean;
 }
 
+/**
+ * One term of the Action Point total (P2.5, 6 September 2026: "show the effect where the
+ * number appears, and let the player drill into the number"). The terms sum to `total`, and
+ * `total` is exactly `apFor(g)` — asserted over the state corpus, so the explanation cannot
+ * drift from the number it explains. `base` is the difficulty's budget; `drain` one invader
+ * sapping energy (Giardia); `organ` a damaged Lungs or Heart; `event` this turn's crisis
+ * modifier; `floor` the lift back to 1 when the rest would go below it.
+ */
+export interface ApTerm {
+  kind: 'base' | 'drain' | 'organ' | 'event' | 'floor';
+  delta: number;
+  organ?: OrganKey;
+  disease?: string;
+}
+
+export interface ApBreakdown {
+  total: number;
+  terms: ApTerm[];
+}
+
+/**
+ * Why a spent cell is back WHEN it is back. `readyTurn` is the turn it acts again, or null
+ * when it will not (the Neutrophil while the marrow is damaged); `wait` the turns the wait
+ * takes; `helped` when a primed Helper T-Cell in the blood shortens it (Th17, the Neutrophil
+ * only); `marrowBroken` when the marrow is stopping it.
+ */
+export interface RegenBreakdown {
+  readyTurn: number | null;
+  wait: number;
+  helped: boolean;
+  marrowBroken: boolean;
+}
+
 export type { AbPoolKey, CellKey, OrganKey, RouteKey };

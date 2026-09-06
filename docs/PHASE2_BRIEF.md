@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.5 · 30 August 2026
+**Version:** 1.6 · 6 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
@@ -74,6 +74,20 @@ protocol review (30 August 2026, [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md)):
   ([`for-P2.5.md`](for-P2.5.md)).
 
 ---
+
+## What v1.6 records
+
+v1.6 changes one sentence of §8, by ruling (Shantanu, 6 September 2026, recorded in
+[`for-P2.5.md`](for-P2.5.md), "The question, answered from the constraints"):
+
+- **"The engine is unchanged" now says what the checks actually guarantee: the engine's
+  BEHAVIOUR is unchanged, and its ROOT SURFACE is exactly legacy's 67 names.** A pure query
+  added on the `./internal` entry point changes neither, and two were added that day
+  (`apBreakdown`, `regenBreakdown`) so the UI could list the causes of a number instead of
+  re-deriving the rule; the alternative was a third engine-literal mirror in the UI, which the
+  same ruling forbade. The condition on any such addition: it retires a UI mirror or gives a
+  number its explanation, it is pinned to the number it explains on the corpus, and the
+  functions it explains are left untouched. §8 carries the marked amendment in place.
 
 ## What v1.1 changes, and why the changes are marked rather than folded in
 
@@ -714,8 +728,11 @@ land as deliberate, isolated changes measured against the corpus, not as part of
       fails on a hardcoded string in a component, and a negative control proving that check
       fires. The 46 ambiguous strings decided
 - [ ] Art pipeline deterministic; provenance recorded for every asset
-- [ ] Corpus still green; **the engine is unchanged** — no carve-out, because the one thing that
-      would have needed one is out of scope (§6)
+- [ ] Corpus still green; **the engine's behaviour is unchanged and its root surface is exactly
+      legacy's 67 names** — no carve-out, because the one thing that would have needed one is
+      out of scope (§6). ⚠️ *Amended in v1.6 (6 September 2026):* this read "the engine is
+      unchanged". Additive pure queries on the `./internal` entry point are permitted under the
+      conditions v1.6 states; the corpus and the export-contract test are what hold this line
 - [ ] A Phase 2 closeout in the same discipline: what is proven, what is not, what Phase 3
       inherits
 

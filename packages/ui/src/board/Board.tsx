@@ -192,7 +192,12 @@ interface Cellish extends Located {
  * again, when the view carries it.
  */
 export interface Unavailable {
-  kind: 'spent' | 'offline';
+  /**
+   * spent / offline: the cell is out and returns. hiv: the Helper T-Cell while HIV has
+   * destroyed the helper T-cells (6 September 2026 — its home is the piece, where the Helper
+   * is described, not a strip chip). infected: a resident with a parasite living inside it.
+   */
+  kind: 'spent' | 'offline' | 'hiv' | 'infected';
   backIn: number | null;
 }
 
@@ -359,6 +364,12 @@ export interface InspectInfo {
   /** Organ key when that organ's resident macrophage stands here. */
   resident: string | null;
   invaders: InspectInvader[];
+  /**
+   * THE ORGAN ITSELF when this node is a branch's step 0 (6 September 2026): its integrity,
+   * so the sheet can carry the organ's "When damaged" text one tap from the pips — the home
+   * that let the permanent organ-damage chip leave the strip.
+   */
+  organ: { key: string; hp: number; max: number } | null;
 }
 
 /** Everything standing on the board, grouped by node — what the board draws AND what a tap resolves against. */
@@ -388,6 +399,22 @@ export interface DisplayToken {
   count: number;
   /** ATTACK targets are by invader id; a type-group token stands for every id in it. */
   ids?: string[];
+}
+
+/** The organ whose step-0 node sits at `pos`, with its integrity — or null for any other node. */
+function organAtPos(view: ViewState, pos: Pt): InspectInfo['organ'] {
+  const organs = (view['organs'] as Record<string, Organish> | undefined) ?? {};
+  for (const [key, o] of Object.entries(organs)) {
+    const at = tokenPos({ zone: 'branch', organ: key, step: 0 });
+    if (at && at.x === pos.x && at.y === pos.y) {
+      return {
+        key,
+        hp: typeof o.hp === 'number' ? o.hp : 0,
+        max: typeof o.max === 'number' ? o.max : 0,
+      };
+    }
+  }
+  return null;
 }
 
 export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<string, NodeModel> {
@@ -438,6 +465,7 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
           unavailable: {},
           resident: null,
           invaders: [],
+          organ: organAtPos(view, s.pos),
         },
       };
       byNode.set(k, node);
@@ -445,6 +473,11 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
     if (s.kind === 'cell') {
       if (s.resident !== undefined) {
         node.inspect.resident = s.resident;
+        // An INFECTED resident (a parasite living inside it) is drawn dimmed like a spent cell
+        // (6 September 2026): the token is the surface, its reason line says why, and the
+        // permanent strip chip that used to say it came out.
+        const r = residents[s.resident] as { infectedBy?: unknown } | undefined;
+        const infected = r?.infectedBy !== null && r?.infectedBy !== undefined;
         node.display.push({
           key: `res-${s.resident}`,
           label: '',
@@ -452,6 +485,7 @@ export function buildNodeModel(view: ViewState, readyTurn: ReadyTurn = {}): Map<
           pos: s.pos,
           resident: true,
           organ: s.resident,
+          unavailable: infected ? { kind: 'infected', backIn: null } : undefined,
           art: 'cell-macrophage',
           count: 1,
         });

@@ -582,6 +582,48 @@ changed.
 - **The cell cards:** the Eosinophil's deficiency line softened; its role line kept on purpose
   against the engine until Q9 (FINDINGS #57 says why).
 
+### The second set of rulings, the same day, and what was built on them
+
+Shantanu ruled on the three reports and asked one question first: **can the engine expose an
+AP breakdown without changing behaviour?** Checked against the constraints rather than
+assumed: the root export contract forbids a root export by test; the `./internal` entry point
+exists for exactly this and the session already reaches it; the corpus cannot see a pure query
+nothing in the engine calls; the coverage gate does see it and is fed by a suite in its include
+list. **Additive and safe, so built that way, no mirror**: `apBreakdown` and `regenBreakdown` on
+`./internal`, `apFor` and `neutrophilReadyTurn` untouched, pinned to the numbers they explain on
+every corpus state (`tests/equivalence/src/breakdowns.test.ts`, with vacuity guards and a
+control). The brief is v1.6 for it, §8 amended in place. Full record: [`for-P2.5.md`](for-P2.5.md),
+"The rulings of 6 September 2026, second set".
+
+Built on the four rulings: the AP figure drills into its terms in the bar and on the planning
+screen; a spent cell's why under its chip, in the bar and on the planning facts line; HIV on
+the Helper's own chip and reason line; the crisis section of the reveal (one interruption per
+turn, never a second dialog); the strip swept to what is happening now; the organ's "When
+damaged" one tap from the pips (the sheet's organ row, the planning focus line); an infected
+resident dimmed; the rare event's log line (FINDINGS #58); the class acronym on the card and
+the Produce button; "Coat" on a worm and "Chip" on a fungus; odds and speed on the rows and
+header, damage withheld as the fourth mirror (Q7). The S25 list for this round is below.
+
+**Awaiting Shantanu:** whether `apFor` becomes a wrapper over `apBreakdown` (one calculation,
+not two agreeing ones); the rows' layout on the phone; the organ's kind (strings 45, 46).
+
+**S25 list for this round (the fourth pass):** (1) Select a cell: its header reads "Name · speed
+N"; tap "AP N" in the bar and the terms open, ending in the total N; tap again to close. (2) On
+the planning screen tap "You will have N Action Points": the same terms. (3) After a NET: the
+Neutrophil's chip reads "Spent 4"; select it and a line beneath the grid says when and why;
+park a primed Helper in the Bloodstream and the line changes to "Back in 2 turns instead of 4".
+(4) Draw until a crisis fires: the reveal opens with the event's name, its why, and its effect
+line above the arrivals; the strip's chip reads the event once, not "Immunosuppression ·
+Immunosuppression". (5) A damaged organ: no chip in the strip; tap the organ's node (the
+resident stands there) and the sheet's last row reads "{Organ}, integrity 2 of 3" with "When
+damaged: …" beneath; on the planning screen tap the organ and the same line follows "Showing".
+(6) Select the B-Cell with a coated-able worm in reach: the row reads "Coat {worm}"; with a
+fungus under the Monocyte: "Chip {fungus}"; the NK row reads "hits on 3 or more". (7) Open a
+pathogen card: "Enveloped virus (ENV)" beside the type; the Produce button reads the same. (8)
+If HIV is in the body: the Helper's chip is dimmed with "Destroyed by HIV" and selecting it says
+so; no HIV chip in the strip. (9) The body panel has no memory line; the chip and the ring say
+it. (10) Judge the rows' detail at 360px: clutter, or not.
+
 ### What remains in P2.5
 
 The rulings above once taken and built; Gate 1 hygiene (touch targets, 200% text, contrast

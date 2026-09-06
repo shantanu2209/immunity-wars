@@ -30,7 +30,15 @@ const ivTok = (ty: string, pos: { x: number; y: number }, n: number): DisplayTok
 const node = (pos: { x: number; y: number }, display: DisplayToken[]): NodeModel => ({
   pos,
   display,
-  inspect: { x: pos.x, y: pos.y, cells: [], unavailable: {}, resident: null, invaders: [] },
+  inspect: {
+    x: pos.x,
+    y: pos.y,
+    cells: [],
+    unavailable: {},
+    resident: null,
+    invaders: [],
+    organ: null,
+  },
 });
 
 describe('the hub: Variant B', () => {

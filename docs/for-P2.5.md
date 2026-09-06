@@ -1754,3 +1754,136 @@ implies is one thing: a crisis section in `RevealBody`, from the view's banner (
 the folded effect text the strip already composes. `APP_FLOW.md`'s dialog list ("crisis events ·
 rare events · Pathogen X reveal") is superseded by this table once Shantanu has overruled what
 he disagrees with.
+
+
+# The rulings of 6 September 2026, second set: the engine question, and what was built on the four rulings
+
+## The question, answered from the constraints rather than assumed
+
+Shantanu asked, before ruling on the AP drill-in: **can the engine expose an AP breakdown
+WITHOUT changing behaviour?** Three constraints were checked, not reasoned about:
+
+1. **The root export contract forbids it, by test.** `tests/equivalence/src/exports.test.ts`
+   asserts SET EQUALITY between the engine root's runtime exports and legacy's 67 names, with
+   one documented exemption (`PACKAGE_NAME`). A new root export fails "publishes nothing
+   legacy does not". That test is right and stays.
+2. **The `./internal` entry point exists for exactly this.** `packages/engine/src/internal.ts`
+   publishes helpers legacy keeps private that are "genuinely needed outside the engine", one
+   name at a time on demonstrated need; the session already imports `uid` from it; the
+   dependency-cruiser rule forbids `ui` and `app` from reaching it but names the session as
+   the one package permitted to reach the engine at all; no test pins internal's name list.
+   **An addition there is additive and passes the contract.**
+3. **The corpus cannot see a pure query that nothing in the engine calls.** The B6 simulate
+   check and the state corpus compare the outputs of `applyAction`, `simulate` and the named
+   query lists against legacy; a new query with no legacy counterpart is in none of them and
+   changes no state. The coverage gate (`TARGET = 95`, measured over `packages/engine/src`
+   under the equivalence and content suites only) does see the new code, so the new queries
+   are covered by a suite inside that include list, with vacuity guards and a control.
+
+**One constraint is a ruling, not a mechanism:** the brief's definition of done says "the
+engine is unchanged". What the checks guarantee is *behaviour* unchanged and *the root surface*
+unchanged; a pure query on `./internal` changes neither. The brief's wording is amended in
+place (v1.6) to say what the checks actually hold, so the next additive query does not have to
+re-argue this.
+
+**So: additive and safe, and built that way, no mirror.** `apBreakdown(g)` returns the terms
+(base, each Giardia drain, each damaged Lungs or Heart, this turn's crisis modifier, the floor)
+and a `total`; `apFor` is untouched. `regenBreakdown(g)` returns, per spent cell, the return
+turn, the wait, whether a primed Helper in the blood shortened it, and whether the marrow is
+stopping it; `neutrophilReadyTurn` is untouched. Both are pinned by
+`tests/equivalence/src/breakdowns.test.ts`: on every harvested and synthetic state the terms sum
+to the total and the total IS `apFor(g)`; the Neutrophil's return turn IS the engine's, null
+exactly when `marrowBroken`; every term kind and every regen case occurs (constructed states for
+the floor, a helped Neutrophil and a broken marrow); and a control aims a breakdown that forgot
+the heart at the same predicate and it fires.
+
+**The same calculation lives in one place, with one honest caveat.** `apBreakdown` reads the
+same fields with the same constants ten lines below `apFor`, and the equality test is what
+stops them drifting; that is still two functions. The one-place version is `apFor` becoming a
+wrapper over `apBreakdown(g).total`, which the corpus would prove behaviour-identical. Shantanu
+specified "leaving apFor untouched", so that was not done; it is a one-line change he can
+approve, and the closeout should say which shape the engine carries.
+
+**What the session retired.** `LocalSession` no longer reads the marrow itself: its
+`readyTurn` was withheld on hp-below-max, a copy of the engine's `marrowBroken` that was
+conservative on Hard's compensated marrow. Both numbers now come off `regenBreakdown`. That was
+a mirror nobody had counted.
+
+**The literal mirrors that remain, counted so the next ruling can see them:** the neutralise
+toxin cost (2 AP, `NEUTRALISE_TOXIN_AP`, Q7); the antivenom cost (3 AP) and the degranulate cost
+(2 AP) and the Hard memory-response cost (1 AP) in `offered.ts`, each a literal the engine also
+holds, held honest by the offered-subset-of-accepted harness in one direction only (an
+over-offer is caught; an under-offer is not); and the Helper's "not yet primed" reading
+(`flags.helperT`, `flags.dendritic`, `presentations`), which the strip's retired chip made and
+the Helper's reason line now makes instead. Recorded against Q7 in the queue as one family.
+
+## What was built on the four rulings
+
+**1. The AP drill-in and the regeneration why.** The AP beside the selected cell in the
+command bar is a tap (dotted underline) that opens the terms, signed and coloured, ending in the
+total; the planning screen's "You will have N Action Points" is the same tap with a one-line
+hint beneath it. The lines are the engine's terms localised (`apTermLines`), named after this
+turn's event when the view carries the banner. A spent cell's WHY renders under its selected
+chip in the piece strip, in the bar's advisory line, and after its facts entry on the planning
+screen: "Back in 2 turns instead of 4: a primed Helper T-Cell is in the Bloodstream", or "Not
+coming back while the Bone Marrow is damaged", or "Back 4 turns after it was spent".
+`tests/session/src/ap-terms.test.ts` holds the UI half: the lines sum to the AP the view shows
+on every recorded command state, no missing-key marker, with vacuity guards and a control.
+
+**2. HIV in the panel.** The natural line exists: the Helper's own chip and its reason line,
+where the Helper is described. Under HIV the Helper's piece chip is dimmed with "Destroyed by
+HIV" in its badge slot (a new `Unavailable` kind, `hiv`), the inspect sheet's cell row says the
+same, and selecting it answers "HIV has destroyed the helper T-cells. This cell can help no one
+until the HIV is cleared". No chip, no default back to the strip. The Helper's reason line also
+now says "not yet primed" before it says "works by contact", which is the unprimed chip's job
+moved rather than added.
+
+**3. The arrival window is a banner.** Kept as the strip's info chip, unchanged; nothing
+interrupts. **The crisis section of the reveal is built:** this turn's event, its why (with the
+engine's emphasis rendered, not shown as tags), and the effect lines the strip folded into it,
+above the arrivals, red for a bad event and green for a good one. The pure builder
+`revealCrisis` is held to the banner on every recorded state. `APP_FLOW.md`'s dialog list is
+amended to match: the reveal (with its crisis section), the goal dialog, and the two
+confirmations.
+
+**The strip, as swept.** Out: organ damage, HIV, the lymphatics, the Helper primed and unprimed,
+an infected resident, the AP modifiers (now terms of the AP figure). Stays: this turn's crisis
+effects with the event's name and why, antibody shortage counting down, cells offline counting
+down, the forecast, the memory response, the window, and a rare event for the one turn after it
+fired (the engine sets `firedTurn` and never used it). `effects.test.ts` asserts each retired
+chip absent on states where its condition holds, with the vacuity guards proving those states
+occurred. The homes that let the permanent states leave: an infected resident's token is dimmed
+(it was not before) with its reason line; the lymph shortcut withheld at a blocked crossing is a
+muted advisory in the bar; **the organ's "When damaged" column** has two homes, the inspect
+sheet's new organ row at a branch's step-0 node (integrity, and the column when damaged) and the
+planning figure's focus line when a damaged organ is tapped. **The body panel's memory line is
+dropped**; the chip and the board's ring say it. **A rare event now has a log line**: the engine
+banners it and writes no log line at all, so `rareLogLine` authors one from the content's why,
+dated to the turn it fired and filed among the engine's lines (FINDINGS #58).
+
+**4. The strings.**
+- *The fourteen (FAM_LONG).* Not in the antibody panel, as ruled. The pathogen card's class line
+  reads "Enveloped virus (ENV)"; the Produce button reads "Produce Enveloped virus (ENV)". Both
+  from `FAMILIES.name` and the key; no new content field, no example diseases anywhere.
+- *"Tag" reads "Coat" on a worm or parasite*, and the sweep for the same shape found one more:
+  `engulf` on a fungus or a parasite reads **"Chip"**, because the Monocyte wounds those for 1
+  and does not swallow them (the engine's own log: "chipped the Candida"). Every other verb
+  already fits every target it is offered on (`verbFor` in `offered.ts` is the one place).
+- *Rows carry odds and cost; speed sits beside the cell's name; damage is withheld.* The NK
+  row reads "NK strike Shingles · hits on 3 or more" (`NK_HITS`, content); Degranulate keeps its
+  "2 AP"; the selected cell's header reads "Neutrophil · speed 2" (`SPEED`, content). **Strike
+  and degranulate damage are NOT on the rows**: 2, 1 and 3 are engine literals, and putting them
+  on a row is the fourth literal mirror, the thing this ruling set exists to stop. They join the
+  Q7 family; when the literals become content the rows gain them for free. Layout: the detail
+  is right-aligned and muted at 12px and the row wraps it under the label at 360px rather than
+  truncating; on a 360px screen a row is one line unless the disease name is long. Shantanu
+  judges from the phone whether that clutters.
+- *Organ kind (45, 46)* was not ruled and is not built; it has a natural home in the sheet's new
+  organ row if he wants it.
+
+## Verified by test versus by finger
+
+By test: everything above with a named suite. By finger: nothing yet; the S25 list for this
+round is in the progress note. Verified by no one: the crisis section on the phone with a real
+event; the AP terms with a damaged organ; the Helper chip under HIV; the organ row in the sheet;
+"Chip" on a fungus.

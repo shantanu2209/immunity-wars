@@ -26,6 +26,7 @@ const ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  flexWrap: 'wrap',
   gap: 8,
   textAlign: 'left',
 };
@@ -73,8 +74,13 @@ export function ActionList({
             }}
           >
             <span>{r.label}</span>
-            {r.cost !== null ? (
-              <span style={{ fontSize: 12, color: '#7C6A61' }}>{r.cost}</span>
+            {r.detail !== null || r.cost !== null ? (
+              // THE ROW'S DETAIL (ruled 6 September 2026: rows carry odds and cost where the
+              // number is content's): right-aligned, muted, and allowed to wrap under the label
+              // at 360px rather than truncate — `flexWrap` on the row.
+              <span data-action-detail="1" style={{ fontSize: 12, color: '#7C6A61' }}>
+                {[r.detail, r.cost].filter((x) => x !== null).join(` ${t('inspect.sep')} `)}
+              </span>
             ) : null}
           </button>
           {!r.available && open === r.id && r.reason !== null ? (

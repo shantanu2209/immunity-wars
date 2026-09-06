@@ -32,8 +32,10 @@
 import {
   ANTIVENOM_ORDER,
   CLONE_COST,
+  FAMILIES,
   LYMPH_GROUP,
   LYMPH_STEP,
+  NK_HITS,
   NOVEL_ANTIGENS,
   ROUTES,
   ROUTE_KEYS,
@@ -84,6 +86,12 @@ export interface BoardOffer {
   label: string;
   /** Localised cost hint, e.g. "2 AP", or null when it costs the usual. */
   cost: string | null;
+  /**
+   * A localised detail the row carries beside its cost (ruled 6 September 2026: rows carry
+   * odds where the number is content's — "hits on 3 or more"). Damage figures are NOT here:
+   * strike and degranulate damage are engine literals, and a retyped copy could drift.
+   */
+  detail?: string | null;
   /** Exactly what `sendAction` receives. */
   params: Record<string, unknown>;
 }
@@ -111,6 +119,12 @@ export interface Offered {
   buttons: ButtonOffer[];
   /** Set when a cell is selected and no ATTACK is offered — muted beside a move/produce hint. */
   reason: string | null;
+  /**
+   * An advisory about the selection that is neither a reason nor a rejection (6 September
+   * 2026): the lymph shortcut withheld from a cell at the crossing because the lymphatics are
+   * blocked. The strip's permanent chip for that state came out; this line is where it lives.
+   */
+  note?: string | null;
 }
 
 interface Invaderish {
@@ -124,13 +138,39 @@ interface Invaderish {
 const EMPTY_CELL: Offered = { source: 'cell', board: [], buttons: [], reason: null };
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
-const ids = (xs: unknown): { id: string; disease: string }[] =>
+interface Target {
+  id: string;
+  disease: string;
+  type: string;
+}
+const ids = (xs: unknown): Target[] =>
   Array.isArray(xs)
     ? (xs as Invaderish[]).map((iv) => ({
         id: String(iv.id ?? ''),
         disease: String(iv.disease ?? ''),
+        type: String(iv.type ?? ''),
       }))
     : [];
+
+/**
+ * THE VERB NAMED FOR ITS TARGET (ruled 6 September 2026): every action row uses the name a
+ * player would use for what it does to THIS target, not the engine's internal verb. `tag` on a
+ * worm or parasite is "Coat" (the engine's own log says "coated"; the Eosinophil "strikes a
+ * coated worm"); `engulf` on a fungus or a parasite is "Chip" (the engine's log: "chipped the
+ * Candida — 1/2 left"), because the Monocyte does not swallow those, it wounds them. The
+ * engine action and the params are unchanged; only the word changes.
+ */
+function verbFor(action: string, type: string): string {
+  if (action === 'tag' && (type === 'worm' || type === 'parasite')) return t('action.coat');
+  if (action === 'engulf' && (type === 'fungus' || type === 'parasite')) return t('action.chip');
+  return t(`action.${action}`);
+}
+
+/** The full class name with its acronym in brackets (ruled 6 September 2026), or the key alone. */
+export function familyLabel(family: string): string {
+  const name = (FAMILIES as Record<string, { name?: unknown } | undefined>)[family]?.name;
+  return typeof name === 'string' ? `${name} (${family})` : family;
+}
 
 /** The engine's generic gate before any board action: AP left, or a free action for this cell. */
 function canAct(g: ViewState, cell: string): boolean {
@@ -376,8 +416,9 @@ export function offeredActions(view: SessionView): Offered {
 
   const attack = (
     action: string,
-    targets: { id: string; disease: string }[],
+    targets: Target[],
     cost: string | null,
+    detail: string | null = null,
   ): void => {
     for (const iv of targets) {
       board.push({
@@ -386,8 +427,9 @@ export function offeredActions(view: SessionView): Offered {
         action,
         cell,
         invaderId: iv.id,
-        label: `${t(`action.${action}`)} ${iv.disease}`,
+        label: `${verbFor(action, iv.type)} ${iv.disease}`,
         cost,
+        detail,
         params: { action, cell, invaderId: iv.id },
       });
     }
@@ -415,7 +457,9 @@ export function offeredActions(view: SessionView): Offered {
         break;
       case 'nk': {
         const flags = g['flags'] as Record<string, unknown> | undefined;
-        if (flags?.['nkCell'] === true) attack('nkkill', ids(state['nkTargets']), null);
+        // The odds on the row (ruled 6 September 2026): NK_HITS is content's, so no copy.
+        if (flags?.['nkCell'] === true)
+          attack('nkkill', ids(state['nkTargets']), null, t('actions.hitsOn', { n: NK_HITS }));
         break;
       }
       case 'eosinophil': {
@@ -433,7 +477,11 @@ export function offeredActions(view: SessionView): Offered {
         const canNeut = (view.queries.perInvader['canNeutralise'] ?? []) as unknown[];
         const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
         invaders.forEach((iv, i) => {
-          const target = { id: String(iv.id ?? ''), disease: String(iv.disease ?? '') };
+          const target = {
+            id: String(iv.id ?? ''),
+            disease: String(iv.disease ?? ''),
+            type: String(iv.type ?? ''),
+          };
           if (canTag[i] === true) attack('tag', [target], null);
           if (canNeut[i] === true) {
             const toxin = iv.type === 'toxin';
@@ -455,7 +503,9 @@ export function offeredActions(view: SessionView): Offered {
             id: `produce:${f.family}`,
             action: 'produce',
             cell,
-            label: `${t('action.produce')} ${f.family}`,
+            // The full class name with its acronym (ruled 6 September 2026): the Produce
+            // button teaches "Enveloped virus (ENV)" at the point of use, not a legend.
+            label: `${t('action.produce')} ${familyLabel(f.family)}`,
             params: { action: 'produce', family: f.family },
             place: 'panel',
             family: f.family,
@@ -473,11 +523,21 @@ export function offeredActions(view: SessionView): Offered {
   const canAttack =
     board.some((o) => o.kind === 'attack') ||
     buttons.some((b) => b.place !== 'panel' && !MOVE_LIKE.has(b.action));
+  // The lymph shortcut withheld at the crossing because the lymphatics are blocked — said
+  // here, where the shortcut would have been offered, rather than as a permanent chip.
+  const standing = (g['cells'] as Record<string, Record<string, unknown>> | undefined)?.[cell];
+  const atCrossing =
+    standing?.['zone'] === 'route' &&
+    standing['step'] === LYMPH_STEP &&
+    typeof standing['lane'] === 'string' &&
+    lymphPartners(standing['lane']).length > 0;
+  const note = atCrossing && state['lymphBlocked'] === true ? t('selection.lymphBlocked') : null;
   return {
     source: 'cell',
     board,
     buttons,
     reason: canAttack ? null : noActionReason(view, cell, act),
+    note,
   };
 }
 
@@ -599,8 +659,19 @@ function noActionReason(view: SessionView, cell: string, act: boolean): string {
       return t('selection.nothingCoatedHere');
     case 'macrophage':
       return t('selection.nothingToEngulfHere');
-    case 'helper':
+    case 'helper': {
+      // WHERE THE HELPER IS DESCRIBED is where HIV and priming are explained (ruled 6 September
+      // 2026, HIV in the panel not the strip): HIV from the engine's own query; "not yet
+      // primed" from the licensing inputs the view carries — the same reading the strip's
+      // retired chip made, moved here rather than added.
+      const g = view.game;
+      if (view.queries.state['hivActive'] === true) return t('selection.helperHiv');
+      const flags = (g['flags'] as Record<string, unknown> | undefined) ?? {};
+      const licensed =
+        flags['helperT'] === true && (flags['dendritic'] !== true || num(g['presentations']) > 0);
+      if (!licensed) return t('selection.helperUnprimed');
       return t('selection.helperContact');
+    }
     case 'bcell': {
       const fams = producibleFamilies(view);
       if (fams.length > 0 && fams.every((f) => f.why === 'blocked'))
@@ -642,6 +713,8 @@ export interface ActionRow {
   /** Localised: "Engulf Rotavirus" / "Engulf" (greyed). */
   label: string;
   cost: string | null;
+  /** The offer's detail (odds), or null. */
+  detail: string | null;
   available: boolean;
   /** For an available row: the offer it sends (board or button), by id. */
   offerId: string | null;
@@ -728,6 +801,7 @@ export function actionRows(view: SessionView): ActionRow[] {
           action,
           label: o.label,
           cost: 'cost' in o ? (o.cost ?? null) : null,
+          detail: 'detail' in o ? (o.detail ?? null) : null,
           available: true,
           offerId: o.id,
           reason: null,
@@ -746,6 +820,7 @@ export function actionRows(view: SessionView): ActionRow[] {
       action,
       label: t(`action.${action}`),
       cost: null,
+      detail: null,
       available: false,
       offerId: null,
       reason,

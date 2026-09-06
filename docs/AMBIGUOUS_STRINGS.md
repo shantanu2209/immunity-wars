@@ -73,3 +73,28 @@ and renders through the catalogue like everything else; the `iw/no-hardcoded-jsx
 holds it there. Each ruled OUT is recorded here as out, so the count is closed rather than
 re-opened by the next person who reads the inventory. The brief's definition of done says "the
 46 ambiguous strings decided" (§8), and this document is where the decisions land.
+
+## The rulings (Shantanu, 6 September 2026), and what was built
+
+- **The 13 carried, the 10 code, the 2 dev-only: accepted as classified.** Closed.
+- **26, "Tag / Coat": RULED and BUILT.** The row reads "Coat" on a worm or parasite and "Tag"
+  on a bacterium, and the rule is general: every action row uses the name a player would use
+  for what it does to THIS target. The sweep for the same shape found one more, `engulf` on a
+  fungus or a parasite, which reads "Chip" (the Monocyte wounds those for 1; the engine's own
+  log says "chipped"). `verbFor` in `packages/ui/src/play/offered.ts` is the one place.
+- **27, 28, 29 and 30, damage, odds and speed: RULED "carry them if it does not clutter";
+  BUILT in part.** The NK row carries its odds ("hits on 3 or more", `NK_HITS`, content); the
+  selected cell's header carries its speed ("Neutrophil · speed 2", `SPEED`, content). **Damage
+  is withheld**: strike's 2 and 1 and degranulate's 3 are engine literals, and a retyped copy is
+  the fourth engine-literal mirror, which the same day's ruling forbade. They join Q7 in the
+  engine change queue; when the literals are content the rows carry them. Layout for Shantanu
+  to judge on the phone: the detail is right-aligned and muted, and the row wraps it under the
+  label at 360px rather than truncating.
+- **31 to 44, the antigen classes: RULED "not in the antibody panel"; BUILT as ruled.** The
+  pathogen card's class line reads "Enveloped virus (ENV)" and the Produce button reads
+  "Produce Enveloped virus (ENV)", both from `FAMILIES.name` and the key. No example diseases
+  anywhere, no legend, no new content field.
+- **45 and 46, the organ's kind: still open.** Not ruled, not built. The inspect sheet's new
+  organ row (6 September, the home for "When damaged") is where it would go.
+
+The count: 44 of 46 decided; 2 open.

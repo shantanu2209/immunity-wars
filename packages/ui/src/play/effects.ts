@@ -1,13 +1,20 @@
 /**
- * THE EFFECTS IN FORCE (S25 items 5 and 7, ruled 4 September 2026) — every persistent effect
- * the engine tracks that a player could not see, as chips for a strip at the top of the play
- * surface, each saying what it is doing and for how long. The sweep that produced this list
- * is in for-P2.5.md ("Item 5"): crisis effects with their durations (the session's `effects`
- * summary of the `fx` the view drops), cells offline, organ damage (permanent — the organ's
- * own effect text from content), the lymphatics blocked, HIV, the Helper T unprimed, a
- * parasite inside a resident, next turn's forecast, a rare event's banner, and the arrival
- * window closed with the deadline to clear the body (item 7's banner — the numbers come from
- * the view and content, never a difficulty's literals).
+ * THE EFFECTS IN FORCE (S25 items 5 and 7, ruled 4 September 2026; SWEPT 6 September 2026) —
+ * chips for a strip at the top of the play surface, each saying what is happening and for how
+ * long.
+ *
+ * WHAT SURVIVES THE SWEEP, and the rule it applied (Shantanu, 6 September 2026: "do not show a
+ * cause as a banner; show the effect where the number appears, and let the player drill into
+ * the number"): a chip stays only for something happening NOW that counts down or ends by the
+ * player's action — this turn's crisis effects with the event's name and why, the two- and
+ * three-turn effects counting down, next turn's forecast, a memory response ready, a rare
+ * event for the one turn after it fired, and the arrival window's closing (ruled a banner, not
+ * a dialog). Every permanent or indefinite STATE came out: organ damage (the pips are the
+ * surface; "When damaged" lives one tap in), the lymphatics blocked (the selected cell's line
+ * says why there is no shortcut), HIV (the Helper's own chip and line, where the Helper is
+ * described), the Helper primed or unprimed (the production breakdown lists it), an infected
+ * resident (its own dimmed chip and reason), and the AP modifiers (the AP figure now drills
+ * into its terms, the engine's `apBreakdown`). The record is in for-P2.5.md.
  *
  * Pure: a function of the view. Legality is not decided here; this is state made visible.
  */
@@ -15,17 +22,18 @@ import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import { t } from '../i18n';
-import { residentDisplayName } from '../names';
 
 export interface EffectChip {
   id: string;
-  /** bad = a penalty in force; good = a boost; info = a state to know; permanent = organ damage. */
-  kind: 'bad' | 'good' | 'info' | 'permanent';
+  /** bad = a penalty in force; good = a boost; info = a state to know. */
+  kind: 'bad' | 'good' | 'info';
   text: string;
   /** Localised duration, or null when the text already says it. */
   duration: string | null;
-  /** A muted second line: the event's own why, or an organ's "when damaged" column. */
+  /** A muted second line: the event's own why, or the forecast's tell. */
   detail?: string | null;
+  /** The crisis event this chip carries (its name), when the banner folded into it. */
+  event?: string;
 }
 
 /**
@@ -34,18 +42,17 @@ export interface EffectChip {
  * same draw, so the strip showed the effect chip and the banner chip for one event. One
  * effect, one chip: the banner folds into the chip its event produced — the event's name
  * becomes the chip's text and its `why` the detail — and the banner chip is shown only for an
- * event with no chip of its own (co-infection, passive antibodies). Fever is the one event
- * with two effects, and it keeps two chips because they are two effects: the invaders slowed
- * (good) and an Action Point lost (bad). Map from the engine's `applyEvent` (construct.ts).
+ * event with no chip of its own (co-infection, passive antibodies, and since the 6 September
+ * sweep fatigue and surge, whose AP change is read off the AP figure's own breakdown). Fever
+ * folds into the one effect it still has a chip for, the march skipped. Map from the engine's
+ * `applyEvent` (construct.ts).
  */
 const EVENT_CHIPS: Readonly<Record<string, readonly string[]>> = {
   immunosuppression: ['noProduce'],
   neutropenia: ['neutrophilOffline'],
   lymphopenia: ['tcellOffline'],
   antibodyShortage: ['capTurns'],
-  fatigue: ['apDown'],
-  surge: ['apUp'],
-  fever: ['skipMarch', 'apDown'],
+  fever: ['skipMarch'],
 };
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
@@ -56,9 +63,9 @@ export function effectChips(view: SessionView): EffectChip[] {
   const g = view.game;
   const out: EffectChip[] = [];
   const fx = view.queries.effects;
-  const state = view.queries.state;
 
-  // Item 7: the arrival window closed — the deadline from the view and content.
+  // Item 7: the arrival window closed — the deadline from the view and content. A banner, not
+  // a dialog (ruled 6 September 2026): it changes the goal, not what the player can do now.
   const turn = num(g['turn']);
   const maxTurn = num(g['maxTurn']);
   if (maxTurn > 0 && turn > maxTurn) {
@@ -85,20 +92,6 @@ export function effectChips(view: SessionView): EffectChip[] {
       text: t('effects.capTurns'),
       duration: turnsLeft(fx.capTurns),
     });
-  if (fx.apMod < 0)
-    out.push({
-      id: 'apDown',
-      kind: 'bad',
-      text: t('effects.apDown', { n: -fx.apMod }),
-      duration: t('effects.thisTurn'),
-    });
-  if (fx.apMod > 0)
-    out.push({
-      id: 'apUp',
-      kind: 'good',
-      text: t('effects.apUp', { n: fx.apMod }),
-      duration: t('effects.thisTurn'),
-    });
   if (fx.skipMarch)
     out.push({
       id: 'skipMarch',
@@ -124,57 +117,9 @@ export function effectChips(view: SessionView): EffectChip[] {
       duration: turnsLeft(num(sup['tcell'])),
     });
 
-  // Organ damage — permanent, with the organ's own effect text (content). Hard's compensated
-  // marrow lifts the functional penalty, and the engine reads `compensated` for that.
-  const organs = (g['organs'] as Record<string, Record<string, unknown>> | undefined) ?? {};
-  for (const [o, organ] of Object.entries(organs)) {
-    if (num(organ['hp']) >= num(organ['max'])) continue;
-    if (g['difficulty'] === 'hard' && organ['compensated'] === true) continue;
-    const def = (ORGANS as Record<string, { name?: string; effect?: string } | undefined>)[o];
-    // The organ's `effect` is the rulebook's "when damaged" COLUMN — a table cell, not a
-    // clause ("None — but fragile & slow to defend"), so it is rendered as a labelled value,
-    // never spliced into a sentence that assumed a clause (S25 second pass: "Brain damaged —
-    // None — but…" did not parse). The class is recorded in for-P2.5.md.
-    out.push({
-      id: `organ:${o}`,
-      kind: 'permanent',
-      text: t('effects.organDamaged', { organ: def?.name ?? o }),
-      duration: t('effects.permanent'),
-      detail: def?.effect ? t('effects.organEffect', { effect: def.effect }) : null,
-    });
-  }
-
-  // Whole-body states the queries answer.
-  if (state['lymphBlocked'] === true)
-    out.push({ id: 'lymphBlocked', kind: 'bad', text: t('effects.lymphBlocked'), duration: null });
-  if (state['hivActive'] === true)
-    out.push({ id: 'hiv', kind: 'bad', text: t('effects.hiv'), duration: null });
-  const flags = (g['flags'] as Record<string, unknown> | undefined) ?? {};
-  const helperT = flags['helperT'] === true;
-  const licensed = helperT && (flags['dendritic'] !== true || num(g['presentations']) > 0);
-  if (helperT && !licensed)
-    out.push({
-      id: 'helperUnprimed',
-      kind: 'info',
-      text: t('effects.helperUnprimed'),
-      duration: null,
-    });
-  // THE BENEFICIAL CHIPS (ruled 5 September 2026, after the second S25 pass): the strip had
-  // four colours all along, and Shantanu's session happened to hold only harmful effects —
-  // the real gap was beneficial STATES having no chip at all. A primed Helper T-Cell is an
-  // effect in force (every bonus it gives is live from that turn on), so it is a chip for
-  // the rest of the game, gone only while HIV has destroyed the helper T-cells (the engine's
-  // `helperWith` and `helperInBlood` return false under `hivActive`).
-  if (licensed && state['hivActive'] !== true)
-    out.push({
-      id: 'helperPrimed',
-      kind: 'good',
-      text: t('effects.helperPrimed'),
-      duration: null,
-      detail: t('effects.helperPrimedDetail'),
-    });
-  // A memory response ready: a pathogen the body remembers is in the body. An effect in force
-  // for as long as it stands there; the body panel's line and the board's ring say the same.
+  // A memory response ready: a pathogen the body remembers is in the body. Happening now and
+  // ended by the player's action; the board's ring says the same, and nothing else does (the
+  // body panel's duplicate line came out in the 6 September sweep).
   const remembered = [
     ...new Set(
       ((g['invaders'] as { remembered?: unknown; disease?: unknown }[] | undefined) ?? [])
@@ -192,19 +137,6 @@ export function effectChips(view: SessionView): EffectChip[] {
         g['difficulty'] === 'hard' ? t('effects.memoryReadyHard') : t('effects.memoryReadyFree'),
     });
 
-  // A parasite inside a resident.
-  const residents = (g['residents'] as Record<string, Record<string, unknown>> | undefined) ?? {};
-  for (const [o, r] of Object.entries(residents)) {
-    if (r['infectedBy'] !== null && r['infectedBy'] !== undefined) {
-      out.push({
-        id: `resident:${o}`,
-        kind: 'bad',
-        text: t('effects.residentInfected', { name: residentDisplayName(o) }),
-        duration: null,
-      });
-    }
-  }
-
   // This turn's crisis event, next turn's forecast, a rare event — the content's own words.
   const banner = g['banner'] as {
     key?: unknown;
@@ -217,9 +149,14 @@ export function effectChips(view: SessionView): EffectChip[] {
     const why = typeof banner.why === 'string' ? banner.why : null;
     const carriers = out.filter((c) => folded.includes(c.id));
     if (carriers.length > 0) {
-      // The event's own chip(s) say it: name on the chip, why beneath, no second banner.
+      // The event's own chip(s) say it: name on the chip, why beneath, no second banner. When
+      // the effect's own text already opens with the event's name ("Immunosuppression: no
+      // antibodies can be made") the name is not doubled in front of it — found 6 September
+      // 2026 by the reveal's crisis test, which read "Immunosuppression · Immunosuppression: …".
       for (const c of carriers) {
-        c.text = `${banner.name} ${t('inspect.sep')} ${c.text}`;
+        c.event = banner.name;
+        if (!c.text.startsWith(banner.name))
+          c.text = `${banner.name} ${t('inspect.sep')} ${c.text}`;
         c.detail = why;
       }
     } else {
@@ -229,6 +166,7 @@ export function effectChips(view: SessionView): EffectChip[] {
         text: banner.name,
         duration: null,
         detail: why,
+        event: banner.name,
       });
     }
   }
@@ -247,8 +185,11 @@ export function effectChips(view: SessionView): EffectChip[] {
       detail: text,
     });
   }
-  const rare = g['rareBanner'] as { name?: unknown; why?: unknown } | null;
-  if (rare && typeof rare.name === 'string')
+  // A rare event fires at the END of a spread, so the turn it belongs to is the one after
+  // `firedTurn`. It is a chip for that one turn (the sweep's rule: happening now), and the log
+  // keeps it for the game — see `rareLogLine`.
+  const rare = g['rareBanner'] as { name?: unknown; why?: unknown; firedTurn?: unknown } | null;
+  if (rare && typeof rare.name === 'string' && turn - num(rare.firedTurn) <= 1)
     out.push({
       id: 'rare',
       kind: 'bad',
@@ -260,6 +201,23 @@ export function effectChips(view: SessionView): EffectChip[] {
   return out;
 }
 
+/**
+ * THE RARE EVENT'S LOG LINE (found by the 6 September sweep): the engine's `fireRare` sets the
+ * banner and writes NO log line, so once its chip retires the event has no trace. Kartik's why
+ * for a rare event is his best teaching text, so the UI authors one entry for the log from
+ * the content's own words, dated to the turn it fired. Null when no rare event has fired.
+ */
+export function rareLogLine(g: ViewState): { t: number; text: string; kind: string } | null {
+  const rare = g['rareBanner'] as { name?: unknown; why?: unknown; firedTurn?: unknown } | null;
+  if (!rare || typeof rare.name !== 'string') return null;
+  const why = typeof rare.why === 'string' && rare.why.trim() !== '' ? ` ${rare.why}` : '';
+  return {
+    t: num(rare.firedTurn),
+    text: `${t('log.rareEvent', { name: rare.name })}${why}`,
+    kind: 'bad',
+  };
+}
+
 /** The turn line for the shell: "Turn 3 of 15" inside the arrival window, the countdown after. */
 export function turnLine(g: ViewState): string {
   const turn = num(g['turn']);
@@ -268,4 +226,39 @@ export function turnLine(g: ViewState): string {
     return t('play.turnClear', { n: turn, k: maxTurn + GRACE_CLEAR - turn });
   }
   return t('play.turnOf', { n: turn, max: maxTurn });
+}
+
+/**
+ * THE ACTION POINT FIGURE'S DRILL-IN (6 September 2026): the engine's `apBreakdown` terms as
+ * localised lines, in the engine's order, ending with the total. Nothing is computed here —
+ * each line names a term and its signed delta; the sum is the engine's, asserted on the corpus.
+ * The crisis term is named after this turn's event when the view carries the banner.
+ */
+export function apTermLines(view: SessionView): { text: string; delta: number }[] {
+  const g = view.game;
+  const banner = g['banner'] as { name?: unknown } | null;
+  const organName = (o: string): string =>
+    String((ORGANS as Record<string, { name?: unknown } | undefined>)[o]?.name ?? o);
+  return view.queries.ap.terms.map((term) => {
+    switch (term.kind) {
+      case 'base':
+        return { text: t('ap.base', { n: term.delta }), delta: term.delta };
+      case 'drain':
+        return { text: t('ap.drain', { disease: term.disease ?? '' }), delta: term.delta };
+      case 'organ':
+        return { text: t('ap.organ', { organ: organName(term.organ ?? '') }), delta: term.delta };
+      case 'event':
+        return {
+          text:
+            banner && typeof banner.name === 'string'
+              ? t('ap.eventNamed', { name: banner.name })
+              : t('ap.event'),
+          delta: term.delta,
+        };
+      case 'floor':
+        return { text: t('ap.floor'), delta: term.delta };
+      default:
+        return { text: t('ap.event'), delta: term.delta };
+    }
+  });
 }

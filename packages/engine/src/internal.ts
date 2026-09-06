@@ -22,6 +22,7 @@ export { ALL_ORGANS } from '@immunity-wars/content';
 
 export {
   abTotal,
+  apBreakdown,
   apFor,
   brainSlow,
   capFor,
@@ -33,9 +34,16 @@ export {
   marrowBroken,
   memoryHit,
   placeDist,
+  regenBreakdown,
   samePlace,
   spawnCount,
 } from './queries.js';
+
+// The two breakdown queries (P2.5, 6 September 2026): the terms behind the AP total and behind
+// a spent cell's return, for the session to carry to the UI. Additive — apFor and
+// neutrophilReadyTurn are untouched and the corpus proves it — and here rather than on the root
+// because the root is exactly legacy's 67 names. Their types travel with them.
+export type { ApBreakdown, ApTerm, RegenBreakdown } from './state.js';
 
 export { cap1, clone, d6, lymphPartners, organsFor, resetUid, shuffle, uid } from './primitives.js';
 

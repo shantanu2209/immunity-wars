@@ -25,6 +25,12 @@ export interface LogLine {
   t: number;
   msg: string;
   kind: string;
+  /**
+   * A UI-AUTHORED line (6 September 2026): already localised, rendered as it is, never put
+   * through the engine catalogue. One client today — the rare event, which the engine banners
+   * but never logs (`rareLogLine`). `msg` is empty for such a line.
+   */
+  text?: string;
 }
 
 const SHOWN = 8;
@@ -124,7 +130,7 @@ export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement
         <div style={{ color: '#7C6A61' }}>{t('log.empty')}</div>
       ) : (
         shown.map((l, i) => {
-          const r = engineLogText(l.msg);
+          const r = l.text !== undefined ? { text: l.text, matched: true } : engineLogText(l.msg);
           return (
             <div
               key={[String(l.t), String(i)].join('-')}
