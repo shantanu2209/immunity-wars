@@ -47,6 +47,7 @@ export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
+export { SettingsScreen, type DeleteSaveBlock } from './screens/SettingsScreen';
 export { ResultScreen, type ResultStats } from './screens/ResultScreen';
 export { cellDisplayName, typeDisplayName, residentDisplayName, organDisplayName } from './names';
 export { t } from './i18n';

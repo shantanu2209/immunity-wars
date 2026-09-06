@@ -22,10 +22,13 @@ const BTN: CSSProperties = {
 export function PauseSheet({
   onResume,
   onQuit,
+  onSettings,
 }: {
   onResume: () => void;
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
   onQuit: () => void;
+  /** Settings over the paused game (APP_FLOW §4: "P2.6 adds: Settings · How to play"). */
+  onSettings: () => void;
 }): ReactElement {
   const [confirming, setConfirming] = useState(false);
   return (
@@ -63,6 +66,9 @@ export function PauseSheet({
           <>
             <button style={BTN} onClick={onResume}>
               {t('pause.resume')}
+            </button>
+            <button style={BTN} onClick={onSettings}>
+              {t('pause.settings')}
             </button>
             <button style={BTN} onClick={() => setConfirming(true)}>
               {t('pause.quit')}

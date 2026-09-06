@@ -61,8 +61,46 @@ in [`for-P2.6.md`](for-P2.6.md) as PROPOSAL 1 and PROPOSAL 2:
   player's path writes, with the two dev-shell stores and the precache listed as the things
   that also persist and are left alone.
 
+**Both proposals ruled the same day** (five rulings, [`for-P2.6.md`](for-P2.6.md), "The five
+rulings on the two proposals"): "Delete saved game" as the label; one piece, two PRs, text size
+last; no tips section, and the shape one would take; the rulebook's "why it works this way"
+boxes go in the library (Kartik); Help lists every crisis event (Kartik), reading the same
+sources as the reveal rather than copies, with the effect line pinned by firing each event.
+
+## Piece 2, PR 1 — Settings: the store, the screen, two rows, two doors (done, 6 September 2026)
+
+- **The preference store** (`packages/app/src/settings.ts`): one `localStorage` key holding a
+  versioned object of a text size and a locale, Zod-validated at the read because a stored
+  value is a trust boundary; read synchronously before the first render. Its tests run both
+  ways: a valid value round-trips exactly; seven malformed shapes, including the right keys
+  with an unlisted size, fall back to the defaults; a throwing store reads as the defaults and
+  reports the failed write. Not the `Storage` seam, which is Session's and serialises `GameState`.
+- **The screen** (`packages/ui/src/screens/SettingsScreen.tsx`): rows from a table in two
+  groups, so a row is one entry. Reading: Language, shown as a value rather than a control while
+  the catalogue has one locale, since a control with one option is a control that does nothing.
+  Progress: **Delete saved game** (ruling 1), live when a save exists and disabled with its
+  reason otherwise: "No saved game", or from the pause menu "You are playing the saved game.
+  Quit to the title to delete it", because the game being played IS the save and the next
+  accepted action would write it again. The confirm says settings stay. Fourteen catalogue
+  keys, no dashes.
+- **Two doors:** the Title slot, and the pause menu. Over a paused game the game stays mounted
+  underneath, hidden, so the session, the selection and any queued dialog are untouched; Back
+  returns to it.
+- **The audit walks the four Settings states** (no save; over play; with a save, after a quit
+  that keeps it; the delete confirm), and its first run over them found two defects in the walk
+  itself, fixed inline and recorded in [`GATE1_AUDIT.md`](GATE1_AUDIT.md): the Title's Continue
+  button could not be clicked by its exact text, and the overwrite confirm moved after the
+  difficulty pick once a save survived between the passes, which share one browser profile.
+  Both showed only in the per-screen counts, not the totals.
+- **The run on the shipped build:** 369 controls and 936 text runs across 21 screens; every
+  check 0 under both mechanisms; offline met.
+
+**Not in this PR, by ruling 2:** text size, with the scaling mechanism and the audit's third
+pass. That is PR 2.
+
 ## What is next
 
-Rulings on the two proposals. Everything else proceeds on the proposed order in
-`for-P2.6.md`: after Settings, the disease library, About, the error boundary and the
-storage-failure notice, then onboarding held for a direction.
+PR 2 of Settings: text size. Then Help's prose, whose structure is agreed with Kartik, whenever
+it fits the order; then the library, which now also carries the rulebook's "why it works this
+way" boxes; About; the error boundary and the storage-failure notice; onboarding held for a
+direction.

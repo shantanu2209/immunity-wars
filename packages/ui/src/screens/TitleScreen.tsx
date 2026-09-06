@@ -28,11 +28,14 @@ export function TitleScreen({
   save,
   onContinue,
   onNewGame,
+  onSettings,
 }: {
   /** Present when an autosave exists; Continue renders only then. */
   save: SaveSummary | null;
   onContinue: () => void;
   onNewGame: () => void;
+  /** The first of the four P2.6 Title slots (APP_FLOW §4). */
+  onSettings: () => void;
 }): ReactElement {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
@@ -49,6 +52,9 @@ export function TitleScreen({
       ) : null}
       <button style={BTN} onClick={onNewGame}>
         {t('title.newGame')}
+      </button>
+      <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onSettings}>
+        {t('title.settings')}
       </button>
     </div>
   );

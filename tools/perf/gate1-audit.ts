@@ -352,6 +352,15 @@ async function walk(
   }, rootPct);
   await sleep(100);
   await step(page, 'title', results);
+  // Settings from the Title slot (P2.6 piece 2) on a fresh profile: no save, so the delete
+  // row is disabled with its reason. The live row and its confirm are measured at the end of
+  // this walk, once a game has been saved.
+  if (await click(page, 'Settings')) {
+    await sleep(200);
+    await step(page, 'settings, no save', results);
+    await click(page, 'Back');
+    await sleep(200);
+  }
   await click(page, 'New game');
   await sleep(200);
   await click(page, 'Start and replace');
@@ -363,6 +372,12 @@ async function walk(
     ) as HTMLElement | undefined;
     el?.click();
   });
+  await sleep(300);
+  // With a save present the overwrite confirm appears AFTER the difficulty pick (APP_FLOW §4);
+  // the click before the pick, above, is from the first shell and stays harmless. This matters
+  // once passes share a profile: the passes run as tabs of one browser, so a save left by an
+  // earlier pass is on this Title.
+  await click(page, 'Start and replace');
   await sleep(400);
   await step(page, 'goal dialog', results);
   await click(page, 'Begin');
@@ -431,7 +446,14 @@ async function walk(
   await click(page, 'Menu');
   await sleep(300);
   await step(page, 'pause sheet', results);
-  await click(page, 'Resume');
+  // Settings over the paused game: the game stays mounted (hidden) underneath, and the delete
+  // row is disabled with its reason, since the save is the game being played.
+  if (await click(page, 'Settings')) {
+    await sleep(200);
+    await step(page, 'settings, over play', results);
+    await click(page, 'Back');
+    await sleep(200);
+  }
   await sleep(200);
   await click(page, 'End turn');
   await sleep(400);
@@ -443,6 +465,36 @@ async function walk(
   }
   await sleep(600);
   await step(page, 'play, next turn', results);
+  // Settings from the Title WITH a save (the first visit had none, so the delete row was
+  // disabled): quit keeps the save, the row is live, its confirm is measured, and Continue
+  // resumes the game for the walk to the Result.
+  await click(page, 'Menu');
+  await sleep(200);
+  await click(page, 'Quit to title');
+  await sleep(200);
+  await click(page, 'Quit');
+  await sleep(400);
+  if (await click(page, 'Settings')) {
+    await sleep(200);
+    await step(page, 'settings, with a save', results);
+    if (await click(page, 'Delete saved game')) {
+      await sleep(200);
+      await step(page, 'settings, delete confirm', results);
+      await click(page, 'Keep');
+      await sleep(150);
+    }
+    await click(page, 'Back');
+    await sleep(200);
+  }
+  // The Title's Continue carries its subtitle ("Training turn 2") inside the button, so the
+  // exact-text click cannot find it: match the label's start. The reveal's Continue is exact.
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')].find((x) =>
+      x.textContent?.trim().startsWith('Continue'),
+    );
+    b?.click();
+  });
+  await sleep(700);
 }
 
 /** The Result screen: an idle game on Training is lost within a handful of turns. */
