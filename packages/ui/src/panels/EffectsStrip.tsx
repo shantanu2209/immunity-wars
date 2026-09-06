@@ -7,12 +7,12 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
 import type { EffectChip } from '../play/effects';
+import { RichText } from './LogPanel';
 
 const COLOUR: Record<EffectChip['kind'], { border: string; text: string; bg: string }> = {
   bad: { border: '#B03A2E', text: '#B03A2E', bg: '#FBEAE5' },
   good: { border: '#2F6B4A', text: '#2F6B4A', bg: '#EAF3EC' },
   info: { border: '#1F6F8B', text: '#1F6F8B', bg: '#E6F2F7' },
-  permanent: { border: '#8E6E53', text: '#5A4636', bg: '#F3EBE4' },
 };
 
 const CHIP: CSSProperties = {
@@ -48,8 +48,9 @@ export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement |
                 </span>
               ) : null}
               {c.detail ? (
+                // An event's why is content prose carrying the engine's <b> emphasis.
                 <span data-effect-detail="1" style={{ display: 'block', color: '#7C6A61' }}>
-                  {c.detail}
+                  <RichText text={c.detail} />
                 </span>
               ) : null}
             </div>

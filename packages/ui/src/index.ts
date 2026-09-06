@@ -22,7 +22,13 @@ export { InspectSheet } from './panels/InspectSheet';
 export { PieceStrip, type PieceChip } from './panels/PieceStrip';
 export { ActionList } from './panels/ActionList';
 export { actionRows, ACTION_CATALOGUE, MOVE_LIKE, type ActionRow } from './play/offered';
-export { effectChips, turnLine, type EffectChip } from './play/effects';
+export { effectChips, turnLine, rareLogLine, apTermLines, type EffectChip } from './play/effects';
+export {
+  RevealBody,
+  revealCrisis,
+  type RevealArrival,
+  type RevealCrisis,
+} from './dialogs/RevealBody';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
 export { CellCard, type CellCardSubject } from './panels/CellCard';

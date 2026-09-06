@@ -16,7 +16,7 @@ than inherited. The workarounds that expire with them are listed at the end.
 | **Q4** | **Antivenom kills grant no memory** — memory-on-kill checks the killer | Kartik, option (a) | Antivenom is passive immunity; it teaches the immune system nothing, which is exactly why a second snakebite needs a second dose. The engine's own log says so and the engine contradicts it | #55 |
 | **Q5** | **The invader id counter into `GameState`** (and into the relay's authoritative state) | Found at P2.5 item 12 | A saved game carries every id and not the counter; a fresh process restarts it and reuses ids. The session works around it at resume; the relay would hit the same reset on every restart | #56 |
 | **Q6** | **Resident RECALL** — a new action returning a resident to its organ box (branch step 0) from any step, for 1 AP, move-class (undoable) | Kartik, ruling 1 | A resident must step forward onto its branch to intercept; it needs a way back that is not `resmove` one step at a time. Proposed shape below | #5 |
-| **Q7** | **`neutralise`'s 2-AP toxin cost into content** | Shantanu, at CP2 | The 2 is a literal in the engine, mirrored in the UI with a spanning test | #52 |
+| **Q7** | **The engine's action literals into content, as one family** — `neutralise`'s 2-AP toxin cost; the antivenom dose (3 AP); degranulate's cost (2 AP) and damage (3); strike's damage (2 Eosinophil, 1 Monocyte); the Hard memory-response cost (1 AP) | Shantanu, at CP2; widened 6 September 2026 | The 2 is a literal in the engine, mirrored in the UI with a spanning test (#52). The 6 September ruling against mirrors found the rest: every one is a literal the UI also holds (`offered.ts`, held honest only one way by the offered-subset-of-accepted harness) or WANTS to hold and may not (the damage figures Shantanu ruled onto the action rows, withheld because a retyped copy could drift). When they are content, the UI reads them and the rows gain damage for free | #52; for-P2.5.md, 6 September, "the literal mirrors that remain" |
 | **Q8** | **Queries and log sites emit ids, not prose** | Shantanu, at CP2/CP5 | The Hindi edition renders five composed log lines in English until then | #53 |
 | **Q9** | **Degranulate burns the organ only when the fight is IN the organ** — organ damage when the Eosinophil (and its target) stand at branch step 0, not anywhere on the branch | Shantanu, S25 pass of 5 September 2026 | Eosinophil degranulation damages the tissue it happens in; granule proteins released on a lane are not released in the brain. Today  keys the burn to the TARGET being on a branch at any step, so a strike at step 1 of the Brain branch cost the Brain a point. Kartik's ruling that degranulate's cost is a risk you accept assumed the damage happens where the fight happens | #57 |
 
@@ -62,6 +62,21 @@ rules source. Until then the rulebook states the rule for the table game and the
 | `productionText.ts` mapper; `engineLogText` templates for the five composed sites; `log-text.test.ts`'s "only misses" pin; `$meta.unextractedSites` | `packages/ui`, `tests/session`, `engine.json` | Q8 |
 | `advanceIdsPast` at `LocalSession.resume` + `resume-ids.test.ts` | `packages/session/src/local.ts`, `tests/session` | Q5 |
 | The UI's `canAct` reading `free` | `packages/ui/src/play/offered.ts` | Q2 |
+| The AP-cost literals in the offers (antivenom 3, degranulate 2, memory response 1 on Hard) | `packages/ui/src/play/offered.ts` | Q7 |
+| `rareLogLine`, the UI-authored log entry for a rare event the engine banners and never logs (#58) | `packages/ui/src/play/effects.ts`, `LogLine.text` | Q8 |
+
+## Not queued: the two breakdown queries, added on the `./internal` entry point (6 September 2026)
+
+`apBreakdown` and `regenBreakdown` (`packages/engine/src/queries.ts`) are **additive** engine
+queries, not rule changes: `apFor` and `neutrophilReadyTurn` are untouched, the root export
+contract is untouched (the root is exactly legacy's 67 names; `./internal` is where helpers
+legacy keeps private are published, one at a time on demonstrated need), and the corpus cannot
+see a pure query nothing in the engine calls. They exist so the UI lists the causes of a number
+instead of re-deriving the rule, which retired one mirror nobody had counted (the session's own
+reading of the marrow). Pinned by `tests/equivalence/src/breakdowns.test.ts`; the reasoning in
+[`for-P2.5.md`](for-P2.5.md), 6 September, "The question, answered from the constraints". One
+choice left for Shantanu: `apFor` as a wrapper over `apBreakdown(g).total`, one calculation
+rather than two agreeing ones; a one-line change the corpus would prove behaviour-identical.
 
 ## What is NOT queued — ruled "no change", with the reasoning a judge would ask for
 

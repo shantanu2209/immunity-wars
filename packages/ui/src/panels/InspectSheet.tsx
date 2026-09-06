@@ -9,9 +9,16 @@
  * OR degranulate the same worm), each invader row carries its offers as buttons — the sheet
  * is where a choice between attacks is made, because a 20px pathogen token cannot present two.
  */
+import { ORGANS } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
 import type { InspectInfo, Unavailable } from '../board/Board';
+
+/** The organ's "when damaged" column from the rules pack, or null when it has none. */
+export const organEffect = (organ: string): string | null => {
+  const e = (ORGANS as Record<string, { effect?: unknown } | undefined>)[organ]?.effect;
+  return typeof e === 'string' && e.trim() !== '' ? e : null;
+};
 import { t } from '../i18n';
 import { invaderNowLine } from './invaderNow';
 import {
@@ -45,6 +52,8 @@ export interface InvaderOffer {
 
 /** "Spent · back in 2 turns" — the words for a dimmed cell, all through the catalogue. */
 export function unavailableText(u: Unavailable): string {
+  if (u.kind === 'hiv') return t('inspect.hiv');
+  if (u.kind === 'infected') return t('inspect.infected');
   const what = t(u.kind === 'spent' ? 'inspect.spent' : 'inspect.offline');
   if (u.backIn === null) return what;
   const when =
@@ -222,6 +231,26 @@ export function InspectSheet({
             </span>
           </span>
         </button>
+      ) : null}
+      {info.organ !== null ? (
+        // THE ORGAN'S OWN ROW at its step-0 node (6 September 2026): its integrity, and when it
+        // is damaged the rulebook's "When damaged" column — the home one tap from the pips
+        // that let the permanent organ-damage chip leave the strip. The column is content, a
+        // table cell rendered as a labelled value, never spliced into a sentence.
+        <div data-sheet-organ={info.organ.key} style={{ ...ROW, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 14 }}>
+            {t('inspect.organ', {
+              organ: organDisplayName(info.organ.key),
+              hp: info.organ.hp,
+              max: info.organ.max,
+            })}
+            {info.organ.hp < info.organ.max && organEffect(info.organ.key) !== null ? (
+              <span style={{ display: 'block', fontSize: 13, color: '#B03A2E' }}>
+                {t('effects.organEffect', { effect: organEffect(info.organ.key) ?? '' })}
+              </span>
+            ) : null}
+          </span>
+        </div>
       ) : null}
       <button
         onClick={onClose}

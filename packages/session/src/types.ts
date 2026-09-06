@@ -26,6 +26,8 @@
  */
 
 /** The engine's projection. Deliberately opaque — the UI reads fields, it does not construct one. */
+import type { ApBreakdown, RegenBreakdown } from '@immunity-wars/engine/internal';
+
 export type ViewState = Readonly<Record<string, unknown>>;
 
 /** One frame of an `endCommand` burst. Presentation only. */
@@ -94,9 +96,10 @@ export interface PrecomputedQueries {
    * primed Helper T stands in the blood (Th17 help), and never while the marrow is damaged.
    * `regenAt` on the cell says none of that — the legacy UI showed it and was wrong under
    * help; the first headless run of the badge showed "4" and the cell came back in 2. So this
-   * is `neutrophilReadyTurn(g)` (one of the 67 exports), withheld when the marrow is damaged
-   * (hp below max in the view — conservative on Hard, where a compensated marrow would in
-   * fact regenerate: no number rather than a wrong one). The Eosinophil's `regenAt` is exact.
+   * is `neutrophilReadyTurn(g)` (one of the 67 exports), null when the marrow is damaged. Since
+   * 6 September 2026 both numbers are read off the engine's `regenBreakdown` (`regen` below):
+   * the marrow condition is the engine's own, exact on Hard's compensated marrow where this
+   * session's earlier hp-below-max reading was merely conservative.
    */
   readonly readyTurn: Readonly<Record<string, number | null>>;
   /**
@@ -111,6 +114,21 @@ export interface PrecomputedQueries {
     apMod: number;
     skipMarch: boolean;
   }>;
+  /**
+   * THE ACTION POINT TOTAL AS TERMS (6 September 2026, Shantanu's principle: show the effect
+   * where the number appears and let the number drill into its causes). The engine's own
+   * `apBreakdown`, on its `./internal` entry point: the difficulty's base, each drain, each
+   * damaged organ, this turn's crisis modifier, the floor. Its `total` is `apFor(g)` — the
+   * view's `apMax` — asserted on the corpus (`tests/equivalence/src/breakdowns.test.ts`), so
+   * the UI lists causes and never re-derives the rule.
+   */
+  readonly ap: ApBreakdown;
+  /**
+   * WHY A SPENT CELL RETURNS WHEN IT DOES — the engine's `regenBreakdown`, per spent cell, or
+   * null when the cell is not spent. `readyTurn` here is what `readyTurn` above is built from;
+   * the session no longer reads the marrow itself.
+   */
+  readonly regen: Readonly<Record<'neutrophil' | 'eosinophil', RegenBreakdown | null>>;
 }
 
 export interface ProductionSummary {

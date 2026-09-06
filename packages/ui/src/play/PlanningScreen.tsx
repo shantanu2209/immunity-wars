@@ -23,7 +23,8 @@ import { useState } from 'react';
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
 import { cellDisplayName, typeDisplayName } from '../names';
-import { unavailableText } from '../panels/InspectSheet';
+import { ApTerms } from '../panels/ApTerms';
+import { organEffect, unavailableText } from '../panels/InspectSheet';
 import { invaderNowLine } from '../panels/invaderNow';
 import { AnatomyView } from './AnatomyView';
 import {
@@ -237,12 +238,21 @@ function AllocationBlock({ slot }: { slot: AllocationSlot }): ReactElement {
 export function PlanningScreen({
   model,
   cells,
+  apTerms = [],
+  why = {},
   disabled = false,
   onCommand,
   onPathogenCard,
 }: {
   model: PlanningModel;
   cells: PlanningCell[];
+  /**
+   * THE AP FIGURE'S TERMS (6 September 2026), localised by the shell from the engine's
+   * `apBreakdown`: tapping "You will have N Action Points" lists what is making N.
+   */
+  apTerms?: readonly { text: string; delta: number }[];
+  /** Why a spent cell is back when it is back, by cell key — beside the facts line. */
+  why?: Readonly<Record<string, string>>;
   disabled?: boolean;
   /** Sends the model's button params — `beginCommand`, or `confirmAllocation` under allocation. */
   onCommand: (params: Record<string, unknown>) => void;
@@ -250,25 +260,52 @@ export function PlanningScreen({
 }): ReactElement {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const toggle = (k: string): void => setOpen((o) => ({ ...o, [k]: !o[k] }));
+  const [apOpen, setApOpen] = useState(false);
   // BLOCK A's expand-a-lane: the figure's focused place filters the rows; tap-again clears.
   const [focus, setFocus] = useState<string | null>(null);
   const rows = focus === null ? model.groups : model.groups.filter((grp) => grp.place === focus);
   return (
     <div data-screen="planning" style={{ marginTop: 6 }}>
       <div style={{ fontSize: 18, fontWeight: 700, color: '#2E2A28' }}>{t('planning.title')}</div>
-      <div style={{ fontSize: 13, color: '#7C6A61' }}>
+      {/* THE AP FIGURE DRILLS INTO ITS TERMS (6 September 2026): the number is the surface, its
+          breakdown the explanation, one tap away and never a banner. */}
+      <button
+        data-planning-ap="1"
+        disabled={apTerms.length === 0}
+        onClick={() => setApOpen((v) => !v)}
+        style={{
+          minHeight: 44,
+          padding: '0 4px',
+          fontSize: 13,
+          color: '#7C6A61',
+          background: 'transparent',
+          border: 'none',
+          cursor: apTerms.length > 0 ? 'pointer' : 'default',
+          textAlign: 'left',
+          font: 'inherit',
+        }}
+      >
         {t('planning.apNext', { n: model.apNext })}
-      </div>
+        {apTerms.length > 0 ? (
+          <span style={{ display: 'block', fontSize: 12, color: '#8E6E53' }}>{t('ap.tap')}</span>
+        ) : null}
+      </button>
+      {apOpen && apTerms.length > 0 ? <ApTerms terms={apTerms} total={model.apNext} /> : null}
       {/* THE CELLS AS A FACT, not a roster (S25 second pass, 5 September 2026): the planning
           screen is about the body and the threats; which cells are spent belongs beside the
-          AP line, and the cell cards open from the inspect sheet. */}
+          AP line, and the cell cards open from the inspect sheet. Since 6 September the fact
+          carries its WHY (the engine's `regenBreakdown`) when there is one. */}
       {cells.some((c) => c.unavailable !== null) ? (
         <div data-planning-cell-facts="1" style={{ fontSize: 13, color: '#7A5600' }}>
           {cells
             .filter((c) => c.unavailable !== null)
-            .map(
-              (c) =>
+            .map((c) =>
+              [
                 `${cellDisplayName(c.key)} ${t('inspect.sep')} ${c.unavailable ? unavailableText(c.unavailable) : ''}`,
+                why[c.key],
+              ]
+                .filter((x) => x !== undefined)
+                .join(`. `),
             )
             .join(` ${t('inspect.sep')} `)}
         </div>
@@ -285,10 +322,24 @@ export function PlanningScreen({
           {focus === null ? (
             t('planning.figureHint')
           ) : (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
+            >
               <span style={{ fontWeight: 700, color: '#2E2A28' }}>
                 {t('planning.showing', { place: placeName(focus) })}
               </span>
+              {(() => {
+                // A DAMAGED ORGAN's "When damaged" column, one tap from its pips (6 September
+                // 2026) — the planning screen's half of the home that let the permanent
+                // organ-damage chip leave the strip; the inspect sheet's organ row is the other.
+                const marker = model.places.find((p) => p.place === focus && p.kind === 'organ');
+                const effect = organEffect(focus);
+                return marker?.hp && marker.hp.hp < marker.hp.max && effect !== null ? (
+                  <span data-planning-organ-effect={focus} style={{ color: '#B03A2E' }}>
+                    {t('effects.organEffect', { effect })}
+                  </span>
+                ) : null;
+              })()}
               <button
                 data-planning-show-all="1"
                 style={{ ...CARD_BUTTON, border: '1.5px solid #8E6E53' }}

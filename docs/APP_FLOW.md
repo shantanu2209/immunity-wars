@@ -38,8 +38,16 @@ inspect (built) · command bar (built, persistent) · pause menu · production/a
 
 ### Dialogs (modal over Play; block play until acknowledged; drain through ONE queue)
 
-disease-card reveal on draw · crisis events · rare events · Pathogen X reveal ·
-quit confirmation · new-game-overwrites-save confirmation
+disease-card reveal on draw (carrying this turn's crisis event as a section, and the Pathogen X
+and memory lines) · quit confirmation · new-game-overwrites-save confirmation
+
+> ⚠️ **Amended 6 September 2026 (ruling 5's per-event decisions, taken by one test).** This
+> read "crisis events · rare events · Pathogen X reveal" as dialogs of their own. Shantanu's
+> test — *does it change what the player can do THIS TURN?* — every crisis event passes, and the
+> reveal already interrupts at that exact moment, so crisis events are a SECTION of the reveal,
+> never a second dialog. Rare events fire at the end of the spread and fail the test (a strip
+> chip for one turn and a log line); Pathogen X and a memory response were already lines in the
+> reveal. Nothing else in the game interrupts play. Record: `for-P2.5.md`, "Per-event dialogs".
 
 ### Overlays (non-interactive)
 

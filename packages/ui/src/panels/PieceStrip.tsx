@@ -52,6 +52,7 @@ export function PieceStrip({
   pieces,
   selectedCell,
   selectedResident,
+  why = {},
   disabled = false,
   onSelectCell,
   onSelectResident,
@@ -60,6 +61,12 @@ export function PieceStrip({
   pieces: PieceChip[];
   selectedCell: string | null;
   selectedResident: string | null;
+  /**
+   * WHY a spent cell is back when it is back (6 September 2026), by cell key, localised by the
+   * shell from the engine's `regenBreakdown`: shown under the selected chip only, so the grid
+   * stays fourteen equal boxes and the explanation sits one tap from the number.
+   */
+  why?: Readonly<Record<string, string>>;
   disabled?: boolean;
   onSelectCell: (cell: string) => void;
   onSelectResident: (organ: string) => void;
@@ -111,22 +118,31 @@ export function PieceStrip({
               />
               <span style={{ minWidth: 0, flex: '1 1 auto' }}>
                 <span style={{ ...CLIP, fontWeight: 700 }}>{name}</span>
-                <span style={{ ...CLIP, color: '#7C6A61' }}>
-                  {p.kind === 'resident'
-                    ? organDisplayName(p.key)
-                    : p.unavailable
-                      ? p.unavailable.backIn !== null
-                        ? t(p.unavailable.kind === 'spent' ? 'inspect.spent' : 'inspect.offline') +
-                          ' ' +
-                          String(p.unavailable.backIn)
-                        : t(p.unavailable.kind === 'spent' ? 'inspect.spent' : 'inspect.offline')
-                      : ''}
-                </span>
+                <span style={{ ...CLIP, color: '#7C6A61' }}>{badgeText(p)}</span>
               </span>
             </button>
           );
         })}
       </div>
+      {selectedCell !== null && why[selectedCell] !== undefined ? (
+        <div data-piece-why={selectedCell} style={{ fontSize: 12, color: '#7A5600', marginTop: 4 }}>
+          {why[selectedCell]}
+        </div>
+      ) : null}
     </div>
   );
+}
+
+/** The chip's second line: a resident's organ; a cell's state and its return, or nothing. */
+function badgeText(p: PieceChip): string {
+  if (p.kind === 'resident') {
+    const organ = organDisplayName(p.key);
+    return p.unavailable ? `${organ} ${t('inspect.sep')} ${t('inspect.infected')}` : organ;
+  }
+  const u = p.unavailable;
+  if (!u) return '';
+  if (u.kind === 'hiv') return t('inspect.hiv');
+  if (u.kind === 'infected') return t('inspect.infected');
+  const what = t(u.kind === 'spent' ? 'inspect.spent' : 'inspect.offline');
+  return u.backIn !== null ? `${what} ${String(u.backIn)}` : what;
 }

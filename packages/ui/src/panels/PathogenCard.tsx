@@ -107,6 +107,10 @@ export function PathogenCard({
     ? (FAMILIES as Record<string, { name?: string; bio?: string } | undefined>)[famKey]
     : undefined;
   const beat = (BEAT_BY_TYPE as Record<string, string | undefined>)[type];
+  // THE ACRONYM IN BRACKETS after the full class name (ruled 6 September 2026): the card
+  // teaches the link between "Enveloped virus" and the ENV the antibody panel's chips carry,
+  // at the point of use, instead of a permanent legend. Both halves are content's.
+  const famLine = fam?.name ? `${fam.name} (${String(famKey)})` : null;
   const organName = (o: string): string =>
     String((ORGANS as Record<string, { name?: string } | undefined>)[o]?.name ?? o);
 
@@ -143,10 +147,10 @@ export function PathogenCard({
             <div style={{ fontSize: 20, fontWeight: 700, color: '#B03A2E' }}>{disease}</div>
             <div style={{ fontSize: 13, color: '#7C6A61' }}>
               {typeDisplayName(type)}
-              {fam?.name ? (
+              {famLine !== null ? (
                 <>
                   {' '}
-                  {t('inspect.sep')} {fam.name}
+                  {t('inspect.sep')} {famLine}
                 </>
               ) : null}
             </div>

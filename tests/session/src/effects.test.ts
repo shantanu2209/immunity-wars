@@ -67,14 +67,34 @@ describe('S25 items 5 and 7: the effects in force', () => {
         const nOff = Number(sup['neutrophil'] ?? 0) > 0;
         if (has('neutrophilOffline') !== nOff) problems.push('neutrophil offline chip ≠ suppress');
         if (nOff) seen.offline += 1;
+        // THE SWEEP (6 September 2026): every permanent or indefinite state is OUT of the
+        // strip — organ damage, HIV, the lymphatics, the Helper primed or unprimed, an
+        // infected resident, the AP modifiers. Each is asserted absent on states where it
+        // holds (the vacuity guards below prove those states occurred), so a chip cannot
+        // quietly come back.
         const organs = (g['organs'] as Record<string, Raw>) ?? {};
         for (const [o, organ] of Object.entries(organs)) {
           const damaged =
             Number(organ['hp']) < Number(organ['max']) &&
             !(difficulty === 'hard' && organ['compensated'] === true);
-          if (has(`organ:${o}`) !== damaged) problems.push(`organ chip for ${o} ≠ damaged`);
+          if (has(`organ:${o}`)) problems.push(`organ chip for ${o} is back in the strip`);
           if (damaged) seen.organ += 1;
         }
+        for (const gone of [
+          'hiv',
+          'lymphBlocked',
+          'helperUnprimed',
+          'helperPrimed',
+          'apDown',
+          'apUp',
+        ])
+          if (has(gone)) problems.push(`${gone} chip is back in the strip`);
+        if (chips.some((c) => c.id.startsWith('resident:')))
+          problems.push('resident chip is back in the strip');
+        // A rare event's chip lives for the one turn after it fired, then retires.
+        const rare = g['rareBanner'] as { firedTurn?: unknown } | null;
+        const rareNow = rare !== null && Number(g['turn']) - Number(rare.firedTurn ?? 0) <= 1;
+        if (has('rare') !== rareNow) problems.push('rare chip ≠ the turn after it fired');
         const turn = Number(g['turn']);
         const maxTurn = Number(g['maxTurn']);
         const closed = turn > maxTurn;
@@ -107,17 +127,15 @@ describe('S25 items 5 and 7: the effects in force', () => {
         } else if (has('banner')) {
           problems.push('a banner chip without a banner');
         }
-        // THE BENEFICIAL CHIPS (ruled 5 September 2026): a primed Helper T-Cell — the engine's
-        // own licensing rule, off under HIV — and a memory response ready while a remembered
-        // pathogen stands in the body. Chip ⇔ state, like every other chip here.
+        // THE PRIMED HELPER (ruled a chip 5 September 2026, ruled OUT 6 September 2026: a cause
+        // as a banner). The state is counted so the vacuity guard proves the sweep's absence
+        // check above ran on states where the chip would once have shown.
         const flags = (g['flags'] as Raw | undefined) ?? {};
         const licensed =
           flags['helperT'] === true &&
           (flags['dendritic'] !== true || Number(g['presentations'] ?? 0) > 0);
         const hiv = v.queries.state['hivActive'] === true;
-        if (has('helperPrimed') !== (licensed && !hiv))
-          problems.push('primed chip ≠ the licensing rule');
-        if (has('helperPrimed')) seen.primed += 1;
+        if (licensed && !hiv) seen.primed += 1;
         const remembered = (((g['invaders'] as Raw[] | undefined) ?? []) as Raw[]).some(
           (iv) => iv['remembered'] === true,
         );

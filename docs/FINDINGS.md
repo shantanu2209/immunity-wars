@@ -3155,3 +3155,21 @@ degranulating burns "the organ it stands in". That is Kartik's ruling and the ru
 it is NOT what the engine does today, which burns the target's organ from anywhere on its
 branch. The card is left as written on purpose. Until Q9 lands, the card and the engine
 disagree, and the card is the one that is right. Do not edit the card to match the engine.
+
+## 58. A rare event is bannered and never logged, so once its chip retires it leaves no trace
+
+**Found by the strip sweep, 6 September 2026.** `packages/engine/src/spread.ts`, `fireRare`:
+it sets `g.rareBanner = { key, name, why, firedTurn }` and applies the event's effect (a new
+invader, a damaged heart, dengue's ADE) and writes **no `pushLog` line**. Every crisis event
+logs itself (`applyEvent`'s last line); the seven rare events, whose `why` is the best teaching
+text in the content pack (molecular mimicry, the 1918 pneumonias, the hypnozoite), do not. The
+strip's rare chip was therefore the event's ONLY surface, and `firedTurn` was set and read by
+nothing, so the chip persisted for the rest of the game.
+
+**Disposition: mitigated in the UI; the engine half is Phase 3's.** The chip now lives for the
+one turn after the event fired (the sweep's rule: happening now). `rareLogLine`
+(`packages/ui/src/play/effects.ts`) authors a log entry from `RARE[key].why`, dated to
+`firedTurn`, and the log panel renders it as a UI-authored line (`LogLine.text`), so the record
+survives the chip. The engine should log the event itself, in the same shape as a crisis event;
+that lands with Q8, when the log emits ids rather than prose, and the UI-authored line is
+deleted with it (queued in `ENGINE_CHANGE_QUEUE.md`'s workarounds table).

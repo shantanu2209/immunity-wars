@@ -8,7 +8,7 @@
  */
 
 import * as engine from '@immunity-wars/engine';
-import { uid } from '@immunity-wars/engine/internal';
+import { apBreakdown, regenBreakdown, uid } from '@immunity-wars/engine/internal';
 
 import { newPlayerRef } from './player-ref.js';
 import {
@@ -349,24 +349,21 @@ export class LocalSession implements Session {
       };
     }
 
-    // WHEN A SPENT CELL IS BACK — see `PrecomputedQueries.readyTurn`. The engine's own answer
-    // for the Neutrophil, withheld while the marrow is damaged (the engine will not regenerate
-    // it then, and `damaged()` is not exported — hp below max is the view's data, so no rule
-    // is mirrored; Hard's compensated marrow loses a number, never the truth).
-    const cells = (this.g['cells'] as Record<string, Record<string, unknown>> | undefined) ?? {};
-    const marrow = (this.g['organs'] as Record<string, Record<string, unknown>> | undefined)?.[
-      'marrow'
-    ];
-    const marrowDamaged =
-      marrow !== undefined && Number(marrow['hp'] ?? 0) < Number(marrow['max'] ?? 0);
-    const eos = cells['eosinophil'];
+    // WHEN A SPENT CELL IS BACK, AND WHY — see `PrecomputedQueries.regen`. The engine's own
+    // `regenBreakdown` (6 September 2026): the Neutrophil's return turn is null while the
+    // marrow is damaged because the spread will not regenerate it then — the ENGINE's reading
+    // of the marrow, which retires the one this session used to make from hp < max (that copy
+    // was conservative on Hard, where a compensated marrow does regenerate; the engine's is
+    // exact). `readyTurn` is derived from it so the board's badge is unchanged.
+    const engineState = this.g as unknown as Parameters<typeof regenBreakdown>[0];
+    const regen = regenBreakdown(engineState);
     const readyTurn: Record<string, number | null> = {
-      neutrophil: marrowDamaged
-        ? null
-        : ((call('neutrophilReadyTurn', this.g) as number | null | undefined) ?? null),
-      eosinophil:
-        eos?.['alive'] === false && typeof eos['regenAt'] === 'number' ? eos['regenAt'] : null,
+      neutrophil: regen.neutrophil?.readyTurn ?? null,
+      eosinophil: regen.eosinophil?.readyTurn ?? null,
     };
+
+    // THE ACTION POINT TOTAL AS TERMS — see `PrecomputedQueries.ap`.
+    const ap = apBreakdown(engineState);
 
     // THE CRISIS EFFECTS IN FORCE — the view drops `fx`; the strip needs its durations.
     const fx = (this.g['fx'] as Record<string, unknown> | undefined) ?? {};
@@ -377,7 +374,18 @@ export class LocalSession implements Session {
       skipMarch: fx['skipMarch'] === true,
     };
 
-    return { state, perInvader, perCell, perOrgan, perFamily, production, readyTurn, effects };
+    return {
+      state,
+      perInvader,
+      perCell,
+      perOrgan,
+      perFamily,
+      production,
+      readyTurn,
+      effects,
+      ap,
+      regen,
+    };
   }
 
   private scope(): ScopedQueries {

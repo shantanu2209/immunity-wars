@@ -59,8 +59,6 @@ export interface BodyPanelData {
   antivenom: number;
   avOrder: number;
   orderButtons: PanelButton[];
-  /** A remembered pathogen is in the body and reachable: its ring is on the board. */
-  memoryReady: number;
   hard: boolean;
   training: boolean;
   novelSeen: boolean;
@@ -125,12 +123,6 @@ export function BodyPanel({
       }}
     >
       <div style={{ ...LABEL, marginBottom: 2 }}>{t('body.title')}</div>
-
-      {data.memoryReady > 0 ? (
-        <div style={{ color: '#1F6F8B', fontWeight: 700, padding: '4px 0' }}>
-          {t(data.hard ? 'body.memoryReadyHard' : 'body.memoryReady', { n: data.memoryReady })}
-        </div>
-      ) : null}
 
       <div style={ROW}>
         <span style={{ flex: '1 1 160px' }}>

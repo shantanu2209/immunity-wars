@@ -12,10 +12,13 @@
  */
 import type { CSSProperties, ReactElement } from 'react';
 
+import { useState } from 'react';
+
 import { t } from '../i18n';
 import { actionDisplayName } from '../names';
 import type { ActionRow } from '../play/offered';
 import { ActionList } from './ActionList';
+import { ApTerms } from './ApTerms';
 
 const BTN: CSSProperties = {
   minHeight: 44,
@@ -35,6 +38,9 @@ export interface BarButton {
 export function CommandBar({
   selectedCellName,
   qualifier = null,
+  speed = null,
+  apTerms = [],
+  note = null,
   noSelectionHint = null,
   ap,
   hint = null,
@@ -71,6 +77,18 @@ export function CommandBar({
   selectedCellName: string | null;
   /** Muted line after the name — a resident's "resident of the Liver" (CP3). */
   qualifier?: string | null;
+  /** The selected cell's speed (content's SPEED table), shown beside its name (6 Sep 2026). */
+  speed?: number | null;
+  /**
+   * THE AP FIGURE'S TERMS (6 September 2026): the engine's `apBreakdown`, localised by the
+   * shell. Tapping the AP opens them; the number is the surface, the list its explanation.
+   */
+  apTerms?: readonly { text: string; delta: number }[];
+  /**
+   * A muted advisory about the SELECTION that is not a reason and not a rejection — the lymph
+   * shortcut withheld because the lymphatics are blocked; why a spent cell is back when it is.
+   */
+  note?: string | null;
   /** Shown instead of the select prompt while nothing is selected and the body offers rings (CP4). */
   noSelectionHint?: string | null;
   ap: number;
@@ -99,6 +117,7 @@ export function CommandBar({
   onInspect?: () => void;
   onDeselect: () => void;
 }): ReactElement {
+  const [apOpen, setApOpen] = useState(false);
   return (
     <div
       style={{
@@ -125,9 +144,32 @@ export function CommandBar({
             {qualifier !== null ? (
               <span style={{ fontSize: 13, color: '#7C6A61' }}>{qualifier}</span>
             ) : null}
-            <span style={{ fontSize: 13, color: '#7C6A61' }}>
+            {speed !== null ? (
+              // The cell's speed beside its name (ruled 6 September 2026): content's table,
+              // where the rule lives, not a number retyped here.
+              <span data-bar-speed={String(speed)} style={{ fontSize: 13, color: '#7C6A61' }}>
+                {t('commandBar.speed', { n: speed })}
+              </span>
+            ) : null}
+            {/* THE AP FIGURE IS A TAP (6 September 2026): it opens its own terms. */}
+            <button
+              data-bar-ap="1"
+              disabled={apTerms.length === 0}
+              onClick={() => setApOpen((v) => !v)}
+              style={{
+                minHeight: 44,
+                padding: '0 6px',
+                fontSize: 13,
+                color: '#7C6A61',
+                background: 'transparent',
+                border: 'none',
+                cursor: apTerms.length > 0 ? 'pointer' : 'default',
+                font: 'inherit',
+                textDecoration: apTerms.length > 0 ? 'underline dotted' : 'none',
+              }}
+            >
               {t('commandBar.ap')} {ap}
-            </span>
+            </button>
             {hint !== null ? <span style={{ fontSize: 13, color: '#2F6B4A' }}>{hint}</span> : null}
             {buttons.map((b) => (
               <button
@@ -158,6 +200,14 @@ export function CommandBar({
           </button>
         ) : null}
       </div>
+      {apOpen && apTerms.length > 0 && selectedCellName !== null ? (
+        <ApTerms terms={apTerms} total={ap} />
+      ) : null}
+      {note !== null && selectedCellName !== null ? (
+        <div data-bar-note="1" style={{ fontSize: 12, color: '#7A5600' }}>
+          {note}
+        </div>
+      ) : null}
       {/* The actions: the selected piece's rows, or the body's while nothing is selected. */}
       {onOffer ? (
         <ActionList rows={rows} hasMovement={hasMovement} disabled={disabled} onOffer={onOffer} />

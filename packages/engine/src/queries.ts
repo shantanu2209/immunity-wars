@@ -16,6 +16,7 @@ import {
   AFFINITY_AT,
   ANTIBODY_CAP,
   ANTIBODY_RATE,
+  EOSINOPHIL_REGEN,
   FAM_KEYS,
   FAST_DISEASE,
   INV_SPEED,
@@ -39,12 +40,15 @@ import { knobs } from './knobs.js';
 import { branchLen, d6, famOf, lymphPartners } from './primitives.js';
 import type {
   AbPoolKey,
+  ApBreakdown,
+  ApTerm,
   GameState,
   Invader,
   MoveDestination,
   Placed,
   ProductionBreakdown,
   ProductionEffect,
+  RegenBreakdown,
 } from './state.js';
 import type { CellKey, OrganKey } from './types.js';
 
@@ -202,6 +206,52 @@ export function apFor(g: GameState): number {
   if (g.organs.heart && damaged(g, 'heart')) ap -= 1;
   if (g.fx) ap += g.fx.apMod ?? 0;
   return Math.max(1, ap);
+}
+
+/**
+ * THE ACTION POINT TOTAL AS TERMS (P2.5, 6 September 2026). The same rule as `apFor`, in the
+ * same order, reading the same fields — `apFor` is left exactly as it is, and the equivalence
+ * suite asserts `apBreakdown(g).total === apFor(g)` on every state it holds, so the two
+ * cannot drift apart without a test going red. Published on the `./internal` entry point,
+ * never the root: the root is legacy's 67 names and this is not one of them.
+ *
+ * Why it exists: a player must be able to see why they have the number they have. Antibody
+ * production already explains itself through `productionBreakdown`; this gives the AP figure
+ * the same shape, so the UI lists causes rather than re-deriving them (a UI copy of this rule
+ * would be a second implementation of it, which is what the whole boundary exists to avoid).
+ */
+export function apBreakdown(g: GameState): ApBreakdown {
+  const terms: ApTerm[] = [];
+  const base = knobs.apOverride ?? g.apMax;
+  terms.push({ kind: 'base', delta: base });
+  let ap = base;
+  if (g.flags.specials) {
+    for (const iv of g.invaders) {
+      const drain = iv.drain ?? 0;
+      if (drain > 0) {
+        terms.push({ kind: 'drain', delta: -drain, disease: iv.disease });
+        ap -= drain;
+      }
+    }
+  }
+  if (g.organs.lungs && damaged(g, 'lungs')) {
+    terms.push({ kind: 'organ', delta: -1, organ: 'lungs' });
+    ap -= 1;
+  }
+  if (g.organs.heart && damaged(g, 'heart')) {
+    terms.push({ kind: 'organ', delta: -1, organ: 'heart' });
+    ap -= 1;
+  }
+  const mod = g.fx ? (g.fx.apMod ?? 0) : 0;
+  if (mod !== 0) {
+    terms.push({ kind: 'event', delta: mod });
+    ap += mod;
+  }
+  if (ap < 1) {
+    terms.push({ kind: 'floor', delta: 1 - ap });
+    ap = 1;
+  }
+  return { total: ap, terms };
 }
 
 /** Per-class antibody storage cap. A damaged liver cannot support the same protein output. */
@@ -601,6 +651,44 @@ export function neutrophilReadyTurn(g: GameState): number | null {
   if (!n || n.alive) return null;
   const wait = helperInBlood(g) ? NEUTROPHIL_REGEN_HELPED : NEUTROPHIL_REGEN;
   return n.spentAt != null ? n.spentAt + wait : (n.regenAt ?? null);
+}
+
+/**
+ * WHY A SPENT CELL IS BACK WHEN IT IS BACK (P2.5, 6 September 2026) — the terms behind the
+ * badge's number, for the two cells that spend themselves. Reads the same rules the spread
+ * applies (`neutrophilReadyTurn`, `marrowBroken`, the Eosinophil's `regenAt`), unchanged;
+ * the equivalence suite asserts the turns agree on every state. `null` for a cell that is
+ * not spent. The Neutrophil's `readyTurn` is null while the marrow is damaged because the
+ * spread will not regenerate it then — the same condition `resolveSpread` tests — and that
+ * retires the session's own reading of the marrow, which was the one place outside the
+ * engine that rule was written down. On the `./internal` entry point, like `apBreakdown`.
+ */
+export function regenBreakdown(
+  g: GameState,
+): Record<'neutrophil' | 'eosinophil', RegenBreakdown | null> {
+  let neutrophil: RegenBreakdown | null = null;
+  const n = g.cells.neutrophil;
+  if (n && !n.alive) {
+    const helped = helperInBlood(g);
+    const broken = marrowBroken(g);
+    neutrophil = {
+      readyTurn: broken ? null : neutrophilReadyTurn(g),
+      wait: helped ? NEUTROPHIL_REGEN_HELPED : NEUTROPHIL_REGEN,
+      helped,
+      marrowBroken: broken,
+    };
+  }
+  let eosinophil: RegenBreakdown | null = null;
+  const e = g.cells.eosinophil;
+  if (e && !e.alive) {
+    eosinophil = {
+      readyTurn: e.regenAt ?? null,
+      wait: EOSINOPHIL_REGEN,
+      helped: false,
+      marrowBroken: false,
+    };
+  }
+  return { neutrophil, eosinophil };
 }
 
 /**
