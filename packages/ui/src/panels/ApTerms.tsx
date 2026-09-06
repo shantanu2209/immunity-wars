@@ -28,11 +28,11 @@ export function ApTerms({
         borderRadius: 8,
         border: '1.5px solid #C8B8AE',
         background: '#FFFDF9',
-        fontSize: 13,
+        fontSize: '0.8125rem',
         color: '#2E2A28',
       }}
     >
-      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700 }}>{t('ap.title')}</div>
+      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700 }}>{t('ap.title')}</div>
       {terms.map((term, i) => (
         <div
           key={String(i)}

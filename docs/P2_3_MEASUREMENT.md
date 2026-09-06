@@ -240,3 +240,32 @@ worse number to explain.
 **The closeout inherits, in the brief's words:** row 3 within at p50 on the throttled PC with
 its p95 stated; row 2's command tap exceeded at 6× pending a ruling on a mount-changing fix;
 the handset pass still the deciding one.
+
+
+## Added 6 September 2026 (late) — the command tap RESOLVED with the mount fix, recorded as resolved with the measurement
+
+**The ruling (Shantanu):** take the mount fix — keep the board and the command panels mounted
+and hidden behind the planning screen — and resolve the 109/119ms breach rather than carry it
+a third time. Built: the command stage is a `<div data-command-stage hidden={planningActive}>`
+around the same children, so the tap that ends planning is a visibility toggle plus the board's
+redraw for the new turn; the flight reads its landing rectangles after that commit, when the
+stage is visible again; the memoised static layers make the extra render per draw cheap.
+
+**Measured, the same instrument and conditions as the rows above** (i7-12700F, headless system
+Chrome, CDP throttling, the dev shell, 360 × 780, four command taps per level):
+
+| device · throttle | busy p50 | busy p95 | busy max | to-paint p50 | row 2 budget (100ms) |
+|---|---|---|---|---|---|
+| i7-12700F · 1× | 11.7ms | 20.6ms | 20.6ms | 27.3ms | within |
+| i7-12700F · 4× | 40.4ms | 48.3ms | 48.3ms | 55.0ms | within |
+| i7-12700F · **6×** | **96.4ms** | 97.6ms | 97.6ms | 103.8ms | **within** (was 109.1 on 5 September, 121.2 / 119.3 earlier today) |
+
+**Resolved, not accepted:** the tap is inside the row at every screening level, with 3.6%
+headroom at 6× on this PC. That is thin, and it is stated as thin: the handset pass remains
+the deciding one, and this row is the first to re-measure there. The other rows in the same
+run: initial render 88 / 44 / 18ms at 1×, 159 / 187 / 105 at 4×, 299 / 152 / 186 at 6×
+(within 1s); selection tap busy p50 5.5 / 26.2 / 38.7ms; per-redraw work p50 5.3 / 16.3 /
+26.7ms (within 32 at every level; p95 at 6× 52.6, stated).
+
+**No breach is carried into the closeout from this screen.** What the closeout inherits is the
+handset pass and the p95s named here.

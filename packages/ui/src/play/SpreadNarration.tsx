@@ -54,13 +54,15 @@ export function SpreadNarration({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 16, fontWeight: 700, color: '#2E2A28' }}>
+        <span style={{ fontSize: '1rem', fontWeight: 700, color: '#2E2A28' }}>
           {/* An engine string: the frame headline is a query-prose site in the engine
               catalogue since FINDINGS #53 — one catalogue, loud on a miss. */}
           {engineText(label)}
         </span>
-        <span style={{ fontSize: 13, color: '#78665D' }}>{[String(n), String(of)].join('/')}</span>
-        <span style={{ fontSize: 13, color: '#78665D', marginLeft: 'auto' }}>
+        <span style={{ fontSize: '0.8125rem', color: '#78665D' }}>
+          {[String(n), String(of)].join('/')}
+        </span>
+        <span style={{ fontSize: '0.8125rem', color: '#78665D', marginLeft: 'auto' }}>
           {t('spread.tapToContinue')}
         </span>
       </div>
@@ -73,7 +75,7 @@ export function SpreadNarration({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 4,
-                fontSize: 13,
+                fontSize: '0.8125rem',
                 color: d.hit ? '#B03A2E' : '#78665D',
                 fontWeight: d.hit ? 700 : 400,
                 border: `1.5px solid ${d.hit ? '#B03A2E' : '#C48377'}`,

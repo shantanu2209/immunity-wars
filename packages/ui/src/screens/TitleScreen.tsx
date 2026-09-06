@@ -11,7 +11,7 @@ const BTN: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 52,
-  fontSize: 17,
+  fontSize: '1.0625rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -36,12 +36,12 @@ export function TitleScreen({
 }): ReactElement {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: 30, color: '#B03A2E' }}>{t('title.name')}</h1>
-      <p style={{ fontSize: 14, color: '#78665D' }}>{t('title.tagline')}</p>
+      <h1 style={{ fontSize: '1.875rem', color: '#B03A2E' }}>{t('title.name')}</h1>
+      <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('title.tagline')}</p>
       {save ? (
         <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onContinue}>
           {t('title.continue')}
-          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
+          <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
             {/* The difficulty is a key, not display text — render its catalogue name. */}
             {t(`difficulty.${save.difficulty}`)} {t('title.continueTurn')} {save.turn}
           </span>

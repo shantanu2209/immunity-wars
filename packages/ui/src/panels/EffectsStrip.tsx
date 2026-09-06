@@ -18,7 +18,7 @@ const COLOUR: Record<EffectChip['kind'], { border: string; text: string; bg: str
 const CHIP: CSSProperties = {
   borderRadius: 8,
   padding: '4px 8px',
-  fontSize: 13,
+  fontSize: '0.8125rem',
   lineHeight: 1.25,
   border: '1.5px solid',
 };
@@ -27,7 +27,7 @@ export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement |
   if (chips.length === 0) return null;
   return (
     <div data-panel="effects" style={{ marginBottom: 6 }}>
-      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
+      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
         {t('effects.title')}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>

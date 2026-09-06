@@ -48,14 +48,19 @@ const DEPTH_COLOUR: Record<Depth, string> = {
   organ: '#B03A2E',
 };
 
-const TITLE: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 };
+const TITLE: CSSProperties = {
+  fontSize: '0.75rem',
+  color: '#78665D',
+  fontWeight: 700,
+  marginBottom: 2,
+};
 const PANEL: CSSProperties = {
   marginTop: 6,
   padding: '6px 8px',
   border: '1.5px solid #C48377',
   borderRadius: 10,
   background: '#FFFDF9',
-  fontSize: 13,
+  fontSize: '0.8125rem',
 };
 const ROW_BUTTON: CSSProperties = {
   display: 'flex',
@@ -77,7 +82,7 @@ const ROW_BUTTON: CSSProperties = {
 const CARD_BUTTON: CSSProperties = {
   minHeight: 44,
   padding: '0 12px',
-  fontSize: 14,
+  fontSize: '0.875rem',
   borderRadius: 8,
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
@@ -87,7 +92,7 @@ const BIG: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 48,
-  fontSize: 16,
+  fontSize: '1rem',
   fontWeight: 700,
   borderRadius: 10,
   border: '2px solid #B03A2E',
@@ -138,7 +143,7 @@ function GroupRow({
                 borderRadius: 9,
                 background: '#2E2A28',
                 color: '#FFFDF9',
-                fontSize: 11,
+                fontSize: '0.6875rem',
                 fontWeight: 700,
                 textAlign: 'center',
                 lineHeight: '18px',
@@ -149,7 +154,7 @@ function GroupRow({
           ) : null}
         </span>
         <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-          <span style={{ fontSize: 14, fontWeight: 700 }}>
+          <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>
             {group.novel ? t('inspect.unknown') : typeDisplayName(group.type)}
             {group.count >= 2 ? (
               <span style={{ color: '#78665D', fontWeight: 400 }}>
@@ -172,7 +177,7 @@ function GroupRow({
           ) : null}
           <span style={{ display: 'block', color: '#4A423E' }}>{group.where}</span>
         </span>
-        <span style={{ color: colour, fontWeight: 700, fontSize: 12, flex: '0 0 auto' }}>
+        <span style={{ color: colour, fontWeight: 700, fontSize: '0.75rem', flex: '0 0 auto' }}>
           {t(DEPTH_LABEL[group.depth])}
         </span>
       </button>
@@ -190,14 +195,14 @@ function GroupRow({
                 flexWrap: 'wrap',
               }}
             >
-              <span style={{ fontSize: 14, flex: '1 1 auto' }}>
+              <span style={{ fontSize: '0.875rem', flex: '1 1 auto' }}>
                 {iv.novel ? t('inspect.unknown') : iv.disease}
                 <span style={{ color: '#78665D' }}>
                   {' '}
                   {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
                 </span>
                 {invaderNowLine(iv) !== null ? (
-                  <span style={{ display: 'block', fontSize: 13, color: '#7A5600' }}>
+                  <span style={{ display: 'block', fontSize: '0.8125rem', color: '#7A5600' }}>
                     {invaderNowLine(iv)}
                   </span>
                 ) : null}
@@ -269,7 +274,9 @@ export function PlanningScreen({
   const rows = focus === null ? model.groups : model.groups.filter((grp) => grp.place === focus);
   return (
     <div data-screen="planning" style={{ marginTop: 6 }}>
-      <div style={{ fontSize: 18, fontWeight: 700, color: '#2E2A28' }}>{t('planning.title')}</div>
+      <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#2E2A28' }}>
+        {t('planning.title')}
+      </div>
       {/* THE AP FIGURE DRILLS INTO ITS TERMS (6 September 2026): the number is the surface, its
           breakdown the explanation, one tap away and never a banner. */}
       <button
@@ -279,7 +286,7 @@ export function PlanningScreen({
         style={{
           minHeight: 44,
           padding: '0 4px',
-          fontSize: 13,
+          fontSize: '0.8125rem',
           color: '#78665D',
           background: 'transparent',
           border: 'none',
@@ -290,7 +297,9 @@ export function PlanningScreen({
       >
         {t('planning.apNext', { n: model.apNext })}
         {apTerms.length > 0 ? (
-          <span style={{ display: 'block', fontSize: 12, color: '#8E6E53' }}>{t('ap.tap')}</span>
+          <span style={{ display: 'block', fontSize: '0.75rem', color: '#8E6E53' }}>
+            {t('ap.tap')}
+          </span>
         ) : null}
       </button>
       {apOpen && apTerms.length > 0 ? <ApTerms terms={apTerms} total={model.apNext} /> : null}
@@ -299,7 +308,7 @@ export function PlanningScreen({
           AP line, and the cell cards open from the inspect sheet. Since 6 September the fact
           carries its WHY (the engine's `regenBreakdown`) when there is one. */}
       {cells.some((c) => c.unavailable !== null) ? (
-        <div data-planning-cell-facts="1" style={{ fontSize: 13, color: '#7A5600' }}>
+        <div data-planning-cell-facts="1" style={{ fontSize: '0.8125rem', color: '#7A5600' }}>
           {cells
             .filter((c) => c.unavailable !== null)
             .map((c) =>
@@ -321,7 +330,7 @@ export function PlanningScreen({
           disabled={disabled}
           onTap={(place) => setFocus((f) => (place === null || place === f ? null : place))}
         />
-        <div style={{ fontSize: 12, color: '#78665D', textAlign: 'center' }}>
+        <div style={{ fontSize: '0.75rem', color: '#78665D', textAlign: 'center' }}>
           {focus === null ? (
             t('planning.figureHint')
           ) : (

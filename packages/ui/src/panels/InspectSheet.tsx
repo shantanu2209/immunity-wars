@@ -42,7 +42,7 @@ const ROW: CSSProperties = {
 const BTN: CSSProperties = {
   minHeight: 44,
   padding: '0 12px',
-  fontSize: 14,
+  fontSize: '0.875rem',
   borderRadius: 8,
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
@@ -125,7 +125,7 @@ export function InspectSheet({
             alt=""
             style={iv.novel ? { filter: 'brightness(0.2)' } : undefined}
           />
-          <span style={{ fontSize: 14, flex: '1 1 auto' }}>
+          <span style={{ fontSize: '0.875rem', flex: '1 1 auto' }}>
             {iv.novel ? t('inspect.unknown') : iv.disease}
             <span style={{ color: '#78665D' }}>
               {' '}
@@ -139,7 +139,7 @@ export function InspectSheet({
               </span>
             ) : null}
             {invaderNowLine(iv) !== null ? (
-              <span style={{ display: 'block', fontSize: 13, color: '#7A5600' }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', color: '#7A5600' }}>
                 {invaderNowLine(iv)}
               </span>
             ) : null}
@@ -175,7 +175,7 @@ export function InspectSheet({
               background: selectedCell === ck ? '#FBEAE5' : 'transparent',
               border: 'none',
               cursor: 'pointer',
-              fontSize: 14,
+              fontSize: '0.875rem',
               textAlign: 'left',
             }}
           >
@@ -222,7 +222,7 @@ export function InspectSheet({
             background: selectedResident === info.resident ? '#FBEAE5' : 'transparent',
             border: 'none',
             cursor: 'pointer',
-            fontSize: 14,
+            fontSize: '0.875rem',
             textAlign: 'left',
           }}
         >
@@ -242,7 +242,7 @@ export function InspectSheet({
         // that let the permanent organ-damage chip leave the strip. The column is content, a
         // table cell rendered as a labelled value, never spliced into a sentence.
         <div data-sheet-organ={info.organ.key} style={{ ...ROW, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 14 }}>
+          <span style={{ fontSize: '0.875rem' }}>
             {t('inspect.organ', {
               organ: organDisplayName(info.organ.key),
               // THE ORGAN'S KIND (strings 45 and 46, ruled IN 6 September 2026): the rulebook's
@@ -253,7 +253,7 @@ export function InspectSheet({
               max: info.organ.max,
             })}
             {info.organ.hp < info.organ.max && organEffect(info.organ.key) !== null ? (
-              <span style={{ display: 'block', fontSize: 13, color: '#B03A2E' }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', color: '#B03A2E' }}>
                 {t('effects.organEffect', { effect: organEffect(info.organ.key) ?? '' })}
               </span>
             ) : null}
@@ -262,7 +262,7 @@ export function InspectSheet({
       ) : null}
       <button
         onClick={onClose}
-        style={{ minHeight: 44, width: '100%', fontSize: 14, marginTop: 4 }}
+        style={{ minHeight: 44, width: '100%', fontSize: '0.875rem', marginTop: 4 }}
       >
         {t('inspect.close')}
       </button>

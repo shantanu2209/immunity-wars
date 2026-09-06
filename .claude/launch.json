@@ -7,6 +7,12 @@
       "runtimeArgs": ["--filter", "@immunity-wars/app", "dev"],
       "port": 5173,
       "autoPort": true
+    },
+    {
+      "name": "preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@immunity-wars/app", "preview"],
+      "port": 4173
     }
   ]
 }

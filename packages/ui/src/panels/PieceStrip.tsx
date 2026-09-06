@@ -37,7 +37,7 @@ const CHIP: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 4,
-  fontSize: 12,
+  fontSize: '0.75rem',
   lineHeight: 1.15,
   textAlign: 'left',
 };
@@ -74,13 +74,13 @@ export function PieceStrip({
 }): ReactElement {
   return (
     <div data-panel="pieces" style={{ marginTop: 6 }}>
-      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
+      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
         {t('pieces.title')}
       </div>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(7rem, 1fr))',
           gap: 6,
           paddingBottom: 4,
         }}
@@ -125,7 +125,10 @@ export function PieceStrip({
         })}
       </div>
       {selectedCell !== null && why[selectedCell] !== undefined ? (
-        <div data-piece-why={selectedCell} style={{ fontSize: 12, color: '#7A5600', marginTop: 4 }}>
+        <div
+          data-piece-why={selectedCell}
+          style={{ fontSize: '0.75rem', color: '#7A5600', marginTop: 4 }}
+        >
           {why[selectedCell]}
         </div>
       ) : null}

@@ -120,10 +120,10 @@ export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement
         border: '1.5px solid #C48377',
         borderRadius: 10,
         background: '#FFFDF9',
-        fontSize: 13,
+        fontSize: '0.8125rem',
       }}
     >
-      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
+      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
         {t('log.title')}
       </div>
       {shown.length === 0 ? (
@@ -145,7 +145,9 @@ export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement
                 fontWeight: l.kind === 'big' ? 700 : undefined,
               }}
             >
-              <span style={{ color: '#78665D', fontSize: 11, flex: '0 0 auto', paddingTop: 2 }}>
+              <span
+                style={{ color: '#78665D', fontSize: '0.6875rem', flex: '0 0 auto', paddingTop: 2 }}
+              >
                 {t('log.turn', { n: l.t })}
               </span>
               <span>
@@ -161,7 +163,7 @@ export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement
           style={{
             minHeight: 44,
             width: '100%',
-            fontSize: 14,
+            fontSize: '0.875rem',
             marginTop: 4,
             borderRadius: 8,
             border: '1.5px solid #8E6E53',

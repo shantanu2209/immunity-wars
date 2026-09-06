@@ -11,7 +11,7 @@ const BTN: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 56,
-  fontSize: 16,
+  fontSize: '1rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -42,7 +42,7 @@ export function DifficultyScreen({
 
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }}>
-      <h2 style={{ fontSize: 22, color: '#2E2A28' }}>{t('difficulty.heading')}</h2>
+      <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('difficulty.heading')}</h2>
       {DIFFS.map((d) => (
         <button
           key={d}
@@ -54,11 +54,13 @@ export function DifficultyScreen({
             // The interface carries the first-game guidance, not the newcomer-test script —
             // Shantanu's ruling, 30 Aug 2026 (docs/NEWCOMER_TEST.md): whether a newcomer can
             // tell where to start is part of what the test measures.
-            <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#1F6F8B' }}>
+            <span
+              style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#1F6F8B' }}
+            >
               {t('difficulty.trainingRecommended')}
             </span>
           ) : null}
-          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
+          <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
             {t(`difficulty.${d}Desc`)}
           </span>
         </button>
@@ -87,7 +89,7 @@ export function DifficultyScreen({
               padding: 16,
             }}
           >
-            <p style={{ fontSize: 15 }}>{t('difficulty.overwriteWarning')}</p>
+            <p style={{ fontSize: '0.9375rem' }}>{t('difficulty.overwriteWarning')}</p>
             <button
               style={{ ...BTN, textAlign: 'center', borderColor: '#B03A2E' }}
               onClick={() => onStart(pendingDiff)}

@@ -27,12 +27,12 @@ interface Fields {
   fact?: string;
 }
 
-const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
 const CLOSE: CSSProperties = {
   display: 'block',
   width: '100%',
   minHeight: 44,
-  fontSize: 16,
+  fontSize: '1rem',
   borderRadius: 10,
   border: '2px solid #8E6E53',
   background: '#FFFDF9',
@@ -81,17 +81,17 @@ export function CellCard({
           border: '2px solid #8E6E53',
           borderRadius: 12,
           padding: 14,
-          fontSize: 14,
+          fontSize: '0.875rem',
           color: '#2E2A28',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={`/art/cell-${cell}@3x.webp`} width={48} height={48} alt="" />
           <div style={{ flex: '1 1 auto' }}>
-            <div style={{ fontSize: 20, fontWeight: 700, color: '#8E6E53' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#8E6E53' }}>
               {cellDisplayName(cell)}
             </div>
-            {tag ? <div style={{ fontSize: 13, color: '#78665D' }}>{tag}</div> : null}
+            {tag ? <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>{tag}</div> : null}
           </div>
         </div>
         {subject.now !== null ? (

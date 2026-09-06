@@ -70,18 +70,18 @@ export function RevealBody({
             color: crisis.bad ? '#B03A2E' : '#2F6B4A',
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#78665D' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78665D' }}>
             {t(crisis.bad ? 'reveal.crisisBad' : 'reveal.crisisGood')}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>{crisis.name}</div>
+          <div style={{ fontSize: '1rem', fontWeight: 700 }}>{crisis.name}</div>
           {crisis.why ? (
             // The event's why is content prose with the engine's <b> emphasis in it.
-            <div style={{ fontSize: 13, color: '#4A423E' }}>
+            <div style={{ fontSize: '0.8125rem', color: '#4A423E' }}>
               <RichText text={crisis.why} />
             </div>
           ) : null}
           {crisis.effects.map((e, i) => (
-            <div key={String(i)} style={{ fontSize: 13, fontWeight: 700 }}>
+            <div key={String(i)} style={{ fontSize: '0.8125rem', fontWeight: 700 }}>
               {e}
             </div>
           ))}
@@ -90,22 +90,24 @@ export function RevealBody({
       {arrivals.map((a, i) => {
         const inner = (
           <>
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#2E2A28' }}>{a.disease}</span>
-            <span style={{ fontSize: 13, color: '#78665D' }}>
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#2E2A28' }}>{a.disease}</span>
+            <span style={{ fontSize: '0.8125rem', color: '#78665D' }}>
               {t('reveal.enteredVia')} {routeName(a.lane)}
             </span>
             {a.novel ? (
-              <span style={{ fontSize: 13, color: '#B03A2E', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.8125rem', color: '#B03A2E', fontWeight: 700 }}>
                 {t('reveal.novel')}
               </span>
             ) : null}
             {a.remembered ? (
-              <span style={{ fontSize: 13, color: '#1F6F8B', fontWeight: 700 }}>
+              <span style={{ fontSize: '0.8125rem', color: '#1F6F8B', fontWeight: 700 }}>
                 {t('reveal.remembered')}
               </span>
             ) : null}
             {!a.novel && onCard ? (
-              <span style={{ fontSize: 13, color: '#8E6E53' }}>{t('reveal.tapForCard')}</span>
+              <span style={{ fontSize: '0.8125rem', color: '#8E6E53' }}>
+                {t('reveal.tapForCard')}
+              </span>
             ) : null}
           </>
         );

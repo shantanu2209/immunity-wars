@@ -26,13 +26,13 @@ import { t } from '../i18n';
 const BTN: CSSProperties = {
   minHeight: 44,
   padding: '0 12px',
-  fontSize: 14,
+  fontSize: '0.875rem',
   borderRadius: 8,
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
   cursor: 'pointer',
 };
-const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
 const ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -119,7 +119,7 @@ export function BodyPanel({
         border: '1.5px solid #C48377',
         borderRadius: 10,
         background: '#FFFDF9',
-        fontSize: 14,
+        fontSize: '0.875rem',
       }}
     >
       <div style={{ ...LABEL, marginBottom: 2 }}>{t('body.title')}</div>
@@ -128,7 +128,7 @@ export function BodyPanel({
         <span style={{ flex: '1 1 160px' }}>
           <span style={LABEL}>{t('body.antivenom')}</span>{' '}
           {t(data.antivenom === 1 ? 'body.doseOne' : 'body.doses', { n: data.antivenom })}
-          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
+          <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
             {t('body.order', { n: ANTIVENOM_ORDER })}{' '}
             <Progress put={data.avOrder} cost={ANTIVENOM_ORDER} />{' '}
             {[data.avOrder, ANTIVENOM_ORDER].join('/')}
@@ -141,7 +141,7 @@ export function BodyPanel({
         <div style={ROW}>
           <span style={{ flex: '1 1 160px' }}>
             <span style={LABEL}>{t('body.clone')}</span>
-            <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
+            <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
               {data.cloneFound ? t('body.cloneFound') : t('body.cloneHint')}
             </span>
           </span>
@@ -152,23 +152,25 @@ export function BodyPanel({
       <div style={{ marginTop: 4 }}>
         <span style={LABEL}>{t('body.vaccines')}</span>
         {data.training ? (
-          <div style={{ fontSize: 13, color: '#78665D' }}>{t('body.trainingNoVaccine')}</div>
+          <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>
+            {t('body.trainingNoVaccine')}
+          </div>
         ) : (
           <>
-            <div style={{ fontSize: 13, color: '#78665D' }}>
+            <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>
               {t('body.vaccineHint', { cost: VACCINE_COST })}
             </div>
             {data.vaccines.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#78665D' }}>{t('body.vaccineNone')}</div>
+              <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>{t('body.vaccineNone')}</div>
             ) : (
               data.vaccines.map((v) => (
                 <div key={v.disease} style={ROW} data-vaccine={v.disease}>
                   <span style={{ flex: '1 1 160px' }}>
                     {v.name}{' '}
-                    <span style={{ fontSize: 12, color: '#78665D' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#78665D' }}>
                       {familyName(v.disease) || v.family}
                     </span>
-                    <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
+                    <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
                       <Progress put={v.put} cost={VACCINE_COST} /> {[v.put, VACCINE_COST].join('/')}
                     </span>
                   </span>
@@ -179,7 +181,7 @@ export function BodyPanel({
           </>
         )}
         {data.immune.length > 0 ? (
-          <div style={{ fontSize: 13, color: '#1F6F8B', marginTop: 4 }}>
+          <div style={{ fontSize: '0.8125rem', color: '#1F6F8B', marginTop: 4 }}>
             <span style={LABEL}>{t('body.immune')}</span> {data.immune.join(', ')}
           </div>
         ) : null}

@@ -22,7 +22,7 @@ import { productionText } from '../productionText';
 const CHIP: CSSProperties = {
   minHeight: 44,
   padding: '4px 10px',
-  fontSize: 13,
+  fontSize: '0.8125rem',
   borderRadius: 8,
   border: '1.5px solid #8E6E53',
   background: '#FFFDF9',
@@ -83,10 +83,10 @@ export function AntibodyPanel({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#2E2A28' }}>
+        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#2E2A28' }}>
           {t('antibody.title')}
         </span>
-        <span style={{ fontSize: 12, color: '#78665D' }}>{t('antibody.selectHint')}</span>
+        <span style={{ fontSize: '0.75rem', color: '#78665D' }}>{t('antibody.selectHint')}</span>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
         {rows.map((r) => {
@@ -116,7 +116,7 @@ export function AntibodyPanel({
         })}
       </div>
       {selectedFamily !== null ? (
-        <div style={{ marginTop: 8, fontSize: 13, color: '#2E2A28' }}>
+        <div style={{ marginTop: 8, fontSize: '0.8125rem', color: '#2E2A28' }}>
           <div style={{ fontWeight: 700 }}>{name(selectedFamily)}</div>
           {detail ? (
             <>
@@ -150,7 +150,7 @@ export function AntibodyPanel({
                 minHeight: 44,
                 marginTop: 6,
                 padding: '0 14px',
-                fontSize: 14,
+                fontSize: '0.875rem',
                 borderRadius: 8,
                 border: '1.5px solid #B03A2E',
                 background: '#FFFDF9',

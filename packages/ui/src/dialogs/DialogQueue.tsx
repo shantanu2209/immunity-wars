@@ -82,14 +82,16 @@ export function DialogHost({
           padding: 16,
         }}
       >
-        <h3 style={{ fontSize: 18, color: '#B03A2E', margin: '0 0 8px' }}>{dialog.title}</h3>
+        <h3 style={{ fontSize: '1.125rem', color: '#B03A2E', margin: '0 0 8px' }}>
+          {dialog.title}
+        </h3>
         {dialog.body}
         <button
           style={{
             display: 'block',
             width: '100%',
             minHeight: 44,
-            fontSize: 16,
+            fontSize: '1rem',
             borderRadius: 10,
             border: '2px solid #8E6E53',
             background: '#FFFDF9',

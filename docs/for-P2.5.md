@@ -1984,3 +1984,70 @@ frame store, the memoised board, the grid, the dialog wrap) for anything that re
 The list is in `P2_5_PROGRESS.md`. Waiting on rulings: the command tap's mount fix; the
 service worker. Waiting on nothing: the newcomer test, which lands against the closeout when
 testers exist.
+
+
+# The phone session's result, two rulings applied, and a finding that changed the instrument (6 September 2026, late)
+
+## The phone session (Shantanu, S25)
+
+- **THE WIN PATH IS CROSSED BY A PERSON.** Several full games played and won on the phone; the
+  Result screen reached on a real win. The closeout checklist item is closed on that, not on
+  the headless crossing from a constructed end-state.
+- Offline play continued after load with only some visuals missing, matching the measurement.
+- No flicker or jump during spreads after the frame store change. No perceptible pause on the
+  command tap.
+- **A finding, not a pass:** Android's font size at 200% made no difference to the game. The
+  address bar grew, so the setting applied; nothing in the page responded.
+
+## Ruling 1, applied: the mount fix
+
+The command stage stays mounted and hidden behind the planning screen. The command tap
+measures **96.4ms at p50 at 6×** against the 100ms row, from 119, and is recorded as RESOLVED
+with the measurement in [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 6 September 2026
+(late)"; 3.6% headroom at 6× on the PC, stated as thin; the handset pass decides.
+
+## Ruling 2, applied: the service worker
+
+`vite-plugin-pwa` (generateSW, autoUpdate) precaches everything the game needs at the first
+visit: the app, 193 entries, 985 KiB — the art at every scale, the anatomy frame, the fonts.
+The dev server does not register it (the instruments and HMR must see the network);
+`pnpm --filter @immunity-wars/app build:web` then `preview` serves the build on 4173, and
+`pnpm gate1:audit http://localhost:4173` is the check: the network cut after the first visit,
+a turn played (0 of 14 images broken, 0 failed requests), a reload with no network that
+renders the app and plays a turn. **Offline is MET on the shipped web build**; FINDINGS #59 is
+closed. `pnpm audit` after the new dependency: the same two dispositioned advisories, nothing
+new.
+
+## The finding: text did not scale, and the audit had passed it (FINDINGS #60)
+
+**Investigated before anything was proposed.** Every font size in the UI was a fixed pixel
+number: 109 inline sizes in `packages/ui`, 12 in the app shell, no `rem` anywhere, no root
+size set. The viewport tag is the ordinary one and there is no `text-size-adjust` rule; nothing
+suppressed scaling, there was nothing that could scale. A phone's font-size setting changes
+the browser's default font size, which only relative units follow.
+
+**The instrument's defect is the real finding.** The audit tested 200% text by re-running the
+screens at a 180 px viewport, the layout that doubled text produces, and it found four real
+layout faults that way. It never asked whether the text doubled. It confirmed the layout
+survives a thing that did not happen, and it would have passed this build forever. The same
+shape the project keeps finding: a check that measures a proxy for the thing.
+
+**Both halves fixed.** (1) The thing: all 121 font sizes are `rem` (16 px root, 13 → 0.8125rem),
+the piece grid's minimum column is `7rem`; the board's SVG text stays in board units on purpose
+(the drawn board at the board's scale, like the print; the inspect sheet is its text surface),
+stated as a decision. (2) The instrument: the root font size is set to 200% on every load at
+the full 360 px width and, on every screen, each text run's computed size must be at least
+1.9× its size at 100%, listed by name when it is not, and the layout must survive it. Its
+controls: a planted 13 px span flagged as not scaling, a planted 0.8125rem span not flagged, a
+600 px block flagged as overflow; all fire before any screen is measured. The 180 px proxy pass
+is gone. The first run of the new pass then found the instrument's own second defect: the title
+screen was measured before the 200% root had been applied (the app renders from a module script
+before DOMContentLoaded), and reported three texts unscaled that scale; the root is now set
+explicitly before the first screen. The numbers after that are in
+[`GATE1_AUDIT.md`](GATE1_AUDIT.md).
+
+## For the next phone session (one item)
+
+Android font size at 200%: every screen's text should now be twice its size, the layout should
+hold (the audit says it does at the same width), and the board's own labels stay at the
+board's scale. If anything is cut or overlaps, name the screen.
