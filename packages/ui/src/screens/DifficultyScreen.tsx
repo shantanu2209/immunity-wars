@@ -58,12 +58,12 @@ export function DifficultyScreen({
               {t('difficulty.trainingRecommended')}
             </span>
           ) : null}
-          <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
+          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
             {t(`difficulty.${d}Desc`)}
           </span>
         </button>
       ))}
-      <button style={{ ...BTN, textAlign: 'center', borderColor: '#C8877B' }} onClick={onBack}>
+      <button style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }} onClick={onBack}>
         {t('difficulty.back')}
       </button>
       {pendingDiff !== null ? (

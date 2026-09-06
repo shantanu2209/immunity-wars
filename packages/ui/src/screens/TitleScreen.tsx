@@ -37,11 +37,11 @@ export function TitleScreen({
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
       <h1 style={{ fontSize: 30, color: '#B03A2E' }}>{t('title.name')}</h1>
-      <p style={{ fontSize: 14, color: '#7C6A61' }}>{t('title.tagline')}</p>
+      <p style={{ fontSize: 14, color: '#78665D' }}>{t('title.tagline')}</p>
       {save ? (
         <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onContinue}>
           {t('title.continue')}
-          <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
+          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
             {/* The difficulty is a key, not display text — render its catalogue name. */}
             {t(`difficulty.${save.difficulty}`)} {t('title.continueTurn')} {save.turn}
           </span>

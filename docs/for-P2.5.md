@@ -1911,3 +1911,76 @@ it to the port's `apFor` would prove nothing once they are one function. Recorde
 **Ruling: the organ's kind, in.** On the sheet's organ row, "Liver, defence organ, integrity 2
 of 3", from `ORGANS.kind` through the catalogue. That closes the 46 ambiguous strings, 46 of
 46, and the definition-of-done item with them; `AMBIGUOUS_STRINGS.md` records the close.
+
+
+# What remained in P2.5, taken in Shantanu's order (6 September 2026, late): Gate 1 hygiene, the full-UI re-measure, the three unverified states
+
+## a. Gate 1 hygiene, the headless half: BUILT, RUN, and the fixes it found are in
+
+The instrument is `tools/perf/gate1-audit.ts` (`pnpm gate1:audit`); the record with every
+number is [`GATE1_AUDIT.md`](GATE1_AUDIT.md). Sixteen screens of a real game on the app shell,
+at 360 × 780 and at 180 × 390 (200% zoom's layout); five planted controls fire first or the run
+stops, and they fired on every run. **Touch targets: 327 controls, 0 under 44 px. Contrast:
+836 text runs, 0 under their threshold; 327 control boundaries, 0 under 3:1. 200%: 0 after
+three fixes. Offline: NOT MET by the web build, measured and reported for a ruling.**
+
+What the audit found and what changed, all rendering-only: six colours a few hundredths short
+of their threshold (the muted text on the pink bar at 4.40:1 against 4.5; the greyed action
+rows, which are tappable, at 2.90:1; four control borders between 1.65:1 and 2.91:1 against
+3:1), each nudged to the nearest value over the line; the reveal dialog's box sizing and a
+long single word that would not wrap at 180 px; the piece grid, which at 180 px clipped every
+name to one letter and is now `auto-fill, minmax(110px, 1fr)` with tighter chip padding —
+three columns at 360 px exactly as before, one at 180 px. **The board's own print palette is
+untouched**: the global colour sweep had darkened its ink and route constants and they were
+put back, because they are the physical board's and the SVG is outside this instrument.
+
+The offline finding: after a load, a turn plays with the network cut but every lazily fetched
+asset fails (23 URLs, 14 of 14 images broken); a reload with no network loads the page and
+does not render the app. A plain Vite SPA has no service worker. The fix is a build-and-caching
+decision (`vite-plugin-pwa`'s precache, tested on `vite preview`), the same class as the
+command tap's mount fix, so it is recommended and not built (FINDINGS #59). Phase 4's Capacitor
+build bundles every asset and is offline by construction; the web build is what P2.5 ships.
+
+## b. The full-UI per-redraw re-measure: a SECOND breach found and resolved; the command tap stops for a ruling
+
+`tools/perf/measure-full.ts` (`pnpm perf:full`) is P2.3's instrument against the full play
+screen. The record is in [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 6 September
+2026". In one line each:
+
+- **Row 3 was breached** (59.7ms per frame at p50 at 6×, 38.3 at 4×, against 32): every frame
+  of a spread re-rendered every panel. Resolved with two rendering changes that touch neither
+  the mount nor the flight — the frame in an external store with four subscribers
+  (`frameStore.ts`), and the board's static layers memoised — to **23.4ms at p50 at 6×, 17.7 at
+  4×**, with the p95 at 6× (47ms) stated rather than hidden.
+- **The command tap is still exceeded: 119ms at 6×.** Its cost is the mount, and both named
+  fixes change the mount, so per Shantanu's instruction the fix stops here: the options and a
+  recommendation (keep the board mounted and hidden behind the planning screen) are in the
+  measurement record.
+- Rows 1 and 2 are within at every level; the selection tap dropped from 59 to 38ms at 6×.
+
+## c. The three states verified by no one: now verified headless
+
+Constructed states injected through the app's own autosave (`immunity-wars` / `saves` /
+`autosave`, then Continue), the driver kept in the session scratchpad per practice:
+
+- **A coated planning row**: a worm coated on the Bone Marrow branch, End turn, Draw — the
+  planning row reads "Worm · Coated in antibody · Bone Marrow branch, step 2 · Organ lane".
+- **A bloodstream badge tap**: a planning moment with one invader in the hub (found among
+  `planningStates`; a command-phase state loses it to the spread first) — the bloodstream chip
+  carries badge 1, a pointer-down at its centre (the figure resolves taps by coordinates, like
+  the board) focuses `hub`, "Showing: Bloodstream", one row, depth blood.
+- **A failed organ**: the Liver at 0 resumed mid-turn — the strip shows no organ chip (as
+  swept), the pips are the surface; End turn — the spread loses the game and the Result reads
+  "Lost to damage: Liver". There is no separate "failed" rendering on the board: `integrityState`
+  has full, worn and critical, and a failed organ exists on the command screen only until the
+  next spread, which ends the game. The earlier handoff's "dimmed icon" was an expectation,
+  not a built thing; recorded here so nobody looks for it.
+
+## What the phone session covers, and what waits
+
+The phone session is worth doing now, once against the build that carries all of the above:
+200% text, offline as measured, a real win, and a look at the four rerendering changes (the
+frame store, the memoised board, the grid, the dialog wrap) for anything that reads wrong.
+The list is in `P2_5_PROGRESS.md`. Waiting on rulings: the command tap's mount fix; the
+service worker. Waiting on nothing: the newcomer test, which lands against the closeout when
+testers exist.

@@ -49,12 +49,12 @@ export function ActionList({
       data-panel="actions"
       style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}
     >
-      <div style={{ fontSize: 12, color: '#7C6A61', fontWeight: 700 }}>{t('actions.title')}</div>
+      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700 }}>{t('actions.title')}</div>
       {hasMovement ? (
         <div style={{ fontSize: 12, color: '#2F6B4A' }}>{t('actions.movementOnBoard')}</div>
       ) : null}
       {rows.length === 0 ? (
-        <div style={{ fontSize: 13, color: '#7C6A61' }}>{t('actions.none')}</div>
+        <div style={{ fontSize: 13, color: '#78665D' }}>{t('actions.none')}</div>
       ) : null}
       {rows.map((r) => (
         <div key={r.id}>
@@ -68,8 +68,8 @@ export function ActionList({
             }}
             style={{
               ...ROW,
-              borderColor: r.available ? '#B03A2E' : '#C8B8AE',
-              color: r.available ? '#2E2A28' : '#9A8C84',
+              borderColor: r.available ? '#B03A2E' : '#94847A',
+              color: r.available ? '#2E2A28' : '#7A6C64',
               background: r.available ? '#FFFDF9' : '#F6F1EC',
             }}
           >
@@ -78,7 +78,7 @@ export function ActionList({
               // THE ROW'S DETAIL (ruled 6 September 2026: rows carry odds and cost where the
               // number is content's): right-aligned, muted, and allowed to wrap under the label
               // at 360px rather than truncate — `flexWrap` on the row.
-              <span data-action-detail="1" style={{ fontSize: 12, color: '#7C6A61' }}>
+              <span data-action-detail="1" style={{ fontSize: 12, color: '#78665D' }}>
                 {[r.detail, r.cost].filter((x) => x !== null).join(` ${t('inspect.sep')} `)}
               </span>
             ) : null}
@@ -86,7 +86,7 @@ export function ActionList({
           {!r.available && open === r.id && r.reason !== null ? (
             <div
               data-action-reason={r.action}
-              style={{ fontSize: 12, color: '#7C6A61', padding: '2px 12px 4px' }}
+              style={{ fontSize: 12, color: '#78665D', padding: '2px 12px 4px' }}
             >
               {r.reason}
             </div>

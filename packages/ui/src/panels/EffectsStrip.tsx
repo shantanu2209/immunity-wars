@@ -27,7 +27,7 @@ export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement |
   if (chips.length === 0) return null;
   return (
     <div data-panel="effects" style={{ marginBottom: 6 }}>
-      <div style={{ fontSize: 12, color: '#7C6A61', fontWeight: 700, marginBottom: 2 }}>
+      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
         {t('effects.title')}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -42,14 +42,14 @@ export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement |
             >
               <span>{c.text}</span>
               {c.duration !== null ? (
-                <span style={{ color: '#7C6A61' }}>
+                <span style={{ color: '#78665D' }}>
                   {' '}
                   {t('inspect.sep')} {c.duration}
                 </span>
               ) : null}
               {c.detail ? (
                 // An event's why is content prose carrying the engine's <b> emphasis.
-                <span data-effect-detail="1" style={{ display: 'block', color: '#7C6A61' }}>
+                <span data-effect-detail="1" style={{ display: 'block', color: '#78665D' }}>
                   <RichText text={c.detail} />
                 </span>
               ) : null}

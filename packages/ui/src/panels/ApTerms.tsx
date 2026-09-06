@@ -32,7 +32,7 @@ export function ApTerms({
         color: '#2E2A28',
       }}
     >
-      <div style={{ fontSize: 12, color: '#7C6A61', fontWeight: 700 }}>{t('ap.title')}</div>
+      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700 }}>{t('ap.title')}</div>
       {terms.map((term, i) => (
         <div
           key={String(i)}

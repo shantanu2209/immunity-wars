@@ -29,14 +29,14 @@ export interface PieceChip {
 const CHIP: CSSProperties = {
   minHeight: 44,
   minWidth: 0,
-  padding: '3px 6px',
+  padding: '3px 4px',
   borderRadius: 10,
   border: '1.5px solid #8E6E53',
   background: '#FFFDF9',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
-  gap: 5,
+  gap: 4,
   fontSize: 12,
   lineHeight: 1.15,
   textAlign: 'left',
@@ -74,13 +74,13 @@ export function PieceStrip({
 }): ReactElement {
   return (
     <div data-panel="pieces" style={{ marginTop: 6 }}>
-      <div style={{ fontSize: 12, color: '#7C6A61', fontWeight: 700, marginBottom: 2 }}>
+      <div style={{ fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
         {t('pieces.title')}
       </div>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
           gap: 6,
           paddingBottom: 4,
         }}
@@ -102,7 +102,7 @@ export function PieceStrip({
               }}
               style={{
                 ...CHIP,
-                borderColor: selected ? '#e80' : p.kind === 'resident' ? '#8E6E53' : '#C8877B',
+                borderColor: selected ? '#DE7800' : p.kind === 'resident' ? '#8E6E53' : '#C48377',
                 borderWidth: selected ? 3 : 1.5,
                 borderStyle: p.kind === 'resident' ? 'double' : 'solid',
                 background: selected ? '#FBEAE5' : '#FFFDF9',
@@ -118,7 +118,7 @@ export function PieceStrip({
               />
               <span style={{ minWidth: 0, flex: '1 1 auto' }}>
                 <span style={{ ...CLIP, fontWeight: 700 }}>{name}</span>
-                <span style={{ ...CLIP, color: '#7C6A61' }}>{badgeText(p)}</span>
+                <span style={{ ...CLIP, color: '#78665D' }}>{badgeText(p)}</span>
               </span>
             </button>
           );

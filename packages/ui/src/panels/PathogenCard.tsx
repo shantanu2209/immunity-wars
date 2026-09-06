@@ -42,7 +42,7 @@ export interface PathogenCardSubject {
   now: string | null;
 }
 
-const LABEL: CSSProperties = { fontSize: 12, color: '#7C6A61', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
 const ROW: CSSProperties = {
   display: 'flex',
   gap: 10,
@@ -145,7 +145,7 @@ export function PathogenCard({
           <img src={`/art/path-${type}@3x.webp`} width={48} height={48} alt="" />
           <div style={{ flex: '1 1 auto' }}>
             <div style={{ fontSize: 20, fontWeight: 700, color: '#B03A2E' }}>{disease}</div>
-            <div style={{ fontSize: 13, color: '#7C6A61' }}>
+            <div style={{ fontSize: 13, color: '#78665D' }}>
               {typeDisplayName(type)}
               {famLine !== null ? (
                 <>
@@ -205,7 +205,7 @@ export function PathogenCard({
           </div>
         </div>
         {fact ? (
-          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#7C6A61' }}>{fact}</div>
+          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#78665D' }}>{fact}</div>
         ) : null}
         {beat ? (
           <div style={{ marginTop: 8 }}>

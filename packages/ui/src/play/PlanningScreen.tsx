@@ -48,11 +48,11 @@ const DEPTH_COLOUR: Record<Depth, string> = {
   organ: '#B03A2E',
 };
 
-const TITLE: CSSProperties = { fontSize: 12, color: '#7C6A61', fontWeight: 700, marginBottom: 2 };
+const TITLE: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700, marginBottom: 2 };
 const PANEL: CSSProperties = {
   marginTop: 6,
   padding: '6px 8px',
-  border: '1.5px solid #C8877B',
+  border: '1.5px solid #C48377',
   borderRadius: 10,
   background: '#FFFDF9',
   fontSize: 13,
@@ -60,6 +60,9 @@ const PANEL: CSSProperties = {
 const ROW_BUTTON: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
+  // Wraps at 200% text (Gate 1's zoom audit, 6 September 2026): the depth label could not
+  // shrink and a long place text pushed it 6 px past a 180 px viewport.
+  flexWrap: 'wrap',
   gap: 8,
   minHeight: 44,
   width: '100%',
@@ -145,11 +148,11 @@ function GroupRow({
             </span>
           ) : null}
         </span>
-        <span style={{ flex: '1 1 auto' }}>
+        <span style={{ flex: '1 1 auto', minWidth: 0 }}>
           <span style={{ fontSize: 14, fontWeight: 700 }}>
             {group.novel ? t('inspect.unknown') : typeDisplayName(group.type)}
             {group.count >= 2 ? (
-              <span style={{ color: '#7C6A61', fontWeight: 400 }}>
+              <span style={{ color: '#78665D', fontWeight: 400 }}>
                 {' '}
                 {t('planning.times', { n: group.count })}
               </span>
@@ -189,7 +192,7 @@ function GroupRow({
             >
               <span style={{ fontSize: 14, flex: '1 1 auto' }}>
                 {iv.novel ? t('inspect.unknown') : iv.disease}
-                <span style={{ color: '#7C6A61' }}>
+                <span style={{ color: '#78665D' }}>
                   {' '}
                   {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
                 </span>
@@ -221,7 +224,7 @@ function AllocationBlock({ slot }: { slot: AllocationSlot }): ReactElement {
     <section data-block="allocation" style={PANEL}>
       <div style={TITLE}>{t('planning.allocation')}</div>
       <div>{t('planning.pool', { n: slot.pool })}</div>
-      <div style={{ color: '#7C6A61' }}>{t('planning.allocationNote')}</div>
+      <div style={{ color: '#78665D' }}>{t('planning.allocationNote')}</div>
       {slot.budgets.map((b) => (
         <div key={b.pid} style={{ minHeight: 28, display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontWeight: b.pid === slot.captain ? 700 : 400 }}>{b.pid}</span>
@@ -277,7 +280,7 @@ export function PlanningScreen({
           minHeight: 44,
           padding: '0 4px',
           fontSize: 13,
-          color: '#7C6A61',
+          color: '#78665D',
           background: 'transparent',
           border: 'none',
           cursor: apTerms.length > 0 ? 'pointer' : 'default',
@@ -318,7 +321,7 @@ export function PlanningScreen({
           disabled={disabled}
           onTap={(place) => setFocus((f) => (place === null || place === f ? null : place))}
         />
-        <div style={{ fontSize: 12, color: '#7C6A61', textAlign: 'center' }}>
+        <div style={{ fontSize: 12, color: '#78665D', textAlign: 'center' }}>
           {focus === null ? (
             t('planning.figureHint')
           ) : (
@@ -354,7 +357,7 @@ export function PlanningScreen({
       <section data-block="pathogens" style={PANEL}>
         <div style={TITLE}>{t('planning.pathogens')}</div>
         {model.total === 0 ? (
-          <div style={{ color: '#7C6A61' }}>{t('planning.noPathogens')}</div>
+          <div style={{ color: '#78665D' }}>{t('planning.noPathogens')}</div>
         ) : (
           <>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
@@ -383,7 +386,7 @@ export function PlanningScreen({
             </div>
             {rows.length === 0 ? (
               <div
-                style={{ color: '#7C6A61', minHeight: 44, display: 'flex', alignItems: 'center' }}
+                style={{ color: '#78665D', minHeight: 44, display: 'flex', alignItems: 'center' }}
               >
                 {t('planning.emptyPlace')}
               </div>

@@ -77,7 +77,7 @@ export function AntibodyPanel({
       style={{
         marginTop: 6,
         padding: '6px 8px',
-        border: '1.5px solid #C8877B',
+        border: '1.5px solid #C48377',
         borderRadius: 10,
         background: '#FFFDF9',
       }}
@@ -86,7 +86,7 @@ export function AntibodyPanel({
         <span style={{ fontSize: 14, fontWeight: 700, color: '#2E2A28' }}>
           {t('antibody.title')}
         </span>
-        <span style={{ fontSize: 12, color: '#7C6A61' }}>{t('antibody.selectHint')}</span>
+        <span style={{ fontSize: 12, color: '#78665D' }}>{t('antibody.selectHint')}</span>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
         {rows.map((r) => {
@@ -96,7 +96,7 @@ export function AntibodyPanel({
               key={r.family}
               style={{
                 ...CHIP,
-                borderColor: selected ? '#B03A2E' : r.blocked ? '#C8877B' : '#8E6E53',
+                borderColor: selected ? '#B03A2E' : r.blocked ? '#C48377' : '#8E6E53',
                 background: selected ? '#FBEAE5' : '#FFFDF9',
                 opacity: r.blocked ? 0.7 : 1,
               }}
@@ -106,7 +106,7 @@ export function AntibodyPanel({
               <span style={{ fontWeight: 700 }}>
                 {r.family} {[String(r.have), String(r.cap)].join('/')}
               </span>
-              <span style={{ color: r.blocked ? '#B03A2E' : '#7C6A61' }}>
+              <span style={{ color: r.blocked ? '#B03A2E' : '#78665D' }}>
                 {r.blocked
                   ? t('antibody.blocked')
                   : `+${String(r.net)} ${r.boosted ? t('antibody.boosted') : r.reduced ? t('antibody.reduced') : ''}`}
@@ -120,7 +120,7 @@ export function AntibodyPanel({
           <div style={{ fontWeight: 700 }}>{name(selectedFamily)}</div>
           {detail ? (
             <>
-              <div style={{ color: '#7C6A61' }}>
+              <div style={{ color: '#78665D' }}>
                 {[
                   `${t('antibody.base')} ${String(detail.base)}`,
                   `${t('antibody.net')} ${String(detail.net)} ${t('antibody.perAction')}`,
@@ -138,7 +138,7 @@ export function AntibodyPanel({
                 </div>
               ))}
               {detail.capReasons.map((c, i) => (
-                <div key={`cap-${String(i)}`} style={{ color: '#7C6A61' }}>
+                <div key={`cap-${String(i)}`} style={{ color: '#78665D' }}>
                   {[t('antibody.storage'), productionText(c)].join(': ')}
                 </div>
               ))}

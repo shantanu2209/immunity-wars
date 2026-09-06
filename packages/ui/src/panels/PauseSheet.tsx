@@ -51,7 +51,7 @@ export function PauseSheet({
       >
         {confirming ? (
           <>
-            <p style={{ fontSize: 14, color: '#7C6A61' }}>{t('pause.quitNote')}</p>
+            <p style={{ fontSize: 14, color: '#78665D' }}>{t('pause.quitNote')}</p>
             <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onQuit}>
               {t('pause.quitConfirm')}
             </button>

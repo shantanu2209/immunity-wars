@@ -3173,3 +3173,31 @@ one turn after the event fired (the sweep's rule: happening now). `rareLogLine`
 survives the chip. The engine should log the event itself, in the same shape as a crisis event;
 that lands with Q8, when the log emits ids rather than prose, and the UI-authored line is
 deleted with it (queued in `ENGINE_CHANGE_QUEUE.md`'s workarounds table).
+
+
+## 59. The web build is not offline: nothing is cached on purpose, and a reload with no network does not render the app
+
+**Found by the Gate 1 audit, 6 September 2026** (`tools/perf/gate1-audit.ts`, its offline
+check; record in [`GATE1_AUDIT.md`](GATE1_AUDIT.md)). Gate 1 requires "works offline, fully,
+with no network at all" ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §1). Measured on the app shell:
+after a load, a turn plays with the network cut — the engine and the session are in the bundle
+already loaded — but every asset fetched lazily fails: 20 board and panel images requested on
+first use, the anatomy frame, the Nunito font; 23 distinct URLs, 14 of 14 images broken on the
+command screen. A reload with no network loads the page from the browser's cache and the app
+does not render.
+
+**The cause is structural, not a bug in a component.** A Vite SPA has no service worker, so
+the browser caches what its heuristics happen to keep and nothing is precached. The art is
+fetched by `<img>` and `<image>` on first render of each icon, so a turn that first shows an
+organ, an entry or a pathogen type fetches it then.
+
+**Disposition: OPEN — a build-and-caching decision for Shantanu, recommended and not built.**
+The web fix is a service worker with a precache manifest (`vite-plugin-pwa`, `generateSW`,
+`registerType: 'autoUpdate'`): the bundle, the art and the font precached at first visit, after
+which the app loads and plays with no network and the reload works. It is one dependency and
+one config block, and it changes the app's loading behaviour (a stale worker serves the last
+build until the next visit), so it is not a component change and it needs the production build
+(`vite preview`) to test, with the audit's offline check pointed at it. Phase 4's Capacitor
+build bundles every asset inside the app and is offline by construction; the web build is
+what P2.5 ships and what the newcomer test runs on. Until one of the two lands, the closeout
+states the gate's offline item as NOT MET on the web build, in those words.

@@ -69,6 +69,7 @@ import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SpreadNarration, diceOf } from './SpreadNarration';
+import { createFrameStore, useFrame, type FrameStore } from './frameStore';
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
 // its outcome), so they hold longer. A tap anywhere advances immediately.
@@ -155,13 +156,12 @@ export function PlayScreen({
   renderControls: (ctx: PlayControlsCtx) => ReactNode;
 }): ReactElement {
   const [authView, setAuthView] = useState<SessionView>(() => session.getView());
-  const [frame, setFrame] = useState<{
-    view: ViewState;
-    label: string;
-    n: number;
-    of: number;
-    dice: unknown;
-  } | null>(null);
+  // THE FRAME IS NOT REACT STATE HERE (the full-UI re-measure, 6 September 2026): it lives in
+  // an external store that only the board, the narration, the log and the shell's controls
+  // subscribe to, so a spread's frames do not re-render the panels — see `frameStore.ts`.
+  // What IS state is whether a burst is playing, which changes twice per burst.
+  const [playing, setPlaying] = useState(false);
+  const frameStore = useRef<FrameStore>(createFrameStore()).current;
   const [lastError, setLastError] = useState<string | null>(null);
   const [inspect, setInspect] = useState<InspectInfo | null>(null);
   // THE PATHOGEN CARD — a layer above the sheet and the dialogs, opened from either.
@@ -210,8 +210,9 @@ export function PlayScreen({
           onCheckRef.current?.(line);
           if (!ok) console.error(`[burst] ${line}`);
         }
+        frameStore.set(null);
         if (pv) setAuthView(pv);
-        setFrame(null);
+        setPlaying(false);
         return;
       }
       lastFrameRef.current = f;
@@ -219,7 +220,7 @@ export function PlayScreen({
       // Per-redraw main-thread work (§4 row 2). flushSync is instrumentation — FINDINGS #48.
       const frameStart = performance.now();
       flushSync(() => {
-        setFrame({ view: f.view, label: f.label, n, of: burstSizeRef.current, dice: f.dice });
+        frameStore.set({ view: f.view, label: f.label, n, of: burstSizeRef.current, dice: f.dice });
       });
       onFrameRef.current?.(frameStart, performance.now() - frameStart, f.label, Boolean(f.dice));
       timerRef.current = window.setTimeout(playNext, f.dice ? DICE_FRAME_MS : FRAME_MS);
@@ -238,6 +239,7 @@ export function PlayScreen({
         burstSizeRef.current = queueRef.current.length;
         if (!playingRef.current) {
           playingRef.current = true;
+          setPlaying(true);
           playNext();
         }
       } else {
@@ -360,8 +362,6 @@ export function PlayScreen({
 
   const game = authView.game;
   const phase = String(game['phase']);
-  const playing = frame !== null;
-  const shown = frame ? frame.view : game;
   const selectedCell = authView.selection.cell;
   const selectedResident = authView.selection.resident;
 
@@ -507,18 +507,9 @@ export function PlayScreen({
 
   // THE LOG — the engine's own prose, newest first (the view carries the latest 40). Read
   // from the SHOWN view so a burst's frames narrate as they land.
-  const engineLines: LogLine[] = (
-    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
-  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
-  // THE RARE EVENT'S LINE (6 September 2026): the engine banners a rare event and never logs
-  // it, so the UI authors one entry from the content's own words, dated to the turn it fired,
-  // and files it among the engine's lines by turn (newest first, stable within a turn).
-  const rare = rareLogLine(shown);
-  const logLines: LogLine[] = rare
-    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
-        (a, b) => b.t - a.t,
-      )
-    : engineLines;
+  // The log's lines are built in `LiveLog` below, from the SHOWN view (a frame's while a burst
+  // plays, the authoritative one otherwise), so a burst narrates as it lands without the rest
+  // of this screen re-rendering per frame.
 
   const sendOffer = (id: string): void => {
     const o =
@@ -724,18 +715,12 @@ export function PlayScreen({
   return (
     <div ref={rootRef}>
       <style>{FLIGHT_CSS}</style>
-      {renderControls({
-        game,
-        phase,
-        playing,
-        planning: planningActive,
-        lastError,
-        frameInfo: frame ? { n: frame.n, of: frame.of, label: frame.label } : null,
-        send,
-      })}
-      {frame ? (
-        <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
-      ) : null}
+      <LiveControls
+        store={frameStore}
+        render={renderControls}
+        ctx={{ game, phase, playing, planning: planningActive, lastError, send }}
+      />
+      <LiveNarration store={frameStore} />
       <EffectsStrip chips={effectChips(authView)} />
       {planning !== null && planningActive ? (
         <>
@@ -749,7 +734,7 @@ export function PlayScreen({
             onCommand={commandFromPlanning}
             onPathogenCard={openPathogenCard}
           />
-          <LogPanel lines={logLines} />
+          <LiveLog store={frameStore} game={game} />
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
           {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
           {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
@@ -757,8 +742,9 @@ export function PlayScreen({
       ) : null}
       {planningActive ? null : (
         <>
-          <Board
-            view={shown}
+          <LiveBoard
+            store={frameStore}
+            game={game}
             selectedCell={selectedCell}
             selectedResident={selectedResident}
             readyTurn={authView.queries.readyTurn}
@@ -839,7 +825,7 @@ export function PlayScreen({
             onProduce={sendOffer}
           />
           <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-          <LogPanel lines={logLines} />
+          <LiveLog store={frameStore} game={game} />
           {inspect ? (
             <InspectSheet
               info={inspect}
@@ -887,6 +873,7 @@ export function PlayScreen({
             // frames play means "next frame". Below the dialog layer (30) — a dialog never shows
             // mid-burst, but the ordering should not depend on that.
             <div
+              data-tap-advance="1"
               style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
               onPointerDown={advanceFrame}
             />
@@ -898,4 +885,68 @@ export function PlayScreen({
       )}
     </div>
   );
+}
+
+/* ------------------------------------------------------------------------------------------ *
+ * THE FRAME'S SUBSCRIBERS (the full-UI re-measure, 6 September 2026). Four small components
+ * read the burst's current frame from the store and are the ONLY things that re-render per
+ * frame: the shell's controls line (its frame headline), the narration banner, the board, and
+ * the log. Everything else on the play screen reads the authoritative view, which does not
+ * change while a burst plays. See `frameStore.ts` for the measurement that put them here.
+ * ------------------------------------------------------------------------------------------ */
+
+function LiveControls({
+  store,
+  render,
+  ctx,
+}: {
+  store: FrameStore;
+  render: (ctx: PlayControlsCtx) => ReactNode;
+  ctx: Omit<PlayControlsCtx, 'frameInfo'>;
+}): ReactElement {
+  const frame = useFrame(store);
+  return (
+    <>
+      {render({
+        ...ctx,
+        frameInfo: frame ? { n: frame.n, of: frame.of, label: frame.label } : null,
+      })}
+    </>
+  );
+}
+
+function LiveNarration({ store }: { store: FrameStore }): ReactElement | null {
+  const frame = useFrame(store);
+  return frame ? (
+    <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
+  ) : null;
+}
+
+type BoardProps = Parameters<typeof Board>[0];
+
+function LiveBoard({
+  store,
+  game,
+  ...rest
+}: Omit<BoardProps, 'view'> & { store: FrameStore; game: ViewState }): ReactElement {
+  const frame = useFrame(store);
+  return <Board view={frame ? frame.view : game} {...rest} />;
+}
+
+function LiveLog({ store, game }: { store: FrameStore; game: ViewState }): ReactElement {
+  const frame = useFrame(store);
+  const shown = frame ? frame.view : game;
+  const engineLines: LogLine[] = (
+    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+  // THE RARE EVENT'S LINE (6 September 2026): the engine banners a rare event and never logs
+  // it, so the UI authors one entry from the content's own words, dated to the turn it fired,
+  // and files it among the engine's lines by turn (newest first, stable within a turn).
+  const rare = rareLogLine(shown);
+  const lines: LogLine[] = rare
+    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
+        (a, b) => b.t - a.t,
+      )
+    : engineLines;
+  return <LogPanel lines={lines} />;
 }

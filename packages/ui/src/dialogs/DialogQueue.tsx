@@ -67,7 +67,13 @@ export function DialogHost({
     >
       <div
         style={{
-          width: 'min(88vw, 380px)',
+          width: 'min(92vw, 380px)',
+          // Border-box, so the padding stays inside the width: at 200% text (a 180px layout,
+          // Gate 1's zoom audit, 6 September 2026) content-box sizing overflowed by 8px.
+          boxSizing: 'border-box',
+          // A single long word ("Immunosuppression" at 16px bold) is wider than a 180px
+          // layout's dialog and pushed it past the viewport at 200% text; break it there.
+          overflowWrap: 'anywhere',
           maxHeight: '80vh',
           overflowY: 'auto',
           background: '#FFFDF9',
