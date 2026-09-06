@@ -158,6 +158,17 @@ contract Task B was measured against.
   stay scoped **without** teaching anyone to ignore a firing control, which is the failure this
   project would least survive.
 
+- **READ THE INSTRUMENT THAT REPORTS COVERAGE, NOT THE ONE THAT REPORTS A VERDICT.** A green
+  total over an incomplete walk is the same shape as a green gate over an uncovered arm: the
+  verdict cannot say what it never measured. So when a run is green, read what it covered —
+  the per-screen list and its counts, the arm list, the suite manifest — before believing the
+  total. *Agreed 6 September 2026, at P2.6, after the third time in one day that the Gate 1
+  audit's per-screen counts caught what its totals hid:* the inspect sheet reached only when
+  the deck co-operated (two green runs had never measured it), then a Continue button the walk
+  could not click (the Result never reached, the totals still zero), then an overwrite confirm
+  in a place the walk was not looking (twelve text runs per "screen", the totals still zero).
+  None of the three was a product defect and none would have been found from the verdict.
+
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the
   first kind freely — the negative-control rule qualifies, because it catches a *class* of error

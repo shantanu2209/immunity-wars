@@ -79,6 +79,39 @@ export function writeSettings(store: KeyValueStore | null | undefined, s: Settin
   }
 }
 
+/** The root element's two surfaces this mechanism touches; a fake satisfies it in tests. */
+export interface RootLike {
+  style: { fontSize: string };
+  dataset: { textSize?: string };
+}
+
+/**
+ * THE IN-APP SCALING MECHANISM (for-P2.6.md, PROPOSAL 2 piece A; ruled 6 September 2026).
+ * Applies the chosen text size to the document root as a percentage of the browser's default,
+ * so every `rem` size in the UI follows — the same lever the P2.5 sweep pulled (FINDINGS #60)
+ * and the browser's own default-font-size preference pulls. The board's SVG text stays at the
+ * board's scale by the standing ruling.
+ *
+ * At Standard it removes only a size IT set (`data-text-size` records what it applied), and
+ * leaves alone a root size something else set: the Gate 1 audit's FONT200 pass sets the root
+ * to 200% by the same inline style to model the browser preference, and an app that cleared it
+ * at every load would be fighting its own instrument.
+ */
+export function applyTextSize(size: TextSize, root: RootLike | null = documentRoot()): void {
+  if (!root) return;
+  if (size === '100') {
+    if (root.dataset.textSize !== undefined) root.style.fontSize = '';
+  } else {
+    root.style.fontSize = `${size}%`;
+  }
+  root.dataset.textSize = size;
+}
+
+function documentRoot(): RootLike | null {
+  const g = globalThis as { document?: { documentElement?: RootLike } };
+  return g.document?.documentElement ?? null;
+}
+
 /** The browser's store, or null where it is unavailable or throws on access (some privacy
  *  modes throw on the accessor itself). */
 export function browserStore(): KeyValueStore | null {

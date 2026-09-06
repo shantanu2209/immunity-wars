@@ -38,7 +38,19 @@
  *            mechanism and no instrument for the other — and is restored by #61 after
  *            Shantanu's check by hand (page zoom at 200% on the shipped build: the text
  *            doubled and everything he checked stayed playable).
- *   LAYOUT   the same checks under both mechanisms: no horizontal scrolling, every control
+ *   SIZE200  models the app's OWN text size setting (Settings > Text size > Largest, P2.6
+ *            piece 2 PR 2), the third mechanism, the one a player will actually find: the
+ *            app writes the root font size from a stored preference, so physically it is the
+ *            default-font-size lever again — but pulled by a control the app ships, which can
+ *            appear to work and not (FINDINGS #60's shape). So this pass DRIVES THE REAL
+ *            CONTROL, then checks three things stay consistent: the option the row shows
+ *            pressed, the value in the store, and the size the root renders at; then that a
+ *            reload keeps all three (persistence); then every screen under FONT200's own
+ *            scaling and layout auditors. Its controls plant the two ways the control can lie:
+ *            stored and shown but NOT rendered, and chosen and rendered but NOT persisted.
+ *            The pass ends by choosing Standard through the same control, so the offline pass
+ *            that follows runs at the default.
+ *   LAYOUT   the same checks under every mechanism: no horizontal scrolling, every control
  *            still in the viewport, no text clipped to an ellipsis.
  *   OFFLINE  after the first load, the network is cut: a full turn is played and every
  *            failed request recorded; then a reload with no network, which MUST render the
@@ -73,7 +85,7 @@ const CHROME =
   process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 
 interface Finding {
-  check: 'touch' | 'contrast' | 'nontext' | 'scale' | 'layout' | 'offline';
+  check: 'touch' | 'contrast' | 'nontext' | 'scale' | 'layout' | 'size' | 'offline';
   screen: string;
   path: string;
   text: string;
@@ -252,6 +264,72 @@ const LAYOUT_AUDITOR = `
 })()
 `;
 
+/** SIZE200's three surfaces of the text size setting, read from the page: the stored value,
+ *  the size the root renders at, what the app says it applied, and the option the Settings row
+ *  shows pressed (null when the row is not on screen). */
+const SIZE_STATE = `
+(() => {
+  let stored = null;
+  try {
+    const raw = localStorage.getItem('immunity-wars.settings');
+    if (raw !== null) { const o = JSON.parse(raw); stored = o && typeof o === 'object' && typeof o.textSize === 'string' ? o.textSize : 'malformed'; }
+  } catch { stored = 'unreadable'; }
+  const root = document.documentElement;
+  const pressed = document.querySelector('[data-settings-row=textSize] button[aria-pressed=true]');
+  return {
+    stored,
+    rootPx: parseFloat(getComputedStyle(root).fontSize),
+    applied: root.dataset.textSize ?? null,
+    pressed: pressed ? pressed.getAttribute('data-settings-option') : null,
+  };
+})()
+`;
+
+interface SizeState {
+  stored: string | null;
+  rootPx: number;
+  applied: string | null;
+  pressed: string | null;
+}
+
+/** The consistency the setting must keep: after a choice of `expected`, the store holds it,
+ *  the root renders it (16px × expected/100, within a pixel), the app says it applied it, and
+ *  the row (when on screen) shows it pressed. Each disagreement is its own finding. */
+async function sizeCheck(page: Page, where: string, expected: string): Promise<Finding[]> {
+  const s = (await page.evaluate(SIZE_STATE)) as SizeState;
+  const wantPx = (16 * Number(expected)) / 100;
+  const out: Finding[] = [];
+  const f = (detail: string): void => {
+    out.push({ check: 'size', screen: where, path: 'html', text: `expected ${expected}`, detail });
+  };
+  if (s.stored !== expected)
+    f(
+      `the store holds ${s.stored === null ? 'nothing' : s.stored}, not ${expected} (did the choice persist?)`,
+    );
+  if (Math.abs(s.rootPx - wantPx) > 1)
+    f(
+      `the root renders at ${s.rootPx}px, not ${wantPx}px: stored ${s.stored}, applied ${s.applied} (does the control render, or only store?)`,
+    );
+  if (s.applied !== expected) f(`the app says it applied ${s.applied}, not ${expected}`);
+  if (s.pressed !== null && s.pressed !== expected)
+    f(`the row shows ${s.pressed} pressed, not ${expected}`);
+  return out;
+}
+
+/** Drives the real control: Title > Settings > the size option > Back. False if any step is
+ *  missing, which is itself reported by the caller. */
+async function chooseTextSize(page: Page, size: string): Promise<boolean> {
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await sleep(200);
+  if (!(await click(page, 'Settings'))) return false;
+  await sleep(200);
+  const hit = await clickSel(page, `[data-settings-row=textSize] [data-settings-option="${size}"]`);
+  if (!hit) return false;
+  await sleep(200);
+  return true;
+}
+
 const click = (page: Page, label: string): Promise<boolean> =>
   page.evaluate((l: string) => {
     const b = [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === l);
@@ -400,18 +478,42 @@ async function walk(
   // other door, "What's here", is offered, so the first audits reached the sheet by luck and
   // some runs never did. A puppeteer click, not `.click()`: the board resolves the hit from
   // real pointer coordinates.
-  const token = await page.$('[data-invader]');
-  if (token) {
+  // The hit is resolved to the NEAREST node, so a token placed beside an organ's resident can
+  // resolve to the resident (a selection, no sheet): every token is tried until one opens the
+  // sheet, and a run in which none does records the sheet as NOT REACHED — a red line in the
+  // JSON, never a silent absence from the screen list (CLAUDE.md: read the coverage).
+  let sheetOpened = false;
+  for (const token of await page.$$('[data-invader]')) {
     await token.click();
     await sleep(300);
-    const sheet = await page.evaluate(() =>
+    sheetOpened = await page.evaluate(() =>
       [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Close'),
     );
-    if (sheet) {
-      await step(page, 'inspect sheet', results);
-      await click(page, 'Close');
-      await sleep(200);
-    }
+    if (sheetOpened) break;
+    // The tap may have selected a cell or a resident instead (a tap on the selected piece
+    // deselects it; a tap on nothing deselects too): the same tap again undoes it.
+    await token.click();
+    await sleep(150);
+  }
+  if (sheetOpened) {
+    await step(page, 'inspect sheet', results);
+    await click(page, 'Close');
+    await sleep(200);
+  } else {
+    results.push({
+      screen: 'inspect sheet',
+      controls: 0,
+      textRuns: 0,
+      findings: [
+        {
+          check: 'touch',
+          screen: 'inspect sheet',
+          path: '',
+          text: '',
+          detail: 'NOT REACHED: no invader token tap opened the sheet',
+        },
+      ],
+    });
   }
   await clickSel(page, '[data-piece="cell:bcell"]');
   await sleep(300);
@@ -760,6 +862,54 @@ async function controls(page: Page): Promise<string[]> {
   await unplant();
   await page.setViewport({ width: 360, height: 780 });
 
+  // SIZE200 (the app's own text size), the two ways the control can lie, planted for real on
+  // the real control. Chosen and rendered: not flagged. Stored and shown pressed but NOT
+  // rendered (the root put back to the default under it): flagged — FINDINGS #60's shape, the
+  // control that appears to work. Chosen and rendered but NOT persisted (the stored value
+  // removed, then a reload): flagged. Then Standard through the same control: not flagged.
+  const drove = await chooseTextSize(page, '200');
+  line('size: the real control is reachable (Title > Settings > Largest)', drove);
+  const s1 = await sizeCheck(page, 'control', '200');
+  line(
+    'size passes: Largest chosen through the control stores 200, renders 32px, shows pressed: NOT flagged',
+    s1.length === 0,
+  );
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '';
+  });
+  const s2 = await sizeCheck(page, 'control', '200');
+  line(
+    'size fires: stored 200 and shown pressed but rendered at 16px (a control that appears to work) is flagged',
+    s2.some((x) => x.detail.includes('renders at')),
+  );
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = '200%';
+  });
+  await page.evaluate(() => localStorage.removeItem('immunity-wars.settings'));
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await sleep(200);
+  const s3 = await sizeCheck(page, 'control', '200');
+  line(
+    'size fires: a choice that did not persist (store emptied, then a reload) is flagged',
+    s3.some((x) => x.detail.includes('persist')) && s3.some((x) => x.detail.includes('renders at')),
+  );
+  const back = await chooseTextSize(page, '200');
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await sleep(200);
+  const s4 = await sizeCheck(page, 'control', '200');
+  line(
+    'size passes: Largest survives a reload (store, root and applied agree): NOT flagged',
+    back && s4.length === 0,
+  );
+  const std = await chooseTextSize(page, '100');
+  const s5 = await sizeCheck(page, 'control', '100');
+  line(
+    'size passes: Standard through the control clears the root and stores 100: NOT flagged',
+    std && s5.length === 0,
+  );
+
   // OFFLINE, both ways: with the network cut a fresh URL must fail, and a URL the build
   // precached must be served by the worker. On an origin with no worker (the dev server) the
   // passes-half cannot run: it says so, and the offline check will report not met.
@@ -989,6 +1139,54 @@ try {
   }
   await page4.close();
 
+  // SIZE200: the app's own text size at Largest, chosen through the real control, then the
+  // same screens under FONT200's scaling and layout auditors (the walk's first `goto` is the
+  // reload that proves the choice persisted), then Standard again through the control.
+  const page5 = await browser.newPage();
+  await page5.setViewport({ width: 360, height: 780 });
+  const size200: ScreenResult[] = [];
+  if (!offlineOnly) {
+    const drove = await chooseTextSize(page5, '200');
+    const chosen = await sizeCheck(page5, 'settings, Largest chosen', '200');
+    size200.push({
+      screen: 'settings, Largest chosen',
+      controls: 0,
+      textRuns: 0,
+      findings: drove
+        ? chosen
+        : [
+            {
+              check: 'size',
+              screen: 'settings, Largest chosen',
+              path: '',
+              text: '',
+              detail: 'the text size control was not reachable',
+            },
+          ],
+    });
+    await walk(page5, size200, font200Audit);
+    await walkToResult(page5, size200, font200Audit);
+    const std = await chooseTextSize(page5, '100');
+    const reset = await sizeCheck(page5, 'settings, Standard chosen again', '100');
+    size200.push({
+      screen: 'settings, Standard chosen again',
+      controls: 0,
+      textRuns: 0,
+      findings: std
+        ? reset
+        : [
+            {
+              check: 'size',
+              screen: 'settings, Standard chosen again',
+              path: '',
+              text: '',
+              detail: 'the text size control was not reachable',
+            },
+          ],
+    });
+  }
+  await page5.close();
+
   const page3 = await browser.newPage();
   await page3.setViewport({ width: 360, height: 780 });
   const off = await offline(page3);
@@ -1000,11 +1198,12 @@ try {
     url: URL,
     when: new Date().toISOString(),
     viewport:
-      '360x780 CSS px; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2',
+      "360x780 CSS px; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2; SIZE200 at 360x780 with the app's own text size at Largest",
     controls: controlLines,
     screens: results,
     font200,
     zoom200,
+    size200,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -1016,6 +1215,10 @@ try {
       scale: count(font200, 'scale'),
       layoutFont200: count(font200, 'layout'),
       layoutZoom200: count(zoom200, 'layout'),
+      textRunsScaledInApp: size200.reduce((n, s) => n + s.textRuns, 0),
+      scaleSize200: count(size200, 'scale'),
+      layoutSize200: count(size200, 'layout'),
+      sizeSize200: count(size200, 'size'),
       offlineMet: off['met'],
     },
   };

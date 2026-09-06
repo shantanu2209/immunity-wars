@@ -104,6 +104,12 @@ a tester does.
   JSON's screen list rather than the verdict: two green runs had never measured the sheet.
   Fixed inline (an instrument); the habit is the lesson. Seventeen screens deterministically is
   the difference between "clean" and "clean over everything" (Shantanu, at the merge of #58).
+- **The habit, made a standing rule after its third catch in one day** (Shantanu, at the merge
+  of #60; `CLAUDE.md`, "How to work here"): read the instrument that reports coverage, not the
+  one that reports a verdict. The inspect sheet, the Continue button the walk could not click,
+  and the overwrite confirm in the wrong place were all invisible in the totals and all plain
+  in the per-screen counts. A green total over an incomplete walk is a green gate over an
+  uncovered arm.
 
 ---
 

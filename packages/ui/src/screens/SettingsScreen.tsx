@@ -49,9 +49,18 @@ const ROW: CSSProperties = {
 /** Why the delete row cannot act right now; null when it can. */
 export type DeleteSaveBlock = 'none' | 'inPlay' | null;
 
+/** The choice rows the shell knows how to store; a new choice row is a new member here. */
+export type ChoiceRow = 'textSize' | 'language';
+
 /** A row of the settings table: a choice among options, or an action with a confirm. */
 type Row =
-  | { kind: 'choice'; key: string; labelKey: string; options: readonly string[]; value: string }
+  | {
+      kind: 'choice';
+      key: ChoiceRow;
+      labelKey: string;
+      options: readonly string[];
+      value: string;
+    }
   | { kind: 'action'; key: string; labelKey: string };
 
 interface Group {
@@ -60,18 +69,23 @@ interface Group {
 }
 
 export function SettingsScreen({
+  textSize,
+  textSizes,
   language,
   languages,
-  onLanguage,
+  onChoose,
   deleteSaveBlock,
   onDeleteSave,
   onBack,
 }: {
+  /** The text size in force and the sizes offered (percentages of the browser default). */
+  textSize: string;
+  textSizes: readonly string[];
   /** The active locale code, and every locale the catalogue offers (one today). */
   language: string;
   languages: readonly string[];
-  /** Chosen from the row's options; never called while there is only one. */
-  onLanguage: (locale: string) => void;
+  /** A choice made on a row; never called for a row with one option (it renders no control). */
+  onChoose: (row: ChoiceRow, value: string) => void;
   /** Why the delete row is disabled, or null when a save exists and is not being played. */
   deleteSaveBlock: DeleteSaveBlock;
   onDeleteSave: () => void;
@@ -83,6 +97,13 @@ export function SettingsScreen({
     {
       labelKey: 'settings.groupReading',
       rows: [
+        {
+          kind: 'choice',
+          key: 'textSize',
+          labelKey: 'settings.textSize',
+          options: textSizes,
+          value: textSize,
+        },
         {
           kind: 'choice',
           key: 'language',
@@ -121,7 +142,8 @@ export function SettingsScreen({
                     borderColor: o === row.value ? '#DE7800' : '#8E6E53',
                   }}
                   aria-pressed={o === row.value}
-                  onClick={() => onLanguage(o)}
+                  data-settings-option={o}
+                  onClick={() => onChoose(row.key, o)}
                 >
                   {t(`${row.labelKey}.${o}`)}
                 </button>
