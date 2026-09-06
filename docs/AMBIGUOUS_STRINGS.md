@@ -98,3 +98,16 @@ re-opened by the next person who reads the inventory. The brief's definition of 
   organ row (6 September, the home for "When damaged") is where it would go.
 
 The count: 44 of 46 decided; 2 open.
+
+## Closed: 46 of 46 (Shantanu, 6 September 2026, evening)
+
+**45 and 46, the organ's kind: RULED IN and BUILT.** The inspect sheet's organ row reads
+"{Organ}, {vital organ | defence organ}, integrity {hp} of {max}", the two words from
+`ORGANS.kind` through the catalogue (`organ.vital`, `organ.defence`). The reasoning: the
+rulebook already teaches the two words, so the app comes into line with the printed game
+rather than inventing a label; the engine never reads the kind, so it carries no rule and
+cannot drift.
+
+**That closes the count, and the definition-of-done item with it** (brief §8, marked): every
+one of the 46 is decided, and every one ruled in renders through the catalogue under the
+hardcoded-string rule.

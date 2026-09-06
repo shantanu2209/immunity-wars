@@ -68,7 +68,7 @@ work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (25 arms)
+## Uncategorised — still open (24 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
@@ -90,10 +90,9 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `construct.ts:164` `default:`
 - `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
-- `queries.ts:228` `if (g.flags.specials) {`
-- `queries.ts:324` `if (!g.flags.dendritic) {`
-- `queries.ts:415` `if (!attackable(iv)) return false;`
-- `queries.ts:429` `if (!attackable(iv)) return false;`
+- `queries.ts:329` `if (!g.flags.dendritic) {`
+- `queries.ts:420` `if (!attackable(iv)) return false;`
+- `queries.ts:434` `if (!attackable(iv)) return false;`
 - `spread.ts:66` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
 - `spread.ts:69` `if (!e) return false;`
 - `spread.ts:166` `default:`

@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1934 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 180 entries (9.4% of the 1916 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -73,36 +73,34 @@ weaker than a demonstration and is labelled so deliberately.
 - `89` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `89` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `161` `return INV_SPEED[iv.type] || 1;`
-- `207` `if (g.fx) ap += g.fx.apMod ?? 0;`
-- `207` `if (g.fx) ap += g.fx.apMod ?? 0;`
-- `245` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
-- `245` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
-- `259` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `273` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `273` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `273` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `277` `return (g.ab[famOf(iv)] ?? 0) > 0;`
-- `277` `return (g.ab[famOf(iv)] ?? 0) > 0;`
-- `298` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
-- `299` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `299` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `302` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
-- `309` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) r += 1;`
-- `330` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
-- `331` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `331` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
-- `351` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
-- `362` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
-- `369` `const have = g.ab[f] ?? 0;`
-- `371` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `434` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
-- `438` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `470` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
-- `685` `readyTurn: e.regenAt ?? null,`
-- `708` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
-- `709` `return t[d6() - 1] ?? 1;`
-- `727` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
-- `727` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
+- `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
+- `264` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
+- `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
+- `303` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
+- `304` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `304` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `307` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
+- `314` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) r += 1;`
+- `335` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
+- `336` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `336` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
+- `356` `const capRate = RATE_CAP_BY_DIFF[g.difficulty] ?? RATE_CAP_BY_DIFF.normal;`
+- `367` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
+- `374` `const have = g.ab[f] ?? 0;`
+- `376` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
+- `439` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
+- `443` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
+- `475` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
+- `690` `readyTurn: e.regenAt ?? null,`
+- `713` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
+- `714` `return t[d6() - 1] ?? 1;`
+- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
 
 ### simulate.ts
 
@@ -169,12 +167,12 @@ report as rule A: every arm that leaves this list is named.
 
 ### queries.ts
 
-- `447` `if (!m) return [];`
-- `469` `if (!t) return [];`
-- `481` `if (iv.zone === 'branch') return iv.step <= R;`
-- `509` `if (!n) return [];`
-- `516` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
-- `608` `} else if (c.zone === 'branch' && c.organ) {`
+- `452` `if (!m) return [];`
+- `474` `if (!t) return [];`
+- `486` `if (iv.zone === 'branch') return iv.step <= R;`
+- `514` `if (!n) return [];`
+- `521` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
+- `613` `} else if (c.zone === 'branch' && c.organ) {`
 
 ### simulate.ts
 
@@ -437,7 +435,7 @@ if (!helper || !target) return false;
 
 helper is roster-total (constructed at newGame, never deleted), and target is read with keys callers draw from CELL_KEYS. Demonstrated over 300 games
 
-### queries.ts:532
+### queries.ts:537
 
 ```
 if (!c) return [];
@@ -445,7 +443,7 @@ if (!c) return [];
 
 roster-total lookup: wormStrikeable is called with keys from CELL_KEYS and g.cells is total over them. Demonstrated over 300 games
 
-### queries.ts:597
+### queries.ts:602
 
 ```
 if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
@@ -453,7 +451,7 @@ if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
 
 dead by data: every branch is at least 2 steps (schema-enforced against the drawn board) and speed tops out at 3, so st = L - k >= 0 always. Demonstrated by data scan
 
-### queries.ts:627
+### queries.ts:632
 
 ```
 if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });
@@ -461,7 +459,7 @@ if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: tru
 
 dead by data: every route is 5 steps, the lymph crossing is step 3, and extra <= 2, so ns is always within [1, 5]. Demonstrated by data scan
 
-### queries.ts:628
+### queries.ts:633
 
 ```
 if (ns === 0) out.push({ zone: 'hub', lymph: true });
@@ -469,7 +467,7 @@ if (ns === 0) out.push({ zone: 'hub', lymph: true });
 
 unreachable: ns === 0 needs extra === LYMPH_STEP (3), and extra runs to sp-1, so it needs speed >= 4. The fastest cell is speed 2, or 3 with a primed helper
 
-### queries.ts:272
+### queries.ts:277
 
 ```
 export function abTotal(g: GameState): number {
@@ -477,7 +475,7 @@ export function abTotal(g: GameState): number {
 
 dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
-### queries.ts:276
+### queries.ts:281
 
 ```
 export function hasAb(g: GameState, iv: Invader): boolean {

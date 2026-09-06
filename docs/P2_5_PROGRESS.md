@@ -604,10 +604,16 @@ resident dimmed; the rare event's log line (FINDINGS #58); the class acronym on 
 the Produce button; "Coat" on a worm and "Chip" on a fungus; odds and speed on the rows and
 header, damage withheld as the fourth mirror (Q7). The S25 list for this round is below.
 
-**Awaiting Shantanu:** whether `apFor` becomes a wrapper over `apBreakdown` (one calculation,
-not two agreeing ones); the rows' layout on the phone; the organ's kind (strings 45, 46).
+**The third set of rulings, the same evening, all applied:** `apFor` IS a wrapper over
+`apBreakdown(g).total` (the brief's v1.6 note records it as the one deliberate exception to
+"the engine is unchanged", the corpus the proof); the organ's kind is on the sheet's organ row
+("Liver, defence organ, integrity 2 of 3"), which closes the 46 ambiguous strings, 46 of 46,
+and the definition-of-done item (brief §8, ticked); **the fourth S25 pass passed** on
+everything reachable, and the states the deck did not offer are **accepted on test, not
+verified by finger**, listed under that heading in [`for-P2.5.md`](for-P2.5.md) ("The fourth
+S25 pass") for the closeout to keep distinct. Nothing is awaiting Shantanu from this round.
 
-**S25 list for this round (the fourth pass):** (1) Select a cell: its header reads "Name · speed
+**S25 list for the fourth pass (run 6 September 2026, evening; kept as the record):** (1) Select a cell: its header reads "Name · speed
 N"; tap "AP N" in the bar and the terms open, ending in the total N; tap again to close. (2) On
 the planning screen tap "You will have N Action Points": the same terms. (3) After a NET: the
 Neutrophil's chip reads "Spent 4"; select it and a line beneath the grid says when and why;
@@ -624,10 +630,26 @@ If HIV is in the body: the Helper's chip is dimmed with "Destroyed by HIV" and s
 so; no HIV chip in the strip. (9) The body panel has no memory line; the chip and the ring say
 it. (10) Judge the rows' detail at 360px: clutter, or not.
 
-### What remains in P2.5
+### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu)
 
-The rulings above once taken and built; Gate 1 hygiene (touch targets, 200% text, contrast
-against the pipeline's numbers, offline); the mandatory per-redraw re-measure with the 109ms
-breach to resolve; the WIN path uncrossed; the newcomer test, two staggered runs. Three things
-are still verified by no one: a coated planning row, a bloodstream badge tap, a failed organ.
-Then the P2.5 closeout.
+1. **Gate 1 hygiene**: the touch-target audit (every control ≥44px), text at 200% without loss,
+   the contrast audit against the art pipeline's measured values, and offline verification with
+   no network at all. Machine-checkable, built and run here; needs from Shantanu only a look at
+   the 200% and offline results on the S25, since neither is fully provable headless.
+2. **The mandatory full-UI per-redraw re-measure** (brief §4: row 3's headroom is what the UI
+   spends), carrying the recorded breach to RESOLVE: the command tap from the planning screen
+   at 109ms against the 100ms row at 6×, with its named fix in `P2_3_MEASUREMENT.md`. Measured
+   here on the throttled PC; needs from Shantanu a ruling on the fix if it changes the flight or
+   the mount, and the handset figures remain the deciding pass they always were.
+3. **The WIN path**, crossed by nobody. Crossed here headless from a constructed end-state
+   (the body clear after the window closes), then by finger once, on the S25, to a real Result
+   screen; needs from Shantanu that one finger pass, or one real win.
+4. **The newcomer test, two staggered runs** (`NEWCOMER_TEST.md`, approved). Needs from
+   Shantanu two testers and the sessions; the product is named specifics, which reorder what is
+   left before the closeout.
+5. **Three things still verified by no one**, folded into whichever of the above reaches them:
+   a coated planning row, a bloodstream badge tap, a failed organ.
+6. **The P2.5 closeout**, in the usual discipline: what is proven, what is accepted on test,
+   what is not, what P2.6 inherits. Needs from Shantanu the read and the sign-off.
+
+Outside P2.5 but open on him: whether the rulebook .docx get the no-dashes preference.

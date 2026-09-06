@@ -1887,3 +1887,27 @@ By test: everything above with a named suite. By finger: nothing yet; the S25 li
 round is in the progress note. Verified by no one: the crisis section on the phone with a real
 event; the AP terms with a damaged organ; the Helper chip under HIV; the organ row in the sheet;
 "Chip" on a fungus.
+
+## The fourth S25 pass and the third set of rulings (6 September 2026, evening)
+
+**The pass.** Everything Shantanu could reach worked as expected: the header with speed and
+the AP tap, the planning screen's AP line, the class name with its acronym on the card and the
+Produce button, the NK row's odds, the body panel without its memory line, and the rows'
+detail at phone width. **Accepted on test, not verified by finger** — the states the deck did
+not offer him: the crisis section of the reveal, the AP terms with a damaged Lungs or Heart,
+the Helper under HIV, the sheet's organ row, "Chip" on a fungus, a spent cell's why, an
+infected resident, a rare event's chip and log line. Each has a named test on recorded or
+constructed states (`ap-terms.test.ts`, `effects.test.ts`, `breakdowns.test.ts`) and the
+closeout must list them under that heading, not under "verified on the phone". He raises any
+of them if a later run shows a problem.
+
+**Ruling: `apFor` becomes a wrapper.** Done: `apFor(g)` returns `apBreakdown(g).total` and
+nothing else; the five lines of the rule live in `apBreakdown` alone. The corpus is the proof
+that the number did not move (the B2 differential holds `apFor` to legacy's `apMax`), and
+`breakdowns.test.ts` now holds the terms' total to legacy's number directly, because holding
+it to the port's `apFor` would prove nothing once they are one function. Recorded in the brief
+(v1.6) as the one deliberate exception to "the engine is unchanged".
+
+**Ruling: the organ's kind, in.** On the sheet's organ row, "Liver, defence organ, integrity 2
+of 3", from `ORGANS.kind` through the catalogue. That closes the 46 ambiguous strings, 46 of
+46, and the definition-of-done item with them; `AMBIGUOUS_STRINGS.md` records the close.
