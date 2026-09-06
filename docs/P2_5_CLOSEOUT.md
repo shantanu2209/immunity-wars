@@ -30,6 +30,10 @@ performance: [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md).
   825 text runs and 327 control boundaries all at or above their contrast thresholds; no layout
   fault at 200% text; text scales under the browser default-font-size mechanism (121 sizes to
   `rem`). Every check with a planted control that fired.
+- **Text at 200% on the phone, by hand, for the mechanism Chrome for Android has** (added
+  later the same day; FINDINGS #61): Page zoom at 200% on the shipped build doubled the text
+  and everything Shantanu checked was still playable. What he checked, on one phone; the
+  audit's page-zoom pass is not yet restored, and P2.6 starts there.
 - **Performance on the throttled PC, the full UI:** initial render within 1 s at 6×; selection
   taps 38.7 ms at 6×; per-redraw work 26.7 ms at p50 at 6× (p95 52.6 stated); the command tap
   96.4 ms at p50 at 6×, RESOLVED by keeping the command stage mounted, with 3.6% headroom
@@ -47,11 +51,16 @@ badge tap; a failed organ. Shantanu raises any of them if a later run shows a pr
 
 ## Not proven, stated in the brief's words
 
-- **Text at 200% on the phone.** The audit's scaling pass measures the browser default-font-size
-  mechanism; Chrome for Android's user-facing mechanism is page zoom, which the earlier 180 px
-  layout pass modelled and which was removed as a proxy. Android's system font size reaches
-  neither, and that is what was changed on the phone (FINDINGS #61). One two-minute check owed
-  (Chrome › Accessibility › Page zoom); both passes to be carried, not built here.
+- **Text at 200% on the phone: PROVEN BY HAND later the same day, and moved above.** ⚠️ This
+  read: *the audit's scaling pass measures the browser default-font-size mechanism; Chrome for
+  Android's is page zoom, which the earlier 180 px layout pass modelled and which was removed
+  as a proxy; Android's system font size reaches neither, and that is what was changed on the
+  phone (FINDINGS #61); one two-minute check owed; both passes to be carried, not built here.*
+  Shantanu's check on the shipped build, Chrome for Android, Settings › Accessibility › Page
+  zoom at 200%: the text doubled and everything he checked was still playable. What remains
+  unproven by hand is only the default-font-size path, which no Chrome-on-Android user reaches
+  and the audit covers headless. What remains unbuilt is the audit's page-zoom pass, restored
+  beside the current one and named for its mechanism: P2.6's first piece.
 - **Offline.** Met by the headless check on the shipped web build (the worker active; a reload
   with no network renders and plays a turn). The phone-session observation tested the network,
   not the worker, and is struck; **checked properly on the Android build**, deferred there by
@@ -66,7 +75,8 @@ badge tap; a failed organ. Shantanu raises any of them if a later run shows a pr
 
 ## What P2.6 inherits
 
-- The two phone items above, and the audit's second pass to restore beside the first.
+- Offline on the Android build (the one phone item still open above), and the audit's
+  page-zoom pass to restore beside the default-font-size pass, each named for its mechanism.
 - The handset pass, and the per-redraw p95 at 6× (52.6 ms) named ahead of it.
 - FINDINGS #57 (degranulate burns from the lane; Q9), #58 (rare events unlogged; Q8), the
   literal-mirror family (Q7: neutralise cost, antivenom, degranulate, memory response on Hard,
