@@ -3241,3 +3241,58 @@ run's computed size to be at least 1.9× its size at 100% (listing by name any t
 and the layout to survive it. Its controls: a planted 13 px span must be flagged as not
 scaling, a planted 0.8125rem span must not be, and a 600 px block must overflow; all three
 fire before any screen is measured. The 180 px proxy pass is gone.
+
+## 61. The rebuilt 200% audit measures a mechanism no Chrome-on-Android user has: #60 one level up, in the instrument built to fix it
+
+**Found by Shantanu on the S25, 6 September 2026, on the shipped build:** Android's font size
+at maximum still changed nothing in the game, one hour after `gate1-audit.ts` reported 836 text
+runs reaching 1.9× at 200%. Investigated before anything was proposed, and not built.
+
+**What the audit does.** It sets `document.documentElement.style.fontSize = '200%'`, an inline
+style on the root. No user setting does that. Its EFFECT is the same as a browser's default
+font size preference (desktop Chrome, Settings › Appearance › Font size; Firefox on every
+platform): the root's initial size changes, so `rem` and `em` follow and `px` does not. That
+is the mechanism the rem sweep (#60) made the app respond to, and the audit proves that
+response. It is real, and it is not the phone's.
+
+**What the phone does, to my knowledge of current Chrome for Android, stated as knowledge
+rather than measurement.** Android's system font size scales native apps' text; Chrome's web
+content does not follow it. Chrome exposes its own setting, Settings › Accessibility › Page
+zoom (older versions: Text scaling), and that is a ZOOM: everything scales, `px` included, and
+the CSS viewport narrows to match, so a 360 px phone at 200% lays the page out at 180 CSS px.
+That is exactly the 180 px pass this audit ran before #60 and then removed as a proxy. So the
+first instrument modelled the Android mechanism's layout (and could take scaling for granted,
+because a zoom scales everything), the second models the desktop and Firefox mechanism, and
+the setting Shantanu changed reaches neither, because no web page on Chrome for Android can.
+
+**Plainly: the audit's mechanism is not the one a Chrome-on-Android user has.** It is green on
+a property that matters on other browsers and says nothing about the phone. #60 called the
+180 px pass a proxy and replaced it; the truth is that there are two mechanisms and the audit
+should carry both: the 180 px layout pass for Chrome's page zoom, and the root-200% pass for
+the default-font-size preference. Neither is built here — this entry is the report.
+
+**Nothing in the app suppresses either.** The viewport tag is `width=device-width,
+initial-scale=1.0` with no `user-scalable` or `maximum-scale`, so pinch zoom works; there is
+no `text-size-adjust` rule anywhere (0 hits across the app and the UI).
+
+**The two-minute check for Shantanu:** on the S25, Chrome › Settings › Accessibility › Page
+zoom (or Text scaling) to 200%, with "Force enable zoom" on. If the game's text doubles
+there, the app follows the mechanism Chrome-on-Android users actually have, and the earlier
+180 px pass is the right instrument for it. If it does not, that is a new finding.
+
+**Disposition: OPEN, deferred with P2.6's inheritance.** Record the phone's result, then
+restore the 180 px pass beside the root-200% pass in `gate1-audit.ts`, each named for the
+mechanism it models. `GATE1_AUDIT.md` carries the correction at its head.
+
+## 59, corrected: the phone's offline observation tested the network, not the worker
+
+Shantanu's phone session had reported "offline play continues after load with only some
+visuals missing" as matching the measurement. His later reading (6 September 2026, evening):
+turning Wi-Fi off and reopening a page served from the PC over the LAN cuts the connection the
+page came over, so what that tested was the network, not the service worker. Recorded as he
+ruled: **the offline item is checked properly on the Android build, where the app is
+self-contained**, and the phone-session observation is struck from the evidence. What stands
+as the web build's evidence is the headless check on `localhost`: the worker active, a reload
+with no network rendering and playing a full turn. (For the record, a worker installed on the
+LAN origin during an online visit would serve that origin from cache too; nobody has tried
+that on the phone, and the Android build is where it is settled.)
