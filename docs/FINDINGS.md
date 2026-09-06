@@ -3288,14 +3288,19 @@ layout the 180 px pass measured, so the pass was the right instrument for this m
 along; #60's error was calling it a proxy without asking what it modelled. Recorded as
 stated: what he checked, on one phone, not every screen.
 
-**Disposition: the phone's half CLOSED by hand; the instrument's half OPEN, P2.6's first
-piece.** The Gate 1 text item now rests on two things: a person's check for page zoom, and the
-audit's root-200% pass for the default-font-size preference, which no Chrome-on-Android user
-reaches and which is therefore covered headless rather than by hand. No machine check of the
-page-zoom mechanism exists, so the 180 px pass is restored beside the root-200% pass in
-`gate1-audit.ts`, each named for the mechanism it models, each with a control that fires and
-one that must pass. Until then, page zoom is proven by hand for what was checked and by the
-audit for nothing. `GATE1_AUDIT.md` carries the correction at its head.
+**Disposition: FIXED, both halves — the phone's by hand, the instrument's in P2.6's first
+piece (6 September 2026).** The Gate 1 text item rests on two mechanisms, and the audit now
+carries a pass for each, named for it: FONT200 (the root at 200% on a 360 px page: the
+default-font-size preference, which no Chrome-on-Android user reaches and which is therefore
+covered headless rather than by hand) and ZOOM200 (a 180 × 390 CSS px page at a doubled device
+scale: Chrome for Android's page zoom). One layout auditor runs under both, and each layout
+result records the width and root font size it measured at, so the record says what it
+measured rather than only that it passed. Every check has a control both ways (eighteen, nine
+pairs; Shantanu's ruling at the P2.6 kickoff). The run on the shipped build: 17 screens under
+ZOOM200 at 180 px, **0** layout findings, the inspect sheet among them. `GATE1_AUDIT.md`
+carries the numbers. The lesson stands as #60 stated it and this entry sharpened it: name the
+mechanism a check models, and if a person can reach the property by a different one, the
+check models that one too.
 
 ## 59, corrected: the phone's offline observation tested the network, not the worker
 

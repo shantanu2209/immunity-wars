@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.6 · 6 September 2026
+**Version:** 1.7 · 6 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
 
@@ -95,6 +95,21 @@ v1.6 changes one sentence of §8, by ruling (Shantanu, 6 September 2026, recorde
   proof**: the B2 differential holds `apFor` to legacy's `apMax` on the state corpus, and the
   breakdown suite holds the terms to legacy's number directly, since holding them to the
   port's `apFor` would now prove nothing. The risk is bounded and visible.
+
+## What v1.7 records
+
+v1.7 changes one word of §2's table, by ruling (Shantanu, 6 September 2026, at the P2.6
+kickoff; recorded in [`for-P2.6.md`](for-P2.6.md)):
+
+- **"Offline states" is superseded by [`APP_FLOW.md`](APP_FLOW.md)'s ruling of 30 August:
+  there is no offline state.** Offline IS the app's normal state; it has no network to lose.
+  The only offline-shaped moment is a first visit with no network, before the service worker
+  exists to precache the build, and that is an install problem rather than a screen. The two
+  documents disagreed for a week; this note is so they no longer do. Gate 1's "works
+  offline, fully" (§1) is untouched: it is the property, not a screen.
+- Two P2.5 items the closeout listed as P2.6's inheritances **pass through to Phase 4**:
+  offline checked on the Android build, and the handset pass. Neither can close before the
+  build and the handset exist. [`P2_5_CLOSEOUT.md`](P2_5_CLOSEOUT.md) carries the correction.
 
 ## What v1.1 changes, and why the changes are marked rather than folded in
 
@@ -236,7 +251,7 @@ Sequenced so the decision that could invalidate everything happens in week two, 
 | **P2.3** | **Performance measurement** on that slice | The decision point. See §4 |
 | **P2.4** | Art pipeline | Runs alongside from here; blocks nothing |
 | **P2.5** | Full UI build, screen by screen | See §5 |
-| **P2.6** | Onboarding, empty/error/offline states, settings | The screens an exhibition demo never needed |
+| **P2.6** | Onboarding, empty/error states, settings; help, the disease library, about ([`APP_FLOW.md`](APP_FLOW.md)'s Title slots). ⚠️ *v1.7:* this read "empty/error/offline states"; **there is no offline state** — see "What v1.7 records" | The screens an exhibition demo never needed |
 | **P2.7** | Polish rounds, then Gate 2 | §1 |
 
 > ⚠️ **Scope, fixed in v1.2 before P2.2 starts — and it is the sub-phase most likely to grow,
