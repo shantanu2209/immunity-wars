@@ -3280,9 +3280,22 @@ zoom (or Text scaling) to 200%, with "Force enable zoom" on. If the game's text 
 there, the app follows the mechanism Chrome-on-Android users actually have, and the earlier
 180 px pass is the right instrument for it. If it does not, that is a new finding.
 
-**Disposition: OPEN, deferred with P2.6's inheritance.** Record the phone's result, then
-restore the 180 px pass beside the root-200% pass in `gate1-audit.ts`, each named for the
-mechanism it models. `GATE1_AUDIT.md` carries the correction at its head.
+**The check's result (Shantanu, 6 September 2026, the shipped build, Chrome for Android,
+Settings › Accessibility › Page zoom at 200%): the text doubled, and everything he checked was
+still playable.** So both halves hold: the app follows the mechanism a Chrome-on-Android user
+actually has, and the layout survives the 180 CSS px that mechanism produces. That is the
+layout the 180 px pass measured, so the pass was the right instrument for this mechanism all
+along; #60's error was calling it a proxy without asking what it modelled. Recorded as
+stated: what he checked, on one phone, not every screen.
+
+**Disposition: the phone's half CLOSED by hand; the instrument's half OPEN, P2.6's first
+piece.** The Gate 1 text item now rests on two things: a person's check for page zoom, and the
+audit's root-200% pass for the default-font-size preference, which no Chrome-on-Android user
+reaches and which is therefore covered headless rather than by hand. No machine check of the
+page-zoom mechanism exists, so the 180 px pass is restored beside the root-200% pass in
+`gate1-audit.ts`, each named for the mechanism it models, each with a control that fires and
+one that must pass. Until then, page zoom is proven by hand for what was checked and by the
+audit for nothing. `GATE1_AUDIT.md` carries the correction at its head.
 
 ## 59, corrected: the phone's offline observation tested the network, not the worker
 

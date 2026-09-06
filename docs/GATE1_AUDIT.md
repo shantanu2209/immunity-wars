@@ -10,6 +10,11 @@
 > be carried, named for what they model; not built here. The "0 unscaled" row is true of the
 > first mechanism only. The offline row's phone-session confirmation is struck (it tested the
 > network); the headless check stands, and offline is checked by hand on the Android build.
+>
+> **Checked by hand later that day (FINDINGS #61):** Page zoom at 200% on the shipped build,
+> Chrome for Android, doubled the text and everything Shantanu checked was still playable.
+> The page-zoom mechanism is proven for what he checked and measured by this audit for
+> nothing; the 180 px pass comes back beside the root-200% pass as P2.6's first piece.
 
 **What this is.** [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §1's Gate 1 has four items a machine can
 check and one it cannot. This is the record of the machine's half, produced by

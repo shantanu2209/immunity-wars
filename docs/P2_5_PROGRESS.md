@@ -682,8 +682,10 @@ the close, both recorded there and in FINDINGS #59 (corrected) and #61: the phon
 observation tested the network and offline is checked on the Android build; the audit's 200%
 pass models the default-font-size mechanism, not Chrome-on-Android's page zoom, and the
 phone's system font size reaches neither. The newcomer test lands against the closeout when
-testers exist. **Owed by Shantanu:** the two-minute check, Chrome › Settings › Accessibility ›
-Page zoom at 200% on the shipped build.
+testers exist. **The check Shantanu owed, done the same day:** Chrome › Settings ›
+Accessibility › Page zoom at 200% on the shipped build doubled the text and everything he
+checked stayed playable. Recorded in FINDINGS #61 and the closeout; the audit's page-zoom pass
+is P2.6's first piece. Nothing from P2.5 is owed by anyone.
 
 ### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu; updated late that day, see above)
 
