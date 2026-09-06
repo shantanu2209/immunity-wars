@@ -167,3 +167,76 @@ re-measure** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §4, row 3's note, "expected,
 optional"). That pass re-measures this tap with the fix in place, or states the shortfall in
 the closeout in the brief's own words — but it does not carry the breach forward as an open
 note a third time.
+
+
+## Added 6 September 2026 — THE MANDATORY FULL-UI PER-REDRAW RE-MEASURE, and the breach RESOLVED in part
+
+**What was measured.** The same instrument as the screening pass (i7-12700F, headless system
+Chrome, CDP CPU throttling; `tools/perf/measure-full.ts`, `pnpm perf:full`) against the DEV
+SHELL, which mounts the FULL play screen — the effects strip, the command bar with its rows and
+AP terms, the piece grid, the antibody, body and log panels, the planning screen, the reveal
+and the goal dialog — at 360 × 780. Per throttle level: three fresh loads (row 1), 24 board
+selection taps (row 2), four full turns with their spreads (row 3), and the COMMAND TAP once per
+turn ("Command your cells" on the planning screen, `__iwMetrics.transitions`). Every number is
+the page's own clock. Optimistic by construction, like the screening pass.
+
+**The first run found a SECOND breach.** Row 3 — per-redraw main-thread work during a spread,
+under 32ms — measured **59.7ms at p50 at 6×** (p95 67.6, max 74.3) and 38.3ms at 4×, against
+19.7ms at P2.3 on the thin slice. The board alone was not the cost: every frame of a spread was
+React state on the play screen, so every frame re-rendered the strip, the bar, the grid and
+every panel, none of which change during a burst (they read the authoritative view, which is
+held until the burst drains). The brief's §4 note said this re-measure was "expected, not
+optional" because row 3's headroom was what the rest of the UI would spend; it spent all of it
+and more.
+
+**Resolved, twice, neither touching the mount or the flight.** (1) The frame moved out of React
+state into an external store (`packages/ui/src/play/frameStore.ts`) that only the board, the
+narration, the log and the shell's controls line subscribe to; the play screen's own state
+changes twice per burst. (2) The board's static layers — the routes with their step nodes and
+entry annotations, the lymph arcs, each organ's branch, tissue node, icon and label — became
+memoised components drawn once per art manifest and skipped per frame; the log's text lookup
+is memoised per message. The same elements, in the same order, under the same parents.
+
+| device · throttle | frames | busy p50 | busy p95 | busy max | to-paint p50 | row 3 (32ms) |
+|---|---|---|---|---|---|---|
+| i7-12700F · 1× · before | 17 | 8.4ms | 9.5ms | 9.5ms | 21.5ms | within |
+| i7-12700F · 4× · before | 18 | 38.3ms | 47.4ms | 47.4ms | 44.2ms | **exceeded** |
+| i7-12700F · 6× · before | 21 | 59.7ms | 67.6ms | 74.3ms | 71.3ms | **exceeded** |
+| i7-12700F · 1× · after | 20 | 4.5ms | 6.7ms | 6.7ms | 32.1ms | within |
+| i7-12700F · 4× · after | 18 | 17.7ms | 29.9ms | 29.9ms | 35.8ms | within |
+| i7-12700F · 6× · after | 17 | **23.4ms** | 47.2ms | 47.2ms | 35.5ms | **within at p50; p95 over** |
+
+Stated as measured: at 6× the median frame is inside the row with 27% headroom, and the heavy
+frames (a dice frame, an organ hit, the frames with the most tokens) still cross it at p95. The
+screening pass judged rows at p50 with their headroom, and this row is judged the same way; the
+p95 is on the record for the handset pass to weigh, not hidden in a median.
+
+**The other rows, full UI, after:**
+
+| device · throttle | initial render (3 loads) | selection tap busy p50 / p95 | row 1 (1s) | row 2 (100ms) |
+|---|---|---|---|---|
+| i7-12700F · 1× | 63 / 52 / 36ms | 5.4 / 6.3ms | within | within |
+| i7-12700F · 4× | 184 / 194 / 107ms | 23.7 / 31.4ms | within | within |
+| i7-12700F · 6× | 292 / 148 / 161ms | 37.6 / 44.2ms | within | within |
+
+**The command tap: STILL EXCEEDED, and its fix STOPS HERE for a ruling.** Busy p50 at 6×:
+**121.2ms before today's changes, 119.3ms after** (p95 146; 4×: 78.4ms, within; 1×: 14.7ms).
+The frame store and the memoised layers do not help it, as expected: the cost is the MOUNT of
+the board and every panel when the planning screen gives way, not a redraw. Both named fixes
+change the mount — keep the board mounted and hidden behind the planning screen (the tap becomes
+a visibility toggle plus one redraw; the board's memory and its render on every draw are the
+price), or mount it deferred behind the planning screen's own paint — and Shantanu's
+instruction for this pass was to stop and report before building a fix that changes the mount
+or the flight. The flight reads the figure's rectangles at the tap and lands on the board's
+icons after the mount; keeping the board mounted moves the landing targets to elements that
+already exist, which is a change to the flight's timing that he should see, not inherit.
+
+**Recommendation:** keep the board mounted and hidden (`display: none` or `visibility` on its
+wrapper; the memoised static layers now make the extra render per draw cheap), re-measure the
+tap, and re-verify the flight lands. The deferred-mount alternative keeps the planning screen
+lighter but makes the tap's cost depend on how long the player looks at the plan, which is a
+worse number to explain.
+
+**The closeout inherits, in the brief's words:** row 3 within at p50 on the throttled PC with
+its p95 stated; row 2's command tap exceeded at 6× pending a ruling on a mount-changing fix;
+the handset pass still the deciding one.

@@ -74,7 +74,23 @@ export interface LogText {
   key: string | null;
 }
 
+/**
+ * Memoised per message (the full-UI re-measure, 6 September 2026): the log re-renders on every
+ * frame of a spread and its lines recur across frames, so the template scan runs once per
+ * distinct message for the life of the page. A pure function of its argument, so the cache
+ * is unbounded by design — a game produces a few hundred distinct lines.
+ */
+const LOG_TEXT_CACHE = new Map<string, LogText>();
+
 export function engineLogText(message: string): LogText {
+  const cached = LOG_TEXT_CACHE.get(message);
+  if (cached) return cached;
+  const result = engineLogTextUncached(message);
+  LOG_TEXT_CACHE.set(message, result);
+  return result;
+}
+
+function engineLogTextUncached(message: string): LogText {
   const exact = KEY_OF_TEXT.get(message);
   if (exact !== undefined)
     return { text: ENGINE_I18N_EN[exact] ?? message, matched: true, key: exact };

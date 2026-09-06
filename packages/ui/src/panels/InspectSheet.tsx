@@ -127,7 +127,7 @@ export function InspectSheet({
           />
           <span style={{ fontSize: 14, flex: '1 1 auto' }}>
             {iv.novel ? t('inspect.unknown') : iv.disease}
-            <span style={{ color: '#7C6A61' }}>
+            <span style={{ color: '#78665D' }}>
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
             </span>
@@ -189,7 +189,7 @@ export function InspectSheet({
             <span>
               {cellName(ck)}
               {info.unavailable[ck] ? (
-                <span style={{ color: '#7C6A61' }}>
+                <span style={{ color: '#78665D' }}>
                   {' '}
                   {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
                 </span>
@@ -229,7 +229,7 @@ export function InspectSheet({
           <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
           <span>
             {residentDisplayName(info.resident)}
-            <span style={{ color: '#7C6A61' }}>
+            <span style={{ color: '#78665D' }}>
               {' '}
               {t('resident.of', { organ: organDisplayName(info.resident) })}
             </span>

@@ -15,7 +15,7 @@
 
 import { LYMPH_GROUP, LYMPH_STEP, ORGANS, ROUTES, LABEL_SIDE } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
-import type { MouseEvent as ReactMouseEvent, ReactElement } from 'react';
+import { memo, type MouseEvent as ReactMouseEvent, type ReactElement } from 'react';
 
 import {
   BOARD_ORGANS,
@@ -768,147 +768,19 @@ export function Board({
         opacity={CLASSIC.washAlpha}
       />
 
-      {/* routes: hub -> steps -> entry */}
-      {LANES.map((lane) => {
-        const stepsOf = routeSteps(lane);
-        const entry = entryOf(lane);
-        const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
-        // The entry icon is an ANNOTATION outside the play circle — the lane line stops at
-        // the circle's edge (the ENTRY anchor), because nothing ever occupies an entry point.
-        const placed = entry ? annotationPlacement(entry, artMetrics, `entry-${lane}`) : null;
-        const lymphStep = lymphGroupOf(lane) === null ? -1 : (LYMPH_STEP as number);
-        return (
-          <g key={lane}>
-            <polyline
-              points={polyPoints(run)}
-              fill="none"
-              stroke={CLASSIC.route}
-              strokeWidth={CLASSIC.wLine}
-            />
-            {stepsOf.map((p) => (
-              <g key={p.step}>
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={CLASSIC.rNode}
-                  fill={p.step === lymphStep ? CLASSIC.lymphNodeFill : '#fff'}
-                  stroke={p.step === lymphStep ? CLASSIC.lymph : CLASSIC.route}
-                  strokeWidth={CLASSIC.wNode}
-                />
-                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
-                  {p.step}
-                </text>
-              </g>
-            ))}
-            {placed ? (
-              <image
-                href={ART_URL(`entry-${lane}`)}
-                x={placed.icon.x - LARGE_ART_U / 2}
-                y={placed.icon.y - LARGE_ART_U / 2}
-                width={LARGE_ART_U}
-                height={LARGE_ART_U}
-              />
-            ) : null}
-            {placed ? (
-              <text
-                x={placed.label.x}
-                y={placed.label.y}
-                textAnchor={placed.anchor}
-                fontSize={13}
-                fill={CLASSIC.ink}
-              >
-                {routeName(lane)}
-              </text>
-            ) : null}
-          </g>
-        );
-      })}
-
-      {/* lymphatic connectors, over the routes they shortcut */}
-      {LYMPH_ARCS.map((arc, i) => (
-        <polyline
-          key={`lymph-${i}`}
-          points={polyPoints(arc)}
-          fill="none"
-          stroke={CLASSIC.lymph}
-          strokeWidth={CLASSIC.wLymph}
-          strokeDasharray={CLASSIC.lymphDash}
-        />
-      ))}
+      <StaticRoutes artMetrics={artMetrics} />
 
       {/* organ branches: hub -> steps -> organ box */}
       {BOARD_ORGANS.map((o) => {
-        const stepsOf = branchSteps(o);
         const pos = organPos(o);
         if (!pos) return null;
         // hub -> steps -> the tissue slot, and the line STOPS there: the tissue is a
         // terminal node, and a tail past it would say pieces can go further (they cannot).
         // Routes differ deliberately — their tail is the germ arriving from outside.
-        const run: Pt[] = [HUB_POS, ...stepsOf, pos];
         const hp = Number((organs[o] ?? {}).hp ?? 0);
         return (
           <g key={o}>
-            <polyline
-              points={polyPoints(run)}
-              fill="none"
-              stroke={CLASSIC.branch}
-              strokeWidth={CLASSIC.wLine}
-            />
-            {stepsOf.map((p) => (
-              <g key={p.step}>
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={CLASSIC.rNode}
-                  fill={CLASSIC.branchNodeFill}
-                  stroke={CLASSIC.branch}
-                  strokeWidth={CLASSIC.wNode}
-                />
-                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
-                  {p.step}
-                </text>
-              </g>
-            ))}
-            {/* The organ icon is an ANNOTATION outside the play circle; the branch ends at
-                ORGAN_POS on the circle — the terminal anchor where an attacker or a
-                resident (branch step 0) stands. hp stays at the anchor, inside play. */}
-            <circle
-              cx={pos.x}
-              cy={pos.y}
-              r={CLASSIC.rNode}
-              fill={CLASSIC.branchNodeFill}
-              stroke={CLASSIC.organ}
-              strokeWidth={CLASSIC.wNode}
-            />
-            {/* Step 0 — matching the engine's addressing (tokenPos maps branch step 0 here),
-                so the display never needs translating during a debug session. */}
-            <text x={pos.x} y={pos.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
-              {0}
-            </text>
-            {(() => {
-              const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
-              return (
-                <>
-                  <image
-                    data-organ-icon={o}
-                    href={ART_URL(`organ-${o}`)}
-                    x={p.icon.x - LARGE_ART_U / 2}
-                    y={p.icon.y - LARGE_ART_U / 2}
-                    width={LARGE_ART_U}
-                    height={LARGE_ART_U}
-                  />
-                  <text
-                    x={p.label.x}
-                    y={p.label.y}
-                    textAnchor={p.anchor}
-                    fontSize={13}
-                    fill={CLASSIC.inkDark}
-                  >
-                    {organName(o)}
-                  </text>
-                </>
-              );
-            })()}
+            <OrganStatic o={o} artMetrics={artMetrics} />
             {/* INTEGRITY AS PIPS ABOVE the organ icon (S25, ruled 5 September 2026; moved
                 above at the second pass — below, they met the organ names). The digit that sat
                 inward of the tissue slot read as one number with step 1's label ("13") at phone
@@ -1180,3 +1052,166 @@ export function Board({
     </svg>
   );
 }
+
+/* ------------------------------------------------------------------------------------------ *
+ * THE STATIC LAYERS, MEMOISED (the full-UI re-measure, 6 September 2026). The routes with
+ * their step nodes and entry annotations, the lymph arcs, and each organ's branch, tissue
+ * node, icon and label depend on geometry, content and the art manifest — never on the view.
+ * Drawn once per manifest and skipped on every frame of a spread, which is where the board's
+ * per-frame cost went (P2.3 measured the whole board at 19.7ms per frame at 6×). Nothing
+ * about what is mounted changes: the same elements, in the same order, under the same parent.
+ * ------------------------------------------------------------------------------------------ */
+
+const StaticRoutes = memo(function StaticRoutes({ artMetrics }: { artMetrics?: ArtMetrics }) {
+  return (
+    <>
+      {/* routes: hub -> steps -> entry */}
+      {LANES.map((lane) => {
+        const stepsOf = routeSteps(lane);
+        const entry = entryOf(lane);
+        const run: Pt[] = [HUB_POS, ...stepsOf, ...(entry ? [entry] : [])];
+        // The entry icon is an ANNOTATION outside the play circle — the lane line stops at
+        // the circle's edge (the ENTRY anchor), because nothing ever occupies an entry point.
+        const placed = entry ? annotationPlacement(entry, artMetrics, `entry-${lane}`) : null;
+        const lymphStep = lymphGroupOf(lane) === null ? -1 : (LYMPH_STEP as number);
+        return (
+          <g key={lane}>
+            <polyline
+              points={polyPoints(run)}
+              fill="none"
+              stroke={CLASSIC.route}
+              strokeWidth={CLASSIC.wLine}
+            />
+            {stepsOf.map((p) => (
+              <g key={p.step}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={CLASSIC.rNode}
+                  fill={p.step === lymphStep ? CLASSIC.lymphNodeFill : '#fff'}
+                  stroke={p.step === lymphStep ? CLASSIC.lymph : CLASSIC.route}
+                  strokeWidth={CLASSIC.wNode}
+                />
+                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
+                  {p.step}
+                </text>
+              </g>
+            ))}
+            {placed ? (
+              <image
+                href={ART_URL(`entry-${lane}`)}
+                x={placed.icon.x - LARGE_ART_U / 2}
+                y={placed.icon.y - LARGE_ART_U / 2}
+                width={LARGE_ART_U}
+                height={LARGE_ART_U}
+              />
+            ) : null}
+            {placed ? (
+              <text
+                x={placed.label.x}
+                y={placed.label.y}
+                textAnchor={placed.anchor}
+                fontSize={13}
+                fill={CLASSIC.ink}
+              >
+                {routeName(lane)}
+              </text>
+            ) : null}
+          </g>
+        );
+      })}
+
+      {/* lymphatic connectors, over the routes they shortcut */}
+      {LYMPH_ARCS.map((arc, i) => (
+        <polyline
+          key={`lymph-${i}`}
+          points={polyPoints(arc)}
+          fill="none"
+          stroke={CLASSIC.lymph}
+          strokeWidth={CLASSIC.wLymph}
+          strokeDasharray={CLASSIC.lymphDash}
+        />
+      ))}
+    </>
+  );
+});
+
+const OrganStatic = memo(function OrganStatic({
+  o,
+  artMetrics,
+}: {
+  o: string;
+  artMetrics?: ArtMetrics;
+}) {
+  const stepsOf = branchSteps(o);
+  const pos = organPos(o);
+  if (!pos) return null;
+  // hub -> steps -> the tissue slot, and the line STOPS there: the tissue is a terminal node,
+  // and a tail past it would say pieces can go further (they cannot).
+  const run: Pt[] = [HUB_POS, ...stepsOf, pos];
+  return (
+    <>
+      <polyline
+        points={polyPoints(run)}
+        fill="none"
+        stroke={CLASSIC.branch}
+        strokeWidth={CLASSIC.wLine}
+      />
+      {stepsOf.map((p) => (
+        <g key={p.step}>
+          <circle
+            cx={p.x}
+            cy={p.y}
+            r={CLASSIC.rNode}
+            fill={CLASSIC.branchNodeFill}
+            stroke={CLASSIC.branch}
+            strokeWidth={CLASSIC.wNode}
+          />
+          <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
+            {p.step}
+          </text>
+        </g>
+      ))}
+      {/* The organ icon is an ANNOTATION outside the play circle; the branch ends at
+          ORGAN_POS on the circle — the terminal anchor where an attacker or a
+          resident (branch step 0) stands. hp stays at the anchor, inside play. */}
+      <circle
+        cx={pos.x}
+        cy={pos.y}
+        r={CLASSIC.rNode}
+        fill={CLASSIC.branchNodeFill}
+        stroke={CLASSIC.organ}
+        strokeWidth={CLASSIC.wNode}
+      />
+      {/* Step 0 — matching the engine's addressing (tokenPos maps branch step 0 here),
+          so the display never needs translating during a debug session. */}
+      <text x={pos.x} y={pos.y + 3.5} textAnchor="middle" fontSize={10} fill={CLASSIC.ink}>
+        {0}
+      </text>
+      {(() => {
+        const p = annotationPlacement(pos, artMetrics, `organ-${o}`);
+        return (
+          <>
+            <image
+              data-organ-icon={o}
+              href={ART_URL(`organ-${o}`)}
+              x={p.icon.x - LARGE_ART_U / 2}
+              y={p.icon.y - LARGE_ART_U / 2}
+              width={LARGE_ART_U}
+              height={LARGE_ART_U}
+            />
+            <text
+              x={p.label.x}
+              y={p.label.y}
+              textAnchor={p.anchor}
+              fontSize={13}
+              fill={CLASSIC.inkDark}
+            >
+              {organName(o)}
+            </text>
+          </>
+        );
+      })()}
+    </>
+  );
+});

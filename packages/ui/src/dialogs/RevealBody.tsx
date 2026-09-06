@@ -70,7 +70,7 @@ export function RevealBody({
             color: crisis.bad ? '#B03A2E' : '#2F6B4A',
           }}
         >
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#7C6A61' }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#78665D' }}>
             {t(crisis.bad ? 'reveal.crisisBad' : 'reveal.crisisGood')}
           </div>
           <div style={{ fontSize: 16, fontWeight: 700 }}>{crisis.name}</div>
@@ -91,7 +91,7 @@ export function RevealBody({
         const inner = (
           <>
             <span style={{ fontSize: 16, fontWeight: 700, color: '#2E2A28' }}>{a.disease}</span>
-            <span style={{ fontSize: 13, color: '#7C6A61' }}>
+            <span style={{ fontSize: 13, color: '#78665D' }}>
               {t('reveal.enteredVia')} {routeName(a.lane)}
             </span>
             {a.novel ? (

@@ -27,7 +27,7 @@ interface Fields {
   fact?: string;
 }
 
-const LABEL: CSSProperties = { fontSize: 12, color: '#7C6A61', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
 const CLOSE: CSSProperties = {
   display: 'block',
   width: '100%',
@@ -91,7 +91,7 @@ export function CellCard({
             <div style={{ fontSize: 20, fontWeight: 700, color: '#8E6E53' }}>
               {cellDisplayName(cell)}
             </div>
-            {tag ? <div style={{ fontSize: 13, color: '#7C6A61' }}>{tag}</div> : null}
+            {tag ? <div style={{ fontSize: 13, color: '#78665D' }}>{tag}</div> : null}
           </div>
         </div>
         {subject.now !== null ? (
@@ -109,10 +109,10 @@ export function CellCard({
           ) : null,
         )}
         {card.fact ? (
-          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#7C6A61' }}>{card.fact}</div>
+          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#78665D' }}>{card.fact}</div>
         ) : null}
         {!filled ? (
-          <div style={{ marginTop: 8, color: '#7C6A61' }}>{t('cellCard.empty')}</div>
+          <div style={{ marginTop: 8, color: '#78665D' }}>{t('cellCard.empty')}</div>
         ) : null}
         <button style={{ ...CLOSE, marginTop: 12 }} onClick={onClose}>
           {t('card.close')}

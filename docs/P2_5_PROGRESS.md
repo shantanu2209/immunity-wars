@@ -630,7 +630,45 @@ If HIV is in the body: the Helper's chip is dimmed with "Destroyed by HIV" and s
 so; no HIV chip in the strip. (9) The body panel has no memory line; the chip and the ring say
 it. (10) Judge the rows' detail at 360px: clutter, or not.
 
-### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu)
+### Taken in Shantanu's order, 6 September 2026 (late): a, b, c done to the point of his rulings
+
+Record: [`for-P2.5.md`](for-P2.5.md), "What remained in P2.5, taken in Shantanu's order".
+**(a) Gate 1 hygiene, the headless half:** built as `pnpm gate1:audit` with five controls, run
+four times against the app shell, its findings fixed (six colours, the dialog, the piece grid);
+touch 0, contrast 0, non-text 0, 200% 0; **offline NOT MET on the web build**, measured,
+recommended, not built ([`GATE1_AUDIT.md`](GATE1_AUDIT.md), FINDINGS #59). **(b) The full-UI
+re-measure** (`pnpm perf:full`): a second breach found (row 3, 59.7ms per frame at 6×) and
+resolved without touching the mount or the flight (the frame store, the memoised board:
+23.4ms at p50, p95 stated); **the command tap's breach stands at 119ms at 6× and its fix stops
+for a ruling** because it changes the mount ([`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md),
+"Added 6 September 2026"). **(c) The three unverified states** are verified headless from
+constructed states through the autosave: the coated planning row, the bloodstream badge tap,
+the failed organ (which has no rendering of its own and ends the game at the next spread).
+
+**The phone session is worth doing now**, once, against this build. What to do and what to
+expect:
+
+1. **Text at 200%.** The phone's largest text size, or browser zoom at 200%. Expected: every
+   screen scrolls vertically only; every control reachable; no name clipped. Name any screen
+   that overlaps or cuts.
+2. **Offline, as measured.** Airplane mode after the app has loaded, then play a turn.
+   Expected TODAY: the game continues, the board's icons and the panels' art are missing, the
+   font falls back. That is the measured state, not a pass. A fresh launch in airplane mode
+   fails. Both change when the service worker is ruled in.
+3. **A real win.** Play Training to a win (about 45 turns; an idle game loses, so it has to be
+   played). Expected: the Result screen reads "You survived!" with the three counts, Continue
+   is not offered on the title afterwards.
+4. **The four rendering changes, by eye.** A spread: the narration, the board and the log
+   update every frame; the strip, the bar, the grid and the panels do not flicker. The piece
+   grid at 100%: three columns as before. A crisis reveal: the dialog fits the screen.
+5. **The command tap.** Tap "Command your cells" a few times across turns and say whether it
+   feels late. The instrument says 119ms at 6× throttling on the PC; your phone is faster than
+   6× and slower than 1×, and the deciding number is a low-end handset's.
+
+**Rulings this round asks for:** the command tap's fix (keep the board mounted and hidden,
+recommended, or the deferred mount); the service worker for the web build.
+
+### What remains in P2.5 (stated 6 September 2026, evening, with what each needs from Shantanu; updated late that day, see above)
 
 1. **Gate 1 hygiene**: the touch-target audit (every control ≥44px), text at 200% without loss,
    the contrast audit against the art pipeline's measured values, and offline verification with

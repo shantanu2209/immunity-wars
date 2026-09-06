@@ -32,7 +32,7 @@ const BTN: CSSProperties = {
   background: '#FFFDF9',
   cursor: 'pointer',
 };
-const LABEL: CSSProperties = { fontSize: 12, color: '#7C6A61', fontWeight: 700 };
+const LABEL: CSSProperties = { fontSize: 12, color: '#78665D', fontWeight: 700 };
 const ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -116,7 +116,7 @@ export function BodyPanel({
       style={{
         marginTop: 6,
         padding: '6px 8px',
-        border: '1.5px solid #C8877B',
+        border: '1.5px solid #C48377',
         borderRadius: 10,
         background: '#FFFDF9',
         fontSize: 14,
@@ -128,7 +128,7 @@ export function BodyPanel({
         <span style={{ flex: '1 1 160px' }}>
           <span style={LABEL}>{t('body.antivenom')}</span>{' '}
           {t(data.antivenom === 1 ? 'body.doseOne' : 'body.doses', { n: data.antivenom })}
-          <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
+          <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
             {t('body.order', { n: ANTIVENOM_ORDER })}{' '}
             <Progress put={data.avOrder} cost={ANTIVENOM_ORDER} />{' '}
             {[data.avOrder, ANTIVENOM_ORDER].join('/')}
@@ -141,7 +141,7 @@ export function BodyPanel({
         <div style={ROW}>
           <span style={{ flex: '1 1 160px' }}>
             <span style={LABEL}>{t('body.clone')}</span>
-            <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
+            <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
               {data.cloneFound ? t('body.cloneFound') : t('body.cloneHint')}
             </span>
           </span>
@@ -152,23 +152,23 @@ export function BodyPanel({
       <div style={{ marginTop: 4 }}>
         <span style={LABEL}>{t('body.vaccines')}</span>
         {data.training ? (
-          <div style={{ fontSize: 13, color: '#7C6A61' }}>{t('body.trainingNoVaccine')}</div>
+          <div style={{ fontSize: 13, color: '#78665D' }}>{t('body.trainingNoVaccine')}</div>
         ) : (
           <>
-            <div style={{ fontSize: 13, color: '#7C6A61' }}>
+            <div style={{ fontSize: 13, color: '#78665D' }}>
               {t('body.vaccineHint', { cost: VACCINE_COST })}
             </div>
             {data.vaccines.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#7C6A61' }}>{t('body.vaccineNone')}</div>
+              <div style={{ fontSize: 13, color: '#78665D' }}>{t('body.vaccineNone')}</div>
             ) : (
               data.vaccines.map((v) => (
                 <div key={v.disease} style={ROW} data-vaccine={v.disease}>
                   <span style={{ flex: '1 1 160px' }}>
                     {v.name}{' '}
-                    <span style={{ fontSize: 12, color: '#7C6A61' }}>
+                    <span style={{ fontSize: 12, color: '#78665D' }}>
                       {familyName(v.disease) || v.family}
                     </span>
-                    <span style={{ display: 'block', fontSize: 13, color: '#7C6A61' }}>
+                    <span style={{ display: 'block', fontSize: 13, color: '#78665D' }}>
                       <Progress put={v.put} cost={VACCINE_COST} /> {[v.put, VACCINE_COST].join('/')}
                     </span>
                   </span>

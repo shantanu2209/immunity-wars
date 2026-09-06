@@ -46,7 +46,7 @@ export function SpreadNarration({
   return (
     <div
       style={{
-        border: '2px solid #C8877B',
+        border: '2px solid #C48377',
         background: '#FBEAE5',
         borderRadius: 10,
         padding: '8px 12px',
@@ -59,8 +59,8 @@ export function SpreadNarration({
               catalogue since FINDINGS #53 — one catalogue, loud on a miss. */}
           {engineText(label)}
         </span>
-        <span style={{ fontSize: 13, color: '#7C6A61' }}>{[String(n), String(of)].join('/')}</span>
-        <span style={{ fontSize: 13, color: '#7C6A61', marginLeft: 'auto' }}>
+        <span style={{ fontSize: 13, color: '#78665D' }}>{[String(n), String(of)].join('/')}</span>
+        <span style={{ fontSize: 13, color: '#78665D', marginLeft: 'auto' }}>
           {t('spread.tapToContinue')}
         </span>
       </div>
@@ -74,9 +74,9 @@ export function SpreadNarration({
                 alignItems: 'center',
                 gap: 4,
                 fontSize: 13,
-                color: d.hit ? '#B03A2E' : '#7C6A61',
+                color: d.hit ? '#B03A2E' : '#78665D',
                 fontWeight: d.hit ? 700 : 400,
-                border: `1.5px solid ${d.hit ? '#B03A2E' : '#C8877B'}`,
+                border: `1.5px solid ${d.hit ? '#B03A2E' : '#C48377'}`,
                 borderRadius: 6,
                 padding: '1px 6px',
                 background: '#FFFDF9',

@@ -127,7 +127,7 @@ export function CommandBar({
         minHeight: 52,
         padding: '6px 8px',
         background: '#FBEAE5',
-        border: '1.5px solid #C8877B',
+        border: '1.5px solid #C48377',
         borderRadius: 10,
       }}
     >
@@ -135,19 +135,19 @@ export function CommandBar({
         {selectedCellName === null ? (
           // Nothing selected: the prompt — or, when the BODY has rings on the board (a memory
           // response, an antivenom dose), what those rings are.
-          <span style={{ fontSize: 14, color: noSelectionHint !== null ? '#1F6F8B' : '#7C6A61' }}>
+          <span style={{ fontSize: 14, color: noSelectionHint !== null ? '#1F6F8B' : '#78665D' }}>
             {noSelectionHint ?? t('commandBar.selectPrompt')}
           </span>
         ) : (
           <>
             <span style={{ fontSize: 15, fontWeight: 700 }}>{selectedCellName}</span>
             {qualifier !== null ? (
-              <span style={{ fontSize: 13, color: '#7C6A61' }}>{qualifier}</span>
+              <span style={{ fontSize: 13, color: '#78665D' }}>{qualifier}</span>
             ) : null}
             {speed !== null ? (
               // The cell's speed beside its name (ruled 6 September 2026): content's table,
               // where the rule lives, not a number retyped here.
-              <span data-bar-speed={String(speed)} style={{ fontSize: 13, color: '#7C6A61' }}>
+              <span data-bar-speed={String(speed)} style={{ fontSize: 13, color: '#78665D' }}>
                 {t('commandBar.speed', { n: speed })}
               </span>
             ) : null}
@@ -160,7 +160,7 @@ export function CommandBar({
                 minHeight: 44,
                 padding: '0 6px',
                 fontSize: 13,
-                color: '#7C6A61',
+                color: '#78665D',
                 background: 'transparent',
                 border: 'none',
                 cursor: apTerms.length > 0 ? 'pointer' : 'default',
@@ -184,7 +184,7 @@ export function CommandBar({
             {noAction !== null ? (
               // Muted when the board still offers moves (the cell can act, just not attack);
               // red when nothing at all is offered.
-              <span style={{ fontSize: 13, color: hint !== null ? '#7C6A61' : '#B03A2E' }}>
+              <span style={{ fontSize: 13, color: hint !== null ? '#78665D' : '#B03A2E' }}>
                 {noAction}
               </span>
             ) : null}
@@ -239,7 +239,7 @@ export function CommandBar({
         // WHY undo is unavailable — S25 item 2's instrumentation, visible rather than behind a
         // flag because it doubles as a teaching line: only moves can be undone, and the first
         // committing action names itself.
-        <div data-undo-reason={undo.reason} style={{ fontSize: 12, color: '#7C6A61' }}>
+        <div data-undo-reason={undo.reason} style={{ fontSize: 12, color: '#78665D' }}>
           {undo.reason === 'committed'
             ? t('undo.committed', { action: actionDisplayName(undo.committedBy ?? '') })
             : undo.reason === 'resumed'
