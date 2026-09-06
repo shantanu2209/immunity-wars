@@ -247,3 +247,58 @@ claim is checked rather than assumed:
 Nothing else: no cookies, no `sessionStorage`, no other database. So the row's name is honest
 as "Reset progress" only if progress means the saved game; if Shantanu would rather it read
 "Delete saved game", that is the more literal label and the smaller true claim.
+
+---
+
+## The five rulings on the two proposals (Shantanu, 6 September 2026; two of them Kartik's)
+
+**1. "Delete saved game", not "Reset progress".** The row clears only the autosave, confirmed
+from the code above, and "Reset progress" overpromises: it sounds like statistics, unlocks or
+achievements, none of which exist. The smaller true label, as everywhere else. Built so.
+
+**2. The build order is agreed:** one piece, two PRs, text size last because it touches every
+screen. PR 1 is the store, the screen with its language and delete rows, the two doors (the
+Title slot and the pause menu), and the audit walking the new screen; PR 2 is text size with
+the scaling mechanism and the audit's third pass.
+
+*Decided in the build and flagged rather than hidden:* from the pause menu the delete row is
+**disabled with its reason** ("You are playing the saved game. Quit to the title to delete
+it."), because the save IS the game being played and the next accepted action would write it
+again; deleting from inside the game would have to end the game, which is Quit's job. From the
+Title the row is live when a save exists and disabled with "No saved game" when none does, so
+it is never a control that does nothing. Settings over a paused game keeps the game mounted
+underneath, hidden, so the session, the selection and any queued dialog are undisturbed; Back
+returns to the game.
+
+**3. No tips section, at least not yet. Help is rules.** Recorded as the shape it would take
+if it ever happens, so nobody adds tips into Help by default: **a separate section behind a
+spoiler warning that says plainly that reading it may cost the player their own path to
+playing well.** Not a Help section by default, not folded into the rules, not first.
+
+**4. The rulebook's "why it works this way" boxes go in the library (Kartik's ruling).** They
+are his explanations of the biology behind each mechanic and they appear nowhere in the app.
+This also settles part of what the library is for: not only what a pathogen is, but **why the
+game models it the way it does.** The library piece carries them; they are content prose
+(Kartik's science, translated with the diseases namespace), extracted from the rulebook into
+the content pack like the card prose was, and pinned to the rulebook's text.
+
+**5. Section 9 duplicates, does not reference (Kartik's ruling):** Help lists every crisis
+event with what it does, so a player can look one up without waiting for it to fire.
+
+**The string question, solved rather than discovered.** Where an event's words live today,
+checked in the code rather than assumed: its **name** and its **why** are the content pack's
+event table (`EVENTS[key]`), which the reveal renders directly; **what it does** is an effect
+chip, a UI catalogue string (`effects.noProduce`, `effects.neutrophilOffline`, …) that the
+strip and the reveal choose from the game state the event produced, not from the event key;
+and the table's `tell` is the engine's **forecast** wording ("next turn"), set as the warning
+the turn before a bad event, which one event lacks. So Help reads the same three sources and
+copies none: for every key of `EVENTS`, its `name` and `why` from the table, and for its
+effect line **the chip text that event produces when it fires**, through one keyed map from
+event to effect key in the UI, **pinned by a test that fires each event on a constructed state
+and requires the strip to produce exactly the mapped chip** (the state-injection pattern), with
+a control that a wrong mapping fails. An event with no chip of its own (co-infection) shows its
+`tell`, stated as the forecast it is. Nothing is copied into the catalogue, nothing can drift
+without the pin going red, and a new event in the pack fails the pin until it is mapped. The
+reveal keeps its shorter form by construction: it shows the one event that fired, with its
+chips; Help shows all of them. Help's only catalogue strings of its own are its headings and
+its intro line.

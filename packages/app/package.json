@@ -22,17 +22,18 @@
   "comment:build:web": "The shipped web build, with the service worker that makes it offline (Gate 1). `preview` serves it; `pnpm gate1:audit http://localhost:4173` is the offline check against it.",
   "comment:dependencies": "session and content, and deliberately NOT engine. ui-app-no-engine forbids the engine; ui-app-no-unresolvable makes an unresolved import red too, so a permitted dependency that is not declared is also red. Declaring these is what makes the permission true rather than written down.",
   "dependencies": {
+    "@immunity-wars/content": "workspace:*",
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/ui": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@immunity-wars/content": "workspace:*"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "vite": "^8.2.0",
-    "vite-plugin-pwa": "^1.3.0",
+    "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.2.5",
-    "@types/node": "^22.0.0"
+    "vite": "^8.2.0",
+    "vite-plugin-pwa": "^1.3.0"
   }
 }

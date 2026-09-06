@@ -27,12 +27,15 @@ SHIPPED WEB BUILD (`pnpm --filter @immunity-wars/app build:web`, served by `prev
 4173), not the dev server, because the offline item can only be true of a build with its
 service worker. Every number is the instrument's.
 
-**The instrument, and its controls.** Seventeen screens are driven in a real game on the app
-shell: title, difficulty, the goal dialog, the play screen in the infection phase, the reveal,
-the planning screen with and without the AP terms open, the command screen with nothing, the
-inspect sheet, the B-Cell and the Neutrophil selected, the antibody family detail, the cell
-card, the pause sheet, a spread frame, the next turn, and the Result screen (an idle Training
-game is lost within a handful of turns). On each it measures every visible control outside the
+**The instrument, and its controls.** Twenty-one screens are driven in a real game on the app
+shell: title, Settings from the Title with no save, difficulty, the goal dialog, the play
+screen in the infection phase, the reveal, the planning screen with and without the AP terms
+open, the command screen with nothing, the inspect sheet, the B-Cell and the Neutrophil
+selected, the antibody family detail, the cell card, the pause sheet, Settings over the paused
+game, a spread frame, the next turn, then after a quit that keeps the save Settings from the
+Title with a save and its delete confirm, and after Continue the Result screen (an idle
+Training game is lost within a handful of turns). *The four Settings screens were added in
+P2.6 piece 2 (6 September 2026); before it, seventeen.* On each it measures every visible control outside the
 SVG board (the board is coarse pointing by ruling; the inspect sheet is its precise surface,
 P2.5 piece 1), every visible text run outside the board against the first opaque background
 behind it, and every control's full border against the surface behind it. Then the same
@@ -97,25 +100,36 @@ found the instrument's own second defect (the title screen measured before the 2
 applied, because the app renders from a module script before DOMContentLoaded) and the root is
 now set explicitly before the first screen.
 
-## The numbers (the shipped build, the P2.6 first-piece run, 6 September 2026)
+## The numbers (the shipped build, the P2.6 piece 2 run, 6 September 2026)
 
-Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 17 screens; every
+Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 21 screens; every
 row's width and root font size are the instrument's own readings, recorded per screen in the
 JSON. Eighteen controls fired the right way first.
 
 | Check | Mechanism it models | Measured | Findings |
 |---|---|---|---|
-| Touch targets ≥ 44 × 44 CSS px | — | 357 controls across 17 screens at 360 px | **0** |
-| Text contrast (4.5:1, 3:1 large) | — | 911 text runs | **0** |
-| Non-text contrast (3:1, control boundaries) | — | 357 controls | **0** |
-| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 911 text runs across 17 screens, root 32 px at 360 px | **0** unscaled |
-| Layout under FONT200 | the default-font-size preference | 17 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
-| **Layout under ZOOM200** | Chrome for Android's page zoom | 17 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
+| Touch targets ≥ 44 × 44 CSS px | — | 369 controls across 21 screens at 360 px | **0** |
+| Text contrast (4.5:1, 3:1 large) | — | 936 text runs | **0** |
+| Non-text contrast (3:1, control boundaries) | — | 369 controls | **0** |
+| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 937 text runs across 21 screens, root 32 px at 360 px | **0** unscaled |
+| Layout under FONT200 | the default-font-size preference | 21 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
+| **Layout under ZOOM200** | Chrome for Android's page zoom | 21 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
 | **Offline** | — | first visit online, then the network cut | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
 
-*The previous record (P2.5's final run) read 327 controls and 825 text runs across 16
-screens, 836 runs scaled; the difference is the inspect sheet (30 controls, 65 text runs) and
-the deck. It had no ZOOM200 row.* The layout faults the first 180 px pass found and fixed
+*The P2.6 piece 1 run read 357 controls and 911 text runs across 17 screens; the difference is
+the four Settings screens (10 controls, 33 text runs) and the deck. P2.5's final run read 327
+controls and 825 text runs across 16 screens, 836 runs scaled, with no ZOOM200 row.*
+
+**Two instrument defects found by the first run over the Settings screens, fixed inline.**
+The walk now quits to the Title mid-game to measure Settings with a save; its Continue click
+then failed silently, because the Title's Continue button carries its subtitle ("Training
+turn 2") inside the button and the exact-text click could not find it, so the Result was never
+reached and the save survived into the later passes. Those passes run as tabs of one browser
+and share its profile, and a Title with a save puts the overwrite confirm AFTER the difficulty
+pick, where the walk was not looking: the scaled passes sat on the difficulty screen and
+measured 12 text runs per "screen". Both were visible only in the JSON's per-screen text-run
+counts and the "NOT REACHED" line, not in the totals, which still read zero findings. The
+Continue click matches the label's start; the overwrite confirm is clicked after the pick. The layout faults the first 180 px pass found and fixed
 in P2.5 (the reveal dialog, the piece grid, the planning row; the table above) are what a
 zero here rests on, and this is the first machine measurement of the layout at 180 px since
 the `rem` sweep, which changes nothing at a 16 px root.

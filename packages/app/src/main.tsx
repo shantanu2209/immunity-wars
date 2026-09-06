@@ -20,6 +20,7 @@ import {
   PauseSheet,
   PlayScreen,
   ResultScreen,
+  SettingsScreen,
   TitleScreen,
   t,
   turnLine,
@@ -29,14 +30,23 @@ import {
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { LOCALES, browserStore, readSettings, writeSettings, type Settings } from './settings';
+
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
+// The preference store is read once, synchronously, before the first render (settings.ts says
+// why); a write that fails keeps the in-memory value for the session.
+const prefStore = browserStore();
+const initialSettings = readSettings(prefStore);
 
 type Screen =
   | { name: 'title' }
   | { name: 'difficulty' }
   | { name: 'play' }
-  | { name: 'result'; finalView: ViewState; difficulty: string };
+  | { name: 'result'; finalView: ViewState; difficulty: string }
+  /** Settings, and where Back returns to. From play, the game stays mounted underneath
+   *  (hidden), so nothing about the session, the selection or a queued dialog is disturbed. */
+  | { name: 'settings'; from: 'title' | 'play' };
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -54,6 +64,11 @@ function App(): ReactElement {
   const [screen, setScreen] = useState<Screen>({ name: 'title' });
   const [save, setSave] = useState<SaveSummary | null>(null);
   const [paused, setPaused] = useState(false);
+  const [settings, setSettings] = useState<Settings>(initialSettings);
+  const saveSettings = (s: Settings): void => {
+    setSettings(s);
+    writeSettings(prefStore, s);
+  };
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
@@ -122,12 +137,38 @@ function App(): ReactElement {
     setScreen({ name: 'result', finalView, difficulty: difficultyRef.current });
   };
 
+  const deleteSave = (): void => {
+    // The one thing that persists on the player's path (for-P2.6.md, PROPOSAL 2, "what reset
+    // resets"): the autosave. Settings stay, and the confirm said so.
+    void storage
+      .delete(SAVE_ID)
+      .catch(() => undefined)
+      .then(() => {
+        setSave(null);
+        refreshSave();
+      });
+  };
+
+  const settingsScreen = (from: 'title' | 'play'): ReactElement => (
+    <SettingsScreen
+      language={settings.language}
+      languages={LOCALES}
+      onLanguage={(l) => saveSettings({ ...settings, language: l as Settings['language'] })}
+      deleteSaveBlock={from === 'play' ? 'inPlay' : save ? null : 'none'}
+      onDeleteSave={deleteSave}
+      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
+    />
+  );
+
+  if (screen.name === 'settings' && screen.from === 'title') return settingsScreen('title');
+
   if (screen.name === 'title') {
     return (
       <TitleScreen
         save={save}
         onContinue={continueSave}
         onNewGame={() => setScreen({ name: 'difficulty' })}
+        onSettings={() => setScreen({ name: 'settings', from: 'title' })}
       />
     );
   }
@@ -169,69 +210,85 @@ function App(): ReactElement {
         save={save}
         onContinue={continueSave}
         onNewGame={() => setScreen({ name: 'difficulty' })}
+        onSettings={() => setScreen({ name: 'settings', from: 'title' })}
       />
     );
   }
 
+  const settingsOverPlay = screen.name === 'settings';
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
-      <PlayScreen
-        session={session}
-        artMetrics={artMetrics}
-        onGameEnd={onGameEnd}
-        renderControls={(ctx) => (
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              padding: '8px 0',
-            }}
-          >
-            <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
-              {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])} {t('play.deck')}{' '}
-              {String(ctx.game['deckCount'])}
-            </span>
-            <button
-              style={{ minHeight: 44, fontSize: '0.875rem' }}
-              disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
-              onClick={() => ctx.send({ action: 'draw' })}
+      {settingsOverPlay ? settingsScreen('play') : null}
+      <div hidden={settingsOverPlay}>
+        <PlayScreen
+          session={session}
+          artMetrics={artMetrics}
+          onGameEnd={onGameEnd}
+          renderControls={(ctx) => (
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                padding: '8px 0',
+              }}
             >
-              {t('play.draw')}
-            </button>
-            {/* While the planning screen shows (item 12), its own bottom button begins
-                command; a second copy up here would be the same button twice. */}
-            {ctx.planning ? null : (
+              <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
+                {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])} {t('play.deck')}{' '}
+                {String(ctx.game['deckCount'])}
+              </span>
               <button
                 style={{ minHeight: 44, fontSize: '0.875rem' }}
-                disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
-                onClick={() => ctx.send({ action: 'beginCommand' })}
+                disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
+                onClick={() => ctx.send({ action: 'draw' })}
               >
-                {t('play.beginCommand')}
+                {t('play.draw')}
               </button>
-            )}
-            <button
-              style={{ minHeight: 44, fontSize: '0.875rem' }}
-              disabled={ctx.playing || ctx.phase !== 'command'}
-              onClick={() => ctx.send({ action: 'endCommand' })}
-            >
-              {t('play.endCommand')}
-            </button>
-            <button
-              style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
-              onClick={() => setPaused(true)}
-            >
-              {t('play.pause')}
-            </button>
-            {ctx.frameInfo ? (
-              <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>{ctx.frameInfo.label}</span>
-            ) : null}
-            {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
-          </div>
-        )}
-      />
-      {paused ? <PauseSheet onResume={() => setPaused(false)} onQuit={quitToTitle} /> : null}
+              {/* While the planning screen shows (item 12), its own bottom button begins
+                command; a second copy up here would be the same button twice. */}
+              {ctx.planning ? null : (
+                <button
+                  style={{ minHeight: 44, fontSize: '0.875rem' }}
+                  disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
+                  onClick={() => ctx.send({ action: 'beginCommand' })}
+                >
+                  {t('play.beginCommand')}
+                </button>
+              )}
+              <button
+                style={{ minHeight: 44, fontSize: '0.875rem' }}
+                disabled={ctx.playing || ctx.phase !== 'command'}
+                onClick={() => ctx.send({ action: 'endCommand' })}
+              >
+                {t('play.endCommand')}
+              </button>
+              <button
+                style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
+                onClick={() => setPaused(true)}
+              >
+                {t('play.pause')}
+              </button>
+              {ctx.frameInfo ? (
+                <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>
+                  {ctx.frameInfo.label}
+                </span>
+              ) : null}
+              {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
+            </div>
+          )}
+        />
+        {paused ? (
+          <PauseSheet
+            onResume={() => setPaused(false)}
+            onQuit={quitToTitle}
+            onSettings={() => {
+              setPaused(false);
+              setScreen({ name: 'settings', from: 'play' });
+            }}
+          />
+        ) : null}
+      </div>
     </div>
   );
 }
