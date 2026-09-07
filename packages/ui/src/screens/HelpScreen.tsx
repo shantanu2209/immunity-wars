@@ -36,6 +36,7 @@ import { Fragment, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
+import { RichText } from '../panels/LogPanel';
 
 const BTN: CSSProperties = {
   display: 'block',
@@ -239,7 +240,10 @@ function sectionBody(key: HelpSectionKey): ReactElement {
           {Object.keys(events).map((k) => (
             <p key={k} style={P} data-help-event={k}>
               <Lead text={String(events[k]?.name ?? k)} />
-              {stripTags(String(events[k]?.why ?? ''))}
+              {/* The reason carries the engine's <b> emphasis; the app's rich-text renderer
+                  turns it into runs, as the reveal does. A regex that stripped tags was
+                  CodeQL's "incomplete sanitisation" pattern and is gone. */}
+              <RichText text={String(events[k]?.why ?? '')} />
               {/* Two reasons (Fatigue, Acute-phase surge) already state the effect in Kartik's
                   own words, so their Help line is empty rather than a repeat; the pin checks
                   the reason's numbers for those. */}
@@ -273,12 +277,6 @@ function sectionBody(key: HelpSectionKey): ReactElement {
     default:
       return <Fragment />;
   }
-}
-
-/** The event table's why carries the engine's <b> emphasis; Help sets the name in bold
- *  itself, so the tags are dropped rather than rendered. */
-function stripTags(s: string): string {
-  return s.replace(/<[^>]+>/g, '');
 }
 
 export function HelpScreen({

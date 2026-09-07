@@ -133,14 +133,12 @@ describe('Help lists every crisis event, with what it does pinned to the engine'
     expect([...lines].sort()).toEqual([...keys].sort());
   });
 
-  /** What Help shows for an event: the pack's reason (Kartik's words, tags dropped) and
-   *  Help's effect line. Two reasons already state the effect, so their Help line is empty
-   *  and the reason itself carries the numbers the pin checks. */
+  /** What Help shows for an event: the pack's reason (Kartik's words; its <b> tags carry no
+   *  digits and no checked word, so they are left as they are) and Help's effect line. Two
+   *  reasons already state the effect, so their Help line is empty and the reason itself
+   *  carries the numbers the pin checks. */
   const shown = (key: string): string => {
-    const why = String((EVENTS as Record<string, { why?: unknown }>)[key]?.why ?? '').replace(
-      /<[^>]+>/g,
-      '',
-    );
+    const why = String((EVENTS as Record<string, { why?: unknown }>)[key]?.why ?? '');
     const effect = UI[`help.event.${key}.effect`];
     expect(effect).toBeDefined();
     return `${why} ${effect ?? ''}`.trim();
