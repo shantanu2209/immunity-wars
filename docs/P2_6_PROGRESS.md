@@ -289,7 +289,13 @@ Neither is library work; both came out of what made PR #70 red.
   committed:** the alert's name implies a second pass would find more, and brute force over every
   string to length 9 says the old spelling was already idempotent. The whole measured difference
   is the empty tag `<>`. Both generators re-run and byte-identical, which is what makes the change
-  safe. The loop is belt-and-braces, and the code says so rather than implying it is load-bearing.
+  safe. **Then CodeQL rejected the replacement too**, and was right: the fixpoint loop that had
+  been kept as belt-and-braces is a linear pass inside a loop, so it is polynomial on input
+  starting with many `<`. Since the measurement had already shown the loop bought nothing, it
+  went. What ships is a **scanner with no regular expression in it**, linear by construction,
+  asserted equal to the single-pass regex over **every string up to length 8** on the alphabet
+  that matters rather than over examples. Two claims about one four-line function, each believed
+  briefly and each corrected by a check.
 - **Recorded, not built** ([`for-P2.6.md`](for-P2.6.md)): `STRING_INVENTORY.md` is generated and
   carries a hand-written correction note that regeneration silently deletes.
 - **The badge contrast result kept as its own instance**, at Shantanu's direction:
