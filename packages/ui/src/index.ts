@@ -48,6 +48,7 @@ export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/P
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export { SettingsScreen, type DeleteSaveBlock, type ChoiceRow } from './screens/SettingsScreen';
+export { HelpScreen, HELP_SECTION_KEYS, type HelpSectionKey } from './screens/HelpScreen';
 export { ResultScreen, type ResultStats } from './screens/ResultScreen';
 export { cellDisplayName, typeDisplayName, residentDisplayName, organDisplayName } from './names';
 export { t } from './i18n';
