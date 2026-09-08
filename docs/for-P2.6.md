@@ -120,6 +120,15 @@ a tester does.
   and the overwrite confirm in the wrong place were all invisible in the totals and all plain
   in the per-screen counts. A green total over an incomplete walk is a green gate over an
   uncovered arm.
+- **`docs/STRING_INVENTORY.md` is GENERATED, and it carries a hand-written correction note that
+  regeneration silently deletes.** Found on 8 September 2026 while proving that the markup change
+  left both generators byte-identical: `string-inventory.ts` reproduced the whole document except
+  the "Corrected 6 September 2026" block about the line numbers counting from the `<script>` tag,
+  which is not in the generator and so cannot survive it. The file was restored by hand this time.
+  Nothing warns about it, and the next person to regenerate will not notice. Two honest fixes: put
+  the note in the generator, or stop hand-editing generated documents and keep such notes beside
+  them. Not built, and not urgent, because the note's content is also in
+  [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md).
 
 ---
 

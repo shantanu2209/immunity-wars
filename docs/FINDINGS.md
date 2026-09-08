@@ -3398,3 +3398,39 @@ whatsoever would satisfy the fail-control perfectly — and would then red on ev
 someone removed it from `verify`. That is the standing rule's case, unchanged: *forbid X is
 half a specification.*
 
+
+---
+
+## 63. A new USE of an existing content value is a new surface: 212 contrast findings from a colour the pack had carried, unchanged and trusted, for months
+
+**Found by the Gate 1 audit's first run over the disease library, 8 September 2026**, and
+recorded as its own instance at Shantanu's direction because the class is not the one the
+audit was built for.
+
+**What happened.** The library's rows carried a class badge, cream text on the invader family's
+own colour from `FAMILIES.col`. The audit returned **212 contrast findings**, every one of them
+that badge: the pack's family colours sit between **2.4:1 and 3.7:1** against cream, under the
+4.5:1 that WCAG 2.1 SC 1.4.3 asks of text. The badge is now dark text with the colour as a bar
+beside it, and the run after the fix is clean.
+
+**The colours were not wrong and had not changed.** They are Kartik's, they are on the printed
+board, and the app had used them for months — as **fills behind tokens and as lane strokes**,
+where nothing is a contrast failure because no text sits on them. What was new was putting
+**text** on one. The value was unchanged and trusted everywhere it already appeared; the
+*use* was new, and a use is what a contrast rule is about.
+
+**The sentence worth keeping, because it names why a passing check preceded a failing one.**
+Minutes earlier a scripted read of the rendered index had passed: every name, every group, every
+row present and in the right order. **A read checks that the words are there. The audit checks
+that they can be read.** Both were working correctly and only one of them was asking the
+question that mattered.
+
+> **The rule, stated generally:** a new USE of an existing content value is a NEW SURFACE, even
+> when the value is unchanged and is trusted everywhere it already appears. Reviewing the value
+> tells you nothing, because the value is not what changed.
+
+**Why it is a product finding and not an instrument one**, by the standing test: nothing
+downstream depended on it being right. The audit measured correctly and reported correctly the
+first time it was pointed at the surface. The defect was in the thing being built, it was fixed
+before the piece landed, and the instrument needed no repair — which is exactly the case the
+instrument-versus-product rule exists to keep out of the stop-the-line lane.
