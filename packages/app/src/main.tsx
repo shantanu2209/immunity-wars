@@ -17,17 +17,21 @@ import { LocalSession, IndexedDbStorage } from '@immunity-wars/session';
 import type { ViewState } from '@immunity-wars/session';
 import {
   AboutScreen,
+  CrashScreen,
   DifficultyScreen,
+  ErrorBoundary,
   HelpScreen,
   LibraryScreen,
   PauseSheet,
   PlayScreen,
   ResultScreen,
+  SaveFailedNotice,
   SettingsScreen,
   TitleScreen,
   t,
   turnLine,
   type ArtMetrics,
+  type CrashCase,
   type HelpSectionKey,
   type LibraryView,
   type SaveSummary,
@@ -85,7 +89,7 @@ function resultOf(v: ViewState): { won: boolean; lossOrgan: string | null } {
   };
 }
 
-function App(): ReactElement {
+function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void }): ReactElement {
   const [screen, setScreen] = useState<Screen>({ name: 'title' });
   const [save, setSave] = useState<SaveSummary | null>(null);
   const [paused, setPaused] = useState(false);
@@ -96,6 +100,13 @@ function App(): ReactElement {
     writeSettings(prefStore, s);
   };
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
+  // Whether a game is under way, reported up so the crash screen can tell case A from case B.
+  // A ref in the parent rather than state here: this must survive the tree that threw.
+  useEffect(() => {
+    onPlayingChange(sessionRef.current !== null);
+  });
+  /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
+  const [saveFailed, setSaveFailed] = useState(false);
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
 
@@ -126,9 +137,23 @@ function App(): ReactElement {
       .catch(() => undefined);
   }, []);
 
+  /**
+   * THE SHELL LISTENS FOR THE NOTICE, not PlayScreen, because the warning outlives any one
+   * screen: a player who opens Settings after it appears has not stopped being unable to save.
+   * The subscription is never unsubscribed by hand — `dispose()` clears every listener.
+   */
+  const watchForSaveFailure = (session: LocalSession): LocalSession => {
+    session.subscribe((e) => {
+      if (e.kind === 'notice' && e.notice === 'save-failed') setSaveFailed(true);
+    });
+    return session;
+  };
+
   const startNew = (difficulty: string): void => {
     difficultyRef.current = difficulty;
-    sessionRef.current = LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID });
+    sessionRef.current = watchForSaveFailure(
+      LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID }),
+    );
     setPaused(false);
     setScreen({ name: 'play' });
   };
@@ -141,7 +166,9 @@ function App(): ReactElement {
       }
       const st = s.state as Record<string, unknown>;
       difficultyRef.current = String(st['difficulty'] ?? 'training');
-      sessionRef.current = LocalSession.resume(s.state, { storage, saveId: SAVE_ID });
+      sessionRef.current = watchForSaveFailure(
+        LocalSession.resume(s.state, { storage, saveId: SAVE_ID }),
+      );
       setPaused(false);
       setScreen({ name: 'play' });
     });
@@ -220,15 +247,18 @@ function App(): ReactElement {
 
   if (screen.name === 'title') {
     return (
-      <TitleScreen
-        save={save}
-        onContinue={continueSave}
-        onNewGame={() => setScreen({ name: 'difficulty' })}
-        onSettings={() => setScreen({ name: 'settings', from: 'title' })}
-        onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
-        onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
-        onAbout={() => setScreen({ name: 'about' })}
-      />
+      <>
+        {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
+        <TitleScreen
+          save={save}
+          onContinue={continueSave}
+          onNewGame={() => setScreen({ name: 'difficulty' })}
+          onSettings={() => setScreen({ name: 'settings', from: 'title' })}
+          onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
+          onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
+          onAbout={() => setScreen({ name: 'about' })}
+        />
+      </>
     );
   }
 
@@ -265,15 +295,18 @@ function App(): ReactElement {
   if (!session) {
     // A play screen with no session is unreachable by the machine; recover to title.
     return (
-      <TitleScreen
-        save={save}
-        onContinue={continueSave}
-        onNewGame={() => setScreen({ name: 'difficulty' })}
-        onSettings={() => setScreen({ name: 'settings', from: 'title' })}
-        onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
-        onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
-        onAbout={() => setScreen({ name: 'about' })}
-      />
+      <>
+        {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
+        <TitleScreen
+          save={save}
+          onContinue={continueSave}
+          onNewGame={() => setScreen({ name: 'difficulty' })}
+          onSettings={() => setScreen({ name: 'settings', from: 'title' })}
+          onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
+          onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
+          onAbout={() => setScreen({ name: 'about' })}
+        />
+      </>
     );
   }
 
@@ -282,6 +315,7 @@ function App(): ReactElement {
     screen.name === 'settings' || screen.name === 'help' || screen.name === 'library';
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
+      {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
       {screen.name === 'settings' ? settingsScreen('play') : null}
       {screen.name === 'help' ? helpScreen('play', screen.section) : null}
       {screen.name === 'library' ? libraryScreen('play', screen.view) : null}
@@ -377,7 +411,68 @@ function sumMade(g: ViewState): number {
   return Object.values(made).reduce<number>((s, v) => s + (typeof v === 'number' ? v : 0), 0);
 }
 
+/**
+ * THE ROOT, WRAPPED (docs/for-P2.6-errors.md, ruled 8 September 2026).
+ *
+ * `AppRoot` exists only to hold the crash state, because `App` is what may have thrown and its
+ * state is not to be trusted afterwards.
+ *
+ * **It reads the autosave and never writes it** (ruling 2). The read decides which of the four
+ * cases the player is in; the write that a "helpful" crash screen would do is what turns a
+ * recoverable crash into lost progress, so no code path from here reaches `storage.put`.
+ *
+ * **Every exit reloads** (ruling 1). `location.reload()` for Continue, because a reload resumes
+ * from the autosave, which is current; `location.href` with a fresh load for the others. A tree
+ * that threw is undefined and there is nothing here worth preserving.
+ */
+function AppRoot(): ReactElement {
+  const [which, setWhich] = useState<CrashCase | null>(null);
+  const [turn, setTurn] = useState<number | null>(null);
+  const playingRef = useRef(false);
+
+  const onCrash = (): void => {
+    // A READ, never a write. If it throws or the record is unreadable, say so rather than
+    // guessing: an unreadable save is its own case and gets its own wording.
+    storage
+      .get(SAVE_ID)
+      .then((s) => {
+        if (!s) {
+          setWhich('none');
+          return;
+        }
+        const st = s.state as Record<string, unknown>;
+        const t = Number(st['turn'] ?? 0);
+        if (!Number.isFinite(t)) {
+          setWhich('unreadable');
+          return;
+        }
+        setTurn(t);
+        setWhich(playingRef.current ? 'playing' : 'safe');
+      })
+      .catch(() => setWhich('unreadable'));
+  };
+
+  return (
+    <ErrorBoundary
+      onCrash={onCrash}
+      render={(detail) => (
+        <CrashScreen
+          which={which ?? 'safe'}
+          turn={turn}
+          detail={`${detail.source}: ${detail.message}
+${detail.stack}`}
+          onContinue={() => window.location.reload()}
+          onTitle={() => window.location.reload()}
+          onNewGame={() => window.location.reload()}
+        />
+      )}
+    >
+      <App onPlayingChange={(p) => (playingRef.current = p)} />
+    </ErrorBoundary>
+  );
+}
+
 const el = document.getElementById('app');
 if (el) {
-  createRoot(el).render(<App />);
+  createRoot(el).render(<AppRoot />);
 }

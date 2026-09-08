@@ -83,6 +83,8 @@ export class LocalSession implements Session {
   private readonly storage: Storage;
   private readonly now: () => number;
   private readonly saveId: string;
+  /** Latched on the first failed autosave; see `autosave()` for why it never resets. */
+  private saveFailed = false;
   private disposed = false;
 
   /** Accepted MOVE_CLASS actions this command phase — what an undo unwinds. */
@@ -195,7 +197,7 @@ export class LocalSession implements Session {
     // a resolved `sendAction` means the write is ordered before any later one; the failure is
     // swallowed rather than rejecting an action the engine has already applied — a device
     // whose storage does not work degrades to no-save, not to an unplayable game.
-    await this.save().catch(() => undefined);
+    await this.autosave();
     return { ok: true };
   }
 
@@ -239,6 +241,33 @@ export class LocalSession implements Session {
     if (this.disposed) throw new Error('this session has been disposed');
   }
 
+  /**
+   * THE AUTOSAVE, and the one thing it must never do is reject.
+   *
+   * A device whose storage does not work degrades to no-save, not to an unplayable game: the
+   * engine has already applied the action, so failing it here would reject something that
+   * happened. That was true before and is unchanged.
+   *
+   * ⚠️ **What changed on 8 September 2026** (Shantanu's ruling, `docs/for-P2.6-errors.md` point
+   * 4): the failure is no longer SILENT. It was `.catch(() => undefined)`, so a player could
+   * believe their game was saved for forty turns when it was not, and the UI had no way to find
+   * out — it never sees `GameState` and cannot check for itself.
+   *
+   * **Emitted once, not once per action.** A device with broken storage fails every write, and a
+   * notice on every action would be a stream. The latch is deliberately never reset: a storage
+   * layer that failed once and then works is not a state worth modelling, and clearing the
+   * warning would be claiming a recovery nobody verified.
+   */
+  private async autosave(): Promise<void> {
+    try {
+      await this.save();
+    } catch {
+      if (this.saveFailed) return;
+      this.saveFailed = true;
+      this.emit({ kind: 'notice', notice: 'save-failed' });
+    }
+  }
+
   private emit(event: SessionEvent): void {
     // Copied before iterating: a listener that unsubscribes itself must not perturb this loop.
     for (const l of [...this.listeners]) l(event);
@@ -263,7 +292,7 @@ export class LocalSession implements Session {
     this.movesThisPhase = 0;
     this.cached = this.build();
     this.emit({ kind: 'view', view: this.cached });
-    await this.save().catch(() => undefined);
+    await this.autosave();
     return { ok: true };
   }
 

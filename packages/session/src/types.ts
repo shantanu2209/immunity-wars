@@ -209,10 +209,29 @@ export interface ActionOutcome {
  * the correct view, because the last frame of a burst equals the post-action projection — measured
  * at 908/908 and asserted as `burst-tail-authoritative` with a negative control. That invariant is
  * what makes skipping safe and what makes reconnection possible.
+ *
+ * ⚠️ **A THIRD ARM, `notice`, added 8 September 2026** (Shantanu's ruling on
+ * `docs/for-P2.6-errors.md` point 4). `save()` failures were swallowed inside this class and the
+ * UI could not see them, so a player could believe their game was saved for forty turns when it
+ * was not. Telling them requires the session to say so, and the three shapes considered were a
+ * field on the view, a field on `ActionOutcome`, and this.
+ *
+ * **The reason it is here and not on the view is structural rather than tidy: save health is a
+ * fact about THIS DEVICE, not about the game.** `viewState` is the unit of synchronisation in
+ * Phase 3 (`docs/PHASE2_BRIEF.md` §3), so it is the thing that will cross a network to other
+ * players, and whether one person's browser can write to IndexedDB is nobody else's business and
+ * would be wrong on arrival. The union already exists because one callback could not express two
+ * kinds of thing; a third kind is what it is for.
+ *
+ * A `notice` is NOT authoritative and NOT a view. A subscriber that ignores every notice still
+ * renders correctly — it just cannot warn anyone.
  */
+export type SessionNotice = 'save-failed';
+
 export type SessionEvent =
   | { readonly kind: 'view'; readonly view: SessionView }
-  | { readonly kind: 'burst'; readonly frames: readonly BurstFrame[] };
+  | { readonly kind: 'burst'; readonly frames: readonly BurstFrame[] }
+  | { readonly kind: 'notice'; readonly notice: SessionNotice };
 
 export type Listener = (event: SessionEvent) => void;
 export type Unsubscribe = () => void;

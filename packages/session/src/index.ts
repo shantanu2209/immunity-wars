@@ -18,6 +18,7 @@ export type {
   Selection,
   Session,
   SessionEvent,
+  SessionNotice,
   SessionView,
   UndoAvailability,
   Unsubscribe,

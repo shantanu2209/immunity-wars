@@ -538,6 +538,40 @@ async function walk(
     await click(page, 'Back');
     await sleep(200);
   }
+  // THE CRASH SCREEN. Measured like any other screen, because it is one: a player who reaches
+  // it at 200% text on a 360px phone is having the worst moment the app offers, and an
+  // unreadable apology is worse than none. Reached by dispatching the event the boundary
+  // listens for; the details line is opened so the collapsed content is measured too.
+  await page.evaluate(
+    "window.dispatchEvent(new ErrorEvent('error', { error: new Error('audit walk') }))",
+  );
+  await sleep(400);
+  if (await page.evaluate(() => document.querySelector('[data-crash]') !== null)) {
+    await step(page, 'crash screen', results);
+    if (await clickSel(page, '[data-crash-details]')) {
+      await sleep(200);
+      await step(page, 'crash screen, details open', results);
+    } else {
+      results.push(notReached('crash screen, details open'));
+    }
+  } else {
+    results.push(notReached('crash screen'));
+    results.push(notReached('crash screen, details open'));
+  }
+  // Every exit reloads (ruling 1), so the walk reloads to get back to the Title.
+  //
+  // ⚠️ AND RE-APPLIES THE ROOT SIZE, for the same reason the walk's opening does. Found by this
+  // pass's own per-screen list on the first run with the crash screen in it: the reload dropped
+  // the 200% root, so difficulty and every screen after it were measured at 100% and reported
+  // as UNSCALED — 9 scale findings, none of them a product defect. The totals said `scale: 9`
+  // and the verdict said nothing about which screens or why. An instrument defect introduced by
+  // this very change, caught by reading coverage rather than the verdict, and fixed inline.
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await page.evaluate((p: string | null) => {
+    if (p) document.documentElement.style.fontSize = p;
+  }, rootPct);
+  await sleep(300);
   await click(page, 'New game');
   await sleep(200);
   await click(page, 'Start and replace');
@@ -1064,6 +1098,52 @@ async function controls(page: Page): Promise<string[]> {
       'CONTROL offline passes: NOT RUN — no service worker controls this origin (the dev server has none); the offline check will report not met',
     );
   else line('offline passes: a precached bundle URL is served with the network cut', served);
+
+  // ------------------------------------------------------------------------------------------
+  // THE ERROR BOUNDARY, three routes, because they are three different code paths and a React
+  // boundary catches only the first. A boundary that has never fired is not known to work, and
+  // one that catches renders only would look like it worked while missing this app's real
+  // failure surface: every action is an onClick and every save is a promise.
+  //
+  // Driven by dispatching the events the boundary listens for rather than by adding a crash
+  // button to the app. A test hook in shipped product is surface nobody asked for.
+  // ------------------------------------------------------------------------------------------
+  const crashed = async (fire: string): Promise<boolean> => {
+    await page.goto(URL, { waitUntil: 'load' });
+    await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+    const before = await page.evaluate(() => document.querySelector('[data-crash]') !== null);
+    if (before) return false; // it must not already be showing, or this proves nothing
+    await page.evaluate(fire);
+    await sleep(400);
+    return page.evaluate(() => document.querySelector('[data-crash]') !== null);
+  };
+
+  line(
+    'boundary fires: an error event reaches the crash screen',
+    await crashed(
+      "window.dispatchEvent(new ErrorEvent('error', { error: new Error('audit control') }))",
+    ),
+  );
+  line(
+    'boundary fires: an unhandled rejection reaches the crash screen',
+    await crashed(
+      "window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', " +
+        "{ promise: Promise.resolve(), reason: new Error('audit control') }))",
+    ),
+  );
+  // THE PASSES HALF. Without it, a boundary that showed the crash screen unconditionally would
+  // satisfy both controls above perfectly, and the app would be unusable.
+  line(
+    'boundary passes: an ordinary load shows no crash screen',
+    await (async (): Promise<boolean> => {
+      await page.goto(URL, { waitUntil: 'load' });
+      await page.waitForFunction(() => document.querySelector('button') !== null, {
+        timeout: 30000,
+      });
+      await sleep(400);
+      return page.evaluate(() => document.querySelector('[data-crash]') === null);
+    })(),
+  );
 
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
   return lines;

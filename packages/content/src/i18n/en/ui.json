@@ -424,5 +424,18 @@
   "about.licenceCode": "The source code is licensed under the Apache License 2.0.",
   "about.licenceContent": "The game content, meaning the board artwork, the card designs and the rulebook, is all rights reserved.",
   "about.classroom": "If you are a teacher who wants to use this in a classroom, that is exactly what it is for. Please go ahead.",
-  "about.back": "Back"
+  "about.back": "Back",
+  "crash.title": "Something went wrong",
+  "crash.saved": "Your game is saved.",
+  "crash.resumeAt": "You will start again at the beginning of turn",
+  "crash.continue": "Continue your game",
+  "crash.safe": "Your saved game is safe.",
+  "crash.none": "There was no game in progress.",
+  "crash.unreadable": "The saved game could not be read.",
+  "crash.newGame": "Start a new game",
+  "crash.title.back": "Back to the title",
+  "crash.showDetails": "Show technical details",
+  "crash.hideDetails": "Hide technical details",
+  "save.failed": "This game cannot be saved on this device. You can keep playing, but if you close the game it will not be here when you come back.",
+  "save.failedDismiss": "I understand"
 }

@@ -341,7 +341,46 @@ Neither is library work; both came out of what made PR #70 red.
   hoping the first row has one, since only four boxes are disease-specific: reaching a screen by
   luck is what the inspect sheet did for two green runs.
 
-## Proposed, not built — the error boundary and the storage-failure notice
+## Piece 7 — the error boundary and the storage-failure notice, one piece (8 September 2026)
+
+All five points of [`for-P2.6-errors.md`](for-P2.6-errors.md) ruled, and the document now carries
+the leanings as leanings and the rulings as rulings, kept apart on Shantanu's instruction.
+
+- **The boundary reloads and never writes** (rulings 1 and 2). Ruling 2 is enforced by SHAPE
+  rather than by a comment: `CrashScreen` takes no storage handle, no session and no save
+  callback, so nothing under it can write. The shell reads the save and passes the answer down.
+  No delete button in the unreadable case either, because a save that failed to LOAD may be fine
+  and the loader may be what broke.
+- **Two window listeners beside the boundary**, and they are not optional: React catches render,
+  lifecycle and constructors, which is **not** where this app fails. Every action is an
+  `onClick`, the spread walks on a timer, `sendAction` is async. A boundary alone would catch
+  nothing and look like it worked.
+- **The four cases and the collapsed details line** (ruling 3), the deciding reason being
+  Shantanu's rather than mine: the only bug channel this project has is a person telling us, and
+  a line they can read out is the difference between "it broke" and something actionable.
+- **The third arm of the subscription union** (ruling 4), `{kind: 'notice'}`. `ViewState` is
+  untouched, because save health is a fact about this device and the view is what crosses a
+  network in Phase 3. Five session tests, one of them the control that it does NOT fire when
+  storage works, since a notice that always fired would look perfect to a fail-only test set.
+- **The notice's wording checked against ruling 5's condition.** The guarantee it cannot make is
+  "your game was saved up to now": it fires on the first failure the session sees, and a store
+  that never worked is indistinguishable from one that broke midway. The catalogue script that
+  adds the strings **fails on the phrases that would imply it** rather than leaving it to a
+  reading. The probe is not built, and the caveat is recorded as framed.
+- **Three boundary controls in the audit**, on a real browser rather than a DOM shim, because the
+  event and promise routes are exactly what a shim models least faithfully. Two fire, one passes:
+  without the passes half, a boundary that showed the crash screen unconditionally would satisfy
+  both fail-controls and make the app unusable.
+- **An instrument defect found by this change and fixed inline.** The crash screen's exit reloads,
+  and the walk's reload **dropped the 200% root font size** the FONT200 pass had set, so
+  difficulty and every screen after it were measured at 100% and reported as unscaled: nine scale
+  findings, not one a product defect. The totals said `scale: 9` and named nothing. Found by
+  reading the per-screen list, which is the third time that habit has paid in this sub-phase.
+- **The run on the shipped build:** **41 screens** per pass, 43 under SIZE200, up from 39; every
+  check 0 under all four mechanisms; no screen NOT REACHED; **27 controls** all firing correctly;
+  offline met.
+
+## Superseded — the proposal, before it was ruled
 
 [`for-P2.6-errors.md`](for-P2.6-errors.md), PROPOSAL 4, written because Shantanu asked for the
 behaviour with a game in progress to be designed rather than discovered. The measurement that
@@ -354,9 +393,13 @@ the session swallows save failures today and the UI cannot see them. Five points
 
 ## What is next
 
-The error boundary and the storage-failure notice, once PROPOSAL 4 is ruled; then onboarding,
-for which Shantanu will bring a direction, and which carries one constraint from him already:
-**Gate 1 requires a newcomer to start and finish a game unaided, so if onboarding does the
-teaching, the newcomer test measures the onboarding rather than the app.** The app has to be
-legible enough that onboarding is a helpful extra rather than a prerequisite, and onboarding is
-to be minimal by design rather than by budget. About is done (piece 6).
+**Onboarding, and it is the only thing left in P2.6.** Shantanu will bring a direction; it
+carries one constraint from him already, given at the ruling of 8 September 2026 and recorded
+here because it shapes the whole thing rather than a detail of it:
+
+> Gate 1 requires a newcomer to start and finish a game **unaided**. If onboarding does the
+> teaching, the newcomer test measures the onboarding rather than the app. So the app has to be
+> legible enough that onboarding is a **helpful extra rather than a prerequisite**, and
+> onboarding is to be **minimal by design rather than by budget**.
+
+The implications are being thought through and are owed to him when he brings the direction.
