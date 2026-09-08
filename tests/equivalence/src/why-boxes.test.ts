@@ -67,15 +67,24 @@ function unescapeXml(s: string): string {
     .replace(/&amp;/g, '&');
 }
 
+/** The runs of one paragraph, read from the capture rather than by stripping tags off a match.
+ *  `[^<]*` cannot span a tag, so the captured text carries no markup by construction: there is
+ *  nothing left to sanitise, which is the point. A tag-stripping regex here is what CodeQL
+ *  rejected on PR #63, in a different file, for the same reason. */
+function runTexts(paragraph: string): string[] {
+  const re = /<w:t[^>]*>([^<]*)<\/w:t>/g;
+  const out: string[] = [];
+  for (let m = re.exec(paragraph); m !== null; m = re.exec(paragraph)) out.push(m[1] ?? '');
+  return out;
+}
+
 /** The rulebook's boxes, in order: every paragraph whose text opens with the box heading. */
 function rulebookBoxes(): string[] {
   const xml = zipEntry(readFileSync(DOCX), 'word/document.xml').toString('utf8');
   const paras = xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) ?? [];
   const out: string[] = [];
   for (const p of paras) {
-    const text = unescapeXml(
-      (p.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) ?? []).map((t) => t.replace(/<[^>]+>/g, '')).join(''),
-    );
+    const text = unescapeXml(runTexts(p).join(''));
     const m = /^\s*WHY IT WORKS THIS WAY\s*(.*)$/s.exec(text);
     if (m && m[1]) out.push(m[1].trim());
   }
