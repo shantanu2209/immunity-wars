@@ -109,19 +109,35 @@ consequence of this document. `CLAUDE.md` is corrected the same day to say what 
   4.1.4, a major past what ajv declares, which is more than "no behaviour change" promises.
   Verified by running `pnpm boundaries` — dependency-cruiser on the new version, same one
   warning as before. Four alerts cleared. Drop the override when the lockfile resolves past it.
-- **`sharp` — DEFERRED, with the reasoning recorded so the deferral is a decision and not a
-  default.** The pipeline asserts byte-for-byte determinism across its 29 assets (`--verify`),
-  and a libvips change can move WebP encoder bytes. So the bump means regenerating and
-  re-gating every asset — real work — against an advisory about decoding *crafted* images,
-  when the only images decoded are our own committed art. **Revisit when the pipeline next
-  runs for another reason** (a new or changed asset), and take the bump inside that run.
+- **`sharp` — TAKEN, 8 September 2026 (0.33.5 → 0.35.4), at the cost the deferral named,
+  measured.** The deferral below stood because a libvips change can move WebP bytes and the
+  pipeline asserts byte-for-byte determinism. It did move them, and more than bytes: rebuilt
+  under 0.35.4, 82 of the 90 image files differed in bytes and 73 in decoded pixels, 2.2% of
+  all pixels, by resampling jitter inside the shapes (adjacent palette shades swapping; alpha
+  moved by at most 2 of 255), invisible at six times magnification on the three assets looked
+  at, and **every measured field of the manifest identical** (contrast, dominant colour,
+  light share, cover). So the outputs were regenerated in the same change, `--verify` is green
+  again on 91 files, the pipeline's four control halves fire, and the provenance rows are
+  unchanged because the raw sources are unchanged; only the output hashes moved. One type fix
+  went with it: 0.35 resolves `import` to a new ESM declaration file with no namespace, so
+  `sharp.OverlayOptions` became a named type import. Shantanu's ruling: the queue should not
+  hold a bump that is not problematic, and this one was not, once measured.
+  *The deferral as it was recorded, kept for the reasoning:* the pipeline asserts byte-for-byte
+  determinism across its 29 assets (`--verify`), and a libvips change can move WebP encoder
+  bytes. So the bump means regenerating and re-gating every asset — real work — against an
+  advisory about decoding *crafted* images, when the only images decoded are our own committed
+  art. Revisit when the pipeline next runs for another reason, and take the bump inside that run.
 - **`extract-zip` — ACCEPTED WITH NO ACTION, not open.** No patched version exists and the
   vulnerable path (browser download and extraction) is never taken: the perf driver uses the
   system Chrome. There is nothing to schedule; this line is the disposition.
 
-After the override, `pnpm audit` reports **two** advisories: `sharp` (deferred as above) and
-`extract-zip` (accepted, no action). GitHub will show three alerts for those two, because
-`sharp` is counted once per manifest.
+After the override, `pnpm audit` reported **two** advisories: `sharp` (then deferred) and
+`extract-zip` (accepted, no action). GitHub showed three alerts for those two, because `sharp`
+was counted once per manifest. **From 8 September 2026 `pnpm audit` is clean: `sharp` is
+taken (above), and `extract-zip` left the lockfile with the puppeteer-core 25 bump (#67, 7
+September), so its acceptance has nothing left to cover.** The property that replaced the old
+acceptance sentence still holds and is now vacuous: no open advisory is in a process that
+listens, because no advisory is open.
 
 ---
 

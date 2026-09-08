@@ -24,20 +24,20 @@
         "1x": {
           "file": "cell-macrophage@1x.webp",
           "px": 20,
-          "bytes": 778,
-          "sha256": "2e8a437059c83a8429b7b726b13b27996856f9c6a10e9a64398ec91ca234b3be"
+          "bytes": 780,
+          "sha256": "a4271ba662f1c8ed269768bbd163a34cc2e71920309875fb2bcb382cd1a9dfc9"
         },
         "2x": {
           "file": "cell-macrophage@2x.webp",
           "px": 40,
-          "bytes": 1630,
-          "sha256": "7e27bc7eeeb54b7c4a6bc8c4ed7d2903fb96f7c80e48c2ae2b6ce36094d18b7c"
+          "bytes": 1634,
+          "sha256": "f56afdaf3384a0faad85e3300e0431563fccbc60ff6403a5d86acd75f2e38866"
         },
         "3x": {
           "file": "cell-macrophage@3x.webp",
           "px": 60,
-          "bytes": 2556,
-          "sha256": "1743ed8fbf47c8379a53d0bc7ab3c116de2d67dcfccb048f918f2d47d270e21b"
+          "bytes": 2636,
+          "sha256": "d13fc807e4a20cf31e47f53d4a31f91fd3c62dc1034c9d9f6ae6dc2c453dcc47"
         }
       },
       "source": {
@@ -74,20 +74,20 @@
         "1x": {
           "file": "cell-neutrophil@1x.webp",
           "px": 20,
-          "bytes": 922,
-          "sha256": "b212faf7c2c4f1859f29efef96b2a46700d3ffdd2069f7cb7cee8d46b9dc17cc"
+          "bytes": 920,
+          "sha256": "da35f63f99055fae4e7490bef7993631896edcc0b4d7cf9d45ef588c43c155c7"
         },
         "2x": {
           "file": "cell-neutrophil@2x.webp",
           "px": 40,
-          "bytes": 2280,
-          "sha256": "83a5c936d7e5c2f33d89cfd3dcc0c26c6d8b77637eb94f1b01ec1d98e07736c8"
+          "bytes": 2264,
+          "sha256": "767aad36204f33ebb84cc5504a1cf6e262facbaca88f64b0ebbc638967639d25"
         },
         "3x": {
           "file": "cell-neutrophil@3x.webp",
           "px": 60,
-          "bytes": 3806,
-          "sha256": "8b498da998ef954802ea13b9dce91e2a68f073a93678c943c5474086754bef04"
+          "bytes": 3822,
+          "sha256": "28a9b36abe403f482b97acb96e06fcba84ab06ba4c32564d5a92cac0d0da22f3"
         }
       },
       "source": {
@@ -124,20 +124,20 @@
         "1x": {
           "file": "cell-bcell@1x.webp",
           "px": 20,
-          "bytes": 904,
-          "sha256": "a1274ab93fc27cdce17117f12f10575367c51f7b898eba893258bbfcf9c5597c"
+          "bytes": 920,
+          "sha256": "23de97a9d2e7085b4f4c1801c6db481daa370fd640df46813a92cf23f92351f4"
         },
         "2x": {
           "file": "cell-bcell@2x.webp",
           "px": 40,
-          "bytes": 2460,
-          "sha256": "e968e84d783373ea2d11ca424454b6da2f593f588b8847b303250715af3ecbfb"
+          "bytes": 2478,
+          "sha256": "4e5e0dd9bf3c7d912eb468095030125e69443dfa501f0fb1d22cc148afac0ab2"
         },
         "3x": {
           "file": "cell-bcell@3x.webp",
           "px": 60,
-          "bytes": 4684,
-          "sha256": "9a810dcb9a6ba4a91f263f33d1fcb0b41400f581047c22fc4145ededdd8194cd"
+          "bytes": 4690,
+          "sha256": "cd28280e4eb022fd03a881f26890611120e4d6a5dc2f75b042c53b6b0f1c73ad"
         }
       },
       "source": {
@@ -174,20 +174,20 @@
         "1x": {
           "file": "cell-tcell@1x.webp",
           "px": 20,
-          "bytes": 884,
-          "sha256": "c399a47e030924f678d957f7e313cc48668e0998be7a6bc17736049d26972405"
+          "bytes": 882,
+          "sha256": "516bd9e2acd6a0f3b8bc53a5c25df1cf6e0a4d4c61bc02108c9f4f59e878c97f"
         },
         "2x": {
           "file": "cell-tcell@2x.webp",
           "px": 40,
-          "bytes": 2356,
-          "sha256": "ba416f852a02833e5bebcfcb3eddc5020a23c58945438badad0a566bc8c625ce"
+          "bytes": 2372,
+          "sha256": "d7afaab69b1138cdecfb039e0fab00c09a76d597686ef5685e490c7ce9354c31"
         },
         "3x": {
           "file": "cell-tcell@3x.webp",
           "px": 60,
-          "bytes": 4078,
-          "sha256": "4dcdac04d5c8831c36d54894813d2445ada83033cdc04daf1fc14693604e8142"
+          "bytes": 3908,
+          "sha256": "44212023f020c8881ab38175c7e8abd3b42ee8f2d644b4856c8e7dd476a9d405"
         }
       },
       "source": {
@@ -224,20 +224,20 @@
         "1x": {
           "file": "cell-helper@1x.webp",
           "px": 20,
-          "bytes": 1012,
-          "sha256": "66e53869a32e317e2c575c97b5c5343e3a2a8f5a85a82baf082bc635a54ec6a8"
+          "bytes": 1002,
+          "sha256": "9316111038ef48a95abdd8d36a55fbdb67bf67a4fe67b671ca2883aa57d81229"
         },
         "2x": {
           "file": "cell-helper@2x.webp",
           "px": 40,
-          "bytes": 2810,
-          "sha256": "3ca125e1a6ee6222a3ad47803700dbe65763d2c4dfb79de3928a89bc3bb4aa79"
+          "bytes": 2816,
+          "sha256": "04af950f2335b3c45f068ec1cb0764821003e345d7193dfa6de4a8afdbffe0ec"
         },
         "3x": {
           "file": "cell-helper@3x.webp",
           "px": 60,
-          "bytes": 5304,
-          "sha256": "280364e74897d6496a19adbd99f2eb3954c532cae3e093be2b680ee15629ecdd"
+          "bytes": 5236,
+          "sha256": "49edf6dd3bf2b423f215e7d5222d03775a4465aa977fe77364bf18b53221740c"
         }
       },
       "source": {
@@ -274,14 +274,14 @@
         "1x": {
           "file": "cell-nk@1x.webp",
           "px": 20,
-          "bytes": 778,
-          "sha256": "ca9840be412d45e1af24b5d16d230e805b5060d88315dee02b0b7177e4c7c8a3"
+          "bytes": 794,
+          "sha256": "86ac613538323baa0cc93db60e8646cf52accb058472eca38e97e46ef923d5d2"
         },
         "2x": {
           "file": "cell-nk@2x.webp",
           "px": 40,
-          "bytes": 1908,
-          "sha256": "8b948bb600bfab1c010417c51f3c1992de19afc0968f379fb2cec3f0fc13bfd1"
+          "bytes": 1928,
+          "sha256": "6088eb6710ee78b2758d1838cfd87e992106c67d02ca84c33726ffbdf8cc42c0"
         },
         "3x": {
           "file": "cell-nk@3x.webp",
@@ -324,14 +324,14 @@
         "1x": {
           "file": "cell-eosinophil@1x.webp",
           "px": 20,
-          "bytes": 906,
-          "sha256": "fcc8561642664a54762836a8a41d1b40ed1d28ebbdea9624012576eede3946c1"
+          "bytes": 902,
+          "sha256": "8c20c20e19a20336573134253df530e3b4009d055dc151534b0ce15c40926c10"
         },
         "2x": {
           "file": "cell-eosinophil@2x.webp",
           "px": 40,
-          "bytes": 2232,
-          "sha256": "2e3c08b51f709182492e89a05a730f22d85bbee261d7b0dba2848539f470cf4c"
+          "bytes": 2198,
+          "sha256": "d2f091cd36498db89b57ebc048a7ddf9138c4b55399ef4492da7d55e7d82eaaa"
         },
         "3x": {
           "file": "cell-eosinophil@3x.webp",
@@ -374,14 +374,14 @@
         "1x": {
           "file": "path-virus@1x.webp",
           "px": 20,
-          "bytes": 810,
-          "sha256": "5bfa057255dea058fb6d2a913a4f5655be502f6c8972f9bd73f1610cbdb366a8"
+          "bytes": 808,
+          "sha256": "b9ae9477420c99375ab59a3bca721013f4a2465f73ce2bcdecf39054ff20b013"
         },
         "2x": {
           "file": "path-virus@2x.webp",
           "px": 40,
-          "bytes": 2508,
-          "sha256": "55d881084cb8cff2f5c58e240c46ab7f8889c0876f7403d6ae6742a1d2db86ee"
+          "bytes": 2522,
+          "sha256": "11af85122b40b6eac0da5f758b1e70ce7dc372f618da9aedada664d58372866f"
         },
         "3x": {
           "file": "path-virus@3x.webp",
@@ -424,20 +424,20 @@
         "1x": {
           "file": "path-hidden@1x.webp",
           "px": 20,
-          "bytes": 786,
-          "sha256": "9aa0047b013f222e1988d19bc7a2a5295d21c62fd8a116bfa9ed6516dbb469fb"
+          "bytes": 782,
+          "sha256": "6526c7ebb0fd0975229f6cbdb6f633d8179a626b79b187374960a1bde2e08223"
         },
         "2x": {
           "file": "path-hidden@2x.webp",
           "px": 40,
-          "bytes": 1768,
-          "sha256": "18b8a4f65e4e4413ac7f1e5e6d20232a21dd88c19bd4d1dc75ae1d6d137e1311"
+          "bytes": 1812,
+          "sha256": "bcb7b5f1e6ce037e735fefdaf76fd058300b823a2d0032eb01ebb846ff85f009"
         },
         "3x": {
           "file": "path-hidden@3x.webp",
           "px": 60,
-          "bytes": 3072,
-          "sha256": "69f4cd25347f9f87dc96295068b2e32cb555ad54e6ee2b39d6f5c9db6d60f1bf"
+          "bytes": 2978,
+          "sha256": "178e8627e608cb415515febad05effa35fd6a7e59c3e7f4d1ce84bd85fd4262c"
         }
       },
       "source": {
@@ -475,19 +475,19 @@
           "file": "path-bacteria@1x.webp",
           "px": 20,
           "bytes": 772,
-          "sha256": "bdd0f8e4c47007d2740fde69d42b48473f0860803e6729757511a5f87b844db2"
+          "sha256": "f5f2abee2befc1301a760678b323bce46af04ebf4ce4a3f5f20144fda4bea218"
         },
         "2x": {
           "file": "path-bacteria@2x.webp",
           "px": 40,
-          "bytes": 1846,
-          "sha256": "a8fd1875416d2ba5fd43c45cc5d3aec4d92220ec9a6c289676a097c270a2f4c6"
+          "bytes": 1824,
+          "sha256": "0e3c33e4a360e4dce12b74cba63aba7f0e0c2c4fc313f0ca23b97f685f001079"
         },
         "3x": {
           "file": "path-bacteria@3x.webp",
           "px": 60,
-          "bytes": 3200,
-          "sha256": "3973de55a6087d110f73c650909ec9df0c112842572e8646a4bdf3ff7c763923"
+          "bytes": 3282,
+          "sha256": "7c2a28997151ce141babf6c54c5477f9b178095cd2ac59251e3c1b539f17beb1"
         }
       },
       "source": {
@@ -524,20 +524,20 @@
         "1x": {
           "file": "path-toxin@1x.webp",
           "px": 20,
-          "bytes": 796,
-          "sha256": "9ed6413c511f7e7e3228c647540dcfa88483fb204906a5307781d903fc9f807e"
+          "bytes": 790,
+          "sha256": "9289e5fbef95e056fc680476c0a82178e622db8a7607a33f83a739a73b9e76f9"
         },
         "2x": {
           "file": "path-toxin@2x.webp",
           "px": 40,
-          "bytes": 1998,
-          "sha256": "3788955a19a4acf74609fe02895906dd7fc4c28e9d3f827024b704968113ca67"
+          "bytes": 1966,
+          "sha256": "7fa015235af2f5356c9631291bceec5818b683c444da423b79e22e7680dfeb84"
         },
         "3x": {
           "file": "path-toxin@3x.webp",
           "px": 60,
-          "bytes": 3288,
-          "sha256": "79bd92c8b029e6c664cd7c9a90175f801b4925ee212957a709228d938c5f1b5b"
+          "bytes": 3250,
+          "sha256": "d2ed5523e8a2c45db49a511f7e541983505448bc12136ef84cf3a414d178423e"
         }
       },
       "source": {
@@ -574,14 +574,14 @@
         "1x": {
           "file": "path-venom@1x.webp",
           "px": 20,
-          "bytes": 858,
-          "sha256": "0de19494720ab213d92ad9aa984dbd5b9fca5e09ab8c155884109bf0c7645432"
+          "bytes": 842,
+          "sha256": "5b9b55bd5d81ef9064b6d22f2a8e6320880b10d388377a7e76f7a9bcc9289be5"
         },
         "2x": {
           "file": "path-venom@2x.webp",
           "px": 40,
-          "bytes": 1928,
-          "sha256": "95b63c78b0668a3ddc9ef7b96fd96f11b58e208b02e21a19c2b9e14cf37d00a8"
+          "bytes": 1914,
+          "sha256": "bd09ed283248200d05da734f67d1b6a9e5637be2c0b559dcc1266b45f5508ed2"
         },
         "3x": {
           "file": "path-venom@3x.webp",
@@ -624,20 +624,20 @@
         "1x": {
           "file": "path-fungus@1x.webp",
           "px": 20,
-          "bytes": 722,
-          "sha256": "47b61ade52c93b74776bc0def1019805d3f7276507448213104049096c0e166c"
+          "bytes": 724,
+          "sha256": "21e522b385f0b488fd1395d142b7de9df7b27cd7aeb1df74ba1054a715a17ae7"
         },
         "2x": {
           "file": "path-fungus@2x.webp",
           "px": 40,
-          "bytes": 1544,
-          "sha256": "077c484065398ebca8a798a93639cd5a2a653bd51fac26b821858cb89c75612e"
+          "bytes": 1596,
+          "sha256": "7d130a187c1a50dde428caaa5149ac3d9bc925cec949450c7a2f0eb9394df75d"
         },
         "3x": {
           "file": "path-fungus@3x.webp",
           "px": 60,
-          "bytes": 2756,
-          "sha256": "ae08ee88d071e3090009c5e5cd9f556c60c26ae932d7f1b585081b97022e70ef"
+          "bytes": 2678,
+          "sha256": "e8c1fe71b3fa58ef67b5990210f24eaab4ab24593578c16b7634c2a169dce498"
         }
       },
       "source": {
@@ -674,20 +674,20 @@
         "1x": {
           "file": "path-worm@1x.webp",
           "px": 20,
-          "bytes": 872,
-          "sha256": "353fc1644a096d1d99277696c86add3b3dff4be5e65ac474de7e78757d4d9688"
+          "bytes": 860,
+          "sha256": "853c692ebfddda5a9318a8e1ec6f84b1c230632691339800440311743b8c07dd"
         },
         "2x": {
           "file": "path-worm@2x.webp",
           "px": 40,
-          "bytes": 2292,
-          "sha256": "cc322ef21add8fc60811d0c442f5fcd897d5a8ef1c04586a3548806dc01d7f45"
+          "bytes": 2284,
+          "sha256": "9f09ff7760bb2c68c2969b9ea9c460d0176090073a2750663ad35492fd93dc16"
         },
         "3x": {
           "file": "path-worm@3x.webp",
           "px": 60,
-          "bytes": 3894,
-          "sha256": "25280f83bd2294f47b7e0dfde04b76913e8cdd5a214fa9ea3664e2275bdacb01"
+          "bytes": 3818,
+          "sha256": "d4b39fd597d7f9c11e7c0614b09d79ce57f3f93e41d12e0eb69f67e9f57bea42"
         }
       },
       "source": {
@@ -724,20 +724,20 @@
         "1x": {
           "file": "path-malaria@1x.webp",
           "px": 20,
-          "bytes": 782,
-          "sha256": "3a3b849dc7fddcb20391fabe723ac5a93c1c00d5171cec250705af932d147d97"
+          "bytes": 776,
+          "sha256": "0bd54589f8ae52fbbb941ac9ee79d8cd802cfad3e08ab6a7ec0e973dd42d83be"
         },
         "2x": {
           "file": "path-malaria@2x.webp",
           "px": 40,
-          "bytes": 1882,
-          "sha256": "96aabcdc9911918dea1a3e21b49a120b1219f47974ff18c4ea2b4b8105b55fb8"
+          "bytes": 1866,
+          "sha256": "442ca3a8a9fb7edbc16ade5edaa2440f96e52741cb647f1a2072aa472644ae00"
         },
         "3x": {
           "file": "path-malaria@3x.webp",
           "px": 60,
-          "bytes": 3482,
-          "sha256": "d65433ad6949b262a3b65a82c3afe751990c2c490316109547285a65ed12c405"
+          "bytes": 3348,
+          "sha256": "6ca5994aba1774441e244ca2148f917f5f11e458e9c0c8dcaa894c1994ae7490"
         }
       },
       "source": {
@@ -774,20 +774,20 @@
         "1x": {
           "file": "path-parasite@1x.webp",
           "px": 20,
-          "bytes": 990,
-          "sha256": "fc89d720a828a8f2d98a7d9370fa32d23e591352cfb5d88e83b3533e64c09163"
+          "bytes": 984,
+          "sha256": "ba7b7959aff90fa3bca8014f00b65eb067886abbcba404619d2d4a98f87cc48c"
         },
         "2x": {
           "file": "path-parasite@2x.webp",
           "px": 40,
-          "bytes": 2734,
-          "sha256": "eb2545ad06efe21e2d688bb54516e4a1fb464597dc91a14b245c7adf26b9527a"
+          "bytes": 2696,
+          "sha256": "8426570bbe36e142999d6c8f4038fc33983b724dccd2e481b3470b0303ebcf87"
         },
         "3x": {
           "file": "path-parasite@3x.webp",
           "px": 60,
-          "bytes": 4966,
-          "sha256": "4719a14fc0f852ce80ce0a78685ff47e9c6ef26281ae6ee2a0f1812a9f635d50"
+          "bytes": 4916,
+          "sha256": "5b394926e8d57953a15ac01475b6a06d3e17b1e90bbed281d79349eaf215a6cf"
         }
       },
       "source": {
@@ -824,20 +824,20 @@
         "1x": {
           "file": "entry-nose@1x.webp",
           "px": 30,
-          "bytes": 1018,
-          "sha256": "0ef93dd0cda8911827f7285086d5c2649a1f97854b891de1dd3a363b48e5a6a3"
+          "bytes": 1022,
+          "sha256": "f258775a8c8f6710f640e283d97bfaa3c2ec04ee1c85c08648de04c1daa6639f"
         },
         "2x": {
           "file": "entry-nose@2x.webp",
           "px": 60,
-          "bytes": 2082,
-          "sha256": "072977d382b50071185da18f58a58a5659f7bd02f301aed126a308820605936a"
+          "bytes": 2092,
+          "sha256": "2c05c6d9b6b6c214f5ec95c1288fea153bdd6300a026df58e663014968a39f15"
         },
         "3x": {
           "file": "entry-nose@3x.webp",
           "px": 90,
-          "bytes": 3442,
-          "sha256": "63b58792d53a3af518d0457272e7489e859edac2a28b3736d18526a2edbf415b"
+          "bytes": 3444,
+          "sha256": "bc32c3a5230cc451e67d9f639e9e9fc123ed58491ead6672942ecc81746dbab1"
         }
       },
       "source": {
@@ -874,14 +874,14 @@
         "1x": {
           "file": "entry-contact@1x.webp",
           "px": 30,
-          "bytes": 1152,
-          "sha256": "57e274029156924351f20c172e57c119d50f7ac849640fd9f0a7f2be74034557"
+          "bytes": 1148,
+          "sha256": "728d1e1baea0195a595dcc221ae45d54c0578132e5aebbba0375c3a5dcd8b2f5"
         },
         "2x": {
           "file": "entry-contact@2x.webp",
           "px": 60,
-          "bytes": 3078,
-          "sha256": "44dbedad95938c831798d0f8a24d30e3dd9a7a520147473b16130ebe14bfd6fd"
+          "bytes": 3042,
+          "sha256": "5bf3bcdd30500ad8c8ff3f6f39236931e8faeaa9c24260fba6f735b91d78ac07"
         },
         "3x": {
           "file": "entry-contact@3x.webp",
@@ -924,14 +924,14 @@
         "1x": {
           "file": "entry-gut@1x.webp",
           "px": 30,
-          "bytes": 1396,
-          "sha256": "061c38264ab9339d0fbde212c68e771bf8becf536b16535dcb2f26cefb4124f4"
+          "bytes": 1386,
+          "sha256": "72e2873bf49c79f116b62d3b90f53621b73374479a739ff11b25d359fd3ba0ca"
         },
         "2x": {
           "file": "entry-gut@2x.webp",
           "px": 60,
-          "bytes": 3520,
-          "sha256": "f8327739ac601ab963d611cf9c85f7cfd2ebe32a35445706dfdc498809e8f1f9"
+          "bytes": 3526,
+          "sha256": "c7fc7032e5cea10ef021f331a74749919b8fc3c313e665c7fdd0b6544fb47a16"
         },
         "3x": {
           "file": "entry-gut@3x.webp",
@@ -974,20 +974,20 @@
         "1x": {
           "file": "entry-blood@1x.webp",
           "px": 30,
-          "bytes": 968,
-          "sha256": "49b592a803ced0b37621622d9e6e38b1d55d7f394bcafab026f4ecdf9ea7a4e8"
+          "bytes": 938,
+          "sha256": "761893f669c937c02b04efedf5cda139b7ecd3b5a775ccf95265c8984b30883a"
         },
         "2x": {
           "file": "entry-blood@2x.webp",
           "px": 60,
-          "bytes": 2362,
-          "sha256": "116c14554dfd8b2bf10b61d75b5fa674208fab32ea4bdc5aea838a782ff2717c"
+          "bytes": 2404,
+          "sha256": "6fa6e60deca701a896047e2e7fe448fee426e9984b77fc7fac4d19ba6e01cac5"
         },
         "3x": {
           "file": "entry-blood@3x.webp",
           "px": 90,
-          "bytes": 4132,
-          "sha256": "b166e35fb1570b84da2bde7b0823c42b0095438ed7e61bac0d43144c5871c1d6"
+          "bytes": 4112,
+          "sha256": "c594a49ad0e7fa307b9899ac45dcd8886cc94c56eeb9b990139a349123165a69"
         }
       },
       "source": {
@@ -1024,14 +1024,14 @@
         "1x": {
           "file": "entry-wound@1x.webp",
           "px": 30,
-          "bytes": 1364,
-          "sha256": "3276a8481dda781b1816cf708cb6f92858ebaff6415a72eb5761fbbbfe1ca84b"
+          "bytes": 1372,
+          "sha256": "21eb15ab770cf017b54cbcb27dd43b10be9fa868b811653e31c423e5306dd092"
         },
         "2x": {
           "file": "entry-wound@2x.webp",
           "px": 60,
-          "bytes": 3642,
-          "sha256": "ab954c4547694641547890018b193352c84597a938faabc305206f8497d4d5f1"
+          "bytes": 3616,
+          "sha256": "496b40f1c9639cc123cd20b6db099a2e21d690834c60f2f4984df282ff559002"
         },
         "3x": {
           "file": "entry-wound@3x.webp",
@@ -1074,20 +1074,20 @@
         "1x": {
           "file": "entry-bite@1x.webp",
           "px": 30,
-          "bytes": 972,
-          "sha256": "27088ad98df45a7884dcd916005ff3a52dbd507a2d33346be970f5dfed464a5e"
+          "bytes": 964,
+          "sha256": "e3d68adea66937fe910a89469b29a4beab645a34206386345ca427f22136388a"
         },
         "2x": {
           "file": "entry-bite@2x.webp",
           "px": 60,
-          "bytes": 2368,
-          "sha256": "dfa7672096b78c9564c488868e8bebb301b46e0e4d3327e974b8a7cc93438a20"
+          "bytes": 2390,
+          "sha256": "2651937ee765d7ae868f60c1ad54e669db341cdeca8e3f48d11edf9bf0fe6320"
         },
         "3x": {
           "file": "entry-bite@3x.webp",
           "px": 90,
-          "bytes": 4210,
-          "sha256": "70b75f71e2b1fb9526993a6a259fb5dcccb71b150b6c50772d38cab9b963e388"
+          "bytes": 4222,
+          "sha256": "d2af6188e45459854075a15f19fc441006c213b4ae09b3a5e2d08037b95ea3f2"
         }
       },
       "source": {
@@ -1124,20 +1124,20 @@
         "1x": {
           "file": "organ-brain@1x.webp",
           "px": 30,
-          "bytes": 1170,
-          "sha256": "0f9dc8e907c6bd7d7b4693b6ea131af6147ad9c894c05ff17acad19604a450c0"
+          "bytes": 1168,
+          "sha256": "cc6970a7c94fb8e26d8b8bb166b9fc19bbb972b128efd7ceb41c702d2ff18302"
         },
         "2x": {
           "file": "organ-brain@2x.webp",
           "px": 60,
-          "bytes": 2930,
-          "sha256": "99dcb7c4114d3174531e9f80c6cf9e7531da2b8c07fecaf85812b795e1d61598"
+          "bytes": 2922,
+          "sha256": "be0ba269046deeaa0631f6fbe128450aae7338031c0145b09fc6c0e569de55da"
         },
         "3x": {
           "file": "organ-brain@3x.webp",
           "px": 90,
-          "bytes": 4884,
-          "sha256": "b83832ad972f433056f0bfa5043a3d5b9efb4266dc04b5cd3654fe24e23f13b9"
+          "bytes": 4924,
+          "sha256": "758d3cd0d6de48cfa3de7e31e77c06c567d3edf9999571a7e91b5b4854d4241d"
         }
       },
       "source": {
@@ -1174,20 +1174,20 @@
         "1x": {
           "file": "organ-lungs@1x.webp",
           "px": 30,
-          "bytes": 1200,
-          "sha256": "7b45f9633b2e4133a134d39b160c458bf126f56f3dc246dc3f23e4d36a89d077"
+          "bytes": 1222,
+          "sha256": "d3e1050f7f30df4afc85ea1ebaa94bd66f134a00de1e0cbac1d22d24eee781f5"
         },
         "2x": {
           "file": "organ-lungs@2x.webp",
           "px": 60,
-          "bytes": 3140,
-          "sha256": "293bb284a588927fe09a327508b5a6a9127b76f273c9504e12af69ebb1de0529"
+          "bytes": 3142,
+          "sha256": "8d4a269bea406d64f65ecc5c2e474bd58c41a249b461893abdbebb37a3855e1b"
         },
         "3x": {
           "file": "organ-lungs@3x.webp",
           "px": 90,
-          "bytes": 5614,
-          "sha256": "94b5606afe8e8eedb0c50e7e9521198ce6a54287756eab3564cb15b2afe7df3b"
+          "bytes": 5646,
+          "sha256": "c80ab82f52fce2e38eb1fcac968f6d4bd0a196d7d02b36a9d6af3b4c67bc375f"
         }
       },
       "source": {
@@ -1224,20 +1224,20 @@
         "1x": {
           "file": "organ-heart@1x.webp",
           "px": 30,
-          "bytes": 1474,
-          "sha256": "2084c7baee38f001e78a477a1ce8dd46dbe32aca5e1fae93a3c21cc0068bb422"
+          "bytes": 1500,
+          "sha256": "f0ae16095205599546f4a22ec6a86be8f9f94b75f006bba08d1b6935d3a15825"
         },
         "2x": {
           "file": "organ-heart@2x.webp",
           "px": 60,
-          "bytes": 3974,
-          "sha256": "1fbcd535ee4edb43aca21275daaf1632b7517941cec63144f47fb9e8744fbea2"
+          "bytes": 3972,
+          "sha256": "76895420af7f51501bfbe98136169cfe81e52bc5bb389b61fb0480e161130cf6"
         },
         "3x": {
           "file": "organ-heart@3x.webp",
           "px": 90,
-          "bytes": 7176,
-          "sha256": "95967a5d27b11db174e69095efc29315b98fbf2889c7ccdcff9f1bcab7965d60"
+          "bytes": 7174,
+          "sha256": "9fc39bb65a3fc39b554409d258ee59d95a9637c0788af9085a1aea8401659451"
         }
       },
       "source": {
@@ -1274,20 +1274,20 @@
         "1x": {
           "file": "organ-liver@1x.webp",
           "px": 30,
-          "bytes": 1014,
-          "sha256": "94e67b9e477774075845b61fe3fcd2c7f557da352c4105605d33ca28f64e8fdc"
+          "bytes": 1024,
+          "sha256": "4b348c0f3da3bd6f13b92b7a9aaa5143d97993db9c67da3abcc3f132fc515dbf"
         },
         "2x": {
           "file": "organ-liver@2x.webp",
           "px": 60,
-          "bytes": 2524,
-          "sha256": "1e3b357548fb37a2a0cb1b25019ff43f1259367e3d799e350013d88fdbaf6e3c"
+          "bytes": 2474,
+          "sha256": "8d791a228c8d38629c1d22ba72bc97f459ef224aed30dd8c09b0a0c1823ddf2c"
         },
         "3x": {
           "file": "organ-liver@3x.webp",
           "px": 90,
-          "bytes": 4268,
-          "sha256": "57a0d695e587fee00af62eeed3c5ec40c7ef127c694441621485f76371bd4e12"
+          "bytes": 4298,
+          "sha256": "d6267a1f07fac4bfefd733ae1597fb9825957f592983dc41c8cd0cb6061aa28b"
         }
       },
       "source": {
@@ -1324,20 +1324,20 @@
         "1x": {
           "file": "organ-spleen@1x.webp",
           "px": 30,
-          "bytes": 1156,
-          "sha256": "7572f65a4698a717ed01a2d17ac165743c5ad5f98fdc9fc862021e2f16ea2e73"
+          "bytes": 1142,
+          "sha256": "049e42cb5337469e07bcab352c1432705566a77eec786f2225093ed3196067e6"
         },
         "2x": {
           "file": "organ-spleen@2x.webp",
           "px": 60,
-          "bytes": 2792,
-          "sha256": "c9021a6ba3f1ed9d61e37052c7de57bdbf1d335b7b263a68c305d460044ed366"
+          "bytes": 2682,
+          "sha256": "1fa6ef95dbd22930e795f2fd762717556382177721f6cddaa6560dd56ad8b175"
         },
         "3x": {
           "file": "organ-spleen@3x.webp",
           "px": 90,
-          "bytes": 4656,
-          "sha256": "bf863c3cbf10870808154b010fa03d377a2795e45c0285ebf36c0dd1ba1f98d9"
+          "bytes": 4706,
+          "sha256": "9a9093ddd42f83f1bbfbb23b5709a836dc9a9f3819b1976f85a9574087753fd1"
         }
       },
       "source": {
@@ -1374,14 +1374,14 @@
         "1x": {
           "file": "organ-kidneys@1x.webp",
           "px": 30,
-          "bytes": 1394,
-          "sha256": "b039d152bc4bbd85468e2b472bfe29bfabbfb6fcc57b51b1d6551b0a887fccd6"
+          "bytes": 1384,
+          "sha256": "29692bfa3f0ef995dc3cc5dc62fb04d1fd78ed18eb1a23774680c2b18fba2782"
         },
         "2x": {
           "file": "organ-kidneys@2x.webp",
           "px": 60,
-          "bytes": 3516,
-          "sha256": "8d448289fe63f07b38d9e2af5169e1cf8d84ddea37c6bc19716c1098e60416af"
+          "bytes": 3498,
+          "sha256": "9a400551f99fd42fa8c47c63d98c6e59a191d4ab972dc84c4440a834fd15d08a"
         },
         "3x": {
           "file": "organ-kidneys@3x.webp",
@@ -1424,20 +1424,20 @@
         "1x": {
           "file": "organ-marrow@1x.webp",
           "px": 30,
-          "bytes": 1336,
-          "sha256": "a783888bcd51a84afcac0454c65f73220c84112404e7765e50e3f2fd164e69ce"
+          "bytes": 1326,
+          "sha256": "ed96804f0c8d705b606b7234c4ca02a5c403fcd83b0df1371cdef396fdfcebe0"
         },
         "2x": {
           "file": "organ-marrow@2x.webp",
           "px": 60,
-          "bytes": 3552,
-          "sha256": "fb94604d9511a8b1aa08d51602759d8b10826212a375b063d1fc5fd2c2cf40c5"
+          "bytes": 3572,
+          "sha256": "4e1c2968ab47f45c5c96bc37d8fa721d6647e65a003e22507d7c680f68df4c07"
         },
         "3x": {
           "file": "organ-marrow@3x.webp",
           "px": 90,
-          "bytes": 6306,
-          "sha256": "3719e66f70edcab16f33ae101bf74853cc3643ffffadb73001efe865fc1cfb49"
+          "bytes": 6336,
+          "sha256": "7fe5d23cbcda237335bcda8c9bd18e1124fa525724286dbb054a8adc3f4dc909"
         }
       },
       "source": {
@@ -1475,19 +1475,19 @@
           "file": "frame/body@1x.webp",
           "px": 380,
           "bytes": 17194,
-          "sha256": "c8a3dee17a0ce8623e9c06d84803462d42e71bc48092920c852ad6deddc5b29b"
+          "sha256": "1e128a4eafbc91c827503f2e9600b17d2598b153650703028fbfb51fee4cef4e"
         },
         "2x": {
           "file": "frame/body@2x.webp",
           "px": 760,
-          "bytes": 45138,
-          "sha256": "2df48e195f7afc06a334edef63dc49a408ac608e5a6bd0a6b6df4e867dbe6eb3"
+          "bytes": 45238,
+          "sha256": "62e7b0eb9070a6410ff8203946faec5d9742285c5e49a886ca51813cadc5bf44"
         },
         "3x": {
           "file": "frame/body@3x.webp",
           "px": 1140,
-          "bytes": 84116,
-          "sha256": "7a0b4e2cec1373b4721255798f0dddab95252f41454c36b97bfe9db2fe603477"
+          "bytes": 84956,
+          "sha256": "5e3bc64361a520520f3607dad12638019646ae67d139bed998b6350375f1bd57"
         }
       },
       "source": {
