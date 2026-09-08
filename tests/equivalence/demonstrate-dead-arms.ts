@@ -313,13 +313,14 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
 
   const eventKeys = new Set(Object.keys(E.EVENTS));
   installRng(73000);
-  let scheduled: string[] = [];
-  try {
-    const g0: any = E.newGame({ difficulty: 'hard', science: false });
-    scheduled = Object.values(g0.events as Record<string, string>);
-  } finally {
-    restoreRng();
-  }
+  const scheduled: string[] = (() => {
+    try {
+      const g0: any = E.newGame({ difficulty: 'hard', science: false });
+      return Object.values(g0.events as Record<string, string>);
+    } finally {
+      restoreRng();
+    }
+  })();
   say(
     'construct.ts:102 — applyEvent keys come from EVENTS',
     scheduled.length > 0 && scheduled.every((k) => eventKeys.has(k)),

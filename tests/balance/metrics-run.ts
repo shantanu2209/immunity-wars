@@ -220,7 +220,7 @@ console.log(
 );
 
 // -----------------------------------------------------------------------------------------------
-let engineRev = 'unknown';
+let engineRev: string;
 try {
   engineRev = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
 } catch {
