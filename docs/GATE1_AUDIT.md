@@ -34,8 +34,10 @@ open, the command screen with nothing, the inspect sheet, the B-Cell and the Neu
 selected, the antibody family detail, the cell card, the pause sheet, Settings over the paused
 game, a spread frame, the next turn, then after a quit that keeps the save Settings from the
 Title with a save and its delete confirm, and after Continue the Result screen (an idle
-Training game is lost within a handful of turns). *The four Settings screens were added in
-P2.6 piece 2 (6 September 2026); before it, seventeen.* On each it measures every visible control outside the
+Training game is lost within a handful of turns), and How to play: its index from the Title,
+each of its ten sections by Next, and its index again over the paused game. Thirty-three
+screens in all. *The four Settings screens were added in P2.6 piece 2 and the twelve Help
+screens in piece 3 (6 September 2026); before them, seventeen.* On each it measures every visible control outside the
 SVG board (the board is coarse pointing by ruling; the inspect sheet is its precise surface,
 P2.5 piece 1), every visible text run outside the board against the first opaque background
 behind it, and every control's full border against the surface behind it. Then the same
@@ -117,28 +119,30 @@ found the instrument's own second defect (the title screen measured before the 2
 applied, because the app renders from a module script before DOMContentLoaded) and the root is
 now set explicitly before the first screen.
 
-## The numbers (the shipped build, the P2.6 piece 2 PR 2 run, 6 September 2026)
+## The numbers (the shipped build, the P2.6 piece 3 run, 6 September 2026)
 
-Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 21 screens, and 23
+Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 33 screens, and 35
 under the app's own text size (the two Settings bookends where it is chosen and reset); every
 row's width and root font size are the instrument's own readings, recorded per screen in the
-JSON. Twenty-four controls fired the right way first. Every pass reached the inspect sheet and
-the Result, read from the per-screen list, not the totals.
+JSON. Twenty-four controls fired the right way first. Every pass reached every screen,
+including the inspect sheet, all twelve Help screens and the Result, read from the per-screen
+list rather than the totals; no NOT REACHED line.
 
 | Check | Mechanism it models | Measured | Findings |
 |---|---|---|---|
-| Touch targets ≥ 44 × 44 CSS px | — | 385 controls across 21 screens at 360 px | **0** |
-| Text contrast (4.5:1, 3:1 large) | — | 966 text runs | **0** |
-| Non-text contrast (3:1, control boundaries) | — | 385 controls | **0** |
-| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 1,028 text runs across 21 screens, root 32 px at 360 px | **0** unscaled |
-| Layout under FONT200 | the default-font-size preference | 21 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
-| **Layout under ZOOM200** | Chrome for Android's page zoom | 21 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
-| **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 966 text runs across 23 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
+| Touch targets ≥ 44 × 44 CSS px | — | 428 controls across 33 screens at 360 px | **0** |
+| Text contrast (4.5:1, 3:1 large) | — | 1,111 text runs | **0** |
+| Non-text contrast (3:1, control boundaries) | — | 428 controls | **0** |
+| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 1,173 text runs across 33 screens, root 32 px at 360 px | **0** unscaled |
+| Layout under FONT200 | the default-font-size preference | 33 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
+| **Layout under ZOOM200** | Chrome for Android's page zoom | 33 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
+| **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 1,111 text runs across 35 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
 | **Offline** | — | first visit online, then the network cut, at Standard | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
 
-*The PR 1 run read 369 controls and 936 text runs across 21 screens; the difference is the
-text-size row (four options) and the deck. The piece 1 run read 357 and 911 across 17; P2.5's
-final run 327 and 825 across 16, with no ZOOM200 row.*
+*The piece 2 PR 2 run read 385 controls and 966 text runs across 21 screens; the difference
+is Help (41 controls, 151 text runs across 12 screens) and the deck. PR 1 read 369 and 936
+across 21; piece 1 read 357 and 911 across 17; P2.5's final run 327 and 825 across 16, with
+no ZOOM200 row.*
 
 **One more walk defect, found by the per-screen list on this pass's first run.** The inspect
 sheet's node door taps the first invader token, and the board resolves a tap to the NEAREST

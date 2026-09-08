@@ -74,6 +74,16 @@ reviews the science with Shantanu, and the builder's job is making it fit a scre
 
 ---
 
+## The rulings on the Help draft (Shantanu, 6 September 2026)
+
+Recorded in full in [`HELP_DRAFT.md`](HELP_DRAFT.md), "The rulings". In one line each: the NK
+Cell's reach is 1 and the rulebook and quick reference are corrected to say so; section 9
+keeps its length; the app's phase names win, which settles Infection and Command from the
+app and Spread for the third phase the app never names, with the quick reference's March
+corrected; the "not all hidden pathogens are viruses" note stays in Help. One premise
+corrected: no resident wording was changed in any document, and the rulebook's resident
+Recall stands as the table rule and Q6's target.
+
 ## The order, proposed at the kickoff (provisional until the newcomer test)
 
 1. **The page-zoom pass and the must-pass halves** — done in the first piece

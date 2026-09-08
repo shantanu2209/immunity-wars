@@ -316,7 +316,50 @@ entries are the content.
   engine today burns when the target is anywhere on a branch (FINDINGS #57, Q9). Help states
   the rule as designed, since that is what the fix restores.
 
-## For Kartik to rule on, beyond the words
+## The rulings (Shantanu, 6 September 2026), and what the app now carries
+
+1. **The NK Cell's reach is 1, and the rulebook was wrong**: it said both "on its own space"
+   and "within 1 step", so it contradicted itself and the engine settled it. Help says within
+   one step. The rulebook's NK row and the quick reference's NK line now say "within 1 step".
+2. **Section 9 keeps its length.** The overrun follows Kartik's ruling that it duplicates
+   rather than references, and a reference section is long by nature.
+3. **The app's phase names win.** Stated precisely, because the premise needed one correction:
+   the app names only two phases to a player, "Infection!" on the reveal and "Command your
+   cells" on the button, and never names the third. So Infection and Command are the app's,
+   and for the third Help uses **Spread**, which is the rulebook's word and the engine's own;
+   the quick reference's "March" heading is corrected to Spread. Two documents and the app now
+   agree, and if the app ever labels the third phase it is Spread. The verb "march" for what
+   germs do stays, in the rulebook and in the fever chip: it is a verb, not a phase name.
+4. **"Not all hidden pathogens are viruses" stays in Help**: a rules fact a player needs before
+   they meet one; the card is read after the fact.
+
+*One premise corrected rather than acted on.* The ruling on the NK reach asked for the fix "in
+the same pass as the resident wording you already fixed". No document's resident wording was
+changed: Help left resident Recall out because the app lacks it, while the rulebook keeps it as
+the table game's rule and the Phase 3 queue's target (Q6). The rulebook's Recall sentence
+stands.
+
+**Section 1 in the app** differs from the draft in one respect: the goal dialog's sentences
+carry {maxTurn} and {lastTurn} for the game in play, and Help is read outside a game, so
+Help's first paragraph states the window for all three difficulties and the fifteen-turn
+grace after it, every number read from the content pack rather than typed. The words are
+otherwise the goal dialog's.
+
+**Section 9 in the app, one difference from the draft, found by reading the screen.** The
+draft trimmed two reasons to their first clause; the app shows each reason whole, as the
+reveal does, and two of Kartik's reasons already state the effect in his own words (Fatigue:
+"1 fewer Action Point this turn only"; Acute-phase surge: "+2 Action Points this turn only",
+with its acute-phase note). Rendered with Help's line as well, each said its effect twice. So
+those two Help lines are empty and the reason carries the effect; the pin checks the reason's
+numbers for them and requires that exactly those two are the empty ones.
+
+**Every number Help states that a difficulty sets** (Action Points, the window, the grace) is
+read from the content pack at render; section 3's example organ row is the inspect sheet's
+own composition of the Liver at 2 of 3; section 9's names and reasons are the event table the
+reveal renders, and its effect lines are pinned to the engine by firing each event
+(`tests/equivalence/src/help-events.test.ts`, with two controls).
+
+## For Kartik to rule on, beyond the words (ruled above; kept as the record of what was asked)
 
 1. **The NK Cell's reach.** The rulebook's own table says "on its own space"; its Killer
    T-Cell passage says "within 1 step"; the engine's range is 1. Section 5 says "within one
