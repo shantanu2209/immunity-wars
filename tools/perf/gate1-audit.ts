@@ -439,6 +439,23 @@ async function walk(
     await click(page, 'Back');
     await sleep(200);
   }
+  // How to play from the Title (P2.6 piece 3): the index, then every section by Next, then
+  // back to the index and out. Each section is its own screen; all ten are measured.
+  if (await click(page, 'How to play')) {
+    await sleep(200);
+    await step(page, 'help, index', results);
+    if (await clickSel(page, '[data-help-section=s1]')) {
+      for (let i = 1; i <= 10; i += 1) {
+        await sleep(200);
+        await step(page, `help, section ${i}`, results);
+        if (i < 10 && !(await click(page, 'Next'))) break;
+      }
+      await click(page, 'All sections');
+      await sleep(150);
+    }
+    await click(page, 'Back');
+    await sleep(200);
+  }
   await click(page, 'New game');
   await sleep(200);
   await click(page, 'Start and replace');
@@ -555,6 +572,18 @@ async function walk(
     await step(page, 'settings, over play', results);
     await click(page, 'Back');
     await sleep(200);
+  }
+  // How to play over the paused game: the index only (the sections are the same screens as
+  // from the Title), then back to the game.
+  await click(page, 'Menu');
+  await sleep(200);
+  if (await click(page, 'How to play')) {
+    await sleep(200);
+    await step(page, 'help, index, over play', results);
+    await click(page, 'Back');
+    await sleep(200);
+  } else {
+    await click(page, 'Resume');
   }
   await sleep(200);
   await click(page, 'End turn');

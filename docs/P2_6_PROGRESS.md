@@ -140,8 +140,44 @@ recall is Phase 3's and left out; the crisis pool is the content pack's nine; fe
 march and costs a point; degranulate's burn is stated as designed. Four points are put to him
 beyond the words. The catalogue entries are cut from the settled words, not before.
 
+**Ruled the same day** (four rulings, [`HELP_DRAFT.md`](HELP_DRAFT.md), "The rulings"): the
+NK Cell's reach is 1 and the rulebook and quick reference are corrected to say so; section 9
+keeps its length; the app's phase names win, which settles Infection and Command from the app
+and Spread for the third, with the quick reference's March corrected; the hidden-protozoa
+note stays. One premise corrected: no resident wording was changed anywhere, and the
+rulebook's resident Recall stands as the table rule and Q6's target.
+
+## Piece 3, built — How to play in the app (6 September 2026)
+
+- **The screen** (`packages/ui/src/screens/HelpScreen.tsx`): an index of the ten sections,
+  each opening as its own page with Next and All sections; Back from the index leaves Help.
+  Two doors: the Title slot and the pause menu, the game kept mounted underneath as for
+  Settings. Every section fits two phone screens at 360 px, held by the audit.
+- **Nothing retyped that the game already knows:** the numbers a difficulty sets come from the
+  content pack at render; a cell's speed likewise; section 3's example organ row is the
+  inspect sheet's own composition of the Liver at 2 of 3; section 9's names and reasons are the
+  event table the reveal renders; section 10 reuses the difficulty screen's descriptions. The
+  words themselves are 84 catalogue entries, two of them punctuation (`help.stop`,
+  `help.number`), because Hindi ends a sentence with a danda and the i18n rule was right to
+  refuse a bare full stop in JSX.
+- **Section 9's effect lines are pinned to the engine** (`tests/equivalence/src/help-events.test.ts`):
+  each event is fired on a fresh game whose stores are filled past any cap, and what Help shows
+  must state the engine's numbers and name the thing that happened; every event has a line
+  and every line an event; two controls, a line with its numbers moved by one and a line
+  naming the wrong effect, both caught. **Found by reading the screen, not the draft:** two of
+  Kartik's reasons (Fatigue, Acute-phase surge) already state the effect in his words, so Help
+  said it twice; those two Help lines are empty, the reason carries the effect, and the pin
+  requires exactly those two to be the empty ones.
+- **The two documents corrected in place** (`docs/Immunity_Wars_Rulebook_v3_1.docx`,
+  `docs/Immunity_Wars_Quick_Reference_v3.docx`, by direct edit of their XML, since no Word
+  library is installed): the NK Cell attacks within 1 step; the quick reference's third phase
+  is Spread. Three replacements, each asserted to match exactly once.
+- **The audit walks Help:** the index from the Title, all ten sections by Next, the index over
+  the paused game. **The run on the shipped build:** 428 controls and 1,111 text runs across 33
+  screens, Help's twelve among them (41 controls, 151 text runs); every check 0 under all four
+  mechanisms; every pass reached every screen; offline met; 24 controls fired.
+
 ## What is next
 
-The rulings on the Help draft, then its catalogue entries and screen; the library, which now
-also carries the rulebook's "why it works this way" boxes; About; the error boundary and the
-storage-failure notice; onboarding held for a direction.
+The library, which now also carries the rulebook's "why it works this way" boxes; About; the
+error boundary and the storage-failure notice; onboarding held for a direction.
