@@ -42,6 +42,7 @@ import { botGame } from '@immunity-wars/equivalence/bot';
 import { loadLegacy } from '@immunity-wars/equivalence/engine';
 import { canonical } from '@immunity-wars/equivalence/hash';
 import { installRng, restoreRng } from '@immunity-wars/equivalence/rng';
+import { stripMarkup } from '@immunity-wars/equivalence/strip-markup';
 import type { Action, Engine, GameState } from '@immunity-wars/equivalence/types';
 
 import * as portEngine from '@immunity-wars/engine';
@@ -121,7 +122,7 @@ function summarise(E: Engine, g: GameState): View {
     ap: Number(v['ap']),
     invaders: invaders.map((iv) => ({ disease: String(iv['disease']), where: place(iv) })),
     organs: integrity,
-    log: String(log[0]?.msg ?? '').replace(/<[^>]+>/g, ''),
+    log: stripMarkup(String(log[0]?.msg ?? '')),
   };
 }
 

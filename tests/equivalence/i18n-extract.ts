@@ -35,6 +35,8 @@ import { dirname, resolve } from 'node:path';
 
 import ts from 'typescript';
 
+import { stripMarkup } from './src/strip-markup.js';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENGINE = resolve(HERE, '../../packages/engine/src');
 const OUT_DIR = resolve(HERE, '../../packages/content/src/i18n/en');
@@ -77,8 +79,7 @@ function paramName(expr: string, used: Set<string>): string {
 /** Message -> stable key: `<file-stem>.<camelCased first words>`. */
 function keyFor(file: string, message: string, used: Set<string>): string {
   const stem = file.replace(/\.ts$/, '');
-  const words = message
-    .replace(/<[^>]+>/g, ' ')
+  const words = stripMarkup(message, ' ')
     .replace(/\{[^}]*\}/g, ' ')
     .replace(/[^A-Za-z0-9 ]/g, ' ')
     .trim()

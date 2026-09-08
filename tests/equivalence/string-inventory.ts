@@ -28,6 +28,7 @@ import { dirname, resolve } from 'node:path';
 import ts from 'typescript';
 
 import { legacyUiTable } from './src/legacy-ui.js';
+import { stripMarkup } from './src/strip-markup.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ENGINE = resolve(HERE, '../../packages/engine/src');
@@ -282,8 +283,7 @@ function uiProse(): { prose: Prose[]; ambiguous: Prose[]; dropped: Map<string, n
       const text = n.getText(sf).slice(1, -1);
       if (!inTable(pos)) {
         const line = sf.getLineAndCharacterOfPosition(pos).line + 1;
-        const bare = text
-          .replace(/<[^>]+>/g, '')
+        const bare = stripMarkup(text)
           .replace(/\$\{[^}]*\}/g, '§')
           .trim();
 
