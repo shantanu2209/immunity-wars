@@ -177,7 +177,22 @@ rulebook's resident Recall stands as the table rule and Q6's target.
   screens, Help's twelve among them (41 controls, 151 text runs); every check 0 under all four
   mechanisms; every pass reached every screen; offline met; 24 controls fired.
 
+## Piece 4 — the disease library: the structure, proposed (8 September 2026; nothing built)
+
+[`for-P2.6.md`](for-P2.6.md), PROPOSAL 3. Measured first: 106 disease records, 97 of them deck
+cards across nine types, nine that arise in play from a parent, and one, Diphtheria toxin,
+that nothing in the pack or the engine produces (for Kartik). No difficulty axis exists in the
+data. The shape proposed: **grouped by type** in Help's order, alphabetical within, each
+section header carrying the type's "beat it" line, a name filter and nine jump chips; the
+derived records indented under their parents with a pinned parent table; the existing card as
+the leaf. The fifteen "why it works this way" boxes as **their own section, per mechanic**,
+Kartik's text unchanged except ten repunctuated, extracted into the content pack and pinned
+to the rulebook document by a test, with cross-links to and from the Help sections. Five
+points for ruling. Between pieces: the merged bot bumps (fast-check 4, @eslint/js 10,
+@types/react-dom, puppeteer-core 25) verified green on main and the audit re-run under
+puppeteer 25 with full coverage.
+
 ## What is next
 
-The library, which now also carries the rulebook's "why it works this way" boxes; About; the
-error boundary and the storage-failure notice; onboarding held for a direction.
+The rulings on the library's structure, then its build; About; the error boundary and the
+storage-failure notice; onboarding held for a direction.

@@ -318,3 +318,112 @@ without the pin going red, and a new event in the pack fails the pin until it is
 reveal keeps its shorter form by construction: it shows the one event that fired, with its
 chips; Help shows all of them. Help's only catalogue strings of its own are its headings and
 its intro line.
+
+---
+
+## PROPOSAL 3 — the disease library (for ruling; nothing built)
+
+**Asked for by Shantanu, 8 September 2026:** the shape of an index over the diseases, and where
+the rulebook's "why it works this way" boxes sit. His two conditions: the boxes are content to
+present, not prose to rewrite, and repunctuation for the no-dashes rule is the only change
+allowed to them; and the structure is proposed before anything is built, as Help's was.
+
+### What there is to index, measured from the content pack
+
+- **106 disease records**, every one with all five lines the card shows (discovered, causes,
+  found, prevent, treat), four stat bars from 1 to 5 (contagion, severity, speed, cunning),
+  and a **tier** word: Common 32, Rare 41, Legendary 33. The engine never reads the tier, so it
+  is Kartik's classification and a card fact, not a rule. A **fact** line exists for 30.
+- **97 are deck cards**, each with a type: bacteria 29, virus 25, hidden 13, fungus 8, worm 7,
+  parasite 6, toxin 4, venom 3, malaria 2. **Pathogen X** is a card with no record, masked by
+  design, and stays out of the library.
+- **Nine records are not cards and arise in play from a parent**: three toxins released by
+  Tetanus, Cholera and Gas gangrene; Malaria's blood stage and its relapse; Dengue's ADE;
+  Tuberculosis reactivated; Shingles, from Chickenpox; Pneumococcal pneumonia, after
+  Influenza. The engine names every one of them in its spread and rare-event code.
+- **One record arises from nothing: Diphtheria toxin.** It has a class and a target organ, no
+  card, no maker in the toxin table, and no line in the engine produces it. A library entry no
+  game can reach; Kartik's call whether it is the toxin Diphtheria conceptually releases and
+  should be shown as such, or a leftover to retire from the pack.
+- **Antigen classes** over the 106: ENV 28, EUK 27, EXB 21, TOX 11, ICB 10, NAK 9. **Target
+  organs** (a disease with two targets counts in both): lungs 29, brain 28, liver 27, kidneys
+  18, heart 17, spleen 12, marrow 11, any organ 3.
+- **No difficulty axis exists.** One deck serves all three difficulties and the dice decide
+  the draw; nothing in the data says which diseases a Training player meets.
+
+### The shape: grouped by type, with a name filter and section chips
+
+**Nine sections in the order Help's section 6 uses** (virus, hidden, bacteria, fungus, toxin,
+venom, worm, parasite, malaria), alphabetical within each, so the library's shape is Help's
+shape and the card's. **Each section header carries the type's "beat it" line** from the
+content pack, the same line the card shows, so the rule is read once per group rather than
+once per disease. **Each row**: the name, the antigen class as a coloured badge in the class's
+own colour (the antibody panel's), and the target organs in muted text. **A filter box at the
+top** narrows every section by name as you type, for the player who met a disease and wants
+it back; **a row of nine chips under it** jumps to a section without the keyboard, because
+106 rows at 44 px is more than six phone screens. Tap a row: the existing pathogen card, with
+Close returning to the index at the same place.
+
+The nine derived records sit **indented under their parent** with an "arises from" line, so the
+index reads 97 and the ten things a game can make of them show where they come from. The
+parent map is a content table, pinned by a test to the engine's own spawn lines.
+
+**Why type and not the others**, one each:
+
+- **Alphabetical** serves lookup by name and teaches nothing; the filter box serves lookup by
+  name better, so alphabetical order would buy nothing the filter does not.
+- **Antigen class** is the game's central teaching, and it is the wrong partition for a
+  library: EUK holds fungi beside worms and protozoa, which are beaten in three different ways,
+  and the card already answers "what antibody" in its class line. The badge on every row keeps
+  the class visible without making it the shape.
+- **Organ** is a filter, not a partition: a disease with two targets appears twice, and the
+  counts sum to 145 over 106. The row's organ text and the card's "can infect" line carry it.
+- **Difficulty** does not exist in the data. Grouping by it would be an invention.
+- **Tier** is Kartik's rarity label, which the engine does not read; the card shows it and the
+  index does not group by it.
+
+If a class or organ grouping is ever wanted, it is a sort toggle, one entry in a modes table;
+flagged and not built.
+
+### The boxes: their own section, per mechanic, with cross-links
+
+None of the fifteen boxes is about a disease. Each is about a mechanic: the blood route, the
+lymphatic shortcuts, the Brain, starting with no antibodies, worms, toxin-makers, coating,
+priming, the NK Cell's die, the Eosinophil's burn, residents, malaria's stages, vaccines,
+Pathogen X, and why surviving the window is not the win. So they sit **as their own section of
+the library, "Why it works this way", fifteen entries in the rulebook's order**, one scrolling
+page with the fifteen titles as jump chips, about 640 words in all. Each entry's title is a
+fresh catalogue label naming the mechanic; the text is Kartik's, unchanged except that ten of
+the fifteen carry a dash and are repunctuated, one of them only a hyphen in "blood-brain".
+
+**Cross-links both ways.** Every Help section that has a matching box gets a "Why it works this
+way" link at its foot, to the entry: section 1 to the window box; section 3 to the blood
+route, the lymphatics and the Brain; section 5 to priming, the NK Cell, the Eosinophil and the
+residents; section 6 to worms, toxin-makers and malaria; section 7 to coating and to starting
+with no antibodies; section 8 to vaccines and Pathogen X. Each entry links back to its Help
+section. Links from the pathogen cards (Malaria's card to the malaria box, a toxin-maker's to
+the toxin box, a worm's to the worm box) are a small follow-on and are not in the first build.
+
+**The boxes as content.** Extracted from the rulebook into the content pack's diseases
+namespace, Kartik's science translated with the pack, keyed by mechanic; and **pinned to the
+rulebook document by a test** that reads the docx in the repository and requires each box to
+match its source exactly, dashes repunctuated aside, with a control that a changed word fails.
+The same pattern that pinned the card prose to legacy.
+
+### Doors, audit, length
+
+The Title slot only, as APP_FLOW draws it; the pause menu's two additions are Settings and How
+to play, and in play a card is already one tap from the reveal and the inspect sheet. Back
+ordering: card, then index, then Title. The audit walks the index, one card and the why
+section, three more screens per pass; every row of the index is a control it measures. The
+index at 360 px is six to seven screens with the chips as the way through; the why section is
+about four.
+
+### For ruling
+
+1. Type as the shape, with the filter and the chips, as above.
+2. The nine derived records under their parents, and what to do with Diphtheria toxin.
+3. Whether the index says, in one line at its foot, that one pathogen has no entry because
+   nobody has ever seen it. Player text, so Kartik's words if it is said at all.
+4. The boxes as their own section with the cross-links, and my titles as the entry labels.
+5. The Title door only.
