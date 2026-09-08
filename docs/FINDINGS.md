@@ -3434,3 +3434,133 @@ downstream depended on it being right. The audit measured correctly and reported
 first time it was pointed at the surface. The defect was in the thing being built, it was fixed
 before the piece landed, and the instrument needed no repair — which is exactly the case the
 instrument-versus-product rule exists to keep out of the stop-the-line lane.
+
+---
+
+## 64. Three claims about one four-line function, each held briefly and each killed by a check rather than an argument
+
+**8 September 2026.** Recorded at Shantanu's direction as a SEQUENCE rather than an outcome,
+because the outcome on its own — "the shipped version has no regular expression in it" — reads
+like a design decision, and it was nothing of the kind. It is where four rounds of checking
+ended up. The three sites are the legacy harness's protocol reader and two extraction tools,
+all spelling an inline-markup strip as a single-pass tag regex, all flagged by the same CodeQL
+query that fired on a fourth site in PR #70.
+
+**None of them was ever exploitable.** Nothing here reaches a browser and the inputs are this
+repository's own catalogue. That is what makes the sequence worth keeping: with no pressure
+from risk, the only thing driving each step was whether the last claim survived being checked.
+
+### Claim 1 — "a second pass would find more." FALSE for this regex.
+
+The alert is named *incomplete multi-character sanitization*, and the natural reading is that
+removing an inner match splices the surrounding characters into a tag the pass has already gone
+by. I wrote the test asserting it. **The test failed.** Brute-forced over every string up to
+length 9 on the alphabet `< > a`, the old spelling is **idempotent everywhere** — a greedy
+negated class already eats across any inner opening bracket, so there is nothing for a second
+pass to find.
+
+The whole measured difference between the old spelling and the replacement turned out to be the
+**empty tag**, which the old class could not match and the new one can. One character class, not
+a class of defect.
+
+### Claim 2 — "a fixpoint loop is harmless belt-and-braces." Rejected by CodeQL, correctly.
+
+Claim 1 had already shown the loop could not be doing anything. It was kept anyway, on the
+reasoning that it made completeness structural rather than resting on an argument about greedy
+matching — an argument I had by then got wrong twice.
+
+CodeQL then flagged the loop as **"polynomial regular expression used on uncontrolled data"**,
+and that is right: a linear pass inside a loop is superlinear in total, on input starting with
+many opening brackets. **So the loop bought nothing measurable and cost the only complexity
+concern in the file.** Deleting it was not a concession; it was what the first measurement had
+already implied.
+
+What replaced it is a **scanner with no regular expression at all** — one left-to-right pass,
+each search resuming where the last stopped, linear by construction.
+
+### Claim 3 — "a pattern built at runtime is not the flagged shape." FALSE.
+
+Two regexes remained in the *test*, as the superseded spellings the scanner is compared against,
+built with a constructor rather than written as literals. **CodeQL reads the string argument
+too**, and flagged both.
+
+Replacing them turned out to be the biggest improvement of the four rounds, which is the part
+worth noticing. The oracle became a **second independent implementation** — an explicit
+character-by-character state machine, a different algorithm from the index-jumping scanner it
+checks. Comparing an implementation against the thing it replaced only ever proves you
+reproduced the old behaviour. Comparing two independently written algorithms is a real
+differential, and it is what licenses running it **exhaustively**: every string up to length 8,
+both replacements, 9,840 of them with the count asserted so an empty walk cannot pass.
+
+**And the oracle is itself controlled**, because a diff cannot see a defect both sides share: a
+deliberately wrong stripper is required to disagree with the reference somewhere in that space.
+
+### Claim 4, the smallest and the same shape — the offset in #65's fix
+
+Carried here because it happened in the same change. Moving the string inventory's hand-typed
+line-number note into its generator meant computing the offset, and the first version was
+**checked only against whole lines**. Joined line 1 is not a whole line — it is the remainder of
+the script tag's own line — so the check reported a mismatch on a file that maps perfectly. It
+passed on the real input only because no listed entry sits on line 1. The control asking for a
+line past the end of the file then caught a **vacuous match**: both sides read as the empty
+string and compared equal.
+
+### What this is a record of
+
+Four claims, four checks, four corrections, on a function of four lines that was never at risk.
+**Not one of them was settled by argument, and the argument was available and plausible every
+time.** The standing rule says a check that has never failed is not known to work; this is the
+same rule pointed at reasoning rather than at instruments.
+
+The record: `tests/equivalence/src/strip-markup.ts` and its test carry all four in their headers,
+so the next person to look at a four-line function does not re-derive them.
+
+---
+
+## 65. A hand edit inside a GENERATED document is deleted by the next regeneration, silently, and nothing can catch it because nothing knows it was there
+
+**Found on 8 September 2026**, and not by looking for it. A change to the three tag-stripping
+sites (#64) had to prove the generators it touched were inert, so both were re-run and diffed.
+The i18n catalogue came back byte-identical. `docs/STRING_INVENTORY.md` came back **missing a
+paragraph**: a correction note added by hand on 6 September, explaining that the line numbers in
+its tables count from the start of the legacy UI file's script and that the real line is the
+number shown plus 543.
+
+The note was true, it was useful, and it was **not in the generator**, so it could not survive
+one. It had lasted two days for the only reason such things last: nobody regenerated.
+
+### Why this is worse than an ordinary stale document
+
+**Nothing can detect it.** A stale generated file is caught by regenerating and diffing — CI does
+exactly that for the coverage documents (#62). But a diff against a regeneration reports the hand
+edit as *the thing to remove*, in the same shape as any other staleness. There is no signal that
+distinguishes "this paragraph is out of date" from "this paragraph is the only copy of something
+a person wrote". The correct action and the destructive one look identical.
+
+**And this document is not regenerated in CI at all.** `string-inventory.ts` has a `--check` mode
+that fails if the committed file would change, and it is wired into nothing. So the file can drift
+in either direction unobserved. That is a separate gap and it is stated rather than fixed here.
+
+### The rule
+
+> **A generated document has exactly one author: its generator.** Anything worth saying in it is
+> worth saying in the generator. A sentence added by hand is not a small exception — it is a
+> paragraph with no backup, in the one class of file whose contents are periodically destroyed on
+> purpose.
+
+### The fix, and why it is more than moving a sentence
+
+The note now lives in `string-inventory.ts` and is emitted with the document, so regeneration
+preserves it (Shantanu, 8 September 2026: *"If the note belongs, it belongs in the generator"*).
+
+**Moving it would not have been an improvement on its own.** A computed wrong number is worse than
+a hand-typed right one, and the hand-typed 543 was right. So the offset is **derived from the
+script's position and then CHECKED against every line the document lists**; when the check fails,
+the note says the mapping is not uniform instead of printing a number that is wrong for most of
+the table. A hand-typed constant could not have told anyone either way — and this file has **two**
+script blocks, so a single offset holding for both is a fact about its layout rather than a law.
+
+Seven tests, four of them controls, on synthetic documents: `tools/legacy/` is read-only by hard
+rule, so a control that mutated the legacy UI file to break the mapping is not available even
+temporarily. Both defects in the checking logic were found by those controls before the change
+landed — see #64's fourth claim.

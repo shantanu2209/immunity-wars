@@ -346,6 +346,40 @@ const clickSel = (page: Page, sel: string): Promise<boolean> =>
     return true;
   }, sel);
 
+/**
+ * Sets a text input's value and fires the events React listens for. `page.type` would append to
+ * whatever is already there, and the library's filter is the one control this walk needs to
+ * CLEAR as well as fill.
+ */
+const typeInto = (page: Page, sel: string, value: string): Promise<boolean> =>
+  page.evaluate(
+    (s: string, v: string) => {
+      const el = document.querySelector(s) as HTMLInputElement | null;
+      if (!el) return false;
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value',
+      )?.set;
+      setter?.call(el, v);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    },
+    sel,
+    value,
+  );
+
+/**
+ * A screen the walk could not reach, recorded as a FINDING rather than omitted. An absent screen
+ * and a clean screen look identical in a total, which is the whole reason the per-screen list
+ * exists (CLAUDE.md, "read the instrument that reports coverage").
+ */
+const notReached = (screen: string, why = 'the walk could not open it'): ScreenResult => ({
+  screen,
+  controls: 0,
+  textRuns: 0,
+  findings: [{ check: 'touch', screen, path: '', text: '', detail: `NOT REACHED: ${why}` }],
+});
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Advances a spread frame through the tap-anywhere overlay; false when no burst is playing. */
@@ -467,12 +501,40 @@ async function walk(
       await click(page, 'Close card');
       await sleep(200);
     }
+    // The card-to-box link (ruled 8 September 2026). Only four boxes are about a disease, so
+    // the FIRST row's card usually carries none: the walk filters to a worm, which the pack
+    // guarantees has one, rather than hoping. Reaching this by luck is exactly what the
+    // inspect sheet did for two green runs.
+    if (await typeInto(page, '[data-library-filter]', 'Hookworm')) {
+      await sleep(250);
+      if (await clickSel(page, '[data-library-row]')) {
+        await sleep(300);
+        await step(page, 'library, card with a why link', results);
+        if (await clickSel(page, '[data-card-why]')) {
+          await sleep(300);
+          await step(page, 'library, why from a card', results);
+          await click(page, 'All pathogens');
+          await sleep(200);
+        } else {
+          results.push(notReached('library, why from a card'));
+        }
+      }
+      await typeInto(page, '[data-library-filter]', '');
+      await sleep(200);
+    }
     if (await click(page, 'Why it works this way')) {
       await sleep(300);
       await step(page, 'library, why', results);
       await click(page, 'All pathogens');
       await sleep(200);
     }
+    await click(page, 'Back');
+    await sleep(200);
+  }
+  // About (P2.6): the Title's fourth slot, and the only one that never opens over play.
+  if (await click(page, 'About')) {
+    await sleep(300);
+    await step(page, 'about', results);
     await click(page, 'Back');
     await sleep(200);
   }

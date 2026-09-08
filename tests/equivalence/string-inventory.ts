@@ -217,7 +217,60 @@ const TABLE_NAMES = [
   'HUB',
 ];
 
-function uiProse(): { prose: Prose[]; ambiguous: Prose[]; dropped: Map<string, number> } {
+/**
+ * HOW A `line` IN THIS DOCUMENT MAPS TO A LINE OF `v2_ui.html`, computed and VERIFIED here
+ * rather than written into the document by hand.
+ *
+ * Every line below is a line of the JOINED script bodies, not of the file: the parser is given
+ * `blocks.join('\n;\n')`, so line 1 is the first line inside the first `<script>`. A reader who
+ * opens `v2_ui.html` at the number shown lands 543 lines early.
+ *
+ * That sentence used to live in `docs/STRING_INVENTORY.md` as a hand-typed note — inside a
+ * GENERATED document, where the next regeneration deletes it silently and nothing knows it was
+ * there. It was found on 8 September 2026 by a change that had to prove this generator was
+ * inert, and it is `FINDINGS.md` #65. It belongs here, so it survives.
+ *
+ * **It is also computed rather than trusted.** The offset is derived from the first script's
+ * position and then CHECKED: the file's line at `shown + offset` must be the joined line, for
+ * every line this document lists. There are two script blocks and their offsets need not agree —
+ * that they do is a fact about this file's layout, not a law — so when the check fails the
+ * document says the mapping is not uniform instead of printing a number that is wrong for most
+ * of the table. A hand-typed constant could not have told anyone either way.
+ */
+export function lineOffset(html: string, joined: string[], lines: number[]): number | null {
+  const head = /<script\b[^>]*>/i.exec(html);
+  if (!head) return null;
+  const contentStart = head.index + head[0].length;
+  const candidate = html.slice(0, contentStart).split(/\r?\n/).length - 1;
+  const real = html.split(/\r?\n/);
+  // JOINED LINE 1 IS NOT A WHOLE LINE. The joined source starts at the character after the tag,
+  // so its first line is the REMAINDER of the tag's own line — usually empty, since the code
+  // begins on the next one. Comparing it against the whole real line would report a mismatch
+  // for a file that maps perfectly, which is a wrong answer rather than a cautious one. Today
+  // no entry sits on joined line 1, so this path is latent; it is handled because a latent
+  // wrong answer is exactly what this function exists to avoid printing.
+  const firstBreak = html.indexOf('\n', contentStart);
+  const tagLineRemainder = html
+    .slice(contentStart, firstBreak === -1 ? undefined : firstBreak)
+    .trim();
+  for (const n of lines) {
+    // Out of range on either side is a FAILURE, not a skip. Both would read as the empty string
+    // and compare equal, so without this a line past the end of the file would silently agree —
+    // a vacuous match, and the control that asked for a line 900 caught exactly that.
+    if (n < 1 || n > joined.length || n + candidate > real.length) return null;
+    const j = (joined[n - 1] ?? '').trim();
+    const r = n === 1 ? tagLineRemainder : (real[n + candidate - 1] ?? '').trim();
+    if (j !== r) return null;
+  }
+  return candidate;
+}
+
+function uiProse(): {
+  prose: Prose[];
+  ambiguous: Prose[];
+  dropped: Map<string, number>;
+  offset: number | null;
+} {
   const html = readFileSync(UI, 'utf8');
   const blocks: string[] = [];
   const re = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
@@ -325,7 +378,12 @@ function uiProse(): { prose: Prose[]; ambiguous: Prose[]; dropped: Map<string, n
     ts.forEachChild(n, visit);
   };
   visit(sf);
-  return { prose, ambiguous, dropped };
+  const offset = lineOffset(
+    html,
+    src.split(/\r?\n/),
+    [...prose, ...ambiguous].map((p) => p.line),
+  );
+  return { prose, ambiguous, dropped, offset };
 }
 
 /* ================================================================== *
@@ -335,7 +393,25 @@ function uiProse(): { prose: Prose[]; ambiguous: Prose[]; dropped: Map<string, n
 function report(): string {
   const eng = engineStrings();
   const tables = uiTables();
-  const { prose, ambiguous, dropped } = uiProse();
+  const { prose, ambiguous, dropped, offset } = uiProse();
+  /** The line-numbering note, emitted with a VERIFIED offset. See `lineOffset`. */
+  const lineNote =
+    offset === null
+      ? [
+          '> ⚠️ **The line numbers below do not map to `v2_ui.html` by a single offset.** They',
+          "> count from the start of the file's script, and the check that a fixed offset",
+          '> reproduces every line failed, so no number is printed here rather than a wrong one.',
+          '> Use [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md), which carries the real lines.',
+          '',
+        ]
+      : [
+          `> ⚠️ **The line numbers below are not lines of \`v2_ui.html\`.** They count from the`,
+          `> start of the file's \`<script>\`, so the real line is the number shown **plus`,
+          `> ${offset}**. That offset is computed and then checked against every line this`,
+          '> document lists, rather than typed in. The ones that need a call are located and',
+          '> classified in [`AMBIGUOUS_STRINGS.md`](AMBIGUOUS_STRINGS.md), with the real lines.',
+          '',
+        ];
 
   const errs = eng.filter((e) => e.fn === 'err');
   const logs = eng.filter((e) => e.fn === 'pushLog');
@@ -493,6 +569,7 @@ function report(): string {
     '',
     `### The ${ambiguous.length} that need a human call`,
     '',
+    ...lineNote,
     'Neither clearly prose nor clearly code. **Someone has to read these and decide** — which is',
     'the point of listing them rather than folding them into a number in either direction.',
     '',
