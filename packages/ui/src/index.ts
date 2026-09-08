@@ -50,6 +50,9 @@ export { DifficultyScreen } from './screens/DifficultyScreen';
 export { SettingsScreen, type DeleteSaveBlock, type ChoiceRow } from './screens/SettingsScreen';
 export { HelpScreen, HELP_SECTION_KEYS, type HelpSectionKey } from './screens/HelpScreen';
 export { AboutScreen } from './screens/AboutScreen';
+export { CrashScreen, type CrashCase } from './screens/CrashScreen';
+export { ErrorBoundary, CrashForTesting, type CrashDetail } from './screens/ErrorBoundary';
+export { SaveFailedNotice } from './panels/SaveFailedNotice';
 export {
   LibraryScreen,
   libraryType,

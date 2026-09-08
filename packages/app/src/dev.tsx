@@ -12,7 +12,13 @@
  * The perf driver targets THIS page: point it at <origin>/dev.html.
  */
 import { LocalSession, IndexedDbStorage } from '@immunity-wars/session';
-import { PlayScreen, type ArtMetrics } from '@immunity-wars/ui';
+import {
+  CrashForTesting,
+  CrashScreen,
+  ErrorBoundary,
+  PlayScreen,
+  type ArtMetrics,
+} from '@immunity-wars/ui';
 import { useEffect, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -26,6 +32,11 @@ const session = LocalSession.createGame(
 
 function DevApp(): ReactElement {
   const [skip, setSkip] = useState(false);
+  /** The boundary's controls. A boundary that has never fired is not known to work, and the
+   *  three routes into it are DIFFERENT code paths: render, an event handler, a rejected
+   *  promise. Only the first reaches getDerivedStateFromError; the other two exist because a
+   *  boundary alone would sit there catching nothing and look like it worked. */
+  const [throwOnRender, setThrowOnRender] = useState(false);
   const [checks, setChecks] = useState<string[]>([]);
   const [idbLines, setIdbLines] = useState<string[]>([]);
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
@@ -91,6 +102,24 @@ function DevApp(): ReactElement {
           </p>
         )}
       />
+      {throwOnRender ? <CrashForTesting /> : null}
+      <p style={{ fontSize: '0.8125rem' }}>
+        <button onClick={() => setThrowOnRender(true)}>Crash: render</button>{' '}
+        <button
+          onClick={() => {
+            throw new Error('deliberate crash from an event handler');
+          }}
+        >
+          Crash: event handler
+        </button>{' '}
+        <button
+          onClick={() => {
+            void Promise.reject(new Error('deliberate crash from a rejected promise'));
+          }}
+        >
+          Crash: rejected promise
+        </button>
+      </p>
       <pre style={{ fontSize: '0.75rem' }}>{checks.join('\n')}</pre>
       <details>
         <summary style={{ fontSize: '0.8125rem' }}>
@@ -104,6 +133,24 @@ function DevApp(): ReactElement {
 
 const el = document.getElementById('app');
 if (el) {
-  createRoot(el).render(<DevApp />);
+  // The dev shell is wrapped too, so the crash controls above have something to fire INTO and
+  // the boundary is exercised on a real page rather than only in a test.
+  createRoot(el).render(
+    <ErrorBoundary
+      render={(detail) => (
+        <CrashScreen
+          which="safe"
+          turn={null}
+          detail={`${detail.source}: ${detail.message}
+${detail.stack}`}
+          onContinue={() => window.location.reload()}
+          onTitle={() => window.location.reload()}
+          onNewGame={() => window.location.reload()}
+        />
+      )}
+    >
+      <DevApp />
+    </ErrorBoundary>,
+  );
   markInitialRender();
 }

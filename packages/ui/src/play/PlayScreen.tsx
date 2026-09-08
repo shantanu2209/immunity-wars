@@ -106,7 +106,10 @@ export interface PlaySessionLike {
     listener: (
       ev:
         | { kind: 'view'; view: SessionView }
-        | { kind: 'burst'; frames: readonly { view: ViewState; label: string; dice?: unknown }[] },
+        | { kind: 'burst'; frames: readonly { view: ViewState; label: string; dice?: unknown }[] }
+        // The third arm (8 September 2026). This screen ignores it: the notice is the shell's to
+        // show, because it outlives any one screen. Listed so the union stays assignable.
+        | { kind: 'notice'; notice: string },
     ) => void,
   ): () => void;
 }
@@ -242,10 +245,11 @@ export function PlayScreen({
           setPlaying(true);
           playNext();
         }
-      } else {
+      } else if (ev.kind === 'view') {
         if (playingRef.current) pendingViewRef.current = ev.view;
         else setAuthView(ev.view);
       }
+      // `notice` falls through deliberately: it is the shell's, not this screen's.
     });
     return (): void => {
       unsubscribe();

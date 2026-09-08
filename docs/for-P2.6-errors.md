@@ -1,4 +1,8 @@
-# PROPOSAL 4 — the error boundary and the storage-failure notice (for ruling; nothing built)
+# PROPOSAL 4 — the error boundary and the storage-failure notice
+
+> ✅ **ALL FIVE RULED, 8 September 2026, and BUILT.** The proposal is left exactly as it was
+> written, unedited, so that what was proposed can still be read against what was decided. The
+> rulings, and the leanings that preceded them, are at the end of this document.
 
 **8 September 2026.** Shantanu asked for one thing to be designed rather than discovered: **what
 the error boundary does with a game in progress.** That question turns out to have a clean
@@ -164,3 +168,97 @@ the notice is a late warning rather than a guarantee.
 Once ruled, the build is: the boundary and its screen, the two window listeners, the dev-only
 throw and its control, the catalogue entries, the audit walking all four cases, and, separately,
 the session change and the notice.
+
+---
+
+# The leanings, and then the rulings — kept apart on purpose
+
+Shantanu asked for the record to show which was which
+(*"record the leanings as leanings and the rulings as rulings, so the record shows which was
+which"*). This project's briefs do the same thing wherever a decision had a preceding opinion:
+a lean that turned out right and a lean that was overruled look identical afterwards unless
+somebody wrote down that it was a lean.
+
+## What was LEANED, before any ruling
+
+**Mine, in the proposal above**, offered as leanings and marked as such at the time:
+
+| # | The lean | What happened |
+|---|---|---|
+| 3 | **Include the technical details line, collapsed** | Ruled in, and on a better reason than mine |
+| 4 | **The third shape: a new arm on the subscribe union** | Ruled in, on the reasoning given |
+| 5 | **Do not build the startup storage probe** | Ruled, with a condition mine did not carry |
+
+**Shantanu's, given as leanings before he had read all five** (8 September 2026, stated in those
+words: *"which you can take as leaning rather than ruling until I have the whole set"*): reload
+rather than recover, never write from the crash screen, and that the save-failure signal is the
+one that matters structurally. All three later became rulings unchanged. **They are recorded as
+leanings anyway**, because that is what they were when they were said, and a record that
+promotes them retroactively teaches that leanings are just early rulings.
+
+## What was RULED, 8 September 2026
+
+All five, after the full set was sent.
+
+### 1. Reload rather than recover in place — RULED
+
+> A tree that threw is undefined and the save is current. Reloading is the honest recovery, and
+> pretending otherwise is how a crash becomes a corruption.
+
+Built: every exit from `CrashScreen` is `location.reload()`.
+
+### 2. Never write to storage from the crash screen — RULED
+
+> A crash handler that helpfully saves would overwrite good turns with whatever was in memory
+> when things went wrong. That is helpfulness that reads as care and does damage.
+
+Built, and **enforced by shape rather than by comment**: `CrashScreen` takes no storage handle,
+no session and no save callback, so there is nothing under it that could write. `AppRoot` reads
+the save and passes the answer down. No delete button in the unreadable case either.
+
+### 3. The four cases as worded, and the technical details line is IN, collapsed — RULED
+
+The deciding reason was **not** the one in my lean, and it is worth the difference being visible:
+
+> This game has been presented at a showcase and will be in classrooms, and the only bug channel
+> is a person telling us. A collapsed line they can read out is the difference between "it broke"
+> and something actionable.
+
+Mine reached the same place from "a player describing a white screen". His names *why* that is
+the failure mode that matters here: there is no other channel and there will be strangers using
+this.
+
+Naming the turn in case A confirmed for the reason given: a claim that a game is saved is a
+claim, and a number is evidence the player can check when they land back in it.
+
+### 4. The seam: a new arm on the subscribe union — RULED
+
+> Save health is a fact about THIS DEVICE, not about the game. The view is what crosses the
+> network in Phase 3, so a device-local fact does not belong in it, and the union exists
+> precisely because one callback could not express two kinds of thing. One boolean held by the UI
+> is a fair price.
+
+Built: `SessionEvent` gains `{kind: 'notice', notice: 'save-failed'}`. `ViewState` is untouched.
+
+### 5. The probe: do not build it — RULED, with a condition
+
+> Record the caveat exactly as you framed it. The notice is a late warning rather than a
+> guarantee, the first failure is always silent, and a device with broken storage is rare enough
+> that the probe is real work for a rare case. **What matters is that the notice does not IMPLY a
+> guarantee it cannot make, so check its wording against that.**
+
+The condition is the part that changed the build. **The guarantee the notice cannot make is
+"your game was saved up to now"** — it fires on the first failure the session sees, and a store
+that never worked and a store that broke midway produce it identically. So the wording says only
+what is true in both cases: *this game cannot be saved on this device*, present tense, plus the
+consequence the player can act on. It does not say "from now on", "so far", or "your progress is
+saved", each of which would imply the guarantee. `SaveFailedNotice.tsx` carries that reasoning,
+and the catalogue script that added the strings **fails the build on those phrases** rather than
+leaving it to a reading.
+
+### 6. One piece, not two — RULED
+
+> The session change and the notice land together as one piece.
+
+Correct, and for a reason worth keeping: **a notice has nothing to notice until the signal
+exists.** Shipping the notice first would have been a component nothing could ever render.
