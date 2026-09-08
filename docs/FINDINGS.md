@@ -3326,3 +3326,75 @@ as the web build's evidence is the headless check on `localhost`: the worker act
 with no network rendering and playing a full turn. (For the record, a worker installed on the
 LAN origin during an online visit would serve that origin from cache too; nobody has tried
 that on the phone, and the Android build is where it is settled.)
+
+---
+
+## 62. `pnpm verify` cannot see a whole class of CI failure: the generated coverage documents record POSITIONS, and any line inserted above an arm moves them
+
+**Found by CI on PR #70, 8 September 2026**, and the shape is worth naming because the
+verdict was not where the information was. The coverage GATE passed. Coverable branch
+coverage was unmoved at 96.30% against a 95% target, the same 63 arms were deferred, and
+every arm's recorded source text was still exactly right. What failed was the drift check
+beside the gate, which regenerates the two documents and requires the committed copies to
+match. Four numbers had changed: adding the `WHY` and `DERIVED` schemas to the content pack
+pushed four `schema.ts` arms from lines 558, 567, 583 and 615 to 591, 600, 616 and 648.
+
+**The property that makes this recur.** A line number is not a property of the arm. It is a
+property of everything ABOVE the arm. So `docs/COVERAGE_EXCLUSIONS.md` and
+`docs/COVERAGE_DEFERRED.md` go stale on *any* insertion or deletion in
+`packages/engine/src` or `packages/content/src`, with nothing about coverage having changed
+and nothing about the arms being wrong.
+
+**Why it was invisible locally, which is the part that matters.** `pnpm verify` does not run
+coverage, deliberately, because coverage is slow. So the branch was green on the maintainer's
+machine and red on CI, and the standing rule — verify before commit — could not have caught
+it. **A pre-flight check that cannot predict the gate it is a pre-flight for is not
+wrong, but it is incomplete in a way nobody notices until it costs a round trip.** This one
+had cost one.
+
+### The fix, and why it costs nothing
+
+`tools/ci/coverage-positions.ts`, `pnpm coverage:positions`, inside `pnpm verify`.
+
+The documents already quote the source line beside every position, so the check is a
+comparison they make possible themselves: read the file, take the recorded line, require the
+source there to still start with the text recorded beside it. **No coverage run, no
+instrumentation, no `coverage/` directory.** 232 entries across the two documents, in
+milliseconds.
+
+**It is a NECESSARY condition, not a sufficient one, and says so in its own output.** It
+cannot see an arm that became covered, an exclusion that went stale in meaning, or a new arm
+that should have been listed. Those need the real gate and CI runs it. What it catches is the
+one failure mode that is both common and entirely mechanical.
+
+### The four ways it could have been blind, and what was done about each
+
+1. **Parsing nothing.** A regex matching no entries passes trivially. The counts are asserted
+   against a floor set BELOW today's numbers, and printed per document and per file — read the
+   instrument that reports coverage, not the one that reports a verdict.
+2. **An empty recorded text** would match any line at all, since every string starts with the
+   empty string. Asserted against rather than assumed absent. There are none today.
+3. **A base name that cannot be resolved** is a failure, never a skip. `queries.ts`,
+   `effects.ts` and `schema.ts` each exist twice in this repository, and a silently skipped
+   entry shrinks the checked set invisibly.
+4. **Guessing which files are instrumented.** The roots are read from
+   `vitest.coverage.config.ts` rather than restated, so a root added there cannot leave this
+   check quietly measuring the old set.
+
+### The controls, and why two of them are one edit at opposite ends of one file
+
+Three, all firing correctly on their first run.
+
+| Control | Edit | Must |
+|---|---|---|
+| `coverage-positions-shifted` | one line PREPENDED to `packages/content/src/schema.ts` | go RED |
+| `coverage-positions-untouched` | one line APPENDED to the same file | stay GREEN |
+| `coverage-positions-unresolvable` | a recorded base name changed to one no instrumented file has | go RED |
+
+**The first two are the matched pair, and the second is the one that does the work.** The
+same edit at opposite ends of the same file: prepending moves every recorded arm below it,
+appending moves nothing. Without the permitted half, a check that reddened on ANY source edit
+whatsoever would satisfy the fail-control perfectly — and would then red on every commit until
+someone removed it from `verify`. That is the standing rule's case, unchanged: *forbid X is
+half a specification.*
+

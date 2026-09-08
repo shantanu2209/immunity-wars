@@ -231,6 +231,45 @@ const CONTROLS: readonly Control[] = [
     gate: 'npx vitest run --root tools/dashboard',
     expect: 'floor, not an estimate',
   },
+  // ------------------------------------------------------------------------------------------
+  // The coverage documents' positions. THREE controls, and the first two are a matched pair on
+  // ONE file: the same edit at opposite ends of packages/content/src/schema.ts. Prepending moves
+  // every recorded arm below it and must go red; appending moves nothing and must stay green.
+  // Without the second, a check that reddened on ANY source edit would satisfy the first.
+  // ------------------------------------------------------------------------------------------
+  {
+    id: 'coverage-positions-shifted',
+    why: 'PR #70: adding the WHY and DERIVED schemas pushed four arms down schema.ts, the coverage GATE passed, and the drift check failed on four line numbers. pnpm verify does not run coverage, so it had been green.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) => `// control: one line inserted above every arm in this file\n${t}`,
+    gate: 'pnpm coverage:positions',
+    expect: 'THE GENERATED COVERAGE DOCUMENTS ARE STALE',
+  },
+  {
+    id: 'coverage-positions-untouched',
+    why: 'The permitted half. A source edit that moves no recorded position must NOT red the check — otherwise "forbid X" is satisfied by a rule that forbids every edit, and the check becomes noise someone turns off.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) => `${t}\n// control: one line appended below every arm in this file\n`,
+    gate: 'pnpm coverage:positions',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
+    id: 'coverage-positions-no-globs',
+    why: 'The check reads the instrumented roots from vitest.coverage.config.ts rather than restating them. If it cannot read them it must SAY SO, not fall back to a guess — a fallback is how a check ends up confidently measuring something other than what it names.',
+    file: 'vitest.coverage.config.ts',
+    mutate: (t) => t.replace(/(\n\s+)include:(\s*\[\s*'packages)/, '$1includeRenamed:$2'),
+    gate: 'pnpm coverage:positions',
+    expect: 'declares no `include` inside its `coverage:` block',
+  },
+  {
+    id: 'coverage-positions-unresolvable',
+    why: 'A base name the check cannot resolve must FAIL rather than be skipped. queries.ts, effects.ts and schema.ts each exist twice here, and a silently skipped entry shrinks the checked set invisibly — the shape of every blind check this project has found.',
+    file: 'docs/COVERAGE_DEFERRED.md',
+    mutate: (t) => t.replace(/`schema\.ts:/g, '`schema_absent.ts:'),
+    gate: 'pnpm coverage:positions',
+    expect: 'NO INSTRUMENTED FILE IS NAMED',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
