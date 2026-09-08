@@ -14,7 +14,8 @@
     "./diff": "./src/diff.ts",
     "./engine": "./src/engine.ts",
     "./types": "./src/types.ts",
-    "./query-shapes": "./src/query-shapes.ts"
+    "./query-shapes": "./src/query-shapes.ts",
+    "./strip-markup": "./src/strip-markup.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

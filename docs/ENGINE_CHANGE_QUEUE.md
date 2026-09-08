@@ -44,6 +44,25 @@ generic no-AP gate in `actions.ts:196`, the undo snapshot, `viewState`, and `con
 initialising and resetting it. All plumbing for a grant that never happens (#29). Removing it
 removes a view key, which is why it is a corpus-breaking change and sits in this queue.
 
+## Q9 — the two player-facing texts that already describe the RULED behaviour, not the shipped one
+
+Listed here so that landing Q9 is a one-line change to the engine and not a hunt through the
+catalogue, and so nobody "corrects" either text in the meantime.
+
+| Where | The text | Status |
+|---|---|---|
+| The Eosinophil's cell card, `ui.help.cell.eosinophil` | "it burns the organ it **stands in**" | True once Q9 lands. Today the burn is keyed to the target being on a branch at any step, so a strike at step 1 of the Brain branch costs the Brain a point while the Eosinophil is nowhere near it |
+| The library's why box 11, `ui.library.why.eosinophil.title` | "Why the Eosinophil burns the organ it **stands in**" | The same sentence, and it was written to match the card |
+
+**Kartik's box text underneath the title is not affected**: "killing a parasite inside tissue
+damages that tissue" is the biology, and it is the biology Q9 exists to make the engine obey.
+It is the *title* and the *card* that state where the damage lands.
+
+**So the game and its own explanation disagree until Q9 lands** — narrowly, in one direction,
+and in favour of the explanation. Flagged to Kartik on 8 September 2026 rather than left for him
+to discover, on Shantanu's instruction. Both texts become true, with no edit, the moment the
+engine keys the burn to branch step 0. Record: [`FINDINGS.md`](FINDINGS.md) #57.
+
 ## Q6 — resident recall: the proposed shape
 
 `{ action: 'resrecall', organ }`. Accepted in the command phase when the resident exists, is not

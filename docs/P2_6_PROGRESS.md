@@ -255,6 +255,53 @@ miss** (the catalogue's `library.why.<key>.title`):
 | 14 | Why you must vaccinate on Normal and Hard |
 | 15 | Why Pathogen X takes so long to answer |
 
+The list as sent to him, with his text under each title, is
+[`WHY_BOX_TITLES.md`](WHY_BOX_TITLES.md).
+
+**Title 11 is flagged to Kartik specifically** (Shantanu, 8 September 2026), because it is the
+one title that describes a rule the engine does not yet follow. "Burns the organ it **stands
+in**" is what he ruled and what the engine will do once **Q9** lands; today the burn is keyed to
+the target being on a branch at any step, so a strike at step 1 of the Brain branch costs the
+Brain a point while the Eosinophil is nowhere near it ([`FINDINGS.md`](FINDINGS.md) #57). The
+Eosinophil's **cell card already says the same thing**, so this is not a new disagreement — it is
+the same one, now in a second place. **His box text is unaffected**: "killing a parasite inside
+tissue damages that tissue" is the biology Q9 exists to make the engine obey. Both texts become
+true with no edit the moment Q9 lands, and the two of them are listed under Q9 in
+[`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md) so that landing it is a one-line engine change
+rather than a hunt through the catalogue.
+
+## Piece 5 — the two instrument fixes carried forward from the #70 failures (8 September 2026)
+
+Neither is library work; both came out of what made PR #70 red.
+
+- **`pnpm coverage:positions`, inside `pnpm verify`** (`tools/ci/coverage-positions.ts`): the
+  half of the generated coverage documents that can be checked **without running coverage**. Every
+  entry records a position, and a line number is a property of everything above the arm, so any
+  insertion in the instrumented sources staled the committed copies while the gate itself passed.
+  Verify does not run coverage, so the class was invisible locally and red on CI. The documents
+  quote the source line beside every position, so the check is a comparison they make possible
+  themselves: **232 entries, three entry shapes, milliseconds.** A necessary condition and not a
+  sufficient one, said in its own output. **Four controls**, two of them one edit at opposite ends
+  of one file: a line prepended must go red, the same line appended must stay green.
+  [`FINDINGS.md`](FINDINGS.md) #62.
+- **The three older tag-stripping sites**, fixed as the fourth was and reduced to one tested
+  function with a shared home. **The justification was corrected by measurement before it was
+  committed:** the alert's name implies a second pass would find more, and brute force over every
+  string to length 9 says the old spelling was already idempotent. The whole measured difference
+  is the empty tag `<>`. Both generators re-run and byte-identical, which is what makes the change
+  safe. **Then CodeQL rejected the replacement too**, and was right: the fixpoint loop that had
+  been kept as belt-and-braces is a linear pass inside a loop, so it is polynomial on input
+  starting with many `<`. Since the measurement had already shown the loop bought nothing, it
+  went. What ships is a **scanner with no regular expression in it**, linear by construction,
+  asserted equal to the single-pass regex over **every string up to length 8** on the alphabet
+  that matters rather than over examples. Two claims about one four-line function, each believed
+  briefly and each corrected by a check.
+- **Recorded, not built** ([`for-P2.6.md`](for-P2.6.md)): `STRING_INVENTORY.md` is generated and
+  carries a hand-written correction note that regeneration silently deletes.
+- **The badge contrast result kept as its own instance**, at Shantanu's direction:
+  [`FINDINGS.md`](FINDINGS.md) #63. A new **use** of an existing content value is a new surface,
+  even when the value is unchanged and trusted everywhere it already appears.
+
 ## What is next
 
 About; the error boundary and the storage-failure notice; onboarding held for a direction.
