@@ -391,6 +391,20 @@ and it **never writes to storage**, because a crash screen that helpfully saves 
 good turns with whatever was in memory. The storage-failure notice needs a seam decision, since
 the session swallows save failures today and the UI cannot see them. Five points for ruling.
 
+## Proposed, not built — first-encounter hints
+
+[`for-P2.6-onboarding.md`](for-P2.6-onboarding.md), PROPOSAL 5, to Shantanu's direction of
+8 September 2026: not a tutorial, hints on first CONTACT, resettable. Four measurements taken
+before anything was proposed, two of which changed the answer. **A first turn on Training puts
+seventeen things within reach of a tap** (7 cells, 7 residents, 7 organs, 1 to 2 invaders across
+eight fresh games), so the set is not what breaks the no-narration constraint, the pace is; a cap
+of two new hints per turn is proposed, with the alternative named rather than assumed. **No
+mechanical truncation of the existing text gives a usable hint** (the first sentence fails 8 of
+18, the first two fail 4 of 18, and "Never moves." is a true first sentence), so the proposal is
+a third answer: the long form is **composed from** the hint, one entry split in two, and no pin
+is needed because nothing is duplicated. **The settings object cannot hold the seen set** without
+resetting every player's text size, since its schema pins `v: 1`. Five points for ruling.
+
 ## What is next
 
 **Onboarding, and it is the only thing left in P2.6.** Shantanu will bring a direction; it
