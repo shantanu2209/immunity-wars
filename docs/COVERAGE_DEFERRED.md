@@ -72,10 +72,10 @@ work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `schema.ts:558` `if (!carded.includes(c)) {`
-- `schema.ts:567` `if (!cells.includes(c)) {`
-- `schema.ts:583` `if (!placed.includes(o)) {`
-- `schema.ts:615` `if (!placedRoutes.includes(r)) {`
+- `schema.ts:591` `if (!carded.includes(c)) {`
+- `schema.ts:600` `if (!cells.includes(c)) {`
+- `schema.ts:616` `if (!placed.includes(o)) {`
+- `schema.ts:648` `if (!placedRoutes.includes(r)) {`
 - `actions.ts:169` `if (g.phase !== 'command') return err('Not in command.');`
 - `actions.ts:240` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`

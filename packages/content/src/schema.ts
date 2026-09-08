@@ -505,6 +505,39 @@ export const DiseasesS = z.strictObject({
       z.enum(['Common', 'Rare', 'Legendary']),
     ]),
   ),
+  /**
+   * The rulebook's fifteen "why it works this way" boxes (P2.6, the library; Kartik's ruling
+   * that they belong there). His text, dashes repunctuated and nothing else; pinned word for
+   * word to the rulebook document by the equivalence suite's `why-boxes.test.ts` (this
+   * package's tests carry no Node types, and reading a .docx needs the file system). `help`
+   * is the How to play section each
+   * belongs to; the title is a UI catalogue label.
+   */
+  WHY: z
+    .array(
+      z.strictObject({
+        key: z.string().regex(/^[a-zA-Z]+$/),
+        help: z.enum(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10']),
+        text: z.string().min(1),
+      }),
+    )
+    .min(1),
+  /**
+   * The disease records that are not deck cards, and where each arises from (P2.6, the
+   * library). `type` is the invader type the engine gives it; pinned to the deck, the disease
+   * records, the toxin makers and the engine's rare events by `derived.test.ts` and the
+   * equivalence suite. `from: null` with `via: 'none'` is the one record nothing produces
+   * (docs/FINDINGS.md #23), kept by ruling and labelled as such.
+   */
+  DERIVED: z.record(
+    z.string(),
+    z.strictObject({
+      from: z.string().nullable(),
+      type: InvaderTypeS,
+      via: z.enum(['toxin', 'stage', 'rare', 'none']),
+      rare: z.string().optional(),
+    }),
+  ),
 });
 
 export const LabelsS = z.strictObject({

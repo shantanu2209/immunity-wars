@@ -186,6 +186,23 @@ export type DiseaseStats = readonly [
   rarity: 'Common' | 'Rare' | 'Legendary',
 ];
 
+/** One of the rulebook's "why it works this way" boxes: Kartik's text, and the How to play
+ *  section it belongs to. The title is a UI catalogue label keyed by `key`. */
+export interface WhyEntry {
+  readonly key: string;
+  readonly help: 's1' | 's2' | 's3' | 's4' | 's5' | 's6' | 's7' | 's8' | 's9' | 's10';
+  readonly text: string;
+}
+
+/** A disease record that is not a deck card: the parent it arises from (null for the one
+ *  record nothing produces), the invader type the engine gives it, and how it arises. */
+export interface DerivedEntry {
+  readonly from: string | null;
+  readonly type: InvaderType;
+  readonly via: 'toxin' | 'stage' | 'rare' | 'none';
+  readonly rare?: string;
+}
+
 /** n=name · r=role blurb · g=glyph */
 export interface CellLabel {
   readonly n: string;

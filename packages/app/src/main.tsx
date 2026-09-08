@@ -18,6 +18,7 @@ import type { ViewState } from '@immunity-wars/session';
 import {
   DifficultyScreen,
   HelpScreen,
+  LibraryScreen,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -27,6 +28,7 @@ import {
   turnLine,
   type ArtMetrics,
   type HelpSectionKey,
+  type LibraryView,
   type SaveSummary,
 } from '@immunity-wars/ui';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
@@ -62,7 +64,10 @@ type Screen =
    *  (hidden), so nothing about the session, the selection or a queued dialog is disturbed. */
   | { name: 'settings'; from: 'title' | 'play' }
   /** How to play: the index (section null) or one section; the same two doors as Settings. */
-  | { name: 'help'; from: 'title' | 'play'; section: HelpSectionKey | null };
+  | { name: 'help'; from: 'title' | 'play'; section: HelpSectionKey | null }
+  /** The disease library: its index, a card over it, or the why section. Its door is the
+   *  Title (APP_FLOW; ruled 8 September 2026); from play it is reached only by a Help link. */
+  | { name: 'library'; from: 'title' | 'play'; view: LibraryView };
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -190,10 +195,22 @@ function App(): ReactElement {
       section={section}
       onOpen={(s) => setScreen({ name: 'help', from, section: s })}
       onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
+      onWhy={(entry) => setScreen({ name: 'library', from, view: { kind: 'why', entry } })}
+    />
+  );
+
+  const libraryScreen = (from: 'title' | 'play', view: LibraryView): ReactElement => (
+    <LibraryScreen
+      view={view}
+      onView={(v) => setScreen({ name: 'library', from, view: v })}
+      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
+      onHelp={(section) => setScreen({ name: 'help', from, section })}
     />
   );
 
   if (screen.name === 'settings' && screen.from === 'title') return settingsScreen('title');
+  if (screen.name === 'library' && screen.from === 'title')
+    return libraryScreen('title', screen.view);
   if (screen.name === 'help' && screen.from === 'title') return helpScreen('title', screen.section);
 
   if (screen.name === 'title') {
@@ -204,6 +221,7 @@ function App(): ReactElement {
         onNewGame={() => setScreen({ name: 'difficulty' })}
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
         onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
+        onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
       />
     );
   }
@@ -247,16 +265,19 @@ function App(): ReactElement {
         onNewGame={() => setScreen({ name: 'difficulty' })}
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
         onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
+        onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
       />
     );
   }
 
   // Settings or Help over the paused game: the game stays mounted underneath, hidden.
-  const overPlay = screen.name === 'settings' || screen.name === 'help';
+  const overPlay =
+    screen.name === 'settings' || screen.name === 'help' || screen.name === 'library';
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
       {screen.name === 'settings' ? settingsScreen('play') : null}
       {screen.name === 'help' ? helpScreen('play', screen.section) : null}
+      {screen.name === 'library' ? libraryScreen('play', screen.view) : null}
       <div hidden={overPlay}>
         <PlayScreen
           session={session}

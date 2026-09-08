@@ -1,0 +1,59 @@
+{
+  "DERIVED": {
+    "Tetanus toxin": {
+      "from": "Tetanus",
+      "type": "toxin",
+      "via": "toxin"
+    },
+    "Cholera toxin": {
+      "from": "Cholera",
+      "type": "toxin",
+      "via": "toxin"
+    },
+    "Clostridial toxin": {
+      "from": "Gas gangrene",
+      "type": "toxin",
+      "via": "toxin"
+    },
+    "Diphtheria toxin": {
+      "from": null,
+      "type": "toxin",
+      "via": "none"
+    },
+    "Malaria (blood)": {
+      "from": "Malaria",
+      "type": "malaria",
+      "via": "stage"
+    },
+    "Malaria (relapse)": {
+      "from": "Malaria",
+      "type": "malaria",
+      "via": "rare",
+      "rare": "malariaRelapse"
+    },
+    "Dengue (ADE)": {
+      "from": "Dengue",
+      "type": "virus",
+      "via": "rare",
+      "rare": "dengueADE"
+    },
+    "Tuberculosis (reactivated)": {
+      "from": "Tuberculosis",
+      "type": "bacteria",
+      "via": "rare",
+      "rare": "tbReactivation"
+    },
+    "Shingles": {
+      "from": "Chickenpox",
+      "type": "hidden",
+      "via": "rare",
+      "rare": "shingles"
+    },
+    "Pneumococcal pneumonia": {
+      "from": "Influenza",
+      "type": "bacteria",
+      "via": "rare",
+      "rare": "postFluPneumonia"
+    }
+  }
+}

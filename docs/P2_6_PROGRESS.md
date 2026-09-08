@@ -192,7 +192,69 @@ points for ruling. Between pieces: the merged bot bumps (fast-check 4, @eslint/j
 @types/react-dom, puppeteer-core 25) verified green on main and the audit re-run under
 puppeteer 25 with full coverage.
 
+**Ruled the same day** (five rulings, [`for-P2.6.md`](for-P2.6.md), "The five rulings on the
+library"): grouped by type; the Title door only; the index mentions Pathogen X in one line;
+Diphtheria toxin kept and labelled as readable but never produced (Kartik), with the design
+question underneath it recorded as his; the fifteen box titles are the builder's, sent for
+Kartik to overrule.
+
+## Piece 4, built — the disease library (8 September 2026)
+
+- **Two content tables.** `why.json`: the rulebook's fifteen boxes, Kartik's text, ten of them
+  repunctuated and nothing else changed, each naming its How to play section; **pinned word
+  for word to the rulebook document** by the equivalence suite's `why-boxes.test.ts`, which
+  reads the `.docx` in the repository through a small zip reader, with a control that a changed
+  word fails and a control that a changed punctuation mark passes. `derived.json`: the ten
+  disease records that are not deck cards, each with the parent it arises from, its type and
+  how it arises; held to the deck, the disease records and the toxin makers by the content
+  package's `derived.test.ts`, and to the engine by `derived-rare.test.ts`, which fires each
+  rare event and requires the outcome's disease and type. The one record nothing produces is
+  required to be the only such entry.
+- **The screen** (`LibraryScreen.tsx`): nine groups in Help's order, alphabetical within, the
+  type's "beat it" line on each header, a name filter, nine jump chips; rows carry the class
+  badge in its colour and the target organs; the derived records sit indented under their
+  parents with "arises from", Diphtheria toxin with "readable, but nothing in the game releases
+  it"; the Pathogen X line at the foot; the existing card opens over the index. The why
+  section is its own page with the fifteen entries, jump chips, and a link from each entry to
+  its How to play section; each Help section links to its boxes in turn.
+- **Doors:** the Title slot. From play the library is reached only through a Help section's
+  "Why it works this way" link, over the paused game, and its own link leads back.
+- **Records:** FINDINGS #23 carries Kartik's ruling; the queue's "not queued" list carries the
+  design question; `for-P2.6.md` the rulings.
+- **Two defects found on the way, both in the build, fixed before the first run:** a `$note`
+  key in each new JSON tripped the pack's strict schema, since a note belongs in the schema's
+  comments and not in the data; and the docx pin cannot live in the content package, whose
+  test program carries no Node types on purpose, so it lives in the equivalence suite.
+- **One found by the audit's first run and fixed:** 212 contrast findings, every one the class
+  badge's cream text on the class's own colour, which the pack gives at 2.4:1 to 3.7:1 against
+  cream. A scripted read of the rendered index had passed minutes earlier; a read checks the
+  words are there, the audit checks they can be read. The badge is dark text with the colour
+  as a bar beside it. Recorded in [`GATE1_AUDIT.md`](GATE1_AUDIT.md).
+- **The run on the shipped build:** 712 controls and 1,965 text runs across 36 screens, the
+  library's three among them (268 controls, 813 text runs); every check 0 under all four
+  mechanisms; every pass reached every screen; offline met; 24 controls fired.
+
+**The fifteen titles, the builder's labels over Kartik's text, for him to overrule any that
+miss** (the catalogue's `library.why.<key>.title`):
+
+| Box | Title |
+|---|---|
+| 1 | Why surviving the window is not the win |
+| 2 | Why the Blood route is short |
+| 3 | Why the lymphatic shortcuts join the routes they do |
+| 4 | Why the Brain is so hard to defend |
+| 5 | Why you start with no antibodies |
+| 6 | Why worms do not multiply inside you |
+| 7 | Why coating a toxin-maker stops its countdown |
+| 8 | Why coating is not killing |
+| 9 | Why the Helper must be primed first |
+| 10 | Why the NK Cell rolls a die |
+| 11 | Why the Eosinophil burns the organ it stands in |
+| 12 | Why a resident never leaves its organ |
+| 13 | Why malaria needs three different defences |
+| 14 | Why you must vaccinate on Normal and Hard |
+| 15 | Why Pathogen X takes so long to answer |
+
 ## What is next
 
-The rulings on the library's structure, then its build; About; the error boundary and the
-storage-failure notice; onboarding held for a direction.
+About; the error boundary and the storage-failure notice; onboarding held for a direction.
