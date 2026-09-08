@@ -31,15 +31,17 @@ export function TitleScreen({
   onSettings,
   onHelp,
   onLibrary,
+  onAbout,
 }: {
   /** Present when an autosave exists; Continue renders only then. */
   save: SaveSummary | null;
   onContinue: () => void;
   onNewGame: () => void;
-  /** Three of the four P2.6 Title slots (APP_FLOW §4): How to play, Disease library, Settings. */
+  /** The four P2.6 Title slots (APP_FLOW §4), in the order they are shown. */
   onSettings: () => void;
   onHelp: () => void;
   onLibrary: () => void;
+  onAbout: () => void;
 }): ReactElement {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
@@ -65,6 +67,9 @@ export function TitleScreen({
       </button>
       <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onSettings}>
         {t('title.settings')}
+      </button>
+      <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onAbout}>
+        {t('title.about')}
       </button>
     </div>
   );

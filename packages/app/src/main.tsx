@@ -16,6 +16,7 @@ import { ORGANS } from '@immunity-wars/content';
 import { LocalSession, IndexedDbStorage } from '@immunity-wars/session';
 import type { ViewState } from '@immunity-wars/session';
 import {
+  AboutScreen,
   DifficultyScreen,
   HelpScreen,
   LibraryScreen,
@@ -67,7 +68,10 @@ type Screen =
   | { name: 'help'; from: 'title' | 'play'; section: HelpSectionKey | null }
   /** The disease library: its index, a card over it, or the why section. Its door is the
    *  Title (APP_FLOW; ruled 8 September 2026); from play it is reached only by a Help link. */
-  | { name: 'library'; from: 'title' | 'play'; view: LibraryView };
+  | { name: 'library'; from: 'title' | 'play'; view: LibraryView }
+  /** About: credits, recognition, privacy, licence. The Title is its only door, and unlike the
+   *  other three slots it has no reason to open over a paused game. */
+  | { name: 'about' };
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -212,6 +216,7 @@ function App(): ReactElement {
   if (screen.name === 'library' && screen.from === 'title')
     return libraryScreen('title', screen.view);
   if (screen.name === 'help' && screen.from === 'title') return helpScreen('title', screen.section);
+  if (screen.name === 'about') return <AboutScreen onBack={() => setScreen({ name: 'title' })} />;
 
   if (screen.name === 'title') {
     return (
@@ -222,6 +227,7 @@ function App(): ReactElement {
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
         onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
         onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
+        onAbout={() => setScreen({ name: 'about' })}
       />
     );
   }
@@ -266,6 +272,7 @@ function App(): ReactElement {
         onSettings={() => setScreen({ name: 'settings', from: 'title' })}
         onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
         onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
+        onAbout={() => setScreen({ name: 'about' })}
       />
     );
   }

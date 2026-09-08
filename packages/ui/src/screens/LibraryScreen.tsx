@@ -17,8 +17,16 @@
  *
  * The rulebook's fifteen "why it works this way" boxes are their own section: Kartik's text,
  * pinned to the rulebook document by the content package's test, under labels of this
- * screen's own, each linking to its How to play section. None of the boxes is about a
- * disease, so none sits on a card.
+ * screen's own, each linking to its How to play section.
+ *
+ * ⚠️ **Corrected 8 September 2026.** This read *"None of the boxes is about a disease, so none
+ * sits on a card"*, and **four of them are**: worms, toxin-makers, malaria and Pathogen X each
+ * explain a mechanic that belongs to particular diseases rather than to a cell or to the board.
+ * The claim was written while building the why section and was never checked against the boxes.
+ * Shantanu ruled the link in on the same reasoning it should have had: a card answering "what is
+ * this" should reach "why does the game model it that way", which is why the boxes are in the
+ * library at all. `whyForDisease` is that link, and it is DERIVED from the pack rather than
+ * assigned by hand — see its own comment for why that distinction matters here.
  *
  * Nothing here is game logic: every list is a read of the content pack.
  */
@@ -29,6 +37,8 @@ import {
   FAMILIES,
   FAMILY,
   INV_HP,
+  NOVEL_ANTIGENS,
+  TOXIN_MAKERS,
   TROPISM,
   WHY,
 } from '@immunity-wars/content';
@@ -157,6 +167,40 @@ function organsOf(disease: string): string {
   const targets = (TROPISM as Record<string, readonly string[] | undefined>)[disease] ?? [];
   if (targets.includes('any')) return t('card.anyOrgan');
   return targets.map((o) => organDisplayName(o)).join(', ');
+}
+
+/**
+ * THE WHY BOXES THAT ARE ABOUT THIS DISEASE, in the order they appear in the why section.
+ *
+ * **Derived from the content pack, never assigned by hand, and that is the whole point.** The
+ * boxes are Kartik's science; saying "this box explains this disease" is a claim about the
+ * biology, and a hand-written table of 106 diseases against 15 boxes would be 106 such claims
+ * that nobody checked. So a box is offered only where the pack ALREADY says the disease has that
+ * mechanic, which makes each link a restatement of existing data rather than a new assertion.
+ *
+ * Four boxes qualify, and the rest are silent by design rather than by omission:
+ *
+ *   worms        every deck card of type `worm`
+ *   toxinMakers  the three diseases in `TOXIN_MAKERS`, and the toxins they release
+ *   malaria      every record of type `malaria`, deck or derived
+ *   pathogenX    whatever the pack calls novel (`NOVEL_ANTIGENS`), rather than a name typed
+ *                here; today that is Pathogen X, which has no library row and so reaches this
+ *                only from play
+ *
+ * The other eleven are about a cell, the board or the immune response in general. A card for a
+ * virus therefore shows no link, and that is the honest answer: the boxes that bear on it are
+ * about the Helper, the B-Cell and the window, not about it.
+ */
+export function whyForDisease(disease: string, type: string): readonly string[] {
+  const keys: string[] = [];
+  if (type === 'worm') keys.push('worms');
+  if (type === 'toxin' || disease in TOXIN_MAKERS) keys.push('toxinMakers');
+  if (type === 'malaria') keys.push('malaria');
+  if (NOVEL_ANTIGENS.has(disease)) keys.push('pathogenX');
+  // Order the result the way the why section lists them, so following two links reads top to
+  // bottom rather than in whatever order the tests above happen to fire.
+  const order = WHY.map((w) => w.key);
+  return keys.sort((a, b) => order.indexOf(a) - order.indexOf(b));
 }
 
 /** The type a disease record is grouped and carded under: its deck card's, or its derived
@@ -336,6 +380,8 @@ export function LibraryScreen({
             now: null,
           }}
           onClose={() => onView({ kind: 'index' })}
+          whyBoxes={whyForDisease(view.disease, libraryType(view.disease))}
+          onWhy={(entry) => onView({ kind: 'why', entry })}
         />
       ) : null}
     </div>

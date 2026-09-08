@@ -302,6 +302,61 @@ Neither is library work; both came out of what made PR #70 red.
   [`FINDINGS.md`](FINDINGS.md) #63. A new **use** of an existing content value is a new surface,
   even when the value is unchanged and trusted everywhere it already appears.
 
+## Piece 6 — About, the card-to-box link, and the generated-file trap closed (8 September 2026)
+
+- **About** (`AboutScreen.tsx`), the fourth and last Title slot. `APP_FLOW.md` names it and says
+  nothing about its contents, so the contents are a decision: **three of the project's hard rules
+  land on this one screen**, and the credits are the README's, in the same three parts and the
+  same order, because this is where a stranger forms their idea of who made this. He designed the
+  game, he did not write the source, and the screen says so. Two names and one age, nothing else
+  about anybody. Twenty catalogue entries, no dashes. **No version string**, deliberately: it
+  would need a build identifier injected through Vite and its use is telling someone which build
+  a problem came from, and there is no way to report a problem by design. That becomes worth its
+  plumbing in Phase 4.
+- **The card-to-box link** (ruled by Shantanu, 8 September 2026), which closes the loop from
+  "what is this" to "why does the game model it that way". It also **corrected a claim in the
+  library's own header**: it said none of the boxes was about a disease, and **four of them are**.
+  `whyForDisease` is **derived from the pack, never assigned by hand** — worm cards, the toxin
+  makers and their toxins, every malaria record, and whatever the pack marks novel — because a
+  hand-written table of 106 diseases against 15 boxes would be 106 claims about biology that
+  nobody checked. Eight tests, none of which lists a disease: they ask the pack and require the
+  function to agree, so a card added to the deck is covered the day it is added. One control
+  requires the four rules to match something and to be a strict subset, so a function returning
+  every box for every disease fails rather than sails through. The play card is untouched: a door
+  into the library from mid-game is a design change, and it is left for Shantanu.
+- **The generated-file trap closed** ([`FINDINGS.md`](FINDINGS.md) #65). The string inventory's
+  hand-typed line-number note now lives in its generator and is emitted with the document. It is
+  also **computed and checked** rather than moved: the offset is derived from the script's
+  position and verified against every line the document lists, and when the check fails the note
+  says the mapping is not uniform instead of printing a number wrong for most of the table. The
+  file has two script blocks, so one offset holding for both is a fact about its layout, not a
+  law. Seven tests, four of them controls, and **both defects in the checking logic were found by
+  those controls** before it landed.
+- **The regex sequence recorded** ([`FINDINGS.md`](FINDINGS.md) #64), at Shantanu's direction, as
+  a sequence rather than an outcome: four claims about one four-line function, each plausible,
+  each killed by a check rather than by an argument.
+- **The run on the shipped build:** **39 screens** per pass (41 under SIZE200), up from 36; every
+  check 0 under all four mechanisms; **no screen NOT REACHED**; 24 controls all firing correctly;
+  offline met. The card carrying a why link is reached by **filtering to a worm** rather than by
+  hoping the first row has one, since only four boxes are disease-specific: reaching a screen by
+  luck is what the inspect sheet did for two green runs.
+
+## Proposed, not built — the error boundary and the storage-failure notice
+
+[`for-P2.6-errors.md`](for-P2.6-errors.md), PROPOSAL 4, written because Shantanu asked for the
+behaviour with a game in progress to be designed rather than discovered. The measurement that
+decides it: **the autosave is written on every accepted action and awaited**, so a crash cannot
+lose a turn, and "offer to continue" is the honest answer. Proposed: the boundary **reloads**
+rather than recovering in place, because a tree that threw is undefined and the save is current;
+and it **never writes to storage**, because a crash screen that helpfully saves would overwrite
+good turns with whatever was in memory. The storage-failure notice needs a seam decision, since
+the session swallows save failures today and the UI cannot see them. Five points for ruling.
+
 ## What is next
 
-About; the error boundary and the storage-failure notice; onboarding held for a direction.
+The error boundary and the storage-failure notice, once PROPOSAL 4 is ruled; then onboarding,
+for which Shantanu will bring a direction, and which carries one constraint from him already:
+**Gate 1 requires a newcomer to start and finish a game unaided, so if onboarding does the
+teaching, the newcomer test measures the onboarding rather than the app.** The app has to be
+legible enough that onboarding is a helpful extra rather than a prerequisite, and onboarding is
+to be minimal by design rather than by budget. About is done (piece 6).

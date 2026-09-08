@@ -86,9 +86,22 @@ function StatBar({ label, value }: { label: string; value: number }): ReactEleme
 export function PathogenCard({
   subject,
   onClose,
+  whyBoxes,
+  onWhy,
 }: {
   subject: PathogenCardSubject;
   onClose: () => void;
+  /**
+   * The why boxes that explain this disease's own mechanic, from `whyForDisease`. Passed in
+   * rather than computed here, because this component is also the card the INSPECT SHEET opens
+   * during play and the library is not reachable from there. Omitting both props is what the
+   * play card does, so the link exists exactly where the library is one Back away.
+   *
+   * Whether the play card should carry it too is a door into the library from mid-game, which
+   * is a design change rather than a rendering one, so it is left for Shantanu.
+   */
+  whyBoxes?: readonly string[];
+  onWhy?: (entry: string) => void;
 }): ReactElement {
   const { disease, type } = subject;
   const info = (
@@ -244,6 +257,18 @@ export function PathogenCard({
             )}
           </div>
         ) : null}
+        {onWhy && whyBoxes && whyBoxes.length > 0
+          ? whyBoxes.map((key) => (
+              <button
+                key={key}
+                style={{ ...CLOSE, marginTop: 12, textAlign: 'left', fontSize: '0.9375rem' }}
+                onClick={() => onWhy(key)}
+                data-card-why={key}
+              >
+                {t(`library.why.${key}.title`)}
+              </button>
+            ))
+          : null}
         <button style={{ ...CLOSE, marginTop: 12 }} onClick={onClose}>
           {t('card.close')}
         </button>
