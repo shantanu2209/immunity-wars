@@ -23,12 +23,15 @@ export function PauseSheet({
   onResume,
   onQuit,
   onSettings,
+  onHelp,
 }: {
   onResume: () => void;
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
   onQuit: () => void;
-  /** Settings over the paused game (APP_FLOW §4: "P2.6 adds: Settings · How to play"). */
+  /** Settings and How to play over the paused game (APP_FLOW §4: "P2.6 adds: Settings ·
+   *  How to play"). */
   onSettings: () => void;
+  onHelp: () => void;
 }): ReactElement {
   const [confirming, setConfirming] = useState(false);
   return (
@@ -66,6 +69,9 @@ export function PauseSheet({
           <>
             <button style={BTN} onClick={onResume}>
               {t('pause.resume')}
+            </button>
+            <button style={BTN} onClick={onHelp}>
+              {t('pause.help')}
             </button>
             <button style={BTN} onClick={onSettings}>
               {t('pause.settings')}
