@@ -456,6 +456,26 @@ async function walk(
     await click(page, 'Back');
     await sleep(200);
   }
+  // The disease library from the Title (P2.6 piece 4): the index, one card over it, the why
+  // section, then back out. Every row of the index is a control the audit measures.
+  if (await click(page, 'Disease library')) {
+    await sleep(300);
+    await step(page, 'library, index', results);
+    if (await clickSel(page, '[data-library-row]')) {
+      await sleep(300);
+      await step(page, 'library, card', results);
+      await click(page, 'Close card');
+      await sleep(200);
+    }
+    if (await click(page, 'Why it works this way')) {
+      await sleep(300);
+      await step(page, 'library, why', results);
+      await click(page, 'All pathogens');
+      await sleep(200);
+    }
+    await click(page, 'Back');
+    await sleep(200);
+  }
   await click(page, 'New game');
   await sleep(200);
   await click(page, 'Start and replace');

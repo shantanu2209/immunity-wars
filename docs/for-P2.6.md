@@ -427,3 +427,32 @@ about four.
    nobody has ever seen it. Player text, so Kartik's words if it is said at all.
 4. The boxes as their own section with the cross-links, and my titles as the entry labels.
 5. The Title door only.
+
+## The five rulings on the library (Shantanu, 8 September 2026; two of them Kartik's), and what was built
+
+1. **Grouped by type**, approved on the reasoning given: antigen class is the wrong partition
+   because EUK holds fungi beside worms and protozoa beaten three different ways, and organ is a
+   filter rather than a partition. Built as proposed: nine groups in Help's order, the "beat it"
+   line on each header, the name filter, the nine chips.
+2. **The Title door only.** APP_FLOW's ruling stands and a card is one tap from the reveal. One
+   way in from play remains and is a link, not a door: a Help section's "Why it works this way"
+   opens the library's why entry over the paused game, and its own link leads back to Help.
+3. **The index mentions Pathogen X**, in one line at its foot: one pathogen has no entry here,
+   because nobody has ever seen it. It teaches the mechanic in passing, and a player who counts
+   and finds no X will wonder. The words are a catalogue entry for Kartik to overrule.
+4. **Diphtheria toxin is kept and labelled precisely** (Kartik): readable but never produced,
+   not unfinished. It has a full record; what it lacks is a producer. FINDINGS #23 carries the
+   ruling; the design question underneath it, whether a bacterium should release it and which,
+   is recorded in the queue as Kartik's and not the library's.
+5. **The fifteen box titles are the builder's**, Kartik's text under them; sent to Shantanu with
+   the boxes when the piece lands, so Kartik can overrule any that miss. They are the
+   `library.why.<key>.title` catalogue entries.
+
+**What holds the build honest.** The boxes are in the content pack (`why.json`) and pinned word
+for word to the rulebook document in the repository by the equivalence suite's `why-boxes.test.ts`, which reads the `.docx`
+itself, with a control that a changed word fails and a control that a changed punctuation mark
+passes, since repunctuation is the one change the ruling allows. The records that are not deck
+cards are a content table (`derived.json`) held to the deck, the disease records and the toxin
+makers by `derived.test.ts`, and to the engine by the equivalence suite firing each rare event
+and requiring the outcome's disease and type. Diphtheria toxin is required to be the only entry
+with no parent.

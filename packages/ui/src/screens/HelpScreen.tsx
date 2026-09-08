@@ -31,6 +31,7 @@ import {
   INV_HP,
   ORGANS,
   SPEED,
+  WHY,
 } from '@immunity-wars/content';
 import { Fragment, type CSSProperties, type ReactElement } from 'react';
 
@@ -283,6 +284,7 @@ export function HelpScreen({
   section,
   onOpen,
   onBack,
+  onWhy,
 }: {
   /** The open section, or null for the index. */
   section: HelpSectionKey | null;
@@ -290,6 +292,8 @@ export function HelpScreen({
   onOpen: (key: HelpSectionKey | null) => void;
   /** Leave Help: back to where it was opened from. */
   onBack: () => void;
+  /** Open one of the library's "why it works this way" entries (the cross-link, P2.6). */
+  onWhy: (entry: string) => void;
 }): ReactElement {
   if (section === null) {
     return (
@@ -315,6 +319,20 @@ export function HelpScreen({
         {t('help.number', { n: i + 1 })} {t(`help.${section}.title`)}
       </h2>
       {sectionBody(section)}
+      {/* The rulebook's "why it works this way" boxes that belong to this section, by the
+          content pack's own mapping; they live in the library and link back here. */}
+      {WHY.filter((w) => w.help === section).length > 0 ? (
+        <section style={{ marginTop: 16 }} data-help-why="">
+          <h3 style={{ fontSize: '0.875rem', color: '#78665D', margin: '0 0 4px' }}>
+            {t('help.whyLink')}
+          </h3>
+          {WHY.filter((w) => w.help === section).map((w) => (
+            <button key={w.key} style={BTN} onClick={() => onWhy(w.key)}>
+              {t(`library.why.${w.key}.title`)}
+            </button>
+          ))}
+        </section>
+      ) : null}
       {next ? (
         <button style={BTN} onClick={() => onOpen(next)}>
           {t('help.next')}

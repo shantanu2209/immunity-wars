@@ -1,0 +1,79 @@
+{
+  "WHY": [
+    {
+      "key": "window",
+      "help": "s1",
+      "text": "Real infections do not end when the exposure stops. They end when the last organism is cleared. A person is not well the moment they stop being infected; they are well when their body has finished the job. That is why surviving the window is not a win."
+    },
+    {
+      "key": "bloodRoute",
+      "help": "s3",
+      "text": "The Blood route is short because a needle, a transfusion or a deep wound puts an infection straight into the bloodstream, skipping the skin, the mucus and the stomach acid that stop almost everything else. Bloodborne infection is fast because it has cheated the barriers."
+    },
+    {
+      "key": "lymphatics",
+      "help": "s3",
+      "text": "Mucosal surfaces share a common defensive system (MALT), and skin wounds drain to shared regional lymph nodes. A needle into a vein bypasses lymphatic drainage entirely, which is exactly why the Blood route has no shortcut."
+    },
+    {
+      "key": "brain",
+      "help": "s3",
+      "text": "The blood-brain barrier deliberately keeps immune cells out, to protect neurons that cannot be replaced. That protection is also a weakness: it is why brain infections are so hard to clear, and why the Brain has only 2 integrity instead of 3."
+    },
+    {
+      "key": "noAntibodies",
+      "help": "s7",
+      "text": "You start with zero antibodies because the first adaptive response genuinely takes five to ten days: the one matching B-cell must be found among millions and then multiplied. The innate cells exist to buy exactly those days."
+    },
+    {
+      "key": "worms",
+      "help": "s6",
+      "text": "Worms are large animals that burrow into tissue rather than travelling in the blood like a virus. And unlike bacteria they cannot multiply inside you: most human worms lay eggs that must leave the body and develop outside. A person's worm burden grows through repeated exposure, not internal breeding, which is why two per game is biologically honest as well as playable."
+    },
+    {
+      "key": "toxinMakers",
+      "help": "s6",
+      "text": "Coating a toxin-making bacterium stops its countdown completely: a coated bacterium never advances toward releasing its toxin. That is the game rewarding you for dealing with tetanus early, which is exactly the clinical advice."
+    },
+    {
+      "key": "coating",
+      "help": "s7",
+      "text": "Coating is separated from killing on purpose. An antibody is a handle, not a weapon. This is opsonisation, and it is why the B-Cell and the Monocyte have to work as a pair."
+    },
+    {
+      "key": "priming",
+      "help": "s5",
+      "text": "A naive helper T-cell genuinely cannot help anyone until a dendritic cell presents it an antigen. The three bonuses are the real T-helper subsets: Th2 releases IL-5 to recruit eosinophils, Th17 releases IL-17 which drives G-CSF and steps up neutrophil production in the marrow, and helper contact is what licenses a B-cell to make antibodies properly."
+    },
+    {
+      "key": "nkCell",
+      "help": "s5",
+      "text": "The NK cell is innate: it needs no antibody, no antigen presentation and no priming, so it works from turn one. The die is the honest price of that speed. It is fast and always available, but less precise than a Killer T-Cell."
+    },
+    {
+      "key": "eosinophil",
+      "help": "s5",
+      "text": "Eosinophil granules are indiscriminate poison. Killing a parasite inside tissue damages that tissue, which is why parasitic infections cause chronic inflammation and scarring, and why degranulating should feel like a decision rather than a free hit."
+    },
+    {
+      "key": "residents",
+      "help": "s5",
+      "text": "Tissue-resident macrophages, Kupffer cells in the liver, alveolar macrophages in the lungs, microglia in the brain, live permanently in one organ and never circulate. The 'never leaves' rule is what tissue-residency means."
+    },
+    {
+      "key": "malaria",
+      "help": "s6",
+      "text": "This is the clearest example in medicine of why the same pathogen needs different defences at different moments. The RTS,S malaria vaccine targets the travelling sporozoite precisely because that brief window is when antibodies can act at all."
+    },
+    {
+      "key": "vaccines",
+      "help": "s8",
+      "text": "On the harder modes the game forces the real public-health lesson: waiting to catch a disease is a terrible strategy. A vaccine gives you the memory without the illness, and paying 5 Action Points before an outbreak is far cheaper than fighting it twice."
+    },
+    {
+      "key": "pathogenX",
+      "help": "s8",
+      "text": "This is clonal selection, and the delay is the point: it is precisely why a genuinely new virus is so dangerous. Your body is not missing the tools; it is searching a library of a hundred million receptor shapes for the one that fits."
+    }
+  ]
+}

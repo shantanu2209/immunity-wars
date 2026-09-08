@@ -31,8 +31,10 @@ import type {
   CellLabel,
   Difficulty,
   DifficultyDef,
+  DerivedEntry,
   DiseaseInfo,
   DiseaseStats,
+  WhyEntry,
   EventDef,
   FamilyDef,
   FamilyKey,
@@ -68,6 +70,8 @@ import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
+import whyJson from './diseases/why.json';
+import derivedJson from './rules/derived.json';
 import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
 
@@ -103,6 +107,8 @@ function parseBoard(): Record<string, unknown> {
     ...regionsJson,
     ...anatomyJson,
     ...diseasesJson,
+    ...whyJson,
+    ...derivedJson,
     ...labelsJson,
     ...cellsJson,
   };
@@ -267,6 +273,12 @@ export const FACT = pack['FACT'] as Record<string, string>;
 export const DZINFO = pack['DZINFO'] as Record<string, DiseaseInfo>;
 /** Legacy calls this `S`; docs/PHASE1_BRIEF.md §3 renames it DZSTATS on extraction. */
 export const DZSTATS = pack['DZSTATS'] as Record<string, DiseaseStats>;
+/** The rulebook's "why it works this way" boxes, in its order; Kartik's words, pinned to the
+ *  document by the equivalence suite's `why-boxes.test.ts`. The library's own section (P2.6). */
+export const WHY = pack['WHY'] as readonly WhyEntry[];
+/** The disease records that are not deck cards, and where each arises from (P2.6, the
+ *  library; `derived.test.ts` and the equivalence suite hold it to the deck and the engine). */
+export const DERIVED = pack['DERIVED'] as Record<string, DerivedEntry>;
 
 /* --- labels and glyphs --- */
 export const UM = pack['UM'] as Record<CellKey, CellLabel>;

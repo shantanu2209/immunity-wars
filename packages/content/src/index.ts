@@ -136,6 +136,8 @@ export {
   DZINFO,
   FRAME,
   DZSTATS,
+  WHY,
+  DERIVED,
   ENTRY,
   FACT,
   HUB,

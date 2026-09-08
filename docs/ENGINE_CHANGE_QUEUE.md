@@ -90,3 +90,9 @@ engine is unchanged", with the corpus as the proof.
 - **The Heart's 2-step branch** (#15): **intended.** Kartik: pathogens travel from the
   bloodstream outward, so the heart is genuinely the quickest to reach. The rulebook's strategy
   section now warns about the Heart beside the Brain.
+- **Diphtheria toxin's producer** (#23): **an open design question, Kartik's, not a change.**
+  The record is kept and the library shows it as readable but never produced (ruled 8
+  September 2026). Whether a bacterium should release it, and which, is a deck decision: the
+  deck's Diphtheria card is itself of type toxin, and only bacteria emit, so giving the toxin a
+  producer means either a new bacterium card or a change to what Diphtheria is. Engine-adjacent
+  either way; it lands here as a queued change only if Kartik says yes.

@@ -1010,6 +1010,18 @@ table entries, and nowhere else. There is no card, no rare event, and no emissio
 
 So the row is inert. Nothing reads it, nothing writes it, and no game can contain it.
 
+**Ruled 8 September 2026 (Kartik, at the library), and now READ by something.** The record is
+kept, and the disease library shows it under the toxins with the exact label "readable, but
+nothing in the game releases it": it has a full record and is readable; what it lacks is a
+producer, the way Tetanus, Cholera and Gas gangrene each have a bacterium that releases their
+toxin. Worded as readable but never produced, not as unfinished. The pack's `DERIVED` table
+carries it as the one entry with no parent (`via: 'none'`), and `derived.test.ts` requires it
+to be the only such entry, so a second orphan cannot appear quietly. **The design question
+underneath it is recorded separately, as Kartik's and not the library's**
+([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), "What is NOT queued"): should a bacterium
+release it, and which. Diphtheria is real and serious enough that the answer may be yes, but it
+is a deck decision and engine-adjacent.
+
 ### Why record a dead table row at all
 
 Because it is **[#22](#22-pattern--the-engine-guards-against-states-the-content-design-makes-impossible)

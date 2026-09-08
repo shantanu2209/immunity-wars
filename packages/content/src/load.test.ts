@@ -27,11 +27,13 @@ import invadersJson from './rules/invaders.json';
 import packJson from './rules/pack.json';
 import tropismJson from './rules/tropism.json';
 import tuningJson from './rules/tuning.json';
+import derivedJson from './rules/derived.json';
 
 import anatomyJson from './board/anatomy.json';
 import geometryJson from './board/geometry.json';
 import regionsJson from './board/regions.json';
 import diseasesJson from './diseases/diseases.json';
+import whyJson from './diseases/why.json';
 import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
 
@@ -262,6 +264,8 @@ describe('the board pack', () => {
         ...regionsJson,
         ...anatomyJson,
         ...diseasesJson,
+        ...whyJson,
+        ...derivedJson,
         ...labelsJson,
         ...cellsJson,
       }),
