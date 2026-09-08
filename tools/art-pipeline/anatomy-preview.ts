@@ -14,7 +14,9 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import sharp from 'sharp';
+// A named type import rather than `sharp.OverlayOptions`: sharp 0.35's exports map resolves
+// the types through a path where the default export no longer carries the namespace.
+import sharp, { type OverlayOptions } from 'sharp';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ART = join(HERE, '../../packages/app/public/art');
@@ -46,7 +48,7 @@ async function main(): Promise<void> {
     top: Math.round(p.y * SCALE - px / 2),
   });
   const frame = await sharp(join(ART, `${anatomy.FRAME.asset}@${SCALE}x.webp`)).toBuffer();
-  const layers: sharp.OverlayOptions[] = [{ input: frame, left: 0, top: 0 }];
+  const layers: OverlayOptions[] = [{ input: frame, left: 0, top: 0 }];
   const icon = async (key: string, p: Pt): Promise<void> => {
     const buf = await sharp(join(ART, `${key}@3x.webp`))
       .resize(px, px)

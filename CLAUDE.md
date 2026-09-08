@@ -236,13 +236,17 @@ contract Task B was measured against.
   the final 3.x — can fail a run in which every test passed, a false-red its closed line will
   never fix. `docs/FINDINGS.md` #43 and #44.
 
-  **Two advisories are open, both dispositioned, re-argued 4 September 2026**
-  (`docs/SECURITY_NOTES.md`, "Re-argued" and "Rulings"): `sharp` <0.35 is DEFERRED (the art
-  pipeline decodes only our own committed art; a bump means regenerating and re-gating all 29
-  assets, so it is taken when the pipeline next runs for another reason), and `extract-zip` is
-  ACCEPTED WITH NO ACTION (puppeteer's browser-download path, never taken; no patch exists).
-  Four `fast-uri` advisories were cleared by a `pnpm` override the same day. **The old
-  acceptance sentence — "this
+  **`pnpm audit` is clean again, 8 September 2026.** *This block read "two advisories are
+  open, both dispositioned" from 4 September:* `sharp` <0.35 was DEFERRED (the art pipeline
+  decodes only our own committed art; a bump means regenerating and re-gating all 29 assets),
+  and `extract-zip` was ACCEPTED WITH NO ACTION (puppeteer's browser-download path, never
+  taken; no patch existed). The `sharp` bump was then TAKEN at exactly the cost the deferral
+  named, measured: 73 of 90 image files moved in pixels by resampling jitter, invisible, every
+  measured manifest field identical, the outputs regenerated and `--verify` green again
+  (`docs/SECURITY_NOTES.md`, "Rulings"). `extract-zip` left the lockfile with puppeteer-core
+  25 (#67). Four `fast-uri` advisories were cleared by a `pnpm` override on 4 September. The
+  clean state is a fact about today's lockfile, not a property; the re-check rule below
+  stands. **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
