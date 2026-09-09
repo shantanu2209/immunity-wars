@@ -476,6 +476,24 @@ alternatives side by side is what it is for, and iterating one version in code i
 Gate 2 is a visual approval given explicitly, so the round that seeks it is exactly where
 alternatives are worth generating rather than converged on.
 
+## P2.6 IS CLOSED
+
+[`P2_6_CLOSEOUT.md`](P2_6_CLOSEOUT.md), 9 September 2026. This note is superseded by it, in the
+usual discipline, and is kept as the running record of how each piece got there.
+
+**The last two rulings, applied here:** the window hint is **dropped** and its sentence is
+**screen copy on the difficulty screen** instead (options B and C together). The distinction is
+the point: it fires on sight and is read once by everyone, so calling it a hint would have been
+the exception the hint rule exists to avoid. It is there because a hint could not do the job at
+all: the effects strip already says the same thing, but only after the window closes, and the
+windows are 15, 20 and 30 turns, so a newcomer losing on turn 8 was never told.
+
+⚠️ **One correction to the ruling's premise, stated rather than smoothed over:** it said to word
+it "beside the window length that is already there". **The window length is not on the difficulty
+screen** — the three descriptions name the feel, not the numbers, and Help section 10 carries the
+figures. So the line is written to stand without a number, under the heading. Adding the per
+difficulty window lengths to that screen is available and is not taken here.
+
 ## What is next
 
 **Onboarding is DONE** (piece 8): the ruled shape was first-encounter hints, and they are built.
@@ -490,5 +508,5 @@ The hints as built satisfy it by construction: they are not a tutorial, they do 
 they never require dismissal to continue, and a player who ignores every one of them can finish a
 game. The per-turn cap of two is the same constraint expressed as a number.
 
-**What remains in P2.6:** Kartik's corrections to the eighteen splits, which are content edits;
-the window hint's trigger, reported and not built; and the closeout.
+**P2.6 is done.** What travels on: Kartik's corrections to the seventeen splits, which are content
+edits; and Gate 2, which is P2.7's.

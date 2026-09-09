@@ -464,5 +464,6 @@
   "settings.hintsReason": "You have not seen any yet",
   "settings.hintsConfirmTitle": "Show first time hints again?",
   "settings.hintsConfirmBody": "The short lines that explain a cell or an invader the first time you tap it will appear again. Your saved game and your settings are not touched.",
-  "settings.hintsConfirmYes": "Show them again"
+  "settings.hintsConfirmYes": "Show them again",
+  "difficulty.goal": "New infections stop arriving after a set number of turns. Surviving that is not the win: you win by clearing the body."
 }

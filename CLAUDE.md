@@ -169,6 +169,25 @@ contract Task B was measured against.
   in a place the walk was not looking (twelve text runs per "screen", the totals still zero).
   None of the three was a product defect and none would have been found from the verdict.
 
+  **A QUESTION TO ASK OF EVERY NEW SURFACE, added 9 September 2026 (`docs/FINDINGS.md` #66):
+  does this screen consume something when it is shown?** If it does, every instrument that
+  visits it more than once needs that something reset, and the failure when it is not is a
+  silent green. It is written as a question rather than a rule on purpose — it is asked, not
+  obeyed. The first-encounter hints appear once per thing ever, so the audit's four passes,
+  sharing one browser profile, measured a screen that the FIRST pass had legitimately consumed:
+  the walk was right, the app was fine, and there was no defect anywhere to find. Only the
+  `NOT REACHED` convention made it visible, because an omitted row and a clean row look the
+  same in a list.
+
+- **PLAYER TEXT INSIDE `packages/engine/src` IS NOT EDITABLE FOR STYLE. It is state the corpus
+  compares byte for byte against legacy, so changing it breaks the project's primary oracle.**
+  Ruled 9 September 2026, when "+1" replaced "one more" across the UI catalogue and two engine
+  log lines carrying the same phrasing were left alone. **A phrasing preference is never worth
+  re-baselining the thing that tells you the rewrite did not change the rules** — and if the
+  same thing comes up again, refuse it the same way and say why. A wording change that must
+  reach engine text is a deliberate, isolated engine change measured against the corpus, which
+  is a different piece of work from a style pass.
+
 - **Build what the task specifies. For anything beyond it, the test is PURPOSE, not cost:**
   does this make later work faster or safer, or is it completeness for its own sake? Build the
   first kind freely — the negative-control rule qualifies, because it catches a *class* of error
