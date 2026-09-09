@@ -38,27 +38,7 @@ import { Fragment, type CSSProperties, type ReactElement } from 'react';
 import { t } from '../i18n';
 import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
 import { RichText } from '../panels/LogPanel';
-
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '0.9375rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
-  padding: '8px 14px',
-  textAlign: 'left',
-};
-
-const P: CSSProperties = {
-  fontSize: '0.9375rem',
-  lineHeight: 1.45,
-  color: '#2E2A28',
-  margin: '10px 0',
-};
+import { BACK, BODY as P, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
 const NAME: CSSProperties = { fontWeight: 700 };
 const EXAMPLE: CSSProperties = {
   ...P,
@@ -333,15 +313,15 @@ export function HelpScreen({
 }): ReactElement {
   if (section === null) {
     return (
-      <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }} data-screen="help">
-        <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('help.title')}</h2>
-        <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('help.index.lead')}</p>
+      <div style={PAGE} data-screen="help">
+        <h1 style={TITLE}>{t('help.title')}</h1>
+        <p style={LEAD}>{t('help.index.lead')}</p>
         {HELP_SECTION_KEYS.map((k, i) => (
-          <button key={k} style={BTN} onClick={() => onOpen(k)} data-help-section={k}>
+          <button key={k} style={ROW_BTN} onClick={() => onOpen(k)} data-help-section={k}>
             {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
           </button>
         ))}
-        <button style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }} onClick={onBack}>
+        <button style={BACK} onClick={onBack}>
           {t('help.back')}
         </button>
       </div>
@@ -350,20 +330,18 @@ export function HelpScreen({
   const i = HELP_SECTION_KEYS.indexOf(section);
   const next = HELP_SECTION_KEYS[i + 1] ?? null;
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }} data-screen="help">
-      <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>
+    <div style={PAGE} data-screen="help">
+      <h1 style={TITLE}>
         {t('help.number', { n: i + 1 })} {t(`help.${section}.title`)}
-      </h2>
+      </h1>
       {sectionBody(section)}
       {/* The rulebook's "why it works this way" boxes that belong to this section, by the
           content pack's own mapping; they live in the library and link back here. */}
       {WHY.filter((w) => w.help === section).length > 0 ? (
         <section style={{ marginTop: 16 }} data-help-why="">
-          <h3 style={{ fontSize: '0.875rem', color: '#78665D', margin: '0 0 4px' }}>
-            {t('help.whyLink')}
-          </h3>
+          <h2 style={GROUP}>{t('help.whyLink')}</h2>
           {WHY.filter((w) => w.help === section).map((w) => (
-            <button key={w.key} style={BTN} onClick={() => onWhy(w.key)}>
+            <button key={w.key} style={ROW_BTN} onClick={() => onWhy(w.key)}>
               {t(`library.why.${w.key}.title`)}
             </button>
           ))}
@@ -374,10 +352,7 @@ export function HelpScreen({
           {t('help.next')}
         </button>
       ) : null}
-      <button
-        style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }}
-        onClick={() => onOpen(null)}
-      >
+      <button style={BACK} onClick={() => onOpen(null)}>
         {t('help.toIndex')}
       </button>
     </div>

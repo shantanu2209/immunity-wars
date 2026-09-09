@@ -31,64 +31,41 @@
  * RIGHTS RESERVED by decision, which is the answer a teacher reading this needs to see. The
  * classroom sentence is kept because it is the one thing on this screen a reader might act on.
  */
-import type { CSSProperties, ReactElement } from 'react';
+import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
-
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 16,
-  padding: '8px 14px',
-};
-const H2: CSSProperties = {
-  fontSize: '1.0625rem',
-  color: '#B03A2E',
-  margin: '22px 0 6px',
-};
-const P: CSSProperties = {
-  fontSize: '0.9375rem',
-  lineHeight: 1.45,
-  color: '#2E2A28',
-  margin: '8px 0',
-};
+import { BACK, BODY, PAGE, SECTION, TITLE } from './chrome';
 
 export function AboutScreen({ onBack }: { onBack: () => void }): ReactElement {
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: '1.5rem', color: '#B03A2E' }}>{t('about.title')}</h1>
-      <p style={P}>{t('about.lead')}</p>
+    <div style={PAGE} data-screen="about">
+      <h1 style={TITLE}>{t('about.title')}</h1>
+      <p style={BODY}>{t('about.lead')}</p>
 
-      <h2 style={H2}>{t('about.credits')}</h2>
-      <p style={P}>
+      <h2 style={SECTION}>{t('about.credits')}</h2>
+      <p style={BODY}>
         <b>{t('about.design')}</b> {t('about.designBody')}
       </p>
-      <p style={P}>
+      <p style={BODY}>
         <b>{t('about.direction')}</b> {t('about.directionBody')}
       </p>
-      <p style={P}>
+      <p style={BODY}>
         <b>{t('about.code')}</b> {t('about.codeBody')}
       </p>
 
-      <h2 style={H2}>{t('about.recognition')}</h2>
-      <p style={P}>{t('about.prize')}</p>
-      <p style={P}>{t('about.showcase')}</p>
+      <h2 style={SECTION}>{t('about.recognition')}</h2>
+      <p style={BODY}>{t('about.prize')}</p>
+      <p style={BODY}>{t('about.showcase')}</p>
 
-      <h2 style={H2}>{t('about.privacy')}</h2>
-      <p style={P}>{t('about.privacyBody')}</p>
+      <h2 style={SECTION}>{t('about.privacy')}</h2>
+      <p style={BODY}>{t('about.privacyBody')}</p>
 
-      <h2 style={H2}>{t('about.licence')}</h2>
-      <p style={P}>{t('about.licenceCode')}</p>
-      <p style={P}>{t('about.licenceContent')}</p>
-      <p style={P}>{t('about.classroom')}</p>
+      <h2 style={SECTION}>{t('about.licence')}</h2>
+      <p style={BODY}>{t('about.licenceCode')}</p>
+      <p style={BODY}>{t('about.licenceContent')}</p>
+      <p style={BODY}>{t('about.classroom')}</p>
 
-      <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onBack}>
+      <button style={BACK} onClick={onBack}>
         {t('about.back')}
       </button>
     </div>

@@ -104,10 +104,25 @@ a screen's layout, text or controls change.**
 | `no-dashes.test.ts` | no dashes in player text | its own control |
 | the equivalence corpus | the engine's behaviour and its 67-name root surface | the whole of Phase 1 |
 
-**The audit's numbers to beat, from the final P2.6 run:** 843 controls and 2,243 text runs across
-**44 screens** per pass (46 under SIZE200), every check **0**, no screen NOT REACHED, offline met.
+**What the audit must hold, every run:** **44 screens** per pass (46 under SIZE200), **no screen
+NOT REACHED**, every check **0**, **27 controls** all firing the right way, offline met.
 **Read the per-screen list, not the total** — four times in P2.6 a green total hid an unmeasured
 screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
+
+> ⚠️ **CORRECTED 9 September 2026, at P2.7's first change, by a control that fired on its first
+> run** ([`FINDINGS.md`](FINDINGS.md) **#68**). This paragraph read: *"The audit's numbers to beat,
+> from the final P2.6 run: 843 controls and 2,243 text runs across 44 screens per pass."*
+> **Two of those three numbers cannot be beaten or missed.** The walk plays a real, UNSEEDED game
+> — the engine has no seed injection point (#40) — so the card drawn and the dice differ every run,
+> and with them the counts. Measured: **two runs against the same build with no code change between
+> them gave 848 / 2,336 and 843 / 2,267**, and every screen in the delta was a play screen. The
+> screen COUNT is stable because the walk visits a fixed list; the counts WITHIN a screen are not,
+> because the game inside them is not the same game.
+>
+> The counts are still worth printing — a drop from 843 to 400 is not variance — but a threshold
+> they are not. Calling them one invited the dangerous reading rather than the merely costly one:
+> **a real loss of coverage dismissed as the variance everyone had learned to expect**, which is
+> #66's silent green with a sentence in this document holding the door open.
 
 ---
 

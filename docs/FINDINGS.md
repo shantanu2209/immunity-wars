@@ -3639,3 +3639,180 @@ that the totals also could not name.
 2. **An element handle held across a click detached**, once a tap could re-render the region it
    lived in, and threw the whole audit away rather than one step. An instrument defect. Handles
    are re-queried on every use now.
+
+## 68. Two of the audit's three "numbers to beat" cannot be beaten or missed: the walk plays an UNSEEDED game, so its control and text-run counts vary run to run on an unchanged build
+
+**Found on 9 September 2026, at the first change of P2.7**, by a run that came back green with
+different numbers from the ones the handover document said to hold. Recorded as an instrument
+finding under `CLAUDE.md`'s test — *does anything downstream depend on this being right?* — because
+what depended on it was the next person's judgement about whether a polish change had cost
+coverage.
+
+### What happened
+
+The P2.7 handover ([`for-P2.7.md`](for-P2.7.md)) carried, in bold: **"The audit's numbers to beat,
+from the final P2.6 run: 843 controls and 2,243 text runs across 44 screens per pass."** The first
+Gate 1 audit of P2.7, over a change that touched only inline style constants on four screens, came
+back **848 controls and 2,336 text runs** — every check 0, no screen NOT REACHED, 27 controls
+firing, offline met.
+
+A styling change cannot add 93 pieces of text. So either the change did something unintended, or
+the numbers are not what the document says they are.
+
+### The measurement that settled it, and it is the negative control for the claim
+
+**The audit was run twice against the same build with no code change between the runs.**
+
+| | run A | run B | delta |
+|---|---|---|---|
+| controls measured | 848 | **843** | −5 |
+| text runs measured | 2,336 | **2,267** | −69 |
+| screens per pass | 44 | 44 | 0 |
+| findings | 0 | 0 | 0 |
+
+Run B reproduced the handover's own figure of 843 exactly, from a build the handover had never
+seen. **The counts move on their own.**
+
+Every screen in the delta is a **play** screen — the reveal dialog, planning, the command screen
+and its sheets, the cell card, the pause sheet. Not one of the four Title-slot screens appeared in
+it. The cause is [#40](FINDINGS.md): the engine calls global `Math.random()` in six places with no
+injection point, and the walk plays a real game, so the card drawn, the dice and the spread differ
+every run — and a different card is a different number of text runs.
+
+### What is an invariant here and what is a sample
+
+The distinction is the whole finding, because the audit reports both kinds in one block of numbers
+and nothing marks which is which.
+
+| Invariant — hold it | Sample — do not hold it |
+|---|---|
+| **44 screens** per pass, 46 under SIZE200 | controls measured |
+| **no screen NOT REACHED** | text runs measured |
+| every check **0** | text runs scaled |
+| **27 controls** all firing the right way | |
+| **offline met** | |
+
+The screen COUNT is stable because the walk visits a fixed list of screens; the counts WITHIN a
+screen are not, because the game inside it is not the same game.
+
+### Why the wording mattered rather than being pedantry
+
+"Numbers to beat" invites two errors and it is the second one that is dangerous:
+
+1. A count that came back lower is read as a regression, and someone spends a session chasing a
+   phantom. Costly, and self-correcting.
+2. **A count that came back lower for a real reason — a screen quietly losing half its controls —
+   is dismissed as the variance everyone has learned to expect.** That is #66's silent green with
+   a new door into it, and this time the door was held open by a sentence in the handover.
+
+### The fix
+
+The handover's sentence is corrected in place and marked, in the discipline this repository uses
+for every other corrected claim; [`GATE1_AUDIT.md`](GATE1_AUDIT.md) gains the measured variance
+beside the run it records, so its table is read as one sample rather than a floor. **The counts are
+still worth printing** — a drop from 843 to 400 is not variance — so what changed is what they are
+called, not whether they are reported.
+
+**Seeding the walk is NOT the fix, and cannot be one here.** It would need a seed injection point
+in the engine, which is [#40](FINDINGS.md) and an engine change, and engine changes are Phase 3's
+(`PHASE2_BRIEF.md` §7). The honest instrument is one whose numbers are labelled for what they are.
+
+### Found alongside, and not fixed because the fix is not mine to guess
+
+**`#67` is cited by `CLAUDE.md` and [`SECURITY_NOTES.md`](SECURITY_NOTES.md) and does not exist in
+this file.** Both cite it for the same thing — `extract-zip` leaving the lockfile with the
+puppeteer-core 25 bump, 7 September 2026 — so the entry was described twice and never written.
+`pnpm docs:check` cannot see it: it resolves relative markdown links, and a bare `#67` in prose is
+neither. Reported rather than invented, because what the entry was meant to say is Shantanu's to
+supply. **This finding is numbered 68 rather than 67 on purpose**, so that the two existing
+citations do not acquire a second meaning.
+
+## 69. A service worker that fails to register takes the whole app down, permanently: the app starts, then a non-fatal background failure replaces it with the crash screen, and the crash screen's only exit reloads into the same failure
+
+**Found 9 September 2026, at P2.7's first change**, by opening the shipped build in a browser that
+could not fetch `/sw.js`. A **product** defect under `CLAUDE.md`'s rule, so it is filed rather than
+fixed inline — but it is filed with a qualification on a published claim, which is why it is written
+out in full rather than listed.
+
+### What happens, in order
+
+1. The app loads and **mounts correctly**. The Title screen renders.
+2. On the window's `load` event, the injected registration script runs.
+3. `navigator.serviceWorker.register('/sw.js')` **rejects**.
+4. Nothing catches it, so it surfaces as an `unhandledrejection` on `window`.
+5. `ErrorBoundary` listens for exactly that (`ErrorBoundary.tsx:98`) and takes it as a crash.
+6. The Title screen is replaced by **"Something went wrong / There was no game in progress."**
+7. The only control is **Back to the title**, which by ruling **reloads** — and the reload repeats
+   steps 1 to 6.
+
+**Observed, not reasoned:** the loop was driven twice and came back to the crash screen both times.
+The wording of step 6 is itself the proof of step 1 — the boundary could only know there was no game
+in progress because the shell had already mounted and told it so.
+
+### The generated registration has no `catch`, and it is not ours
+
+`packages/app/dist/registerSW.js`, emitted by `vite-plugin-pwa` under `injectRegister: 'auto'`:
+
+```js
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/sw.js', { scope: '/' })})}
+```
+
+A floating promise. The boundary is doing exactly what it was built to do — `for-P2.6-errors.md`
+§2.1 added the two window listeners **because** React boundaries miss errors outside render, and
+that reasoning is still right. The defect is the pairing: **a broad listener plus an uncaught
+background promise means any failure anywhere in the page becomes a fatal application crash.**
+
+### Why this is wrong on the merits, and not merely inconvenient
+
+**Failing to become offline-capable is not a crash.** Every one of the game's rules, screens and
+saves works without a service worker; what is lost is precaching, and the honest consequence of
+losing it is that the next visit needs the network. The app's response to "you will not work
+offline" is currently "you will not work at all."
+
+### What actually triggers it, stated at the size it deserves
+
+The trigger observed here was environmental — a sandboxed browser whose proxy refused the script
+("An unknown error occurred when fetching the script"). **The response, however, is the product's,
+and it is identical for every cause.** Real ones exist: a first visit where `/sw.js` fails to fetch
+on a flaky connection (the school-wifi case the offline work exists for), Firefox private browsing,
+a browser with site data blocked, an exhausted storage quota.
+
+⚠️ **The S25 pass was NOT affected, and the reason is worth recording because it is also the reason
+nobody had seen this.** `vite preview --host` reached from the phone by LAN IP is an **insecure
+context**, where `navigator.serviceWorker` is not exposed at all — so the `'serviceWorker' in
+navigator` guard is false, nothing registers, nothing rejects, and nothing crashes. The phone was
+never offline-capable in those sessions and was never at risk from this either. *That is a platform
+rule rather than something measured on his handset, and is marked as such.*
+
+### Why no check caught it, and the half of that which is an instrument gap
+
+`pnpm gate1:audit` carries the control **"an ordinary load shows no crash screen"**, and it passes.
+It passes honestly: in the audit's own browser, on localhost, with a normal profile, the worker
+registers, so **the failing condition never occurs in the instrument's environment.** The offline
+arm then measures the path where the worker is *active* — it reports `serviceWorker: "active"` —
+so the registration-failure path is not merely unchecked, it is the one state the offline check
+cannot be in.
+
+> **The shape, which is #66's with the polarity flipped.** #66 was a screen the instrument could
+> not see because a previous pass had consumed it. This is a state the instrument cannot enter
+> because its environment is too healthy. Both are green totals over something unmeasured.
+
+**An audit arm for it is a gap and not a stop-the-line correction:** the instrument is not wrong
+about what it measured, it simply does not measure this. Noted here rather than built, per
+`PHASE2_BRIEF.md` §6's rule on additions.
+
+### The qualification on a published claim, which is Shantanu's to rule on
+
+[`P2_6_CLOSEOUT.md`](P2_6_CLOSEOUT.md) and [`for-P2.7.md`](for-P2.7.md) both state that **Gate 1's
+capability bar is met**, and Gate 1 contains *"No unreachable state: no dead end, no control that
+does nothing, no screen without an exit"* and *"Works offline, fully"*. Under a registration
+failure the app has a dead end whose only exit returns to it. **Neither document is edited by this
+entry**: whether the claim needs qualifying, and in what words, is a ruling and not a repair.
+
+### The fix, when it is taken
+
+Catch the registration failure — `injectRegister: false` with a registration in the shell that
+handles rejection, or `injectRegister: 'script'` over a script that does. **Not** by narrowing the
+boundary's `unhandledrejection` listener, which would trade this defect for the class of real
+crashes §2.1 added the listener to catch. A control is owed in both directions: a registration
+failure must NOT reach the crash screen, and a genuine unhandled rejection must still reach it.

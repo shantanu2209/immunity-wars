@@ -151,6 +151,18 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 | **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 2,267 text runs across 46 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
 | **Offline** | — | first visit online, then the network cut, at Standard | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
 
+> ⚠️ **THE COUNTS IN THIS TABLE ARE ONE SAMPLE, NOT A FLOOR — measured 9 September 2026 at
+> P2.7's first change** ([`FINDINGS.md`](FINDINGS.md) **#68**). The walk plays a real, **unseeded**
+> game: the engine has no seed injection point (#40), so the card drawn, the dice and the spread
+> differ on every run, and the number of controls and text runs differs with them. **Two runs
+> against the same build with no code change between them gave 848 controls / 2,336 text runs and
+> 843 / 2,267**, and every screen in the delta was a play screen — no Title-slot screen moved.
+>
+> **What is invariant, and is what a run must hold:** 44 screens per pass (46 under SIZE200), no
+> screen NOT REACHED, every check 0, 27 controls all firing the right way, offline met. **What is a
+> sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
+> a drop of 5 is the deck.
+
 *Updated at the P2.6 CLOSE, 9 September 2026: the final run is 843 controls and 2,243 text runs
 across 44 screens (46 under SIZE200), with **27 controls** rather than 24 — three of them the
 error boundary's, two that fire and one that passes, driven on a real browser rather than a DOM

@@ -21,19 +21,7 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '0.9375rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
-  padding: '8px 14px',
-};
+import { BACK, BTN, GROUP, PAGE, TITLE } from './chrome';
 
 const ROW: CSSProperties = {
   display: 'flex',
@@ -221,17 +209,15 @@ export function SettingsScreen({
     );
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }} data-screen="settings">
-      <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('settings.title')}</h2>
+    <div style={PAGE} data-screen="settings">
+      <h1 style={TITLE}>{t('settings.title')}</h1>
       {groups.map((g) => (
         <section key={g.labelKey} style={{ marginTop: 20 }}>
-          <h3 style={{ fontSize: '0.875rem', color: '#78665D', margin: '0 0 4px' }}>
-            {t(g.labelKey)}
-          </h3>
+          <h2 style={GROUP}>{t(g.labelKey)}</h2>
           {g.rows.map(renderRow)}
         </section>
       ))}
-      <button style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }} onClick={onBack}>
+      <button style={BACK} onClick={onBack}>
         {t('settings.back')}
       </button>
       {confirming ? (
@@ -258,7 +244,7 @@ export function SettingsScreen({
           >
             <p style={{ fontSize: '0.9375rem' }}>{t(confirmRow?.confirmKey ?? '')}</p>
             <button
-              style={{ ...BTN, textAlign: 'center', borderColor: '#B03A2E' }}
+              style={{ ...BTN, borderColor: '#B03A2E' }}
               onClick={() => {
                 setConfirming(null);
                 confirmRow?.onAct();
@@ -267,7 +253,7 @@ export function SettingsScreen({
             >
               {t(confirmRow?.confirmYesKey ?? '')}
             </button>
-            <button style={{ ...BTN, textAlign: 'center' }} onClick={() => setConfirming(null)}>
+            <button style={BTN} onClick={() => setConfirming(null)}>
               {t('settings.deleteSaveKeep')}
             </button>
           </div>
