@@ -61,7 +61,19 @@ type Row =
       options: readonly string[];
       value: string;
     }
-  | { kind: 'action'; key: string; labelKey: string };
+  | {
+      kind: 'action';
+      key: string;
+      labelKey: string;
+      /** Why the row is disabled, or null when it can be used. */
+      blockedKey: string | null;
+      /** The confirm's three strings and what it does. Generalised on 9 September 2026, when
+       *  the hints row became the SECOND action row: the first was written straight into the
+       *  renderer, which is exactly the shape the rows table exists to avoid. */
+      confirmKey: string;
+      confirmYesKey: string;
+      onAct: () => void;
+    };
 
 interface Group {
   labelKey: string;
@@ -76,6 +88,8 @@ export function SettingsScreen({
   onChoose,
   deleteSaveBlock,
   onDeleteSave,
+  hintsSeenAny,
+  onResetHints,
   onBack,
 }: {
   /** The text size in force and the sizes offered (percentages of the browser default). */
@@ -89,9 +103,12 @@ export function SettingsScreen({
   /** Why the delete row is disabled, or null when a save exists and is not being played. */
   deleteSaveBlock: DeleteSaveBlock;
   onDeleteSave: () => void;
+  /** True when this device has seen at least one hint; the row is disabled otherwise. */
+  hintsSeenAny: boolean;
+  onResetHints: () => void;
   onBack: () => void;
 }): ReactElement {
-  const [confirming, setConfirming] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const groups: readonly Group[] = [
     {
@@ -115,7 +132,31 @@ export function SettingsScreen({
     },
     {
       labelKey: 'settings.groupProgress',
-      rows: [{ kind: 'action', key: 'deleteSave', labelKey: 'settings.deleteSave' }],
+      rows: [
+        {
+          kind: 'action',
+          key: 'deleteSave',
+          labelKey: 'settings.deleteSave',
+          blockedKey:
+            deleteSaveBlock === 'inPlay'
+              ? 'settings.deleteSaveInPlay'
+              : deleteSaveBlock === 'none'
+                ? 'settings.deleteSaveNone'
+                : null,
+          confirmKey: 'settings.deleteSaveConfirm',
+          confirmYesKey: 'settings.deleteSaveDo',
+          onAct: onDeleteSave,
+        },
+        {
+          kind: 'action',
+          key: 'resetHints',
+          labelKey: 'settings.hintsShow',
+          blockedKey: hintsSeenAny ? null : 'settings.hintsReason',
+          confirmKey: 'settings.hintsConfirmBody',
+          confirmYesKey: 'settings.hintsConfirmYes',
+          onAct: onResetHints,
+        },
+      ],
     },
   ];
 
@@ -153,28 +194,31 @@ export function SettingsScreen({
         </div>
       );
     }
-    const blocked = deleteSaveBlock !== null;
+    const blocked = row.blockedKey !== null;
     return (
       <div key={row.key} style={{ ...ROW, display: 'block' }} data-settings-row={row.key}>
         <button
           style={{ ...BTN, marginTop: 0, borderColor: blocked ? '#94847A' : '#B03A2E' }}
           disabled={blocked}
-          onClick={() => setConfirming(true)}
+          onClick={() => setConfirming(row.key)}
         >
           {t(row.labelKey)}
         </button>
-        {blocked ? (
+        {row.blockedKey ? (
           <p style={{ fontSize: '0.8125rem', color: '#78665D', margin: '6px 0 0' }}>
-            {t(
-              deleteSaveBlock === 'inPlay'
-                ? 'settings.deleteSaveInPlay'
-                : 'settings.deleteSaveNone',
-            )}
+            {t(row.blockedKey)}
           </p>
         ) : null}
       </div>
     );
   };
+
+  /** The row the confirm belongs to. Both action rows use the same dialog with their own words. */
+  const confirmRow = groups
+    .flatMap((g) => g.rows)
+    .find(
+      (r): r is Extract<Row, { kind: 'action' }> => r.kind === 'action' && r.key === confirming,
+    );
 
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }} data-screen="settings">
@@ -212,17 +256,18 @@ export function SettingsScreen({
               boxSizing: 'border-box',
             }}
           >
-            <p style={{ fontSize: '0.9375rem' }}>{t('settings.deleteSaveConfirm')}</p>
+            <p style={{ fontSize: '0.9375rem' }}>{t(confirmRow?.confirmKey ?? '')}</p>
             <button
               style={{ ...BTN, textAlign: 'center', borderColor: '#B03A2E' }}
               onClick={() => {
-                setConfirming(false);
-                onDeleteSave();
+                setConfirming(null);
+                confirmRow?.onAct();
               }}
+              data-settings-confirm=""
             >
-              {t('settings.deleteSaveDo')}
+              {t(confirmRow?.confirmYesKey ?? '')}
             </button>
-            <button style={{ ...BTN, textAlign: 'center' }} onClick={() => setConfirming(false)}>
+            <button style={{ ...BTN, textAlign: 'center' }} onClick={() => setConfirming(null)}>
               {t('settings.deleteSaveKeep')}
             </button>
           </div>

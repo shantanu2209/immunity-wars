@@ -61,6 +61,20 @@ import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { CommandBar } from '../panels/CommandBar';
 import { InspectSheet } from '../panels/InspectSheet';
+import { HintLine } from '../panels/HintLine';
+import {
+  ANTIBODY_SUBJECT,
+  RESIDENT_SUBJECT,
+  cellSubject,
+  contact,
+  dismiss,
+  hintKey,
+  hintPlace,
+  initialHintState,
+  invaderSubject,
+  type HintState,
+  type HintSubject,
+} from '../hints/controller';
 import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
 import { CellCard, type CellCardSubject } from '../panels/CellCard';
 import { unavailableText } from '../panels/InspectSheet';
@@ -139,8 +153,17 @@ export function PlayScreen({
   onTransition,
   onGameEnd,
   renderControls,
+  hintsSeen = [],
+  onHintsSeen,
 }: {
   session: PlaySessionLike;
+  /**
+   * FIRST-ENCOUNTER HINTS. The seen set is the shell's to persist — this screen decides WHEN a
+   * hint fires and never touches storage, the same division as everywhere else here.
+   * Omitting both props turns hints off entirely, which is what the dev shell does.
+   */
+  hintsSeen?: readonly HintSubject[];
+  onHintsSeen?: (seen: readonly HintSubject[]) => void;
   artMetrics?: ArtMetrics;
   /** Ignore bursts, render authoritative views only — the reconnection rehearsal. */
   skipBursts?: boolean;
@@ -424,6 +447,51 @@ export function PlayScreen({
       blocked: p.blocked,
     }));
   const selectedFamily = authView.selection.family;
+
+  /**
+   * FIRST CONTACT, derived from what is SELECTED rather than intercepted at each tap handler.
+   *
+   * The two are the same moment — a tap sets the selection — and deriving it means the four tap
+   * paths (the strip, the board, the sheet, deselection) cannot drift apart, and a fifth added
+   * later is covered without anyone remembering. `null` is a real answer: it means the player
+   * moved to something with no hint, which CONSUMES whatever was showing (see the controller).
+   *
+   * Order matters where two are true at once. The sheet is checked first because opening it is
+   * the more recent tap, and most recent wins (ruling 3).
+   */
+  const hintSubject: HintSubject | null = inspect?.invaders?.[0]
+    ? invaderSubject(inspect.invaders[0].type)
+    : selectedCell
+      ? cellSubject(selectedCell)
+      : selectedResident
+        ? RESIDENT_SUBJECT
+        : selectedFamily
+          ? ANTIBODY_SUBJECT
+          : null;
+  const turnNow = Number(game['turn'] ?? 0);
+  const hintsRef = useRef<HintState>(initialHintState(hintsSeen, turnNow));
+  const [hintShown, setHintShown] = useState<HintSubject | null>(null);
+  const applyHints = (next: HintState): void => {
+    const grew = next.seen.length !== hintsRef.current.seen.length;
+    hintsRef.current = next;
+    setHintShown(next.shown);
+    // Persisting is the shell's, and only when the set actually grew: a write per render would
+    // be a write per frame of a spread.
+    if (grew) onHintsSeen?.(next.seen);
+  };
+  useEffect(() => {
+    applyHints(contact(hintsRef.current, hintSubject, turnNow));
+    // The inputs are the subject and the turn, deliberately. `applyHints` reads the current
+    // state through a ref rather than closing over it, so re-running on anything else would
+    // re-contact the same subject and cost a spurious consumption.
+  }, [hintSubject, turnNow]);
+  const hintFor = (place: 'pieces' | 'inspect' | 'antibodies'): ReactElement | null =>
+    hintShown && hintPlace(hintShown) === place ? (
+      <HintLine
+        text={t(hintKey(hintShown))}
+        onDismiss={() => applyHints(dismiss(hintsRef.current))}
+      />
+    ) : null;
   const rawDetail = authView.scoped.productionDetail as Record<string, unknown> | null;
   const familyDetail: FamilyDetail | null = rawDetail
     ? {
@@ -823,6 +891,7 @@ export function PlayScreen({
             onSelectResident={tapResident}
             onDeselect={deselect}
           />
+          {hintFor('pieces')}
           <AntibodyPanel
             rows={familyRows}
             selectedFamily={selectedFamily}
@@ -834,10 +903,12 @@ export function PlayScreen({
             }
             onProduce={sendOffer}
           />
+          {hintFor('antibodies')}
           <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
           <LiveLog store={frameStore} game={game} />
           {inspect ? (
             <InspectSheet
+              hint={hintFor('inspect')}
               info={inspect}
               selectedCell={selectedCell}
               disabled={playing}

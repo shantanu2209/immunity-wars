@@ -57,6 +57,9 @@ function memoryStore(
     setItem: (k, v) => {
       data[k] = v;
     },
+    removeItem: (k) => {
+      delete data[k];
+    },
   };
 }
 
@@ -95,6 +98,9 @@ describe('readSettings / writeSettings', () => {
     const throwing: KeyValueStore = {
       getItem: () => {
         throw new Error('private mode');
+      },
+      removeItem: () => {
+        throw new Error('blocked');
       },
       setItem: () => {
         throw new Error('quota');

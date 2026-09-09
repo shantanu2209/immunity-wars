@@ -44,6 +44,11 @@ export const SETTINGS_KEY = 'immunity-wars.settings';
 export interface KeyValueStore {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  /** Added 9 September 2026 for the hints store, which CLEARS its key rather than writing an
+   *  empty record: a device whose hints were reset should be indistinguishable from one that
+   *  has never played, so there is no third state to get subtly wrong. Settings itself never
+   *  removes anything — deleting a saved game leaves preferences alone, by ruling. */
+  removeItem(key: string): void;
 }
 
 /** Reads the settings, synchronously. Anything malformed, missing or of another version is
