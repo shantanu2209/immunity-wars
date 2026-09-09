@@ -136,20 +136,34 @@ checks that they can be read.
 Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 36 screens, and 38
 under the app's own text size (the two Settings bookends where it is chosen and reset); every
 row's width and root font size are the instrument's own readings, recorded per screen in the
-JSON. Twenty-four controls fired the right way first. Every pass reached every screen,
+JSON. Twenty-four controls fired the right way first (twenty-seven at the P2.6 close). Every pass reached every screen,
 including the inspect sheet, all twelve Help screens, the library's three and the Result, read
 from the per-screen list rather than the totals; no NOT REACHED line.
 
 | Check | Mechanism it models | Measured | Findings |
 |---|---|---|---|
-| Touch targets ≥ 44 × 44 CSS px | — | 712 controls across 36 screens at 360 px | **0** |
-| Text contrast (4.5:1, 3:1 large) | — | 1,965 text runs | **0** |
-| Non-text contrast (3:1, control boundaries) | — | 712 controls | **0** |
-| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 1,955 text runs across 36 screens, root 32 px at 360 px | **0** unscaled |
-| Layout under FONT200 | the default-font-size preference | 36 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
-| **Layout under ZOOM200** | Chrome for Android's page zoom | 36 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
-| **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 1,957 text runs across 38 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
+| Touch targets ≥ 44 × 44 CSS px | — | 843 controls across 44 screens at 360 px | **0** |
+| Text contrast (4.5:1, 3:1 large) | — | 2,243 text runs | **0** |
+| Non-text contrast (3:1, control boundaries) | — | 843 controls | **0** |
+| **Text scales at 200%** (≥ 1.9× per run) | FONT200: the default-font-size preference | 2,259 text runs across 44 screens, root 32 px at 360 px | **0** unscaled |
+| Layout under FONT200 | the default-font-size preference | 44 screens at 360 px, root 32 px | **0**: no overflow, no control off-screen, nothing clipped |
+| **Layout under ZOOM200** | Chrome for Android's page zoom | 44 screens at 180 px, root 16 px, device scale 2 | **0**: no overflow, no control off-screen, nothing clipped |
+| **Text scales and lays out under SIZE200** | the app's own text size, chosen through the real control | 2,267 text runs across 46 screens, root 32 px at 360 px, after a reload | **0** unscaled, **0** layout, **0** disagreements between the pressed option, the store and the rendered root |
 | **Offline** | — | first visit online, then the network cut, at Standard | **MET**: service worker active; a turn played with 0 of 14 images broken and 0 failed requests; a reload with no network rendered the app and played a full turn (all eight steps, turn 2, 14 images, 0 broken, 0 failed) |
+
+*Updated at the P2.6 CLOSE, 9 September 2026: the final run is 843 controls and 2,243 text runs
+across 44 screens (46 under SIZE200), with **27 controls** rather than 24 — three of them the
+error boundary's, two that fire and one that passes, driven on a real browser rather than a DOM
+shim because the event and promise routes are what a shim models least faithfully. The screens
+added since the library: About, the crash screen and its details line, a card carrying a why
+link and the why page reached from it, a first-encounter hint and its dismissal, and the hints
+reset confirm.*
+
+*⚠️ The hint is the one screen in this walk whose whole nature is to appear ONCE, and the four
+passes share one browser profile, so the first pass consumed it and the other three measured a
+screen that was not there. The walk now clears the hints key at the top of every pass. Found by
+the per-screen list; the totals stayed green throughout, because an absent screen contributes no
+findings. `FINDINGS.md` #66.*
 
 *The piece 3 run read 428 controls and 1,111 text runs across 33 screens; the difference is
 the library (268 controls and 813 text runs across its three screens: the index alone is 118
