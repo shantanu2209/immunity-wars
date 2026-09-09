@@ -3564,3 +3564,78 @@ Seven tests, four of them controls, on synthetic documents: `tools/legacy/` is r
 rule, so a control that mutated the legacy UI file to break the mapping is not available even
 temporarily. Both defects in the checking logic were found by those controls before the change
 landed — see #64's fourth claim.
+
+---
+
+## 66. A screen whose whole nature is to appear ONCE is the one screen a shared browser profile can hide, and no total can say so
+
+**Found by the Gate 1 audit's per-screen list on 9 September 2026**, the first run over the
+first-encounter hints, and recorded as its own instance at Shantanu's direction rather than as a
+fourth tick against the read-the-coverage rule. It is a narrower and sharper thing than the three
+that preceded it in this sub-phase.
+
+### What happened
+
+The audit walks the app four times, once per text-scaling mechanism. The hint appeared under the
+base pass and came back **NOT REACHED under all three scaled passes**.
+
+The cause is that the four passes **share one browser profile**, so they share `localStorage`.
+The hint's entire specification is that it appears **once per thing, ever**: the first pass
+contacted the subject, the hint fired, the walk dismissed it, and the seen set was written. The
+three passes after it were then measuring a screen that could not exist.
+
+### Why this is not just another instance of "read the coverage"
+
+The three earlier catches in P2.6 were of screens the walk *failed to reach* — the inspect sheet
+reached only when the deck co-operated, a Continue button the walk could not click, an overwrite
+confirm in a place the walk was not looking. In each, the walk was wrong and the app was fine.
+
+**Here the walk was right and the app was fine.** The tap happened, the code ran, the state was
+correct. The screen was absent because **the previous pass had legitimately consumed it**, which
+is the feature working exactly as specified. There is no defect anywhere to find.
+
+> **The general shape: a once-only surface is invisible to any instrument that runs more than
+> once against shared state, and it is invisible in the way that looks most like success.** Every
+> total stays green, because a screen that does not exist contributes no findings. A clean sweep
+> over three passes that measured nothing is indistinguishable, from the totals, from a clean
+> sweep over three passes that measured everything.
+
+The audit's `scale`, `contrast` and `touch` counts were all zero across those passes, and would
+have stayed zero if the hint had been unreadable, mis-sized, or invisible against its background
+at 200% text.
+
+### The one line that made it visible
+
+`NOT REACHED` in the per-screen list — a deliberate finding pushed for a screen the walk could not
+open, rather than an omitted row. That convention was added in P2.6's first piece for the inspect
+sheet, and it is the only reason this was seen at all. **An omitted row and a clean row look the
+same in a list; a NOT REACHED row does not.**
+
+### The fix, and what generalises
+
+The walk clears the hints key at the top of every pass, through the app's own storage key rather
+than by wiping storage, so the save the later steps depend on survives. Recorded in the walk
+beside the clear.
+
+**What generalises is a question to ask of any new surface**, and it is cheaper asked than found:
+
+> **Does this screen consume something when it is shown?** If it does, every instrument that
+> visits it more than once needs that something reset, and the failure mode when it is not is a
+> silent green.
+
+Candidates already in this app: the goal dialog on a first game, the overwrite confirm, anything
+gated on the memory of a previous visit. Two of those three have already produced a walk defect
+in this sub-phase, which suggests the question is worth asking as a habit rather than as a rule.
+
+### Two more defects on the same run, both in the product and both fixed inline
+
+Recorded together because they came from the same list and one of them is a real product defect
+that the totals also could not name.
+
+1. **Help's `Named` helper serves eight entries that are NOT split into hint and rest**, and
+   composing there rendered their catalogue key names into the page, which overflowed the layout
+   at 200% text. **The totals said two layout findings and named neither screen**; the per-screen
+   list named sections 2 and 3 immediately. A product defect, caught before it landed.
+2. **An element handle held across a click detached**, once a tap could re-render the region it
+   lived in, and threw the whole audit away rather than one step. An instrument defect. Handles
+   are re-queried on every use now.
