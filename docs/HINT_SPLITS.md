@@ -1,7 +1,9 @@
 # The hint splits
 
-> ✅ **APPROVED, all seventeen, by Shantanu on 9 September 2026**, including the Helper's rewrite,
-> which Kartik does not need to redo. One edit was ruled at the same time and is applied: **"+1"
+> ✅ **SETTLED, 9 September 2026. Approved as written, all seventeen, including the Helper's
+> rewrite. No review is pending from anyone** (Shantanu): if a wording turns out to be wrong
+> later, it is text and it changes in a commit. This document is now a record of where the cuts
+> fall and why, not a request. One edit was ruled at the same time and is applied: **"+1"
 > in place of "one more"**, on the reasoning that a number reads faster than a word on a phone.
 > It appears three times in the Helper's rest, once in the Killer T-Cell's, and once more in a
 > fourth entry outside this document, which is noted at the end.
