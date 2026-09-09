@@ -1,4 +1,10 @@
-# The hint splits, for Kartik to correct
+# The hint splits
+
+> ✅ **APPROVED, all seventeen, by Shantanu on 9 September 2026**, including the Helper's rewrite,
+> which Kartik does not need to redo. One edit was ruled at the same time and is applied: **"+1"
+> in place of "one more"**, on the reasoning that a number reads faster than a word on a phone.
+> It appears three times in the Helper's rest, once in the Killer T-Cell's, and once more in a
+> fourth entry outside this document, which is noted at the end.
 
 **9 September 2026.** Every one of these is a **proposal**, and correcting a proposal is much
 faster than deciding a cut from nothing, which is why they are here rather than as a list of
@@ -49,7 +55,7 @@ about the B-Cell a player cannot see and will otherwise discover by trying.*
 
 ### Killer T-Cell
 > Snipe: destroys a pathogen hiding inside one of your cells. Never misses. ▌ Range 3 on Training,
-> 2 on Normal and Hard, one more while a primed Helper stands with it.
+> 2 on Normal and Hard, +1 while a primed Helper stands with it.
 
 ### NK Cell
 > NK strike: attacks a hidden or infected cell within one step, on a die roll of 3 or more. ▌
@@ -159,9 +165,9 @@ a proposal, because these are words you did not write:
 > **Hint:** It kills nothing. It licenses your other cells, and only after it has been primed.
 >
 > **Rest:** Priming means an antigen has been presented, which happens the first time any of your
-> cells engulfs or destroys a pathogen. With the B-Cell: one more antibody per action. With the
-> Killer T-Cell: one more range. With the Eosinophil: one more step. In the bloodstream: the
-> Neutrophil returns in 2 turns.
+> cells engulfs or destroys a pathogen. With the B-Cell: +1 antibody per action. With the Killer
+> T-Cell: +1 range. With the Eosinophil: +1 step. In the bloodstream: the Neutrophil returns in
+> 2 turns.
 
 **This changes what How to play says**, unlike every other entry here, so it is the one place
 where the "How to play does not change" promise does not hold. The mechanic is identical; the
@@ -186,11 +192,109 @@ The idea is that surviving to the end is not the win. **But the trigger cannot w
 fires on first CONTACT, and the window is not a thing a player touches: it is a number in the
 bar. Under the rule as ruled, a player never encounters it, so the hint would never fire.
 
-Rather than invent a trigger, this is reported. Three ways out, for Shantanu rather than for you:
-make the bar's turn indicator tappable, move this one line into the difficulty screen where it is
-read before the game starts, or drop it. **Nothing is built for it.**
+The three options are set out in full below, for Shantanu rather than for you. **Nothing is built
+for it.**
 
 ---
+
+# The window hint: the three options, measured
+
+**9 September 2026.** Shantanu asked to see these rather than be proposed past. Each carries what
+was measured for it, because two of the three change on the measurement.
+
+## What is already there, measured from the code
+
+**There IS a window chip**, `id: 'window'`, in the effects strip (`packages/ui/src/play/effects.ts`).
+Three facts about it decide most of this:
+
+1. **It is not tappable.** It renders as a `<div>` with no `onClick`, no `role`, no cursor and no
+   handler anywhere else. Nothing in the strip is interactive.
+2. **It appears only AFTER the window closes** — the condition is `turn > maxTurn`. The windows are
+   **15 turns on Training, 20 on Normal, 30 on Hard**, so a newcomer who loses early never sees it
+   at all.
+3. **Its text already says the thing the hint would say:** *"No more pathogens will arrive. Clear
+   the body to win by turn N."* That is "surviving the window is not the win", stated at the moment
+   it becomes operative.
+
+## Option A — make the chip tappable and hang the hint on it
+
+**Shantanu's instinct, and it is one of the three**, in the form "make the bar's turn indicator
+tappable". His version is better than mine was: the chip is a better anchor than the bare turn
+number, because it is already about the window rather than about the count.
+
+**What is right about it.** It keeps the rule with no exception, and an exception to "first
+contact" would be the first crack in a rule whose whole value is that it has none.
+
+**What the measurement does to it.** Two things, and the second is the serious one.
+
+- The chip **is not tappable today**, so this is a UI change rather than a wiring change: it
+  becomes a control, and then it owes a 44px touch target, a control-grade contrast ratio against
+  the strip, and its own audit coverage. Small, and not free.
+- **The chip already says it.** A hint fired by tapping the chip would restate, one tap later, what
+  the player just read. That is not a hint answering a question; it is the same sentence twice.
+
+## Option B — move the line to the difficulty screen
+
+Put "surviving to the end is not the win" where the window length is chosen, so it is read before
+the game starts.
+
+**What is right about it.** It is the only option that reaches the player **early**, which is when
+the misconception forms. The difficulty screen already names the window length, so the sentence
+has somewhere to sit that is about exactly that.
+
+**What is wrong with it.** It is not a hint and should not pretend to be one: it fires on sight,
+not on contact, and it is read once by everyone rather than once per person per thing. **Calling
+it a hint would be the exception; making it screen copy is not.** So this option is really
+"drop the hint, and add one sentence to a screen".
+
+## Option C — drop it, because the chip already carries it
+
+**This is the option that got stronger when I measured, and it is now my lean.**
+
+The subject was in the set because a player cannot work out by looking that surviving is not the
+win. **That was true when the set was written and it is not true of the shipped app**: the chip
+says it, unprompted, with no tap needed, at the moment the goal actually changes.
+
+The gap the other two options are trying to close is not "the player is never told". It is "the
+player is not told **early**". And a hint cannot close that gap either, because a hint also fires
+late — on contact, which for a thing in the bar means after the player goes looking.
+
+**What this option leaves open, stated rather than buried:** a player who loses before turn 16 on
+Training is never told at all, by the chip or by anything else in play. If that matters, it is
+Option B that fixes it, not Option A.
+
+## Summary
+
+| | Keeps the rule | Reaches the player early | Says something new | Cost |
+|---|---|---|---|---|
+| **A** tappable chip | yes | no | **no** | the chip becomes a control |
+| **B** difficulty screen | not a hint at all | **yes** | yes | one sentence, one screen |
+| **C** drop it | yes | no | n/a | none |
+
+**My lean is C, with B if the early gap matters** — and B and C are compatible, since B is not a
+hint. A is the one I would not take, not because the instinct is wrong but because the measurement
+says the chip already carries the sentence, and paying for a control to repeat it is the wrong
+trade.
+
+---
+
+## Where else "+1" was applied, and where it was NOT
+
+The same shape appears in one entry outside these seventeen, and it is changed for consistency:
+**`effects.helperPrimedDetail`**, the chip the effects strip shows while the Helper is primed. It
+listed the same three bonuses in the same words, and a player who reads "+1 range" in How to play
+and "one more range" on the chip is reading two descriptions of one rule.
+
+**Two more were left alone, deliberately, and the reason is not style.** The antivenom log line
+("one more vial") and the co-infection line ("an extra") live in `packages/engine/src`. Engine log
+text is part of the game state the equivalence corpus compares byte for byte against the legacy
+engine, so editing it is an engine change that breaks the project's primary oracle. A phrasing
+preference is not worth that, and Phase 2's definition of done says the engine's behaviour is
+unchanged.
+
+The crisis-event line "An extra invader breaks in at once" is also untouched: it is pinned to the
+engine by the Help events test, it does not use the words "one more", and "+1 invader breaks in"
+reads worse than what is there.
 
 ## What happens to your corrections
 

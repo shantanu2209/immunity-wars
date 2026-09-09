@@ -429,8 +429,11 @@ is testable today, and his corrections are content edits that change no code.
   named neither screen. And the four passes share one browser profile, so a hint consumed by the
   first pass could never fire again and the other three measured a screen that was not there.
   **A hint is the one screen in this walk whose whole nature is to appear once**, which is why it
-  is the one that needed the reset saying out loud. A third, in the walk rather than the app: an
-  element handle held across a click detached once a tap could re-render the board region.
+  is the one that needed the reset saying out loud, and it is now [`FINDINGS.md`](FINDINGS.md)
+  **#66** in its own right rather than a fourth tick: the walk was right and the app was fine, and
+  the screen was absent because the previous pass had legitimately consumed it. A third defect, in
+  the walk rather than the app: an element handle held across a click detached once a tap could
+  re-render the board region.
 - **The run on the shipped build:** **44 screens** per pass, 46 under SIZE200, up from 41; every
   check 0 under all four mechanisms; no screen NOT REACHED; 27 controls all firing; offline met.
 
