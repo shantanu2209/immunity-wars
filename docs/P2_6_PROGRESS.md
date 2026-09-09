@@ -508,5 +508,6 @@ The hints as built satisfy it by construction: they are not a tutorial, they do 
 they never require dismissal to continue, and a player who ignores every one of them can finish a
 game. The per-turn cap of two is the same constraint expressed as a number.
 
-**P2.6 is done.** What travels on: Kartik's corrections to the seventeen splits, which are content
-edits; and Gate 2, which is P2.7's.
+**P2.6 is done and nothing is owed by anyone**: the seventeen splits are settled as written, and
+Shantanu's S25 pass over everything P2.6 built is green. What travels on is Gate 2, which is
+P2.7's: [`for-P2.7.md`](for-P2.7.md) is the handover.

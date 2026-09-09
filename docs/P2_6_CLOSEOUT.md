@@ -38,14 +38,24 @@ inherits. Running record: [`P2_6_PROGRESS.md`](P2_6_PROGRESS.md); decisions:
   full turn played.
 - **The two documents corrected in place** where they and the app disagreed: the NK Cell's reach
   is 1, and the quick reference's third phase is Spread.
+- **✅ THE S25 PASS, by Shantanu, on everything P2.6 built** (9 September 2026, after this
+  closeout was first written): everything works as described. How to play reads well on a phone;
+  the library is navigable at 106 rows; the hints fire two per turn; Settings works at all four
+  text sizes; the difficulty line reads clearly. **Gate 1's capability bar is met.**
+  ⚠️ *He also found refinements to navigation and placement, and ruled them Gate 2's rather than
+  P2.6's. They are not defects and they are not listed here; they are P2.7's first input and are
+  carried below.*
 
 ## Accepted, not verified by finger
 
-- **Every P2.6 screen is headless-audited and none has been used on the S25.** Settings, How to
-  play, the library, About, the crash screen and the hints were all built and measured after the
-  last phone pass. The audit covers touch size, contrast, scaling and layout; it does not cover
-  whether the hint's placement reads well under a thumb, or whether the library's index is
-  pleasant to scroll at 106 rows.
+- ⚠️ **CLOSED by the S25 pass, 9 September 2026, and moved to Proven above.** This read: *every
+  P2.6 screen is headless-audited and none has been used on the S25 — Settings, How to play, the
+  library, About, the crash screen and the hints were all built and measured after the last phone
+  pass; the audit covers touch size, contrast, scaling and layout, and does not cover whether the
+  hint's placement reads well under a thumb, or whether the library's index is pleasant to scroll
+  at 106 rows.* **Both of those specific doubts were checked by hand and both are fine.** The
+  correction is marked rather than folded in, because the gap was the sharpest thing this closeout
+  had to say when it was written and a silently deleted caveat teaches nobody what was owed.
 - **The crash screen has never been seen by a person in a real crash.** It is reached in the
   audit by dispatching the events the boundary listens for, and by three deliberate-throw
   controls in the dev shell. That is the boundary proven, not the experience.
@@ -54,10 +64,11 @@ inherits. Running record: [`P2_6_PROGRESS.md`](P2_6_PROGRESS.md); decisions:
 
 ## Not proven, stated plainly
 
-- **Kartik has not yet corrected the splits.** All seventeen are approved by Shantanu, including
-  the Helper's rewrite, and the mechanism is built against them. His corrections remain content
-  edits that change no code. **The Helper's entry is the one place where How to play's words
-  changed**, and that is recorded rather than absorbed.
+- ⚠️ **SETTLED, 9 September 2026, and no longer owed by anyone.** This read: *Kartik has not yet
+  corrected the splits.* **The seventeen splits are approved as written, including the Helper's
+  rewrite, and no review is pending from anyone** (Shantanu). **The Helper's entry remains the one
+  place where How to play's own words changed**, which is recorded rather than absorbed. If a
+  wording turns out to be wrong later it is text, and it changes in a commit.
 - **The newcomer test.** Protocol approved; no testers. It lands against this closeout when they
   exist. P2.6 is the sub-phase most likely to be reordered by it, because the hints and How to
   play are exactly what it measures.
@@ -85,11 +96,17 @@ beats iterating one version in code (Shantanu, 9 September 2026).
 
 ## What P2.7 inherits
 
+**Its handover document is [`for-P2.7.md`](for-P2.7.md)**, written the same day, which carries
+the first three actions and what must not regress. The list below is what it inherits; that
+document is how to start.
+
+
 - **Gate 2**, and the two-polish-round shape the brief describes, with named specifics rather
   than a verdict at the end of each round.
-- **Every P2.6 screen unseen on a phone**, listed above. The first S25 pass of P2.7 is the
-  cheapest place to find what the audit cannot.
-- **Kartik's corrections to the seventeen splits**, as content edits.
+- **The refinements Shantanu already saw on the S25**, to navigation and placement, ruled Gate 2's
+  and deliberately not written down as a list. **P2.7's first round starts by asking him for those
+  named specifics rather than guessing at them** — the brief requires each round to end in
+  specifics, and this one has its input before it begins.
 - **The instruments, each with its controls as its warrant:** `pnpm gate1:audit` (four passes,
   27 controls), `pnpm coverage:positions` (four controls), the hint controller and store suites,
   `why-boxes.test.ts` pinning the fifteen boxes to the rulebook document, `derived-rare.test.ts`
