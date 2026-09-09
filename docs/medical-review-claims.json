@@ -1,0 +1,4243 @@
+{
+  "generated": "2026-09-09",
+  "pack": {
+    "packId": "immunity-wars-core",
+    "packVersion": "1.0.0",
+    "rulesVersion": "3.1.0"
+  },
+  "total": 696,
+  "parts": [
+    {
+      "key": "diseases",
+      "title": "Part 1 — The disease cards",
+      "blurb": "Every word of text the app shows on a disease card. **The two fields to check first are Prevent and Treat**: they are the only place the app comes close to saying what a person should do, they are read by children, and a wrong one is the only kind of error here that could matter outside the game.",
+      "claims": [
+        {
+          "id": "DISEASE/Influenza/Discovered",
+          "subject": "Influenza",
+          "label": "Discovered",
+          "text": "Virus isolated 1933; the 1918 pandemic killed ~50 million."
+        },
+        {
+          "id": "DISEASE/Influenza/Causes",
+          "subject": "Influenza",
+          "label": "Causes",
+          "text": "Fever, aches, cough; can lead to pneumonia and myocarditis."
+        },
+        {
+          "id": "DISEASE/Influenza/Found",
+          "subject": "Influenza",
+          "label": "Found",
+          "text": "Worldwide, in yearly winter waves."
+        },
+        {
+          "id": "DISEASE/Influenza/Prevent",
+          "subject": "Influenza",
+          "label": "Prevent",
+          "text": "Annual flu vaccine. It changes because the virus mutates fast."
+        },
+        {
+          "id": "DISEASE/Influenza/Treat",
+          "subject": "Influenza",
+          "label": "Treat",
+          "text": "Rest, fluids; antivirals for high-risk patients."
+        },
+        {
+          "id": "DISEASE/Influenza/Fact",
+          "subject": "Influenza",
+          "label": "Card fact",
+          "text": "Flu mutates fast. Last year's antibodies may not fit."
+        },
+        {
+          "id": "DISEASE/Common cold/Discovered",
+          "subject": "Common cold",
+          "label": "Discovered",
+          "text": "Rhinovirus identified in the 1950s."
+        },
+        {
+          "id": "DISEASE/Common cold/Causes",
+          "subject": "Common cold",
+          "label": "Causes",
+          "text": "Runny nose, sore throat, sneezing."
+        },
+        {
+          "id": "DISEASE/Common cold/Found",
+          "subject": "Common cold",
+          "label": "Found",
+          "text": "Everywhere, all year."
+        },
+        {
+          "id": "DISEASE/Common cold/Prevent",
+          "subject": "Common cold",
+          "label": "Prevent",
+          "text": "Handwashing. No vaccine. Over 100 strains."
+        },
+        {
+          "id": "DISEASE/Common cold/Treat",
+          "subject": "Common cold",
+          "label": "Treat",
+          "text": "No cure; it passes in about a week."
+        },
+        {
+          "id": "DISEASE/Common cold/Fact",
+          "subject": "Common cold",
+          "label": "Card fact",
+          "text": "Over 100 strains; no lasting immunity."
+        },
+        {
+          "id": "DISEASE/COVID-19/Discovered",
+          "subject": "COVID-19",
+          "label": "Discovered",
+          "text": "SARS-CoV-2 identified in Wuhan, China, December 2019."
+        },
+        {
+          "id": "DISEASE/COVID-19/Causes",
+          "subject": "COVID-19",
+          "label": "Causes",
+          "text": "Cough, fever, loss of smell; pneumonia and myocarditis in severe cases."
+        },
+        {
+          "id": "DISEASE/COVID-19/Found",
+          "subject": "COVID-19",
+          "label": "Found",
+          "text": "Worldwide pandemic from 2020."
+        },
+        {
+          "id": "DISEASE/COVID-19/Prevent",
+          "subject": "COVID-19",
+          "label": "Prevent",
+          "text": "Vaccination, ventilation, masks during outbreaks."
+        },
+        {
+          "id": "DISEASE/COVID-19/Treat",
+          "subject": "COVID-19",
+          "label": "Treat",
+          "text": "Supportive care; antivirals for those at risk."
+        },
+        {
+          "id": "DISEASE/COVID-19/Fact",
+          "subject": "COVID-19",
+          "label": "Card fact",
+          "text": "Can inflame the heart muscle (myocarditis) as well as the lungs."
+        },
+        {
+          "id": "DISEASE/RSV/Discovered",
+          "subject": "RSV",
+          "label": "Discovered",
+          "text": "Respiratory syncytial virus, discovered 1956."
+        },
+        {
+          "id": "DISEASE/RSV/Causes",
+          "subject": "RSV",
+          "label": "Causes",
+          "text": "Cold-like illness; bronchiolitis and pneumonia in babies."
+        },
+        {
+          "id": "DISEASE/RSV/Found",
+          "subject": "RSV",
+          "label": "Found",
+          "text": "Worldwide, seasonal."
+        },
+        {
+          "id": "DISEASE/RSV/Prevent",
+          "subject": "RSV",
+          "label": "Prevent",
+          "text": "Monoclonal antibodies and a maternal vaccine for infants."
+        },
+        {
+          "id": "DISEASE/RSV/Treat",
+          "subject": "RSV",
+          "label": "Treat",
+          "text": "Supportive care; oxygen if severe."
+        },
+        {
+          "id": "DISEASE/RSV/Fact",
+          "subject": "RSV",
+          "label": "Card fact",
+          "text": "Mild in adults, dangerous for babies."
+        },
+        {
+          "id": "DISEASE/Measles/Discovered",
+          "subject": "Measles",
+          "label": "Discovered",
+          "text": "Vaccine by John Enders, 1963. One of the most contagious viruses known."
+        },
+        {
+          "id": "DISEASE/Measles/Causes",
+          "subject": "Measles",
+          "label": "Causes",
+          "text": "Rash and fever. And IMMUNE AMNESIA: it wipes out your existing immune memory, leaving you open to diseases you had already beaten."
+        },
+        {
+          "id": "DISEASE/Measles/Found",
+          "subject": "Measles",
+          "label": "Found",
+          "text": "Worldwide; resurges wherever vaccination drops."
+        },
+        {
+          "id": "DISEASE/Measles/Prevent",
+          "subject": "Measles",
+          "label": "Prevent",
+          "text": "MMR vaccine. Two doses."
+        },
+        {
+          "id": "DISEASE/Measles/Treat",
+          "subject": "Measles",
+          "label": "Treat",
+          "text": "No antiviral; vitamin A and supportive care. Prevention is everything."
+        },
+        {
+          "id": "DISEASE/Mumps/Discovered",
+          "subject": "Mumps",
+          "label": "Discovered",
+          "text": "Described by Hippocrates; vaccine 1967."
+        },
+        {
+          "id": "DISEASE/Mumps/Causes",
+          "subject": "Mumps",
+          "label": "Causes",
+          "text": "Swollen salivary glands; can inflame the brain and testes."
+        },
+        {
+          "id": "DISEASE/Mumps/Found",
+          "subject": "Mumps",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Mumps/Prevent",
+          "subject": "Mumps",
+          "label": "Prevent",
+          "text": "MMR vaccine."
+        },
+        {
+          "id": "DISEASE/Mumps/Treat",
+          "subject": "Mumps",
+          "label": "Treat",
+          "text": "Supportive care only."
+        },
+        {
+          "id": "DISEASE/Rubella/Discovered",
+          "subject": "Rubella",
+          "label": "Discovered",
+          "text": "Link to birth defects found by Norman Gregg, 1941."
+        },
+        {
+          "id": "DISEASE/Rubella/Causes",
+          "subject": "Rubella",
+          "label": "Causes",
+          "text": "Mild rash in children. But devastating to an unborn baby."
+        },
+        {
+          "id": "DISEASE/Rubella/Found",
+          "subject": "Rubella",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Rubella/Prevent",
+          "subject": "Rubella",
+          "label": "Prevent",
+          "text": "MMR vaccine, especially before pregnancy."
+        },
+        {
+          "id": "DISEASE/Rubella/Treat",
+          "subject": "Rubella",
+          "label": "Treat",
+          "text": "No cure; prevention protects the next generation."
+        },
+        {
+          "id": "DISEASE/Smallpox/Discovered",
+          "subject": "Smallpox",
+          "label": "Discovered",
+          "text": "Jenner's cowpox vaccine, 1796. The first vaccine ever made."
+        },
+        {
+          "id": "DISEASE/Smallpox/Causes",
+          "subject": "Smallpox",
+          "label": "Causes",
+          "text": "Disfiguring pustules; killed around 30% of those infected."
+        },
+        {
+          "id": "DISEASE/Smallpox/Found",
+          "subject": "Smallpox",
+          "label": "Found",
+          "text": "NOWHERE. Declared eradicated in 1980. The only human disease ever wiped out."
+        },
+        {
+          "id": "DISEASE/Smallpox/Prevent",
+          "subject": "Smallpox",
+          "label": "Prevent",
+          "text": "Vaccination. The campaign that ended it."
+        },
+        {
+          "id": "DISEASE/Smallpox/Treat",
+          "subject": "Smallpox",
+          "label": "Treat",
+          "text": "None needed. This card is a trophy: proof that immunology WINS."
+        },
+        {
+          "id": "DISEASE/Nipah/Discovered",
+          "subject": "Nipah",
+          "label": "Discovered",
+          "text": "Identified in Malaysia 1998; outbreaks in Kerala, India (2018, 2023)."
+        },
+        {
+          "id": "DISEASE/Nipah/Causes",
+          "subject": "Nipah",
+          "label": "Causes",
+          "text": "Brain inflammation; fatal in 40-75% of cases."
+        },
+        {
+          "id": "DISEASE/Nipah/Found",
+          "subject": "Nipah",
+          "label": "Found",
+          "text": "South and Southeast Asia; spread by fruit bats."
+        },
+        {
+          "id": "DISEASE/Nipah/Prevent",
+          "subject": "Nipah",
+          "label": "Prevent",
+          "text": "Avoid raw date-palm sap; isolate cases."
+        },
+        {
+          "id": "DISEASE/Nipah/Treat",
+          "subject": "Nipah",
+          "label": "Treat",
+          "text": "No specific cure. Supportive care."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/Discovered",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Discovered",
+          "text": "Coxsackievirus, 1950s."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/Causes",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Causes",
+          "text": "Blisters on hands, feet and mouth; usually mild in children."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/Found",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Found",
+          "text": "Worldwide; common in schools."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/Prevent",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Prevent",
+          "text": "Handwashing."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/Treat",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Treat",
+          "text": "Self-limiting."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Discovered",
+          "subject": "Chickenpox",
+          "label": "Discovered",
+          "text": "Varicella-zoster; vaccine developed in the 1970s."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Causes",
+          "subject": "Chickenpox",
+          "label": "Causes",
+          "text": "Itchy blisters. Then HIDES IN YOUR NERVES for decades and can return as shingles."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Found",
+          "subject": "Chickenpox",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Prevent",
+          "subject": "Chickenpox",
+          "label": "Prevent",
+          "text": "Varicella vaccine."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Treat",
+          "subject": "Chickenpox",
+          "label": "Treat",
+          "text": "Antivirals if severe."
+        },
+        {
+          "id": "DISEASE/Chickenpox/Fact",
+          "subject": "Chickenpox",
+          "label": "Card fact",
+          "text": "Hides in nerves for decades. Returns as shingles."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Discovered",
+          "subject": "Glandular fever",
+          "label": "Discovered",
+          "text": "Epstein-Barr virus, discovered 1964."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Causes",
+          "subject": "Glandular fever",
+          "label": "Causes",
+          "text": "Fever, sore throat, extreme fatigue, swollen spleen (rupture risk)."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Found",
+          "subject": "Glandular fever",
+          "label": "Found",
+          "text": "Worldwide; common in teenagers."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Prevent",
+          "subject": "Glandular fever",
+          "label": "Prevent",
+          "text": "No vaccine."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Treat",
+          "subject": "Glandular fever",
+          "label": "Treat",
+          "text": "Rest. Avoid contact sport while the spleen is swollen."
+        },
+        {
+          "id": "DISEASE/Glandular fever/Fact",
+          "subject": "Glandular fever",
+          "label": "Card fact",
+          "text": "Hides inside your own B-cells; risks spleen rupture."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/Discovered",
+          "subject": "Cytomegalovirus",
+          "label": "Discovered",
+          "text": "Isolated 1956."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/Causes",
+          "subject": "Cytomegalovirus",
+          "label": "Causes",
+          "text": "Harmless in healthy people. It just hides for life. Dangerous to babies and the immunosuppressed."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/Found",
+          "subject": "Cytomegalovirus",
+          "label": "Found",
+          "text": "Most adults worldwide carry it."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/Prevent",
+          "subject": "Cytomegalovirus",
+          "label": "Prevent",
+          "text": "Hygiene; no vaccine yet."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/Treat",
+          "subject": "Cytomegalovirus",
+          "label": "Treat",
+          "text": "Antivirals only when it reactivates."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Discovered",
+          "subject": "Tuberculosis",
+          "label": "Discovered",
+          "text": "Bacterium found by Robert Koch, 1882."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Causes",
+          "subject": "Tuberculosis",
+          "label": "Causes",
+          "text": "Chronic cough, weight loss, night sweats. Can lie dormant for YEARS."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Found",
+          "subject": "Tuberculosis",
+          "label": "Found",
+          "text": "Worldwide. India carries the largest burden of any country."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Prevent",
+          "subject": "Tuberculosis",
+          "label": "Prevent",
+          "text": "BCG vaccine; treating active cases; ventilation."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Treat",
+          "subject": "Tuberculosis",
+          "label": "Treat",
+          "text": "6+ months of combination antibiotics. Not finishing the course breeds resistance."
+        },
+        {
+          "id": "DISEASE/Tuberculosis/Fact",
+          "subject": "Tuberculosis",
+          "label": "Card fact",
+          "text": "Can lie dormant in the lungs for years."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Discovered",
+          "subject": "Whooping cough",
+          "label": "Discovered",
+          "text": "Bordetella pertussis, identified 1906."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Causes",
+          "subject": "Whooping cough",
+          "label": "Causes",
+          "text": "Violent coughing fits with a 'whoop'; deadly in babies."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Found",
+          "subject": "Whooping cough",
+          "label": "Found",
+          "text": "Worldwide; returns where vaccination falls."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Prevent",
+          "subject": "Whooping cough",
+          "label": "Prevent",
+          "text": "DPT vaccine."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Treat",
+          "subject": "Whooping cough",
+          "label": "Treat",
+          "text": "Antibiotics, given early."
+        },
+        {
+          "id": "DISEASE/Whooping cough/Fact",
+          "subject": "Whooping cough",
+          "label": "Card fact",
+          "text": "Violent coughing fits; DPT vaccine prevents it."
+        },
+        {
+          "id": "DISEASE/Meningitis/Discovered",
+          "subject": "Meningitis",
+          "label": "Discovered",
+          "text": "Meningococcus identified 1887."
+        },
+        {
+          "id": "DISEASE/Meningitis/Causes",
+          "subject": "Meningitis",
+          "label": "Causes",
+          "text": "Infects the lining of the brain. Can kill a healthy person within HOURS."
+        },
+        {
+          "id": "DISEASE/Meningitis/Found",
+          "subject": "Meningitis",
+          "label": "Found",
+          "text": "Worldwide; the African 'meningitis belt' worst."
+        },
+        {
+          "id": "DISEASE/Meningitis/Prevent",
+          "subject": "Meningitis",
+          "label": "Prevent",
+          "text": "Meningococcal vaccine."
+        },
+        {
+          "id": "DISEASE/Meningitis/Treat",
+          "subject": "Meningitis",
+          "label": "Treat",
+          "text": "Emergency antibiotics. Every hour counts."
+        },
+        {
+          "id": "DISEASE/Pneumonia/Discovered",
+          "subject": "Pneumonia",
+          "label": "Discovered",
+          "text": "Streptococcus pneumoniae, identified 1881."
+        },
+        {
+          "id": "DISEASE/Pneumonia/Causes",
+          "subject": "Pneumonia",
+          "label": "Causes",
+          "text": "Fills the lungs with fluid. The single biggest infectious killer of children worldwide."
+        },
+        {
+          "id": "DISEASE/Pneumonia/Found",
+          "subject": "Pneumonia",
+          "label": "Found",
+          "text": "Everywhere."
+        },
+        {
+          "id": "DISEASE/Pneumonia/Prevent",
+          "subject": "Pneumonia",
+          "label": "Prevent",
+          "text": "Pneumococcal vaccine; flu vaccine; clean cooking fuel."
+        },
+        {
+          "id": "DISEASE/Pneumonia/Treat",
+          "subject": "Pneumonia",
+          "label": "Treat",
+          "text": "Antibiotics and oxygen."
+        },
+        {
+          "id": "DISEASE/Strep throat/Discovered",
+          "subject": "Strep throat",
+          "label": "Discovered",
+          "text": "Group A Streptococcus."
+        },
+        {
+          "id": "DISEASE/Strep throat/Causes",
+          "subject": "Strep throat",
+          "label": "Causes",
+          "text": "Sore throat. But if ignored, the antibodies you make against it can attack YOUR OWN HEART VALVES (rheumatic fever)."
+        },
+        {
+          "id": "DISEASE/Strep throat/Found",
+          "subject": "Strep throat",
+          "label": "Found",
+          "text": "Worldwide; rheumatic heart disease is a major problem in India."
+        },
+        {
+          "id": "DISEASE/Strep throat/Prevent",
+          "subject": "Strep throat",
+          "label": "Prevent",
+          "text": "Treat sore throats properly."
+        },
+        {
+          "id": "DISEASE/Strep throat/Treat",
+          "subject": "Strep throat",
+          "label": "Treat",
+          "text": "Antibiotics. Which are given mainly to prevent the heart damage."
+        },
+        {
+          "id": "DISEASE/Leprosy/Discovered",
+          "subject": "Leprosy",
+          "label": "Discovered",
+          "text": "Bacterium found by Gerhard Hansen, 1873. The first bacterium ever linked to human disease."
+        },
+        {
+          "id": "DISEASE/Leprosy/Causes",
+          "subject": "Leprosy",
+          "label": "Causes",
+          "text": "Attacks the nerves. Numbness means injuries go unnoticed, and THAT causes the deformity. Not the germ eating the flesh, as people wrongly believe."
+        },
+        {
+          "id": "DISEASE/Leprosy/Found",
+          "subject": "Leprosy",
+          "label": "Found",
+          "text": "India records a large share of the world's new cases."
+        },
+        {
+          "id": "DISEASE/Leprosy/Prevent",
+          "subject": "Leprosy",
+          "label": "Prevent",
+          "text": "IT IS NOT SPREAD BY TOUCH. It spreads by droplets, after months of close contact, and about 95% of people are naturally immune to it. It enters through the NOSE, which is why it is in the Nose lane and not the Contact lane. The belief that a handshake spreads leprosy is a myth that exiled people to colonies for centuries."
+        },
+        {
+          "id": "DISEASE/Leprosy/Treat",
+          "subject": "Leprosy",
+          "label": "Treat",
+          "text": "Completely curable with multi-drug therapy. Free worldwide since 1995."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/Discovered",
+          "subject": "Legionnaires' disease",
+          "label": "Discovered",
+          "text": "Named after a 1976 outbreak at an American Legion convention."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/Causes",
+          "subject": "Legionnaires' disease",
+          "label": "Causes",
+          "text": "Severe pneumonia from bacteria in air-conditioning and water systems."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/Found",
+          "subject": "Legionnaires' disease",
+          "label": "Found",
+          "text": "Worldwide, in buildings with poorly maintained water systems."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/Prevent",
+          "subject": "Legionnaires' disease",
+          "label": "Prevent",
+          "text": "Maintain cooling towers and water tanks."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/Treat",
+          "subject": "Legionnaires' disease",
+          "label": "Treat",
+          "text": "Antibiotics."
+        },
+        {
+          "id": "DISEASE/Diphtheria/Discovered",
+          "subject": "Diphtheria",
+          "label": "Discovered",
+          "text": "Antitoxin by von Behring, 1890. Winning the FIRST Nobel Prize in Medicine."
+        },
+        {
+          "id": "DISEASE/Diphtheria/Causes",
+          "subject": "Diphtheria",
+          "label": "Causes",
+          "text": "A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed. It poisons you directly."
+        },
+        {
+          "id": "DISEASE/Diphtheria/Found",
+          "subject": "Diphtheria",
+          "label": "Found",
+          "text": "Worldwide where vaccination lapses; outbreaks still occur in India."
+        },
+        {
+          "id": "DISEASE/Diphtheria/Prevent",
+          "subject": "Diphtheria",
+          "label": "Prevent",
+          "text": "DPT vaccine."
+        },
+        {
+          "id": "DISEASE/Diphtheria/Treat",
+          "subject": "Diphtheria",
+          "label": "Treat",
+          "text": "ANTITOXIN. Antibodies. No cell can eat a toxin."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/Discovered",
+          "subject": "Mucormycosis",
+          "label": "Discovered",
+          "text": "'Black fungus'. Surged across India in 2021 among COVID patients."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/Causes",
+          "subject": "Mucormycosis",
+          "label": "Causes",
+          "text": "Invades nose and sinuses, then the eye and BRAIN. Often fatal."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/Found",
+          "subject": "Mucormycosis",
+          "label": "Found",
+          "text": "Worldwide, but it strikes the immunocompromised. Diabetics, steroid patients."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/Prevent",
+          "subject": "Mucormycosis",
+          "label": "Prevent",
+          "text": "Control diabetes; use steroids carefully."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/Treat",
+          "subject": "Mucormycosis",
+          "label": "Treat",
+          "text": "Antifungals and surgery. A pure OPPORTUNIST. It only wins when your defences are already down."
+        },
+        {
+          "id": "DISEASE/Aspergillosis/Discovered",
+          "subject": "Aspergillosis",
+          "label": "Discovered",
+          "text": "Aspergillus mould, described 1729."
+        },
+        {
+          "id": "DISEASE/Aspergillosis/Causes",
+          "subject": "Aspergillosis",
+          "label": "Causes",
+          "text": "A mould you breathe in daily. Harmless, unless your defences are weak."
+        },
+        {
+          "id": "DISEASE/Aspergillosis/Found",
+          "subject": "Aspergillosis",
+          "label": "Found",
+          "text": "Everywhere: soil, dust, damp buildings."
+        },
+        {
+          "id": "DISEASE/Aspergillosis/Prevent",
+          "subject": "Aspergillosis",
+          "label": "Prevent",
+          "text": "Avoid dust if immunocompromised."
+        },
+        {
+          "id": "DISEASE/Aspergillosis/Treat",
+          "subject": "Aspergillosis",
+          "label": "Treat",
+          "text": "Antifungals. Neutrophils are the key defence. Which is why neutropenia invites it in."
+        },
+        {
+          "id": "DISEASE/Cryptococcus/Discovered",
+          "subject": "Cryptococcus",
+          "label": "Discovered",
+          "text": "Described 1894; a leading killer in AIDS."
+        },
+        {
+          "id": "DISEASE/Cryptococcus/Causes",
+          "subject": "Cryptococcus",
+          "label": "Causes",
+          "text": "Fungal meningitis. It invades the BRAIN."
+        },
+        {
+          "id": "DISEASE/Cryptococcus/Found",
+          "subject": "Cryptococcus",
+          "label": "Found",
+          "text": "Worldwide, in soil and pigeon droppings."
+        },
+        {
+          "id": "DISEASE/Cryptococcus/Prevent",
+          "subject": "Cryptococcus",
+          "label": "Prevent",
+          "text": "Hard to avoid; the real defence is a working immune system."
+        },
+        {
+          "id": "DISEASE/Cryptococcus/Treat",
+          "subject": "Cryptococcus",
+          "label": "Treat",
+          "text": "Antifungals. Mostly attacks people with HIV."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/Discovered",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Discovered",
+          "text": "Recognised in the 1980s as the disease that revealed AIDS."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/Causes",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Causes",
+          "text": "A fungus that only causes pneumonia when helper T-cells are destroyed."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/Found",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Found",
+          "text": "Worldwide, in the severely immunosuppressed."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/Prevent",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Prevent",
+          "text": "Preventive antibiotics for at-risk patients."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/Treat",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Treat",
+          "text": "Antibiotics/antifungals. It is a signpost of a collapsed immune system."
+        },
+        {
+          "id": "DISEASE/Dengue/Discovered",
+          "subject": "Dengue",
+          "label": "Discovered",
+          "text": "Four different serotypes. This matters enormously."
+        },
+        {
+          "id": "DISEASE/Dengue/Causes",
+          "subject": "Dengue",
+          "label": "Causes",
+          "text": "High fever, severe joint pain, crashing platelets (marrow)."
+        },
+        {
+          "id": "DISEASE/Dengue/Found",
+          "subject": "Dengue",
+          "label": "Found",
+          "text": "Tropics; a major monsoon disease across India."
+        },
+        {
+          "id": "DISEASE/Dengue/Prevent",
+          "subject": "Dengue",
+          "label": "Prevent",
+          "text": "Aedes mosquito control. It bites in DAYTIME. Remove standing water."
+        },
+        {
+          "id": "DISEASE/Dengue/Treat",
+          "subject": "Dengue",
+          "label": "Treat",
+          "text": "No cure; fluids. Never give aspirin. A SECOND dengue infection can be far worse (ADE)."
+        },
+        {
+          "id": "DISEASE/Dengue/Fact",
+          "subject": "Dengue",
+          "label": "Card fact",
+          "text": "Crashes the marrow's platelet supply."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Discovered",
+          "subject": "Chikungunya",
+          "label": "Discovered",
+          "text": "First described in Tanzania, 1952. The name means 'to become contorted'."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Causes",
+          "subject": "Chikungunya",
+          "label": "Causes",
+          "text": "Fever and severe joint pain that can last months."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Found",
+          "subject": "Chikungunya",
+          "label": "Found",
+          "text": "Africa, Asia, the Americas; common in India."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Prevent",
+          "subject": "Chikungunya",
+          "label": "Prevent",
+          "text": "Aedes mosquito control."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Treat",
+          "subject": "Chikungunya",
+          "label": "Treat",
+          "text": "No antiviral; pain relief."
+        },
+        {
+          "id": "DISEASE/Chikungunya/Fact",
+          "subject": "Chikungunya",
+          "label": "Card fact",
+          "text": "Mosquito virus; joint pain, sometimes myocarditis."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Discovered",
+          "subject": "Japanese encephalitis",
+          "label": "Discovered",
+          "text": "Virus isolated in Japan, 1935."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Causes",
+          "subject": "Japanese encephalitis",
+          "label": "Causes",
+          "text": "Brain inflammation; often leaves permanent damage."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Found",
+          "subject": "Japanese encephalitis",
+          "label": "Found",
+          "text": "Rural Asia including India; pigs and birds are the reservoir."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Prevent",
+          "subject": "Japanese encephalitis",
+          "label": "Prevent",
+          "text": "JE vaccine; mosquito control."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Treat",
+          "subject": "Japanese encephalitis",
+          "label": "Treat",
+          "text": "No cure. Supportive care only."
+        },
+        {
+          "id": "DISEASE/Japanese encephalitis/Fact",
+          "subject": "Japanese encephalitis",
+          "label": "Card fact",
+          "text": "Mosquito-borne brain infection; vaccine-preventable."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Discovered",
+          "subject": "Yellow fever",
+          "label": "Discovered",
+          "text": "Shown to be mosquito-borne by Walter Reed, 1900."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Causes",
+          "subject": "Yellow fever",
+          "label": "Causes",
+          "text": "Fever, liver failure and jaundice (the 'yellow'), bleeding."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Found",
+          "subject": "Yellow fever",
+          "label": "Found",
+          "text": "Africa and South America."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Prevent",
+          "subject": "Yellow fever",
+          "label": "Prevent",
+          "text": "One highly effective, lifelong vaccine."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Treat",
+          "subject": "Yellow fever",
+          "label": "Treat",
+          "text": "Supportive care."
+        },
+        {
+          "id": "DISEASE/Yellow fever/Fact",
+          "subject": "Yellow fever",
+          "label": "Card fact",
+          "text": "Attacks the liver. Hence the jaundice."
+        },
+        {
+          "id": "DISEASE/Zika/Discovered",
+          "subject": "Zika",
+          "label": "Discovered",
+          "text": "Identified 1947; caused a global emergency in 2015-16."
+        },
+        {
+          "id": "DISEASE/Zika/Causes",
+          "subject": "Zika",
+          "label": "Causes",
+          "text": "Mild in adults. But causes severe brain defects in unborn babies."
+        },
+        {
+          "id": "DISEASE/Zika/Found",
+          "subject": "Zika",
+          "label": "Found",
+          "text": "Tropics."
+        },
+        {
+          "id": "DISEASE/Zika/Prevent",
+          "subject": "Zika",
+          "label": "Prevent",
+          "text": "Mosquito control; protect pregnancies."
+        },
+        {
+          "id": "DISEASE/Zika/Treat",
+          "subject": "Zika",
+          "label": "Treat",
+          "text": "No specific treatment."
+        },
+        {
+          "id": "DISEASE/West Nile fever/Discovered",
+          "subject": "West Nile fever",
+          "label": "Discovered",
+          "text": "Isolated in Uganda, 1937."
+        },
+        {
+          "id": "DISEASE/West Nile fever/Causes",
+          "subject": "West Nile fever",
+          "label": "Causes",
+          "text": "Usually mild; occasionally causes brain inflammation."
+        },
+        {
+          "id": "DISEASE/West Nile fever/Found",
+          "subject": "West Nile fever",
+          "label": "Found",
+          "text": "Africa, Europe, Americas, Asia."
+        },
+        {
+          "id": "DISEASE/West Nile fever/Prevent",
+          "subject": "West Nile fever",
+          "label": "Prevent",
+          "text": "Mosquito control."
+        },
+        {
+          "id": "DISEASE/West Nile fever/Treat",
+          "subject": "West Nile fever",
+          "label": "Treat",
+          "text": "Supportive care."
+        },
+        {
+          "id": "DISEASE/Rabies/Discovered",
+          "subject": "Rabies",
+          "label": "Discovered",
+          "text": "Vaccine by Louis Pasteur, 1885."
+        },
+        {
+          "id": "DISEASE/Rabies/Causes",
+          "subject": "Rabies",
+          "label": "Causes",
+          "text": "Creeps up your NERVES to the brain, where antibodies cannot follow. Almost 100% fatal once symptoms begin."
+        },
+        {
+          "id": "DISEASE/Rabies/Found",
+          "subject": "Rabies",
+          "label": "Found",
+          "text": "Worldwide; dogs are the main source in India."
+        },
+        {
+          "id": "DISEASE/Rabies/Prevent",
+          "subject": "Rabies",
+          "label": "Prevent",
+          "text": "Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY."
+        },
+        {
+          "id": "DISEASE/Rabies/Treat",
+          "subject": "Rabies",
+          "label": "Treat",
+          "text": "Post-exposure vaccine works BEFORE symptoms start. After that, nothing does."
+        },
+        {
+          "id": "DISEASE/Rabies/Fact",
+          "subject": "Rabies",
+          "label": "Card fact",
+          "text": "Creeps inside nerves where antibodies can't follow."
+        },
+        {
+          "id": "DISEASE/HIV/Discovered",
+          "subject": "HIV",
+          "label": "Discovered",
+          "text": "Identified 1983 by Montagnier and Barré-Sinoussi (Nobel Prize)."
+        },
+        {
+          "id": "DISEASE/HIV/Causes",
+          "subject": "HIV",
+          "label": "Causes",
+          "text": "It destroys HELPER T-CELLS. The commanders of your immune system. Without them, ordinary germs become lethal."
+        },
+        {
+          "id": "DISEASE/HIV/Found",
+          "subject": "HIV",
+          "label": "Found",
+          "text": "Worldwide; ~39 million people live with HIV. Spread by unprotected sex, shared needles, and infected blood."
+        },
+        {
+          "id": "DISEASE/HIV/Prevent",
+          "subject": "HIV",
+          "label": "Prevent",
+          "text": "Condoms; never share needles; screened blood; PrEP medication. It is NOT spread by mosquitoes, sharing food, or touching. A myth worth killing."
+        },
+        {
+          "id": "DISEASE/HIV/Treat",
+          "subject": "HIV",
+          "label": "Treat",
+          "text": "Antiretroviral therapy: not a cure, but people now live full lives, and treatment makes them unable to pass it on. Attacking the immune system itself is why HIV is so dangerous."
+        },
+        {
+          "id": "DISEASE/Hepatitis B/Discovered",
+          "subject": "Hepatitis B",
+          "label": "Discovered",
+          "text": "Discovered by Baruch Blumberg, 1965 (Nobel Prize). First anti-cancer vaccine."
+        },
+        {
+          "id": "DISEASE/Hepatitis B/Causes",
+          "subject": "Hepatitis B",
+          "label": "Causes",
+          "text": "Attacks the liver; can persist for life and cause liver cancer."
+        },
+        {
+          "id": "DISEASE/Hepatitis B/Found",
+          "subject": "Hepatitis B",
+          "label": "Found",
+          "text": "Worldwide; ~250 million chronic carriers."
+        },
+        {
+          "id": "DISEASE/Hepatitis B/Prevent",
+          "subject": "Hepatitis B",
+          "label": "Prevent",
+          "text": "Hepatitis B vaccine. Given at birth in India."
+        },
+        {
+          "id": "DISEASE/Hepatitis B/Treat",
+          "subject": "Hepatitis B",
+          "label": "Treat",
+          "text": "Antivirals control it; the vaccine prevents it."
+        },
+        {
+          "id": "DISEASE/Hepatitis C/Discovered",
+          "subject": "Hepatitis C",
+          "label": "Discovered",
+          "text": "Identified 1989; Nobel Prize 2020."
+        },
+        {
+          "id": "DISEASE/Hepatitis C/Causes",
+          "subject": "Hepatitis C",
+          "label": "Causes",
+          "text": "Silently scars the liver for decades. Cirrhosis and cancer."
+        },
+        {
+          "id": "DISEASE/Hepatitis C/Found",
+          "subject": "Hepatitis C",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Hepatitis C/Prevent",
+          "subject": "Hepatitis C",
+          "label": "Prevent",
+          "text": "No vaccine yet; screened blood and clean needles."
+        },
+        {
+          "id": "DISEASE/Hepatitis C/Treat",
+          "subject": "Hepatitis C",
+          "label": "Treat",
+          "text": "CURABLE since 2014 with direct-acting antivirals. One of medicine's great wins."
+        },
+        {
+          "id": "DISEASE/Chagas disease/Discovered",
+          "subject": "Chagas disease",
+          "label": "Discovered",
+          "text": "Discovered by Carlos Chagas, 1909. He found the parasite, the vector and the disease."
+        },
+        {
+          "id": "DISEASE/Chagas disease/Causes",
+          "subject": "Chagas disease",
+          "label": "Causes",
+          "text": "A parasite that HIDES INSIDE HEART MUSCLE for decades, then destroys it."
+        },
+        {
+          "id": "DISEASE/Chagas disease/Found",
+          "subject": "Chagas disease",
+          "label": "Found",
+          "text": "Latin America."
+        },
+        {
+          "id": "DISEASE/Chagas disease/Prevent",
+          "subject": "Chagas disease",
+          "label": "Prevent",
+          "text": "Control the 'kissing bug'; improve housing."
+        },
+        {
+          "id": "DISEASE/Chagas disease/Treat",
+          "subject": "Chagas disease",
+          "label": "Treat",
+          "text": "Drugs work early; once the heart is damaged, it is irreversible."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Discovered",
+          "subject": "Lyme disease",
+          "label": "Discovered",
+          "text": "Identified in Lyme, Connecticut, 1975."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Causes",
+          "subject": "Lyme disease",
+          "label": "Causes",
+          "text": "Bull's-eye rash; can attack the heart (Lyme carditis) and nerves."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Found",
+          "subject": "Lyme disease",
+          "label": "Found",
+          "text": "North America, Europe, parts of Asia. From tick bites."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Prevent",
+          "subject": "Lyme disease",
+          "label": "Prevent",
+          "text": "Cover skin in woods; remove ticks quickly."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Treat",
+          "subject": "Lyme disease",
+          "label": "Treat",
+          "text": "Antibiotics. Very effective if caught early."
+        },
+        {
+          "id": "DISEASE/Lyme disease/Fact",
+          "subject": "Lyme disease",
+          "label": "Card fact",
+          "text": "Tick bite; can cause Lyme carditis in the heart."
+        },
+        {
+          "id": "DISEASE/Plague/Discovered",
+          "subject": "Plague",
+          "label": "Discovered",
+          "text": "Yersinia pestis. The Black Death killed a third of Europe (1347-51)."
+        },
+        {
+          "id": "DISEASE/Plague/Causes",
+          "subject": "Plague",
+          "label": "Causes",
+          "text": "Swollen lymph nodes ('buboes'); the lung form spreads person to person and kills fast."
+        },
+        {
+          "id": "DISEASE/Plague/Found",
+          "subject": "Plague",
+          "label": "Found",
+          "text": "Rare now; pockets in Africa, Asia, the Americas."
+        },
+        {
+          "id": "DISEASE/Plague/Prevent",
+          "subject": "Plague",
+          "label": "Prevent",
+          "text": "Rodent and flea control."
+        },
+        {
+          "id": "DISEASE/Plague/Treat",
+          "subject": "Plague",
+          "label": "Treat",
+          "text": "Curable with prompt antibiotics."
+        },
+        {
+          "id": "DISEASE/Plague/Fact",
+          "subject": "Plague",
+          "label": "Card fact",
+          "text": "Flea bites. The historical Black Death."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/Discovered",
+          "subject": "Scrub typhus",
+          "label": "Discovered",
+          "text": "Recognised in Asia; a major cause of fever in India."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/Causes",
+          "subject": "Scrub typhus",
+          "label": "Causes",
+          "text": "Fever with a black scab at the mite bite; can cause pneumonia and brain inflammation."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/Found",
+          "subject": "Scrub typhus",
+          "label": "Found",
+          "text": "The 'tsutsugamushi triangle'. Including India."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/Prevent",
+          "subject": "Scrub typhus",
+          "label": "Prevent",
+          "text": "Avoid mite-infested scrub; protective clothing."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/Treat",
+          "subject": "Scrub typhus",
+          "label": "Treat",
+          "text": "Doxycycline. Cheap and highly effective."
+        },
+        {
+          "id": "DISEASE/Malaria/Discovered",
+          "subject": "Malaria",
+          "label": "Discovered",
+          "text": "Ronald Ross proved mosquitoes carry it. In Secunderabad, INDIA, 1897. Nobel Prize."
+        },
+        {
+          "id": "DISEASE/Malaria/Causes",
+          "subject": "Malaria",
+          "label": "Causes",
+          "text": "Bite → LIVER (hides inside liver cells) → bursts into blood → fever cycles, anaemia, cerebral malaria."
+        },
+        {
+          "id": "DISEASE/Malaria/Found",
+          "subject": "Malaria",
+          "label": "Found",
+          "text": "Tropics; still a major disease in India."
+        },
+        {
+          "id": "DISEASE/Malaria/Prevent",
+          "subject": "Malaria",
+          "label": "Prevent",
+          "text": "Nets, repellents, draining standing water."
+        },
+        {
+          "id": "DISEASE/Malaria/Treat",
+          "subject": "Malaria",
+          "label": "Treat",
+          "text": "Antimalarials. P. vivax needs a SECOND drug to clear the liver. Or it relapses months later."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/Discovered",
+          "subject": "Malaria (blood)",
+          "label": "Discovered",
+          "text": "The blood stage. Merozoites bursting out of the liver."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/Causes",
+          "subject": "Malaria (blood)",
+          "label": "Causes",
+          "text": "Invades red blood cells; causes the classic fever cycles."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/Found",
+          "subject": "Malaria (blood)",
+          "label": "Found",
+          "text": "Tropics."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/Prevent",
+          "subject": "Malaria (blood)",
+          "label": "Prevent",
+          "text": "Mosquito control."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/Treat",
+          "subject": "Malaria (blood)",
+          "label": "Treat",
+          "text": "NOW antibodies and phagocytes can reach it. This is the stage you can actually fight."
+        },
+        {
+          "id": "DISEASE/Kala-azar/Discovered",
+          "subject": "Kala-azar",
+          "label": "Discovered",
+          "text": "Visceral leishmaniasis. Sir Upendranath Brahmachari developed the first cure. In India, 1920."
+        },
+        {
+          "id": "DISEASE/Kala-azar/Causes",
+          "subject": "Kala-azar",
+          "label": "Causes",
+          "text": "HIDES INSIDE YOUR MACROPHAGES. It turns your own defender cell into its home. Destroys the spleen; fatal untreated."
+        },
+        {
+          "id": "DISEASE/Kala-azar/Found",
+          "subject": "Kala-azar",
+          "label": "Found",
+          "text": "Bihar, India, has historically carried a large share of the world's cases."
+        },
+        {
+          "id": "DISEASE/Kala-azar/Prevent",
+          "subject": "Kala-azar",
+          "label": "Prevent",
+          "text": "Sandfly control; indoor spraying."
+        },
+        {
+          "id": "DISEASE/Kala-azar/Treat",
+          "subject": "Kala-azar",
+          "label": "Treat",
+          "text": "Liposomal amphotericin B. India has driven cases down dramatically."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/Discovered",
+          "subject": "Sleeping sickness",
+          "label": "Discovered",
+          "text": "African trypanosomiasis; the parasite was found in 1901."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/Causes",
+          "subject": "Sleeping sickness",
+          "label": "Causes",
+          "text": "ANTIGENIC VARIATION. It keeps changing its coat, so your antibodies never quite fit. Eventually invades the brain."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/Found",
+          "subject": "Sleeping sickness",
+          "label": "Found",
+          "text": "Sub-Saharan Africa; spread by the tsetse fly."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/Prevent",
+          "subject": "Sleeping sickness",
+          "label": "Prevent",
+          "text": "Vector control."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/Treat",
+          "subject": "Sleeping sickness",
+          "label": "Treat",
+          "text": "Drugs exist, and cases have collapsed. Its trick. Changing disguise. Is why a vaccine is so hard."
+        },
+        {
+          "id": "DISEASE/Filariasis/Discovered",
+          "subject": "Filariasis",
+          "label": "Discovered",
+          "text": "Elephantiasis; the worm was found by Patrick Manson, 1877."
+        },
+        {
+          "id": "DISEASE/Filariasis/Causes",
+          "subject": "Filariasis",
+          "label": "Causes",
+          "text": "Adult worms BLOCK YOUR LYMPHATIC VESSELS. Fluid cannot drain, and limbs swell enormously."
+        },
+        {
+          "id": "DISEASE/Filariasis/Found",
+          "subject": "Filariasis",
+          "label": "Found",
+          "text": "Tropics; India has run one of the world's largest elimination programmes."
+        },
+        {
+          "id": "DISEASE/Filariasis/Prevent",
+          "subject": "Filariasis",
+          "label": "Prevent",
+          "text": "Mass drug administration; mosquito control."
+        },
+        {
+          "id": "DISEASE/Filariasis/Treat",
+          "subject": "Filariasis",
+          "label": "Treat",
+          "text": "Antiparasitic drugs kill the worms; the swelling is often permanent."
+        },
+        {
+          "id": "DISEASE/Snake venom/Discovered",
+          "subject": "Snake venom",
+          "label": "Discovered",
+          "text": "Antivenom invented by Albert Calmette, 1895. Using antibodies from horses."
+        },
+        {
+          "id": "DISEASE/Snake venom/Causes",
+          "subject": "Snake venom",
+          "label": "Causes",
+          "text": "Not alive, not a germ. A mix of toxic proteins. Attacks heart, kidneys and nerves."
+        },
+        {
+          "id": "DISEASE/Snake venom/Found",
+          "subject": "Snake venom",
+          "label": "Found",
+          "text": "India has the world's highest snakebite death toll. Roughly 58,000 a year."
+        },
+        {
+          "id": "DISEASE/Snake venom/Prevent",
+          "subject": "Snake venom",
+          "label": "Prevent",
+          "text": "Boots and a torch after dark; never reach blindly into grass."
+        },
+        {
+          "id": "DISEASE/Snake venom/Treat",
+          "subject": "Snake venom",
+          "label": "Treat",
+          "text": "ANTIVENOM. Borrowed antibodies. PASSIVE immunity: instant, but temporary."
+        },
+        {
+          "id": "DISEASE/Russell's viper venom/Discovered",
+          "subject": "Russell's viper venom",
+          "label": "Discovered",
+          "text": "One of India's 'Big Four' snakes."
+        },
+        {
+          "id": "DISEASE/Russell's viper venom/Causes",
+          "subject": "Russell's viper venom",
+          "label": "Causes",
+          "text": "Destroys blood clotting and shreds the KIDNEYS. A leading cause of snakebite death in India."
+        },
+        {
+          "id": "DISEASE/Russell's viper venom/Found",
+          "subject": "Russell's viper venom",
+          "label": "Found",
+          "text": "Across the Indian subcontinent."
+        },
+        {
+          "id": "DISEASE/Russell's viper venom/Prevent",
+          "subject": "Russell's viper venom",
+          "label": "Prevent",
+          "text": "Boots; clear rubble near homes; torch at night."
+        },
+        {
+          "id": "DISEASE/Russell's viper venom/Treat",
+          "subject": "Russell's viper venom",
+          "label": "Treat",
+          "text": "Antivenom, urgently. Dialysis may be needed for the kidneys."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/Discovered",
+          "subject": "Red scorpion sting",
+          "label": "Discovered",
+          "text": "Indian red scorpion. Among the most lethal scorpions in the world."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/Causes",
+          "subject": "Red scorpion sting",
+          "label": "Causes",
+          "text": "Venom floods the body with adrenaline; the HEART and LUNGS fail."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/Found",
+          "subject": "Red scorpion sting",
+          "label": "Found",
+          "text": "Western and southern India; a major cause of child deaths in some districts."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/Prevent",
+          "subject": "Red scorpion sting",
+          "label": "Prevent",
+          "text": "Shake out shoes; seal home floors."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/Treat",
+          "subject": "Red scorpion sting",
+          "label": "Treat",
+          "text": "The drug prazosin transformed survival. An Indian medical breakthrough."
+        },
+        {
+          "id": "DISEASE/Tetanus/Discovered",
+          "subject": "Tetanus",
+          "label": "Discovered",
+          "text": "Toxin isolated 1890 by Kitasato and von Behring."
+        },
+        {
+          "id": "DISEASE/Tetanus/Causes",
+          "subject": "Tetanus",
+          "label": "Causes",
+          "text": "Its TOXIN locks the muscles rigid. 'lockjaw'. Not contagious at all."
+        },
+        {
+          "id": "DISEASE/Tetanus/Found",
+          "subject": "Tetanus",
+          "label": "Found",
+          "text": "Soil and rusty metal, worldwide."
+        },
+        {
+          "id": "DISEASE/Tetanus/Prevent",
+          "subject": "Tetanus",
+          "label": "Prevent",
+          "text": "Tetanus vaccine and boosters; clean wounds."
+        },
+        {
+          "id": "DISEASE/Tetanus/Treat",
+          "subject": "Tetanus",
+          "label": "Treat",
+          "text": "Antitoxin and intensive care. Only antibodies can neutralise a toxin."
+        },
+        {
+          "id": "DISEASE/Tetanus/Fact",
+          "subject": "Tetanus",
+          "label": "Card fact",
+          "text": "A toxin that locks muscles ('lockjaw')."
+        },
+        {
+          "id": "DISEASE/MRSA/Discovered",
+          "subject": "MRSA",
+          "label": "Discovered",
+          "text": "Methicillin-resistant Staph aureus, first seen 1961."
+        },
+        {
+          "id": "DISEASE/MRSA/Causes",
+          "subject": "MRSA",
+          "label": "Causes",
+          "text": "Skin abscesses. And in the blood it can seed ANY organ, including heart valves."
+        },
+        {
+          "id": "DISEASE/MRSA/Found",
+          "subject": "MRSA",
+          "label": "Found",
+          "text": "Worldwide, especially hospitals."
+        },
+        {
+          "id": "DISEASE/MRSA/Prevent",
+          "subject": "MRSA",
+          "label": "Prevent",
+          "text": "Hand hygiene; careful antibiotic use."
+        },
+        {
+          "id": "DISEASE/MRSA/Treat",
+          "subject": "MRSA",
+          "label": "Treat",
+          "text": "Only a few antibiotics still work. The classic superbug."
+        },
+        {
+          "id": "DISEASE/MRSA/Fact",
+          "subject": "MRSA",
+          "label": "Card fact",
+          "text": "A superbug. In the blood it can seed ANY organ, including heart valves."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Discovered",
+          "subject": "Cellulitis",
+          "label": "Discovered",
+          "text": "Caused by Streptococcus or Staphylococcus."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Causes",
+          "subject": "Cellulitis",
+          "label": "Causes",
+          "text": "Hot, red, spreading skin infection; can reach blood, bone and heart valves."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Found",
+          "subject": "Cellulitis",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Prevent",
+          "subject": "Cellulitis",
+          "label": "Prevent",
+          "text": "Clean and cover cuts."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Treat",
+          "subject": "Cellulitis",
+          "label": "Treat",
+          "text": "Antibiotics."
+        },
+        {
+          "id": "DISEASE/Cellulitis/Fact",
+          "subject": "Cellulitis",
+          "label": "Card fact",
+          "text": "Staph/Strep skin infection; can settle on heart valves."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Discovered",
+          "subject": "Leptospirosis",
+          "label": "Discovered",
+          "text": "Bacterium identified 1907."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Causes",
+          "subject": "Leptospirosis",
+          "label": "Causes",
+          "text": "Fever, then kidney and liver failure (Weil's disease)."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Found",
+          "subject": "Leptospirosis",
+          "label": "Found",
+          "text": "Tropics; a monsoon and flood disease in India."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Prevent",
+          "subject": "Leptospirosis",
+          "label": "Prevent",
+          "text": "Avoid wading in floodwater with open cuts; rodent control."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Treat",
+          "subject": "Leptospirosis",
+          "label": "Treat",
+          "text": "Antibiotics, early."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/Fact",
+          "subject": "Leptospirosis",
+          "label": "Card fact",
+          "text": "Enters through cuts in floodwater. A monsoon risk."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Discovered",
+          "subject": "Gas gangrene",
+          "label": "Discovered",
+          "text": "Clostridium perfringens. Notorious in the trenches of WWI."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Causes",
+          "subject": "Gas gangrene",
+          "label": "Causes",
+          "text": "Destroys tissue fast, producing gas; its toxins poison the kidneys."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Found",
+          "subject": "Gas gangrene",
+          "label": "Found",
+          "text": "Worldwide, in deep dirty wounds."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Prevent",
+          "subject": "Gas gangrene",
+          "label": "Prevent",
+          "text": "Clean deep wounds promptly."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Treat",
+          "subject": "Gas gangrene",
+          "label": "Treat",
+          "text": "Surgery plus antibiotics. A true emergency."
+        },
+        {
+          "id": "DISEASE/Gas gangrene/Fact",
+          "subject": "Gas gangrene",
+          "label": "Card fact",
+          "text": "Destroys deep tissue fast; a surgical emergency."
+        },
+        {
+          "id": "DISEASE/Syphilis/Discovered",
+          "subject": "Syphilis",
+          "label": "Discovered",
+          "text": "Bacterium found 1905; the first 'magic bullet' drug (Salvarsan) targeted it."
+        },
+        {
+          "id": "DISEASE/Syphilis/Causes",
+          "subject": "Syphilis",
+          "label": "Causes",
+          "text": "Progresses over years to attack the brain and heart. Can pass to an unborn baby."
+        },
+        {
+          "id": "DISEASE/Syphilis/Found",
+          "subject": "Syphilis",
+          "label": "Found",
+          "text": "Worldwide; rising again."
+        },
+        {
+          "id": "DISEASE/Syphilis/Prevent",
+          "subject": "Syphilis",
+          "label": "Prevent",
+          "text": "Safe practices; screening in pregnancy."
+        },
+        {
+          "id": "DISEASE/Syphilis/Treat",
+          "subject": "Syphilis",
+          "label": "Treat",
+          "text": "Penicillin. Still completely effective after 80 years."
+        },
+        {
+          "id": "DISEASE/Brucellosis/Discovered",
+          "subject": "Brucellosis",
+          "label": "Discovered",
+          "text": "Traced to goat's milk by David Bruce, 1887."
+        },
+        {
+          "id": "DISEASE/Brucellosis/Causes",
+          "subject": "Brucellosis",
+          "label": "Causes",
+          "text": "Undulating fever; settles in the spleen, liver and bones."
+        },
+        {
+          "id": "DISEASE/Brucellosis/Found",
+          "subject": "Brucellosis",
+          "label": "Found",
+          "text": "Worldwide, from unpasteurised milk and infected livestock."
+        },
+        {
+          "id": "DISEASE/Brucellosis/Prevent",
+          "subject": "Brucellosis",
+          "label": "Prevent",
+          "text": "Pasteurise milk; vaccinate animals."
+        },
+        {
+          "id": "DISEASE/Brucellosis/Treat",
+          "subject": "Brucellosis",
+          "label": "Treat",
+          "text": "Long courses of antibiotics."
+        },
+        {
+          "id": "DISEASE/Cold sore/Discovered",
+          "subject": "Cold sore",
+          "label": "Discovered",
+          "text": "Herpes simplex virus; known since antiquity."
+        },
+        {
+          "id": "DISEASE/Cold sore/Causes",
+          "subject": "Cold sore",
+          "label": "Causes",
+          "text": "Blisters on the lip. Then retreats into your NERVES to hide from antibodies."
+        },
+        {
+          "id": "DISEASE/Cold sore/Found",
+          "subject": "Cold sore",
+          "label": "Found",
+          "text": "Worldwide; most adults carry it."
+        },
+        {
+          "id": "DISEASE/Cold sore/Prevent",
+          "subject": "Cold sore",
+          "label": "Prevent",
+          "text": "Avoid contact during an outbreak."
+        },
+        {
+          "id": "DISEASE/Cold sore/Treat",
+          "subject": "Cold sore",
+          "label": "Treat",
+          "text": "Antivirals shorten attacks. It is never fully cleared."
+        },
+        {
+          "id": "DISEASE/Cold sore/Fact",
+          "subject": "Cold sore",
+          "label": "Card fact",
+          "text": "Retreats into nerves to hide from antibodies."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/Discovered",
+          "subject": "Human papillomavirus",
+          "label": "Discovered",
+          "text": "Link to cervical cancer proven by Harald zur Hausen (Nobel Prize, 2008)."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/Causes",
+          "subject": "Human papillomavirus",
+          "label": "Causes",
+          "text": "Hides inside cells for years and can turn them cancerous. It causes almost ALL cervical cancer."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/Found",
+          "subject": "Human papillomavirus",
+          "label": "Found",
+          "text": "Worldwide; most adults meet it at some point."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/Prevent",
+          "subject": "Human papillomavirus",
+          "label": "Prevent",
+          "text": "The HPV VACCINE. The first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/Treat",
+          "subject": "Human papillomavirus",
+          "label": "Treat",
+          "text": "No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts."
+        },
+        {
+          "id": "DISEASE/Ebola/Discovered",
+          "subject": "Ebola",
+          "label": "Discovered",
+          "text": "First outbreak near the Ebola River, 1976."
+        },
+        {
+          "id": "DISEASE/Ebola/Causes",
+          "subject": "Ebola",
+          "label": "Causes",
+          "text": "Massive internal bleeding; liver and spleen collapse. Kills up to 90%."
+        },
+        {
+          "id": "DISEASE/Ebola/Found",
+          "subject": "Ebola",
+          "label": "Found",
+          "text": "Central and West Africa."
+        },
+        {
+          "id": "DISEASE/Ebola/Prevent",
+          "subject": "Ebola",
+          "label": "Prevent",
+          "text": "Isolation, protective equipment. And now a working vaccine."
+        },
+        {
+          "id": "DISEASE/Ebola/Treat",
+          "subject": "Ebola",
+          "label": "Treat",
+          "text": "Antibody treatments and supportive care; survival has improved greatly."
+        },
+        {
+          "id": "DISEASE/Anthrax/Discovered",
+          "subject": "Anthrax",
+          "label": "Discovered",
+          "text": "Robert Koch used it in 1876 to PROVE germs cause disease. Pasteur vaccinated sheep in 1881."
+        },
+        {
+          "id": "DISEASE/Anthrax/Causes",
+          "subject": "Anthrax",
+          "label": "Causes",
+          "text": "Its TOXIN kills cells directly; the inhaled form is nearly always fatal."
+        },
+        {
+          "id": "DISEASE/Anthrax/Found",
+          "subject": "Anthrax",
+          "label": "Found",
+          "text": "Soil worldwide; affects livestock handlers."
+        },
+        {
+          "id": "DISEASE/Anthrax/Prevent",
+          "subject": "Anthrax",
+          "label": "Prevent",
+          "text": "Vaccinate livestock; handle hides carefully."
+        },
+        {
+          "id": "DISEASE/Anthrax/Treat",
+          "subject": "Anthrax",
+          "label": "Treat",
+          "text": "Antibiotics plus ANTITOXIN. The toxin must be neutralised separately."
+        },
+        {
+          "id": "DISEASE/Hookworm/Discovered",
+          "subject": "Hookworm",
+          "label": "Discovered",
+          "text": "Linked to anaemia by Arthur Looss, 1898. He infected himself by accident."
+        },
+        {
+          "id": "DISEASE/Hookworm/Causes",
+          "subject": "Hookworm",
+          "label": "Causes",
+          "text": "Burrows in through BARE SKIN, travels to the gut, and drinks your blood. Causing anaemia."
+        },
+        {
+          "id": "DISEASE/Hookworm/Found",
+          "subject": "Hookworm",
+          "label": "Found",
+          "text": "Warm damp soil where people walk barefoot."
+        },
+        {
+          "id": "DISEASE/Hookworm/Prevent",
+          "subject": "Hookworm",
+          "label": "Prevent",
+          "text": "Wear shoes; sanitation."
+        },
+        {
+          "id": "DISEASE/Hookworm/Treat",
+          "subject": "Hookworm",
+          "label": "Treat",
+          "text": "Deworming tablets plus iron."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/Discovered",
+          "subject": "Schistosomiasis",
+          "label": "Discovered",
+          "text": "Worm found by Theodor Bilharz, 1851."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/Causes",
+          "subject": "Schistosomiasis",
+          "label": "Causes",
+          "text": "Larvae penetrate skin in fresh water; adult worms scar the liver and bladder."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/Found",
+          "subject": "Schistosomiasis",
+          "label": "Found",
+          "text": "Africa, Middle East, parts of Asia."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/Prevent",
+          "subject": "Schistosomiasis",
+          "label": "Prevent",
+          "text": "Avoid infested fresh water; snail control."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/Treat",
+          "subject": "Schistosomiasis",
+          "label": "Treat",
+          "text": "Praziquantel. A single effective drug."
+        },
+        {
+          "id": "DISEASE/Guinea worm/Discovered",
+          "subject": "Guinea worm",
+          "label": "Discovered",
+          "text": "Ancient. Possibly the 'fiery serpent' of the Bible."
+        },
+        {
+          "id": "DISEASE/Guinea worm/Causes",
+          "subject": "Guinea worm",
+          "label": "Causes",
+          "text": "A metre-long worm slowly emerges through the skin."
+        },
+        {
+          "id": "DISEASE/Guinea worm/Found",
+          "subject": "Guinea worm",
+          "label": "Found",
+          "text": "ALMOST ERADICATED. From 3.5 million cases in 1986 to a handful today."
+        },
+        {
+          "id": "DISEASE/Guinea worm/Prevent",
+          "subject": "Guinea worm",
+          "label": "Prevent",
+          "text": "Filter drinking water. No drug, no vaccine. Just clean water."
+        },
+        {
+          "id": "DISEASE/Guinea worm/Treat",
+          "subject": "Guinea worm",
+          "label": "Treat",
+          "text": "Wind the worm out slowly. Proof that prevention alone can defeat a disease."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/Discovered",
+          "subject": "Histoplasmosis",
+          "label": "Discovered",
+          "text": "Described 1906."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/Causes",
+          "subject": "Histoplasmosis",
+          "label": "Causes",
+          "text": "A fungus from soil with bird or bat droppings; attacks the lungs and spleen."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/Found",
+          "subject": "Histoplasmosis",
+          "label": "Found",
+          "text": "Worldwide, including river valleys of India."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/Prevent",
+          "subject": "Histoplasmosis",
+          "label": "Prevent",
+          "text": "Avoid dusty caves and bird roosts."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/Treat",
+          "subject": "Histoplasmosis",
+          "label": "Treat",
+          "text": "Antifungals; often self-limiting in healthy people."
+        },
+        {
+          "id": "DISEASE/Typhoid/Discovered",
+          "subject": "Typhoid",
+          "label": "Discovered",
+          "text": "Salmonella Typhi; 'Typhoid Mary' spread it while healthy herself."
+        },
+        {
+          "id": "DISEASE/Typhoid/Causes",
+          "subject": "Typhoid",
+          "label": "Causes",
+          "text": "Prolonged high fever; infects the liver, spleen and gut."
+        },
+        {
+          "id": "DISEASE/Typhoid/Found",
+          "subject": "Typhoid",
+          "label": "Found",
+          "text": "Where sanitation is poor. Common in South Asia."
+        },
+        {
+          "id": "DISEASE/Typhoid/Prevent",
+          "subject": "Typhoid",
+          "label": "Prevent",
+          "text": "Clean water; typhoid conjugate vaccine."
+        },
+        {
+          "id": "DISEASE/Typhoid/Treat",
+          "subject": "Typhoid",
+          "label": "Treat",
+          "text": "Antibiotics. But drug-resistant typhoid is spreading in India and Pakistan."
+        },
+        {
+          "id": "DISEASE/Typhoid/Fact",
+          "subject": "Typhoid",
+          "label": "Card fact",
+          "text": "Unclean water; hits liver and spleen."
+        },
+        {
+          "id": "DISEASE/Cholera/Discovered",
+          "subject": "Cholera",
+          "label": "Discovered",
+          "text": "John Snow traced it to a London water pump in 1854. The birth of epidemiology."
+        },
+        {
+          "id": "DISEASE/Cholera/Causes",
+          "subject": "Cholera",
+          "label": "Causes",
+          "text": "Its TOXIN forces the gut to pour out litres of water. Dehydration kills within hours."
+        },
+        {
+          "id": "DISEASE/Cholera/Found",
+          "subject": "Cholera",
+          "label": "Found",
+          "text": "Outbreaks wherever water is contaminated."
+        },
+        {
+          "id": "DISEASE/Cholera/Prevent",
+          "subject": "Cholera",
+          "label": "Prevent",
+          "text": "Clean water and sanitation; oral vaccine."
+        },
+        {
+          "id": "DISEASE/Cholera/Treat",
+          "subject": "Cholera",
+          "label": "Treat",
+          "text": "Oral rehydration salts (ORS). Simple, cheap, and one of the great lifesavers."
+        },
+        {
+          "id": "DISEASE/Cholera/Fact",
+          "subject": "Cholera",
+          "label": "Card fact",
+          "text": "Dehydration wrecks the kidneys."
+        },
+        {
+          "id": "DISEASE/Dysentery/Discovered",
+          "subject": "Dysentery",
+          "label": "Discovered",
+          "text": "Shigella, identified by Kiyoshi Shiga, 1897."
+        },
+        {
+          "id": "DISEASE/Dysentery/Causes",
+          "subject": "Dysentery",
+          "label": "Causes",
+          "text": "Bloody diarrhoea; can damage the kidneys."
+        },
+        {
+          "id": "DISEASE/Dysentery/Found",
+          "subject": "Dysentery",
+          "label": "Found",
+          "text": "Where hygiene is poor."
+        },
+        {
+          "id": "DISEASE/Dysentery/Prevent",
+          "subject": "Dysentery",
+          "label": "Prevent",
+          "text": "Handwashing, clean water."
+        },
+        {
+          "id": "DISEASE/Dysentery/Treat",
+          "subject": "Dysentery",
+          "label": "Treat",
+          "text": "Rehydration; antibiotics when severe."
+        },
+        {
+          "id": "DISEASE/Dysentery/Fact",
+          "subject": "Dysentery",
+          "label": "Card fact",
+          "text": "Bloody diarrhoea from dirty water."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Discovered",
+          "subject": "Food poisoning",
+          "label": "Discovered",
+          "text": "E. coli described by Theodor Escherich, 1885."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Causes",
+          "subject": "Food poisoning",
+          "label": "Causes",
+          "text": "Cramps and diarrhoea; some strains harm the kidneys."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Found",
+          "subject": "Food poisoning",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Prevent",
+          "subject": "Food poisoning",
+          "label": "Prevent",
+          "text": "Cook food properly; wash hands."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Treat",
+          "subject": "Food poisoning",
+          "label": "Treat",
+          "text": "Usually self-limiting; rehydration."
+        },
+        {
+          "id": "DISEASE/Food poisoning/Fact",
+          "subject": "Food poisoning",
+          "label": "Card fact",
+          "text": "Some E. coli damage the kidneys (HUS)."
+        },
+        {
+          "id": "DISEASE/Listeria/Discovered",
+          "subject": "Listeria",
+          "label": "Discovered",
+          "text": "Named after Joseph Lister, 1940."
+        },
+        {
+          "id": "DISEASE/Listeria/Causes",
+          "subject": "Listeria",
+          "label": "Causes",
+          "text": "Survives refrigeration; crosses into the BRAIN and the placenta."
+        },
+        {
+          "id": "DISEASE/Listeria/Found",
+          "subject": "Listeria",
+          "label": "Found",
+          "text": "Soft cheeses, deli meats; worldwide."
+        },
+        {
+          "id": "DISEASE/Listeria/Prevent",
+          "subject": "Listeria",
+          "label": "Prevent",
+          "text": "Avoid unpasteurised dairy in pregnancy."
+        },
+        {
+          "id": "DISEASE/Listeria/Treat",
+          "subject": "Listeria",
+          "label": "Treat",
+          "text": "Antibiotics."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/Discovered",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Discovered",
+          "text": "Barry Marshall DRANK the bacteria in 1984 to prove they cause ulcers. He won the Nobel Prize."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/Causes",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Causes",
+          "text": "Burrows into the stomach lining; causes ulcers and stomach cancer."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/Found",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Found",
+          "text": "Perhaps half the world carries it."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/Prevent",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Prevent",
+          "text": "Hygiene and clean water."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/Treat",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Treat",
+          "text": "Antibiotics CURE it. Ulcers were once thought to be caused by stress."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Discovered",
+          "subject": "Rotavirus",
+          "label": "Discovered",
+          "text": "Discovered 1973."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Causes",
+          "subject": "Rotavirus",
+          "label": "Causes",
+          "text": "Severe diarrhoea and dehydration in young children."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Found",
+          "subject": "Rotavirus",
+          "label": "Found",
+          "text": "Worldwide; a leading killer of children before vaccines."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Prevent",
+          "subject": "Rotavirus",
+          "label": "Prevent",
+          "text": "Rotavirus vaccine. Now in India's immunisation programme."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Treat",
+          "subject": "Rotavirus",
+          "label": "Treat",
+          "text": "Oral rehydration."
+        },
+        {
+          "id": "DISEASE/Rotavirus/Fact",
+          "subject": "Rotavirus",
+          "label": "Card fact",
+          "text": "A top cause of child diarrhoea. Vaccine-preventable."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Discovered",
+          "subject": "Hepatitis A",
+          "label": "Discovered",
+          "text": "Virus identified 1973."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Causes",
+          "subject": "Hepatitis A",
+          "label": "Causes",
+          "text": "Liver inflammation and jaundice; no chronic form."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Found",
+          "subject": "Hepatitis A",
+          "label": "Found",
+          "text": "Where sanitation is poor."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Prevent",
+          "subject": "Hepatitis A",
+          "label": "Prevent",
+          "text": "Vaccine; clean food and water."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Treat",
+          "subject": "Hepatitis A",
+          "label": "Treat",
+          "text": "Rest; recovery is usually complete."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/Fact",
+          "subject": "Hepatitis A",
+          "label": "Card fact",
+          "text": "A liver virus from contaminated food or water."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Discovered",
+          "subject": "Hepatitis E",
+          "label": "Discovered",
+          "text": "Recognised after outbreaks in INDIA in the 1970s-80s."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Causes",
+          "subject": "Hepatitis E",
+          "label": "Causes",
+          "text": "Liver inflammation; especially dangerous in pregnancy."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Found",
+          "subject": "Hepatitis E",
+          "label": "Found",
+          "text": "Waterborne; common in South Asia."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Prevent",
+          "subject": "Hepatitis E",
+          "label": "Prevent",
+          "text": "Clean water."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Treat",
+          "subject": "Hepatitis E",
+          "label": "Treat",
+          "text": "Supportive care."
+        },
+        {
+          "id": "DISEASE/Hepatitis E/Fact",
+          "subject": "Hepatitis E",
+          "label": "Card fact",
+          "text": "Waterborne liver virus."
+        },
+        {
+          "id": "DISEASE/Norovirus/Discovered",
+          "subject": "Norovirus",
+          "label": "Discovered",
+          "text": "Traced to an outbreak in Norwalk, Ohio, 1968."
+        },
+        {
+          "id": "DISEASE/Norovirus/Causes",
+          "subject": "Norovirus",
+          "label": "Causes",
+          "text": "Sudden violent vomiting and diarrhoea; astonishingly contagious."
+        },
+        {
+          "id": "DISEASE/Norovirus/Found",
+          "subject": "Norovirus",
+          "label": "Found",
+          "text": "Worldwide. Famous on cruise ships and in schools."
+        },
+        {
+          "id": "DISEASE/Norovirus/Prevent",
+          "subject": "Norovirus",
+          "label": "Prevent",
+          "text": "Handwashing (alcohol gel works poorly here)."
+        },
+        {
+          "id": "DISEASE/Norovirus/Treat",
+          "subject": "Norovirus",
+          "label": "Treat",
+          "text": "Rehydration; passes in a couple of days."
+        },
+        {
+          "id": "DISEASE/Norovirus/Fact",
+          "subject": "Norovirus",
+          "label": "Card fact",
+          "text": "The 'winter vomiting' bug."
+        },
+        {
+          "id": "DISEASE/Polio/Discovered",
+          "subject": "Polio",
+          "label": "Discovered",
+          "text": "Vaccines by Salk (1955) and Sabin (oral, 1961)."
+        },
+        {
+          "id": "DISEASE/Polio/Causes",
+          "subject": "Polio",
+          "label": "Causes",
+          "text": "Enters through the gut; destroys nerve cells and paralyses."
+        },
+        {
+          "id": "DISEASE/Polio/Found",
+          "subject": "Polio",
+          "label": "Found",
+          "text": "Nearly eradicated. INDIA was declared polio-free in 2014."
+        },
+        {
+          "id": "DISEASE/Polio/Prevent",
+          "subject": "Polio",
+          "label": "Prevent",
+          "text": "Oral polio vaccine. One of the great public-health triumphs."
+        },
+        {
+          "id": "DISEASE/Polio/Treat",
+          "subject": "Polio",
+          "label": "Treat",
+          "text": "No cure for the paralysis. Prevention is everything."
+        },
+        {
+          "id": "DISEASE/Polio/Fact",
+          "subject": "Polio",
+          "label": "Card fact",
+          "text": "Enters via the gut, attacks nerves."
+        },
+        {
+          "id": "DISEASE/Botulism/Discovered",
+          "subject": "Botulism",
+          "label": "Discovered",
+          "text": "Toxin identified 1895. The most poisonous substance known to science."
+        },
+        {
+          "id": "DISEASE/Botulism/Causes",
+          "subject": "Botulism",
+          "label": "Causes",
+          "text": "Not alive. Paralyses every muscle, including breathing. A few nanograms can kill."
+        },
+        {
+          "id": "DISEASE/Botulism/Found",
+          "subject": "Botulism",
+          "label": "Found",
+          "text": "Improperly canned or preserved food."
+        },
+        {
+          "id": "DISEASE/Botulism/Prevent",
+          "subject": "Botulism",
+          "label": "Prevent",
+          "text": "Proper canning; never feed honey to infants."
+        },
+        {
+          "id": "DISEASE/Botulism/Treat",
+          "subject": "Botulism",
+          "label": "Treat",
+          "text": "ANTITOXIN. (In tiny doses this same toxin is Botox.)"
+        },
+        {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/Discovered",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Discovered",
+          "text": "Named after Kiyoshi Shiga."
+        },
+        {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/Causes",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Causes",
+          "text": "Not alive. Destroys the KIDNEYS (haemolytic uraemic syndrome), especially in children."
+        },
+        {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/Found",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Found",
+          "text": "Undercooked beef, unpasteurised milk."
+        },
+        {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/Prevent",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Prevent",
+          "text": "Cook meat thoroughly."
+        },
+        {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/Treat",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Treat",
+          "text": "Supportive care and dialysis. Antibiotics can make it WORSE by releasing more toxin."
+        },
+        {
+          "id": "DISEASE/Roundworm/Discovered",
+          "subject": "Roundworm",
+          "label": "Discovered",
+          "text": "Ascaris lumbricoides. Grows up to 35 cm long."
+        },
+        {
+          "id": "DISEASE/Roundworm/Causes",
+          "subject": "Roundworm",
+          "label": "Causes",
+          "text": "Larvae migrate THROUGH THE LUNGS, then return to the gut. Can block the intestines."
+        },
+        {
+          "id": "DISEASE/Roundworm/Found",
+          "subject": "Roundworm",
+          "label": "Found",
+          "text": "Where sanitation is poor. One of the commonest infections on Earth."
+        },
+        {
+          "id": "DISEASE/Roundworm/Prevent",
+          "subject": "Roundworm",
+          "label": "Prevent",
+          "text": "Sanitation; deworming programmes."
+        },
+        {
+          "id": "DISEASE/Roundworm/Treat",
+          "subject": "Roundworm",
+          "label": "Treat",
+          "text": "Deworming tablets. Too big for any cell to swallow."
+        },
+        {
+          "id": "DISEASE/Tapeworm/Discovered",
+          "subject": "Tapeworm",
+          "label": "Discovered",
+          "text": "Neurocysticercosis recognised as a major cause of epilepsy."
+        },
+        {
+          "id": "DISEASE/Tapeworm/Causes",
+          "subject": "Tapeworm",
+          "label": "Causes",
+          "text": "Larvae form cysts IN THE BRAIN. A leading cause of adult-onset epilepsy in India."
+        },
+        {
+          "id": "DISEASE/Tapeworm/Found",
+          "subject": "Tapeworm",
+          "label": "Found",
+          "text": "Where pigs are raised with poor sanitation."
+        },
+        {
+          "id": "DISEASE/Tapeworm/Prevent",
+          "subject": "Tapeworm",
+          "label": "Prevent",
+          "text": "Cook pork thoroughly; sanitation; handwashing."
+        },
+        {
+          "id": "DISEASE/Tapeworm/Treat",
+          "subject": "Tapeworm",
+          "label": "Treat",
+          "text": "Antiparasitic drugs plus anti-seizure medicine."
+        },
+        {
+          "id": "DISEASE/Whipworm/Discovered",
+          "subject": "Whipworm",
+          "label": "Discovered",
+          "text": "Trichuris trichiura."
+        },
+        {
+          "id": "DISEASE/Whipworm/Causes",
+          "subject": "Whipworm",
+          "label": "Causes",
+          "text": "Burrows into the gut wall; causes chronic blood loss and anaemia in children."
+        },
+        {
+          "id": "DISEASE/Whipworm/Found",
+          "subject": "Whipworm",
+          "label": "Found",
+          "text": "Warm, humid regions worldwide."
+        },
+        {
+          "id": "DISEASE/Whipworm/Prevent",
+          "subject": "Whipworm",
+          "label": "Prevent",
+          "text": "Sanitation; handwashing."
+        },
+        {
+          "id": "DISEASE/Whipworm/Treat",
+          "subject": "Whipworm",
+          "label": "Treat",
+          "text": "Deworming tablets."
+        },
+        {
+          "id": "DISEASE/Amoebiasis/Discovered",
+          "subject": "Amoebiasis",
+          "label": "Discovered",
+          "text": "Entamoeba histolytica. The species name means 'tissue-dissolving'."
+        },
+        {
+          "id": "DISEASE/Amoebiasis/Causes",
+          "subject": "Amoebiasis",
+          "label": "Causes",
+          "text": "Eats through the gut wall and forms a LIVER ABSCESS."
+        },
+        {
+          "id": "DISEASE/Amoebiasis/Found",
+          "subject": "Amoebiasis",
+          "label": "Found",
+          "text": "Common in India and other tropical regions."
+        },
+        {
+          "id": "DISEASE/Amoebiasis/Prevent",
+          "subject": "Amoebiasis",
+          "label": "Prevent",
+          "text": "Clean water; wash vegetables."
+        },
+        {
+          "id": "DISEASE/Amoebiasis/Treat",
+          "subject": "Amoebiasis",
+          "label": "Treat",
+          "text": "Metronidazole; the abscess may need draining."
+        },
+        {
+          "id": "DISEASE/Giardia/Discovered",
+          "subject": "Giardia",
+          "label": "Discovered",
+          "text": "Seen by Antonie van Leeuwenhoek in 1681. In his own stool."
+        },
+        {
+          "id": "DISEASE/Giardia/Causes",
+          "subject": "Giardia",
+          "label": "Causes",
+          "text": "Coats the gut and blocks absorption. You eat, but you starve. Draining your energy."
+        },
+        {
+          "id": "DISEASE/Giardia/Found",
+          "subject": "Giardia",
+          "label": "Found",
+          "text": "Worldwide; 'beaver fever' from streams and unclean water."
+        },
+        {
+          "id": "DISEASE/Giardia/Prevent",
+          "subject": "Giardia",
+          "label": "Prevent",
+          "text": "Filter or boil water."
+        },
+        {
+          "id": "DISEASE/Giardia/Treat",
+          "subject": "Giardia",
+          "label": "Treat",
+          "text": "Antiparasitic drugs."
+        },
+        {
+          "id": "DISEASE/Toxoplasmosis/Discovered",
+          "subject": "Toxoplasmosis",
+          "label": "Discovered",
+          "text": "Identified 1908."
+        },
+        {
+          "id": "DISEASE/Toxoplasmosis/Causes",
+          "subject": "Toxoplasmosis",
+          "label": "Causes",
+          "text": "Forms silent CYSTS IN THE BRAIN and hides there for life. Dangerous to unborn babies and to people with AIDS."
+        },
+        {
+          "id": "DISEASE/Toxoplasmosis/Found",
+          "subject": "Toxoplasmosis",
+          "label": "Found",
+          "text": "Worldwide. From undercooked meat and cat faeces."
+        },
+        {
+          "id": "DISEASE/Toxoplasmosis/Prevent",
+          "subject": "Toxoplasmosis",
+          "label": "Prevent",
+          "text": "Cook meat; pregnant women should avoid cat litter."
+        },
+        {
+          "id": "DISEASE/Toxoplasmosis/Treat",
+          "subject": "Toxoplasmosis",
+          "label": "Treat",
+          "text": "Drugs only when it reactivates."
+        },
+        {
+          "id": "DISEASE/Candida/Discovered",
+          "subject": "Candida",
+          "label": "Discovered",
+          "text": "A yeast that lives on almost everyone, harmlessly."
+        },
+        {
+          "id": "DISEASE/Candida/Causes",
+          "subject": "Candida",
+          "label": "Causes",
+          "text": "Normally kept in check by your immune system and your other microbes. But if either falls, it invades ANY organ."
+        },
+        {
+          "id": "DISEASE/Candida/Found",
+          "subject": "Candida",
+          "label": "Found",
+          "text": "Everywhere. It is already on you right now."
+        },
+        {
+          "id": "DISEASE/Candida/Prevent",
+          "subject": "Candida",
+          "label": "Prevent",
+          "text": "Careful antibiotic use. Killing your good bacteria lets Candida bloom."
+        },
+        {
+          "id": "DISEASE/Candida/Treat",
+          "subject": "Candida",
+          "label": "Treat",
+          "text": "Antifungals. The classic OPPORTUNIST."
+        },
+        {
+          "id": "DISEASE/Scabies/Discovered",
+          "subject": "Scabies",
+          "label": "Discovered",
+          "text": "The mite was seen under a microscope in 1687. Making scabies one of the FIRST diseases ever proven to have a specific cause."
+        },
+        {
+          "id": "DISEASE/Scabies/Causes",
+          "subject": "Scabies",
+          "label": "Causes",
+          "text": "A mite that burrows into your skin and lays eggs. The unbearable itch is an ALLERGIC reaction to it. Your own immune system causing the misery."
+        },
+        {
+          "id": "DISEASE/Scabies/Found",
+          "subject": "Scabies",
+          "label": "Found",
+          "text": "Worldwide; ~200 million people at any moment. Spreads by prolonged skin-to-skin contact and shared bedding."
+        },
+        {
+          "id": "DISEASE/Scabies/Prevent",
+          "subject": "Scabies",
+          "label": "Prevent",
+          "text": "Treat the whole household at once, and wash all bedding."
+        },
+        {
+          "id": "DISEASE/Scabies/Treat",
+          "subject": "Scabies",
+          "label": "Treat",
+          "text": "Permethrin cream or ivermectin. Cheap and curable. But it keeps coming back if only one person is treated."
+        },
+        {
+          "id": "DISEASE/Ringworm/Discovered",
+          "subject": "Ringworm",
+          "label": "Discovered",
+          "text": "Not a worm at all. A FUNGUS. The name comes from the ring-shaped rash."
+        },
+        {
+          "id": "DISEASE/Ringworm/Causes",
+          "subject": "Ringworm",
+          "label": "Causes",
+          "text": "A fungus digesting the keratin in your skin, hair and nails."
+        },
+        {
+          "id": "DISEASE/Ringworm/Found",
+          "subject": "Ringworm",
+          "label": "Found",
+          "text": "Everywhere. Spreads by touch, shared towels, and from animals."
+        },
+        {
+          "id": "DISEASE/Ringworm/Prevent",
+          "subject": "Ringworm",
+          "label": "Prevent",
+          "text": "Do not share towels or combs; keep skin dry."
+        },
+        {
+          "id": "DISEASE/Ringworm/Treat",
+          "subject": "Ringworm",
+          "label": "Treat",
+          "text": "Antifungal cream. The commonest fungal infection on Earth. And one of the most misnamed."
+        },
+        {
+          "id": "DISEASE/Impetigo/Discovered",
+          "subject": "Impetigo",
+          "label": "Discovered",
+          "text": "Streptococcus or Staphylococcus on the skin."
+        },
+        {
+          "id": "DISEASE/Impetigo/Causes",
+          "subject": "Impetigo",
+          "label": "Causes",
+          "text": "Golden crusted sores, mainly in children. Highly contagious by touch. Can lead to kidney damage."
+        },
+        {
+          "id": "DISEASE/Impetigo/Found",
+          "subject": "Impetigo",
+          "label": "Found",
+          "text": "Worldwide; common where it is hot and crowded."
+        },
+        {
+          "id": "DISEASE/Impetigo/Prevent",
+          "subject": "Impetigo",
+          "label": "Prevent",
+          "text": "Wash hands and cuts; do not share towels."
+        },
+        {
+          "id": "DISEASE/Impetigo/Treat",
+          "subject": "Impetigo",
+          "label": "Treat",
+          "text": "Antibiotic cream or tablets."
+        },
+        {
+          "id": "DISEASE/Trachoma/Discovered",
+          "subject": "Trachoma",
+          "label": "Discovered",
+          "text": "Chlamydia trachomatis. The SAME species that causes the sexually transmitted infection, arriving by a completely different route."
+        },
+        {
+          "id": "DISEASE/Trachoma/Causes",
+          "subject": "Trachoma",
+          "label": "Causes",
+          "text": "Repeated infection scars the eyelid until the lashes turn INWARD and scrape the eye. Blindness comes slowly, over years."
+        },
+        {
+          "id": "DISEASE/Trachoma/Found",
+          "subject": "Trachoma",
+          "label": "Found",
+          "text": "The world's leading INFECTIOUS cause of blindness. India has fought a long campaign against it."
+        },
+        {
+          "id": "DISEASE/Trachoma/Prevent",
+          "subject": "Trachoma",
+          "label": "Prevent",
+          "text": "Face-washing and clean water. The 'SAFE' strategy. Flies spread it between children's eyes."
+        },
+        {
+          "id": "DISEASE/Trachoma/Treat",
+          "subject": "Trachoma",
+          "label": "Treat",
+          "text": "A single dose of azithromycin. Surgery for the eyelid. **A disease of poverty, cured by soap and water.**"
+        },
+        {
+          "id": "DISEASE/Conjunctivitis/Discovered",
+          "subject": "Conjunctivitis",
+          "label": "Discovered",
+          "text": "Adenovirus. 'pink eye'."
+        },
+        {
+          "id": "DISEASE/Conjunctivitis/Causes",
+          "subject": "Conjunctivitis",
+          "label": "Causes",
+          "text": "Red, weeping, gritty eyes. Astonishingly contagious: rub your eye, touch a door handle, and the next person has it."
+        },
+        {
+          "id": "DISEASE/Conjunctivitis/Found",
+          "subject": "Conjunctivitis",
+          "label": "Found",
+          "text": "Worldwide; sweeps through schools."
+        },
+        {
+          "id": "DISEASE/Conjunctivitis/Prevent",
+          "subject": "Conjunctivitis",
+          "label": "Prevent",
+          "text": "Wash hands. Do not share towels or pillows."
+        },
+        {
+          "id": "DISEASE/Conjunctivitis/Treat",
+          "subject": "Conjunctivitis",
+          "label": "Treat",
+          "text": "Usually clears itself. A NAKED virus. No envelope, so it survives on surfaces for days and hand-gel works poorly on it."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/Discovered",
+          "subject": "Molluscum contagiosum",
+          "label": "Discovered",
+          "text": "A poxvirus. A distant cousin of smallpox."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/Causes",
+          "subject": "Molluscum contagiosum",
+          "label": "Causes",
+          "text": "Small pearly bumps, spread by skin contact and shared towels. Harmless but stubborn."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/Found",
+          "subject": "Molluscum contagiosum",
+          "label": "Found",
+          "text": "Worldwide; common in children."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/Prevent",
+          "subject": "Molluscum contagiosum",
+          "label": "Prevent",
+          "text": "Do not share towels; cover the bumps."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/Treat",
+          "subject": "Molluscum contagiosum",
+          "label": "Treat",
+          "text": "Usually clears on its own. But it can take a year. Your immune system gets there eventually."
+        },
+        {
+          "id": "DISEASE/Endocarditis/Discovered",
+          "subject": "Endocarditis",
+          "label": "Discovered",
+          "text": "Infection of the heart valves. Described by William Osler, 1885."
+        },
+        {
+          "id": "DISEASE/Endocarditis/Causes",
+          "subject": "Endocarditis",
+          "label": "Causes",
+          "text": "Bacteria in the bloodstream settle on a HEART VALVE and build a colony there, where blood flow shields them from your immune cells."
+        },
+        {
+          "id": "DISEASE/Endocarditis/Found",
+          "subject": "Endocarditis",
+          "label": "Found",
+          "text": "Worldwide. A risk after dental work, IV drug use, or a contaminated line. And after rheumatic fever has damaged a valve."
+        },
+        {
+          "id": "DISEASE/Endocarditis/Prevent",
+          "subject": "Endocarditis",
+          "label": "Prevent",
+          "text": "Treat bloodstream infections early; look after damaged valves."
+        },
+        {
+          "id": "DISEASE/Endocarditis/Treat",
+          "subject": "Endocarditis",
+          "label": "Treat",
+          "text": "Weeks of intravenous antibiotics; sometimes surgery to replace the valve."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/Discovered",
+          "subject": "Gonorrhoea",
+          "label": "Discovered",
+          "text": "Bacterium found by Albert Neisser, 1879."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/Causes",
+          "subject": "Gonorrhoea",
+          "label": "Causes",
+          "text": "Infects the reproductive tract; can spread to joints and heart valves. Often causes NO symptoms. So it spreads silently."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/Found",
+          "subject": "Gonorrhoea",
+          "label": "Found",
+          "text": "Worldwide; about 82 million new cases a year."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/Prevent",
+          "subject": "Gonorrhoea",
+          "label": "Prevent",
+          "text": "Condoms; testing and treating partners."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/Treat",
+          "subject": "Gonorrhoea",
+          "label": "Treat",
+          "text": "Antibiotics. But it has now defeated almost every antibiotic we have. The WHO lists it as a PRIORITY superbug. This is antibiotic resistance happening in real time."
+        },
+        {
+          "id": "DISEASE/Chlamydia/Discovered",
+          "subject": "Chlamydia",
+          "label": "Discovered",
+          "text": "Chlamydia trachomatis. The same species that causes trachoma, the leading infectious cause of blindness."
+        },
+        {
+          "id": "DISEASE/Chlamydia/Causes",
+          "subject": "Chlamydia",
+          "label": "Causes",
+          "text": "An INTRACELLULAR bacterium. It lives inside your cells, where antibodies struggle to reach. Usually silent; can cause infertility."
+        },
+        {
+          "id": "DISEASE/Chlamydia/Found",
+          "subject": "Chlamydia",
+          "label": "Found",
+          "text": "The commonest bacterial STI in the world."
+        },
+        {
+          "id": "DISEASE/Chlamydia/Prevent",
+          "subject": "Chlamydia",
+          "label": "Prevent",
+          "text": "Condoms; routine screening."
+        },
+        {
+          "id": "DISEASE/Chlamydia/Treat",
+          "subject": "Chlamydia",
+          "label": "Treat",
+          "text": "Antibiotics. Easy to cure. But only if you know you have it."
+        },
+        {
+          "id": "DISEASE/Genital herpes/Discovered",
+          "subject": "Genital herpes",
+          "label": "Discovered",
+          "text": "Herpes simplex virus type 2."
+        },
+        {
+          "id": "DISEASE/Genital herpes/Causes",
+          "subject": "Genital herpes",
+          "label": "Causes",
+          "text": "Like a cold sore, it retreats into your NERVES and hides there for life. Antibodies cannot follow it in."
+        },
+        {
+          "id": "DISEASE/Genital herpes/Found",
+          "subject": "Genital herpes",
+          "label": "Found",
+          "text": "Worldwide; extremely common."
+        },
+        {
+          "id": "DISEASE/Genital herpes/Prevent",
+          "subject": "Genital herpes",
+          "label": "Prevent",
+          "text": "Condoms reduce but do not eliminate the risk."
+        },
+        {
+          "id": "DISEASE/Genital herpes/Treat",
+          "subject": "Genital herpes",
+          "label": "Treat",
+          "text": "Antivirals control outbreaks. It is never cleared. A lifelong passenger."
+        },
+        {
+          "id": "DISEASE/Trichomoniasis/Discovered",
+          "subject": "Trichomoniasis",
+          "label": "Discovered",
+          "text": "A single-celled protozoan parasite, described 1836."
+        },
+        {
+          "id": "DISEASE/Trichomoniasis/Causes",
+          "subject": "Trichomoniasis",
+          "label": "Causes",
+          "text": "The commonest curable STI on Earth. Often silent."
+        },
+        {
+          "id": "DISEASE/Trichomoniasis/Found",
+          "subject": "Trichomoniasis",
+          "label": "Found",
+          "text": "Worldwide. Around 156 million cases a year."
+        },
+        {
+          "id": "DISEASE/Trichomoniasis/Prevent",
+          "subject": "Trichomoniasis",
+          "label": "Prevent",
+          "text": "Condoms; treating partners."
+        },
+        {
+          "id": "DISEASE/Trichomoniasis/Treat",
+          "subject": "Trichomoniasis",
+          "label": "Treat",
+          "text": "A single course of metronidazole cures it."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/Discovered",
+          "subject": "Hepatitis D",
+          "label": "Discovered",
+          "text": "Identified 1977. The strangest virus in this deck."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/Causes",
+          "subject": "Hepatitis D",
+          "label": "Causes",
+          "text": "It is INCOMPLETE. It cannot infect you on its own: it can ONLY survive if Hepatitis B is already there, because it borrows Hep B's outer coat. A virus that parasitises another virus."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/Found",
+          "subject": "Hepatitis D",
+          "label": "Found",
+          "text": "Wherever Hepatitis B is; the most severe form of viral hepatitis."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/Prevent",
+          "subject": "Hepatitis D",
+          "label": "Prevent",
+          "text": "The Hepatitis B vaccine ALSO prevents Hepatitis D. Block the host and the passenger cannot land."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/Treat",
+          "subject": "Hepatitis D",
+          "label": "Treat",
+          "text": "Hard to treat. Prevention through the Hep B vaccine is the real answer."
+        },
+        {
+          "id": "DISEASE/Transfusion malaria/Discovered",
+          "subject": "Transfusion malaria",
+          "label": "Discovered",
+          "text": "Malaria delivered straight into the bloodstream by transfused blood."
+        },
+        {
+          "id": "DISEASE/Transfusion malaria/Causes",
+          "subject": "Transfusion malaria",
+          "label": "Causes",
+          "text": "It SKIPS the mosquito and skips the tissues. It goes directly to the liver."
+        },
+        {
+          "id": "DISEASE/Transfusion malaria/Found",
+          "subject": "Transfusion malaria",
+          "label": "Found",
+          "text": "Anywhere blood is not properly screened."
+        },
+        {
+          "id": "DISEASE/Transfusion malaria/Prevent",
+          "subject": "Transfusion malaria",
+          "label": "Prevent",
+          "text": "Screening donated blood. Which is why blood banks test every unit."
+        },
+        {
+          "id": "DISEASE/Transfusion malaria/Treat",
+          "subject": "Transfusion malaria",
+          "label": "Treat",
+          "text": "Antimalarials. This is why safe transfusion is a public-health issue, not just a hospital one."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/Discovered",
+          "subject": "Catheter sepsis",
+          "label": "Discovered",
+          "text": "A fungal bloodstream infection from a drip line or catheter."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/Causes",
+          "subject": "Catheter sepsis",
+          "label": "Causes",
+          "text": "Candida travelling up a plastic tube straight into your blood, bypassing every barrier you have."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/Found",
+          "subject": "Catheter sepsis",
+          "label": "Found",
+          "text": "Hospitals worldwide. One of the commonest hospital-acquired infections."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/Prevent",
+          "subject": "Catheter sepsis",
+          "label": "Prevent",
+          "text": "Sterile technique; remove lines as soon as they are not needed."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/Treat",
+          "subject": "Catheter sepsis",
+          "label": "Treat",
+          "text": "Antifungals. A reminder that medicine itself can open a door."
+        },
+        {
+          "id": "DISEASE/Cannula infection/Discovered",
+          "subject": "Cannula infection",
+          "label": "Discovered",
+          "text": "Bacteria entering through a drip needle."
+        },
+        {
+          "id": "DISEASE/Cannula infection/Causes",
+          "subject": "Cannula infection",
+          "label": "Causes",
+          "text": "Staph from the skin, pushed straight into the bloodstream by a needle. Can seed the heart valves."
+        },
+        {
+          "id": "DISEASE/Cannula infection/Found",
+          "subject": "Cannula infection",
+          "label": "Found",
+          "text": "Hospitals worldwide."
+        },
+        {
+          "id": "DISEASE/Cannula infection/Prevent",
+          "subject": "Cannula infection",
+          "label": "Prevent",
+          "text": "Clean the skin; change the line; wash hands."
+        },
+        {
+          "id": "DISEASE/Cannula infection/Treat",
+          "subject": "Cannula infection",
+          "label": "Treat",
+          "text": "Antibiotics. And remove the line."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/Discovered",
+          "subject": "Tetanus toxin",
+          "label": "Discovered",
+          "text": "Isolated 1890."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/Causes",
+          "subject": "Tetanus toxin",
+          "label": "Causes",
+          "text": "Not alive. Locks the muscles rigid. It does not reproduce. It simply poisons."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/Found",
+          "subject": "Tetanus toxin",
+          "label": "Found",
+          "text": "Released by tetanus bacteria in a wound."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/Prevent",
+          "subject": "Tetanus toxin",
+          "label": "Prevent",
+          "text": "Tetanus vaccine trains you to make ANTITOXIN."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/Treat",
+          "subject": "Tetanus toxin",
+          "label": "Treat",
+          "text": "Only antibodies can neutralise it. No cell can eat a toxin."
+        },
+        {
+          "id": "DISEASE/Cholera toxin/Discovered",
+          "subject": "Cholera toxin",
+          "label": "Discovered",
+          "text": "The reason cholera kills."
+        },
+        {
+          "id": "DISEASE/Cholera toxin/Causes",
+          "subject": "Cholera toxin",
+          "label": "Causes",
+          "text": "Not alive. Forces gut cells to pump out water; the kidneys fail from dehydration."
+        },
+        {
+          "id": "DISEASE/Cholera toxin/Found",
+          "subject": "Cholera toxin",
+          "label": "Found",
+          "text": "Released by cholera bacteria."
+        },
+        {
+          "id": "DISEASE/Cholera toxin/Prevent",
+          "subject": "Cholera toxin",
+          "label": "Prevent",
+          "text": "Clean water."
+        },
+        {
+          "id": "DISEASE/Cholera toxin/Treat",
+          "subject": "Cholera toxin",
+          "label": "Treat",
+          "text": "Rehydration; antibodies neutralise the toxin."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/Discovered",
+          "subject": "Clostridial toxin",
+          "label": "Discovered",
+          "text": "The toxin of gas gangrene."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/Causes",
+          "subject": "Clostridial toxin",
+          "label": "Causes",
+          "text": "Not alive. Destroys tissue and poisons the kidneys and liver."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/Found",
+          "subject": "Clostridial toxin",
+          "label": "Found",
+          "text": "Deep dirty wounds."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/Prevent",
+          "subject": "Clostridial toxin",
+          "label": "Prevent",
+          "text": "Clean wounds promptly."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/Treat",
+          "subject": "Clostridial toxin",
+          "label": "Treat",
+          "text": "Antitoxin, surgery, antibiotics."
+        },
+        {
+          "id": "DISEASE/Diphtheria toxin/Discovered",
+          "subject": "Diphtheria toxin",
+          "label": "Discovered",
+          "text": "The toxin von Behring made the first antitoxin against."
+        },
+        {
+          "id": "DISEASE/Diphtheria toxin/Causes",
+          "subject": "Diphtheria toxin",
+          "label": "Causes",
+          "text": "Not alive. Poisons the HEART muscle directly."
+        },
+        {
+          "id": "DISEASE/Diphtheria toxin/Found",
+          "subject": "Diphtheria toxin",
+          "label": "Found",
+          "text": "Released by diphtheria bacteria."
+        },
+        {
+          "id": "DISEASE/Diphtheria toxin/Prevent",
+          "subject": "Diphtheria toxin",
+          "label": "Prevent",
+          "text": "DPT vaccine."
+        },
+        {
+          "id": "DISEASE/Diphtheria toxin/Treat",
+          "subject": "Diphtheria toxin",
+          "label": "Treat",
+          "text": "Antitoxin. Antibodies, urgently."
+        },
+        {
+          "id": "DISEASE/Shingles/Discovered",
+          "subject": "Shingles",
+          "label": "Discovered",
+          "text": "Recognised as reactivated chickenpox, 1953."
+        },
+        {
+          "id": "DISEASE/Shingles/Causes",
+          "subject": "Shingles",
+          "label": "Causes",
+          "text": "The chickenpox virus hid in your nerves for decades and re-emerged."
+        },
+        {
+          "id": "DISEASE/Shingles/Found",
+          "subject": "Shingles",
+          "label": "Found",
+          "text": "Anyone who has had chickenpox."
+        },
+        {
+          "id": "DISEASE/Shingles/Prevent",
+          "subject": "Shingles",
+          "label": "Prevent",
+          "text": "Shingles vaccine."
+        },
+        {
+          "id": "DISEASE/Shingles/Treat",
+          "subject": "Shingles",
+          "label": "Treat",
+          "text": "Antivirals. Proof that some viruses never truly leave."
+        },
+        {
+          "id": "DISEASE/Dengue (ADE)/Discovered",
+          "subject": "Dengue (ADE)",
+          "label": "Discovered",
+          "text": "Antibody-dependent enhancement, described in the 1970s."
+        },
+        {
+          "id": "DISEASE/Dengue (ADE)/Causes",
+          "subject": "Dengue (ADE)",
+          "label": "Causes",
+          "text": "Your antibodies from a PREVIOUS dengue do not neutralise this serotype. They HELP it into your cells."
+        },
+        {
+          "id": "DISEASE/Dengue (ADE)/Found",
+          "subject": "Dengue (ADE)",
+          "label": "Found",
+          "text": "Tropics."
+        },
+        {
+          "id": "DISEASE/Dengue (ADE)/Prevent",
+          "subject": "Dengue (ADE)",
+          "label": "Prevent",
+          "text": "Mosquito control. This is exactly why a dengue vaccine is so hard to make."
+        },
+        {
+          "id": "DISEASE/Dengue (ADE)/Treat",
+          "subject": "Dengue (ADE)",
+          "label": "Treat",
+          "text": "Antibodies will NOT work here. Use cells."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/Discovered",
+          "subject": "Malaria (relapse)",
+          "label": "Discovered",
+          "text": "Hypnozoites described 1982."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/Causes",
+          "subject": "Malaria (relapse)",
+          "label": "Causes",
+          "text": "A dormant form of P. vivax slept in your liver and woke months later. From nothing."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/Found",
+          "subject": "Malaria (relapse)",
+          "label": "Found",
+          "text": "Wherever P. vivax occurs, including India."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/Prevent",
+          "subject": "Malaria (relapse)",
+          "label": "Prevent",
+          "text": "Finish the full course of primaquine to clear the liver."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/Treat",
+          "subject": "Malaria (relapse)",
+          "label": "Treat",
+          "text": "A second drug is needed specifically for the liver forms."
+        },
+        {
+          "id": "DISEASE/Tuberculosis (reactivated)/Discovered",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Discovered",
+          "text": "Latency has been known since the 19th century."
+        },
+        {
+          "id": "DISEASE/Tuberculosis (reactivated)/Causes",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Causes",
+          "text": "TB you thought you had beaten was only sleeping. It woke when your defences fell."
+        },
+        {
+          "id": "DISEASE/Tuberculosis (reactivated)/Found",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Found",
+          "text": "About a quarter of the world carries latent TB."
+        },
+        {
+          "id": "DISEASE/Tuberculosis (reactivated)/Prevent",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Prevent",
+          "text": "Treat latent TB in high-risk people."
+        },
+        {
+          "id": "DISEASE/Tuberculosis (reactivated)/Treat",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Treat",
+          "text": "Months of combination antibiotics."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/Discovered",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Discovered",
+          "text": "Streptococcus pneumoniae, 1881."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/Causes",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Causes",
+          "text": "Moves into lungs stripped bare by influenza. This. Not the flu itself. Killed most victims in 1918."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/Found",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Found",
+          "text": "Worldwide."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/Prevent",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Prevent",
+          "text": "Pneumococcal and flu vaccines."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/Treat",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Treat",
+          "text": "Antibiotics."
+        }
+      ]
+    },
+    {
+      "key": "types",
+      "title": "Part 2 — The pathogen types",
+      "blurb": "What the app tells a player about each kind of invader, and how it is beaten. These sentences name our playing pieces (Monocyte, Killer T-Cell) but they are making a claim about immunology, not about the rules.",
+      "claims": [
+        {
+          "id": "TYPE/virus/beat",
+          "subject": "Virus",
+          "label": "How it is beaten",
+          "text": "Antibody neutralises it, or the Monocyte engulfs it. If it hides inside a cell, only the Killer T-Cell or NK Cell can reach it."
+        },
+        {
+          "id": "TYPE/virus/hint",
+          "subject": "Virus",
+          "label": "In How to play",
+          "text": "Neutralise with a matching antibody, or the Monocyte engulfs it."
+        },
+        {
+          "id": "TYPE/virus/rest",
+          "subject": "Virus",
+          "label": "In How to play",
+          "text": "If it hides inside a cell, only the Killer T-Cell or NK Cell can reach it."
+        },
+        {
+          "id": "TYPE/hidden/beat",
+          "subject": "Hidden Virus",
+          "label": "How it is beaten",
+          "text": "It is INSIDE one of your cells. Antibodies cannot reach it there. Killer T-Cell (never misses) or NK Cell (d6 3+). Not all of these are viruses: Toxoplasmosis and Chagas disease are PROTOZOA that live inside your cells, which is why a Killer T-Cell is the answer for them too."
+        },
+        {
+          "id": "TYPE/hidden/hint",
+          "subject": "Hidden Virus",
+          "label": "In How to play",
+          "text": "It is inside one of your own cells, where antibodies cannot go. Killer T-Cell (never misses) or NK Cell (3 or more)."
+        },
+        {
+          "id": "TYPE/hidden/rest",
+          "subject": "Hidden Virus",
+          "label": "In How to play",
+          "text": "Not all are viruses: Toxoplasmosis and Chagas are protozoa that live inside cells."
+        },
+        {
+          "id": "TYPE/bacteria/beat",
+          "subject": "Bacteria",
+          "label": "How it is beaten",
+          "text": "Coat it with a matching antibody, then engulf it. Or trap the swarm in a Neutrophil NET. It divides if you ignore it!"
+        },
+        {
+          "id": "TYPE/bacteria/hint",
+          "subject": "Bacteria",
+          "label": "In How to play",
+          "text": "Coat it with a matching antibody, then engulf it, or trap the swarm in a NET. It divides if you ignore it."
+        },
+        {
+          "id": "TYPE/bacteria/rest",
+          "subject": "Bacteria",
+          "label": "In How to play",
+          "text": "Up to 8 can pack into one space."
+        },
+        {
+          "id": "TYPE/toxin/beat",
+          "subject": "Toxin",
+          "label": "How it is beaten",
+          "text": "It is NOT alive. No cell can eat it, trap it or snipe it. ANTITOXIN antibodies are the only defence (2 AP to neutralise)."
+        },
+        {
+          "id": "TYPE/toxin/hint",
+          "subject": "Toxin",
+          "label": "In How to play",
+          "text": "Not alive: nothing can eat it, trap it or snipe it. Antitoxin antibodies only, and neutralising costs 2 AP."
+        },
+        {
+          "id": "TYPE/venom/beat",
+          "subject": "Venom",
+          "label": "How it is beaten",
+          "text": "It is NOT alive and acts far too fast for your B-cells. Only an ANTIVENOM dose works. You cannot make antibodies in time."
+        },
+        {
+          "id": "TYPE/venom/hint",
+          "subject": "Venom",
+          "label": "In How to play",
+          "text": "Not alive, and far too fast for your B-cells. Only a ready-made antivenom dose works."
+        },
+        {
+          "id": "TYPE/fungus/beat",
+          "subject": "Fungus",
+          "label": "How it is beaten",
+          "text": "It CANNOT be coated. Antibodies do not opsonise fungi here. The Monocyte engulfs it directly (it has 2 HP, so that chips it), and a Neutrophil NET kills it outright. Fungi are an INNATE problem: neutrophils and macrophages do this work."
+        },
+        {
+          "id": "TYPE/fungus/hint",
+          "subject": "Fungus",
+          "label": "In How to play",
+          "text": "It cannot be coated. The Monocyte engulfs it directly (2 hits, so that chips it) and a NET kills it outright."
+        },
+        {
+          "id": "TYPE/worm/beat",
+          "subject": "Worm",
+          "label": "How it is beaten",
+          "text": "Too big to swallow and immune to NETs. COAT it with an antibody, then the Eosinophil strikes (2 dmg) or degranulates (3 dmg, 2 AP, and it burns the organ)."
+        },
+        {
+          "id": "TYPE/worm/hint",
+          "subject": "Worm",
+          "label": "In How to play",
+          "text": "Too big to swallow and immune to NETs. Coat it, then the Eosinophil strikes (2) or degranulates (3)."
+        },
+        {
+          "id": "TYPE/worm/rest",
+          "subject": "Worm",
+          "label": "In How to play",
+          "text": "It lodges in an organ and chews it every 3 turns."
+        },
+        {
+          "id": "TYPE/malaria/beat",
+          "subject": "Malaria",
+          "label": "How it is beaten",
+          "text": "In the blood: antibodies or the Monocyte. Inside liver cells: only the Killer T-Cell or NK Cell can reach it."
+        },
+        {
+          "id": "TYPE/malaria/hint",
+          "subject": "Malaria",
+          "label": "In How to play",
+          "text": "Three stages. Travelling in the blood: antibodies or the Monocyte. Inside liver cells: Killer T-Cell or NK Cell only. Back in the blood: antibodies again."
+        },
+        {
+          "id": "TYPE/malaria/rest",
+          "subject": "Malaria",
+          "label": "In How to play",
+          "text": "The card has the stages."
+        },
+        {
+          "id": "TYPE/parasite/beat",
+          "subject": "Parasite",
+          "label": "How it is beaten",
+          "text": "Coat it, then STRIKE it down with the Eosinophil (2 dmg) or Monocyte (1 dmg). Once it is on its last HP the Monocyte can finally engulf it. NETs do not hold it."
+        },
+        {
+          "id": "TYPE/parasite/hint",
+          "subject": "Parasite",
+          "label": "In How to play",
+          "text": "Coat it, then strike it down: Eosinophil 2 damage, Monocyte 1."
+        },
+        {
+          "id": "TYPE/parasite/rest",
+          "subject": "Parasite",
+          "label": "In How to play",
+          "text": "Once it is on its last hit point the Monocyte can finally swallow it."
+        }
+      ]
+    },
+    {
+      "key": "cells",
+      "title": "Part 3 — The cells",
+      "blurb": "Seven cells a player commands, each with a card, and seven resident macrophages named for the tissue they live in. **Fourteen named cell types in total.** A cell name is repeated more often than any sentence in the app, because it is what the player calls the piece for the whole game, so a wrong name is the most-repeated error available to us.",
+      "claims": [
+        {
+          "id": "CELL/macrophage/Name",
+          "subject": "Monocyte",
+          "label": "The name we use",
+          "text": "The app calls this piece the Monocyte, for the real-world macrophage."
+        },
+        {
+          "id": "CELL/macrophage/role",
+          "subject": "Monocyte",
+          "label": "What it does",
+          "text": "The big eater. It engulfs one pathogen at a time, the first each turn free and then 1 Action Point each, and every meal raises antigen presentation, the bridge that switches on the adaptive cells."
+        },
+        {
+          "id": "CELL/macrophage/home",
+          "subject": "Monocyte",
+          "label": "Where it comes from",
+          "text": "Made in the marrow. It circulates in the blood as a monocyte and enters tissue where it is needed, maturing into a macrophage there. In the game it starts in the Bloodstream and goes wherever you send it."
+        },
+        {
+          "id": "CELL/macrophage/bestAgainst",
+          "subject": "Monocyte",
+          "label": "What it is best against",
+          "text": "Viruses and coated bacteria on its own space, and blood-stage malaria. It cannot swallow a worm or a full-strength protozoan. Those are physically too big and must be struck down first."
+        },
+        {
+          "id": "CELL/macrophage/deficiency",
+          "subject": "Monocyte",
+          "label": "What happens without it",
+          "text": "Without phagocytes, bacteria and fungi are never cleared, and nothing is ever presented to the adaptive team, so antibodies and killer cells never get their start."
+        },
+        {
+          "id": "CELL/macrophage/fact",
+          "subject": "Monocyte",
+          "label": "Card fact",
+          "text": "A macrophage can engulf tuberculosis bacteria and still fail to kill them. It takes a helper T-cell signal to finish the job, which is why tuberculosis wakes up when helper T-cell counts fall."
+        },
+        {
+          "id": "CELL/macrophage/hint",
+          "subject": "Monocyte",
+          "label": "In How to play",
+          "text": "Engulf: free once a turn, then 1 AP. Swallows a virus, a coated bacterium, a fungus, blood-stage malaria, or a parasite already down to its last hit point."
+        },
+        {
+          "id": "CELL/macrophage/rest",
+          "subject": "Monocyte",
+          "label": "In How to play",
+          "text": "Strike: 1 damage to a coated worm or parasite."
+        },
+        {
+          "id": "CELL/neutrophil/Name",
+          "subject": "Neutrophil",
+          "label": "The name we use",
+          "text": "The app calls this piece the Neutrophil, for the real-world neutrophil."
+        },
+        {
+          "id": "CELL/neutrophil/role",
+          "subject": "Neutrophil",
+          "label": "What it does",
+          "text": "The first responder. It swarms a site and destroys every living microbe standing there at once. Then it is spent, and the marrow takes four turns to replace it, or two with a primed Helper T-Cell in the Bloodstream."
+        },
+        {
+          "id": "CELL/neutrophil/home",
+          "subject": "Neutrophil",
+          "label": "Where it comes from",
+          "text": "The bloodstream, in enormous numbers: the most abundant white cell in the body, made and replaced by the marrow continuously. In the game it starts in the Bloodstream and moves two steps per Action Point."
+        },
+        {
+          "id": "CELL/neutrophil/bestAgainst",
+          "subject": "Neutrophil",
+          "label": "What it is best against",
+          "text": "A swarm: bacteria, fungi and viruses standing together on one space. Not worms, not toxins, and nothing hiding inside one of your own cells."
+        },
+        {
+          "id": "CELL/neutrophil/deficiency",
+          "subject": "Neutrophil",
+          "label": "What happens without it",
+          "text": "Neutropenia, too few neutrophils, as after chemotherapy, leaves the body open to bacterial and fungal infections that are normally stopped within hours."
+        },
+        {
+          "id": "CELL/neutrophil/fact",
+          "subject": "Neutrophil",
+          "label": "Card fact",
+          "text": "Neutrophils live only a day or so, and the marrow makes about a hundred billion of them every day. Their NETs are webs of their own DNA, thrown out to trap and kill microbes."
+        },
+        {
+          "id": "CELL/neutrophil/hint",
+          "subject": "Neutrophil",
+          "label": "In How to play",
+          "text": "NET: traps every living microbe on its own space."
+        },
+        {
+          "id": "CELL/neutrophil/rest",
+          "subject": "Neutrophil",
+          "label": "In How to play",
+          "text": "Then it is spent and returns after 4 turns, or 2 if a primed Helper T-Cell is in the bloodstream."
+        },
+        {
+          "id": "CELL/bcell/Name",
+          "subject": "B-Cell",
+          "label": "The name we use",
+          "text": "The app calls this piece the B-Cell, for the real-world bcell."
+        },
+        {
+          "id": "CELL/bcell/role",
+          "subject": "B-Cell",
+          "label": "What it does",
+          "text": "The antibody factory. It produces antibodies of one class at a time; the antibodies then coat or neutralise pathogens of that class wherever they are."
+        },
+        {
+          "id": "CELL/bcell/home",
+          "subject": "B-Cell",
+          "label": "Where it comes from",
+          "text": "Made in the marrow (the B). In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action."
+        },
+        {
+          "id": "CELL/bcell/bestAgainst",
+          "subject": "B-Cell",
+          "label": "What it is best against",
+          "text": "Anything with an antigen class. Its antibodies tag bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it."
+        },
+        {
+          "id": "CELL/bcell/deficiency",
+          "subject": "B-Cell",
+          "label": "What happens without it",
+          "text": "No B-cells means no antibodies: bacteria and toxins outside cells run unchecked, and there is nothing for a vaccine to build on. The human version is X-linked agammaglobulinaemia."
+        },
+        {
+          "id": "CELL/bcell/fact",
+          "subject": "B-Cell",
+          "label": "Card fact",
+          "text": "Your body already carries B-cells for antigens it has never met. Finding the one that fits a new pathogen, clonal selection, is why a first response takes days, and why the second time is fast."
+        },
+        {
+          "id": "CELL/bcell/hint",
+          "subject": "B-Cell",
+          "label": "In How to play",
+          "text": "Never moves. Produce antibodies of one antigen class."
+        },
+        {
+          "id": "CELL/bcell/rest",
+          "subject": "B-Cell",
+          "label": "In How to play",
+          "text": "Coat a bacterium, worm or parasite. Neutralise a virus, or a toxin for 2 AP. Vaccinate, 5 AP in total. Search for the clone, 3 AP, for Pathogen X."
+        },
+        {
+          "id": "CELL/tcell/Name",
+          "subject": "Killer T-Cell",
+          "label": "The name we use",
+          "text": "The app calls this piece the Killer T-Cell, for the real-world tcell."
+        },
+        {
+          "id": "CELL/tcell/role",
+          "subject": "Killer T-Cell",
+          "label": "What it does",
+          "text": "The sniper. It kills infected cells, anything hiding inside one of your own cells, from a distance, and it never misses."
+        },
+        {
+          "id": "CELL/tcell/home",
+          "subject": "Killer T-Cell",
+          "label": "Where it comes from",
+          "text": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell."
+        },
+        {
+          "id": "CELL/tcell/bestAgainst",
+          "subject": "Killer T-Cell",
+          "label": "What it is best against",
+          "text": "Hidden viruses and the protozoa that live inside cells: Toxoplasma, Chagas, liver-stage malaria, a parasite inside a resident macrophage. Useless against anything out in the open."
+        },
+        {
+          "id": "CELL/tcell/deficiency",
+          "subject": "Killer T-Cell",
+          "label": "What happens without it",
+          "text": "Without killer T-cells, a virus that hides inside cells is never cleared, because the infected cell is never destroyed. Reactivating viruses like shingles are what a weakened T-cell system lets through."
+        },
+        {
+          "id": "CELL/tcell/fact",
+          "subject": "Killer T-Cell",
+          "label": "Card fact",
+          "text": "A killer T-cell recognises an infected cell by the fragments of virus that cell displays on its own surface. The cell reports its own infection."
+        },
+        {
+          "id": "CELL/tcell/hint",
+          "subject": "Killer T-Cell",
+          "label": "In How to play",
+          "text": "Snipe: destroys a pathogen hiding inside one of your cells. Never misses."
+        },
+        {
+          "id": "CELL/tcell/rest",
+          "subject": "Killer T-Cell",
+          "label": "In How to play",
+          "text": "Range 3 on Training, 2 on Normal and Hard, +1 while a primed Helper stands with it."
+        },
+        {
+          "id": "CELL/helper/Name",
+          "subject": "Helper T-Cell",
+          "label": "The name we use",
+          "text": "The app calls this piece the Helper T-Cell, for the real-world helper."
+        },
+        {
+          "id": "CELL/helper/role",
+          "subject": "Helper T-Cell",
+          "label": "What it does",
+          "text": "The conductor. It kills nothing and takes no attacking action; it licenses other cells by standing with them, but only once it has been primed by antigen presentation."
+        },
+        {
+          "id": "CELL/helper/home",
+          "subject": "Helper T-Cell",
+          "label": "Where it comes from",
+          "text": "The Bloodstream at the start. Where it stands afterwards is the whole game: beside the B-Cell, beside the Killer T-Cell, beside the Eosinophil, or parked in the blood."
+        },
+        {
+          "id": "CELL/helper/bestAgainst",
+          "subject": "Helper T-Cell",
+          "label": "What it is best against",
+          "text": "Nothing directly. Beside the B-Cell: +1 antibody per action. Beside the Killer T-Cell: +1 range. Beside the Eosinophil: +1 step. Standing in the Bloodstream: the Neutrophil returns in 2 turns instead of 4."
+        },
+        {
+          "id": "CELL/helper/deficiency",
+          "subject": "Helper T-Cell",
+          "label": "What happens without it",
+          "text": "HIV destroys helper T-cells, and the whole adaptive system collapses with them. That is what AIDS is: not the virus's own damage but the loss of the coordinating layer, leaving the body open to infections it would normally handle easily."
+        },
+        {
+          "id": "CELL/helper/fact",
+          "subject": "Helper T-Cell",
+          "label": "Card fact",
+          "text": "Its three bonuses are real T-helper subsets: Th2 releases IL-5 to recruit eosinophils; Th17 releases IL-17, which drives G-CSF and steps up neutrophil production in the marrow; and direct contact is what licenses a B-cell to make antibodies properly."
+        },
+        {
+          "id": "CELL/helper/hint",
+          "subject": "Helper T-Cell",
+          "label": "In How to play",
+          "text": "It kills nothing. It licenses your other cells, and only after it has been primed."
+        },
+        {
+          "id": "CELL/helper/rest",
+          "subject": "Helper T-Cell",
+          "label": "In How to play",
+          "text": "Priming means an antigen has been presented, which happens the first time any of your cells engulfs or destroys a pathogen. With the B-Cell: +1 antibody per action. With the Killer T-Cell: +1 range. With the Eosinophil: +1 step. In the bloodstream: the Neutrophil returns in 2 turns."
+        },
+        {
+          "id": "CELL/nk/Name",
+          "subject": "NK Cell",
+          "label": "The name we use",
+          "text": "The app calls this piece the NK Cell, for the real-world nk."
+        },
+        {
+          "id": "CELL/nk/role",
+          "subject": "NK Cell",
+          "label": "What it does",
+          "text": "The innate killer. It needs no antigen and no priming, so it attacks an infected cell at once, but it rolls a die, and hits on a 3 or more."
+        },
+        {
+          "id": "CELL/nk/home",
+          "subject": "NK Cell",
+          "label": "Where it comes from",
+          "text": "The bloodstream, patrolling on its own. In the game it starts in the Bloodstream, moves two steps per Action Point, and reaches one step around it."
+        },
+        {
+          "id": "CELL/nk/bestAgainst",
+          "subject": "NK Cell",
+          "label": "What it is best against",
+          "text": "The same hidden targets as the Killer T-Cell, viruses and protozoa inside your own cells, earlier and less reliably. Its reach is one step; the Killer T-Cell reaches further and never misses."
+        },
+        {
+          "id": "CELL/nk/deficiency",
+          "subject": "NK Cell",
+          "label": "What happens without it",
+          "text": "People born without NK cells suffer repeated, severe herpesvirus infections: the viruses that hide inside cells early, before the T-cells are ready."
+        },
+        {
+          "id": "CELL/nk/fact",
+          "subject": "NK Cell",
+          "label": "Card fact",
+          "text": "NK cells kill cells that have stopped showing their identity papers. A virus that hides a cell's surface markers from T-cells makes that cell a target for NK cells instead."
+        },
+        {
+          "id": "CELL/nk/hint",
+          "subject": "NK Cell",
+          "label": "In How to play",
+          "text": "NK strike: attacks a hidden or infected cell within one step, on a die roll of 3 or more."
+        },
+        {
+          "id": "CELL/nk/rest",
+          "subject": "NK Cell",
+          "label": "In How to play",
+          "text": "Needs no antigen and no antibody."
+        },
+        {
+          "id": "CELL/eosinophil/Name",
+          "subject": "Eosinophil",
+          "label": "The name we use",
+          "text": "The app calls this piece the Eosinophil, for the real-world eosinophil."
+        },
+        {
+          "id": "CELL/eosinophil/role",
+          "subject": "Eosinophil",
+          "label": "What it does",
+          "text": "The anti-parasite specialist. It strikes a coated worm or parasite for 2 damage, or degranulates for 3, enough to kill a worm outright, at the price of burning the organ it stands in and four turns spent."
+        },
+        {
+          "id": "CELL/eosinophil/home",
+          "subject": "Eosinophil",
+          "label": "Where it comes from",
+          "text": "Made in the marrow, circulating in small numbers and recruited to wherever a parasite is. In the game it starts in the Bloodstream and gains a step beside a primed Helper T-Cell. That is IL-5."
+        },
+        {
+          "id": "CELL/eosinophil/bestAgainst",
+          "subject": "Eosinophil",
+          "label": "What it is best against",
+          "text": "Worms and large parasites, once antibodies have coated them. It cannot touch an uncoated one, and it is no use against bacteria or viruses."
+        },
+        {
+          "id": "CELL/eosinophil/deficiency",
+          "subject": "Eosinophil",
+          "label": "What happens without it",
+          "text": "Without eosinophils the body loses its specialist weapon against worms, and some worm infections take longer to clear. Where they are over-active, the same granules turn on the body's own airways. That is asthma and allergy."
+        },
+        {
+          "id": "CELL/eosinophil/fact",
+          "subject": "Eosinophil",
+          "label": "Card fact",
+          "text": "Eosinophil granules are indiscriminate poison. That is why parasitic infections cause chronic inflammation and scarring, and why degranulating should feel like a decision rather than a free hit."
+        },
+        {
+          "id": "CELL/eosinophil/hint",
+          "subject": "Eosinophil",
+          "label": "In How to play",
+          "text": "Strike: 2 damage to a coated worm or parasite."
+        },
+        {
+          "id": "CELL/eosinophil/rest",
+          "subject": "Eosinophil",
+          "label": "In How to play",
+          "text": "Degranulate, 2 AP: 3 damage, enough to kill a worm outright, but it burns the organ it stands in and the cell is spent for 4 turns."
+        },
+        {
+          "id": "CELL/resident/hint",
+          "subject": "The resident macrophages",
+          "label": "In How to play",
+          "text": "One lives in each organ. Patrol: 1 AP per step along its own organ branch."
+        },
+        {
+          "id": "CELL/resident/rest",
+          "subject": "The resident macrophages",
+          "label": "In How to play",
+          "text": "It may never leave that branch, and it must be out on the branch to meet anything: nothing can be engulfed in the organ box itself. Engulf, free once per turn: destroy one virus or coated bacterium on its space."
+        },
+        {
+          "id": "CELL/resident/heart",
+          "subject": "Cardiac macrophage",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Heart is called the Cardiac macrophage."
+        },
+        {
+          "id": "CELL/resident/lungs",
+          "subject": "Alveolar macrophage",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Lungs is called the Alveolar macrophage."
+        },
+        {
+          "id": "CELL/resident/liver",
+          "subject": "Kupffer cell",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Liver is called the Kupffer cell."
+        },
+        {
+          "id": "CELL/resident/brain",
+          "subject": "Microglia",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Brain is called the Microglia."
+        },
+        {
+          "id": "CELL/resident/marrow",
+          "subject": "Marrow macrophage",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Bone Marrow is called the Marrow macrophage."
+        },
+        {
+          "id": "CELL/resident/spleen",
+          "subject": "Splenic macrophage",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Spleen is called the Splenic macrophage."
+        },
+        {
+          "id": "CELL/resident/kidneys",
+          "subject": "Renal macrophage",
+          "label": "The name we use",
+          "text": "The macrophage that lives in the Kidneys is called the Renal macrophage."
+        }
+      ]
+    },
+    {
+      "key": "classes",
+      "title": "Part 4 — The antigen classes",
+      "blurb": "The app groups pathogens into six classes by what an antibody actually binds to, and shows this description of each. Which disease we put in which class is a game decision and is not included; whether the description of the class is true is not.",
+      "claims": [
+        {
+          "id": "CLASS/ENV",
+          "subject": "Enveloped virus",
+          "label": "What it is",
+          "text": "Wrapped in a stolen piece of your own cell membrane, studded with spike proteins. Antibodies target the spikes."
+        },
+        {
+          "id": "CLASS/NAK",
+          "subject": "Naked virus",
+          "label": "What it is",
+          "text": "No envelope. A bare protein shell. Tough, survives on surfaces, and antibodies must grip the capsid itself."
+        },
+        {
+          "id": "CLASS/EXB",
+          "subject": "Extracellular bacterium",
+          "label": "What it is",
+          "text": "Lives outside your cells, often behind a slimy capsule. Antibodies opsonise it so phagocytes can grip it."
+        },
+        {
+          "id": "CLASS/ICB",
+          "subject": "Intracellular bacterium",
+          "label": "What it is",
+          "text": "Hides INSIDE your cells, where antibodies struggle to follow. This is why TB is so hard to kill."
+        },
+        {
+          "id": "CLASS/TOX",
+          "subject": "Toxin (antitoxin)",
+          "label": "What it is",
+          "text": "Not alive at all. Cannot be eaten. Antibodies (antitoxin) are the ONLY defence."
+        },
+        {
+          "id": "CLASS/EUK",
+          "subject": "Eukaryotic parasite",
+          "label": "What it is",
+          "text": "Fungi, worms and protozoa. Complex cells like ours, so they are hard to target without harming yourself."
+        }
+      ]
+    },
+    {
+      "key": "organs",
+      "title": "Part 5 — The organs",
+      "blurb": "What the app says about how infection reaches each organ. The damage each organ takes before it is lost is a game number and is not included.",
+      "claims": [
+        {
+          "id": "ORGAN/heart",
+          "subject": "Heart",
+          "label": "How infection reaches it",
+          "text": "The heart itself can be infected. Staph on the valves (endocarditis), Lyme carditis, viral myocarditis. Germs only passing through the bloodstream do NOT infect it; only germs that target heart tissue do."
+        },
+        {
+          "id": "ORGAN/lungs",
+          "subject": "Lungs",
+          "label": "How infection reaches it",
+          "text": "Damaged lungs mean poor gas exchange. The whole body weakens."
+        },
+        {
+          "id": "ORGAN/liver",
+          "subject": "Liver",
+          "label": "How infection reaches it",
+          "text": "The liver makes many defence proteins; damage it and antibody supply falls."
+        },
+        {
+          "id": "ORGAN/marrow",
+          "subject": "Bone Marrow",
+          "label": "How infection reaches it",
+          "text": "All immune cells are made in the marrow."
+        },
+        {
+          "id": "ORGAN/brain",
+          "subject": "Brain",
+          "label": "How infection reaches it",
+          "text": "Immune privilege: the blood-brain barrier keeps immune cells out, so it is hard to defend and cannot take much damage."
+        },
+        {
+          "id": "ORGAN/spleen",
+          "subject": "Spleen",
+          "label": "How infection reaches it",
+          "text": "The spleen filters encapsulated bacteria from the blood. Without it, bacterial infection runs wild."
+        },
+        {
+          "id": "ORGAN/kidneys",
+          "subject": "Kidneys",
+          "label": "How infection reaches it",
+          "text": "Damaged kidneys leak antibodies into the urine. A real cause of secondary immunodeficiency."
+        }
+      ]
+    },
+    {
+      "key": "events",
+      "title": "Part 6 — Why each event happens",
+      "blurb": "Things that happen to the body during a game. Each carries a one-sentence reason, which is the app explaining pathophysiology in the smallest space it ever uses, and therefore where a compression error is most likely. What the event does in the game is not included.",
+      "claims": [
+        {
+          "id": "EVENT/immunosuppression",
+          "subject": "Immunosuppression",
+          "label": "The reason given",
+          "text": "Stress or malnutrition blunts the response."
+        },
+        {
+          "id": "EVENT/neutropenia",
+          "subject": "Neutropenia",
+          "label": "The reason given",
+          "text": "Neutrophil count crashes."
+        },
+        {
+          "id": "EVENT/lymphopenia",
+          "subject": "Lymphopenia",
+          "label": "The reason given",
+          "text": "A virus is destroying lymphocytes."
+        },
+        {
+          "id": "EVENT/antibodyShortage",
+          "subject": "Antibody shortage",
+          "label": "The reason given",
+          "text": "Plasma cells can't keep up."
+        },
+        {
+          "id": "EVENT/fatigue",
+          "subject": "Fatigue",
+          "label": "The reason given",
+          "text": "The whole body is exhausted: <b>1 fewer Action Point this turn only</b>."
+        },
+        {
+          "id": "EVENT/coInfection",
+          "subject": "Co-infection",
+          "label": "The reason given",
+          "text": "A second germ slips in while you're busy."
+        },
+        {
+          "id": "EVENT/surge",
+          "subject": "Acute-phase surge",
+          "label": "The reason given",
+          "text": "Inflammation floods the tissue with defenders: <b>+2 Action Points this turn only</b>. (Acute-phase proteins and a burst of cells released from the marrow.)"
+        },
+        {
+          "id": "EVENT/passiveAntibodies",
+          "subject": "Passive antibodies",
+          "label": "The reason given",
+          "text": "A booster tops up your antibodies."
+        },
+        {
+          "id": "EVENT/fever",
+          "subject": "Fever",
+          "label": "The reason given",
+          "text": "Raised temperature slows the invaders (at an energy cost)."
+        },
+        {
+          "id": "EVENT/malariaRelapse",
+          "subject": "Malaria relapse",
+          "label": "The reason given",
+          "text": "A dormant hypnozoite of P. vivax woke up in your liver — months later, from nothing. This is why vivax malaria needs a second drug to clear the liver."
+        },
+        {
+          "id": "EVENT/dengueADE",
+          "subject": "Dengue — antibody-dependent enhancement",
+          "label": "The reason given",
+          "text": "Your dengue antibodies from last time do NOT neutralise this serotype — they HELP it into your cells. Your own immune memory is being used against you. This is why the second dengue infection is the dangerous one."
+        },
+        {
+          "id": "EVENT/tbReactivation",
+          "subject": "TB reactivation",
+          "label": "The reason given",
+          "text": "Latent TB woke up while your defences were down. A quarter of the world carries TB silently."
+        },
+        {
+          "id": "EVENT/shingles",
+          "subject": "Shingles",
+          "label": "The reason given",
+          "text": "The chickenpox virus never left — it hid in your nerves for years and has re-emerged."
+        },
+        {
+          "id": "EVENT/postFluPneumonia",
+          "subject": "Post-influenza pneumonia",
+          "label": "The reason given",
+          "text": "Flu stripped your airway lining and bacteria moved in. This is what killed most victims of the 1918 pandemic — not the flu itself."
+        },
+        {
+          "id": "EVENT/rheumaticFever",
+          "subject": "Rheumatic fever",
+          "label": "The reason given",
+          "text": "MOLECULAR MIMICRY: your anti-Strep antibodies cannot tell the difference between the bacterium and your own heart valve — so they are attacking your heart. A leading cause of heart disease in Indian children."
+        },
+        {
+          "id": "EVENT/cytokineStorm",
+          "subject": "Cytokine storm",
+          "label": "The reason given",
+          "text": "Your immune response went into overdrive and the inflammation itself burned an organ. This is what killed young, healthy people in COVID and in 1918 — the response, not the germ."
+        }
+      ]
+    },
+    {
+      "key": "why",
+      "title": "Part 7 — \"Why it works this way\"",
+      "blurb": "Fifteen passages that explain how immunity works in general, rather than describing one disease. These are the ones most likely to be quoted at a science fair or read aloud by a teacher, and they make the broadest claims in the app.",
+      "claims": [
+        {
+          "id": "WHY/window",
+          "subject": "Why surviving the window is not the win",
+          "label": "The passage",
+          "text": "Real infections do not end when the exposure stops. They end when the last organism is cleared. A person is not well the moment they stop being infected; they are well when their body has finished the job. That is why surviving the window is not a win."
+        },
+        {
+          "id": "WHY/bloodRoute",
+          "subject": "Why the Blood route is short",
+          "label": "The passage",
+          "text": "The Blood route is short because a needle, a transfusion or a deep wound puts an infection straight into the bloodstream, skipping the skin, the mucus and the stomach acid that stop almost everything else. Bloodborne infection is fast because it has cheated the barriers."
+        },
+        {
+          "id": "WHY/lymphatics",
+          "subject": "Why the lymphatic shortcuts join the routes they do",
+          "label": "The passage",
+          "text": "Mucosal surfaces share a common defensive system (MALT), and skin wounds drain to shared regional lymph nodes. A needle into a vein bypasses lymphatic drainage entirely, which is exactly why the Blood route has no shortcut."
+        },
+        {
+          "id": "WHY/brain",
+          "subject": "Why the Brain is so hard to defend",
+          "label": "The passage",
+          "text": "The blood-brain barrier deliberately keeps immune cells out, to protect neurons that cannot be replaced. That protection is also a weakness: it is why brain infections are so hard to clear, and why the Brain has only 2 integrity instead of 3."
+        },
+        {
+          "id": "WHY/noAntibodies",
+          "subject": "Why you start with no antibodies",
+          "label": "The passage",
+          "text": "You start with zero antibodies because the first adaptive response genuinely takes five to ten days: the one matching B-cell must be found among millions and then multiplied. The innate cells exist to buy exactly those days."
+        },
+        {
+          "id": "WHY/worms",
+          "subject": "Why worms do not multiply inside you",
+          "label": "The passage",
+          "text": "Worms are large animals that burrow into tissue rather than travelling in the blood like a virus. And unlike bacteria they cannot multiply inside you: most human worms lay eggs that must leave the body and develop outside. A person's worm burden grows through repeated exposure, not internal breeding, which is why two per game is biologically honest as well as playable."
+        },
+        {
+          "id": "WHY/toxinMakers",
+          "subject": "Why coating a toxin-maker stops its countdown",
+          "label": "The passage",
+          "text": "Coating a toxin-making bacterium stops its countdown completely: a coated bacterium never advances toward releasing its toxin. That is the game rewarding you for dealing with tetanus early, which is exactly the clinical advice."
+        },
+        {
+          "id": "WHY/coating",
+          "subject": "Why coating is not killing",
+          "label": "The passage",
+          "text": "Coating is separated from killing on purpose. An antibody is a handle, not a weapon. This is opsonisation, and it is why the B-Cell and the Monocyte have to work as a pair."
+        },
+        {
+          "id": "WHY/priming",
+          "subject": "Why the Helper must be primed first",
+          "label": "The passage",
+          "text": "A naive helper T-cell genuinely cannot help anyone until a dendritic cell presents it an antigen. The three bonuses are the real T-helper subsets: Th2 releases IL-5 to recruit eosinophils, Th17 releases IL-17 which drives G-CSF and steps up neutrophil production in the marrow, and helper contact is what licenses a B-cell to make antibodies properly."
+        },
+        {
+          "id": "WHY/nkCell",
+          "subject": "Why the NK Cell rolls a die",
+          "label": "The passage",
+          "text": "The NK cell is innate: it needs no antibody, no antigen presentation and no priming, so it works from turn one. The die is the honest price of that speed. It is fast and always available, but less precise than a Killer T-Cell."
+        },
+        {
+          "id": "WHY/eosinophil",
+          "subject": "Why the Eosinophil burns the organ it stands in",
+          "label": "The passage",
+          "text": "Eosinophil granules are indiscriminate poison. Killing a parasite inside tissue damages that tissue, which is why parasitic infections cause chronic inflammation and scarring, and why degranulating should feel like a decision rather than a free hit."
+        },
+        {
+          "id": "WHY/residents",
+          "subject": "Why a resident never leaves its organ",
+          "label": "The passage",
+          "text": "Tissue-resident macrophages, Kupffer cells in the liver, alveolar macrophages in the lungs, microglia in the brain, live permanently in one organ and never circulate. The 'never leaves' rule is what tissue-residency means."
+        },
+        {
+          "id": "WHY/malaria",
+          "subject": "Why malaria needs three different defences",
+          "label": "The passage",
+          "text": "This is the clearest example in medicine of why the same pathogen needs different defences at different moments. The RTS,S malaria vaccine targets the travelling sporozoite precisely because that brief window is when antibodies can act at all."
+        },
+        {
+          "id": "WHY/vaccines",
+          "subject": "Why you must vaccinate on Normal and Hard",
+          "label": "The passage",
+          "text": "On the harder modes the game forces the real public-health lesson: waiting to catch a disease is a terrible strategy. A vaccine gives you the memory without the illness, and paying 5 Action Points before an outbreak is far cheaper than fighting it twice."
+        },
+        {
+          "id": "WHY/pathogenX",
+          "subject": "Why Pathogen X takes so long to answer",
+          "label": "The passage",
+          "text": "This is clonal selection, and the delay is the point: it is precisely why a genuinely new virus is so dangerous. Your body is not missing the tools; it is searching a library of a hundred million receptor shapes for the one that fits."
+        }
+      ]
+    },
+    {
+      "key": "elsewhere",
+      "title": "Part 8 — General statements about how the body works",
+      "blurb": "Sentences from How to play that explain immunology in general rather than describing one disease, cell or pathogen. Rules text is filtered out aggressively, so this part is short by design: most of what How to play says about a particular cell or invader has already appeared under that subject in Parts 2 and 3.",
+      "claims": [
+        {
+          "id": "TEXT/help.s1.p2",
+          "subject": "How to play",
+          "label": "s1.p2",
+          "text": "Each of you commands one immune cell. Alone, every cell is nearly useless: the Monocyte cannot swallow a worm, the Killer T-Cell cannot touch a toxin, and the B-Cell's antibodies cannot reach anything hiding inside your own cells. Together, you can hold."
+        },
+        {
+          "id": "TEXT/help.s7.p1",
+          "subject": "How to play",
+          "label": "s7.p1",
+          "text": "An antibody only fits its own antigen class. Making the wrong one is wasted work."
+        },
+        {
+          "id": "TEXT/help.s9.rare",
+          "subject": "How to play",
+          "label": "s9.rare",
+          "text": "A few cards carry rarer events that fire at the end of a spread, such as a malaria relapse or shingles. The log names each one and says why."
+        }
+      ]
+    }
+  ]
+}
