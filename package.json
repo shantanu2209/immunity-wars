@@ -39,6 +39,8 @@
     "comment:ci:selftest": "Mutates one file, runs one gate, requires it to FAIL WITH THE RIGHT DIAGNOSTIC, and reverts. A CI pipeline that has never gone red is not known to work, and the usual way to prove it — pushing a broken commit — marks the branch history forever. Not in `pnpm test`: it shells out to the gates, including a full typecheck and lint per control.",
     "comment:docs:check": "The documentation sweep, as a check rather than a habit. CLAUDE.md said 'Current phase: Phase 1' for the whole first session of Phase 2 and ROADMAP.md agreed with it; a stale phase marker is not wrong enough to notice, so it survives. Checks the phase marker resolves and agrees with the brief it names, that every test package reaches tests/suites.json, and that every relative markdown link resolves. It does NOT read prose. Runs inside pnpm verify.",
     "docs:check": "tsx tools/ci/docs-check.ts",
+    "medical:review": "tsx tools/ci/medical-review.ts",
+    "comment:medical:review": "Regenerates docs/MEDICAL_REVIEW.md — every scientific claim the app makes, prose and rules alike, for review by a clinician. NOT a check: it compiles, it does not judge. Reviewer verdicts live in docs/MEDICAL_REVIEW_GUIDE.md, which is hand written and never regenerated.",
     "ci:selftest": "tsx tools/ci/selftest.ts",
     "ci:matrix": "tsx tools/ci/matrix.ts",
     "dashboard:build": "tsx tools/dashboard/build.ts",
