@@ -50,6 +50,7 @@ import {
   type Settings,
   type TextSize,
 } from './settings';
+import { clearHints, readHints, writeHints } from './hints';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -58,6 +59,9 @@ const storage = new IndexedDbStorage();
 // to the root here, before the first paint, so the first frame is already at the chosen size.
 const prefStore = browserStore();
 const initialSettings = readSettings(prefStore);
+/** FIRST-ENCOUNTER HINTS: its own key, never a field on the settings object. `hints.ts` says why
+ *  (adding one would reset every player's text size). Read once, like the settings. */
+const initialHintsSeen = readHints(prefStore).seen;
 applyTextSize(initialSettings.textSize);
 
 type Screen =
@@ -107,6 +111,15 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   });
   /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
   const [saveFailed, setSaveFailed] = useState(false);
+  const [hintsSeen, setHintsSeen] = useState<readonly string[]>(initialHintsSeen);
+  const rememberHints = (seen: readonly string[]): void => {
+    setHintsSeen(seen);
+    writeHints(prefStore, seen);
+  };
+  const resetHints = (): void => {
+    clearHints(prefStore);
+    setHintsSeen([]);
+  };
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
 
@@ -216,6 +229,8 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         )
       }
       deleteSaveBlock={from === 'play' ? 'inPlay' : save ? null : 'none'}
+      hintsSeenAny={hintsSeen.length > 0}
+      onResetHints={resetHints}
       onDeleteSave={deleteSave}
       onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
     />
@@ -323,6 +338,8 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         <PlayScreen
           session={session}
           artMetrics={artMetrics}
+          hintsSeen={hintsSeen}
+          onHintsSeen={rememberHints}
           onGameEnd={onGameEnd}
           renderControls={(ctx) => (
             <div

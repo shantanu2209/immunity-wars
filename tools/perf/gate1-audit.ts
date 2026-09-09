@@ -455,6 +455,19 @@ async function walk(
 ): Promise<void> {
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  // THE FIRST-ENCOUNTER HINTS ARE RESET AT THE TOP OF EVERY PASS.
+  //
+  // The four passes share one browser profile, so a hint consumed by the FIRST pass can never
+  // fire again and the other three measure a screen that is not there. That is exactly what the
+  // first run of this change reported: the hint reached under the base pass and NOT REACHED
+  // under all three scaled ones. A hint is the one screen in this walk whose whole nature is to
+  // appear once, so it is the one that needed saying out loud.
+  //
+  // Cleared through the app's own key rather than by wiping storage, so the save the later
+  // steps depend on survives. Reloaded after, because the shell reads the key once at startup.
+  await page.evaluate(() => localStorage.removeItem('immunity-wars.hints'));
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   // The app renders from a module script BEFORE DOMContentLoaded, so the root size installed
   // by `rootFontSize` can land after the title screen exists: set it again, explicitly, before
   // the first screen is measured (the first run measured the title at 100% and called it
@@ -616,8 +629,24 @@ async function walk(
   // sheet, and a run in which none does records the sheet as NOT REACHED — a red line in the
   // JSON, never a silent absence from the screen list (CLAUDE.md: read the coverage).
   let sheetOpened = false;
-  for (const token of await page.$$('[data-invader]')) {
-    await token.click();
+  // HANDLES ARE RE-QUERIED EVERY TIME rather than held across a click.
+  //
+  // This loop used to hold an ElementHandle and click it twice, and it worked until a tap could
+  // re-render the region the token lives in — which is what the first-encounter hint does. The
+  // second click then threw "Node is detached from document" and took the whole audit with it.
+  // Found on this change's first audit run. An instrument defect, so it is fixed here.
+  const tokenCount = await page.evaluate(() => document.querySelectorAll('[data-invader]').length);
+  const tapToken = async (i: number): Promise<void> => {
+    const el = (await page.$$('[data-invader]'))[i];
+    if (!el) return;
+    try {
+      await el.click();
+    } catch {
+      // The node moved under us. The next iteration re-queries; nothing is lost but this tap.
+    }
+  };
+  for (let i = 0; i < tokenCount; i += 1) {
+    await tapToken(i);
     await sleep(300);
     sheetOpened = await page.evaluate(() =>
       [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Close'),
@@ -625,7 +654,7 @@ async function walk(
     if (sheetOpened) break;
     // The tap may have selected a cell or a resident instead (a tap on the selected piece
     // deselects it; a tap on nothing deselects too): the same tap again undoes it.
-    await token.click();
+    await tapToken(i);
     await sleep(150);
   }
   if (sheetOpened) {
@@ -648,8 +677,25 @@ async function walk(
       ],
     });
   }
+  // FIRST-ENCOUNTER HINTS (P2.6, ruled 8 September 2026). Selecting a cell is first contact, so
+  // the hint is up by the time the piece strip is measured. Measured as its own screen because
+  // a hint appears at 200% text on a 360px phone like everything else, and because a line that
+  // pushes the action rows off the fold would be a real defect nobody would see in a total.
   await clickSel(page, '[data-piece="cell:bcell"]');
-  await sleep(300);
+  await sleep(350);
+  if (await page.evaluate(() => document.querySelector('[data-hint]') !== null)) {
+    await step(page, 'command, a first encounter hint', results);
+    await clickSel(page, '[data-hint-dismiss]');
+    await sleep(200);
+    if (await page.evaluate(() => document.querySelector('[data-hint]') === null)) {
+      await step(page, 'command, hint dismissed', results);
+    } else {
+      results.push(notReached('command, hint dismissed', 'the dismiss control left it on screen'));
+    }
+  } else {
+    results.push(notReached('command, a first encounter hint'));
+    results.push(notReached('command, hint dismissed'));
+  }
   await clickSel(page, '[data-bar-ap]');
   await sleep(200);
   await step(page, 'command, B-Cell selected, AP terms open', results);
@@ -729,6 +775,16 @@ async function walk(
       await step(page, 'settings, delete confirm', results);
       await click(page, 'Keep');
       await sleep(150);
+    }
+    // The hints reset row (P2.6, ruling 5). Live by now, because the walk has already dismissed
+    // a hint, so this also measures the row in its ENABLED state rather than only disabled.
+    if (await clickSel(page, '[data-settings-row=resetHints] button')) {
+      await sleep(200);
+      await step(page, 'settings, hints reset confirm', results);
+      await click(page, 'Keep');
+      await sleep(150);
+    } else {
+      results.push(notReached('settings, hints reset confirm'));
     }
     await click(page, 'Back');
     await sleep(200);

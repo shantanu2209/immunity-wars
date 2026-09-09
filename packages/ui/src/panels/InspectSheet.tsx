@@ -70,6 +70,7 @@ export function unavailableText(u: Unavailable): string {
 }
 
 export function InspectSheet({
+  hint,
   info,
   selectedCell,
   disabled = false,
@@ -97,6 +98,10 @@ export function InspectSheet({
   onSelectResident?: (organ: string) => void;
   selectedResident?: string | null;
   onClose: () => void;
+  /** A first-encounter hint for the invader here, rendered inside the sheet rather than over
+   *  the board. The sheet is already laid out and already audited; a floating callout would
+   *  need placing against board geometry and re-placing at 200% text. */
+  hint?: ReactElement | null;
 }): ReactElement {
   return (
     <div
@@ -116,6 +121,7 @@ export function InspectSheet({
         zIndex: 10,
       }}
     >
+      {hint}
       {info.invaders.map((iv, i) => (
         <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
           <img

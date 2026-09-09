@@ -391,7 +391,55 @@ and it **never writes to storage**, because a crash screen that helpfully saves 
 good turns with whatever was in memory. The storage-failure notice needs a seam decision, since
 the session swallows save failures today and the UI cannot see them. Five points for ruling.
 
-## Proposed, not built — first-encounter hints
+## Piece 8 — first-encounter hints, built (9 September 2026)
+
+All five points ruled as proposed. [`HINT_SPLITS.md`](HINT_SPLITS.md) carries the eighteen entries
+with the cut marked, for Kartik to correct; the mechanism is built against those proposals so it
+is testable today, and his corrections are content edits that change no code.
+
+- **The text is not duplicated, it is composed.** Each of the seventeen prose entries is now
+  `<key>.hint` and `<key>.rest`; the hint surface renders the first, How to play renders both.
+  **Sixteen of the seventeen compose byte-identically to the pre-split entry**, verified against
+  git at the moment of the change. The seventeenth is the Helper, flagged in the splits document
+  as needing rewriting rather than cutting: its first sentence is 170 characters and one sentence,
+  so there is nowhere to cut it.
+- **The inertness check was run and NOT committed**, deliberately. It is a migration check, not
+  an invariant: a frozen copy of the old text kept forever would be a second copy of exactly the
+  words this change exists to stop duplicating, and Kartik's first correction would put it out of
+  date. What is permanent instead: every subject has both parts, no hint is empty, every hint is
+  inside a length band, and **every hint ends a sentence** so it cannot dangle when shown alone.
+- **The controller is pure and tested directly** (17 tests). The consumption rule is one sentence
+  and it earns the most coverage: *a hint is consumed when it leaves the screen for any reason
+  except being displaced by another hint.* A hint consumed too eagerly is never seen and nobody
+  can tell; one consumed too lazily repeats and is reported immediately, so the silent direction
+  gets the tests.
+- **The store is its own key** (8 tests), and every malformed shape reads as "nothing seen" rather
+  than "everything seen" — the direction that shows a hint again rather than switching the feature
+  off invisibly. `KeyValueStore` gained `removeItem` so a reset REMOVES the key: a cleared device
+  is then indistinguishable from a new one, with no third state to get subtly wrong.
+- **Contact is derived from the selection, not intercepted at each tap handler.** The two are the
+  same moment, and deriving means the four tap paths cannot drift and a fifth is covered without
+  anyone remembering.
+- **The Settings action row was generalised**, because the hints reset is the SECOND one and the
+  first had been written straight into the renderer. That is the shape the rows table exists to
+  avoid.
+- **Two defects found by the audit's per-screen list, both mine, both fixed inline.** The Help
+  screen's `Named` helper serves eight entries that are NOT split, and composing there rendered
+  their key names, overflowing the page at 200% text: the totals said two layout findings and
+  named neither screen. And the four passes share one browser profile, so a hint consumed by the
+  first pass could never fire again and the other three measured a screen that was not there.
+  **A hint is the one screen in this walk whose whole nature is to appear once**, which is why it
+  is the one that needed the reset saying out loud. A third, in the walk rather than the app: an
+  element handle held across a click detached once a tap could re-render the board region.
+- **The run on the shipped build:** **44 screens** per pass, 46 under SIZE200, up from 41; every
+  check 0 under all four mechanisms; no screen NOT REACHED; 27 controls all firing; offline met.
+
+**Reported rather than built:** the window hint has no contact trigger. A hint fires on first
+contact and the window is a number in the bar, not a thing a player touches, so under the rule as
+ruled it would never fire. Three ways out are named in [`HINT_SPLITS.md`](HINT_SPLITS.md) and none
+is taken.
+
+## Superseded — the proposal, before it was ruled
 
 [`for-P2.6-onboarding.md`](for-P2.6-onboarding.md), PROPOSAL 5, to Shantanu's direction of
 8 September 2026: not a tutorial, hints on first CONTACT, resettable. Four measurements taken
@@ -405,15 +453,39 @@ a third answer: the long form is **composed from** the hint, one entry split in 
 is needed because nothing is duplicated. **The settings object cannot hold the seen set** without
 resetting every player's text size, since its schema pins `v: 1`. Five points for ruling.
 
+## FOR THE CLOSEOUT — Claude Design has not been used in Phase 2, and that is not a shortfall
+
+Recorded here so the P2.6 closeout carries it and the brief's mention does not read as an unmet
+commitment (Shantanu, 9 September 2026).
+
+[`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §5 names **Claude Design** for "exploring screens that do not
+exist yet and have no prior version to copy", listing mode select, lobby, onboarding, settings and
+store screenshots. **It was used at no point in Phase 2, and every screen now exists**: Settings,
+How to play, the disease library, About, the crash screen and the hints all went straight into
+code, each against a written structure ruled before it was built.
+
+**The commitment was never that Claude Design would be used. It was that screens with no prior
+version would be explored before being built** — and they were, in `for-P2.6.md` and its four
+sibling proposals, which is the same activity in a different medium. Nothing was skipped.
+
+**Its role is P2.7**, the polish rounds, and there it is genuinely the right tool: exploring
+alternatives side by side is what it is for, and iterating one version in code is what it is not.
+Gate 2 is a visual approval given explicitly, so the round that seeks it is exactly where
+alternatives are worth generating rather than converged on.
+
 ## What is next
 
-**Onboarding, and it is the only thing left in P2.6.** Shantanu will bring a direction; it
-carries one constraint from him already, given at the ruling of 8 September 2026 and recorded
-here because it shapes the whole thing rather than a detail of it:
+**Onboarding is DONE** (piece 8): the ruled shape was first-encounter hints, and they are built.
+Shantanu's constraint is recorded because it governs anything further in this area:
 
 > Gate 1 requires a newcomer to start and finish a game **unaided**. If onboarding does the
 > teaching, the newcomer test measures the onboarding rather than the app. So the app has to be
 > legible enough that onboarding is a **helpful extra rather than a prerequisite**, and
 > onboarding is to be **minimal by design rather than by budget**.
 
-The implications are being thought through and are owed to him when he brings the direction.
+The hints as built satisfy it by construction: they are not a tutorial, they do not gate play,
+they never require dismissal to continue, and a player who ignores every one of them can finish a
+game. The per-turn cap of two is the same constraint expressed as a number.
+
+**What remains in P2.6:** Kartik's corrections to the eighteen splits, which are content edits;
+the window hint's trigger, reported and not built; and the closeout.

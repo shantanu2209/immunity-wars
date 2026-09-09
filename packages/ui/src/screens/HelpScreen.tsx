@@ -105,11 +105,47 @@ function Lead({ text }: { text: string }): ReactElement {
 }
 
 /** A named paragraph: a bold lead followed by its text. */
+/**
+ * A per-thing entry, COMPOSED from its two parts (ruled 8 September 2026,
+ * `docs/for-P2.6-onboarding.md` point 2).
+ *
+ * Each of these entries is stored as `<key>.hint` and `<key>.rest`. The first-encounter hint
+ * renders the hint alone; How to play renders both, joined by a space, which is exactly the
+ * string that used to be one entry. **There is one copy of the words, so nothing can drift and
+ * nothing needs pinning** — a pin is a test that two things still agree, and there are not two
+ * things. A `rest` may be empty, for a subject short enough that the hint is the whole of it.
+ */
+export function composed(key: string): string {
+  const hint = t(`${key}.hint`);
+  const rest = t(`${key}.rest`);
+  return rest ? `${hint} ${rest}` : hint;
+}
+
+/**
+ * A named paragraph whose text is ONE catalogue entry.
+ *
+ * ⚠️ It renders `t(textKey)` and not `composed(textKey)`, and the difference matters: only the
+ * per-cell and per-invader entries are split into hint and rest. The first version of this
+ * change composed here too, and the eight entries that are NOT split rendered their own key
+ * names, which overflowed the page at 200% text. Caught by the audit's per-screen list on its
+ * first run over this change; the totals said two layout findings and named neither screen.
+ * Split entries use `NamedComposed` below.
+ */
 function Named({ nameKey, textKey }: { nameKey: string; textKey: string }): ReactElement {
   return (
     <p style={P}>
       <Lead text={t(nameKey)} />
       {t(textKey)}
+    </p>
+  );
+}
+
+/** The same, for an entry that IS split into `.hint` and `.rest`. */
+function NamedComposed({ nameKey, textKey }: { nameKey: string; textKey: string }): ReactElement {
+  return (
+    <p style={P}>
+      <Lead text={t(nameKey)} />
+      {composed(textKey)}
     </p>
   );
 }
@@ -195,10 +231,10 @@ function sectionBody(key: HelpSectionKey): ReactElement {
             <p key={ck} style={P} data-help-cell={ck}>
               <Lead text={cellDisplayName(ck)} />
               {ck === 'bcell' ? null : <>{t('help.speed', { n: num(speed[ck]) })} </>}
-              {t(`help.cell.${ck}`)}
+              {composed(`help.cell.${ck}`)}
             </p>
           ))}
-          <Named nameKey="help.cell.resident.name" textKey="help.cell.resident.text" />
+          <NamedComposed nameKey="help.cell.resident.name" textKey="help.cell.resident.text" />
         </>
       );
     }
@@ -208,7 +244,7 @@ function sectionBody(key: HelpSectionKey): ReactElement {
           {Object.keys(INV_HP).map((ty) => (
             <p key={ty} style={P} data-help-invader={ty}>
               <Lead text={typeDisplayName(ty)} />
-              {t(`help.invader.${ty}`)}
+              {composed(`help.invader.${ty}`)}
             </p>
           ))}
         </>
