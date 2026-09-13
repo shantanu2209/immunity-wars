@@ -48,7 +48,7 @@ import { t } from '../i18n';
 import { organDisplayName, typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
 import type { HelpSectionKey } from './HelpScreen';
-import { BACK, BODY as P, ITEM, PAGE, ROW_BTN, TITLE } from './chrome';
+import { BODY as P, ITEM, PAGE, ROW_BTN, TITLE } from './chrome';
 
 export type LibraryView =
   { kind: 'index' } | { kind: 'card'; disease: string } | { kind: 'why'; entry: string | null };
@@ -196,13 +196,15 @@ export function libraryType(disease: string): string {
 export function LibraryScreen({
   view,
   onView,
-  onBack,
   onHelp,
 }: {
   view: LibraryView;
+  /**
+   * Opens a view one level down: a card over the index, or the why page. Closing is the floating
+   * close's, so a why page opened from a card closes back to that card (docs/for-P2.7.md §9,
+   * ruling 9); it used to close to the index.
+   */
   onView: (view: LibraryView) => void;
-  /** Leave the library: back to where it was opened from. */
-  onBack: () => void;
   /** Open a How to play section (the why entries' link back). */
   onHelp: (section: HelpSectionKey) => void;
 }): ReactElement {
@@ -246,14 +248,12 @@ export function LibraryScreen({
             <button
               style={{ ...ROW_BTN, marginTop: 0, minHeight: 44, fontSize: '0.8125rem' }}
               onClick={() => onHelp(w.help)}
+              data-library-in-help={w.key}
             >
               {t('library.why.inHelp', { section: t(`help.${w.help}.title`) })}
             </button>
           </section>
         ))}
-        <button style={{ ...BACK, marginTop: 20 }} onClick={() => onView({ kind: 'index' })}>
-          {t('library.toIndex')}
-        </button>
       </div>
     );
   }
@@ -340,9 +340,6 @@ export function LibraryScreen({
       <button style={ROW_BTN} onClick={() => onView({ kind: 'why', entry: null })}>
         {t('library.whyLink')}
       </button>
-      <button style={BACK} onClick={onBack}>
-        {t('library.back')}
-      </button>
       {view.kind === 'card' ? (
         <PathogenCard
           subject={{
@@ -351,7 +348,6 @@ export function LibraryScreen({
             remembered: false,
             now: null,
           }}
-          onClose={() => onView({ kind: 'index' })}
           whyBoxes={whyForDisease(view.disease, libraryType(view.disease))}
           onWhy={(entry) => onView({ kind: 'why', entry })}
         />

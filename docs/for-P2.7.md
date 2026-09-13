@@ -110,7 +110,7 @@ a screen's layout, text or controls change.**
 
 | Instrument | What it holds | Its warrant |
 |---|---|---|
-| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline, a refused service worker registration | 29 controls, fire and pass halves (27 until 13 September; the two added are #69's) |
+| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline, a refused service worker registration | 34 controls, fire and pass halves (27 until 13 September; #69 added two, piece 1 five) |
 | `pnpm verify` | typecheck, lint, format, boundaries, docs, turbo hash, every suite | `pnpm ci:selftest` |
 | `pnpm coverage:positions` | the generated coverage documents' positions | 4 controls |
 | `iw/no-hardcoded-jsx-text` | all player text through the catalogue | both control halves |
@@ -118,7 +118,7 @@ a screen's layout, text or controls change.**
 | the equivalence corpus | the engine's behaviour and its 67-name root surface | the whole of Phase 1 |
 
 **What the audit must hold, every run:** **44 screens** per pass (46 under SIZE200), **no screen
-NOT REACHED**, every check **0**, **29 controls** all firing the right way, offline met.
+NOT REACHED**, every check **0**, **34 controls** all firing the right way, offline met, and **no nesting landing wrong**.
 **Read the per-screen list, not the total** — four times in P2.6 a green total hid an unmeasured
 screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
 
@@ -303,10 +303,13 @@ planning take their new shape.
 
 ---
 
-## 10. Piece 1, the navigation stack and the floating close: PROPOSAL, nothing built
+## 10. Piece 1, the navigation stack and the floating close: BUILT, 13 September 2026
 
 Written 13 September 2026, after the split was ruled, because the rulings fix the behaviour and
 leave three choices in how it is built. **Nothing is built until these are ruled.**
+
+> ✅ **All three choices ruled as recommended** (Shantanu, 13 September 2026), and built the same
+> day. What was built, and what building it found, closes this section.
 
 ### What was measured for it
 
@@ -356,7 +359,7 @@ changes in this piece and its controls re-run.
   all four passes, with both control halves. The audit today measures clipping and overflow, not
   one element covering another, so a floating button hiding a card's last line would be green.
 
-### ⚠️ Three choices, each with a recommendation
+### ✅ Three choices, RULED as recommended (13 September 2026)
 
 1. **The phone's back gesture.** (a) On-screen only, and the gesture keeps leaving the app until
    Phase 4 wires Android's back button; or (b) the stack also drives the browser's history, so the
@@ -372,3 +375,43 @@ changes in this piece and its controls re-run.
 3. **Siblings.** Is Back from Help section 6, reached by Next from section 5, meant to go to the
    index (siblings are one level, as proposed) or to section 5 (every screen is a level)?
    **Recommendation: the index.** Otherwise reading all ten sections means ten Backs to leave.
+
+### What was built, and what building it found
+
+**Built as proposed, with one deviation stated rather than worked around.** The stack model, the
+floating close and the back-gesture sync live in `packages/ui/src/nav/`, not in `packages/app` as
+the proposal said: the dev shell mounts the same play screen, its cards and inspect sheet need the
+close too, and `ui` cannot import `app`. The app's screen machine uses the stack from there. The
+behaviour is exactly what was ruled.
+
+- **Every close is one close.** One ordered list holds screens and layers, so Settings opened from
+  the pause menu is [play, pause, settings] and closes to the menu. Help's Next replaces the section
+  in place. The floating button says Back or Close from the stack. Dialogs are on the stack without
+  the button, so the back gesture answers them first, as APP_FLOW ruling 1 orders.
+- **The back gesture closes one level.** One history entry per level, the popstate a trim causes
+  ignored, and a deeper stack held while a trim is still travelling. At the bottom of Play the
+  gesture opens the pause menu; at the Title it leaves.
+- **Removed:** Resume, All sections, All pathogens, Close card, the inspect sheet's Close and every
+  page's Back, with their ten catalogue keys. Added: `nav.back` and `nav.close`.
+- **A spacer at the end of the page while the button shows**, because the inspect sheet is not
+  modal and the game's page can still scroll its last lines under the button.
+
+**Three things the build found, all in instruments, all fixed in the same change:**
+
+1. **The stack test's own control fired on its first run.** It expected a close that pops two
+   levels to be caught on all seven paths, and one path cannot catch it: planning → pathogen card
+   is one level above the base, and the base is never popped, so popping two lands where popping
+   one does. The control now requires the catch on the six paths deep enough to tell, and the
+   seventh is pinned as a blind spot with its own assertion.
+2. **The occlusion check's first run reported 109 findings, and every one was wrong**
+   ([`FINDINGS.md`](FINDINGS.md) #70). It asked whether text overlapped a fixed control; the
+   dialogs, the Settings confirms and the pause menu all have buttons over page text that their
+   own scrim already hides. None involved the floating close. It now asks whether the control is
+   what hides the text, and a third control pins exactly that class.
+3. **The walk reported planning → pathogen card NOT REACHED, and that was the walk's fault.** The
+   pathogen rows render only once their group is opened; the walk now opens the group first.
+
+**The audit on the shipped build, 13 September 2026:** 34 controls, all firing the right way; 44
+screens per pass (46 under SIZE200), none NOT REACHED; every check 0 under all four mechanisms,
+occlusion included; 22 nesting landings checked, 0 wrong, 1 NOT REACHED (inspect sheet → cell
+card: no cell stood on the node the walk inspected, which the deal decides); offline met.

@@ -34,9 +34,10 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { BACK, BODY, PAGE, SECTION, TITLE } from './chrome';
+import { BODY, PAGE, SECTION, TITLE } from './chrome';
 
-export function AboutScreen({ onBack }: { onBack: () => void }): ReactElement {
+/** Its way back is the floating close (docs/for-P2.7.md §9, ruling 8), not a button at the end. */
+export function AboutScreen(): ReactElement {
   return (
     <div style={PAGE} data-screen="about">
       <h1 style={TITLE}>{t('about.title')}</h1>
@@ -64,10 +65,6 @@ export function AboutScreen({ onBack }: { onBack: () => void }): ReactElement {
       <p style={BODY}>{t('about.licenceCode')}</p>
       <p style={BODY}>{t('about.licenceContent')}</p>
       <p style={BODY}>{t('about.classroom')}</p>
-
-      <button style={BACK} onClick={onBack}>
-        {t('about.back')}
-      </button>
     </div>
   );
 }

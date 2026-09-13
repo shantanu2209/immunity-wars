@@ -55,6 +55,7 @@ import { LogPanel, type LogLine } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS, SPEED } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
+import { useNavLayer } from '../nav/NavHost';
 import { GoalBody } from '../dialogs/GoalBody';
 import { RevealBody, revealCrisis, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
@@ -194,6 +195,12 @@ export function PlayScreen({
   const [card, setCard] = useState<PathogenCardSubject | null>(null);
   // THE CELL CARD (item 12, block c) — the same layer, opened from the planning screen.
   const [cellCard, setCellCard] = useState<CellCardSubject | null>(null);
+  // THE LAYERS ON THE NAVIGATION STACK (docs/for-P2.7.md §9, rulings 8 and 9). Each registers
+  // while it shows, in the order it opened, so the one floating close and the back gesture reach
+  // the top one: a card opened from the inspect sheet closes back to the sheet.
+  useNavLayer('inspect', inspect !== null, () => setInspect(null));
+  useNavLayer('pathogen-card', card !== null, () => setCard(null));
+  useNavLayer('cell-card', cellCard !== null, () => setCellCard(null));
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -306,6 +313,14 @@ export function PlayScreen({
   // view drops. A `__sentinel` drawn (mop-up / every slot capped) announces nothing.
   const dialogs = useDialogQueue();
   const enqueueDialog = dialogs.enqueue;
+  // A dialog is on the stack too, without the floating close: it is answered by its own button,
+  // and the back gesture answers it the same way (APP_FLOW ruling 1: the dialog goes first).
+  useNavLayer(
+    `dialog:${dialogs.current?.id ?? ''}`,
+    dialogs.current !== null,
+    dialogs.dismiss,
+    false,
+  );
   const prevGameRef = useRef<ViewState | null>(null);
   useEffect(() => {
     const g = authView.game;
@@ -808,8 +823,8 @@ export function PlayScreen({
           />
           <LiveLog store={frameStore} game={game} />
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
-          {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
-          {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
+          {card ? <PathogenCard subject={card} /> : null}
+          {cellCard ? <CellCard subject={cellCard} /> : null}
         </>
       ) : null}
       {/* THE COMMAND STAGE STAYS MOUNTED behind the planning screen (ruled 6 September 2026,
@@ -945,7 +960,6 @@ export function PlayScreen({
                   now: invaderNowLine(iv),
                 });
               }}
-              onClose={() => setInspect(null)}
             />
           ) : null}
           {playing ? (
@@ -960,8 +974,8 @@ export function PlayScreen({
             />
           ) : null}
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
-          {card ? <PathogenCard subject={card} onClose={() => setCard(null)} /> : null}
-          {cellCard ? <CellCard subject={cellCard} onClose={() => setCellCard(null)} /> : null}
+          {card ? <PathogenCard subject={card} /> : null}
+          {cellCard ? <CellCard subject={cellCard} /> : null}
         </>
       </div>
     </div>

@@ -3932,3 +3932,44 @@ on any path through pnpm's symlinked `node_modules`, so it would have been blind
 most likely to be cited by mistake. Two self-test controls: a code span naming a `node_modules` file
 must fail with the new diagnostic, and one naming a new source file must stay green.
 
+## 70. The occlusion check's first run reported 109 findings, and every one was wrong: it asked whether text OVERLAPPED a fixed control, when the question is whether that control HIDES it
+
+**Found 13 September 2026, building piece 1 of the play screen** ([`for-P2.7.md`](for-P2.7.md)
+§10). An instrument defect on a check's first run, so it was fixed inline and before any number
+from it was believed.
+
+### What happened
+
+The check exists so that the new floating close can never hide a line of text at the end of a
+scroll, which no existing check could see: they measure clipping and overflow, not one element
+covering another. Its first run, on a build where the floating close was placed correctly, came
+back with 29, 30, 31 and 19 findings across the four passes.
+
+**Read by screen and covering control rather than by total, none involved the floating close.**
+Every finding was a modal's own button over page text: the goal dialog's Begin, the reveal
+dialog's rows and Continue, the Settings confirms' Delete and Keep, the pause menu's buttons, and
+the inspect sheet's Card and Got it. In each case the text was already hidden by the surface the
+button sits on, a dialog's scrim or the sheet's own panel. The button overlapped the text; it did
+not hide it.
+
+### The shape, which is #60's
+
+#60 was a check measuring a proxy for the thing it existed to measure. This is the same:
+**overlap is a proxy for hiding**, and on any screen with a modal the two come apart completely. A
+check reading the proxy fills its report with findings on correct screens, which teaches exactly
+the wrong habit: discounting the next finding.
+
+### The fix
+
+Where a text run and a control overlap, the control is hidden for the moment of the test, and a
+finding requires the text to be what is on top there once it is gone. A third control pins the
+class the first run got wrong: text under a fixed button with a scrim between them must not be
+flagged. The corrected check reports 0 across all four passes, and its fires half still flags text
+directly under a button.
+
+### Found alongside, in the other new instrument
+
+The stack test's control expected a close that pops two levels to be caught on every nesting path,
+and fired on its first run because one path cannot catch it: one level above the base, popping two
+lands where popping one does, because the base is never popped. It is pinned in the stack test as a
+blind spot with its own assertion rather than weakened until it passed.

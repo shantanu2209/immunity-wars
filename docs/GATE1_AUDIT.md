@@ -159,8 +159,8 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 > 843 / 2,267**, and every screen in the delta was a play screen — no Title-slot screen moved.
 >
 > **What is invariant, and is what a run must hold:** 44 screens per pass (46 under SIZE200), no
-> screen NOT REACHED, every check 0, 29 controls all firing the right way (27 until #69's two, 13
-> September 2026), offline met. A NOT REACHED is never a sample, but it can be the deal: reach the
+> screen NOT REACHED, every check 0, 34 controls all firing the right way (27 until 13 September 2026; #69
+> added two, piece 1 five), no nesting landing wrong, offline met. A NOT REACHED is never a sample, but it can be the deal: reach the
 > screen or explain it (`FINDINGS.md` #68, added note). **What is a
 > sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
 > a drop of 5 is the deck.
@@ -175,6 +175,18 @@ active. Two full runs on the fixed build, every check 0 on both. The first reach
 under three passes and came back **NOT REACHED for the inspect sheet under SIZE200** ("no invader
 token tap opened the sheet"); the second reached every screen under all four. The inspect sheet's
 door depends on the deal (`FINDINGS.md` #68, added note).*
+
+*Updated 13 September 2026, at piece 1 of the play screen build (`for-P2.7.md` §10): **34
+controls** rather than 29, and **two new checks**. OCCLUSION: nothing readable under a fixed
+control at the end of any scroll, in all four passes, with three controls. Its first run reported
+109 findings and every one was wrong, because it tested overlap rather than hiding (`FINDINGS.md`
+#70); the corrected check reports 0. NESTING: where each close lands, 22 landings in the base pass
+including three through the phone's back gesture, 0 wrong and 1 NOT REACHED (inspect sheet → cell
+card, the deal's), with two controls. The walk now closes everything through the floating button,
+because the Back, Close, All sections, All pathogens, Close card and Resume buttons it used to click
+are gone. One walk defect found and fixed: planning's pathogen rows render only once their group
+is open. Coverage: 44 screens per pass (46 under SIZE200), none NOT REACHED, every check 0,
+offline met.*
 
 *Updated at the P2.6 CLOSE, 9 September 2026: the final run is 843 controls and 2,243 text runs
 across 44 screens (46 under SIZE200), with **27 controls** rather than 24 — three of them the

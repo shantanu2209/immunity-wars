@@ -30,8 +30,17 @@
  */
 import type { CSSProperties } from 'react';
 
-/** The page shell. Its padding is the ONLY top space above the title: see TITLE. */
-export const PAGE: CSSProperties = { maxWidth: 420, margin: '0 auto', padding: '32px 16px' };
+import { FLOAT_RESERVE } from '../nav/NavHost';
+
+/**
+ * The page shell. Its top padding is the ONLY space above the title (see TITLE), and its bottom
+ * keeps the floating close clear of the last line (docs/for-P2.7.md §9, ruling 8).
+ */
+export const PAGE: CSSProperties = {
+  maxWidth: 420,
+  margin: '0 auto',
+  padding: `32px 16px ${FLOAT_RESERVE}`,
+};
 
 /**
  * The screen's own name, once per screen, at the top.

@@ -22,6 +22,7 @@ import {
   ErrorBoundary,
   HelpScreen,
   LibraryScreen,
+  NavHost,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -30,13 +31,15 @@ import {
   TitleScreen,
   t,
   turnLine,
+  useNav,
+  useNavLayerWith,
   type ArtMetrics,
   type CrashCase,
   type HelpSectionKey,
   type LibraryView,
   type SaveSummary,
 } from '@immunity-wars/ui';
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import {
@@ -70,14 +73,16 @@ type Screen =
   | { name: 'difficulty' }
   | { name: 'play' }
   | { name: 'result'; finalView: ViewState; difficulty: string }
-  /** Settings, and where Back returns to. From play, the game stays mounted underneath
-   *  (hidden), so nothing about the session, the selection or a queued dialog is disturbed. */
-  | { name: 'settings'; from: 'title' | 'play' }
-  /** How to play: the index (section null) or one section; the same two doors as Settings. */
-  | { name: 'help'; from: 'title' | 'play'; section: HelpSectionKey | null }
+  /** Settings. Opened over a paused game, the game stays mounted underneath (hidden), so nothing
+   *  about the session, the selection or a queued dialog is disturbed. Where closing returns to is
+   *  the navigation stack's, not this type's (docs/for-P2.7.md §9, ruling 9): the screen used to
+   *  carry a one-hop `from`, which is why a page two levels down closed straight to the title. */
+  | { name: 'settings' }
+  /** How to play: the index (section null) or one section. */
+  | { name: 'help'; section: HelpSectionKey | null }
   /** The disease library: its index, a card over it, or the why section. Its door is the
    *  Title (APP_FLOW; ruled 8 September 2026); from play it is reached only by a Help link. */
-  | { name: 'library'; from: 'title' | 'play'; view: LibraryView }
+  | { name: 'library'; view: LibraryView }
   /** About: credits, recognition, privacy, licence. The Title is its only door, and unlike the
    *  other three slots it has no reason to open over a paused game. */
   | { name: 'about' };
@@ -94,8 +99,19 @@ function resultOf(v: ViewState): { won: boolean; lossOrgan: string | null } {
   };
 }
 
+/** The screens the floating close says Close on returning to, rather than Back (ruling 9). */
+const isMainScreen = (s: Screen): boolean =>
+  s.name === 'title' || s.name === 'play' || s.name === 'result';
+
 function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void }): ReactElement {
-  const [screen, setScreen] = useState<Screen>({ name: 'title' });
+  // THE NAVIGATION STACK (docs/for-P2.7.md §9 ruling 9, §10 piece 1): every close returns to the
+  // level it came from. The shell pushes and resets screens; layers register themselves.
+  const nav = useNav<Screen>({ name: 'title' }, isMainScreen);
+  const screen = nav.screen;
+  const navLayers = useMemo(
+    () => ({ openLayer: nav.openLayer, closeLayer: nav.closeLayer }),
+    [nav.openLayer, nav.closeLayer],
+  );
   const [save, setSave] = useState<SaveSummary | null>(null);
   const [paused, setPaused] = useState(false);
   const [settings, setSettings] = useState<Settings>(initialSettings);
@@ -169,7 +185,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
       LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID }),
     );
     setPaused(false);
-    setScreen({ name: 'play' });
+    nav.reset({ name: 'play' });
   };
 
   const continueSave = (): void => {
@@ -184,7 +200,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         LocalSession.resume(s.state, { storage, saveId: SAVE_ID }),
       );
       setPaused(false);
-      setScreen({ name: 'play' });
+      nav.reset({ name: 'play' });
     });
   };
 
@@ -193,7 +209,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     sessionRef.current = null;
     setPaused(false);
     refreshSave();
-    setScreen({ name: 'title' });
+    nav.reset({ name: 'title' });
   };
 
   const onGameEnd = (finalView: ViewState): void => {
@@ -201,7 +217,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     void storage.delete(SAVE_ID).catch(() => undefined);
     sessionRef.current = null;
     setSave(null);
-    setScreen({ name: 'result', finalView, difficulty: difficultyRef.current });
+    nav.reset({ name: 'result', finalView, difficulty: difficultyRef.current });
   };
 
   const deleteSave = (): void => {
@@ -216,7 +232,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
       });
   };
 
-  const settingsScreen = (from: 'title' | 'play'): ReactElement => (
+  const settingsScreen = (overPlay: boolean): ReactElement => (
     <SettingsScreen
       textSize={settings.textSize}
       textSizes={TEXT_SIZES}
@@ -229,189 +245,190 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             : { ...settings, language: v as Locale },
         )
       }
-      deleteSaveBlock={from === 'play' ? 'inPlay' : save ? null : 'none'}
+      deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
       hintsSeenAny={hintsSeen.length > 0}
       onResetHints={resetHints}
       onDeleteSave={deleteSave}
-      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
     />
   );
 
-  const helpScreen = (from: 'title' | 'play', section: HelpSectionKey | null): ReactElement => (
+  const helpScreen = (section: HelpSectionKey | null): ReactElement => (
     <HelpScreen
       section={section}
-      onOpen={(s) => setScreen({ name: 'help', from, section: s })}
-      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
-      onWhy={(entry) => setScreen({ name: 'library', from, view: { kind: 'why', entry } })}
+      onOpen={(s) => nav.push({ name: 'help', section: s })}
+      onNext={(s) => nav.replace({ name: 'help', section: s })}
+      onWhy={(entry) => nav.push({ name: 'library', view: { kind: 'why', entry } })}
     />
   );
 
-  const libraryScreen = (from: 'title' | 'play', view: LibraryView): ReactElement => (
+  const libraryScreen = (view: LibraryView): ReactElement => (
     <LibraryScreen
       view={view}
-      onView={(v) => setScreen({ name: 'library', from, view: v })}
-      onBack={() => setScreen(from === 'play' ? { name: 'play' } : { name: 'title' })}
-      onHelp={(section) => setScreen({ name: 'help', from, section })}
+      onView={(v) => nav.push({ name: 'library', view: v })}
+      onHelp={(section) => nav.push({ name: 'help', section })}
     />
   );
 
-  if (screen.name === 'settings' && screen.from === 'title') return settingsScreen('title');
-  if (screen.name === 'library' && screen.from === 'title')
-    return libraryScreen('title', screen.view);
-  if (screen.name === 'help' && screen.from === 'title') return helpScreen('title', screen.section);
-  if (screen.name === 'about') return <AboutScreen onBack={() => setScreen({ name: 'title' })} />;
+  /** A game sits under the current screen: Settings, Help or the library opened over it. */
+  const underPlay = nav.stack.entries.some((e) => e.kind === 'screen' && e.screen.name === 'play');
 
-  if (screen.name === 'title') {
-    return (
-      <>
-        {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
-        <TitleScreen
-          save={save}
-          onContinue={continueSave}
-          onNewGame={() => setScreen({ name: 'difficulty' })}
-          onSettings={() => setScreen({ name: 'settings', from: 'title' })}
-          onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
-          onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
-          onAbout={() => setScreen({ name: 'about' })}
+  // THE PAUSE MENU is a layer on the stack. The back gesture at the bottom of Play opens it
+  // (APP_FLOW ruling 1), and Settings or How to play opened from it close back to it (ruling 9).
+  useNavLayerWith(navLayers, 'pause', paused, () => setPaused(false));
+
+  const renderScreen = (): ReactElement => {
+    if (!underPlay && screen.name === 'settings') return settingsScreen(false);
+    if (!underPlay && screen.name === 'library') return libraryScreen(screen.view);
+    if (!underPlay && screen.name === 'help') return helpScreen(screen.section);
+    if (screen.name === 'about') return <AboutScreen />;
+
+    if (screen.name === 'title') {
+      return (
+        <>
+          {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
+          <TitleScreen
+            save={save}
+            onContinue={continueSave}
+            onNewGame={() => nav.push({ name: 'difficulty' })}
+            onSettings={() => nav.push({ name: 'settings' })}
+            onHelp={() => nav.push({ name: 'help', section: null })}
+            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
+            onAbout={() => nav.push({ name: 'about' })}
+          />
+        </>
+      );
+    }
+
+    if (screen.name === 'difficulty') {
+      return <DifficultyScreen hasSave={save !== null} onStart={startNew} />;
+    }
+
+    if (screen.name === 'result') {
+      const r = resultOf(screen.finalView);
+      const g = screen.finalView;
+      return (
+        <ResultScreen
+          won={r.won}
+          lossOrgan={r.lossOrgan}
+          stats={{
+            turns: Number(g['turn'] ?? 0),
+            organsDamaged: countDamagedOrgans(g),
+            antibodiesMade: sumMade(g),
+          }}
+          onPlayAgain={() => startNew(screen.difficulty)}
+          onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
+          onTitle={quitToTitle}
         />
-      </>
-    );
-  }
+      );
+    }
 
-  if (screen.name === 'difficulty') {
-    return (
-      <DifficultyScreen
-        hasSave={save !== null}
-        onStart={startNew}
-        onBack={() => setScreen({ name: 'title' })}
-      />
-    );
-  }
+    const session = sessionRef.current;
+    if (!session) {
+      // A play screen with no session is unreachable by the machine; recover to title.
+      return (
+        <>
+          {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
+          <TitleScreen
+            save={save}
+            onContinue={continueSave}
+            onNewGame={() => nav.push({ name: 'difficulty' })}
+            onSettings={() => nav.push({ name: 'settings' })}
+            onHelp={() => nav.push({ name: 'help', section: null })}
+            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
+            onAbout={() => nav.push({ name: 'about' })}
+          />
+        </>
+      );
+    }
 
-  if (screen.name === 'result') {
-    const r = resultOf(screen.finalView);
-    const g = screen.finalView;
+    // Settings or Help over the paused game: the game stays mounted underneath, hidden.
+    const overPlay =
+      screen.name === 'settings' || screen.name === 'help' || screen.name === 'library';
     return (
-      <ResultScreen
-        won={r.won}
-        lossOrgan={r.lossOrgan}
-        stats={{
-          turns: Number(g['turn'] ?? 0),
-          organsDamaged: countDamagedOrgans(g),
-          antibodiesMade: sumMade(g),
-        }}
-        onPlayAgain={() => startNew(screen.difficulty)}
-        onChangeDifficulty={() => setScreen({ name: 'difficulty' })}
-        onTitle={quitToTitle}
-      />
-    );
-  }
-
-  const session = sessionRef.current;
-  if (!session) {
-    // A play screen with no session is unreachable by the machine; recover to title.
-    return (
-      <>
+      <div style={{ maxWidth: 700, margin: '0 auto' }}>
         {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
-        <TitleScreen
-          save={save}
-          onContinue={continueSave}
-          onNewGame={() => setScreen({ name: 'difficulty' })}
-          onSettings={() => setScreen({ name: 'settings', from: 'title' })}
-          onHelp={() => setScreen({ name: 'help', from: 'title', section: null })}
-          onLibrary={() => setScreen({ name: 'library', from: 'title', view: { kind: 'index' } })}
-          onAbout={() => setScreen({ name: 'about' })}
-        />
-      </>
-    );
-  }
-
-  // Settings or Help over the paused game: the game stays mounted underneath, hidden.
-  const overPlay =
-    screen.name === 'settings' || screen.name === 'help' || screen.name === 'library';
-  return (
-    <div style={{ maxWidth: 700, margin: '0 auto' }}>
-      {saveFailed ? <SaveFailedNotice onDismiss={() => setSaveFailed(false)} /> : null}
-      {screen.name === 'settings' ? settingsScreen('play') : null}
-      {screen.name === 'help' ? helpScreen('play', screen.section) : null}
-      {screen.name === 'library' ? libraryScreen('play', screen.view) : null}
-      <div hidden={overPlay}>
-        <PlayScreen
-          session={session}
-          artMetrics={artMetrics}
-          hintsSeen={hintsSeen}
-          onHintsSeen={rememberHints}
-          onGameEnd={onGameEnd}
-          renderControls={(ctx) => (
-            <div
-              style={{
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                padding: '8px 0',
-              }}
-            >
-              <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
-                {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])} {t('play.deck')}{' '}
-                {String(ctx.game['deckCount'])}
-              </span>
-              <button
-                style={{ minHeight: 44, fontSize: '0.875rem' }}
-                disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
-                onClick={() => ctx.send({ action: 'draw' })}
+        {screen.name === 'settings' ? settingsScreen(true) : null}
+        {screen.name === 'help' ? helpScreen(screen.section) : null}
+        {screen.name === 'library' ? libraryScreen(screen.view) : null}
+        <div hidden={overPlay}>
+          <PlayScreen
+            session={session}
+            artMetrics={artMetrics}
+            hintsSeen={hintsSeen}
+            onHintsSeen={rememberHints}
+            onGameEnd={onGameEnd}
+            renderControls={(ctx) => (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 8,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  padding: '8px 0',
+                }}
               >
-                {t('play.draw')}
-              </button>
-              {/* While the planning screen shows (item 12), its own bottom button begins
-                command; a second copy up here would be the same button twice. */}
-              {ctx.planning ? null : (
+                <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
+                  {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])}{' '}
+                  {t('play.deck')} {String(ctx.game['deckCount'])}
+                </span>
                 <button
                   style={{ minHeight: 44, fontSize: '0.875rem' }}
-                  disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
-                  onClick={() => ctx.send({ action: 'beginCommand' })}
+                  disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
+                  onClick={() => ctx.send({ action: 'draw' })}
                 >
-                  {t('play.beginCommand')}
+                  {t('play.draw')}
                 </button>
-              )}
-              <button
-                style={{ minHeight: 44, fontSize: '0.875rem' }}
-                disabled={ctx.playing || ctx.phase !== 'command'}
-                onClick={() => ctx.send({ action: 'endCommand' })}
-              >
-                {t('play.endCommand')}
-              </button>
-              <button
-                style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
-                onClick={() => setPaused(true)}
-              >
-                {t('play.pause')}
-              </button>
-              {ctx.frameInfo ? (
-                <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>
-                  {ctx.frameInfo.label}
-                </span>
-              ) : null}
-              {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
-            </div>
-          )}
-        />
-        {paused ? (
-          <PauseSheet
-            onResume={() => setPaused(false)}
-            onQuit={quitToTitle}
-            onSettings={() => {
-              setPaused(false);
-              setScreen({ name: 'settings', from: 'play' });
-            }}
-            onHelp={() => {
-              setPaused(false);
-              setScreen({ name: 'help', from: 'play', section: null });
-            }}
+                {/* While the planning screen shows (item 12), its own bottom button begins
+                command; a second copy up here would be the same button twice. */}
+                {ctx.planning ? null : (
+                  <button
+                    style={{ minHeight: 44, fontSize: '0.875rem' }}
+                    disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
+                    onClick={() => ctx.send({ action: 'beginCommand' })}
+                  >
+                    {t('play.beginCommand')}
+                  </button>
+                )}
+                <button
+                  style={{ minHeight: 44, fontSize: '0.875rem' }}
+                  disabled={ctx.playing || ctx.phase !== 'command'}
+                  onClick={() => ctx.send({ action: 'endCommand' })}
+                >
+                  {t('play.endCommand')}
+                </button>
+                <button
+                  style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
+                  onClick={() => setPaused(true)}
+                >
+                  {t('play.pause')}
+                </button>
+                {ctx.frameInfo ? (
+                  <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>
+                    {ctx.frameInfo.label}
+                  </span>
+                ) : null}
+                {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
+              </div>
+            )}
           />
-        ) : null}
+          {paused ? (
+            <PauseSheet
+              onQuit={quitToTitle}
+              // The menu stays open under what it opens, so closing that returns to the menu
+              // (ruling 9). It used to close itself first, which is why Back landed on the game.
+              onSettings={() => nav.push({ name: 'settings' })}
+              onHelp={() => nav.push({ name: 'help', section: null })}
+            />
+          ) : null}
+        </div>
       </div>
-    </div>
+    );
+  };
+
+  return (
+    <NavHost nav={nav} baseGuard={(s) => s.name === 'play'} onBaseBack={() => setPaused(true)}>
+      {renderScreen()}
+    </NavHost>
   );
 }
 

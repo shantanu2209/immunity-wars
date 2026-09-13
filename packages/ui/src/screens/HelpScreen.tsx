@@ -38,7 +38,7 @@ import { Fragment, type CSSProperties, type ReactElement } from 'react';
 import { t } from '../i18n';
 import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
 import { RichText } from '../panels/LogPanel';
-import { BACK, BODY as P, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
+import { BODY as P, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
 const NAME: CSSProperties = { fontWeight: 700 };
 const EXAMPLE: CSSProperties = {
   ...P,
@@ -299,15 +299,19 @@ function sectionBody(key: HelpSectionKey): ReactElement {
 export function HelpScreen({
   section,
   onOpen,
-  onBack,
+  onNext,
   onWhy,
 }: {
   /** The open section, or null for the index. */
   section: HelpSectionKey | null;
-  /** Open a section, or null for the index. */
-  onOpen: (key: HelpSectionKey | null) => void;
-  /** Leave Help: back to where it was opened from. */
-  onBack: () => void;
+  /** Open a section from the index: one level down. */
+  onOpen: (key: HelpSectionKey) => void;
+  /**
+   * Move to the next section at the SAME level. Siblings are not levels (docs/for-P2.7.md §10,
+   * ruled 13 September 2026): closing a section reached by Next returns to the index, not to the
+   * section before, or reading all ten would take ten closes to leave.
+   */
+  onNext: (key: HelpSectionKey) => void;
   /** Open one of the library's "why it works this way" entries (the cross-link, P2.6). */
   onWhy: (entry: string) => void;
 }): ReactElement {
@@ -321,9 +325,6 @@ export function HelpScreen({
             {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
           </button>
         ))}
-        <button style={BACK} onClick={onBack}>
-          {t('help.back')}
-        </button>
       </div>
     );
   }
@@ -341,20 +342,22 @@ export function HelpScreen({
         <section style={{ marginTop: 16 }} data-help-why="">
           <h2 style={GROUP}>{t('help.whyLink')}</h2>
           {WHY.filter((w) => w.help === section).map((w) => (
-            <button key={w.key} style={ROW_BTN} onClick={() => onWhy(w.key)}>
+            <button
+              key={w.key}
+              style={ROW_BTN}
+              onClick={() => onWhy(w.key)}
+              data-help-why-link={w.key}
+            >
               {t(`library.why.${w.key}.title`)}
             </button>
           ))}
         </section>
       ) : null}
       {next ? (
-        <button style={BTN} onClick={() => onOpen(next)}>
+        <button style={BTN} onClick={() => onNext(next)}>
           {t('help.next')}
         </button>
       ) : null}
-      <button style={BACK} onClick={() => onOpen(null)}>
-        {t('help.toIndex')}
-      </button>
     </div>
   );
 }

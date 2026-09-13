@@ -24,6 +24,7 @@ export const organEffect = (organ: string): string | null => {
   return typeof e === 'string' && e.trim() !== '' ? e : null;
 };
 import { t } from '../i18n';
+import { FLOAT_RESERVE } from '../nav/NavHost';
 import { invaderNowLine } from './invaderNow';
 import {
   cellDisplayName as cellName,
@@ -81,7 +82,6 @@ export function InspectSheet({
   selectedResident = null,
   onCard,
   onCellCard,
-  onClose,
 }: {
   /** Opens the pathogen card for an invader (never offered for a novel one). */
   onCard?: (invaderId: string) => void;
@@ -97,7 +97,6 @@ export function InspectSheet({
   /** CP3: the resident row selects the organ's resident, exactly like a cell row. */
   onSelectResident?: (organ: string) => void;
   selectedResident?: string | null;
-  onClose: () => void;
   /** A first-encounter hint for the invader here, rendered inside the sheet rather than over
    *  the board. The sheet is already laid out and already audited; a floating callout would
    *  need placing against board geometry and re-placing at 200% text. */
@@ -105,10 +104,12 @@ export function InspectSheet({
 }): ReactElement {
   return (
     <div
+      data-inspect-sheet=""
       style={{
         position: 'fixed',
         left: '50%',
-        bottom: 12,
+        // Above the floating close, which closes this sheet (for-P2.7.md §9, ruling 8).
+        bottom: FLOAT_RESERVE,
         transform: 'translateX(-50%)',
         width: 'min(92vw, 420px)',
         maxHeight: '46vh',
@@ -153,7 +154,12 @@ export function InspectSheet({
           {!iv.novel && onCard ? (
             // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
             // novel pathogen gets no card — it is masked everywhere as unknown.
-            <button style={BTN} disabled={disabled} onClick={() => onCard(iv.id)}>
+            <button
+              style={BTN}
+              disabled={disabled}
+              onClick={() => onCard(iv.id)}
+              data-sheet-card={iv.id}
+            >
               {t('inspect.card')}
             </button>
           ) : null}
@@ -266,12 +272,6 @@ export function InspectSheet({
           </span>
         </div>
       ) : null}
-      <button
-        onClick={onClose}
-        style={{ minHeight: 44, width: '100%', fontSize: '0.875rem', marginTop: 4 }}
-      >
-        {t('inspect.close')}
-      </button>
     </div>
   );
 }

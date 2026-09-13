@@ -2,10 +2,15 @@
  * PAUSE MENU (sheet over Play) — Gate 1's "no screen without an exit", made real.
  * Quit KEEPS the save (docs/APP_FLOW.md save semantics), and the sheet says so.
  * Back-ordering: this sheet closes before quit-confirm can appear; the confirm is modal.
+ *
+ * It closes from the floating close (docs/for-P2.7.md §9, ruling 8), which is why it has no Resume
+ * button: Resume WAS its close. It stays open under Settings and How to play, so closing either
+ * returns here (ruling 9).
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
 
 const BTN: CSSProperties = {
   display: 'block',
@@ -20,12 +25,10 @@ const BTN: CSSProperties = {
 };
 
 export function PauseSheet({
-  onResume,
   onQuit,
   onSettings,
   onHelp,
 }: {
-  onResume: () => void;
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
   onQuit: () => void;
   /** Settings and How to play over the paused game (APP_FLOW §4: "P2.6 adds: Settings ·
@@ -34,6 +37,8 @@ export function PauseSheet({
   onHelp: () => void;
 }): ReactElement {
   const [confirming, setConfirming] = useState(false);
+  // The quit confirm is a dialog on the stack: the back gesture cancels it.
+  useNavLayer('quit-confirm', confirming, () => setConfirming(false), false);
   return (
     <div
       style={{
@@ -44,6 +49,8 @@ export function PauseSheet({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 15,
+        paddingBottom: FLOAT_RESERVE,
+        boxSizing: 'border-box',
       }}
     >
       <div
@@ -67,9 +74,6 @@ export function PauseSheet({
           </>
         ) : (
           <>
-            <button style={BTN} onClick={onResume}>
-              {t('pause.resume')}
-            </button>
             <button style={BTN} onClick={onHelp}>
               {t('pause.help')}
             </button>

@@ -55,6 +55,16 @@
  *   OFFLINE  after the first load, the network is cut: a full turn is played and every
  *            failed request recorded; then a reload with no network, which MUST render the
  *            app and let a turn be played (the service worker's precache; FINDINGS #59).
+ *   OCCLUSION nothing readable sits under a fixed control. Every scroll area and the page are
+ *            scrolled to their end, and every text run still on screen is checked against every
+ *            fixed or sticky control over it, at the very point they overlap. Added with the
+ *            floating close (docs/for-P2.7.md §10), because every check above measures clipping
+ *            and overflow and none can see one element covering another: a button hiding a
+ *            card's last line would have been green. Runs in all four passes.
+ *   NESTING  where each close lands (§9, ruling 9). The base pass opens the nested paths §9 read
+ *            from the code and asserts, after ONE close, the level it must return to, through the
+ *            floating button and, on three paths, through the phone's back gesture. A path the
+ *            deal does not offer is recorded NOT REACHED, never omitted.
  *
  * EVERY CHECK HAS A CONTROL BOTH WAYS, run first on the title screen: a planted defect that
  * MUST be flagged (fires) beside a planted sound element that MUST NOT be (passes). "Forbid
@@ -65,7 +75,9 @@
  * a 0.8125rem span. Layout, under each mechanism: a 600px block, a block that fits; a control
  * past the edge, one inside; an ellipsis that clips, one that does not. Offline: a fresh URL
  * must fail, a precached one must be served (on an origin with no worker that half cannot
- * run and says so). Any control failing stops the audit and says the instrument is broken.
+ * run and says so). Occlusion: text under a fixed button, text clear of it, and text under a
+ * fixed button but behind a modal scrim, which the button is not what hides. Nesting: a close
+ * that goes two levels must be reported, a close that goes one must not. Any control failing stops the audit and says the instrument is broken.
  * A check that has never failed is not known to work, and a check that has never been
  * required to pass is not known to permit anything.
  *
@@ -85,7 +97,7 @@ const CHROME =
   process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 
 interface Finding {
-  check: 'touch' | 'contrast' | 'nontext' | 'scale' | 'layout' | 'size' | 'offline';
+  check: 'touch' | 'contrast' | 'nontext' | 'scale' | 'layout' | 'size' | 'offline' | 'occlusion';
   screen: string;
   path: string;
   text: string;
@@ -264,6 +276,130 @@ const LAYOUT_AUDITOR = `
 })()
 `;
 
+/**
+ * OCCLUSION: readable text under a fixed control, measured at the end of every scroll.
+ *
+ * "Under" is decided by the browser, not by rectangles: where a text run and a fixed control
+ * overlap, `elementFromPoint` at the overlap says which one a finger would touch and an eye would
+ * see. Overlapping boxes where the text is drawn on top are not a finding. Text is first limited
+ * to the part of the screen its own scroll areas show, so a line scrolled out of a card is not
+ * mistaken for a line under the button. Every scroll position is put back before returning.
+ */
+const OCCLUSION_AUDITOR = `
+(() => {
+  const out = { findings: [] };
+  const isFixed = (el) => {
+    for (let e = el; e && e !== document.body; e = e.parentElement) {
+      const p = getComputedStyle(e).position;
+      if (p === 'fixed' || p === 'sticky') return true;
+    }
+    return false;
+  };
+  const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const controls = [...document.querySelectorAll('button, [role=button], a[href]')].filter((el) => !el.closest('svg') && shown(el) && isFixed(el));
+  if (controls.length === 0) return out;
+  const scrollers = [document.scrollingElement];
+  for (const el of document.querySelectorAll('body *')) {
+    const cs = getComputedStyle(el);
+    if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 1) scrollers.push(el);
+  }
+  const saved = scrollers.map((s) => s.scrollTop);
+  for (const s of scrollers) s.scrollTop = s.scrollHeight;
+  const vw = document.documentElement.clientWidth;
+  const vh = window.innerHeight;
+  const clipOf = (el) => {
+    let c = { left: 0, top: 0, right: vw, bottom: vh };
+    for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (cs.overflowY !== 'visible' || cs.overflowX !== 'visible') {
+        const r = e.getBoundingClientRect();
+        c = { left: Math.max(c.left, r.left), top: Math.max(c.top, r.top), right: Math.min(c.right, r.right), bottom: Math.min(c.bottom, r.bottom) };
+      }
+    }
+    return c;
+  };
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const flaggedEls = new Set();
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    const text = (n.textContent || '').trim();
+    const el = n.parentElement;
+    if (!text || !el || el.closest('svg') || flaggedEls.has(el)) continue;
+    if (controls.some((c) => c.contains(el))) continue;
+    const clip = clipOf(el);
+    const range = document.createRange();
+    range.selectNodeContents(n);
+    let done = false;
+    for (const r of range.getClientRects()) {
+      if (done) break;
+      const left = Math.max(r.left, clip.left);
+      const right = Math.min(r.right, clip.right);
+      const top = Math.max(r.top, clip.top);
+      const bottom = Math.min(r.bottom, clip.bottom);
+      if (right - left < 2 || bottom - top < 2) continue;
+      for (const c of controls) {
+        const cr = c.getBoundingClientRect();
+        const x0 = Math.max(left, cr.left);
+        const x1 = Math.min(right, cr.right);
+        const y0 = Math.max(top, cr.top);
+        const y1 = Math.min(bottom, cr.bottom);
+        if (x1 - x0 < 2 || y1 - y0 < 2) continue;
+        const px = (x0 + x1) / 2;
+        const py = (y0 + y1) / 2;
+        const hit = document.elementFromPoint(px, py);
+        if (!hit || !(hit === c || c.contains(hit))) continue;
+        // Would this text be visible here if the control were not? Only then is the control what
+        // hides it. Text behind a dialog's scrim, or behind a sheet's own panel, is hidden by
+        // that surface whatever its buttons do.
+        const before = c.style.visibility;
+        c.style.visibility = 'hidden';
+        const beneath = document.elementFromPoint(px, py);
+        c.style.visibility = before;
+        if (beneath && (beneath === el || el.contains(beneath))) {
+          flaggedEls.add(el);
+          done = true;
+          out.findings.push({ check: 'occlusion', path: el.tagName.toLowerCase(), text: text.slice(0, 40), detail: 'readable text under the fixed control "' + (c.textContent || '').trim().slice(0, 24) + '" at the end of its scroll' });
+          break;
+        }
+      }
+    }
+  }
+  scrollers.forEach((s, i) => { s.scrollTop = saved[i]; });
+  return out;
+})()
+`;
+
+/**
+ * WHERE THE PLAYER IS, named the way docs/for-P2.7.md §9's nesting table names it, topmost
+ * surface first: a card over the inspect sheet is "pathogen card", and once it closes the sheet
+ * is. Only what is actually on screen counts, so the game kept mounted and hidden under
+ * Settings is not mistaken for the game.
+ */
+const WHERE = `
+(() => {
+  const vis = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+  const q = (s) => [...document.querySelectorAll(s)].find(vis);
+  const button = (label) => [...document.querySelectorAll('button')].some((b) => vis(b) && (b.textContent || '').trim() === label);
+  if (q('[role=dialog][aria-label="Pathogen card"]')) return 'pathogen card';
+  if (q('[data-cell-card-open]')) return 'cell card';
+  if (q('[data-screen=library-why]')) return 'library why page';
+  const help = q('[data-screen=help]');
+  if (help) {
+    if (help.querySelector('[data-help-section]')) return 'help index';
+    const h = help.querySelector('h1');
+    return 'help section: ' + (h ? (h.textContent || '').trim() : '');
+  }
+  if (q('[data-screen=settings]')) return 'settings';
+  if (q('[data-screen=library]')) return 'library index';
+  if (q('[data-screen=about]')) return 'about';
+  if (q('[data-inspect-sheet]')) return 'inspect sheet';
+  if (button('Quit to title')) return 'pause menu';
+  if (q('[data-screen=planning]')) return 'planning';
+  if (q('[data-command-stage]')) return 'play';
+  if (button('New game')) return 'title';
+  return 'unknown';
+})()
+`;
+
 /** SIZE200's three surfaces of the text size setting, read from the page: the stored value,
  *  the size the root renders at, what the app says it applied, and the option the Settings row
  *  shows pressed (null when the row is not on screen). */
@@ -373,6 +509,56 @@ const typeInto = (page: Page, sel: string, value: string): Promise<boolean> =>
  * and a clean screen look identical in a total, which is the whole reason the per-screen list
  * exists (CLAUDE.md, "read the instrument that reports coverage").
  */
+/** Where one close landed, against where ruling 9 says it must (docs/for-P2.7.md §9). */
+interface NestResult {
+  path: string;
+  /** The level it must land on; for a path not reached, why it was not. */
+  expected: string;
+  /** Where it landed, or NOT REACHED. */
+  actual: string;
+  /** How it was closed: the floating button, or the phone's back gesture. */
+  via: 'close' | 'gesture';
+  ok: boolean;
+}
+
+const whereNow = async (page: Page): Promise<string> => (await page.evaluate(WHERE)) as string;
+
+/** One close through the floating button, the way a player closes anything. */
+const closeLevel = async (page: Page): Promise<boolean> => {
+  const hit = await clickSel(page, '[data-nav-close]');
+  await sleep(250);
+  return hit;
+};
+
+/** One level back through the phone's gesture: the browser's own history, not the button. */
+const gestureBack = async (page: Page): Promise<void> => {
+  await page.evaluate('history.back()');
+  await sleep(400);
+};
+
+/**
+ * Closes ONE level, by the button or the gesture, and records where it landed. The close happens
+ * in every pass so every pass walks the same path; only the base pass records (`out` null).
+ */
+async function nest(
+  page: Page,
+  out: NestResult[] | null,
+  path: string,
+  expected: string,
+  via: 'close' | 'gesture' = 'close',
+): Promise<void> {
+  if (via === 'close') await closeLevel(page);
+  else await gestureBack(page);
+  if (out === null) return;
+  const actual = await whereNow(page);
+  out.push({ path, expected, actual, via, ok: actual === expected });
+}
+
+/** A nesting path the walk could not open, recorded rather than omitted. */
+const nestNotReached = (out: NestResult[] | null, path: string, why: string): void => {
+  out?.push({ path, expected: why, actual: 'NOT REACHED', via: 'close', ok: false });
+};
+
 const notReached = (screen: string, why = 'the walk could not open it'): ScreenResult => ({
   screen,
   controls: 0,
@@ -397,11 +583,12 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
     textRuns: number;
     findings: Omit<Finding, 'screen'>[];
   };
+  const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
-    findings: r.findings.map((f) => ({ ...f, screen })),
+    findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
   });
 }
 
@@ -412,6 +599,7 @@ async function font200Audit(page: Page, screen: string, results: ScreenResult[])
     runs: number;
   };
   const l = (await page.evaluate(LAYOUT_AUDITOR)) as Layout;
+  const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const name = `${screen} @200% font size`;
   results.push({
     screen: name,
@@ -419,7 +607,7 @@ async function font200Audit(page: Page, screen: string, results: ScreenResult[])
     textRuns: s.runs,
     width: l.width,
     rootFontPx: l.rootFontPx,
-    findings: [...s.findings, ...l.findings].map((f) => ({ ...f, screen: name })),
+    findings: [...s.findings, ...l.findings, ...o.findings].map((f) => ({ ...f, screen: name })),
   });
 }
 
@@ -435,6 +623,7 @@ interface Layout {
  *  given and the layout is the thing. */
 async function zoom200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
   const l = (await page.evaluate(LAYOUT_AUDITOR)) as Layout;
+  const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const name = `${screen} @200% page zoom`;
   results.push({
     screen: name,
@@ -442,7 +631,7 @@ async function zoom200Audit(page: Page, screen: string, results: ScreenResult[])
     textRuns: 0,
     width: l.width,
     rootFontPx: l.rootFontPx,
-    findings: l.findings.map((f) => ({ ...f, screen: name })),
+    findings: [...l.findings, ...o.findings].map((f) => ({ ...f, screen: name })),
   });
 }
 
@@ -452,6 +641,7 @@ async function walk(
   results: ScreenResult[],
   step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
   rootPct: string | null = null,
+  nesting: NestResult[] | null = null,
 ): Promise<void> {
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
@@ -483,8 +673,7 @@ async function walk(
   if (await click(page, 'Settings')) {
     await sleep(200);
     await step(page, 'settings, no save', results);
-    await click(page, 'Back');
-    await sleep(200);
+    await nest(page, nesting, 'Title → Settings', 'title');
   }
   // How to play from the Title (P2.6 piece 3): the index, then every section by Next, then
   // back to the index and out. Each section is its own screen; all ten are measured.
@@ -497,11 +686,32 @@ async function walk(
         await step(page, `help, section ${i}`, results);
         if (i < 10 && !(await click(page, 'Next'))) break;
       }
-      await click(page, 'All sections');
-      await sleep(150);
+      // Siblings are not levels (for-P2.7.md §10): ten sections reached by Next close in ONE.
+      await nest(page, nesting, 'Help section 10, reached by Next → close', 'help index');
     }
-    await click(page, 'Back');
-    await sleep(200);
+    // HELP SECTION → WHY LINK → LIBRARY PAGE closes back to the section (ruling 9), and the
+    // back gesture from the section itself lands on the index.
+    let linked = false;
+    for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10']) {
+      if (!(await clickSel(page, `[data-help-section=${s}]`))) break;
+      await sleep(200);
+      const section = await whereNow(page);
+      if (await clickSel(page, '[data-help-why-link]')) {
+        await sleep(300);
+        linked = true;
+        await nest(page, nesting, 'Help section → why link → library page', section);
+        await nest(page, nesting, 'Help section → back gesture', 'help index', 'gesture');
+        break;
+      }
+      await closeLevel(page);
+    }
+    if (!linked)
+      nestNotReached(
+        nesting,
+        'Help section → why link → library page',
+        'no section had a why link',
+      );
+    await nest(page, nesting, 'Help index → close', 'title');
   }
   // The disease library from the Title (P2.6 piece 4): the index, one card over it, the why
   // section, then back out. Every row of the index is a control the audit measures.
@@ -511,8 +721,7 @@ async function walk(
     if (await clickSel(page, '[data-library-row]')) {
       await sleep(300);
       await step(page, 'library, card', results);
-      await click(page, 'Close card');
-      await sleep(200);
+      await nest(page, nesting, 'Library index → card → close', 'library index');
     }
     // The card-to-box link (ruled 8 September 2026). Only four boxes are about a disease, so
     // the FIRST row's card usually carries none: the walk filters to a worm, which the pack
@@ -526,10 +735,28 @@ async function walk(
         if (await clickSel(page, '[data-card-why]')) {
           await sleep(300);
           await step(page, 'library, why from a card', results);
-          await click(page, 'All pathogens');
-          await sleep(200);
+          // LIBRARY CARD → WHY PAGE closes back to the card, not the index (ruling 9); the same
+          // path by the back gesture; then the card closes to the index.
+          await nest(page, nesting, 'Library card → why it works this way', 'pathogen card');
+          if (await clickSel(page, '[data-card-why]')) {
+            await sleep(300);
+            await nest(
+              page,
+              nesting,
+              'Library card → why page → back gesture',
+              'pathogen card',
+              'gesture',
+            );
+          }
+          await nest(page, nesting, 'Library card → close', 'library index');
         } else {
           results.push(notReached('library, why from a card'));
+          nestNotReached(
+            nesting,
+            'Library card → why it works this way',
+            'the card had no why link',
+          );
+          await closeLevel(page);
         }
       }
       await typeInto(page, '[data-library-filter]', '');
@@ -538,18 +765,26 @@ async function walk(
     if (await click(page, 'Why it works this way')) {
       await sleep(300);
       await step(page, 'library, why', results);
-      await click(page, 'All pathogens');
-      await sleep(200);
+      // LIBRARY WHY PAGE → IN HOW TO PLAY → HELP closes back to the why page (ruling 9).
+      if (await clickSel(page, '[data-library-in-help]')) {
+        await sleep(300);
+        await nest(page, nesting, 'Library why page → In How to play → Help', 'library why page');
+      } else {
+        nestNotReached(
+          nesting,
+          'Library why page → In How to play → Help',
+          'no In How to play link',
+        );
+      }
+      await nest(page, nesting, 'Library why page → close', 'library index');
     }
-    await click(page, 'Back');
-    await sleep(200);
+    await nest(page, nesting, 'Library index → close', 'title');
   }
   // About (P2.6): the Title's fourth slot, and the only one that never opens over play.
   if (await click(page, 'About')) {
     await sleep(300);
     await step(page, 'about', results);
-    await click(page, 'Back');
-    await sleep(200);
+    await nest(page, nesting, 'Title → About', 'title');
   }
   // THE CRASH SCREEN. Measured like any other screen, because it is one: a player who reaches
   // it at 200% text on a 360px phone is having the worst moment the app offers, and an
@@ -613,6 +848,19 @@ async function walk(
   await click(page, 'Continue');
   await sleep(300);
   await step(page, 'planning', results);
+  // PLANNING → PATHOGEN CARD closes back to planning (ruling 9).
+  await clickSel(page, '[data-planning-group] > button');
+  await sleep(250);
+  if (await clickSel(page, '[data-planning-member] button')) {
+    await sleep(300);
+    await nest(page, nesting, 'Planning → pathogen card', 'planning');
+  } else {
+    nestNotReached(
+      nesting,
+      'Planning → pathogen card',
+      'no pathogen row on planning offered a card',
+    );
+  }
   await clickSel(page, '[data-planning-ap]');
   await sleep(200);
   await step(page, 'planning, AP terms open', results);
@@ -648,8 +896,8 @@ async function walk(
   for (let i = 0; i < tokenCount; i += 1) {
     await tapToken(i);
     await sleep(300);
-    sheetOpened = await page.evaluate(() =>
-      [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Close'),
+    sheetOpened = await page.evaluate(
+      () => document.querySelector('[data-inspect-sheet]') !== null,
     );
     if (sheetOpened) break;
     // The tap may have selected a cell or a resident instead (a tap on the selected piece
@@ -659,9 +907,31 @@ async function walk(
   }
   if (sheetOpened) {
     await step(page, 'inspect sheet', results);
-    await click(page, 'Close');
-    await sleep(200);
+    // INSPECT SHEET → PATHOGEN CARD and → CELL CARD each close back to the sheet (ruling 9).
+    if (await clickSel(page, '[data-inspect-sheet] [data-sheet-card]')) {
+      await sleep(300);
+      await nest(page, nesting, 'Inspect sheet → pathogen card', 'inspect sheet');
+    } else {
+      nestNotReached(nesting, 'Inspect sheet → pathogen card', 'the sheet offered no card');
+    }
+    if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
+      await sleep(300);
+      await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
+    } else {
+      nestNotReached(
+        nesting,
+        'Inspect sheet → cell card',
+        'no cell stood on the node the walk inspected (the deal decides)',
+      );
+    }
+    await nest(page, nesting, 'Inspect sheet → close', 'play');
   } else {
+    nestNotReached(
+      nesting,
+      'Inspect sheet → pathogen card',
+      'no invader token tap opened the sheet',
+    );
+    nestNotReached(nesting, 'Inspect sheet → cell card', 'no invader token tap opened the sheet');
     results.push({
       screen: 'inspect sheet',
       controls: 0,
@@ -710,8 +980,7 @@ async function walk(
   await clickSel(page, '[data-bar-card="1"]');
   await sleep(300);
   await step(page, 'cell card', results);
-  await click(page, 'Close');
-  await sleep(200);
+  await closeLevel(page);
   await clickSel(page, '[data-piece="cell:neutrophil"]');
   await sleep(300);
   await step(page, 'command, Neutrophil selected', results);
@@ -721,32 +990,35 @@ async function walk(
   if (opened) {
     await sleep(300);
     await step(page, "inspect sheet, from What's here", results);
-    await click(page, 'Close');
-    await sleep(200);
+    await closeLevel(page);
   }
   await click(page, 'Menu');
   await sleep(300);
   await step(page, 'pause sheet', results);
   // Settings over the paused game: the game stays mounted (hidden) underneath, and the delete
   // row is disabled with its reason, since the save is the game being played.
+  // PAUSE MENU → SETTINGS closes back to the pause menu (ruling 9); it used to land on the game.
   if (await click(page, 'Settings')) {
     await sleep(200);
     await step(page, 'settings, over play', results);
-    await click(page, 'Back');
-    await sleep(200);
+    await nest(page, nesting, 'Pause menu → Settings', 'pause menu');
+  } else {
+    nestNotReached(nesting, 'Pause menu → Settings', 'the pause menu offered no Settings');
   }
-  // How to play over the paused game: the index only (the sections are the same screens as
-  // from the Title), then back to the game.
-  await click(page, 'Menu');
-  await sleep(200);
+  // How to play over the paused game, from the menu that is still open: the index only (the
+  // sections are the same screens as from the Title), back to the menu, then the menu closes.
   if (await click(page, 'How to play')) {
     await sleep(200);
     await step(page, 'help, index, over play', results);
-    await click(page, 'Back');
-    await sleep(200);
+    await nest(page, nesting, 'Pause menu → How to play', 'pause menu');
   } else {
-    await click(page, 'Resume');
+    nestNotReached(nesting, 'Pause menu → How to play', 'the pause menu offered no How to play');
   }
+  await nest(page, nesting, 'Pause menu → close', 'play');
+  // THE BACK GESTURE AT THE BOTTOM OF PLAY opens the pause menu (APP_FLOW ruling 1): back never
+  // silently leaves the game. The same gesture then closes the menu.
+  await nest(page, nesting, 'Play → back gesture', 'pause menu', 'gesture');
+  await nest(page, nesting, 'Pause menu → back gesture', 'play', 'gesture');
   await sleep(200);
   await click(page, 'End turn');
   await sleep(400);
@@ -786,8 +1058,7 @@ async function walk(
     } else {
       results.push(notReached('settings, hints reset confirm'));
     }
-    await click(page, 'Back');
-    await sleep(200);
+    await closeLevel(page);
   }
   // The Title's Continue carries its subtitle ("Training turn 2") inside the button, so the
   // exact-text click cannot find it: match the label's start. The reveal's Continue is exact.
@@ -1249,6 +1520,127 @@ async function controls(page: Page): Promise<string[]> {
     await refusedRegistration(null),
   );
 
+  // ------------------------------------------------------------------------------------------
+  // OCCLUSION (docs/for-P2.7.md §10): text under a fixed control must be flagged, and text clear
+  // of it must not be. Planted as a fixed button across the bottom of the title screen, with one
+  // line of text under it and one well above it.
+  // ------------------------------------------------------------------------------------------
+  await page.goto(URL, { waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await plant([
+    {
+      tag: 'button',
+      id: 'float',
+      text: 'planted float',
+      style: box({
+        position: 'fixed',
+        left: '0',
+        bottom: '0',
+        width: '100%',
+        height: '60px',
+        border: '1px solid #000',
+        zIndex: '9999',
+      }),
+    },
+    {
+      tag: 'span',
+      id: 'under',
+      text: 'planted under',
+      style: box({ position: 'fixed', left: '10px', bottom: '20px' }),
+    },
+    {
+      tag: 'span',
+      id: 'above',
+      text: 'planted above',
+      style: box({ position: 'fixed', left: '10px', bottom: '200px' }),
+    },
+  ]);
+  const occ = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Planted };
+  line(
+    'occlusion fires: text under a fixed button is flagged',
+    has(occ.findings, 'occlusion', 'planted under'),
+  );
+  line(
+    'occlusion passes: text clear of a fixed button is NOT flagged',
+    !has(occ.findings, 'occlusion', 'planted above'),
+  );
+  await unplant();
+  // The class the check's first run got wrong: text under a fixed button, but behind a modal scrim
+  // that sits between them. The scrim hides it, not the button, so it must NOT be flagged.
+  await plant([
+    {
+      tag: 'div',
+      id: 'scrim',
+      text: '',
+      style: box({
+        position: 'fixed',
+        left: '0',
+        top: '0',
+        width: '100%',
+        height: '100%',
+        background: 'rgba(0,0,0,0.45)',
+        zIndex: '5000',
+      }),
+    },
+    {
+      tag: 'button',
+      id: 'modal-button',
+      text: 'planted modal button',
+      style: box({
+        position: 'fixed',
+        left: '0',
+        bottom: '0',
+        width: '100%',
+        height: '60px',
+        border: '1px solid #000',
+        zIndex: '9999',
+      }),
+    },
+    {
+      tag: 'span',
+      id: 'behind',
+      text: 'planted behind',
+      style: box({ position: 'fixed', left: '10px', bottom: '20px', zIndex: '1' }),
+    },
+  ]);
+  const behind = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Planted };
+  line(
+    'occlusion passes: text behind a modal scrim under a fixed button is NOT flagged',
+    !has(behind.findings, 'occlusion', 'planted behind'),
+  );
+  await unplant();
+
+  // ------------------------------------------------------------------------------------------
+  // NESTING (docs/for-P2.7.md §9, ruling 9): the landing check must report a close that went too
+  // far and pass one that went exactly one level. How to play, section 1; the planted defect
+  // closes TWICE while expecting the index, lands on the title, and must be reported. The same
+  // path closed once must not be.
+  // ------------------------------------------------------------------------------------------
+  const landing = async (closes: number): Promise<NestResult[]> => {
+    await page.goto(URL, { waitUntil: 'load' });
+    await page.waitForFunction(() => document.querySelector('button') !== null, {
+      timeout: 30000,
+    });
+    const got: NestResult[] = [];
+    if (!(await click(page, 'How to play'))) return got;
+    await sleep(200);
+    if (!(await clickSel(page, '[data-help-section=s1]'))) return got;
+    await sleep(200);
+    for (let i = 1; i < closes; i += 1) await closeLevel(page);
+    await nest(page, got, 'control: Help section 1 → close', 'help index');
+    return got;
+  };
+  const twice = await landing(2);
+  line(
+    'nesting fires: a close that goes two levels is reported as landing wrong',
+    twice.length === 1 && twice[0]?.ok === false && twice[0]?.actual === 'title',
+  );
+  const once = await landing(1);
+  line(
+    'nesting passes: a close that goes one level is NOT reported',
+    once.length === 1 && once[0]?.ok === true,
+  );
+
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
   return lines;
 }
@@ -1406,8 +1798,9 @@ try {
   const offlineOnly = process.argv.includes('--offline-only');
 
   const results: ScreenResult[] = [];
+  const nesting: NestResult[] = [];
   if (!offlineOnly) {
-    await walk(page, results, audit);
+    await walk(page, results, audit, null, nesting);
     await walkToResult(page, results, audit);
   }
 
@@ -1499,6 +1892,7 @@ try {
     font200,
     zoom200,
     size200,
+    nesting,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -1514,6 +1908,13 @@ try {
       scaleSize200: count(size200, 'scale'),
       layoutSize200: count(size200, 'layout'),
       sizeSize200: count(size200, 'size'),
+      occlusion: count(results, 'occlusion'),
+      occlusionFont200: count(font200, 'occlusion'),
+      occlusionZoom200: count(zoom200, 'occlusion'),
+      occlusionSize200: count(size200, 'occlusion'),
+      nestingChecked: nesting.length,
+      nestingWrong: nesting.filter((n) => !n.ok && n.actual !== 'NOT REACHED').length,
+      nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
       offlineMet: off['met'],
     },
   };

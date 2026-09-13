@@ -21,7 +21,8 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { BACK, BTN, GROUP, PAGE, TITLE } from './chrome';
+import { useNavLayer } from '../nav/NavHost';
+import { BTN, GROUP, PAGE, TITLE } from './chrome';
 
 const ROW: CSSProperties = {
   display: 'flex',
@@ -78,7 +79,6 @@ export function SettingsScreen({
   onDeleteSave,
   hintsSeenAny,
   onResetHints,
-  onBack,
 }: {
   /** The text size in force and the sizes offered (percentages of the browser default). */
   textSize: string;
@@ -94,9 +94,11 @@ export function SettingsScreen({
   /** True when this device has seen at least one hint; the row is disabled otherwise. */
   hintsSeenAny: boolean;
   onResetHints: () => void;
-  onBack: () => void;
 }): ReactElement {
   const [confirming, setConfirming] = useState<string | null>(null);
+  // The confirm is a dialog on the navigation stack: the back gesture cancels it, and the floating
+  // close stays hidden while it is up, because a dialog is answered by its own buttons.
+  useNavLayer('settings-confirm', confirming !== null, () => setConfirming(null), false);
 
   const groups: readonly Group[] = [
     {
@@ -217,9 +219,6 @@ export function SettingsScreen({
           {g.rows.map(renderRow)}
         </section>
       ))}
-      <button style={BACK} onClick={onBack}>
-        {t('settings.back')}
-      </button>
       {confirming ? (
         <div
           style={{
