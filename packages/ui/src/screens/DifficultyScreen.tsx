@@ -6,6 +6,7 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
 
 const BTN: CSSProperties = {
   display: 'block',
@@ -26,14 +27,14 @@ const DIFFS = ['training', 'normal', 'hard'] as const;
 export function DifficultyScreen({
   hasSave,
   onStart,
-  onBack,
 }: {
   /** When true, picking a difficulty asks before replacing the saved game. */
   hasSave: boolean;
   onStart: (difficulty: string) => void;
-  onBack: () => void;
 }): ReactElement {
   const [pendingDiff, setPendingDiff] = useState<string | null>(null);
+  // The overwrite confirm is a dialog on the navigation stack: the back gesture cancels it.
+  useNavLayer('difficulty-confirm', pendingDiff !== null, () => setPendingDiff(null), false);
 
   const pick = (d: string): void => {
     if (hasSave) setPendingDiff(d);
@@ -41,7 +42,7 @@ export function DifficultyScreen({
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }}>
+    <div style={{ maxWidth: 420, margin: '0 auto', padding: `32px 16px ${FLOAT_RESERVE}` }}>
       <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('difficulty.heading')}</h2>
       {/*
         THE GOAL, said once before the game starts (Shantanu's ruling, 9 September 2026).
@@ -78,9 +79,6 @@ export function DifficultyScreen({
           </span>
         </button>
       ))}
-      <button style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }} onClick={onBack}>
-        {t('difficulty.back')}
-      </button>
       {pendingDiff !== null ? (
         <div
           style={{

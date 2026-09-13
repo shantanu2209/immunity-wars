@@ -16,7 +16,9 @@ import {
   CrashForTesting,
   CrashScreen,
   ErrorBoundary,
+  NavHost,
   PlayScreen,
+  useNav,
   type ArtMetrics,
 } from '@immunity-wars/ui';
 import { useEffect, useState, type ReactElement } from 'react';
@@ -41,6 +43,9 @@ function DevApp(): ReactElement {
   const [checks, setChecks] = useState<string[]>([]);
   const [idbLines, setIdbLines] = useState<string[]>([]);
   const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
+  // The same navigation stack as the app, so the dev shell's cards and inspect sheet close too.
+  // Its base is the game and nothing else, and the back gesture there leaves, as it always has.
+  const nav = useNav<'play'>('play', () => true);
 
   useEffect(() => {
     runIdbExercise((line) => setIdbLines((l) => [...l, line]))
@@ -59,50 +64,52 @@ function DevApp(): ReactElement {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 700, margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.125rem' }}>Immunity Wars — dev shell (instrumented)</h1>
-      <PlayScreen
-        session={session}
-        artMetrics={artMetrics}
-        skipBursts={skip}
-        onCheck={(line) => setChecks((c) => [...c, line])}
-        onFrame={recordFrame}
-        onTap={recordTap}
-        onTransition={recordTransition}
-        renderControls={(ctx) => (
-          <p>
-            <span style={{ fontSize: '0.8125rem' }}>
-              turn {String(ctx.game['turn'])}/{String(ctx.game['maxTurn'])} · phase {ctx.phase} · AP{' '}
-              {String(ctx.game['ap'])} · deck {String(ctx.game['deckCount'])}
-              {ctx.frameInfo
-                ? ` · SPREAD ${ctx.frameInfo.n}/${ctx.frameInfo.of}: ${ctx.frameInfo.label}`
-                : ''}
-              {ctx.lastError ? ` · rejected: ${ctx.lastError}` : ''}
-            </span>
-            <br />
-            <button
-              disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
-              onClick={() => ctx.send({ action: 'draw' })}
-            >
-              Draw
-            </button>{' '}
-            <button
-              disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
-              onClick={() => ctx.send({ action: 'beginCommand' })}
-            >
-              Begin command
-            </button>{' '}
-            <button
-              disabled={ctx.playing || ctx.phase !== 'command'}
-              onClick={() => ctx.send({ action: 'endCommand' })}
-            >
-              End command (spread)
-            </button>{' '}
-            <label style={{ fontSize: '0.8125rem' }}>
-              <input type="checkbox" checked={skip} onChange={(e) => setSkip(e.target.checked)} />{' '}
-              skip bursts (render authoritative views only)
-            </label>
-          </p>
-        )}
-      />
+      <NavHost nav={nav}>
+        <PlayScreen
+          session={session}
+          artMetrics={artMetrics}
+          skipBursts={skip}
+          onCheck={(line) => setChecks((c) => [...c, line])}
+          onFrame={recordFrame}
+          onTap={recordTap}
+          onTransition={recordTransition}
+          renderControls={(ctx) => (
+            <p>
+              <span style={{ fontSize: '0.8125rem' }}>
+                turn {String(ctx.game['turn'])}/{String(ctx.game['maxTurn'])} · phase {ctx.phase} ·
+                AP {String(ctx.game['ap'])} · deck {String(ctx.game['deckCount'])}
+                {ctx.frameInfo
+                  ? ` · SPREAD ${ctx.frameInfo.n}/${ctx.frameInfo.of}: ${ctx.frameInfo.label}`
+                  : ''}
+                {ctx.lastError ? ` · rejected: ${ctx.lastError}` : ''}
+              </span>
+              <br />
+              <button
+                disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
+                onClick={() => ctx.send({ action: 'draw' })}
+              >
+                Draw
+              </button>{' '}
+              <button
+                disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
+                onClick={() => ctx.send({ action: 'beginCommand' })}
+              >
+                Begin command
+              </button>{' '}
+              <button
+                disabled={ctx.playing || ctx.phase !== 'command'}
+                onClick={() => ctx.send({ action: 'endCommand' })}
+              >
+                End command (spread)
+              </button>{' '}
+              <label style={{ fontSize: '0.8125rem' }}>
+                <input type="checkbox" checked={skip} onChange={(e) => setSkip(e.target.checked)} />{' '}
+                skip bursts (render authoritative views only)
+              </label>
+            </p>
+          )}
+        />
+      </NavHost>
       {throwOnRender ? <CrashForTesting /> : null}
       <p style={{ fontSize: '0.8125rem' }}>
         <button onClick={() => setThrowOnRender(true)}>Crash: render</button>{' '}

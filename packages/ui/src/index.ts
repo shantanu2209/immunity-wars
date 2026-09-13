@@ -54,6 +54,17 @@ export { CrashScreen, type CrashCase } from './screens/CrashScreen';
 export { ErrorBoundary, CrashForTesting, type CrashDetail } from './screens/ErrorBoundary';
 export { SaveFailedNotice } from './panels/SaveFailedNotice';
 export {
+  FLOAT_RESERVE,
+  FloatingClose,
+  NavHost,
+  useNav,
+  useNavLayer,
+  useNavLayerWith,
+  type Nav,
+  type NavLayerApi,
+} from './nav/NavHost';
+export { type CloseLabel } from './nav/stack';
+export {
   LibraryScreen,
   libraryType,
   whyForDisease,

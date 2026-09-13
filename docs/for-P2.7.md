@@ -110,7 +110,7 @@ a screen's layout, text or controls change.**
 
 | Instrument | What it holds | Its warrant |
 |---|---|---|
-| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline, a refused service worker registration | 29 controls, fire and pass halves (27 until 13 September; the two added are #69's) |
+| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline, a refused service worker registration | 34 controls, fire and pass halves (27 until 13 September; #69 added two, piece 1 five) |
 | `pnpm verify` | typecheck, lint, format, boundaries, docs, turbo hash, every suite | `pnpm ci:selftest` |
 | `pnpm coverage:positions` | the generated coverage documents' positions | 4 controls |
 | `iw/no-hardcoded-jsx-text` | all player text through the catalogue | both control halves |
@@ -118,7 +118,7 @@ a screen's layout, text or controls change.**
 | the equivalence corpus | the engine's behaviour and its 67-name root surface | the whole of Phase 1 |
 
 **What the audit must hold, every run:** **44 screens** per pass (46 under SIZE200), **no screen
-NOT REACHED**, every check **0**, **29 controls** all firing the right way, offline met.
+NOT REACHED**, every check **0**, **34 controls** all firing the right way, offline met, and **no nesting landing wrong**.
 **Read the per-screen list, not the total** — four times in P2.6 a green total hid an unmeasured
 screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
 
@@ -285,7 +285,10 @@ was found that moved it.
 - **Help's "A turn" section** says "Tap Draw a card". That is catalogue text and changes with the
   build. No engine text changes.
 
-### ⚠️ PROPOSED, NOT YET RULED: the build in four pieces, one PR each
+### ✅ RULED 13 September 2026: the build in four pieces, one PR each
+
+> Recorded as proposed, not ruled, and ruled by Shantanu the same day: "the split and order are
+> correct". The table is unchanged from the proposal.
 
 | Piece | Rulings | Why in this position |
 |---|---|---|
@@ -297,3 +300,118 @@ was found that moved it.
 Each piece is audited with the per-screen list read, and goes up only after the one before it is
 merged. A phone pass on the S25 is most useful after pieces 3 and 4, where the main screen and
 planning take their new shape.
+
+---
+
+## 10. Piece 1, the navigation stack and the floating close: BUILT, 13 September 2026
+
+Written 13 September 2026, after the split was ruled, because the rulings fix the behaviour and
+leave three choices in how it is built. **Nothing is built until these are ruled.**
+
+> ✅ **All three choices ruled as recommended** (Shantanu, 13 September 2026), and built the same
+> day. What was built, and what building it found, closes this section.
+
+### What was measured for it
+
+**Where each close sits today**, at 360 × 780 CSS px on the shipped build:
+
+| Surface | Its close | Scroll needed to reach it |
+|---|---|---|
+| library index | Back, at 7,278px | **6,546px** |
+| library "why it works this way" page | All pathogens, at 4,306px | **3,574px** |
+| Help sections 3, 5, 6, 9 | All sections | 206, **697**, 363, 99px |
+| About | Back, at 1,040px | 308px |
+| pathogen card, cell card, inspect sheet | at the end of their content | none on the instances measured, because those fitted; the close is last in the content, so a longer one pushes it out |
+
+**The phone's back gesture leaves the app from every screen, mid-game included.** Nothing in
+`packages/app` or `packages/ui` touches the browser's history, so the web build is one page with
+no entries. The autosave means nothing is lost, but `APP_FLOW.md` §2 ruling 1 says back "never
+silently exits Play", and on the web build it does.
+
+**The Gate 1 audit clicks closes by their words:** "Back" seven times, "Close" four, and "All
+sections", "Close card" and "Resume" once each. Ruling 9's labels change with depth, so the walk
+changes in this piece and its controls re-run.
+
+### The structure proposed
+
+- **One stack, owned by the shell.** A pure model in `packages/app`: open a level, close a level,
+  and the label the floating button shows (Back when closing returns to a previous level, Close
+  when it returns to the main screen). It replaces the screen machine's one-hop `from`. The play
+  screen's layers (the inspect sheet, cards, the pause menu) open and close through the same stack,
+  so a Settings page opened from the pause menu closes back to the pause menu.
+- **Siblings are not levels.** Help's Next moves from section 5 to section 6 at the same level, so
+  Back from section 6 goes to the Help index, not to section 5. The same holds for the library's
+  cards opened one after another from the index.
+- **One floating button**, a UI component rendering the stack's label from the catalogue, pinned
+  to the bottom of every page and layer that has a close or back today. Reading surfaces get bottom
+  padding so their last line is never under it. "All sections", "All pathogens", "Close card" and
+  the pages' Back buttons are replaced by it.
+- **Not given one:** dialogs (the reveal, the confirms), which are acknowledged by their own
+  button, and Result, whose buttons are all onward.
+
+### What the instruments gain
+
+- **Unit tests on the stack model, both halves**: every open followed by a close lands on the level
+  before it, and a planted defect (a close that pops two levels) is caught.
+- **The audit walks all seven nesting paths of §9** and asserts where each close lands, with a
+  control that fires on a wrong landing and one that passes a right one.
+- **A new audit check: nothing readable sits under a fixed control** at the end of a scroll, under
+  all four passes, with both control halves. The audit today measures clipping and overflow, not
+  one element covering another, so a floating button hiding a card's last line would be green.
+
+### ✅ Three choices, RULED as recommended (13 September 2026)
+
+1. **The phone's back gesture.** (a) On-screen only, and the gesture keeps leaving the app until
+   Phase 4 wires Android's back button; or (b) the stack also drives the browser's history, so the
+   gesture closes one level, exactly like the floating button, without the address changing.
+   **Recommendation: (b).** The web build is what a school opens, the gesture is how most phone
+   users go back, and it is the one way today that Play exits silently, against a ratified ruling.
+   At the bottom of the stack the gesture on Play opens the pause menu, ruling 1's order, and on
+   Title it leaves the app as any site does.
+2. **Where the floating button applies in this piece.** (a) Every page and layer that has a close
+   or back today, the scope above; or (b) the reading surfaces only, leaving the inspect sheet and
+   pause menu to pieces 2 and 3. **Recommendation: (a).** One close in one place is the ruling, and
+   splitting it would ship two conventions at once.
+3. **Siblings.** Is Back from Help section 6, reached by Next from section 5, meant to go to the
+   index (siblings are one level, as proposed) or to section 5 (every screen is a level)?
+   **Recommendation: the index.** Otherwise reading all ten sections means ten Backs to leave.
+
+### What was built, and what building it found
+
+**Built as proposed, with one deviation stated rather than worked around.** The stack model, the
+floating close and the back-gesture sync live in `packages/ui/src/nav/`, not in `packages/app` as
+the proposal said: the dev shell mounts the same play screen, its cards and inspect sheet need the
+close too, and `ui` cannot import `app`. The app's screen machine uses the stack from there. The
+behaviour is exactly what was ruled.
+
+- **Every close is one close.** One ordered list holds screens and layers, so Settings opened from
+  the pause menu is [play, pause, settings] and closes to the menu. Help's Next replaces the section
+  in place. The floating button says Back or Close from the stack. Dialogs are on the stack without
+  the button, so the back gesture answers them first, as APP_FLOW ruling 1 orders.
+- **The back gesture closes one level.** One history entry per level, the popstate a trim causes
+  ignored, and a deeper stack held while a trim is still travelling. At the bottom of Play the
+  gesture opens the pause menu; at the Title it leaves.
+- **Removed:** Resume, All sections, All pathogens, Close card, the inspect sheet's Close and every
+  page's Back, with their ten catalogue keys. Added: `nav.back` and `nav.close`.
+- **A spacer at the end of the page while the button shows**, because the inspect sheet is not
+  modal and the game's page can still scroll its last lines under the button.
+
+**Three things the build found, all in instruments, all fixed in the same change:**
+
+1. **The stack test's own control fired on its first run.** It expected a close that pops two
+   levels to be caught on all seven paths, and one path cannot catch it: planning → pathogen card
+   is one level above the base, and the base is never popped, so popping two lands where popping
+   one does. The control now requires the catch on the six paths deep enough to tell, and the
+   seventh is pinned as a blind spot with its own assertion.
+2. **The occlusion check's first run reported 109 findings, and every one was wrong**
+   ([`FINDINGS.md`](FINDINGS.md) #70). It asked whether text overlapped a fixed control; the
+   dialogs, the Settings confirms and the pause menu all have buttons over page text that their
+   own scrim already hides. None involved the floating close. It now asks whether the control is
+   what hides the text, and a third control pins exactly that class.
+3. **The walk reported planning → pathogen card NOT REACHED, and that was the walk's fault.** The
+   pathogen rows render only once their group is opened; the walk now opens the group first.
+
+**The audit on the shipped build, 13 September 2026:** 34 controls, all firing the right way; 44
+screens per pass (46 under SIZE200), none NOT REACHED; every check 0 under all four mechanisms,
+occlusion included; 22 nesting landings checked, 0 wrong, 1 NOT REACHED (inspect sheet → cell
+card: no cell stood on the node the walk inspected, which the deal decides); offline met.

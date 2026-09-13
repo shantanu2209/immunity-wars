@@ -11,6 +11,7 @@ import { CELL_CARDS, UM } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { FLOAT_RESERVE } from '../nav/NavHost';
 import { cellDisplayName } from '../names';
 
 export interface CellCardSubject {
@@ -28,24 +29,8 @@ interface Fields {
 }
 
 const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
-const CLOSE: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 44,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-};
 
-export function CellCard({
-  subject,
-  onClose,
-}: {
-  subject: CellCardSubject;
-  onClose: () => void;
-}): ReactElement {
+export function CellCard({ subject }: { subject: CellCardSubject }): ReactElement {
   const { cell } = subject;
   const card = (CELL_CARDS as Record<string, Fields | undefined>)[cell] ?? {};
   const tag = (UM as Record<string, { r?: string } | undefined>)[cell]?.r;
@@ -69,13 +54,18 @@ export function CellCard({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 40,
+        // The card sits above the floating close, which closes it (for-P2.7.md §9, ruling 8), so
+        // its last line is never under the button; the percentage below is of what is left.
+        paddingTop: '4vh',
+        paddingBottom: FLOAT_RESERVE,
+        boxSizing: 'border-box',
       }}
     >
       <div
         data-cell-card-open={cell}
         style={{
           width: 'min(92vw, 420px)',
-          maxHeight: '88vh',
+          maxHeight: '100%',
           overflowY: 'auto',
           background: '#FFFDF9',
           border: '2px solid #8E6E53',
@@ -114,9 +104,6 @@ export function CellCard({
         {!filled ? (
           <div style={{ marginTop: 8, color: '#78665D' }}>{t('cellCard.empty')}</div>
         ) : null}
-        <button style={{ ...CLOSE, marginTop: 12 }} onClick={onClose}>
-          {t('card.close')}
-        </button>
       </div>
     </div>
   );

@@ -31,6 +31,7 @@ import {
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { FLOAT_RESERVE } from '../nav/NavHost';
 import { typeDisplayName } from '../names';
 
 export interface PathogenCardSubject {
@@ -85,12 +86,10 @@ function StatBar({ label, value }: { label: string; value: number }): ReactEleme
 
 export function PathogenCard({
   subject,
-  onClose,
   whyBoxes,
   onWhy,
 }: {
   subject: PathogenCardSubject;
-  onClose: () => void;
   /**
    * The why boxes that explain this disease's own mechanic, from `whyForDisease`. Passed in
    * rather than computed here, because this component is also the card the INSPECT SHEET opens
@@ -139,12 +138,17 @@ export function PathogenCard({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 40,
+        // The card sits above the floating close, which closes it (for-P2.7.md §9, ruling 8), so
+        // its last line is never under the button; the percentage below is of what is left.
+        paddingTop: '4vh',
+        paddingBottom: FLOAT_RESERVE,
+        boxSizing: 'border-box',
       }}
     >
       <div
         style={{
           width: 'min(92vw, 420px)',
-          maxHeight: '88vh',
+          maxHeight: '100%',
           overflowY: 'auto',
           background: '#FFFDF9',
           border: '2px solid #B03A2E',
@@ -269,9 +273,6 @@ export function PathogenCard({
               </button>
             ))
           : null}
-        <button style={{ ...CLOSE, marginTop: 12 }} onClick={onClose}>
-          {t('card.close')}
-        </button>
       </div>
     </div>
   );
