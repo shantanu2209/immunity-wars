@@ -180,3 +180,120 @@ screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
    is still wrong, in specifics, and the second round starts from that.
 
 **Nothing here is started until step 1 has an answer.**
+
+> ✅ **DONE, 9 to 13 September 2026.** Step 1 was asked. The answer was not a list: the problems
+> were diffuse rather than pointed, so Shantanu changed the round's shape to a conversation (Claude
+> proposes an arrangement, he reacts, Claude adjusts), with one priority: **playing it must not be
+> difficult**, so the play surfaces come first and the reference screens after. Steps 2 and 3 are
+> replaced by that loop. The consistency pass across the four Title slots went first, because it
+> needed nothing from him and everything else lands on top of it. §9 records the play screen.
+
+---
+
+## 9. The play screen: measured, proposed and ruled (13 September 2026)
+
+Proposed as a page of side-by-side phone mockups, first three arrangements and then the chosen one
+in detail, and **approved in full** (Shantanu, 13 September 2026). **Nothing below is built yet.**
+
+### What was measured first
+
+360 × 780 CSS px, the shipped build, Training, turn 1:
+
+| State | Page height | Below the fold | What it meant |
+|---|---|---|---|
+| Planning | 1,001px | 221px | its one button, at 831px, was off screen |
+| Command, nothing selected | 1,415px | 635px | most of the fourteen pieces below the fold |
+| Command, a cell selected | 1,687px | 907px | selecting grew the command bar 174 → 339px and pushed everything down 272px |
+
+The turn buttons sat at the very top (16 to 68px), two of the three always greyed. The pieces grid
+renders two per row at 360px (`minmax(7rem)`), not the three the 5 September checklist described.
+`APP_FLOW.md` placed the command bar at the bottom; the build had it inline at 459px, and no ruling
+was found that moved it.
+
+### The rulings
+
+1. **The dock.** The next step lives in a dock at the bottom of the play screen, one height in every
+   state: selecting changes what it says and moves nothing. The top row keeps only the turn line and
+   Menu. *This changes the 5 September top row (Draw, End turn, Menu).*
+2. **No Draw button.** The engine refuses every other action before the draw (`beginCommand` returns
+   "Draw first.", `endCommand` returns "Not in command."), so the draw was never a choice. End turn
+   plays the spread, the app sends `draw` itself, and the reveal shows what arrived; its button
+   begins planning. **The engine and the rules are unchanged**; only who sends the action changes.
+   A draw that brings nothing (after the infection window) goes straight to planning; a draw that
+   wins the game goes to Result; on the first turn the draw follows the goal dialog.
+3. **Arrangement C: one main screen, with drawers.** A row of drawer buttons (Pieces, Antibodies, The
+   body, What happened), each opening over the board. Picking a piece in the Pieces drawer closes it
+   and selects the piece on the board.
+4. **No scroll on the main screen.** Only reading surfaces scroll: cards, Help, the library, the log.
+   Everything else opens as a drawer, with transitions between sub-sections instead of scroll.
+5. **200% text.** Nothing is ever cut off. If the main screen cannot fit at a larger text size it may
+   scroll, as the last resort. Gate 1 requires function at 200%, and a no-scroll screen that clipped
+   would fail it.
+6. **Phone sizes, a balance.** Mainstream phones decide the design; a 640px screen is checked, not
+   chased at the cost of quality. No usable screen height for the target low-end phones is recorded
+   anywhere in the project, only their RAM and price class.
+7. **Drawers.** Quick picks (Pieces, Antibodies) slide up from the bottom with part of the board still
+   visible. Reading surfaces (the log, cards) open full height.
+8. **One close.** A floating button at the bottom of the screen closes every drawer, card and page,
+   present throughout and never at the end of a scroll.
+9. **Nesting is a stack.** Every close or back returns to the level it came from, never straight to
+   the main screen. The button says **Back** when it returns to a previous level and **Close** when it
+   returns to the main screen. Android's back button (Phase 4) pops the same stack.
+10. **Two calls made under ruling 6, approved with the rest.** The main screen misses 640px by 11px,
+    and the dock trims to meet it. Planning misses 640px by 126px, and on phones that short planning
+    scrolls rather than shrinking the body view to about 284px for every player.
+
+### The height budget the build is held to
+
+| Main screen, a cell selected | px |
+|---|---|
+| turn line and Menu, one row | 44 |
+| board, full width (measured) | 339 |
+| drawer buttons | 48 |
+| dock, one height in every state | 220 |
+| **total** | **651**: 129 spare at 780, **−11** at 640 |
+
+| Planning | px |
+|---|---|
+| turn line and Menu | 44 |
+| Action Points line | 44 |
+| body view, shrunk from the measured 504 | 410 |
+| Pathogens drawer button | 48 |
+| dock | 220 |
+| **total** | **766**: 14 spare at 780, **−126** at 640 |
+
+### Where nesting breaks today, read from the code on `main`
+
+| Path | Close or back today | Under ruling 9 |
+|---|---|---|
+| inspect sheet → pathogen card | back to the sheet | no change |
+| inspect sheet → cell card | back to the sheet | no change |
+| planning → pathogen card | back to planning | no change |
+| library card → "Why it works this way" | the library index | back to the card |
+| Help section → why link → library page | the library index, then the title | back to the Help section |
+| library why page → "In How to play" → Help | straight to the title or the game | back to the library page |
+| pause menu → Settings or How to play | the game, pause menu closed (`setPaused(false)`) | back to the pause menu |
+
+### What building it changes beyond the screen
+
+- **The instruments.** The Gate 1 audit and `tools/perf/measure.ts` and `measure-full.ts` drive a
+  turn by clicking its buttons, so removing Draw and moving the dock changes their walks, and each
+  change re-runs the controls it depends on. `APP_FLOW.md` ruling 6 keeps the dev shell's own turn
+  buttons for the perf driver's coupling; that is honoured and re-measured, not silently broken.
+- **The walk gains screens:** every drawer, and at least one second level, so ruling 9 is measured
+  rather than assumed.
+- **Help's "A turn" section** says "Tap Draw a card". That is catalogue text and changes with the
+  build. No engine text changes.
+
+### ⚠️ PROPOSED, NOT YET RULED: the build in four pieces, one PR each
+
+| Piece | Rulings | Why in this position |
+|---|---|---|
+| **1. The navigation stack and the floating close** | 8, 9 | App-wide and independent of the play screen. It fixes the four breaks above, and the drawers in pieces 3 and 4 nest on top of it, so it has to exist first. The smallest piece. |
+| **2. The dock and the draw inside End turn** | 1, 2 | The turn's flow. The dock is where a drawer's pick lands, so it comes before the drawers. The audit walk, the perf drivers and Help's turn section change here. |
+| **3. The drawers and the main screen without scroll** | 3 to 7, 10 | The largest piece. The height budget is measured at 780 and 640, and under all three text-at-200% mechanisms. |
+| **4. Planning** | 4, 10 | Depends on the dock and the drawers: the body view at about 410px, the pathogen list as a drawer, the dock's Command your cells. |
+
+Each piece is audited with the per-screen list read, and goes up only after the one before it is
+merged. A phone pass on the S25 is most useful after pieces 3 and 4, where the main screen and
+planning take their new shape.
