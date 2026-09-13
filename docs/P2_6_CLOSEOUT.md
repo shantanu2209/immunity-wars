@@ -26,6 +26,9 @@ inherits. Running record: [`P2_6_PROGRESS.md`](P2_6_PROGRESS.md); decisions:
   UI once, and the notice is worded so it cannot imply a guarantee it cannot make.
 - **The app survives a crash with the game intact:** an error boundary plus two window listeners,
   four cases, every exit a reload, and **no path from the crash screen to a write**.
+  ⚠️ *"Every exit a reload" was also how [`FINDINGS.md`](FINDINGS.md) #69 looped: when the failure
+  was a refused service worker registration, the reload repeated it. Corrected at the Gate 1 line
+  below.*
 - **First-encounter hints**, on first contact, capped at two per turn, one on screen, the
   displaced one not consumed, resettable from Settings.
 - **The per-thing text has exactly one copy.** Each entry is a hint and a rest; the hint surface
@@ -45,6 +48,17 @@ inherits. Running record: [`P2_6_PROGRESS.md`](P2_6_PROGRESS.md); decisions:
   ⚠️ *He also found refinements to navigation and placement, and ruled them Gate 2's rather than
   P2.6's. They are not defects and they are not listed here; they are P2.7's first input and are
   carried below.*
+  ⚠️ **CORRECTED 13 September 2026 ([`FINDINGS.md`](FINDINGS.md) #69).** **What was claimed:** Gate
+  1's capability bar is met. **What was actually true:** it was met on every path that had been
+  walked, and not on one that had not. If the service worker failed to register (a flaky first load,
+  a private browsing mode, blocked site data), the crash screen replaced a working app and its only
+  exit reloaded into the same failure: a dead end, which Gate 1 forbids. The S25 pass could not meet
+  it, because a LAN address is an insecure context where no worker registers at all, and nor could
+  the audit, whose own browser always registered. **What closed it:** registration caught where it
+  happens, the app continuing online when it fails, the error boundary left exactly as strict, and
+  two audit controls that enter the refused state on purpose, whose passes half said NO against the
+  defect and YES against the fix. The claim above is true again and is left as it was written, so the
+  record shows that for four days it was not.
 
 ## Accepted, not verified by finger
 

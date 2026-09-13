@@ -48,23 +48,11 @@ import { t } from '../i18n';
 import { organDisplayName, typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
 import type { HelpSectionKey } from './HelpScreen';
+import { BACK, BODY as P, ITEM, PAGE, ROW_BTN, TITLE } from './chrome';
 
 export type LibraryView =
   { kind: 'index' } | { kind: 'card'; disease: string } | { kind: 'why'; entry: string | null };
 
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '0.9375rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
-  padding: '8px 14px',
-  textAlign: 'left',
-};
 const CHIP: CSSProperties = {
   minHeight: 44,
   fontSize: '0.8125rem',
@@ -75,7 +63,7 @@ const CHIP: CSSProperties = {
   padding: '6px 12px',
 };
 const ROW: CSSProperties = {
-  ...BTN,
+  ...ROW_BTN,
   marginTop: 6,
   display: 'flex',
   flexWrap: 'wrap',
@@ -83,12 +71,6 @@ const ROW: CSSProperties = {
   gap: 8,
 };
 const MUTED: CSSProperties = { fontSize: '0.8125rem', color: '#78665D' };
-const P: CSSProperties = {
-  fontSize: '0.9375rem',
-  lineHeight: 1.45,
-  color: '#2E2A28',
-  margin: '10px 0',
-};
 const INPUT: CSSProperties = {
   display: 'block',
   width: '100%',
@@ -236,11 +218,8 @@ export function LibraryScreen({
 
   if (view.kind === 'why') {
     return (
-      <div
-        style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }}
-        data-screen="library-why"
-      >
-        <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('library.why.title')}</h2>
+      <div style={PAGE} data-screen="library-why">
+        <h1 style={TITLE}>{t('library.why.title')}</h1>
         <p style={MUTED}>{t('library.why.lead')}</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
           {WHY.map((w) => (
@@ -262,22 +241,17 @@ export function LibraryScreen({
             style={{ marginTop: 22 }}
             data-library-why={w.key}
           >
-            <h3 style={{ fontSize: '1rem', color: '#2E2A28', margin: 0 }}>
-              {t(`library.why.${w.key}.title`)}
-            </h3>
+            <h2 style={ITEM}>{t(`library.why.${w.key}.title`)}</h2>
             <p style={P}>{w.text}</p>
             <button
-              style={{ ...BTN, marginTop: 0, minHeight: 44, fontSize: '0.8125rem' }}
+              style={{ ...ROW_BTN, marginTop: 0, minHeight: 44, fontSize: '0.8125rem' }}
               onClick={() => onHelp(w.help)}
             >
               {t('library.why.inHelp', { section: t(`help.${w.help}.title`) })}
             </button>
           </section>
         ))}
-        <button
-          style={{ ...BTN, textAlign: 'center', borderColor: '#C48377', marginTop: 20 }}
-          onClick={() => onView({ kind: 'index' })}
-        >
+        <button style={{ ...BACK, marginTop: 20 }} onClick={() => onView({ kind: 'index' })}>
           {t('library.toIndex')}
         </button>
       </div>
@@ -294,8 +268,8 @@ export function LibraryScreen({
   const total = groups.reduce((n, g) => n + g.entries.length, 0);
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '32px 16px' }} data-screen="library">
-      <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('library.title')}</h2>
+    <div style={PAGE} data-screen="library">
+      <h1 style={TITLE}>{t('library.title')}</h1>
       <p style={MUTED}>
         {t('library.lead')} {t('library.count', { n: total })}
       </p>
@@ -330,9 +304,7 @@ export function LibraryScreen({
           style={{ marginTop: 22 }}
           data-library-section={g.type}
         >
-          <h3 style={{ fontSize: '1rem', color: '#2E2A28', margin: 0 }}>
-            {typeDisplayName(g.type)}
-          </h3>
+          <h2 style={ITEM}>{typeDisplayName(g.type)}</h2>
           <p style={{ ...MUTED, margin: '4px 0 6px' }}>
             {(BEAT_BY_TYPE as Record<string, string | undefined>)[g.type] ?? ''}
           </p>
@@ -365,10 +337,10 @@ export function LibraryScreen({
       <p style={{ ...P, marginTop: 22 }} data-library-x="">
         {t('library.pathogenX')}
       </p>
-      <button style={BTN} onClick={() => onView({ kind: 'why', entry: null })}>
+      <button style={ROW_BTN} onClick={() => onView({ kind: 'why', entry: null })}>
         {t('library.whyLink')}
       </button>
-      <button style={{ ...BTN, textAlign: 'center', borderColor: '#C48377' }} onClick={onBack}>
+      <button style={BACK} onClick={onBack}>
         {t('library.back')}
       </button>
       {view.kind === 'card' ? (

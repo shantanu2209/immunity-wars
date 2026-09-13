@@ -36,6 +36,12 @@ restructure.
 inspect (built) · command bar (built, persistent) · pause menu · production/antibody panel
 [P2.5 later] · memory & vaccine [P2.5 later] · event log [P2.5 later]
 
+> ⚠️ **Amended 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §9, rulings 3, 7, 8 and 9).** On the
+> play screen every panel is a DRAWER, opened from a row of buttons: Pieces, Antibodies, The body,
+> What happened. Quick picks slide up from the bottom with part of the board still visible; reading
+> surfaces open full height. The command bar becomes the DOCK (§4, PLAY). Every drawer, card and
+> page closes from one floating button at the bottom, and closing returns one level (§2, ruling 1).
+
 ### Dialogs (modal over Play; block play until acknowledged; drain through ONE queue)
 
 disease-card reveal on draw (carrying this turn's crisis event as a section, and the Pathogen X
@@ -68,6 +74,14 @@ builds a spinner for a network we do not use.
    with sheets and dialogs as layers over the current screen. **Back-ordering (hardware back
    under Capacitor, and the on-screen back): dialog → sheet → pause menu → quit-confirm —
    in that order, and back never silently exits Play.**
+
+   > ⚠️ **Extended 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §9, ruling 9): navigation is a
+   > STACK.** Every close or back, on screen or the hardware button, returns to the level it came
+   > from and never straight to the main screen: a card opened from the inspect sheet closes to the
+   > sheet, a library page opened from Help closes to Help, and Settings opened from the pause menu
+   > closes to the pause menu. The order above is that stack's play-screen case. The one floating
+   > button says Back when it returns to a previous level and Close when it returns to the main
+   > screen.
 2. **The screen / sheet / dialog / overlay taxonomy** above is the classification every new
    surface must land in before it is built.
 3. **Session lifecycle is owned by the shell machine.** Created on New-game with the chosen
@@ -104,6 +118,11 @@ builds a spinner for a network we do not use.
    verbatim), its checks panel, skip toggle and IDB exercise. **A check fails the build if
    either entry stops building** (both are vite build inputs; `packages/app` build-check
    test), so the dev entry cannot rot quietly.
+
+   > ⚠️ *13 September 2026: the app's Draw button goes ([`for-P2.7.md`](for-P2.7.md) §9, ruling 2).
+   > The dev shell's turn buttons are this ruling's. Whether they follow the app or keep Draw for
+   > the perf driver is decided in the piece that removes it, with the driver's coupling re-measured
+   > rather than assumed.*
 7. **Result is a screen, not a dialog** — it ends the session cleanly before navigation.
 
 ---
@@ -143,8 +162,16 @@ P2.5 piece 1). All text through the i18n catalogue.
 ### PLAY
 - The board (built): radial board, fan-of-types tokens, badges, move-target rings.
 - Command bar (built): selected cell, AP, action buttons; persistent at bottom.
+  ⚠️ *13 September 2026: the build had placed it inline at 459px, under the board, and no ruling
+  moving it was found. Ruling 1 of [`for-P2.7.md`](for-P2.7.md) §9 puts it back at the bottom as
+  the DOCK: one height in every state, holding the selected piece's actions above the turn's next
+  step.*
 - Inspect sheet (built) on node tap.
 - Turn controls: Draw · Begin command · End command — player wording from the catalogue.
+  ⚠️ *13 September 2026 (ruling 2): there is no Draw control. The draw is never a choice (the
+  engine refuses every other action before it), so End turn plays the spread and the app sends the
+  draw; the reveal's button begins planning, and planning's dock button begins command. The engine
+  is unchanged.*
 - Status strip: turn/maxTurn, phase, AP, deck count (the data the dev shell shows; player
   presentation is Claude Design's).
 - **Pause button (always reachable) → pause menu sheet: Resume · Quit to title (→ confirm:
@@ -157,6 +184,10 @@ P2.5 piece 1). All text through the i18n catalogue.
   Not a new screen in the machine's sense: a state of PLAY, decided by `planningModel(view)`.
 - States: infection (pre-draw) / infection (drawn: the planning screen) / command /
   burst-playing / dialog-open / paused. Win or loss transitions to RESULT.
+- ⚠️ *13 September 2026 (rulings 4, 5, 6 and 10): the main play screen does not scroll, at Standard
+  text size on a mainstream phone. Reading surfaces scroll. At larger text sizes nothing is cut off
+  and the screen may scroll as the last resort; on phones shorter than planning fits, planning
+  scrolls. "Infection (pre-draw)" is no longer a resting state: it passes inside End turn.*
 
 ### RESULT
 - Outcome headline (win / loss — on loss: which organ fell, from the final view).
