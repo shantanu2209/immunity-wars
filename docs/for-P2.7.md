@@ -1181,6 +1181,14 @@ ZOOM200, where the zones' words wrap at 180px.
 
 ### Four choices, each with a recommendation
 
+> ✅ **RULED 13 September 2026, by Shantanu: the recommendations, "for now".** In his words: "For now
+> let's go with your suggestion and see how it looks though I liked the look of the shorter drawer
+> more." So **(b) is built, to be looked at**, with choices 2 to 4 as recommended and the calls below
+> standing. **Recorded as a leaning, not a ruling: he preferred the look of (c)**, read here as his
+> "shorter drawer", the shorter planning dock under a drawer row. Read as part of "your suggestion",
+> and said so in the reply: FINDINGS #74's join is fixed inside piece 4. **Still open:** whether the
+> no-dashes check should read code (#74). What was built is §18.
+
 1. **The arrangement. Recommendation: (b).** It keeps ruling 1's one height and the figure at its ruled
    size, fits every Standard state measured at 780, and gives planning's two drawers the dock's action
    area, which (a) leaves empty in planning. Its risk is its margin: 12.5 with the tallest strip
@@ -1226,3 +1234,110 @@ ZOOM200, where the zones' words wrap at 180px.
 turns", in the inspect sheet, a cell card and planning's spent-cells line, where the no-dashes check
 cannot see it. Filed, not fixed. Recommendation: the fix inside piece 4, which rebuilds the line it sits
 in, and the check's reach ruled separately.
+
+---
+
+## 18. Piece 4, planning: BUILT, 13 September 2026, as ruled
+
+Built from §17's ruling: arrangement **(b)**, choices 2 to 4 as recommended, the calls standing, and
+FINDINGS #74's join fixed. **Built to be looked at**: Shantanu's leaning toward (c) is recorded in §17,
+and a move to (c) is a ruling away.
+
+### What was built
+
+- **Planning's page holds the figure alone**, at its frame's own 224px width
+  (`packages/ui/src/play/PlanningScreen.tsx`, `AnatomyView.tsx`), with Phase 3's allocation slot under
+  it when the view carries one. The heading, the AP line and its teaching line, the pathogen list, the
+  button and the log left the page.
+- **One dock serves both steps of the turn** (`packages/ui/src/panels/Dock.tsx`,
+  `packages/ui/src/play/PlayScreen.tsx`). It moved out of the command stage to just after it, so it
+  follows whichever step is showing and measures itself against planning's figure or against the board
+  and its drawer row. In planning, at the same 248px: "You will have n Action Points to spend" in the
+  name line, opening the AP terms over the figure; the figure's hint in the message line, or which cells
+  are out in its place; Pathogens ("n in the body") and What happened as two slots; Command your cells
+  as the next step. That button sends the planning model's own params, so the organs' flight is
+  unchanged.
+- **The Pathogens drawer** (`PathogenList`): a quick pick with the counts by type and the rows. From its
+  slot it shows every row; from a tap on the figure, that place's rows under "Showing", with the organ's
+  damage effect when it has one and Show all. Any close clears the place. What happened opens as the
+  main screen's reading surface does.
+- **The dash's join is a catalogue template**, `inspect.unavailableWhen` (FINDINGS #74), wherever a
+  cell's state is said: the inspect sheet, a cell card and planning.
+- **Catalogue:** `planning.pathogensSlot`, `planning.pathogenCount`, `planning.pathogenCountNone` and
+  `inspect.unavailableWhen` added; `planning.title` and `ap.tap` removed with their last uses. **The
+  engine and the corpus are untouched**, and so are the planning model and its tests.
+
+### What the instruments gained
+
+- **The Gate 1 audit's walk** reaches, from planning's dock, the Pathogens drawer, What happened and
+  the AP terms, and the Pathogens drawer at a place through a real pointer click on a figure marker. The
+  path Pathogens drawer → pathogen card → Back lands on the drawer, replacing "Planning → pathogen card",
+  and each thing planning opens is closed back to planning, landing checked. A tap that fails to open
+  the drawer is NOT REACHED, never a clean landing.
+- **The no-scroll check reaches planning at rest**, and the dock's one-height check reaches planning's
+  screens, with no change to either check: both read what is showing, and the dock now shows in
+  planning.
+
+### Measured on the build
+
+**What these numbers cannot say:** every game was idle on Training, one per mechanism, and the deal is
+not §17's, so the "before" row is a range from other games; one effect chip at most (turn 4 of the
+Standard game); a spent cell only under FONT200, through a crisis event; no handset.
+**Conditions:** CSS px; the shipped build served by `vite preview`; headless system Chrome 153 on the
+development PC (i7-12700F); six turns per mechanism, FONT200's game lost on its fifth.
+
+| | Standard, 360 × 780 | at 640 | FONT200 | ZOOM200, 180 × 390 |
+|---|---|---|---|---|
+| **planning's page** | **780 on all six turns: no scroll**, with a 59.5 crisis chip on turn 4 | scrolls 76, 136 with the chip | 1,074 to 1,211 | 667 to 759 |
+| planning before piece 4 (§17, other games) | 933 to 1,652 | scrolls 293 to 1,012 | 1,380 to 2,557 | 941 to 2,367 |
+| the figure | 224 × 380 in a 394 section | the same | the same | 146 × 248 |
+| the dock in planning | **248, at the bottom of the screen** | in the page | in the page, 535 to 568 | in the page, 308 |
+| the main screen after Command your cells | 0 scroll, the dock 248 | scrolls 67, 132 with the chip | scrolls 258 to 474 | scrolls 208 to 306 |
+
+- **At 640 planning scrolls 76**, 8 more than §17 computed: the dock's 8px margin when it follows the
+  page. Recorded under ruling 10, not fitted.
+- **The Pathogens drawer** from its slot: its top edge at 529 with 2 pathogens in the body, and at its cap
+  from 12 (208, 484 tall, the list scrolling inside when it is longer). From a tap on the figure it opened
+  at the tapped place on every turn of every mechanism.
+- **What happened** opens full height (684 of 780). **The AP terms**: 96 tall, 116 with a crisis term.
+- **The spent-cells line** under FONT200 read "Killer T-Cell · Offline, back in 2 turns": the join is the
+  template's.
+
+### What the first audit of the build found
+
+1. **One scale finding, under FONT200 and SIZE200**: Show all in the Pathogens drawer stayed 13.3px at
+   200% text, because a button does not inherit the page's size. It sat under the figure before this
+   piece, and no walk had ever tapped the figure, so nothing had measured it. It is sized in rem now.
+2. **Offline NOT MET, on a build that had played two offline turns with nothing failing**
+   ([`FINDINGS.md`](FINDINGS.md) #75). The check counted only `<img>`, and this piece left the screen a
+   turn ends on with none, so its images > 0 guard refused. The instrument now fetches SVG `<image>` art
+   too, which checks the board's art offline for the first time, with two controls that said YES on their
+   first run. Fixed inline, because it is the instrument.
+
+### The Gate 1 audit on the build the PR carries
+
+**Conditions:** the shipped build served by `vite preview`, headless system Chrome on the development PC
+(i7-12700F), 360 × 780 CSS px and the three 200% mechanisms; unseeded games (#68); no handset.
+
+**44 controls, all firing the right way** (42 before: #75's two). **56 screens per pass (58 under
+SIZE200). NOT REACHED: two doors the deal decides**, the inspect sheet in the base pass (with its card's
+nesting path) and a row's targets under ZOOM200. Each was reached in the other passes of this run, and
+in every pass of the first run on this build, whose only differences are the two fixes above.
+**Every check 0 under all four mechanisms**: touch, contrast, non-text, scaling, layout, size, occlusion.
+**Nesting: 33 landings, 0 wrong**, among them planning's four closes back to planning and the pathogen
+card back to its drawer. **No scroll at rest: 0px on all 13 screens**, planning's among them. **The dock:
+248px on all 27 screens** it was measured on, planning's among them. **Offline met**: 22 and 23 pieces of
+art, all SVG, served with no network and none broken.
+
+The first run on this build, for the record: 42 controls; 56 screens per pass (58 under SIZE200), none
+NOT REACHED; the scale finding above under FONT200 and SIZE200; nesting 34 landings, 0 wrong; the dock
+248px on 28 screens; offline not met (#75).
+
+### Left for Shantanu's look
+
+- **The type counts at the top of the Pathogens drawer count the whole body** while it shows one place,
+  as the planning page's did before this piece. Whether they should follow the place is his call.
+- **Help's section on Action Points still says "in the command bar or on the planning screen"**
+  (`help.s4.p3`, tagged Fresh in [`HELP_DRAFT.md`](HELP_DRAFT.md)): "command bar" has been stale since
+  piece 2, and Help's wording is his, so it is not changed here.
+- **Still open from #74:** whether the no-dashes check should read code as well as tables.

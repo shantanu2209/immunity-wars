@@ -12,6 +12,9 @@
  * Each drawer is one level on the navigation stack (ruling 9), so the floating close and the phone's
  * back gesture close it, and the dock hides underneath while it is open (§12, ruling 1).
  *
+ * Planning has two (piece 4, §17): Pathogens, a quick pick opened from the dock's slot or at a place
+ * by a tap on the figure, and What happened, the same reading surface as the main screen's.
+ *
  * The scrim closes the drawer too. Ruling 8 makes the floating close THE close; a scrim that
  * swallowed a tap and did nothing would be a control that does nothing, so the tap does the one
  * thing a tap outside an open drawer can mean.
@@ -21,14 +24,23 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import { t } from '../i18n';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 
-export type DrawerKind = 'pieces' | 'antibodies' | 'body' | 'log';
+export type DrawerKind = 'pieces' | 'antibodies' | 'body' | 'log' | 'pathogens';
 
-/** The row's order, and each drawer's button words (the panels' own titles where they are short). */
+/** Every drawer's name: the panels' own titles where they are short, and planning's Pathogens. */
+const LABEL: Record<DrawerKind, string> = {
+  pieces: 'drawer.pieces',
+  antibodies: 'antibody.title',
+  body: 'body.title',
+  log: 'log.title',
+  pathogens: 'planning.pathogens',
+};
+
+/** The main screen's row, in order. Planning's two drawers open from the dock instead (§17). */
 export const DRAWERS: readonly { kind: DrawerKind; label: string }[] = [
-  { kind: 'pieces', label: 'drawer.pieces' },
-  { kind: 'antibodies', label: 'antibody.title' },
-  { kind: 'body', label: 'body.title' },
-  { kind: 'log', label: 'log.title' },
+  { kind: 'pieces', label: LABEL.pieces },
+  { kind: 'antibodies', label: LABEL.antibodies },
+  { kind: 'body', label: LABEL.body },
+  { kind: 'log', label: LABEL.log },
 ];
 
 /** What happened is read, not picked from: it opens full height. */
@@ -115,7 +127,7 @@ export function Drawer({
       <div
         data-drawer={kind}
         role="dialog"
-        aria-label={t(DRAWERS.find((d) => d.kind === kind)?.label ?? kind)}
+        aria-label={t(LABEL[kind])}
         style={{
           position: 'fixed',
           left: 0,

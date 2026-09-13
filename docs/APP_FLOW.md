@@ -206,6 +206,11 @@ P2.5 piece 1). All text through the i18n catalogue.
   after the reveal, the board gives way to the body seen from the outside — pathogen summary
   with depth, the cell cards, the Phase 3 allocation slot — and its one button begins command.
   Not a new screen in the machine's sense: a state of PLAY, decided by `planningModel(view)`.
+  ✅ *Built 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §18, ruled in §17): planning's page is
+  the figure over the dock, which holds the Action Points for the turn to come, the figure's hint or
+  which cells are out, Pathogens and What happened as two slots that open drawers, and Command your
+  cells. A tap on a place on the figure opens the Pathogens drawer at that place. At 360 × 780
+  planning does not scroll; at 640 it scrolls 76px, under ruling 10.*
 - States: infection (pre-draw) / infection (drawn: the planning screen) / command /
   burst-playing / dialog-open / paused. Win or loss transitions to RESULT.
 - ⚠️ *13 September 2026 (rulings 4, 5, 6 and 10): the main play screen does not scroll, at Standard

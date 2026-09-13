@@ -27,6 +27,11 @@
  * WHERE IT SITS is the play screen's to decide (`fixed`): at the bottom of the screen while the top
  * row, the board and the dock all fit, otherwise straight after the board, in a page that scrolls.
  *
+ * IN PLANNING (piece 4, docs/for-P2.7.md §17, ruled 13 September 2026) the same zones at the same
+ * height hold planning's step: the Action Points for the turn to come in the name line, the figure's
+ * hint or which cells are out in the message, Pathogens and What happened as two slots that open
+ * drawers, and Command your cells as the next step.
+ *
  * Dumb by design: `offered.ts` decides what is legal and the play screen words it.
  */
 import { useEffect, useState, type CSSProperties, type ReactElement, type Ref } from 'react';
@@ -104,18 +109,32 @@ export interface DockUndo {
   committedBy?: string | null;
 }
 
+/** A slot that opens something rather than acting: planning's Pathogens and What happened (§17). */
+export interface DockSlot {
+  id: string;
+  label: string;
+  /** The slot's second line, or null. */
+  sub: string | null;
+  onPress: () => void;
+}
+
 export interface DockProps {
   store: FrameStore;
+  /** The step the dock is showing; a spread playing overrides both. */
+  mode: 'command' | 'planning';
   /** The selected piece's display name, or null when nothing is selected. */
   selectedName: string | null;
   /** Leads the message line: a cell's speed, a resident's organ. */
   lead: string | null;
   /** What the board offers, or why nothing is offered, already localised. */
   message: string | null;
-  messageTone: 'hint' | 'muted' | 'memory' | 'alert';
+  messageTone: 'hint' | 'muted' | 'memory' | 'alert' | 'fact';
   /** The last rejection, already localised: it takes the message line, in red. */
   notice: string | null;
   ap: number;
+  /** The AP figure's words when they are not "AP n": planning's "You will have n Action Points to
+   *  spend" (§17). */
+  apLabel?: string;
   apTermsAvailable: boolean;
   onAp: () => void;
   undo: DockUndo;
@@ -129,9 +148,13 @@ export interface DockProps {
   onMoveButton: (id: string) => void;
   /** Said across the action area's first row when the piece has no actions of its own. */
   noRowsText: string | null;
+  /** Slots after the piece's own: planning's two drawers (§17). */
+  slots?: readonly DockSlot[];
   disabled: boolean;
-  endTurnDisabled: boolean;
-  onEndTurn: () => void;
+  /** The next step, End turn unless given: planning's is Command your cells (§17). */
+  next?: { key: string; label: string };
+  nextDisabled: boolean;
+  onNext: () => void;
   onRow: (row: DockRow) => void;
   onUndo: () => void;
   onDeselect: (() => void) | null;
@@ -154,6 +177,8 @@ const TONE: Record<DockProps['messageTone'], string> = {
   muted: '#78665D',
   memory: '#1F6F8B',
   alert: '#B03A2E',
+  // Which cells are out, in planning: the amber the planning screen said it in before piece 4.
+  fact: '#7A5600',
 };
 
 export function Dock(props: DockProps): ReactElement {
@@ -188,7 +213,7 @@ export function Dock(props: DockProps): ReactElement {
   return (
     <div
       ref={props.dockRef}
-      data-dock={frame ? 'spread' : 'command'}
+      data-dock={frame ? 'spread' : props.mode}
       data-dock-fixed={props.fixed ? '1' : '0'}
       aria-hidden={props.hidden ? true : undefined}
       style={shell}
@@ -340,7 +365,11 @@ function CommandZones(
             textDecoration: props.apTermsAvailable ? 'underline dotted' : 'none',
           }}
         >
-          {t('commandBar.ap')} {props.ap}
+          {props.apLabel ?? (
+            <>
+              {t('commandBar.ap')} {props.ap}
+            </>
+          )}
         </button>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
           {props.inCommand ? (
@@ -380,8 +409,8 @@ function CommandZones(
         {text}
       </div>
       {/* THE ACTION AREA, 2 × 2 (§14, rulings 1 to 3): the piece's actions, then Recall, then
-          What's here. Four slots hold every piece at its fullest; the two explicit grid rows keep
-          the zone's height when fewer are showing. */}
+          What's here; in planning, its two drawers (§17). Four slots hold every piece at its
+          fullest; the two explicit grid rows keep the zone's height when fewer are showing. */}
       <div
         data-dock-rows="1"
         style={{
@@ -454,11 +483,24 @@ function CommandZones(
             <span style={LINE1}>{t('dock.whatsHere')}</span>
           </button>
         ) : null}
+        {(props.slots ?? []).map((s) => (
+          // A slot that opens something, bordered like What's here, which opens the inspect sheet.
+          <button
+            key={s.id}
+            data-dock-slot={s.id}
+            disabled={props.disabled}
+            onClick={s.onPress}
+            style={{ ...SLOT, borderColor: '#8E6E53' }}
+          >
+            <span style={LINE1}>{s.label}</span>
+            {s.sub !== null ? <span style={LINE2}>{s.sub}</span> : null}
+          </button>
+        ))}
       </div>
       <button
-        data-dock-next="endTurn"
-        disabled={props.endTurnDisabled}
-        onClick={props.onEndTurn}
+        data-dock-next={props.next?.key ?? 'endTurn'}
+        disabled={props.nextDisabled}
+        onClick={props.onNext}
         style={{
           minHeight: DOCK_ZONES.next,
           width: '100%',
@@ -468,10 +510,10 @@ function CommandZones(
           border: '2px solid #B03A2E',
           background: '#FFFDF9',
           color: '#2E2A28',
-          cursor: props.endTurnDisabled ? 'default' : 'pointer',
+          cursor: props.nextDisabled ? 'default' : 'pointer',
         }}
       >
-        {t('play.endCommand')}
+        {props.next?.label ?? t('play.endCommand')}
       </button>
     </>
   );

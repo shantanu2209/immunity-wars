@@ -4101,3 +4101,41 @@ should also read the string and template literals in `packages/ui` and `packages
 control that plants a dash in a template literal (it must fire) and one in a comment (it must pass).
 Recommendation: the fix inside piece 4, which rebuilds the planning line this text sits in; the check's
 reach ruled separately.
+
+> ✅ **The product half FIXED inside piece 4, 13 September 2026**, as part of the recommendations
+> Shantanu took ([`for-P2.7.md`](for-P2.7.md) §17 and §18): the join is the catalogue template
+> `inspect.unavailableWhen`, "{what}, {when}", so the three surfaces read "Offline, back in 2 turns".
+> **The instrument half is still open**: the no-dashes check reads tables, not code, so nothing would
+> stop the same join being written again.
+
+---
+
+## 75. The offline check counted only `<img>` art, and piece 4 left the screen a turn ends on with none: its guard said not met on a build that had played offline cleanly
+
+**Found 13 September 2026, by the Gate 1 audit's first run on piece 4's build**
+([`for-P2.7.md`](for-P2.7.md) §18). The offline record showed two turns played with no network, every
+step ok, no request failed and no image broken, and `met: false`, with `images: 0` both times.
+
+### Why
+
+`met` required at least one image on the screen the offline turn ends on, and counted images from
+`document.images`, which holds only `<img>` elements. That screen is the next turn's planning, and until
+piece 4 its pathogen list carried `<img>` icons, so the count was met by content nobody had chosen for
+it. Piece 4 moved the list into a closed drawer and left the figure and the hidden board, both SVG
+`<image>`: no `<img>` at all. **The guard was right to refuse.** A check that counts no art cannot say
+the art is served offline, and the comment beside it, "a command screen that holds images", described a
+screen the check was not sampling.
+
+The same fact cuts the other way: **the board's art, most of the game's art, was never among the images
+the check counted**, because it has always been SVG.
+
+### The fix, in the instrument, inline
+
+The check counts both kinds now: each `<img>` as before, and each SVG `<image>`'s URL fetched with the
+network cut, which the service worker must answer. Two controls were planted in the offline control
+block, one each way, and both said YES on their first run: an SVG image whose URL nothing precached is
+counted broken, and one the build precached is not (44 controls, 42 before). Fixed inline because it is
+the instrument, and Gate 1's "works offline, fully" rests on it.
+
+**The re-run on the fixed instrument: offline met**, with 22 and 23 pieces of art counted on the screens
+the two offline turns ended on, all of them SVG and none broken, and no request failed.
