@@ -9,7 +9,8 @@
  *   name line  2.75rem  the piece, the AP figure, Undo and Deselect
  *   message    2.25rem  a speed or a resident's organ, then one line of what the board offers or
  *                       why nothing is; a rejection, or a tapped greyed row's reason, in its place
- *   rows       5.75rem  two row slots, one per action (`dockRows`)
+ *   rows       5.75rem  a 2 × 2 grid of half-width slots: the piece's actions, one per action
+ *                       (`dockRows`), then Recall to bloodstream, then What's here (§14)
  *   next step  2.75rem  End turn, alone on its row, because ending a turn cannot be undone
  *
  * A zone may grow when its content cannot fit, rather than clip (§9 ruling 5: nothing is ever cut
@@ -121,13 +122,12 @@ export interface DockProps {
   inCommand: boolean;
   rows: DockRow[];
   /**
-   * Movement offered as a button rather than a ring: "Recall to bloodstream". The ruling's zones
-   * gave it no place (it was not in the proposal), so it renders below the row slots, where it can
-   * grow the dock, until its placement is ruled.
+   * Movement offered as a button rather than a ring: "Recall to bloodstream", a slot of its own in
+   * the 2 × 2 action area (for-P2.7.md §14, ruling 2).
    */
   moveButtons: readonly { id: string; label: string }[];
   onMoveButton: (id: string) => void;
-  /** Said in the first slot when the piece has no actions at all. */
+  /** Said across the action area's first row when the piece has no actions of its own. */
   noRowsText: string | null;
   disabled: boolean;
   endTurnDisabled: boolean;
