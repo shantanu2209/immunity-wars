@@ -4033,3 +4033,29 @@ A defect in the thing being built is filed and waits its turn. This one was fixe
 because the piece's own bar (§11) is every check at 0 under all four mechanisms, and the fix is the
 invader rows' own pattern in the same file: the row wraps and the name button may shrink. The
 decision is recorded here so it is visible, not taken quietly.
+
+---
+
+## 73. A selected piece chip's border grew from 1.5 to 3px, and at 200% page zoom the 3px it took from the name clipped "Alveolar macrophage"
+
+**Found 13 September 2026, by the Gate 1 audit's ZOOM200 pass on piece 2's amended build**
+([`for-P2.7.md`](for-P2.7.md) §14). One layout finding: the name on the Lungs resident's chip clipped
+with an ellipsis, 122px of text in 120px, only while that chip was selected.
+
+### Why nothing had seen it
+
+The piece grid's names are one line with an ellipsis **on purpose**: the 5 September pass chose it so
+fourteen chips of unequal names stay fourteen equal boxes. A clip is only a defect when the text does
+not fit, and unselected the name fits a 180px layout by about 1px. Selected, the ring was a border 3px
+wide instead of 1.5, which took 3px from the name. **No audit walk had ever selected a resident**; the
+walk added for the dock's one-height check (the same day, for a different defect) was the first.
+
+### The fix, and what it does not fix
+
+The border stays 1.5px and the ring is an inset shadow, which draws the same orange and takes no
+room, so the selected chip's name has exactly the unselected chip's width. Wrapping the name instead
+was declined because it would undo the recorded equal-boxes choice. **What remains is thin:** at
+180px the widest resident name fits by about 1px, so a slightly wider face could clip it again. The
+grid is replaced by piece 3's Pieces drawer, whose layout is measured then. One visual detail changed:
+a selected resident's double border renders as a single line, because a double border needs 3px to
+show two; unselected residents already rendered that way.

@@ -78,6 +78,15 @@ function check(
         if (d.targets.length > 1 && d.offerId !== null)
           problems.add('a several-target row sends an offer itself');
         if (d.targets.length === 0) problems.add('an available row with no target');
+        // 6. The half-width slot's two lines (for-P2.7.md §14): a one-target slot shows exactly
+        //    its label's words, and a several-target slot says how many.
+        if (d.targets.length === 1 && d.target !== null && `${d.verb} ${d.target}` !== d.label)
+          problems.add("a slot's two lines are not its label's words");
+        if (
+          d.targets.length > 1 &&
+          (d.target === null || !d.target.includes(String(d.targets.length)))
+        )
+          problems.add('a several-target slot does not say how many');
       } else if (!d.reason || d.reason.includes('⟪')) {
         problems.add('a greyed row with no usable reason');
       }
@@ -104,6 +113,17 @@ describe("the dock's rows", () => {
   });
 
   describe('CONTROLS', () => {
+    it("fires: a slot whose second line is another target's name", { timeout: 120_000 }, () => {
+      const swapped: Grouping = (view) => {
+        const rows = dockRows(view);
+        const names = rows.map((d) => d.target);
+        return rows.map((d, i) => ({ ...d, target: names[(i + 1) % names.length] ?? d.target }));
+      };
+      expect([...check(swapped, subjects).problems]).toContain(
+        "a slot's two lines are not its label's words",
+      );
+    });
+
     it('fires: a row per target overflows the slots', { timeout: 120_000 }, () => {
       const perTarget: Grouping = (view) =>
         actionRows(view)
@@ -111,6 +131,8 @@ describe("the dock's rows", () => {
           .map((r) => ({
             action: r.action,
             label: r.label,
+            verb: r.verb ?? r.label,
+            target: r.target,
             cost: r.cost,
             detail: r.detail,
             available: r.available,

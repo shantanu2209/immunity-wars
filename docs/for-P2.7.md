@@ -797,3 +797,92 @@ stands off the bloodstream, and the Monocyte and Eosinophil fill both row slots.
 ring on the bloodstream, on the board.** The engine's `recall` moves a cell from anywhere to the
 bloodstream in one action, a movement with a fixed destination, and "movement is on the board" is
 ruled (4 September). The alternative is a place in the dock that grows it for those two cells.
+
+---
+
+## 14. Piece 2, amended before its PR: a 2 × 2 action area, and a card behind every name
+
+### ✅ RULED 13 September 2026, by Shantanu, in reply to §13's open question
+
+> "Why can we not just reduce the size of the button so it does not take up the whole row, that way
+> we can fit more buttons there if required right? then we don't have to look elsewhere to place
+> recall, and maybe other stuff we removed can also be brought back (if it makes sense)." And: "can
+> we not do a small i button or something in the action area for the cell which opens its card? Or
+> the name of the cell itself could be clickable and it opens the card? that approach would save
+> space even for diseases/pathogens."
+
+Claude agreed with both and proposed the shape; Shantanu ruled "go straight to building and put the
+audit's number in the PR". What is ruled, amending §12's ruling 2 and the Card buttons:
+
+1. **The rows zone is a 2 × 2 grid of half-width buttons in the same height.** Four slots hold every
+   piece at its fullest (Monocyte or Eosinophil off the bloodstream beside a pathogen: two actions,
+   Recall, What's here). A slot's button may carry two lines: the action, then its target and cost.
+2. **"Recall to bloodstream" is a slot**, not a ring. §13's ring recommendation existed only because
+   the ruled zones had no room; the grid removes the reason, and a named button teaches what it does.
+3. **"What's here" comes back as a slot**, shown when the selected piece stands with something.
+   The "Actions" and "Movement is on the board" headings, the produce row and the always-on undo line
+   stay out.
+4. **End turn stays full width, alone on its row**, because ending a turn cannot be undone.
+5. **A card behind every name.** A name with a small card icon beside it, the two one button, opens
+   its card: the selected cell's name in the dock, and the same icon in place of every "Card" text
+   button (the inspect sheet's pathogens and cells, planning's rows) and the reveal's "Tap for its
+   card". In the inspect sheet a cell's row already selects the cell, so there the icon is its own
+   44px button beside the name.
+
+### Measured before building
+
+**The slot's labels** (headless system Chrome on Windows, the button's own font, Arial; an Android
+phone's font differs), at 360 CSS px, where a half-width slot leaves 150px of text at 8px padding:
+every action word fits (21 of 21, widest "Recall to bloodstream" at 146px); every disease name alone
+fits (97 of 97, widest "Pneumocystis pneumonia" at 137px); a name with " · 2 AP" does not in 8 of 97
+(to 173px); a name with the NK's " · hits on 3 or more" does not in 67 of 97 (to 238px). So line one
+is the verb with any cost beside it, line two is the target alone, the slot's side padding is 6px,
+and **the NK's odds moved to the message line**, where they are said once for all its targets. The
+first run of this measurement used the body's font (Times New Roman), which a button does not
+inherit, and crossed every action with "12 targets"; nothing from it was used.
+
+### What was built
+
+- **The action area is a 2 × 2 grid** in the same height: the piece's actions (verb and cost, then
+  target or "5 targets"), then **Recall to bloodstream**, then **What's here** when the piece stands
+  with something. End turn is unchanged, alone.
+- **A card behind every name**: `CardIcon.tsx`, a small card drawn in SVG and hidden from assistive
+  technology, beside the selected cell's name in the dock (the two one button, "About Monocyte"), in
+  44px icon buttons in place of "Card" in the inspect sheet and planning, and beside each arrival's
+  name in the reveal, in place of "Tap for its card". A resident has no card and its name is plain.
+- **Offers carry their label's two halves**, `verb` and `target`, built from the same words as the
+  label. Catalogue: `card.about`, `dock.targetCount`, `dock.whatsHere` and `dock.undo` added;
+  `inspect.card` and `reveal.tapForCard` removed.
+- **The dock's Undo says "Undo"** ("Undo 2" when moves can be undone), and a tap on it greyed still
+  says why. See item 2 below.
+
+### What building it found
+
+1. **The one-height check fired: 300px on four screens, 248 on ten**, every 300 with the Neutrophil,
+   the Monocyte or the Eosinophil selected. Measured part by part: the name line is 344px and held
+   the AP figure (44px), "Undo moves" (101px), Deselect (76px) and the gaps (16px), leaving 101px for a
+   name; the Monocyte's name with its icon was 102px, the Helper T-Cell's 124.
+2. **The same measurement found the defect older than the icon.** Five of the seven residents' names
+   (120 to 137px, no icon) overflowed that name line too, so the dock was 300px with those residents
+   selected **in the build committed as 81555d4**. Its audit reported 248px on every screen it
+   measured, truthfully, and had never selected a resident. The dock's Undo became "Undo" and the name
+   line's buttons lost 2px of padding each side, which leaves about 157px for a name against the
+   widest at 137px; the walk now selects the Liver's resident (the shortest name) and the Lungs'
+   (one of the widest), and a Monocyte moved off the bloodstream so Recall is measured showing.
+3. **Selecting a resident for the first time found a clip at 200% page zoom** in the piece grid
+   ([`FINDINGS.md`](FINDINGS.md) #73): a selected chip's 3px border took the room its name needed.
+   The ring is now an inset shadow; the recorded equal-boxes design is kept.
+
+### The Gate 1 audit on the build the PR carries
+
+**Conditions:** the shipped build served by `vite preview`, headless system Chrome on the development
+PC (i7-12700F), 360 × 780 CSS px and the three 200% mechanisms; unseeded games, so control and
+text-run counts vary run to run (#68); no handset.
+
+**39 controls, all firing the right way. 49 screens per pass (51 under SIZE200), none NOT REACHED
+except, under SIZE200, a row's targets**, which that pass's deal never offered in 14 idle turns (it
+was reached under the other three). **Every check 0 under all four mechanisms**: touch, contrast,
+non-text, scaling, layout, size, occlusion. **Nesting: 26 landings, 0 wrong, 0 NOT REACHED**, among
+them the dock name → cell card, a row's targets, and a game closed mid-spread reaching its reveal.
+**The dock: one height, 248px on all 16 screens** it was measured on, including the Neutrophil, the
+Monocyte with Recall showing, both residents, and the cell card opened from the dock. Offline met.

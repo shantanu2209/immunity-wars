@@ -103,7 +103,11 @@ export function PieceStrip({
               style={{
                 ...CHIP,
                 borderColor: selected ? '#DE7800' : p.kind === 'resident' ? '#8E6E53' : '#C48377',
-                borderWidth: selected ? 3 : 1.5,
+                // THE RING IS A SHADOW, NOT A WIDER BORDER (FINDINGS #73): a 3px border took 3px
+                // from the name, which then clipped at a 180px layout (200% page zoom). An inset
+                // shadow draws the same ring and takes no room, so the boxes stay equal.
+                borderWidth: 1.5,
+                boxShadow: selected ? 'inset 0 0 0 1.5px #DE7800' : undefined,
                 borderStyle: p.kind === 'resident' ? 'double' : 'solid',
                 background: selected ? '#FBEAE5' : '#FFFDF9',
                 opacity: p.unavailable ? 0.55 : 1,

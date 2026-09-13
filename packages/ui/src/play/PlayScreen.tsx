@@ -30,7 +30,12 @@ import {
 import { flushSync } from 'react-dom';
 
 import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
-import { Board, inspectInfoForInvader } from '../board/Board';
+import {
+  Board,
+  inspectInfoForCell,
+  inspectInfoForInvader,
+  inspectInfoForResident,
+} from '../board/Board';
 import { engineText } from '../engineText';
 import {
   CLONE_TARGET,
@@ -50,7 +55,7 @@ import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
-import { GRACE_CLEAR, ORGANS, SPEED } from '@immunity-wars/content';
+import { GRACE_CLEAR, NK_HITS, ORGANS, SPEED } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { useNavLayer, useNavState } from '../nav/NavHost';
@@ -773,12 +778,24 @@ export function PlayScreen({
   const speed = selectedCell
     ? ((SPEED as Record<string, number | undefined>)[selectedCell] ?? null)
     : null;
+  // The NK Cell's odds ride the lead, not its slots: every NK strike has the same odds, and with them
+  // beside a target's name the name did not fit a half-width slot (measured, for-P2.7.md §14).
+  const speedLine = speed !== null ? t('commandBar.speed', { n: speed }) : null;
   const lead = selectedResident
     ? t('resident.of', { organ: organDisplayName(selectedResident) })
-    : speed !== null
-      ? t('commandBar.speed', { n: speed })
-      : null;
+    : selectedCell === 'nk' && speedLine !== null
+      ? `${speedLine} ${t('inspect.sep')} ${t('actions.hitsOn', { n: NK_HITS })}`
+      : speedLine;
   const apTerms = apTermLines(authView);
+  // WHAT'S HERE, back as a slot (§14, ruling 3): offered when the selected piece stands with
+  // something the inspect sheet can show.
+  const selectedNode = selectedCell
+    ? inspectInfoForCell(game, selectedCell, authView.queries.readyTurn)
+    : selectedResident
+      ? inspectInfoForResident(game, selectedResident, authView.queries.readyTurn)
+      : null;
+  const canInspect =
+    selectedNode !== null && (selectedNode.invaders.length > 0 || selectedNode.resident !== null);
 
   // THE PLANNING SCREEN (item 12): between the draw's reveal and the command phase the board
   // gives way to the body seen from the outside. Never while a burst plays — the spread is
@@ -964,6 +981,23 @@ export function PlayScreen({
             }}
             onUndo={() => send({ action: 'undo' })}
             onDeselect={selectedCell || selectedResident ? deselect : null}
+            onCard={
+              selectedCell
+                ? () =>
+                    setCellCard({
+                      cell: selectedCell,
+                      now: unavailableByCell[selectedCell]
+                        ? unavailableText(unavailableByCell[selectedCell])
+                        : null,
+                    })
+                : null
+            }
+            cardLabel={
+              selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null
+            }
+            onWhatsHere={
+              canInspect && selectedNode !== null ? () => setInspect(selectedNode) : null
+            }
             resetKey={[selectedCell, selectedResident, turnNow, game['ap'], phase].join('|')}
             fixed={dockFixed}
             hidden={navState.floating}

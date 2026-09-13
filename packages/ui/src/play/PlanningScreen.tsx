@@ -24,6 +24,7 @@ import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
 import { cellDisplayName, typeDisplayName } from '../names';
 import { ApTerms } from '../panels/ApTerms';
+import { CardIcon } from '../panels/CardIcon';
 import { organEffect, unavailableText } from '../panels/InspectSheet';
 import { invaderNowLine } from '../panels/invaderNow';
 import { AnatomyView } from './AnatomyView';
@@ -79,10 +80,16 @@ const ROW_BUTTON: CSSProperties = {
   font: 'inherit',
   padding: '4px 0',
 };
+/** The card icon's button (for-P2.7.md §14, ruling 5): 44px square, in place of "Card". */
 const CARD_BUTTON: CSSProperties = {
   minHeight: 44,
-  padding: '0 12px',
-  fontSize: '0.875rem',
+  width: 44,
+  minWidth: 44,
+  padding: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#8E6E53',
   borderRadius: 8,
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
@@ -210,10 +217,11 @@ function GroupRow({
               {!iv.novel ? (
                 <button
                   style={CARD_BUTTON}
+                  aria-label={t('card.about', { name: iv.disease })}
                   disabled={disabled}
                   onClick={() => onPathogenCard(iv.id)}
                 >
-                  {t('inspect.card')}
+                  <CardIcon />
                 </button>
               ) : null}
             </div>

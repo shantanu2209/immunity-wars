@@ -36,6 +36,7 @@ import { actionDisplayName } from '../names';
 import type { DockRow } from '../play/offered';
 import { useFrame, type FrameStore } from '../play/frameStore';
 import { diceOf } from '../play/SpreadNarration';
+import { CardIcon } from './CardIcon';
 
 /** The zones' minimum heights, the rule of the one height. */
 export const DOCK_ZONES = {
@@ -47,7 +48,9 @@ export const DOCK_ZONES = {
 
 const BTN: CSSProperties = {
   minHeight: 44,
-  padding: '0 10px',
+  // 8px, not 10: the name line holds the name, AP, Undo and Deselect in 344px at 360 CSS px, and a
+  // name over 101px wrapped it onto a second row at 10px (measured, for-P2.7.md §14).
+  padding: '0 8px',
   fontSize: '0.875rem',
   borderRadius: 8,
   border: '1.5px solid #8E6E53',
@@ -56,24 +59,42 @@ const BTN: CSSProperties = {
   cursor: 'pointer',
 };
 
-const ROW: CSSProperties = {
+/**
+ * A HALF-WIDTH SLOT (for-P2.7.md §14): two lines, the verb (with any cost beside it) and under it
+ * the target. Measured before building, in the button's own font at 360 CSS px: the slot leaves 150px
+ * of text at 8px side padding, the widest action word is 146px ("Recall to bloodstream") and the
+ * widest disease name alone 137px, so the padding is 6px, and nothing else shares line two.
+ * The font is the button's default on purpose: `font: inherit` would change the measured face.
+ */
+const SLOT: CSSProperties = {
   minHeight: '2.75rem',
+  minWidth: 0,
   width: '100%',
   boxSizing: 'border-box',
-  padding: '4px 12px',
-  fontSize: '0.875rem',
+  padding: '3px 6px',
   borderRadius: 8,
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
   color: '#2E2A28',
   cursor: 'pointer',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flexWrap: 'wrap',
-  gap: 8,
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'stretch',
+  gap: 1,
   textAlign: 'left',
 };
+
+const LINE1: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 4,
+  fontSize: '0.875rem',
+  fontWeight: 700,
+};
+
+const LINE2: CSSProperties = { fontSize: '0.75rem', color: '#6F6259' };
 
 export interface DockUndo {
   available: boolean;
@@ -114,6 +135,13 @@ export interface DockProps {
   onRow: (row: DockRow) => void;
   onUndo: () => void;
   onDeselect: (() => void) | null;
+  /** Opens the selected cell's card from its name (§14, ruling 5); null for a resident, which has
+   *  none. */
+  onCard: (() => void) | null;
+  /** The card button's words, "About Monocyte", through the catalogue. */
+  cardLabel: string | null;
+  /** What's here, back as a slot (§14, ruling 3): the selected piece stands with something. */
+  onWhatsHere: (() => void) | null;
   /** Clears a tapped reason when what it answered has changed: the selection, the turn, the AP. */
   resetKey: string;
   fixed: boolean;
@@ -257,7 +285,6 @@ function CommandZones(
   const text = props.notice ?? props.said ?? props.message;
   const color =
     props.notice !== null ? TONE.alert : props.said !== null ? TONE.muted : TONE[props.messageTone];
-  const slots = [props.rows[0] ?? null, props.rows[1] ?? null];
 
   return (
     <>
@@ -265,7 +292,33 @@ function CommandZones(
         {/* Nothing selected, the line holds the AP figure and Undo alone: the prompt is the message
             line's. Found by the audit's one-height check on its first run: in the name line, the
             prompt wrapped Undo onto a second row, and the dock was 300px there and 248 elsewhere. */}
-        {props.selectedName !== null ? (
+        {props.selectedName !== null && props.onCard !== null ? (
+          // A CARD BEHIND EVERY NAME (§14, ruling 5): the name and its card icon are one button.
+          <button
+            data-dock-card="1"
+            aria-label={props.cardLabel ?? undefined}
+            disabled={props.disabled}
+            onClick={props.onCard}
+            style={{
+              minHeight: 44,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '0 4px',
+              background: 'transparent',
+              border: 'none',
+              color: '#2E2A28',
+              fontSize: '0.9375rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            {props.selectedName}
+            <span style={{ color: '#8E6E53' }}>
+              <CardIcon />
+            </span>
+          </button>
+        ) : props.selectedName !== null ? (
           <span style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#2E2A28' }}>
             {props.selectedName}
           </span>
@@ -304,9 +357,7 @@ function CommandZones(
                 background: undo.available ? '#FFFDF9' : '#F6F1EC',
               }}
             >
-              {undo.available
-                ? `${t('commandBar.undo')} ${String(undo.moves)}`
-                : t('commandBar.undo')}
+              {undo.available ? `${t('dock.undo')} ${String(undo.moves)}` : t('dock.undo')}
             </button>
           ) : null}
           {props.onDeselect ? (
@@ -328,59 +379,81 @@ function CommandZones(
         ) : null}
         {text}
       </div>
+      {/* THE ACTION AREA, 2 × 2 (§14, rulings 1 to 3): the piece's actions, then Recall, then
+          What's here. Four slots hold every piece at its fullest; the two explicit grid rows keep
+          the zone's height when fewer are showing. */}
       <div
         data-dock-rows="1"
         style={{
           display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gridTemplateRows: `repeat(2, minmax(${DOCK_ZONES.next}, auto))`,
-          rowGap: '0.25rem',
+          gap: '0.25rem 0.375rem',
         }}
       >
         {props.rows.length === 0 && props.noRowsText !== null ? (
-          <div style={{ fontSize: '0.8125rem', color: '#78665D', alignSelf: 'center' }}>
+          <div
+            style={{
+              gridColumn: '1 / -1',
+              fontSize: '0.8125rem',
+              color: '#78665D',
+              alignSelf: 'center',
+            }}
+          >
             {props.noRowsText}
           </div>
         ) : null}
-        {slots.map((row, i) =>
-          row === null ? (
-            props.rows.length === 0 && props.noRowsText !== null && i === 0 ? null : (
-              <div key={`slot-${String(i)}`} aria-hidden="true" />
-            )
-          ) : (
-            <button
-              key={row.action}
-              data-dock-row={row.action}
-              data-available={row.available ? '1' : '0'}
-              data-dock-targets={row.targets.length > 1 ? String(row.targets.length) : undefined}
-              disabled={props.disabled}
-              onClick={() => (row.available ? props.onRow(row) : props.onSay(row.reason))}
-              style={{
-                ...ROW,
-                borderColor: row.available ? '#B03A2E' : '#94847A',
-                color: row.available ? '#2E2A28' : '#6F6259',
-                background: row.available ? '#FFFDF9' : '#F6F1EC',
-              }}
-            >
-              <span>{row.label}</span>
-              {row.detail !== null || row.cost !== null ? (
-                <span data-action-detail="1" style={{ fontSize: '0.75rem', color: '#78665D' }}>
-                  {[row.detail, row.cost].filter((x) => x !== null).join(` ${t('inspect.sep')} `)}
+        {props.rows.map((row) => (
+          <button
+            key={row.action}
+            data-dock-row={row.action}
+            data-available={row.available ? '1' : '0'}
+            data-dock-targets={row.targets.length > 1 ? String(row.targets.length) : undefined}
+            aria-label={row.label}
+            disabled={props.disabled}
+            onClick={() => (row.available ? props.onRow(row) : props.onSay(row.reason))}
+            style={{
+              ...SLOT,
+              borderColor: row.available ? '#B03A2E' : '#94847A',
+              color: row.available ? '#2E2A28' : '#6F6259',
+              background: row.available ? '#FFFDF9' : '#F6F1EC',
+            }}
+          >
+            <span style={LINE1}>
+              <span>{row.verb}</span>
+              {row.cost !== null ? (
+                <span
+                  data-action-detail="1"
+                  style={{ fontSize: '0.75rem', fontWeight: 400, whiteSpace: 'nowrap' }}
+                >
+                  {row.cost}
                 </span>
               ) : null}
-            </button>
-          ),
-        )}
+            </span>
+            {row.target !== null ? <span style={LINE2}>{row.target}</span> : null}
+          </button>
+        ))}
         {props.moveButtons.map((b) => (
           <button
             key={b.id}
             data-dock-move={b.id}
             disabled={props.disabled}
             onClick={() => props.onMoveButton(b.id)}
-            style={{ ...ROW, borderColor: '#2F6B4A' }}
+            style={{ ...SLOT, borderColor: '#2F6B4A' }}
           >
-            <span>{b.label}</span>
+            <span style={LINE1}>{b.label}</span>
           </button>
         ))}
+        {props.onWhatsHere !== null ? (
+          <button
+            data-dock-here="1"
+            disabled={props.disabled}
+            onClick={props.onWhatsHere}
+            style={{ ...SLOT, borderColor: '#8E6E53' }}
+          >
+            <span style={LINE1}>{t('dock.whatsHere')}</span>
+          </button>
+        ) : null}
       </div>
       <button
         data-dock-next="endTurn"

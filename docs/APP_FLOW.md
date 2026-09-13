@@ -177,6 +177,11 @@ P2.5 piece 1). All text through the i18n catalogue.
   while the floating close shows; it sits at the bottom of the screen while the top row, board and
   dock fit, and straight after the board otherwise; a spread's narration plays inside it. A row's
   several targets and the AP terms open over the board.*
+  ✅ *Amended 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §14): the action area is a 2 × 2 grid of
+  half-width slots in the same height (the verb and its cost, then the target), holding the piece's
+  actions, Recall to bloodstream and What's here. A card icon beside a name opens its card: the
+  selected cell's name in the dock, and in place of every "Card" button in the inspect sheet,
+  planning and the reveal.*
 - Inspect sheet (built) on node tap.
 - Turn controls: Draw · Begin command · End command — player wording from the catalogue.
   ⚠️ *13 September 2026 (ruling 2): there is no Draw control. The draw is never a choice (the

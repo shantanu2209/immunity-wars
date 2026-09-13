@@ -84,6 +84,13 @@ export interface BoardOffer {
   invaderId?: string;
   /** Localised, e.g. "Snipe Influenza". */
   label: string;
+  /**
+   * The label's two halves, for the dock's half-width slot, which sets them on two lines
+   * (for-P2.7.md §14): the verb as the label has it ("Coat", not "Tag", on a worm), and whom.
+   * Both are the same words the label is made of, so the slot and the label cannot disagree.
+   */
+  verb?: string;
+  target?: string;
   /** Localised cost hint, e.g. "2 AP", or null when it costs the usual. */
   cost: string | null;
   /**
@@ -228,6 +235,8 @@ export function bodyOffers(view: SessionView): Offered {
         cell: null,
         invaderId: id,
         label: `${t('action.memoryKill')} ${String(iv.disease ?? '')}`,
+        verb: t('action.memoryKill'),
+        target: String(iv.disease ?? ''),
         cost: hard ? apLabel(1) : null,
         params: { action: 'memoryKill', invaderId: id },
       });
@@ -245,6 +254,8 @@ export function bodyOffers(view: SessionView): Offered {
         cell: null,
         invaderId: iv.id,
         label: `${t('action.antivenom')} ${iv.disease}`,
+        verb: t('action.antivenom'),
+        target: String(iv.disease),
         cost: apLabel(3),
         params: { action: 'antivenom', invaderId: iv.id },
       });
@@ -428,6 +439,8 @@ export function offeredActions(view: SessionView): Offered {
         cell,
         invaderId: iv.id,
         label: `${verbFor(action, iv.type)} ${iv.disease}`,
+        verb: verbFor(action, iv.type),
+        target: iv.disease,
         cost,
         detail,
         params: { action, cell, invaderId: iv.id },
@@ -624,6 +637,8 @@ function residentOffers(view: SessionView, organ: string): Offered {
         organ,
         invaderId: iv.id,
         label: `${t('action.engulf')} ${iv.disease}`,
+        verb: t('action.engulf'),
+        target: String(iv.disease),
         cost: null,
         params: { action: 'resengulf', organ, invaderId: iv.id },
       });
@@ -712,6 +727,9 @@ export interface ActionRow {
   action: string;
   /** Localised: "Engulf Rotavirus" / "Engulf" (greyed). */
   label: string;
+  /** The offer's verb and target, the two halves of `label`; null on a greyed row. */
+  verb: string | null;
+  target: string | null;
   cost: string | null;
   /** The offer's detail (odds), or null. */
   detail: string | null;
@@ -800,6 +818,8 @@ export function actionRows(view: SessionView): ActionRow[] {
           id: `${action}:${o.id}`,
           action,
           label: o.label,
+          verb: 'verb' in o ? (o.verb ?? null) : null,
+          target: 'target' in o ? (o.target ?? null) : null,
           cost: 'cost' in o ? (o.cost ?? null) : null,
           detail: 'detail' in o ? (o.detail ?? null) : null,
           available: true,
@@ -819,6 +839,8 @@ export function actionRows(view: SessionView): ActionRow[] {
       id: action,
       action,
       label: t(`action.${action}`),
+      verb: null,
+      target: null,
       cost: null,
       detail: null,
       available: false,
@@ -852,6 +874,14 @@ export interface DockRow {
   action: string;
   /** Localised: the one target's own label, "Neutralise: 5 targets", or the action's name. */
   label: string;
+  /**
+   * The slot's two lines (for-P2.7.md §14): the verb, and under it the target, "5 targets", or
+   * nothing. Measured before building: in the button's font at 360 CSS px every action word and
+   * every disease name alone fits the half-width slot's 150px, and a name with its cost or its
+   * odds does not, so the cost rides line one and the NK's odds ride the message line.
+   */
+  verb: string;
+  target: string | null;
   cost: string | null;
   detail: string | null;
   available: boolean;
@@ -877,6 +907,8 @@ export function dockRows(view: SessionView): DockRow[] {
       return {
         action,
         label: only.label,
+        verb: only.verb ?? only.label,
+        target: only.target,
         cost: only.cost,
         detail: only.detail,
         available: true,
@@ -889,6 +921,8 @@ export function dockRows(view: SessionView): DockRow[] {
       return {
         action,
         label: t('dock.targets', { action: t(`action.${action}`), n: available.length }),
+        verb: t(`action.${action}`),
+        target: t('dock.targetCount', { n: available.length }),
         cost: null,
         detail: null,
         available: true,
@@ -901,6 +935,8 @@ export function dockRows(view: SessionView): DockRow[] {
     return {
       action,
       label: first?.label ?? t(`action.${action}`),
+      verb: first?.label ?? t(`action.${action}`),
+      target: null,
       cost: null,
       detail: null,
       available: false,

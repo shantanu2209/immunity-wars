@@ -1021,7 +1021,7 @@ async function walk(
     }
     if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
       await sleep(300);
-      await step(page, 'cell card', results);
+      await step(page, 'cell card, from the inspect sheet', results);
       coverage.cellCard = true;
       await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
     }
@@ -1087,11 +1087,71 @@ async function walk(
   await clickSel(page, '[data-piece="cell:neutrophil"]');
   await sleep(300);
   await step(page, 'command, Neutrophil selected', results);
+  // A CARD BEHIND EVERY NAME (for-P2.7.md §14, ruling 5): the selected cell's name opens its card,
+  // on every run, where the inspect sheet's door depends on the deal.
+  if (await clickSel(page, '[data-dock-card]')) {
+    await sleep(300);
+    await step(page, 'cell card, from the dock', results);
+    await nest(page, nesting, 'Dock name → cell card → close', 'play');
+  } else {
+    results.push(notReached('cell card, from the dock', 'the selected cell showed no card button'));
+    nestNotReached(nesting, 'Dock name → cell card → close', 'no card button on the name');
+  }
   // A ROW WITH SEVERAL TARGETS opens them over the board (§12, ruling 2). Tried here, and on every
   // turn of the walk to the Result until the deal offers one.
   await tryDockTargets(page, results, step, nesting);
   await click(page, 'Deselect');
   await sleep(200);
+  // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
+  // covers the fullest slot set. The Monocyte is moved off the bloodstream by a ring if it stands
+  // there, the screen is audited, and the move is undone.
+  await clickSel(page, '[data-piece="cell:macrophage"]');
+  await sleep(250);
+  const recallNow = (): Promise<boolean> =>
+    page.evaluate(() => document.querySelector('[data-dock-move="recall"]') !== null);
+  if (!(await recallNow())) {
+    const ring = await page.$('circle[stroke-dasharray="6 4"]');
+    if (ring) {
+      try {
+        await ring.click();
+      } catch {
+        // The ring moved under the tap; the check below says whether Recall is showing.
+      }
+      await sleep(400);
+      if (!(await page.evaluate(() => document.querySelector('[data-dock-card]') !== null))) {
+        await clickSel(page, '[data-piece="cell:macrophage"]');
+        await sleep(250);
+      }
+    }
+  }
+  if (await recallNow()) {
+    await step(page, 'command, Monocyte off the bloodstream, Recall showing', results);
+  } else {
+    results.push(
+      notReached(
+        'command, Monocyte off the bloodstream, Recall showing',
+        'no move ring took the Monocyte off the bloodstream',
+      ),
+    );
+  }
+  if (await clickSel(page, '[data-dock-undo="available"]')) await sleep(300);
+  await click(page, 'Deselect');
+  await sleep(200);
+  // A RESIDENT SELECTED, the shortest name and one of the widest. The walk had never selected a
+  // resident, so the one-height check had never seen the name line with a resident's name in it,
+  // and five of the seven wrapped it onto a second row (for-P2.7.md §14).
+  for (const organ of ['liver', 'lungs']) {
+    if (await clickSel(page, `[data-piece="resident:${organ}"]`)) {
+      await sleep(250);
+      await step(page, `command, the ${organ} resident selected`, results);
+      await click(page, 'Deselect');
+      await sleep(200);
+    } else {
+      results.push(
+        notReached(`command, the ${organ} resident selected`, 'no piece chip for that resident'),
+      );
+    }
+  }
   await click(page, 'Menu');
   await sleep(300);
   await step(page, 'pause sheet', results);
@@ -1275,7 +1335,7 @@ async function tryCellCard(
     }
     if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
       await sleep(300);
-      await step(page, 'cell card', results);
+      await step(page, 'cell card, from the inspect sheet', results);
       await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
       await closeLevel(page);
       coverage.cellCard = true;
@@ -1315,7 +1375,7 @@ async function walkToResult(
   if (!coverage.cellCard) {
     results.push(
       notReached(
-        'cell card',
+        'cell card, from the inspect sheet',
         'no node with a cell beside a pathogen opened in the walk or 14 idle turns (FINDINGS #71)',
       ),
     );

@@ -25,6 +25,7 @@ export const organEffect = (organ: string): string | null => {
 };
 import { t } from '../i18n';
 import { FLOAT_RESERVE } from '../nav/NavHost';
+import { CardIcon } from './CardIcon';
 import { invaderNowLine } from './invaderNow';
 import {
   cellDisplayName as cellName,
@@ -48,6 +49,19 @@ const BTN: CSSProperties = {
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
   cursor: 'pointer',
+};
+
+/** The card icon's button (for-P2.7.md §14, ruling 5): 44px square, narrower than "Card" was. */
+const ICON_BTN: CSSProperties = {
+  ...BTN,
+  width: 44,
+  minWidth: 44,
+  padding: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#8E6E53',
+  flex: '0 0 auto',
 };
 
 export interface InvaderOffer {
@@ -155,12 +169,13 @@ export function InspectSheet({
             // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
             // novel pathogen gets no card — it is masked everywhere as unknown.
             <button
-              style={BTN}
+              style={ICON_BTN}
+              aria-label={t('card.about', { name: iv.disease })}
               disabled={disabled}
               onClick={() => onCard(iv.id)}
               data-sheet-card={iv.id}
             >
-              {t('inspect.card')}
+              <CardIcon />
             </button>
           ) : null}
           {(offers[iv.id] ?? []).map((o) => (
@@ -214,11 +229,12 @@ export function InspectSheet({
           {onCellCard ? (
             <button
               data-cell-card={ck}
-              style={BTN}
+              style={ICON_BTN}
+              aria-label={t('card.about', { name: cellName(ck) })}
               disabled={disabled}
               onClick={() => onCellCard(ck)}
             >
-              {t('inspect.card')}
+              <CardIcon />
             </button>
           ) : null}
         </div>
