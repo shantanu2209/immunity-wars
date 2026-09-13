@@ -41,6 +41,7 @@
  * Exit codes: 0 clean · 1 something is stale.
  */
 
+import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -144,6 +145,38 @@ for (const dir of testDirs) {
   }
 }
 
+// --- what "exists" means -------------------------------------------------------------------------
+
+/**
+ * A path EXISTS when it is in the repository, not merely on this disk.
+ *
+ * Added 13 September 2026, found while closing FINDINGS #69. That finding cited build output in a
+ * code span, and this check passed it on 9 September for no better reason than that a local build had
+ * put the file there. The build directory is gitignored, CI never runs this check, and any checkout
+ * without a build fails it: the verdict depended on untracked local state.
+ *
+ * The rule is GITIGNORED, not UNTRACKED, and it was chosen by measurement. Across 701 references that
+ * resolved on disk, "not tracked by git" flagged exactly one, a real source file written minutes
+ * earlier and not yet added, because `pnpm verify` runs BEFORE `git add`. "Gitignored" flagged none,
+ * and flagged a build file and a node_modules file when both were probed on purpose.
+ *
+ * `git ls-files --ignored --directory` rather than `git check-ignore`, also measured: check-ignore
+ * stops with "beyond a symbolic link" on any path through pnpm's symlinked node_modules, so it would
+ * have been blind to the directories most likely to be cited by mistake.
+ */
+const IGNORED = execSync('git ls-files --others --ignored --exclude-standard --directory', {
+  cwd: REPO,
+  encoding: 'utf8',
+})
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.length > 0);
+const isIgnored = (repoPath: string): boolean =>
+  IGNORED.some((entry) => (entry.endsWith('/') ? repoPath.startsWith(entry) : repoPath === entry));
+/** A path under the repository, as git names it: relative, with forward slashes. */
+const repoRelative = (abs: string): string =>
+  abs.startsWith(REPO) ? abs.slice(REPO.length + 1).replace(/\\/g, '/') : abs;
+
 // --- 3. relative markdown links resolve -----------------------------------------------------------
 
 const SWEEP = ['CLAUDE.md', 'README.md', 'ROADMAP.md'];
@@ -166,8 +199,11 @@ for (const file of SWEEP) {
     if (!href || /^(https?:|mailto:|#)/.test(href)) continue;
     const target = href.split('#')[0] ?? '';
     if (!target) continue;
-    if (!existsSync(resolve(base, target))) {
+    const abs = resolve(base, target);
+    if (!existsSync(abs)) {
       note(`${file}: link to ${target} does not resolve`);
+    } else if (isIgnored(repoRelative(abs))) {
+      note(`${file}: link to ${target} exists only as gitignored output, not in the repository`);
     }
   }
 }
@@ -198,6 +234,10 @@ for (const file of SWEEP) {
     inlineChecked += 1;
     if (!existsSync(join(REPO, target))) {
       note(`${file}: names \`${target}\`, which does not exist`);
+    } else if (isIgnored(target)) {
+      note(
+        `${file}: names \`${target}\`, which exists only as gitignored output, not in the repository`,
+      );
     }
   }
 }
@@ -224,7 +264,9 @@ if (inlineChecked < 50) {
 
 if (problems.length === 0) {
   console.log('  Phase marker resolves and agrees. Every test package is in the manifest.');
-  console.log('  Every relative link resolves, and every path named in a code span exists.');
+  console.log(
+    '  Every relative link resolves, and every path named in a code span exists in the repository.',
+  );
   console.log(
     '\n  This says nothing about whether the PROSE is true. That is still a person`s job.',
   );

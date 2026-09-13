@@ -25,7 +25,11 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // NOT injected (FINDINGS #69). The plugin's injected script called `register` and handled
+      // nothing, so a refused registration became an unhandled rejection and the error boundary
+      // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
+      // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
+      injectRegister: false,
       includeAssets: ['art/**/*', 'fonts/**/*'],
       manifest: {
         name: 'The Immunity Wars',

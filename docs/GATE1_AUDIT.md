@@ -159,9 +159,22 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 > 843 / 2,267**, and every screen in the delta was a play screen — no Title-slot screen moved.
 >
 > **What is invariant, and is what a run must hold:** 44 screens per pass (46 under SIZE200), no
-> screen NOT REACHED, every check 0, 27 controls all firing the right way, offline met. **What is a
+> screen NOT REACHED, every check 0, 29 controls all firing the right way (27 until #69's two, 13
+> September 2026), offline met. A NOT REACHED is never a sample, but it can be the deal: reach the
+> screen or explain it (`FINDINGS.md` #68, added note). **What is a
 > sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
 > a drop of 5 is the deck.
+
+*Updated 13 September 2026, at [`FINDINGS.md`](FINDINGS.md) #69's fix: **29 controls** rather than
+27. The two added enter the state this audit could never reach before, a refused service worker
+registration, in a fresh browser context with `register` made to refuse before any app script runs.
+**Against the defective build** (rebuilt from a stash of the fix), the old control "an ordinary load
+shows no crash screen" still said YES, the new fires half said YES and the new passes half said
+**NO**, so the audit refused to run. **Against the fix:** 29 of 29, offline MET with the worker
+active. Two full runs on the fixed build, every check 0 on both. The first reached every screen
+under three passes and came back **NOT REACHED for the inspect sheet under SIZE200** ("no invader
+token tap opened the sheet"); the second reached every screen under all four. The inspect sheet's
+door depends on the deal (`FINDINGS.md` #68, added note).*
 
 *Updated at the P2.6 CLOSE, 9 September 2026: the final run is 843 controls and 2,243 text runs
 across 44 screens (46 under SIZE200), with **27 controls** rather than 24 — three of them the

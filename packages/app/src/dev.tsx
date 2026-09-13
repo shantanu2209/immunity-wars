@@ -24,6 +24,7 @@ import { createRoot } from 'react-dom/client';
 
 import { runIdbExercise } from './idb-exercise';
 import { markInitialRender, recordFrame, recordTap, recordTransition } from './metrics';
+import { startServiceWorker } from './serviceWorker';
 
 const session = LocalSession.createGame(
   { difficulty: 'training' },
@@ -154,3 +155,6 @@ ${detail.stack}`}
   );
   markInitialRender();
 }
+// The built dev shell registered the worker before, through the plugin's injected script, so it
+// still does; the same function as the app, so a refusal is caught here too (FINDINGS #69).
+startServiceWorker(import.meta.env.PROD);

@@ -183,6 +183,31 @@ const CONTROLS: readonly Control[] = [
     expect: 'which does not exist',
   },
   {
+    id: 'docs-ignored-inline-path',
+    why: 'FINDINGS #69 cited a build file in a code span and this gate passed it, because a local build had put the file on disk: the build directory is gitignored, CI never runs this gate, and a checkout with no build fails it. A path that exists only as ignored output is not a repository path. The probe is a node_modules file because it exists wherever this selftest can run, and it sits behind a pnpm symlink, which git check-ignore cannot see through.',
+    file: 'CLAUDE.md',
+    mutate: (t) =>
+      t.replace(
+        '`packages/content/src/board/geometry.json`',
+        '`packages/app/node_modules/react/package.json`',
+      ),
+    gate: 'pnpm docs:check',
+    expect: 'exists only as gitignored output',
+  },
+  {
+    id: 'docs-new-inline-path-permitted',
+    why: 'The ignore rule must still permit a real repository file, including one written minutes ago and not yet added, because pnpm verify runs before git add. Measured when the rule was chosen: "not tracked by git" would have rejected exactly such a file, which is why the rule is "gitignored" instead.',
+    file: 'CLAUDE.md',
+    mutate: (t) =>
+      t.replace(
+        '`packages/content/src/board/geometry.json`',
+        '`packages/app/src/serviceWorker.test.ts`',
+      ),
+    gate: 'pnpm docs:check',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',

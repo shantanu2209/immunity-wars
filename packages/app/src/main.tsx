@@ -51,6 +51,7 @@ import {
   type TextSize,
 } from './settings';
 import { clearHints, readHints, writeHints } from './hints';
+import { startServiceWorker } from './serviceWorker';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -493,3 +494,6 @@ const el = document.getElementById('app');
 if (el) {
   createRoot(el).render(<AppRoot />);
 }
+// Offline capability, registered after load; a refusal is caught inside and leaves the app
+// running online (FINDINGS #69). Never under the dev server.
+startServiceWorker(import.meta.env.PROD);

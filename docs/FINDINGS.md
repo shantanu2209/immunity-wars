@@ -3640,6 +3640,40 @@ that the totals also could not name.
    lived in, and threw the whole audit away rather than one step. An instrument defect. Handles
    are re-queried on every use now.
 
+
+## 67. `extract-zip` left the tree with the puppeteer-core 25 bump, and an advisory accepted with no action closed without any action being taken
+
+> ⚠️ **WRITTEN 13 September 2026, six days after it was first cited.** This entry was referenced by
+> `CLAUDE.md` and [`SECURITY_NOTES.md`](SECURITY_NOTES.md) and did not exist in this file; #68 found
+> the gap and reported it rather than guessing at its contents. **By Shantanu's ruling it is written
+> from what those two citations already assert, and says nothing they do not.** It is not
+> renumbered and it acquires no new meaning. The two citations agree, so the entry is a record of
+> what they say rather than a finding made today.
+
+### What the two citations assert
+
+- **The advisory.** `extract-zip` ≤2.0.1, a high-severity symlink path traversal on extraction, with
+  **no patched version**. It reached this repository transitively:
+  `puppeteer-core → @puppeteer/browsers → extract-zip`.
+- **Why it was accepted with no action** (from 4 September 2026). The vulnerable path runs only when
+  puppeteer downloads and unpacks a browser. The perf and audit drivers never do: they launch the
+  system Chrome through `executablePath`. There was nothing to patch to and nothing reachable to
+  guard, and the only removal would have been dropping the instrument.
+- **How it closed** (7 September 2026). The puppeteer-core 25 bump took `extract-zip` out of the
+  lockfile. **No action was taken on the advisory itself**: the dependency that carried it simply
+  stopped carrying it, so the acceptance had nothing left to cover.
+- **What that made true** (8 September 2026). With `sharp` taken the same week, `pnpm audit` is
+  clean. [`SECURITY_NOTES.md`](SECURITY_NOTES.md) holds that record, and `CLAUDE.md` says why it is
+  a fact about one lockfile rather than a property: it must be re-checked whenever a listening
+  process gains a dependency.
+
+### What is worth keeping from it
+
+An advisory can close by the dependency graph moving under it, with no decision anywhere. **That is
+still worth one line of record**, because the next person to see the advisory in an old report
+would otherwise have to work out whether it was fixed, accepted or forgotten, and those three need
+different answers.
+
 ## 68. Two of the audit's three "numbers to beat" cannot be beaten or missed: the walk plays an UNSEEDED game, so its control and text-run counts vary run to run on an unchanged build
 
 **Found on 9 September 2026, at the first change of P2.7**, by a run that came back green with
@@ -3692,6 +3726,20 @@ and nothing marks which is which.
 | **27 controls** all firing the right way | |
 | **offline met** | |
 
+> ⚠️ **ADDED 13 September 2026: "no screen NOT REACHED" does not hold on every run either, and it is
+> the same mechanism.** Two full runs against one unchanged build, at #69's fix: the first came back
+> **NOT REACHED for the inspect sheet under SIZE200** ("no invader token tap opened the sheet") while
+> the other three passes of that same run reached it; the second reached every screen under every
+> pass. The inspect sheet's door is a tap on an invader token, and whether a tap opens it depends on
+> where the unseeded game has put the invaders. So a NOT REACHED can be the deal, as a count can.
+>
+> **That does not demote it to a sample, and the difference is the point.** A count that moves
+> needs no explanation; a NOT REACHED always does, and it is never dismissed. The rule for it:
+> **reach the screen or explain it.** A re-run on the same build that reaches the screen is the
+> explanation for a door known to depend on the deal, and only for such a door. The inspect sheet's
+> token door is the one observed. Making that door independent of the deal is instrument work and
+> is not done here.
+
 The screen COUNT is stable because the walk visits a fixed list of screens; the counts WITHIN a
 screen are not, because the game inside it is not the same game.
 
@@ -3727,6 +3775,12 @@ neither. Reported rather than invented, because what the entry was meant to say 
 supply. **This finding is numbered 68 rather than 67 on purpose**, so that the two existing
 citations do not acquire a second meaning.
 
+> ⚠️ **SUPERSEDED 13 September 2026: #67 now exists.** Shantanu ruled that it be written from what
+> the two citations already assert, without inventing a meaning or renumbering anything, and it is
+> above. The paragraph is kept as written because it records the state that was found: an entry
+> cited twice and never written, and invisible to `pnpm docs:check`, which resolves links and
+> cannot see a bare number in prose. That blind spot is unchanged.
+
 ## 69. A service worker that fails to register takes the whole app down, permanently: the app starts, then a non-fatal background failure replaces it with the crash screen, and the crash screen's only exit reloads into the same failure
 
 **Found 9 September 2026, at P2.7's first change**, by opening the shipped build in a browser that
@@ -3751,7 +3805,9 @@ in progress because the shell had already mounted and told it so.
 
 ### The generated registration has no `catch`, and it is not ours
 
-`packages/app/dist/registerSW.js`, emitted by `vite-plugin-pwa` under `injectRegister: 'auto'`:
+The script `vite-plugin-pwa` emitted into the build, as registerSW.js beside index.html, under
+`injectRegister: 'auto'` (named here in plain text rather than as a path: it was build output, never
+a file in the repository, and the fix below removed it from the build as well):
 
 ```js
 if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/sw.js', { scope: '/' })})}
@@ -3816,3 +3872,63 @@ handles rejection, or `injectRegister: 'script'` over a script that does. **Not*
 boundary's `unhandledrejection` listener, which would trade this defect for the class of real
 crashes §2.1 added the listener to catch. A control is owed in both directions: a registration
 failure must NOT reach the crash screen, and a genuine unhandled rejection must still reach it.
+
+### ✅ CLOSED 13 September 2026, by ruling, before any polish
+
+**The ruling** (Shantanu): a registration failure must not reach the boundary at all; catch it
+where registration happens; online-capable and not offline-capable is a **degraded** state, not a
+failure; do not widen the fix into swallowing unhandled rejections generally; and make the
+instrument able to enter the failing state, because a control that cannot reach it is not a
+control.
+
+**What closed it.**
+
+- **Registration is caught where it happens.** `vite-plugin-pwa` no longer injects its script
+  (`injectRegister: false`). Both shells call `packages/app/src/serviceWorker.ts`, which awaits
+  `register` inside a `try`, returns `registered`, `degraded` or `unsupported`, and never rejects.
+  A refusal writes one console line and the app carries on online. Under the dev server nothing
+  registers, as before.
+- **The boundary is exactly as strict as it was.** Its `unhandledrejection` listener still takes
+  every other rejection, and the audit's existing control, an unhandled rejection reaches the crash
+  screen, still fires.
+- **The instrument can now enter the failing state.** Two new audit controls run in a fresh browser
+  context with `register` made to refuse before any app script runs. The passes half: the app's own
+  registration leaves it running, with no crash screen. The fires half, in that same state: the call
+  the plugin used to inject, uncaught, does reach the crash screen, so a forced refusal that
+  silently did nothing cannot pass.
+- **Five unit tests**, both halves, one of them a control that the refusing container really does
+  reject.
+
+**Measured, in this order, because a control that has never failed is not known to work:**
+
+| Build | old control: "an ordinary load shows no crash screen" | new fires half | new passes half | audit |
+|---|---|---|---|---|
+| **The defect**, rebuilt from a stash of the fix | YES | YES | **NO** | refused to run |
+| **The fix** | YES | YES | YES | 29 of 29 controls; offline MET, worker active |
+
+**The first row is this finding in one line.** The old control said YES against the defective build,
+as it always had; only the new passes half could say NO. Offline is still met on the fixed build
+with the worker active, which had to be checked, because the fix changed how the worker registers.
+
+### Found while closing it: `pnpm docs:check` had passed a path that was never in the repository
+
+The closure's first `pnpm verify` went red on this entry, correctly. It cited the plugin's generated
+script by its path under the app's build directory, and the fix had just removed that file. **The
+citation had passed on 9 September for no better reason than that a local build had put the file on
+disk.** The build directory is gitignored, CI never runs `docs:check`, and any checkout without a
+build fails it, which is what this closure's first run showed. A verdict that depends on untracked
+local state is an instrument defect, so it was fixed inline under `CLAUDE.md`'s rule.
+
+**The rule was measured before it was built:**
+
+| What "exists" is taken to mean | References newly flagged, of 701 resolving on disk |
+|---|---|
+| tracked by git | **1**: a real source file not yet added, because `pnpm verify` runs before `git add` |
+| gitignored | **0**, while a build file and a `node_modules` file both came back ignored when probed on purpose |
+
+**So the rule is "gitignored"**, detected with `git ls-files --ignored --directory` rather than
+`git check-ignore`. That choice was measured too: `check-ignore` stops with "beyond a symbolic link"
+on any path through pnpm's symlinked `node_modules`, so it would have been blind to the directories
+most likely to be cited by mistake. Two self-test controls: a code span naming a `node_modules` file
+must fail with the new diagnostic, and one naming a new source file must stay green.
+

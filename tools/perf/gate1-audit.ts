@@ -1201,6 +1201,54 @@ async function controls(page: Page): Promise<string[]> {
     })(),
   );
 
+  // ------------------------------------------------------------------------------------------
+  // A SERVICE WORKER THAT FAILS TO REGISTER (FINDINGS #69). The ordinary-load control above
+  // could never see this defect: in this browser the worker registers, so the failing state is
+  // one the instrument never entered. So it is ENTERED on purpose, in a fresh browser context
+  // with no worker in it, by making `register` refuse before any app script runs.
+  //
+  // Both halves run in that same state. The PASSES half is the property: the app keeps running,
+  // no crash screen and its buttons still there, because online-capable and not
+  // offline-capable is degraded, not failed. The FIRES half runs the call the plugin used to
+  // inject, uncaught, and the crash screen must appear. Without it, a forced refusal that
+  // silently did nothing would pass the passes half perfectly and prove nothing.
+  //
+  // String scripts, not functions: tsx wraps named functions in a helper the page does not have.
+  // ------------------------------------------------------------------------------------------
+  const refusedRegistration = async (probe: string | null): Promise<boolean> => {
+    const context = await page.browser().createBrowserContext();
+    try {
+      const p = await context.newPage();
+      await p.setViewport({ width: 360, height: 780 });
+      await p.evaluateOnNewDocument(
+        "if ('serviceWorker' in navigator) { navigator.serviceWorker.register = function () { " +
+          "return Promise.reject(new TypeError('audit control: registration refused')); }; }",
+      );
+      await p.goto(URL, { waitUntil: 'load' });
+      await p.waitForFunction(() => document.querySelector('button') !== null, {
+        timeout: 30000,
+      });
+      if (probe !== null) await p.evaluate(probe);
+      await sleep(800);
+      const crash = await p.evaluate(() => document.querySelector('[data-crash]') !== null);
+      if (probe !== null) return crash;
+      const buttons = await p.evaluate(() => document.querySelectorAll('button').length);
+      return !crash && buttons > 0;
+    } finally {
+      await context.close();
+    }
+  };
+  line(
+    'service worker fires: with registration refused, the uncaught call the plugin used to inject reaches the crash screen',
+    await refusedRegistration(
+      "setTimeout(function () { navigator.serviceWorker.register('/sw.js', { scope: '/' }); }, 0); 0",
+    ),
+  );
+  line(
+    "service worker passes: with registration refused, the app's own registration leaves it running, no crash screen",
+    await refusedRegistration(null),
+  );
+
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
   return lines;
 }

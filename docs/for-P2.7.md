@@ -20,6 +20,19 @@ at 106 rows, the hints fire two per turn, Settings works at all four text sizes.
 **Gate 1 is the capability gate and it is met.** Gate 2 is not implied by it, and this is stated
 in the brief in those words: *"Not implied by Gate 1. Not implied by a review going well."*
 
+> ⚠️ **CORRECTED 13 September 2026 ([`FINDINGS.md`](FINDINGS.md) #69).** **What was claimed**, twice
+> in this section: Gate 1's capability bar is met. **What was actually true:** met on every path
+> anyone had walked, and not on one nobody had. Gate 1 requires no dead end and no screen without an
+> exit. If the service worker failed to register (a flaky first load, a private browsing mode,
+> blocked site data), the app started, the crash screen replaced it, and that screen's only exit
+> reloaded into the same failure. The S25 pass could not see it, because a LAN address is an
+> insecure context where the worker API is absent and nothing registers; the audit could not see it,
+> because its browser always registered. **What closed it**, before any polish, by ruling:
+> registration caught where it happens, the app continuing online when it fails, the error boundary
+> left exactly as strict, and two audit controls that enter the failing state on purpose, which said
+> NO against the defect and YES against the fix. **The claim is true again**, and it is left standing
+> above rather than restated, so the record shows it was once not.
+
 **Nothing is owed by anyone.** The hint splits are settled. There is no pending review, no
 outstanding correction, and no half-finished piece.
 
@@ -97,7 +110,7 @@ a screen's layout, text or controls change.**
 
 | Instrument | What it holds | Its warrant |
 |---|---|---|
-| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline | 27 controls, fire and pass halves |
+| `pnpm gate1:audit` | touch ≥ 44 px, contrast, text at 200% under three mechanisms, layout, offline, a refused service worker registration | 29 controls, fire and pass halves (27 until 13 September; the two added are #69's) |
 | `pnpm verify` | typecheck, lint, format, boundaries, docs, turbo hash, every suite | `pnpm ci:selftest` |
 | `pnpm coverage:positions` | the generated coverage documents' positions | 4 controls |
 | `iw/no-hardcoded-jsx-text` | all player text through the catalogue | both control halves |
@@ -105,7 +118,7 @@ a screen's layout, text or controls change.**
 | the equivalence corpus | the engine's behaviour and its 67-name root surface | the whole of Phase 1 |
 
 **What the audit must hold, every run:** **44 screens** per pass (46 under SIZE200), **no screen
-NOT REACHED**, every check **0**, **27 controls** all firing the right way, offline met.
+NOT REACHED**, every check **0**, **29 controls** all firing the right way, offline met.
 **Read the per-screen list, not the total** — four times in P2.6 a green total hid an unmeasured
 screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
 
@@ -123,6 +136,13 @@ screen ([`FINDINGS.md`](FINDINGS.md) #66 and `CLAUDE.md`).
 > they are not. Calling them one invited the dangerous reading rather than the merely costly one:
 > **a real loss of coverage dismissed as the variance everyone had learned to expect**, which is
 > #66's silent green with a sentence in this document holding the door open.
+>
+> ⚠️ **One more correction, 13 September 2026:** "no screen NOT REACHED" does not hold on every run
+> either. On one of two runs against an unchanged build the inspect sheet was NOT REACHED under
+> SIZE200, because its door is a tap on an invader token and the unseeded game decides where the
+> tokens are ([`FINDINGS.md`](FINDINGS.md) #68, added note). It is still never dismissed: **reach the
+> screen or explain it**, and a re-run that reaches it is the explanation only for a door known to
+> depend on the deal.
 
 ---
 
