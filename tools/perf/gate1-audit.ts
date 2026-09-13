@@ -106,7 +106,8 @@ interface Finding {
     | 'size'
     | 'offline'
     | 'occlusion'
-    | 'dock';
+    | 'dock'
+    | 'scroll';
   screen: string;
   path: string;
   text: string;
@@ -123,6 +124,9 @@ interface ScreenResult {
   /** The base pass only: the dock's height on this screen, whether it sat at the bottom of the
    *  screen, and what it was showing; null where it is not mounted or is hidden behind planning. */
   dock?: { height: number; fixed: boolean; mode: string } | null;
+  /** The base pass only: how far the page is taller than the screen while the play screen is at
+   *  rest (its stage shown, nothing open over it); null on any other screen. */
+  rest?: { overflow: number } | null;
   findings: Finding[];
 }
 
@@ -395,6 +399,8 @@ const WHERE = `
   if (q('[data-cell-card-open]')) return 'cell card';
   if (q('[data-dock-sheet=targets]')) return 'dock targets';
   if (q('[data-dock-sheet=ap]')) return 'AP terms';
+  const drawer = q('[data-drawer]');
+  if (drawer) return 'drawer: ' + drawer.getAttribute('data-drawer');
   if (button('Plan your turn')) return 'reveal';
   if (q('[data-screen=library-why]')) return 'library why page';
   const help = q('[data-screen=help]');
@@ -412,6 +418,18 @@ const WHERE = `
   if (q('[data-command-stage]')) return 'play';
   if (button('New game')) return 'title';
   return 'unknown';
+})()
+`;
+
+/** How far the page is taller than the screen, when the play screen is at rest: its command stage
+ *  shown and no floating close, so nothing is open over it. Null on every other screen. */
+const REST_PROBE = `
+(() => {
+  const stage = document.querySelector('[data-command-stage]');
+  if (!stage || stage.getClientRects().length === 0) return null;
+  if (document.querySelector('[data-nav-close]')) return null;
+  const el = document.scrollingElement || document.documentElement;
+  return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
 })()
 `;
 
@@ -640,6 +658,36 @@ function dockFindings(
     }));
 }
 
+/**
+ * THE MAIN SCREEN DOES NOT SCROLL (docs/for-P2.7.md §9, ruling 4; piece 3). On every screen of the
+ * base pass (360 × 780, Standard text) where the play screen is at rest, the page must not be taller
+ * than the screen. Larger text may scroll as the last resort (ruling 5) and a 640px phone is checked,
+ * not chased (ruling 6), so neither is this check's business. A 1px tolerance, for subpixel rounding.
+ * A run that measured no screen at rest is NOT REACHED, never clean.
+ */
+function restFindings(records: readonly { screen: string; overflow: number }[]): Finding[] {
+  if (records.length === 0) {
+    return [
+      {
+        check: 'scroll',
+        screen: 'main screen, no scroll',
+        path: '',
+        text: '',
+        detail: 'NOT REACHED: no screen measured the play screen at rest',
+      },
+    ];
+  }
+  return records
+    .filter((r) => r.overflow > 1)
+    .map((r) => ({
+      check: 'scroll' as const,
+      screen: r.screen,
+      path: '',
+      text: '',
+      detail: `the main screen scrolls ${String(r.overflow)}px here`,
+    }));
+}
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Waits for a button by its exact text without clicking it; false when it never comes. */
@@ -653,6 +701,20 @@ async function waitFor(page: Page, label: string, ms: number): Promise<boolean> 
     )
     .then(() => true)
     .catch(() => false);
+}
+
+/**
+ * Selects a piece the way a player does since piece 3 (docs/for-P2.7.md §15): the Pieces drawer
+ * opens and the chip is tapped, which closes it. A chip that is not there closes the drawer again,
+ * so a miss never leaves a drawer open over the rest of the walk.
+ */
+async function pick(page: Page, piece: string): Promise<boolean> {
+  if (!(await clickSel(page, '[data-drawer-button="pieces"]'))) return false;
+  await sleep(250);
+  const hit = await clickSel(page, `[data-piece="${piece}"]`);
+  await sleep(250);
+  if (!hit) await closeLevel(page);
+  return hit;
 }
 
 /** The Title's Continue carries its subtitle inside the button, so match the label's start. */
@@ -682,11 +744,13 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
   };
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const dock = (await page.evaluate(DOCK_PROBE)) as ScreenResult['dock'];
+  const rest = (await page.evaluate(REST_PROBE)) as ScreenResult['rest'];
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
     dock,
+    rest,
     findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
   });
 }
@@ -1052,7 +1116,7 @@ async function walk(
   // the hint is up by the time the piece strip is measured. Measured as its own screen because
   // a hint appears at 200% text on a 360px phone like everything else, and because a line that
   // pushes the action rows off the fold would be a real defect nobody would see in a total.
-  await clickSel(page, '[data-piece="cell:bcell"]');
+  await pick(page, 'cell:bcell');
   await sleep(350);
   if (await page.evaluate(() => document.querySelector('[data-hint]') !== null)) {
     await step(page, 'command, a first encounter hint', results);
@@ -1076,15 +1140,41 @@ async function walk(
     results.push(notReached('AP terms, over the dock', 'the AP figure was not tappable'));
     nestNotReached(nesting, 'Dock → AP terms → close', 'the AP figure was not tappable');
   }
-  await page.evaluate(() => {
-    const chip = [...document.querySelectorAll('button')].find((b) =>
-      /^ENV\b/.test(b.innerText.trim()),
-    );
-    chip?.click();
-  });
-  await sleep(300);
-  await step(page, 'command, family ENV selected', results);
-  await clickSel(page, '[data-piece="cell:neutrophil"]');
+  // THE ANTIBODIES DRAWER (piece 3, docs/for-P2.7.md §15): the panel left the main screen. Opened
+  // with the B-Cell selected, so the Produce button is measured too; a class selected inside it;
+  // then closed back to the game in one close (ruling 9).
+  if (await clickSel(page, '[data-drawer-button="antibodies"]')) {
+    await sleep(300);
+    await step(page, 'drawer: antibodies', results);
+    await page.evaluate(() => {
+      const chip = [...document.querySelectorAll('[data-drawer] button')].find((b) =>
+        /^ENV\b/.test((b as HTMLElement).innerText.trim()),
+      ) as HTMLElement | undefined;
+      chip?.click();
+    });
+    await sleep(300);
+    await step(page, 'drawer: antibodies, family ENV selected', results);
+    await nest(page, nesting, 'Antibodies drawer → close', 'play');
+  } else {
+    results.push(notReached('drawer: antibodies', 'no Antibodies drawer button'));
+    nestNotReached(nesting, 'Antibodies drawer → close', 'no Antibodies drawer button');
+  }
+  // THE OTHER THREE DRAWERS, each opened, audited, and closed back to the game.
+  for (const [kind, screen] of [
+    ['pieces', 'drawer: pieces'],
+    ['body', 'drawer: the body'],
+    ['log', 'drawer: what happened'],
+  ] as const) {
+    if (await clickSel(page, `[data-drawer-button="${kind}"]`)) {
+      await sleep(300);
+      await step(page, screen, results);
+      await nest(page, nesting, `${screen} → close`, 'play');
+    } else {
+      results.push(notReached(screen, 'no drawer button'));
+      nestNotReached(nesting, `${screen} → close`, 'no drawer button');
+    }
+  }
+  await pick(page, 'cell:neutrophil');
   await sleep(300);
   await step(page, 'command, Neutrophil selected', results);
   // A CARD BEHIND EVERY NAME (for-P2.7.md §14, ruling 5): the selected cell's name opens its card,
@@ -1105,7 +1195,7 @@ async function walk(
   // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
   // covers the fullest slot set. The Monocyte is moved off the bloodstream by a ring if it stands
   // there, the screen is audited, and the move is undone.
-  await clickSel(page, '[data-piece="cell:macrophage"]');
+  await pick(page, 'cell:macrophage');
   await sleep(250);
   const recallNow = (): Promise<boolean> =>
     page.evaluate(() => document.querySelector('[data-dock-move="recall"]') !== null);
@@ -1119,7 +1209,7 @@ async function walk(
       }
       await sleep(400);
       if (!(await page.evaluate(() => document.querySelector('[data-dock-card]') !== null))) {
-        await clickSel(page, '[data-piece="cell:macrophage"]');
+        await pick(page, 'cell:macrophage');
         await sleep(250);
       }
     }
@@ -1141,7 +1231,7 @@ async function walk(
   // resident, so the one-height check had never seen the name line with a resident's name in it,
   // and five of the seven wrapped it onto a second row (for-P2.7.md §14).
   for (const organ of ['liver', 'lungs']) {
-    if (await clickSel(page, `[data-piece="resident:${organ}"]`)) {
+    if (await pick(page, `resident:${organ}`)) {
       await sleep(250);
       await step(page, `command, the ${organ} resident selected`, results);
       await click(page, 'Deselect');
@@ -1286,12 +1376,15 @@ async function tryDockTargets(
   nesting: NestResult[] | null,
 ): Promise<void> {
   if (coverage.targets) return;
+  // The pieces are in the Pieces drawer since piece 3: read their keys there, then pick each.
+  if (!(await clickSel(page, '[data-drawer-button="pieces"]'))) return;
+  await sleep(250);
   const pieceKeys = await page.evaluate(() =>
     [...document.querySelectorAll('[data-piece]')].map((e) => e.getAttribute('data-piece') ?? ''),
   );
+  await closeLevel(page);
   for (const p of pieceKeys) {
-    await clickSel(page, `[data-piece="${p}"]`);
-    await sleep(220);
+    if (!(await pick(page, p))) continue;
     if (await clickSel(page, '[data-dock-row][data-dock-targets]')) {
       await sleep(250);
       await step(page, 'dock targets', results);
@@ -1964,6 +2057,28 @@ async function controls(page: Page): Promise<string[]> {
   );
 
   // ------------------------------------------------------------------------------------------
+  // THE MAIN SCREEN DOES NOT SCROLL (docs/for-P2.7.md §15): the check must report a screen at rest
+  // that is taller than the screen, pass one within the 1px tolerance, and call a run that measured
+  // no screen at rest NOT REACHED rather than clean.
+  line(
+    'scroll fires: a main screen taller than the screen is reported, by name',
+    restFindings([
+      { screen: 'a', overflow: 0 },
+      { screen: 'b', overflow: 40 },
+    ]).some((f) => f.screen === 'b' && f.detail.includes('40px')),
+  );
+  line(
+    'scroll passes: a main screen that fits, to the pixel, is NOT reported',
+    restFindings([
+      { screen: 'a', overflow: 0 },
+      { screen: 'b', overflow: 1 },
+    ]).length === 0,
+  );
+  line(
+    'scroll fires: a run that measured no screen at rest is NOT REACHED, never clean',
+    restFindings([]).some((f) => f.detail.startsWith('NOT REACHED')),
+  );
+
   // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands
   // anywhere but a reveal, and pass the game closed mid-spread that the walk itself relies on. The
   // fires half resumes a game saved at planning, after its draw, which has no draw to make and so
@@ -2099,11 +2214,11 @@ async function playATurn(
   await step('Command your cells', () => waitClick(page, 'Command your cells'));
   await step('select the Monocyte', async () => {
     await page
-      .waitForFunction(() => document.querySelector('[data-piece="cell:macrophage"]') !== null, {
+      .waitForFunction(() => document.querySelector('[data-drawer-button="pieces"]') !== null, {
         timeout: 8000,
       })
       .catch(() => undefined);
-    return clickSel(page, '[data-piece="cell:macrophage"]');
+    return pick(page, 'cell:macrophage');
   });
   await step('End turn', () => waitClick(page, 'End turn'));
   for (let i = 0; i < 40; i += 1) {
@@ -2263,6 +2378,17 @@ try {
 
   const count = (rs: ScreenResult[], check: Finding['check']): number =>
     rs.reduce((n, s) => n + s.findings.filter((f) => f.check === check).length, 0);
+  // The main screen without scroll, over the base pass's screens at rest (§15).
+  const restRecords = results.flatMap((r) =>
+    r.rest ? [{ screen: r.screen, overflow: r.rest.overflow }] : [],
+  );
+  const mainScreen = offlineOnly
+    ? null
+    : {
+        screensAtRest: restRecords.length,
+        overflows: restRecords.map((r) => `${r.screen}: ${String(r.overflow)}`),
+        findings: restFindings(restRecords),
+      };
   // The dock's one height, over the base pass's screens (§12).
   const dockRecords = results.flatMap((r) =>
     r.dock ? [{ screen: r.screen, height: r.dock.height, fixed: r.dock.fixed }] : [],
@@ -2287,6 +2413,7 @@ try {
     size200,
     nesting,
     dock,
+    mainScreen,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -2310,6 +2437,7 @@ try {
       nestingWrong: nesting.filter((n) => !n.ok && n.actual !== 'NOT REACHED').length,
       nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
       dockFindings: dock ? dock.findings.length : null,
+      mainScreenScrollFindings: mainScreen ? mainScreen.findings.length : null,
       offlineMet: off['met'],
     },
   };

@@ -886,3 +886,164 @@ non-text, scaling, layout, size, occlusion. **Nesting: 26 landings, 0 wrong, 0 N
 them the dock name → cell card, a row's targets, and a game closed mid-spread reaching its reveal.
 **The dock: one height, 248px on all 16 screens** it was measured on, including the Neutrophil, the
 Monocyte with Recall showing, both residents, and the cell card opened from the dock. Offline met.
+
+---
+
+## 15. Piece 3, the drawers and the main screen without scroll: BUILT, 13 September 2026
+
+Built straight from §9's rulings 3 to 7 and 10, by Shantanu's ruling: "build straight away and put the
+audit's numbers in the PR". No proposal was drawn. Where the rulings leave a detail open, the call made
+is listed below for him to overrule.
+
+### What was built
+
+- **The main screen** is the turn line and Menu, the effects strip, the board, a row of four drawer
+  buttons (**Pieces, Antibodies, The body, What happened**), and the dock. The piece grid, the antibody
+  panel, the body panel and the log left the page (`packages/ui/src/panels/Drawer.tsx`).
+- **Pieces, Antibodies and The body are quick picks** (ruling 7): they slide up from the bottom, part of
+  the board still showing above them. **Picking a piece closes the Pieces drawer and selects it on the
+  board** (ruling 3). **What happened is a reading surface** and opens full height.
+- **Each drawer is one level on the navigation stack** (ruling 9): the floating close and the back
+  gesture close it, and the dock hides underneath while it is open (§12, ruling 1).
+- The slide is 160ms and does not run under reduced motion. The dock measures whether it fits against
+  the board and the drawer row together, since the row sits between them.
+- Catalogue: `drawer.pieces` ("Pieces") added; the other three buttons use the panels' own titles.
+
+### Four calls made where the rulings are silent
+
+1. **A tap on the dimmed board around an open drawer closes it.** Ruling 8 makes the floating close THE
+   close; a scrim that swallowed the tap and did nothing would be a control that does nothing.
+2. **A piece's first-encounter hint shows over the top of the board.** It followed the piece grid, which
+   is in a drawer now, and a hint shown only in a closed drawer would be consumed unseen, #66's shape.
+   Over the board it moves nothing. The antibody class hint stays inside the Antibodies drawer, where
+   the selection that fires it is made.
+3. **The Pieces drawer carries no card icons.** Picking a piece closes the drawer, and the selected
+   piece's name in the dock opens its card (§14, ruling 5), so every cell's card is two taps away.
+4. **Planning is untouched**: it is piece 4. Its log still sits under the planning screen.
+
+### What the instruments gained
+
+**A no-scroll check for ruling 4, with three controls** (fires on a screen at rest taller than the
+screen, passes one within 1px, calls a run with no screen at rest NOT REACHED). On every base-pass
+screen (360 × 780, Standard text) where the play screen is at rest, nothing open over it, the page must
+not be taller than the screen. The walk now selects every piece through the Pieces drawer, opens the
+Antibodies drawer with the B-Cell selected and a class chosen, and opens and closes the other three
+drawers, each landing checked.
+
+### Measured on the build, 360 CSS px wide
+
+Headless system Chrome on the development PC, the shipped build, a command phase on Training, **no
+effects chip showing** (a turn with a crisis effect adds the effects strip above the board, and that is
+not measured here). Heights in CSS px.
+
+| | 360 × 780 | 360 × 640 |
+|---|---|---|
+| top row + board + drawer row + dock | 44 + 339 + 48 + 248 | the same |
+| the dock at the bottom of the screen | yes | **no**: the top row, board, drawer row and dock need 683 |
+| how far the main screen scrolls | **0** | **67**, with End turn below the fold until scrolled |
+| Pieces drawer: height, top edge | 391, 301 | 391, 161 |
+| Antibodies drawer: height, top edge | 156, 536 | 156, 396 |
+| The body drawer: height, top edge | 189, 503 | 189, 363 |
+| What happened | full height (684) | full height (544) |
+
+**At 640 the main screen scrolls 67px**, against §9's −11 with a 220px dock and §14's −21 to −39 before
+the drawer row was counted. Ruling 6: a 640px screen is checked, not chased, so it is recorded, not
+fitted. The levers, if it is to be chased, are a shorter dock or a smaller board; both are rulings.
+
+### What the first audit of the build found
+
+- **The no-scroll check held on its first run: 0px on all 9 screens at rest.** Its controls fired both
+  ways, so 0 is a measurement and not a blind spot.
+- **Four ZOOM200 layout findings in the Pieces drawer**: four residents' names clipped with an ellipsis
+  (117 to 122px of text in 109px). The margin #73 recorded as about 1px at 180px, lost to the drawer's
+  own frame: 96vw wide, 10px side padding, a 2px border. The drawer is now full width below 460px with
+  4px side padding and a 1.5px border, which leaves about 128px against the widest name's 122, and the
+  equal-boxes design is kept.
+- **The inspect sheet was NOT REACHED in the base pass**: no invader token tap opened it that game. It was
+  reached in the other three passes, and the same pass reached the cell card through the sheet later in
+  the walk to the Result, so this is the deal, not the build.
+
+### The Gate 1 audit on the build the PR carries
+
+**Conditions:** the shipped build served by `vite preview` (started by Shantanu: this session's
+automatic permission check refused to start it), headless system Chrome on the development PC
+(i7-12700F), 360 × 780 CSS px and the three 200% mechanisms; unseeded games (#68); no handset.
+
+**42 controls, all firing the right way. 53 screens per pass (55 under SIZE200), none NOT REACHED in
+any pass. Every check 0 under all four mechanisms**: touch, contrast, non-text, scaling, layout, size,
+occlusion. **Nesting: 30 landings, 0 wrong, 0 NOT REACHED**, among them all four drawers closing back
+to the game. **The main screen: 0px of scroll on all 9 screens at rest.** **The dock: 248px on all 20
+screens** it was measured on. Offline met.
+
+### Piece 2's open question, ruled the same day
+
+✅ **§4 row 2 does not govern the draw's render** (Shantanu, 13 September 2026, taking the
+recommendation): it is re-timed on the real low-end handset before the Phase 2 closeout, beside the
+performance rows owed a re-time after pieces 2 and 3. The ruling is recorded with the numbers in
+[`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 13 September 2026".
+
+---
+
+## 16. HANDOVER to a new session: piece 3 is built and audited, and not yet committed
+
+**Written 13 September 2026, at the end of a session that could not finish it.** That session's
+automatic permission check refused, for the rest of the session, to start the preview server and to
+run the chained `pnpm verify`, commit, push and PR. It was not worked around. Shantanu started the
+preview server himself so the audit could run; he could not run the commit steps. **A new session
+starts here.**
+
+### Where things stand
+
+- **Merged:** #79, #80, #81 (piece 1), #82 (piece 2, merge commit 4d1e053).
+- **Piece 3 is built and audited, and uncommitted** on branch `phase2/p2-7-piece3-drawers`, created
+  from `main` after #82. The working tree at handover:
+
+  | File | What changed |
+  |---|---|
+  | `packages/ui/src/panels/Drawer.tsx` | **new**: the drawer row and the drawer |
+  | `packages/ui/src/play/PlayScreen.tsx` | the panels moved into drawers; the hint over the board |
+  | `packages/ui/src/index.ts` | exports the drawer |
+  | `packages/content/src/i18n/en/ui.json` | `drawer.pieces` added |
+  | `tools/perf/gate1-audit.ts` | pieces reached through the drawer; every drawer opened and closed; the no-scroll check and its three controls |
+  | `docs/for-P2.7.md` | §15 (the build record) and this section |
+  | `docs/APP_FLOW.md` | the drawers marked built |
+  | `docs/P2_3_MEASUREMENT.md` | the ruling on the draw's render |
+
+- **The final Gate 1 audit ran on this exact code** (docs changed after it, code did not): 42 controls,
+  all firing the right way; 53 screens per pass (55 under SIZE200), none NOT REACHED; every check 0
+  under all four mechanisms; nesting 30 landings, 0 wrong; the main screen 0px of scroll on all 9
+  screens at rest; the dock 248px on 20 screens; offline met. §15 has the conditions.
+- **The commit message and the PR body are written**, in `out/piece3-handover/commit-message.txt` and
+  `out/piece3-handover/pr-body.md`. `out/` is ignored by git, so they cannot be committed by accident.
+- **No ruling is open.** Piece 2's question (whether §4 row 2 governs the draw's render) was ruled:
+  it does not; it is re-timed on the handset before the closeout.
+
+### The steps, in order
+
+1. `git status`: the table above, and nothing staged.
+2. Stop any preview server that is serving `packages/app/dist`, because `pnpm verify` rebuilds it.
+3. `pnpm verify`. It must pass. The boundary check's one warning, `no-orphans` on
+   `packages/ui/src/i18n-check.control.test.ts`, is older than this work.
+4. `git add docs packages tools`, then `git commit -F out/piece3-handover/commit-message.txt`. Do not
+   add `out/`.
+5. `git push -u origin phase2/p2-7-piece3-drawers`.
+6. `gh pr create --base main --head phase2/p2-7-piece3-drawers --title "Piece 3 of the play screen:
+   four drawers and a main screen that does not scroll" --body-file out/piece3-handover/pr-body.md`.
+7. Report the PR's link to Shantanu. **He merges, never Claude.**
+
+**Re-run the audit only if code changes.** It needs the preview server
+(`pnpm --filter @immunity-wars/app preview`, port 4173, the `preview` entry of `.claude/launch.json`),
+then `npx tsx tools/perf/gate1-audit.ts http://localhost:4173/ <out.json>` from `tools/perf`, and never
+while `pnpm verify` is running.
+
+### After piece 3 merges
+
+- **Piece 4, planning** (§9 rulings 4 and 10, the planning height table): planning still scrolls, its
+  "Command your cells" button measured at 876px on a 780px screen before pieces 2 and 3, and its log
+  still sits under it. The body view shrinks to about 410px and the pathogen list becomes a drawer.
+  Measure it on the current build first; the numbers above predate pieces 2 and 3.
+- **Owed before the Phase 2 closeout:** the draw's render re-timed on the real low-end handset, and the
+  performance rows re-timed after pieces 2 and 3 (`tools/perf/measure.ts`, `measure-full.ts`).
+- **Then the S25 pass**, which also measures what no headless run can: an Android font's widths ("Recall
+  to bloodstream" is 146 of a slot's 150px in Arial; the widest resident name has about 6px to spare in
+  the Pieces drawer at 180px).

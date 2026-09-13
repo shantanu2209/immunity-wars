@@ -66,6 +66,7 @@ import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/Anti
 import { ApTerms } from '../panels/ApTerms';
 import { Dock } from '../panels/Dock';
 import { DockSheet, TargetList } from '../panels/DockSheet';
+import { Drawer, DrawerRow, type DrawerKind } from '../panels/Drawer';
 import { InspectSheet } from '../panels/InspectSheet';
 import { HintLine } from '../panels/HintLine';
 import {
@@ -210,6 +211,9 @@ export function PlayScreen({
   const [apSheet, setApSheet] = useState(false);
   useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
   useNavLayer('ap-terms', apSheet, () => setApSheet(false));
+  // THE DRAWERS (piece 3, §9 rulings 3 and 7): one open at a time, one level on the stack.
+  const [drawer, setDrawer] = useState<DrawerKind | null>(null);
+  useNavLayer('drawer', drawer !== null, () => setDrawer(null));
   // Whether the floating close is showing (the dock hides under it, §12 ruling 1) and whether
   // anything is open over the game (the draw waits for the player to come back).
   const navState = useNavState();
@@ -934,21 +938,37 @@ export function PlayScreen({
           extra render per draw cheap. Measured in P2_3_MEASUREMENT.md, "Added 6 September". */}
       <div data-command-stage="1" hidden={planningActive}>
         <>
+          {/* THE MAIN SCREEN (piece 3, §9 rulings 3 and 4): the board, the row of drawer buttons,
+              and the dock; everything else opens as a drawer. The wrapper is what the dock measures
+              itself against, so the drawer row counts toward whether the dock fits at the bottom. */}
           <div ref={boardWrapRef}>
-            <LiveBoard
-              store={frameStore}
-              game={game}
-              selectedCell={selectedCell}
-              selectedResident={selectedResident}
-              readyTurn={authView.queries.readyTurn}
-              artMetrics={artMetrics}
-              targets={boardTargets}
-              onTap={playing ? undefined : handleBoardTap}
-            />
+            <div style={{ position: 'relative' }}>
+              <LiveBoard
+                store={frameStore}
+                game={game}
+                selectedCell={selectedCell}
+                selectedResident={selectedResident}
+                readyTurn={authView.queries.readyTurn}
+                artMetrics={artMetrics}
+                targets={boardTargets}
+                onTap={playing ? undefined : handleBoardTap}
+              />
+              {hintFor('pieces') !== null ? (
+                // A piece's first-encounter hint, over the top of the board. It used to follow the
+                // piece grid, which is in a drawer now, and a hint shown only in a closed drawer
+                // would be consumed unseen (FINDINGS #66's shape). Over the board it moves nothing.
+                <div
+                  data-hint-over-board=""
+                  style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 3 }}
+                >
+                  {hintFor('pieces')}
+                </div>
+              ) : null}
+            </div>
+            <DrawerRow disabled={playing} onOpen={setDrawer} />
           </div>
-          {/* THE DOCK (§9 ruling 1, §12). Straight after the board in the page, so that when it
-              cannot sit at the bottom of the screen it is the next thing below the board; in piece
-              3 the panels between here and the end of the page move into drawers. */}
+          {/* THE DOCK (§9 ruling 1, §12). Straight after the drawer row in the page, so that when
+              it cannot sit at the bottom of the screen it is the next thing below them. */}
           <Dock
             dockRef={dockRef}
             store={frameStore}
@@ -1019,31 +1039,58 @@ export function PlayScreen({
               <ApTerms terms={apTerms} total={Number(game['ap'] ?? 0)} />
             </DockSheet>
           ) : null}
-          <PieceStrip
-            pieces={pieces}
-            selectedCell={selectedCell}
-            selectedResident={selectedResident}
-            why={why}
-            disabled={playing}
-            onSelectCell={tapCell}
-            onSelectResident={tapResident}
-            onDeselect={deselect}
-          />
-          {hintFor('pieces')}
-          <AntibodyPanel
-            rows={familyRows}
-            selectedFamily={selectedFamily}
-            detail={familyDetail}
-            produce={produceOffers}
-            disabled={playing}
-            onSelectFamily={(family) =>
-              session.setSelection({ cell: selectedCell, family, resident: selectedResident })
-            }
-            onProduce={sendOffer}
-          />
-          {hintFor('antibodies')}
-          <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-          <LiveLog store={frameStore} game={game} />
+          {drawer === 'pieces' ? (
+            <Drawer kind="pieces" onClose={() => setDrawer(null)}>
+              <PieceStrip
+                pieces={pieces}
+                selectedCell={selectedCell}
+                selectedResident={selectedResident}
+                why={why}
+                disabled={playing}
+                // Picking a piece closes the drawer and selects it on the board (ruling 3).
+                onSelectCell={(ck) => {
+                  tapCell(ck);
+                  setDrawer(null);
+                }}
+                onSelectResident={(organ) => {
+                  tapResident(organ);
+                  setDrawer(null);
+                }}
+                onDeselect={() => {
+                  deselect();
+                  setDrawer(null);
+                }}
+              />
+            </Drawer>
+          ) : null}
+          {drawer === 'antibodies' ? (
+            <Drawer kind="antibodies" onClose={() => setDrawer(null)}>
+              <AntibodyPanel
+                rows={familyRows}
+                selectedFamily={selectedFamily}
+                detail={familyDetail}
+                produce={produceOffers}
+                disabled={playing}
+                onSelectFamily={(family) =>
+                  session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+                }
+                onProduce={sendOffer}
+              />
+              {hintFor('antibodies')}
+            </Drawer>
+          ) : null}
+          {drawer === 'body' ? (
+            <Drawer kind="body" onClose={() => setDrawer(null)}>
+              <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+            </Drawer>
+          ) : null}
+          {drawer === 'log' ? (
+            // A reading surface: full height, scrolling, and still narrating a spread's frames as
+            // they land, because the log reads the shown frame.
+            <Drawer kind="log" onClose={() => setDrawer(null)}>
+              <LiveLog store={frameStore} game={game} />
+            </Drawer>
+          ) : null}
           {inspect ? (
             <InspectSheet
               hint={hintFor('inspect')}
