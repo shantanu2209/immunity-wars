@@ -638,6 +638,10 @@ The 60 is a 44px button with 8px of padding above and below it; §9's height tab
 
 ### Seven choices, each with a recommendation
 
+> ✅ **All seven ruled as recommended** (Shantanu, 13 September 2026: "All seven ruled as
+> recommended, build piece 2"). The choices are kept below as they were proposed. What was built,
+> and what building it found, is §13.
+
 1. **The dock and the floating close, both at the bottom.**
    (a) **A layer covers the dock.** While any layer shows the floating close, the dock is hidden and
    inert but keeps its height, so nothing moves, and the floating close sits where it does today.
@@ -708,3 +712,88 @@ The 60 is a 44px button with 8px of padding above and below it; §9's height tab
    **Recommendation: yours to approve, not Kartik's.** No rule changes, and the sentences follow
    his ruling on the draft (the rulebook's phase names as headings, the app's button names in the
    text). Showing him the Infection sentence costs nothing, because it describes his phase.
+
+---
+
+## 13. Piece 2, the dock and the draw inside End turn: BUILT, 13 September 2026, one question open
+
+All seven choices of §12 built as ruled. **One question the ruling did not cover is open, and the PR
+waits for it**: where "Recall to bloodstream" goes (below, and [`FINDINGS.md`](FINDINGS.md) #71).
+
+### What was built
+
+- **The draw is the play screen's** (`packages/ui/src/play/autoDraw.ts`): one pure rule, sent once a
+  turn, waiting for a spread, a dialog, or anything open over the game. It covers the first turn
+  after the goal dialog, every turn after a spread, and a game resumed before its draw. The dialog
+  queue answers "is one pending" synchronously, because the goal is enqueued in the same effect flush
+  the draw reads it in.
+- **The dock** (`packages/ui/src/panels/Dock.tsx`) replaces the command bar and the action list, both
+  deleted: the name line (the piece, AP, Undo, Deselect), one message line, two row slots, End turn
+  alone. Zone minimums in rem. Hidden with its height kept while the floating close shows. At the
+  bottom of the screen while the top row, the board and the dock fit, otherwise straight after the
+  board. The spread's narration plays inside it; the banner above the board is gone.
+- **One row per action** (`dockRows` in `offered.ts`), produce left out; a row with several targets
+  opens them over the board, and the AP terms open there too (`DockSheet.tsx`), each a layer on the
+  navigation stack.
+- **The top row** is the turn line and Menu, one 44px row. The dev shell lost Draw and kept Begin
+  command and End command (spread). The reveal's button is "Plan your turn". Help's section 2 carries
+  the ruled words. Catalogue keys removed: `play.draw`, `reveal.continue`, `commandBar.inspect`,
+  `commandBar.card`, `actions.title`, `actions.movementOnBoard`; added `reveal.plan`, `dock.targets`.
+- **The engine and the corpus are untouched.** No engine file changed.
+
+### What the instruments gained
+
+- `tests/session/src/auto-draw.test.ts`: the rule against the real engine through a real session,
+  every turn of an idle game at each difficulty, with a resume at every turn; five planted rules, each
+  caught by the clause it breaks. Idle games measured 9 to 10 turns with a draw on each, so the floor
+  asserted is five.
+- `tests/session/src/dock-rows.test.ts`: on recorded states for every piece, two slots, nothing a
+  player could take lost, the right offer sent, a reason when greyed; two planted groupings caught.
+- **The Gate 1 audit, 39 controls** (34 before): the dock's one height (fires on two heights, passes
+  one, calls no dock NOT REACHED), and a resumed game (fires on a resume landing on planning, passes a
+  game closed mid-spread reaching its reveal). The walk stopped pressing Draw; it gained the AP terms
+  sheet, a row's targets, the reveal after End turn, planning on the next turn, and the resume path.
+
+### What building found, in the order it was found
+
+1. **Recall had no zone** (FINDINGS #71). Built as a row below the slots until ruled.
+2. **The proposal's "the inspect sheet opens the cell card" was true only sometimes** (FINDINGS #71).
+3. **The one-height check fired on its first run: 300px on three screens, 248 on seven.** With nothing
+   selected, the prompt in the name line wrapped Undo onto a second row. The prompt moved to the
+   message line; the next run measured 248 on every screen.
+4. **Two screens were never reached in any pass under a clean total**: the cell card (its dock door
+   gone) and a row's targets (new, and deal-dependent). An instrument gap, fixed inline: the walk to
+   the Result keeps trying both on every idle turn, and only a run that never reaches one records it.
+5. **Reaching the cell card at 200% page zoom found a defect older than piece 2** (FINDINGS #72): the
+   inspect sheet's cell rows did not wrap. Fixed in this piece, with the reason recorded there.
+6. **Both perf drivers clicked dialog buttons before the dialogs existed.** At 6× a Begin or a "Plan
+   your turn" pressed a render too early missed, the dev shell's buttons played on, and the pending
+   dialog held the next turn's draw: the rule doing its job, the driver not doing its. Both wait now.
+7. **The first instrument for the draw's render was wrong and nothing from it was used.** It started
+   its clock in a mutation callback that ran after React had already rendered, and reported 0.1ms at
+   6× against 6 to 12ms at 1×, which a slower CPU cannot do. The second starts at the driver's tap.
+
+### Measured on the build the PR carries
+
+**Conditions:** CSS px and ms; the shipped build served by `vite preview`; headless system Chrome on
+the development PC (i7-12700F); 360 × 780. What these cannot say: no handset; the audit's games and
+the drivers' games are unseeded, so counts vary run to run (#68); the Monocyte and Eosinophil standing
+off the bloodstream were never selected by the walk, so **the dock's height with the recall row is not
+measured**.
+
+**The Gate 1 audit:** 39 controls, all firing the right way. 45 screens per pass (47 under SIZE200),
+**none NOT REACHED in any pass**. Every check 0 under all four mechanisms: touch, contrast, non-text,
+scaling, layout, size, occlusion. Nesting: 25 landings, 0 wrong, 0 NOT REACHED, including "a game
+closed mid-spread → Continue" landing on its reveal. The dock: one height, **248px on all 12 screens**
+it was measured on, at the bottom of the screen on each. Offline met.
+
+**The performance drivers** against the dev shell, and the draw's render, are in
+[`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 13 September 2026".
+
+### The question open before the PR
+
+**Where does "Recall to bloodstream" go?** It is a button for every cell but the B-Cell whenever it
+stands off the bloodstream, and the Monocyte and Eosinophil fill both row slots. **Recommendation: a
+ring on the bloodstream, on the board.** The engine's `recall` moves a cell from anywhere to the
+bloodstream in one action, a movement with a fixed destination, and "movement is on the board" is
+ruled (4 September). The alternative is a place in the dock that grows it for those two cells.

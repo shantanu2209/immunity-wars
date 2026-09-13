@@ -74,6 +74,76 @@ const clickIncludes = (page: Page, label: string): Promise<void> =>
     b.click();
   }, label);
 
+/**
+ * From the start of a turn to its command phase, as a player gets there now: the app draws, the
+ * reveal (when something arrived) is dismissed by its button, and the planning screen's "Command
+ * your cells" is the command tap, read from `__iwMetrics.transitions`. The dev shell's "Begin
+ * command" is the fallback when the planning screen does not show. Returns how many command taps
+ * it recorded (0 or 1).
+ */
+async function openCommand(page: Page, recorded: number): Promise<number> {
+  const drawn = await page
+    .waitForFunction(
+      () => {
+        const b = [...document.querySelectorAll('button')].find((x) =>
+          x.textContent?.includes('Begin command'),
+        );
+        return b ? !b.disabled : false;
+      },
+      { timeout: 30000 },
+    )
+    .then(() => true)
+    .catch(() => false);
+  if (!drawn) {
+    // Said, not just timed out: what the page showed when the draw did not come.
+    const seen = await page.evaluate(() => ({
+      status: document.querySelector('p')?.textContent ?? '',
+      inspectSheet: document.querySelector('[data-inspect-sheet]') !== null,
+      dockSheet: document.querySelector('[data-dock-sheet]') !== null,
+      buttons: [...document.querySelectorAll('button')].map((b) => b.textContent?.trim() ?? ''),
+    }));
+    throw new Error(`the draw did not come within 30s: ${JSON.stringify(seen)}`);
+  }
+  // THE REVEAL IS WAITED FOR, not clicked blind. Begin command enables in the render that carries
+  // the draw, but the reveal dialog is enqueued in that render and shown in the next; at 6x a click
+  // in between finds no button, the dev shell's Begin command (which ignores dialogs) plays on, and
+  // the reveal stays pending into the next turn, where the app's draw waits for it and never comes.
+  // Found by this driver's first run after piece 2. Tolerant: a mop-up draw shows no reveal.
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('button')].some(
+          (x) => x.textContent?.trim() === 'Plan your turn',
+        ),
+      { timeout: 10000 },
+    )
+    .catch(() => undefined);
+  await clickExact(page, 'Plan your turn');
+  await sleep(150);
+  let tapped = 0;
+  if (await clickExact(page, 'Command your cells')) {
+    tapped = 1;
+    await page.waitForFunction(
+      (n: number) =>
+        (globalThis as unknown as { __iwMetrics: PageMetrics }).__iwMetrics.transitions.length >= n,
+      { timeout: 30000 },
+      recorded + 1,
+    );
+  } else {
+    await clickIncludes(page, 'Begin command');
+  }
+  await page.waitForFunction(
+    () => {
+      const b = [...document.querySelectorAll('button')].find((x) =>
+        x.textContent?.includes('End command'),
+      );
+      return b ? !b.disabled : false;
+    },
+    { timeout: 30000 },
+  );
+  return tapped;
+}
+
 const metricsOf = (page: Page): Promise<PageMetrics> =>
   page.evaluate(
     () => (globalThis as unknown as { __iwMetrics: PageMetrics }).__iwMetrics,
@@ -101,7 +171,23 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
       const m = await metricsOf(page);
       initial.push(Math.round((m.initialRenderMs ?? NaN) * 10) / 10);
     }
+    // The goal dialog is answered before anything else, and WAITED FOR: the app's draw waits for it
+    // (docs/for-P2.7.md §12), so a Begin pressed before the dialog renders (6x throttling) leaves
+    // the game undrawn and every later wait times out. Before piece 2 a missed Begin cost nothing,
+    // because the driver pressed Draw anyway.
+    await page.waitForFunction(
+      () => [...document.querySelectorAll('button')].some((x) => x.textContent?.trim() === 'Begin'),
+      { timeout: 60000 },
+    );
     await clickExact(page, 'Begin');
+
+    // THE DRAW IS THE APP'S (docs/for-P2.7.md §12, ruling 6, 13 September 2026): the dev shell
+    // follows the app, so Begin is followed by the draw with nothing pressed, then the reveal and
+    // planning, behind which the board is hidden. So the first command tap comes first, and the
+    // 24 selection taps run in the COMMAND phase, where they used to run on the pre-draw board,
+    // which is no longer a resting state. A changed condition, stated with the numbers.
+    let commandTaps = 0;
+    commandTaps += await openCommand(page, commandTaps);
 
     // --- row 2: tap -> visible, 24 board selection taps through Session ---
     const cells = ['macrophage', 'neutrophil', 'tcell', 'nk'];
@@ -122,54 +208,20 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
 
     // --- rows 3 and 4: four full turns — the reveal, the planning screen, the COMMAND TAP
     //     (a transition), the command phase, the spread's frames ---
-    let commandTaps = 0;
     for (let t = 0; t < 4; t += 1) {
       const before = await status(page);
-      if (!before.includes('phase infection')) break;
-      await clickIncludes(page, 'Draw');
-      await page
-        .waitForFunction(
-          () =>
-            [...document.querySelectorAll('button')].some(
-              (x) => x.textContent?.trim() === 'Continue',
-            ),
-          { timeout: 30000 },
-        )
-        .catch(() => undefined);
-      await clickExact(page, 'Continue');
-      await sleep(150);
-      // The planning screen's own button is the command tap; the dev shell's "Begin command"
-      // is the fallback when the model does not show the screen (a mop-up draw).
-      const viaPlanning = await clickExact(page, 'Command your cells');
-      if (viaPlanning) {
-        commandTaps += 1;
-        await page.waitForFunction(
-          (n: number) =>
-            (globalThis as unknown as { __iwMetrics: PageMetrics }).__iwMetrics.transitions
-              .length >= n,
-          { timeout: 30000 },
-          commandTaps,
-        );
-      } else {
-        await clickIncludes(page, 'Begin command');
-      }
-      await page.waitForFunction(
-        () => {
-          const b = [...document.querySelectorAll('button')].find((x) =>
-            x.textContent?.includes('End command'),
-          );
-          return b ? !b.disabled : false;
-        },
-        { timeout: 30000 },
-      );
+      if (!before.includes('phase command')) break;
       await clickIncludes(page, 'End command');
       await page.waitForFunction(
         () => {
           const p = document.querySelector('p')?.textContent ?? '';
-          return !p.includes('SPREAD') && p.includes('phase infection');
+          return !p.includes('SPREAD') && !p.includes('phase command');
         },
         { timeout: 180000 },
       );
+      if ((await status(page)).includes('phase infection')) {
+        commandTaps += await openCommand(page, commandTaps);
+      }
     }
 
     const m = await metricsOf(page);

@@ -828,3 +828,85 @@ export function actionRows(view: SessionView): ActionRow[] {
   }
   return rows;
 }
+
+/**
+ * THE DOCK'S ROWS (docs/for-P2.7.md §12, ruling 2, 13 September 2026): the dock has two row slots
+ * and one height, and the action list above could not hold them, because it has one row per
+ * TARGET: a B-Cell on an idle board reached 16 rows and 950px.
+ *
+ * So the dock has one row per ACTION. With one target the row is that target's row, word for word,
+ * and sends its offer, as the list did. With several it names the action and how many ("Neutralise:
+ * 5 targets"), and the dock opens them as a list over the board. With none it is the greyed row and
+ * its reason. The rows below are grouped, never re-decided: every available row `actionRows` makes
+ * is a target of exactly one dock row, which `dock-rows.test.ts` holds on recorded states.
+ *
+ * `produce` is left out: it was greyed on every turn measured, because producing is the antibody
+ * panel's. Without it no piece has more than two actions, which is what makes two slots enough.
+ */
+export const DOCK_OMITS: ReadonlySet<string> = new Set(['produce']);
+
+/** The dock's row slots. A catalogue that outgrew them is caught by `dock-rows.test.ts`. */
+export const DOCK_ROW_SLOTS = 2;
+
+export interface DockRow {
+  action: string;
+  /** Localised: the one target's own label, "Neutralise: 5 targets", or the action's name. */
+  label: string;
+  cost: string | null;
+  detail: string | null;
+  available: boolean;
+  /** One target: the offer the row sends. Several or none: null. */
+  offerId: string | null;
+  /** Every available row this one stands for, in `actionRows` order. */
+  targets: ActionRow[];
+  /** A greyed row: why, localised. */
+  reason: string | null;
+}
+
+export function dockRows(view: SessionView): DockRow[] {
+  const rows = actionRows(view);
+  const order: string[] = [];
+  for (const r of rows) {
+    if (!DOCK_OMITS.has(r.action) && !order.includes(r.action)) order.push(r.action);
+  }
+  return order.map((action): DockRow => {
+    const mine = rows.filter((r) => r.action === action);
+    const available = mine.filter((r) => r.available);
+    const only = available[0];
+    if (available.length === 1 && only) {
+      return {
+        action,
+        label: only.label,
+        cost: only.cost,
+        detail: only.detail,
+        available: true,
+        offerId: only.offerId,
+        targets: available,
+        reason: null,
+      };
+    }
+    if (available.length > 1) {
+      return {
+        action,
+        label: t('dock.targets', { action: t(`action.${action}`), n: available.length }),
+        cost: null,
+        detail: null,
+        available: true,
+        offerId: null,
+        targets: available,
+        reason: null,
+      };
+    }
+    const first = mine[0];
+    return {
+      action,
+      label: first?.label ?? t(`action.${action}`),
+      cost: null,
+      detail: null,
+      available: false,
+      offerId: null,
+      targets: [],
+      reason: first?.reason ?? null,
+    };
+  });
+}

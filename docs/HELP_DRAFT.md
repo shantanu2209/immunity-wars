@@ -55,6 +55,12 @@ Budget 80 words; draft 135.*
 
 [Fresh] Every turn has three phases, and the app runs two of them for you.
 
+> ⚠️ *Changed 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §12, ruling 7): the app has no Draw
+> button, so the Infection paragraph now begins "At the start of each turn the app draws the turn's
+> cards", and the Command paragraph gains "Tap End turn when you are done." Both are [Fresh]; the
+> rulebook paragraph beside them is untouched. The catalogue carries the new words; the draft below
+> keeps the words it was read with, as the record.*
+
 [Fresh] **Infection.** Tap Draw. The app draws this turn's cards, places each new invader at
 the start of its route, and shows you what arrived, with this turn's crisis event if one
 fired. Then it shows the body from the outside so you can plan: what is coming, where it is

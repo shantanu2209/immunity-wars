@@ -76,6 +76,23 @@ export interface Nav<S> extends NavLayerApi {
 
 const NavContext = createContext<NavLayerApi | null>(null);
 
+/**
+ * What a component under the host may know about the stack without being able to change it: how
+ * many levels are open above the base, and whether the floating close is showing. The dock hides
+ * while the floating close shows (for-P2.7.md §12, ruling 1), and the draw waits while anything is
+ * open over the game (ruling 2's structure).
+ */
+export interface NavState {
+  depth: number;
+  floating: boolean;
+}
+
+const NavStateContext = createContext<NavState>({ depth: 0, floating: false });
+
+export function useNavState(): NavState {
+  return useContext(NavStateContext);
+}
+
 export function useNav<S>(base: S, isMain: (screen: S) => boolean): Nav<S> {
   const [stack, setStack] = useState<NavStack<S>>(() => stackOf(base));
   // The stack is read synchronously by close(), which the back gesture can call several times in
@@ -202,9 +219,13 @@ export function NavHost<S>({
     [nav.openLayer, nav.closeLayer],
   );
 
+  const depth = depthOf(nav.stack);
+  const floating = nav.label !== null;
+  const navState = useMemo<NavState>(() => ({ depth, floating }), [depth, floating]);
+
   return (
     <NavContext.Provider value={layerApi}>
-      {children}
+      <NavStateContext.Provider value={navState}>{children}</NavStateContext.Provider>
       {/* While the floating close shows, the page underneath can still scroll (the inspect sheet
           is not modal), so the document gets room at its end: without it the last lines of the
           game's page scroll under the button. The audit's occlusion check is what says so. */}

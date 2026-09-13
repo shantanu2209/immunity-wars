@@ -358,13 +358,16 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
             renderControls={(ctx) => (
+              // THE TOP ROW keeps only the turn line and Menu (for-P2.7.md §9 ruling 1). The turn's
+              // next step is the dock's; the draw is the app's (§12 ruling 2); the spread's headline
+              // plays in the dock (§12 ruling 4). One 44px row: its padding went with the buttons.
               <div
                 style={{
                   display: 'flex',
                   gap: 8,
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  padding: '8px 0',
+                  minHeight: 44,
                 }}
               >
                 <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
@@ -372,42 +375,11 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
                   {t('play.deck')} {String(ctx.game['deckCount'])}
                 </span>
                 <button
-                  style={{ minHeight: 44, fontSize: '0.875rem' }}
-                  disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
-                  onClick={() => ctx.send({ action: 'draw' })}
-                >
-                  {t('play.draw')}
-                </button>
-                {/* While the planning screen shows (item 12), its own bottom button begins
-                command; a second copy up here would be the same button twice. */}
-                {ctx.planning ? null : (
-                  <button
-                    style={{ minHeight: 44, fontSize: '0.875rem' }}
-                    disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
-                    onClick={() => ctx.send({ action: 'beginCommand' })}
-                  >
-                    {t('play.beginCommand')}
-                  </button>
-                )}
-                <button
-                  style={{ minHeight: 44, fontSize: '0.875rem' }}
-                  disabled={ctx.playing || ctx.phase !== 'command'}
-                  onClick={() => ctx.send({ action: 'endCommand' })}
-                >
-                  {t('play.endCommand')}
-                </button>
-                <button
                   style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
                   onClick={() => setPaused(true)}
                 >
                   {t('play.pause')}
                 </button>
-                {ctx.frameInfo ? (
-                  <span style={{ fontSize: '0.8125rem', color: '#B03A2E' }}>
-                    {ctx.frameInfo.label}
-                  </span>
-                ) : null}
-                {/* Rejections render in the command bar, through the catalogue (P2.5 selection). */}
               </div>
             )}
           />

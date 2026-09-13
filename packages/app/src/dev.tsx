@@ -2,8 +2,11 @@
  * THE DEV SHELL — the instrumented entry, preserved as load-bearing (docs/APP_FLOW.md
  * ruling 6). It mounts the SAME PlayScreen as the app shell, with:
  *
- * - its own turn buttons, TEXT UNCHANGED ("Draw", "Begin command", "End command (spread)"),
- *   because tools/perf/measure.ts drives this page by button text and [data-cell];
+ * - its own turn buttons, TEXT UNCHANGED ("Begin command", "End command (spread)"), because
+ *   tools/perf/measure.ts and measure-full.ts drive this page by button text and [data-cell].
+ *   There is no Draw: the dev shell follows the app, whose play screen sends the draw itself
+ *   (docs/for-P2.7.md §12, ruling 6, 13 September 2026), and both drivers were changed and
+ *   re-measured with it rather than kept on a turn no player sees;
  * - the metrics wiring (markInitialRender / recordFrame / recordTap → __iwMetrics);
  * - the tail-assertion checks panel, the skip toggle, and the IndexedDbStorage exercise
  *   (which must rerun on every load — indexeddb.ts's header promises it);
@@ -84,12 +87,6 @@ function DevApp(): ReactElement {
                 {ctx.lastError ? ` · rejected: ${ctx.lastError}` : ''}
               </span>
               <br />
-              <button
-                disabled={ctx.playing || ctx.phase !== 'infection' || Boolean(ctx.game['drawn'])}
-                onClick={() => ctx.send({ action: 'draw' })}
-              >
-                Draw
-              </button>{' '}
               <button
                 disabled={ctx.playing || ctx.phase !== 'infection' || !ctx.game['drawn']}
                 onClick={() => ctx.send({ action: 'beginCommand' })}

@@ -176,7 +176,9 @@ export function InspectSheet({
         </div>
       ))}
       {info.cells.map((ck) => (
-        <div key={`cell-${ck}`} style={{ ...ROW, width: '100%' }}>
+        // Wraps like the invader rows above, so at a 180px layout (200% page zoom) the Card button
+        // drops under the cell instead of past the screen's edge (FINDINGS #72).
+        <div key={`cell-${ck}`} style={{ ...ROW, width: '100%', flexWrap: 'wrap' }}>
           <button
             data-sheet-cell={ck}
             onClick={() => onSelectCell?.(ck)}
@@ -184,6 +186,7 @@ export function InspectSheet({
             style={{
               ...ROW,
               flex: '1 1 auto',
+              minWidth: 0,
               background: selectedCell === ck ? '#FBEAE5' : 'transparent',
               border: 'none',
               cursor: 'pointer',
