@@ -6,11 +6,13 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-09-09 from `packages/content/src` — pack `immunity-wars-core`, content `1.0.0`, rules `3.1.0`.
+Generated 2026-09-13 from `packages/content/src` — pack `immunity-wars-core`, content `1.0.0`, rules `3.1.0`.
 
-**696 claims.** Game mechanics are deliberately excluded: how a disease behaves on
-the board, which organs it can reach in play, how many hits it takes, and the four stat bars are
-design decisions rather than medical claims, and are not here to be reviewed.
+**802 claims.** Game mechanics are deliberately excluded: how a disease behaves on
+the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
+design decisions rather than medical claims, and are not here to be reviewed. **One exception:**
+each card's "Can infect" line is included, labelled as a game simplification, so that a case
+where the simplification is actually wrong can still be caught.
 
 Every claim carries a stable id such as `DISEASE/Rabies/Treat`. Quoting the id is enough for a
 correction to be found and applied.
@@ -20,7 +22,7 @@ correction to be found and applied.
 
 ## Part 1 — The disease cards
 
-Every word of text the app shows on a disease card. **The two fields to check first are Prevent and Treat**: they are the only place the app comes close to saying what a person should do, they are read by children, and a wrong one is the only kind of error here that could matter outside the game.
+Every word of text the app shows on a disease card. **The two fields to check first are Prevent and Treat**: they are the only place the app comes close to saying what a person should do, they are read by children, and a wrong one is the only kind of error here that could matter outside the game. **The last row of each card is different in kind.** "Can infect" lists the organs the GAME lets that disease damage. It is a design simplification, not a claim that the disease affects nothing else. Please flag it only where an organ we list is wrong for that disease, or where an organ that matters for it is missing.
 
 
 ### Influenza
@@ -33,6 +35,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Influenza/Prevent` | Prevent | Annual flu vaccine. It changes because the virus mutates fast. |
 | `DISEASE/Influenza/Treat` | Treat | Rest, fluids; antivirals for high-risk patients. |
 | `DISEASE/Influenza/Fact` | Card fact | Flu mutates fast. Last year's antibodies may not fit. |
+| `DISEASE/Influenza/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Common cold
 
@@ -44,6 +47,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Common cold/Prevent` | Prevent | Handwashing. No vaccine. Over 100 strains. |
 | `DISEASE/Common cold/Treat` | Treat | No cure; it passes in about a week. |
 | `DISEASE/Common cold/Fact` | Card fact | Over 100 strains; no lasting immunity. |
+| `DISEASE/Common cold/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### COVID-19
 
@@ -55,6 +59,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/COVID-19/Prevent` | Prevent | Vaccination, ventilation, masks during outbreaks. |
 | `DISEASE/COVID-19/Treat` | Treat | Supportive care; antivirals for those at risk. |
 | `DISEASE/COVID-19/Fact` | Card fact | Can inflame the heart muscle (myocarditis) as well as the lungs. |
+| `DISEASE/COVID-19/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Heart. |
 
 ### RSV
 
@@ -66,6 +71,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/RSV/Prevent` | Prevent | Monoclonal antibodies and a maternal vaccine for infants. |
 | `DISEASE/RSV/Treat` | Treat | Supportive care; oxygen if severe. |
 | `DISEASE/RSV/Fact` | Card fact | Mild in adults, dangerous for babies. |
+| `DISEASE/RSV/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Measles
 
@@ -76,6 +82,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Measles/Found` | Found | Worldwide; resurges wherever vaccination drops. |
 | `DISEASE/Measles/Prevent` | Prevent | MMR vaccine. Two doses. |
 | `DISEASE/Measles/Treat` | Treat | No antiviral; vitamin A and supportive care. Prevention is everything. |
+| `DISEASE/Measles/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Brain. |
 
 ### Mumps
 
@@ -86,6 +93,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Mumps/Found` | Found | Worldwide. |
 | `DISEASE/Mumps/Prevent` | Prevent | MMR vaccine. |
 | `DISEASE/Mumps/Treat` | Treat | Supportive care only. |
+| `DISEASE/Mumps/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain, Spleen. |
 
 ### Rubella
 
@@ -96,6 +104,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Rubella/Found` | Found | Worldwide. |
 | `DISEASE/Rubella/Prevent` | Prevent | MMR vaccine, especially before pregnancy. |
 | `DISEASE/Rubella/Treat` | Treat | No cure; prevention protects the next generation. |
+| `DISEASE/Rubella/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Heart. |
 
 ### Smallpox
 
@@ -106,6 +115,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Smallpox/Found` | Found | NOWHERE. Declared eradicated in 1980. The only human disease ever wiped out. |
 | `DISEASE/Smallpox/Prevent` | Prevent | Vaccination. The campaign that ended it. |
 | `DISEASE/Smallpox/Treat` | Treat | None needed. This card is a trophy: proof that immunology WINS. |
+| `DISEASE/Smallpox/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Liver. |
 
 ### Nipah
 
@@ -116,6 +126,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Nipah/Found` | Found | South and Southeast Asia; spread by fruit bats. |
 | `DISEASE/Nipah/Prevent` | Prevent | Avoid raw date-palm sap; isolate cases. |
 | `DISEASE/Nipah/Treat` | Treat | No specific cure. Supportive care. |
+| `DISEASE/Nipah/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain, Lungs. |
 
 ### Hand-foot-and-mouth
 
@@ -126,6 +137,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hand-foot-and-mouth/Found` | Found | Worldwide; common in schools. |
 | `DISEASE/Hand-foot-and-mouth/Prevent` | Prevent | Handwashing. |
 | `DISEASE/Hand-foot-and-mouth/Treat` | Treat | Self-limiting. |
+| `DISEASE/Hand-foot-and-mouth/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Heart. |
 
 ### Chickenpox
 
@@ -137,6 +149,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Chickenpox/Prevent` | Prevent | Varicella vaccine. |
 | `DISEASE/Chickenpox/Treat` | Treat | Antivirals if severe. |
 | `DISEASE/Chickenpox/Fact` | Card fact | Hides in nerves for decades. Returns as shingles. |
+| `DISEASE/Chickenpox/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Brain. |
 
 ### Glandular fever
 
@@ -148,6 +161,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Glandular fever/Prevent` | Prevent | No vaccine. |
 | `DISEASE/Glandular fever/Treat` | Treat | Rest. Avoid contact sport while the spleen is swollen. |
 | `DISEASE/Glandular fever/Fact` | Card fact | Hides inside your own B-cells; risks spleen rupture. |
+| `DISEASE/Glandular fever/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Spleen, Liver. |
 
 ### Cytomegalovirus
 
@@ -158,6 +172,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cytomegalovirus/Found` | Found | Most adults worldwide carry it. |
 | `DISEASE/Cytomegalovirus/Prevent` | Prevent | Hygiene; no vaccine yet. |
 | `DISEASE/Cytomegalovirus/Treat` | Treat | Antivirals only when it reactivates. |
+| `DISEASE/Cytomegalovirus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Lungs. |
 
 ### Tuberculosis
 
@@ -169,6 +184,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Tuberculosis/Prevent` | Prevent | BCG vaccine; treating active cases; ventilation. |
 | `DISEASE/Tuberculosis/Treat` | Treat | 6+ months of combination antibiotics. Not finishing the course breeds resistance. |
 | `DISEASE/Tuberculosis/Fact` | Card fact | Can lie dormant in the lungs for years. |
+| `DISEASE/Tuberculosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Whooping cough
 
@@ -180,6 +196,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Whooping cough/Prevent` | Prevent | DPT vaccine. |
 | `DISEASE/Whooping cough/Treat` | Treat | Antibiotics, given early. |
 | `DISEASE/Whooping cough/Fact` | Card fact | Violent coughing fits; DPT vaccine prevents it. |
+| `DISEASE/Whooping cough/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Meningitis
 
@@ -190,6 +207,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Meningitis/Found` | Found | Worldwide; the African 'meningitis belt' worst. |
 | `DISEASE/Meningitis/Prevent` | Prevent | Meningococcal vaccine. |
 | `DISEASE/Meningitis/Treat` | Treat | Emergency antibiotics. Every hour counts. |
+| `DISEASE/Meningitis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Pneumonia
 
@@ -200,6 +218,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Pneumonia/Found` | Found | Everywhere. |
 | `DISEASE/Pneumonia/Prevent` | Prevent | Pneumococcal vaccine; flu vaccine; clean cooking fuel. |
 | `DISEASE/Pneumonia/Treat` | Treat | Antibiotics and oxygen. |
+| `DISEASE/Pneumonia/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Strep throat
 
@@ -210,6 +229,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Strep throat/Found` | Found | Worldwide; rheumatic heart disease is a major problem in India. |
 | `DISEASE/Strep throat/Prevent` | Prevent | Treat sore throats properly. |
 | `DISEASE/Strep throat/Treat` | Treat | Antibiotics. Which are given mainly to prevent the heart damage. |
+| `DISEASE/Strep throat/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Kidneys. |
 
 ### Leprosy
 
@@ -220,6 +240,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Leprosy/Found` | Found | India records a large share of the world's new cases. |
 | `DISEASE/Leprosy/Prevent` | Prevent | IT IS NOT SPREAD BY TOUCH. It spreads by droplets, after months of close contact, and about 95% of people are naturally immune to it. It enters through the NOSE, which is why it is in the Nose lane and not the Contact lane. The belief that a handshake spreads leprosy is a myth that exiled people to colonies for centuries. |
 | `DISEASE/Leprosy/Treat` | Treat | Completely curable with multi-drug therapy. Free worldwide since 1995. |
+| `DISEASE/Leprosy/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Legionnaires' disease
 
@@ -230,6 +251,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Legionnaires' disease/Found` | Found | Worldwide, in buildings with poorly maintained water systems. |
 | `DISEASE/Legionnaires' disease/Prevent` | Prevent | Maintain cooling towers and water tanks. |
 | `DISEASE/Legionnaires' disease/Treat` | Treat | Antibiotics. |
+| `DISEASE/Legionnaires' disease/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Diphtheria
 
@@ -240,6 +262,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Diphtheria/Found` | Found | Worldwide where vaccination lapses; outbreaks still occur in India. |
 | `DISEASE/Diphtheria/Prevent` | Prevent | DPT vaccine. |
 | `DISEASE/Diphtheria/Treat` | Treat | ANTITOXIN. Antibodies. No cell can eat a toxin. |
+| `DISEASE/Diphtheria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
 
 ### Mucormycosis
 
@@ -250,6 +273,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Mucormycosis/Found` | Found | Worldwide, but it strikes the immunocompromised. Diabetics, steroid patients. |
 | `DISEASE/Mucormycosis/Prevent` | Prevent | Control diabetes; use steroids carefully. |
 | `DISEASE/Mucormycosis/Treat` | Treat | Antifungals and surgery. A pure OPPORTUNIST. It only wins when your defences are already down. |
+| `DISEASE/Mucormycosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain, Lungs. |
 
 ### Aspergillosis
 
@@ -260,6 +284,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Aspergillosis/Found` | Found | Everywhere: soil, dust, damp buildings. |
 | `DISEASE/Aspergillosis/Prevent` | Prevent | Avoid dust if immunocompromised. |
 | `DISEASE/Aspergillosis/Treat` | Treat | Antifungals. Neutrophils are the key defence. Which is why neutropenia invites it in. |
+| `DISEASE/Aspergillosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Cryptococcus
 
@@ -270,6 +295,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cryptococcus/Found` | Found | Worldwide, in soil and pigeon droppings. |
 | `DISEASE/Cryptococcus/Prevent` | Prevent | Hard to avoid; the real defence is a working immune system. |
 | `DISEASE/Cryptococcus/Treat` | Treat | Antifungals. Mostly attacks people with HIV. |
+| `DISEASE/Cryptococcus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Pneumocystis pneumonia
 
@@ -280,6 +306,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Pneumocystis pneumonia/Found` | Found | Worldwide, in the severely immunosuppressed. |
 | `DISEASE/Pneumocystis pneumonia/Prevent` | Prevent | Preventive antibiotics for at-risk patients. |
 | `DISEASE/Pneumocystis pneumonia/Treat` | Treat | Antibiotics/antifungals. It is a signpost of a collapsed immune system. |
+| `DISEASE/Pneumocystis pneumonia/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Dengue
 
@@ -291,6 +318,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Dengue/Prevent` | Prevent | Aedes mosquito control. It bites in DAYTIME. Remove standing water. |
 | `DISEASE/Dengue/Treat` | Treat | No cure; fluids. Never give aspirin. A SECOND dengue infection can be far worse (ADE). |
 | `DISEASE/Dengue/Fact` | Card fact | Crashes the marrow's platelet supply. |
+| `DISEASE/Dengue/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Bone Marrow. |
 
 ### Chikungunya
 
@@ -302,6 +330,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Chikungunya/Prevent` | Prevent | Aedes mosquito control. |
 | `DISEASE/Chikungunya/Treat` | Treat | No antiviral; pain relief. |
 | `DISEASE/Chikungunya/Fact` | Card fact | Mosquito virus; joint pain, sometimes myocarditis. |
+| `DISEASE/Chikungunya/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Heart. |
 
 ### Japanese encephalitis
 
@@ -313,6 +342,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Japanese encephalitis/Prevent` | Prevent | JE vaccine; mosquito control. |
 | `DISEASE/Japanese encephalitis/Treat` | Treat | No cure. Supportive care only. |
 | `DISEASE/Japanese encephalitis/Fact` | Card fact | Mosquito-borne brain infection; vaccine-preventable. |
+| `DISEASE/Japanese encephalitis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Yellow fever
 
@@ -324,6 +354,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Yellow fever/Prevent` | Prevent | One highly effective, lifelong vaccine. |
 | `DISEASE/Yellow fever/Treat` | Treat | Supportive care. |
 | `DISEASE/Yellow fever/Fact` | Card fact | Attacks the liver. Hence the jaundice. |
+| `DISEASE/Yellow fever/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Kidneys. |
 
 ### Zika
 
@@ -334,6 +365,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Zika/Found` | Found | Tropics. |
 | `DISEASE/Zika/Prevent` | Prevent | Mosquito control; protect pregnancies. |
 | `DISEASE/Zika/Treat` | Treat | No specific treatment. |
+| `DISEASE/Zika/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### West Nile fever
 
@@ -344,6 +376,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/West Nile fever/Found` | Found | Africa, Europe, Americas, Asia. |
 | `DISEASE/West Nile fever/Prevent` | Prevent | Mosquito control. |
 | `DISEASE/West Nile fever/Treat` | Treat | Supportive care. |
+| `DISEASE/West Nile fever/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Rabies
 
@@ -355,6 +388,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Rabies/Prevent` | Prevent | Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY. |
 | `DISEASE/Rabies/Treat` | Treat | Post-exposure vaccine works BEFORE symptoms start. After that, nothing does. |
 | `DISEASE/Rabies/Fact` | Card fact | Creeps inside nerves where antibodies can't follow. |
+| `DISEASE/Rabies/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### HIV
 
@@ -365,6 +399,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/HIV/Found` | Found | Worldwide; ~39 million people live with HIV. Spread by unprotected sex, shared needles, and infected blood. |
 | `DISEASE/HIV/Prevent` | Prevent | Condoms; never share needles; screened blood; PrEP medication. It is NOT spread by mosquitoes, sharing food, or touching. A myth worth killing. |
 | `DISEASE/HIV/Treat` | Treat | Antiretroviral therapy: not a cure, but people now live full lives, and treatment makes them unable to pass it on. Attacking the immune system itself is why HIV is so dangerous. |
+| `DISEASE/HIV/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow, Spleen. |
 
 ### Hepatitis B
 
@@ -375,6 +410,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hepatitis B/Found` | Found | Worldwide; ~250 million chronic carriers. |
 | `DISEASE/Hepatitis B/Prevent` | Prevent | Hepatitis B vaccine. Given at birth in India. |
 | `DISEASE/Hepatitis B/Treat` | Treat | Antivirals control it; the vaccine prevents it. |
+| `DISEASE/Hepatitis B/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Hepatitis C
 
@@ -385,6 +421,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hepatitis C/Found` | Found | Worldwide. |
 | `DISEASE/Hepatitis C/Prevent` | Prevent | No vaccine yet; screened blood and clean needles. |
 | `DISEASE/Hepatitis C/Treat` | Treat | CURABLE since 2014 with direct-acting antivirals. One of medicine's great wins. |
+| `DISEASE/Hepatitis C/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Chagas disease
 
@@ -395,6 +432,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Chagas disease/Found` | Found | Latin America. |
 | `DISEASE/Chagas disease/Prevent` | Prevent | Control the 'kissing bug'; improve housing. |
 | `DISEASE/Chagas disease/Treat` | Treat | Drugs work early; once the heart is damaged, it is irreversible. |
+| `DISEASE/Chagas disease/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
 
 ### Lyme disease
 
@@ -406,6 +444,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Lyme disease/Prevent` | Prevent | Cover skin in woods; remove ticks quickly. |
 | `DISEASE/Lyme disease/Treat` | Treat | Antibiotics. Very effective if caught early. |
 | `DISEASE/Lyme disease/Fact` | Card fact | Tick bite; can cause Lyme carditis in the heart. |
+| `DISEASE/Lyme disease/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain, Heart. |
 
 ### Plague
 
@@ -417,6 +456,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Plague/Prevent` | Prevent | Rodent and flea control. |
 | `DISEASE/Plague/Treat` | Treat | Curable with prompt antibiotics. |
 | `DISEASE/Plague/Fact` | Card fact | Flea bites. The historical Black Death. |
+| `DISEASE/Plague/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Spleen. |
 
 ### Scrub typhus
 
@@ -427,6 +467,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Scrub typhus/Found` | Found | The 'tsutsugamushi triangle'. Including India. |
 | `DISEASE/Scrub typhus/Prevent` | Prevent | Avoid mite-infested scrub; protective clothing. |
 | `DISEASE/Scrub typhus/Treat` | Treat | Doxycycline. Cheap and highly effective. |
+| `DISEASE/Scrub typhus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Brain. |
 
 ### Malaria
 
@@ -437,6 +478,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Malaria/Found` | Found | Tropics; still a major disease in India. |
 | `DISEASE/Malaria/Prevent` | Prevent | Nets, repellents, draining standing water. |
 | `DISEASE/Malaria/Treat` | Treat | Antimalarials. P. vivax needs a SECOND drug to clear the liver. Or it relapses months later. |
+| `DISEASE/Malaria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Malaria (blood)
 
@@ -447,6 +489,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Malaria (blood)/Found` | Found | Tropics. |
 | `DISEASE/Malaria (blood)/Prevent` | Prevent | Mosquito control. |
 | `DISEASE/Malaria (blood)/Treat` | Treat | NOW antibodies and phagocytes can reach it. This is the stage you can actually fight. |
+| `DISEASE/Malaria (blood)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Spleen, Brain. |
 
 ### Kala-azar
 
@@ -457,6 +500,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Kala-azar/Found` | Found | Bihar, India, has historically carried a large share of the world's cases. |
 | `DISEASE/Kala-azar/Prevent` | Prevent | Sandfly control; indoor spraying. |
 | `DISEASE/Kala-azar/Treat` | Treat | Liposomal amphotericin B. India has driven cases down dramatically. |
+| `DISEASE/Kala-azar/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Spleen, Bone Marrow. |
 
 ### Sleeping sickness
 
@@ -467,6 +511,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Sleeping sickness/Found` | Found | Sub-Saharan Africa; spread by the tsetse fly. |
 | `DISEASE/Sleeping sickness/Prevent` | Prevent | Vector control. |
 | `DISEASE/Sleeping sickness/Treat` | Treat | Drugs exist, and cases have collapsed. Its trick. Changing disguise. Is why a vaccine is so hard. |
+| `DISEASE/Sleeping sickness/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Filariasis
 
@@ -477,6 +522,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Filariasis/Found` | Found | Tropics; India has run one of the world's largest elimination programmes. |
 | `DISEASE/Filariasis/Prevent` | Prevent | Mass drug administration; mosquito control. |
 | `DISEASE/Filariasis/Treat` | Treat | Antiparasitic drugs kill the worms; the swelling is often permanent. |
+| `DISEASE/Filariasis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow, Spleen. |
 
 ### Snake venom
 
@@ -487,6 +533,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Snake venom/Found` | Found | India has the world's highest snakebite death toll. Roughly 58,000 a year. |
 | `DISEASE/Snake venom/Prevent` | Prevent | Boots and a torch after dark; never reach blindly into grass. |
 | `DISEASE/Snake venom/Treat` | Treat | ANTIVENOM. Borrowed antibodies. PASSIVE immunity: instant, but temporary. |
+| `DISEASE/Snake venom/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Kidneys. |
 
 ### Russell's viper venom
 
@@ -497,6 +544,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Russell's viper venom/Found` | Found | Across the Indian subcontinent. |
 | `DISEASE/Russell's viper venom/Prevent` | Prevent | Boots; clear rubble near homes; torch at night. |
 | `DISEASE/Russell's viper venom/Treat` | Treat | Antivenom, urgently. Dialysis may be needed for the kidneys. |
+| `DISEASE/Russell's viper venom/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Red scorpion sting
 
@@ -507,6 +555,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Red scorpion sting/Found` | Found | Western and southern India; a major cause of child deaths in some districts. |
 | `DISEASE/Red scorpion sting/Prevent` | Prevent | Shake out shoes; seal home floors. |
 | `DISEASE/Red scorpion sting/Treat` | Treat | The drug prazosin transformed survival. An Indian medical breakthrough. |
+| `DISEASE/Red scorpion sting/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Lungs. |
 
 ### Tetanus
 
@@ -518,6 +567,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Tetanus/Prevent` | Prevent | Tetanus vaccine and boosters; clean wounds. |
 | `DISEASE/Tetanus/Treat` | Treat | Antitoxin and intensive care. Only antibodies can neutralise a toxin. |
 | `DISEASE/Tetanus/Fact` | Card fact | A toxin that locks muscles ('lockjaw'). |
+| `DISEASE/Tetanus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### MRSA
 
@@ -529,6 +579,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/MRSA/Prevent` | Prevent | Hand hygiene; careful antibiotic use. |
 | `DISEASE/MRSA/Treat` | Treat | Only a few antibiotics still work. The classic superbug. |
 | `DISEASE/MRSA/Fact` | Card fact | A superbug. In the blood it can seed ANY organ, including heart valves. |
+| `DISEASE/MRSA/CanInfect` | Can infect (game simplification) | In the game, this disease can damage any organ. |
 
 ### Cellulitis
 
@@ -540,6 +591,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cellulitis/Prevent` | Prevent | Clean and cover cuts. |
 | `DISEASE/Cellulitis/Treat` | Treat | Antibiotics. |
 | `DISEASE/Cellulitis/Fact` | Card fact | Staph/Strep skin infection; can settle on heart valves. |
+| `DISEASE/Cellulitis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow, Heart. |
 
 ### Leptospirosis
 
@@ -551,6 +603,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Leptospirosis/Prevent` | Prevent | Avoid wading in floodwater with open cuts; rodent control. |
 | `DISEASE/Leptospirosis/Treat` | Treat | Antibiotics, early. |
 | `DISEASE/Leptospirosis/Fact` | Card fact | Enters through cuts in floodwater. A monsoon risk. |
+| `DISEASE/Leptospirosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys, Liver. |
 
 ### Gas gangrene
 
@@ -562,6 +615,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Gas gangrene/Prevent` | Prevent | Clean deep wounds promptly. |
 | `DISEASE/Gas gangrene/Treat` | Treat | Surgery plus antibiotics. A true emergency. |
 | `DISEASE/Gas gangrene/Fact` | Card fact | Destroys deep tissue fast; a surgical emergency. |
+| `DISEASE/Gas gangrene/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys, Liver. |
 
 ### Syphilis
 
@@ -572,6 +626,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Syphilis/Found` | Found | Worldwide; rising again. |
 | `DISEASE/Syphilis/Prevent` | Prevent | Safe practices; screening in pregnancy. |
 | `DISEASE/Syphilis/Treat` | Treat | Penicillin. Still completely effective after 80 years. |
+| `DISEASE/Syphilis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain, Heart. |
 
 ### Brucellosis
 
@@ -582,6 +637,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Brucellosis/Found` | Found | Worldwide, from unpasteurised milk and infected livestock. |
 | `DISEASE/Brucellosis/Prevent` | Prevent | Pasteurise milk; vaccinate animals. |
 | `DISEASE/Brucellosis/Treat` | Treat | Long courses of antibiotics. |
+| `DISEASE/Brucellosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Spleen, Liver. |
 
 ### Cold sore
 
@@ -593,6 +649,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cold sore/Prevent` | Prevent | Avoid contact during an outbreak. |
 | `DISEASE/Cold sore/Treat` | Treat | Antivirals shorten attacks. It is never fully cleared. |
 | `DISEASE/Cold sore/Fact` | Card fact | Retreats into nerves to hide from antibodies. |
+| `DISEASE/Cold sore/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Human papillomavirus
 
@@ -603,6 +660,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Human papillomavirus/Found` | Found | Worldwide; most adults meet it at some point. |
 | `DISEASE/Human papillomavirus/Prevent` | Prevent | The HPV VACCINE. The first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure. |
 | `DISEASE/Human papillomavirus/Treat` | Treat | No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts. |
+| `DISEASE/Human papillomavirus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Ebola
 
@@ -613,6 +671,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Ebola/Found` | Found | Central and West Africa. |
 | `DISEASE/Ebola/Prevent` | Prevent | Isolation, protective equipment. And now a working vaccine. |
 | `DISEASE/Ebola/Treat` | Treat | Antibody treatments and supportive care; survival has improved greatly. |
+| `DISEASE/Ebola/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Spleen. |
 
 ### Anthrax
 
@@ -623,6 +682,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Anthrax/Found` | Found | Soil worldwide; affects livestock handlers. |
 | `DISEASE/Anthrax/Prevent` | Prevent | Vaccinate livestock; handle hides carefully. |
 | `DISEASE/Anthrax/Treat` | Treat | Antibiotics plus ANTITOXIN. The toxin must be neutralised separately. |
+| `DISEASE/Anthrax/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Hookworm
 
@@ -633,6 +693,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hookworm/Found` | Found | Warm damp soil where people walk barefoot. |
 | `DISEASE/Hookworm/Prevent` | Prevent | Wear shoes; sanitation. |
 | `DISEASE/Hookworm/Treat` | Treat | Deworming tablets plus iron. |
+| `DISEASE/Hookworm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow. |
 
 ### Schistosomiasis
 
@@ -643,6 +704,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Schistosomiasis/Found` | Found | Africa, Middle East, parts of Asia. |
 | `DISEASE/Schistosomiasis/Prevent` | Prevent | Avoid infested fresh water; snail control. |
 | `DISEASE/Schistosomiasis/Treat` | Treat | Praziquantel. A single effective drug. |
+| `DISEASE/Schistosomiasis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Spleen. |
 
 ### Guinea worm
 
@@ -653,6 +715,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Guinea worm/Found` | Found | ALMOST ERADICATED. From 3.5 million cases in 1986 to a handful today. |
 | `DISEASE/Guinea worm/Prevent` | Prevent | Filter drinking water. No drug, no vaccine. Just clean water. |
 | `DISEASE/Guinea worm/Treat` | Treat | Wind the worm out slowly. Proof that prevention alone can defeat a disease. |
+| `DISEASE/Guinea worm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow. |
 
 ### Histoplasmosis
 
@@ -663,6 +726,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Histoplasmosis/Found` | Found | Worldwide, including river valleys of India. |
 | `DISEASE/Histoplasmosis/Prevent` | Prevent | Avoid dusty caves and bird roosts. |
 | `DISEASE/Histoplasmosis/Treat` | Treat | Antifungals; often self-limiting in healthy people. |
+| `DISEASE/Histoplasmosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Spleen. |
 
 ### Typhoid
 
@@ -674,6 +738,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Typhoid/Prevent` | Prevent | Clean water; typhoid conjugate vaccine. |
 | `DISEASE/Typhoid/Treat` | Treat | Antibiotics. But drug-resistant typhoid is spreading in India and Pakistan. |
 | `DISEASE/Typhoid/Fact` | Card fact | Unclean water; hits liver and spleen. |
+| `DISEASE/Typhoid/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Spleen. |
 
 ### Cholera
 
@@ -685,6 +750,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cholera/Prevent` | Prevent | Clean water and sanitation; oral vaccine. |
 | `DISEASE/Cholera/Treat` | Treat | Oral rehydration salts (ORS). Simple, cheap, and one of the great lifesavers. |
 | `DISEASE/Cholera/Fact` | Card fact | Dehydration wrecks the kidneys. |
+| `DISEASE/Cholera/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Dysentery
 
@@ -696,6 +762,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Dysentery/Prevent` | Prevent | Handwashing, clean water. |
 | `DISEASE/Dysentery/Treat` | Treat | Rehydration; antibiotics when severe. |
 | `DISEASE/Dysentery/Fact` | Card fact | Bloody diarrhoea from dirty water. |
+| `DISEASE/Dysentery/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Food poisoning
 
@@ -707,6 +774,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Food poisoning/Prevent` | Prevent | Cook food properly; wash hands. |
 | `DISEASE/Food poisoning/Treat` | Treat | Usually self-limiting; rehydration. |
 | `DISEASE/Food poisoning/Fact` | Card fact | Some E. coli damage the kidneys (HUS). |
+| `DISEASE/Food poisoning/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Listeria
 
@@ -717,6 +785,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Listeria/Found` | Found | Soft cheeses, deli meats; worldwide. |
 | `DISEASE/Listeria/Prevent` | Prevent | Avoid unpasteurised dairy in pregnancy. |
 | `DISEASE/Listeria/Treat` | Treat | Antibiotics. |
+| `DISEASE/Listeria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Stomach ulcer (H. pylori)
 
@@ -727,6 +796,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Stomach ulcer (H. pylori)/Found` | Found | Perhaps half the world carries it. |
 | `DISEASE/Stomach ulcer (H. pylori)/Prevent` | Prevent | Hygiene and clean water. |
 | `DISEASE/Stomach ulcer (H. pylori)/Treat` | Treat | Antibiotics CURE it. Ulcers were once thought to be caused by stress. |
+| `DISEASE/Stomach ulcer (H. pylori)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Rotavirus
 
@@ -738,6 +808,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Rotavirus/Prevent` | Prevent | Rotavirus vaccine. Now in India's immunisation programme. |
 | `DISEASE/Rotavirus/Treat` | Treat | Oral rehydration. |
 | `DISEASE/Rotavirus/Fact` | Card fact | A top cause of child diarrhoea. Vaccine-preventable. |
+| `DISEASE/Rotavirus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Hepatitis A
 
@@ -749,6 +820,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hepatitis A/Prevent` | Prevent | Vaccine; clean food and water. |
 | `DISEASE/Hepatitis A/Treat` | Treat | Rest; recovery is usually complete. |
 | `DISEASE/Hepatitis A/Fact` | Card fact | A liver virus from contaminated food or water. |
+| `DISEASE/Hepatitis A/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Hepatitis E
 
@@ -760,6 +832,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hepatitis E/Prevent` | Prevent | Clean water. |
 | `DISEASE/Hepatitis E/Treat` | Treat | Supportive care. |
 | `DISEASE/Hepatitis E/Fact` | Card fact | Waterborne liver virus. |
+| `DISEASE/Hepatitis E/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Norovirus
 
@@ -771,6 +844,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Norovirus/Prevent` | Prevent | Handwashing (alcohol gel works poorly here). |
 | `DISEASE/Norovirus/Treat` | Treat | Rehydration; passes in a couple of days. |
 | `DISEASE/Norovirus/Fact` | Card fact | The 'winter vomiting' bug. |
+| `DISEASE/Norovirus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Polio
 
@@ -782,6 +856,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Polio/Prevent` | Prevent | Oral polio vaccine. One of the great public-health triumphs. |
 | `DISEASE/Polio/Treat` | Treat | No cure for the paralysis. Prevention is everything. |
 | `DISEASE/Polio/Fact` | Card fact | Enters via the gut, attacks nerves. |
+| `DISEASE/Polio/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Botulism
 
@@ -792,6 +867,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Botulism/Found` | Found | Improperly canned or preserved food. |
 | `DISEASE/Botulism/Prevent` | Prevent | Proper canning; never feed honey to infants. |
 | `DISEASE/Botulism/Treat` | Treat | ANTITOXIN. (In tiny doses this same toxin is Botox.) |
+| `DISEASE/Botulism/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Shiga toxin (E. coli O157)
 
@@ -802,6 +878,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Shiga toxin (E. coli O157)/Found` | Found | Undercooked beef, unpasteurised milk. |
 | `DISEASE/Shiga toxin (E. coli O157)/Prevent` | Prevent | Cook meat thoroughly. |
 | `DISEASE/Shiga toxin (E. coli O157)/Treat` | Treat | Supportive care and dialysis. Antibiotics can make it WORSE by releasing more toxin. |
+| `DISEASE/Shiga toxin (E. coli O157)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Roundworm
 
@@ -812,6 +889,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Roundworm/Found` | Found | Where sanitation is poor. One of the commonest infections on Earth. |
 | `DISEASE/Roundworm/Prevent` | Prevent | Sanitation; deworming programmes. |
 | `DISEASE/Roundworm/Treat` | Treat | Deworming tablets. Too big for any cell to swallow. |
+| `DISEASE/Roundworm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Liver. |
 
 ### Tapeworm
 
@@ -822,6 +900,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Tapeworm/Found` | Found | Where pigs are raised with poor sanitation. |
 | `DISEASE/Tapeworm/Prevent` | Prevent | Cook pork thoroughly; sanitation; handwashing. |
 | `DISEASE/Tapeworm/Treat` | Treat | Antiparasitic drugs plus anti-seizure medicine. |
+| `DISEASE/Tapeworm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Whipworm
 
@@ -832,6 +911,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Whipworm/Found` | Found | Warm, humid regions worldwide. |
 | `DISEASE/Whipworm/Prevent` | Prevent | Sanitation; handwashing. |
 | `DISEASE/Whipworm/Treat` | Treat | Deworming tablets. |
+| `DISEASE/Whipworm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow. |
 
 ### Amoebiasis
 
@@ -842,6 +922,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Amoebiasis/Found` | Found | Common in India and other tropical regions. |
 | `DISEASE/Amoebiasis/Prevent` | Prevent | Clean water; wash vegetables. |
 | `DISEASE/Amoebiasis/Treat` | Treat | Metronidazole; the abscess may need draining. |
+| `DISEASE/Amoebiasis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Giardia
 
@@ -852,6 +933,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Giardia/Found` | Found | Worldwide; 'beaver fever' from streams and unclean water. |
 | `DISEASE/Giardia/Prevent` | Prevent | Filter or boil water. |
 | `DISEASE/Giardia/Treat` | Treat | Antiparasitic drugs. |
+| `DISEASE/Giardia/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Toxoplasmosis
 
@@ -862,6 +944,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Toxoplasmosis/Found` | Found | Worldwide. From undercooked meat and cat faeces. |
 | `DISEASE/Toxoplasmosis/Prevent` | Prevent | Cook meat; pregnant women should avoid cat litter. |
 | `DISEASE/Toxoplasmosis/Treat` | Treat | Drugs only when it reactivates. |
+| `DISEASE/Toxoplasmosis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Candida
 
@@ -872,6 +955,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Candida/Found` | Found | Everywhere. It is already on you right now. |
 | `DISEASE/Candida/Prevent` | Prevent | Careful antibiotic use. Killing your good bacteria lets Candida bloom. |
 | `DISEASE/Candida/Treat` | Treat | Antifungals. The classic OPPORTUNIST. |
+| `DISEASE/Candida/CanInfect` | Can infect (game simplification) | In the game, this disease can damage any organ. |
 
 ### Scabies
 
@@ -882,6 +966,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Scabies/Found` | Found | Worldwide; ~200 million people at any moment. Spreads by prolonged skin-to-skin contact and shared bedding. |
 | `DISEASE/Scabies/Prevent` | Prevent | Treat the whole household at once, and wash all bedding. |
 | `DISEASE/Scabies/Treat` | Treat | Permethrin cream or ivermectin. Cheap and curable. But it keeps coming back if only one person is treated. |
+| `DISEASE/Scabies/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Bone Marrow. |
 
 ### Ringworm
 
@@ -892,6 +977,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Ringworm/Found` | Found | Everywhere. Spreads by touch, shared towels, and from animals. |
 | `DISEASE/Ringworm/Prevent` | Prevent | Do not share towels or combs; keep skin dry. |
 | `DISEASE/Ringworm/Treat` | Treat | Antifungal cream. The commonest fungal infection on Earth. And one of the most misnamed. |
+| `DISEASE/Ringworm/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Impetigo
 
@@ -902,6 +988,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Impetigo/Found` | Found | Worldwide; common where it is hot and crowded. |
 | `DISEASE/Impetigo/Prevent` | Prevent | Wash hands and cuts; do not share towels. |
 | `DISEASE/Impetigo/Treat` | Treat | Antibiotic cream or tablets. |
+| `DISEASE/Impetigo/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Kidneys. |
 
 ### Trachoma
 
@@ -912,6 +999,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Trachoma/Found` | Found | The world's leading INFECTIOUS cause of blindness. India has fought a long campaign against it. |
 | `DISEASE/Trachoma/Prevent` | Prevent | Face-washing and clean water. The 'SAFE' strategy. Flies spread it between children's eyes. |
 | `DISEASE/Trachoma/Treat` | Treat | A single dose of azithromycin. Surgery for the eyelid. **A disease of poverty, cured by soap and water.** |
+| `DISEASE/Trachoma/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Conjunctivitis
 
@@ -922,6 +1010,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Conjunctivitis/Found` | Found | Worldwide; sweeps through schools. |
 | `DISEASE/Conjunctivitis/Prevent` | Prevent | Wash hands. Do not share towels or pillows. |
 | `DISEASE/Conjunctivitis/Treat` | Treat | Usually clears itself. A NAKED virus. No envelope, so it survives on surfaces for days and hand-gel works poorly on it. |
+| `DISEASE/Conjunctivitis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Molluscum contagiosum
 
@@ -932,6 +1021,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Molluscum contagiosum/Found` | Found | Worldwide; common in children. |
 | `DISEASE/Molluscum contagiosum/Prevent` | Prevent | Do not share towels; cover the bumps. |
 | `DISEASE/Molluscum contagiosum/Treat` | Treat | Usually clears on its own. But it can take a year. Your immune system gets there eventually. |
+| `DISEASE/Molluscum contagiosum/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Endocarditis
 
@@ -942,6 +1032,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Endocarditis/Found` | Found | Worldwide. A risk after dental work, IV drug use, or a contaminated line. And after rheumatic fever has damaged a valve. |
 | `DISEASE/Endocarditis/Prevent` | Prevent | Treat bloodstream infections early; look after damaged valves. |
 | `DISEASE/Endocarditis/Treat` | Treat | Weeks of intravenous antibiotics; sometimes surgery to replace the valve. |
+| `DISEASE/Endocarditis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
 
 ### Gonorrhoea
 
@@ -952,6 +1043,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Gonorrhoea/Found` | Found | Worldwide; about 82 million new cases a year. |
 | `DISEASE/Gonorrhoea/Prevent` | Prevent | Condoms; testing and treating partners. |
 | `DISEASE/Gonorrhoea/Treat` | Treat | Antibiotics. But it has now defeated almost every antibiotic we have. The WHO lists it as a PRIORITY superbug. This is antibiotic resistance happening in real time. |
+| `DISEASE/Gonorrhoea/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys, Heart. |
 
 ### Chlamydia
 
@@ -962,6 +1054,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Chlamydia/Found` | Found | The commonest bacterial STI in the world. |
 | `DISEASE/Chlamydia/Prevent` | Prevent | Condoms; routine screening. |
 | `DISEASE/Chlamydia/Treat` | Treat | Antibiotics. Easy to cure. But only if you know you have it. |
+| `DISEASE/Chlamydia/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Genital herpes
 
@@ -972,6 +1065,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Genital herpes/Found` | Found | Worldwide; extremely common. |
 | `DISEASE/Genital herpes/Prevent` | Prevent | Condoms reduce but do not eliminate the risk. |
 | `DISEASE/Genital herpes/Treat` | Treat | Antivirals control outbreaks. It is never cleared. A lifelong passenger. |
+| `DISEASE/Genital herpes/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Trichomoniasis
 
@@ -982,6 +1076,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Trichomoniasis/Found` | Found | Worldwide. Around 156 million cases a year. |
 | `DISEASE/Trichomoniasis/Prevent` | Prevent | Condoms; treating partners. |
 | `DISEASE/Trichomoniasis/Treat` | Treat | A single course of metronidazole cures it. |
+| `DISEASE/Trichomoniasis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Hepatitis D
 
@@ -992,6 +1087,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Hepatitis D/Found` | Found | Wherever Hepatitis B is; the most severe form of viral hepatitis. |
 | `DISEASE/Hepatitis D/Prevent` | Prevent | The Hepatitis B vaccine ALSO prevents Hepatitis D. Block the host and the passenger cannot land. |
 | `DISEASE/Hepatitis D/Treat` | Treat | Hard to treat. Prevention through the Hep B vaccine is the real answer. |
+| `DISEASE/Hepatitis D/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Transfusion malaria
 
@@ -1002,6 +1098,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Transfusion malaria/Found` | Found | Anywhere blood is not properly screened. |
 | `DISEASE/Transfusion malaria/Prevent` | Prevent | Screening donated blood. Which is why blood banks test every unit. |
 | `DISEASE/Transfusion malaria/Treat` | Treat | Antimalarials. This is why safe transfusion is a public-health issue, not just a hospital one. |
+| `DISEASE/Transfusion malaria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Catheter sepsis
 
@@ -1012,6 +1109,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Catheter sepsis/Found` | Found | Hospitals worldwide. One of the commonest hospital-acquired infections. |
 | `DISEASE/Catheter sepsis/Prevent` | Prevent | Sterile technique; remove lines as soon as they are not needed. |
 | `DISEASE/Catheter sepsis/Treat` | Treat | Antifungals. A reminder that medicine itself can open a door. |
+| `DISEASE/Catheter sepsis/CanInfect` | Can infect (game simplification) | In the game, this disease can damage any organ. |
 
 ### Cannula infection
 
@@ -1022,6 +1120,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cannula infection/Found` | Found | Hospitals worldwide. |
 | `DISEASE/Cannula infection/Prevent` | Prevent | Clean the skin; change the line; wash hands. |
 | `DISEASE/Cannula infection/Treat` | Treat | Antibiotics. And remove the line. |
+| `DISEASE/Cannula infection/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Bone Marrow. |
 
 ### Tetanus toxin
 
@@ -1032,6 +1131,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Tetanus toxin/Found` | Found | Released by tetanus bacteria in a wound. |
 | `DISEASE/Tetanus toxin/Prevent` | Prevent | Tetanus vaccine trains you to make ANTITOXIN. |
 | `DISEASE/Tetanus toxin/Treat` | Treat | Only antibodies can neutralise it. No cell can eat a toxin. |
+| `DISEASE/Tetanus toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Cholera toxin
 
@@ -1042,6 +1142,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Cholera toxin/Found` | Found | Released by cholera bacteria. |
 | `DISEASE/Cholera toxin/Prevent` | Prevent | Clean water. |
 | `DISEASE/Cholera toxin/Treat` | Treat | Rehydration; antibodies neutralise the toxin. |
+| `DISEASE/Cholera toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys. |
 
 ### Clostridial toxin
 
@@ -1052,6 +1153,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Clostridial toxin/Found` | Found | Deep dirty wounds. |
 | `DISEASE/Clostridial toxin/Prevent` | Prevent | Clean wounds promptly. |
 | `DISEASE/Clostridial toxin/Treat` | Treat | Antitoxin, surgery, antibiotics. |
+| `DISEASE/Clostridial toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Kidneys, Liver. |
 
 ### Diphtheria toxin
 
@@ -1062,6 +1164,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Diphtheria toxin/Found` | Found | Released by diphtheria bacteria. |
 | `DISEASE/Diphtheria toxin/Prevent` | Prevent | DPT vaccine. |
 | `DISEASE/Diphtheria toxin/Treat` | Treat | Antitoxin. Antibodies, urgently. |
+| `DISEASE/Diphtheria toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
 
 ### Shingles
 
@@ -1072,6 +1175,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Shingles/Found` | Found | Anyone who has had chickenpox. |
 | `DISEASE/Shingles/Prevent` | Prevent | Shingles vaccine. |
 | `DISEASE/Shingles/Treat` | Treat | Antivirals. Proof that some viruses never truly leave. |
+| `DISEASE/Shingles/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
 ### Dengue (ADE)
 
@@ -1082,6 +1186,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Dengue (ADE)/Found` | Found | Tropics. |
 | `DISEASE/Dengue (ADE)/Prevent` | Prevent | Mosquito control. This is exactly why a dengue vaccine is so hard to make. |
 | `DISEASE/Dengue (ADE)/Treat` | Treat | Antibodies will NOT work here. Use cells. |
+| `DISEASE/Dengue (ADE)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver, Bone Marrow. |
 
 ### Malaria (relapse)
 
@@ -1092,6 +1197,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Malaria (relapse)/Found` | Found | Wherever P. vivax occurs, including India. |
 | `DISEASE/Malaria (relapse)/Prevent` | Prevent | Finish the full course of primaquine to clear the liver. |
 | `DISEASE/Malaria (relapse)/Treat` | Treat | A second drug is needed specifically for the liver forms. |
+| `DISEASE/Malaria (relapse)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Tuberculosis (reactivated)
 
@@ -1102,6 +1208,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Tuberculosis (reactivated)/Found` | Found | About a quarter of the world carries latent TB. |
 | `DISEASE/Tuberculosis (reactivated)/Prevent` | Prevent | Treat latent TB in high-risk people. |
 | `DISEASE/Tuberculosis (reactivated)/Treat` | Treat | Months of combination antibiotics. |
+| `DISEASE/Tuberculosis (reactivated)/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Pneumococcal pneumonia
 
@@ -1112,6 +1219,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Pneumococcal pneumonia/Found` | Found | Worldwide. |
 | `DISEASE/Pneumococcal pneumonia/Prevent` | Prevent | Pneumococcal and flu vaccines. |
 | `DISEASE/Pneumococcal pneumonia/Treat` | Treat | Antibiotics. |
+| `DISEASE/Pneumococcal pneumonia/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ## Part 2 — The pathogen types
 
@@ -1631,4 +1739,4 @@ Sentences from How to play that explain immunology in general rather than descri
 
 ---
 
-*696 claims: 560 diseases, 24 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 3 elsewhere.*
+*802 claims: 666 diseases, 24 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 3 elsewhere.*

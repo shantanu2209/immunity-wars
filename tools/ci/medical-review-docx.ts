@@ -221,6 +221,19 @@ body.push(
       '(Action Points, turns, spaces) mixed in with the biology; please ignore those parts.',
   ),
 );
+body.push(
+  para('One row on every disease card is a design decision, not a medical claim.', undefined, {
+    b: true,
+  }),
+);
+body.push(
+  para(
+    'The row labelled "Can infect (game simplification)" lists the organs the game lets that ' +
+      'disease damage. It does not claim the disease affects nothing else: tuberculosis is not ' +
+      'only a lung disease, and we know it. Please flag that row only where an organ we list is ' +
+      'wrong for the disease, or where an organ that really matters for it is missing.',
+  ),
+);
 body.push(para('Where to start, if you have an hour rather than ten', 'Heading1'));
 body.push(
   para(

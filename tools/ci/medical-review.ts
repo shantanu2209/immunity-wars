@@ -9,6 +9,13 @@
  * about the game and not about medicine. Asking a clinician to validate our design would spend
  * their attention on the one thing we do not need checked.
  *
+ * ONE EXCEPTION, ruled 13 September 2026: the card's "Can infect" line IS included, marked as a
+ * game simplification rather than a medical claim. It is the one mechanic the card shows in the
+ * form of a fact, and leaving it out would mean the review could never catch the case where the
+ * simplification is actually wrong — an organ listed that the disease does not affect, or one
+ * that matters left off. Its label and the Part 1 introduction both say it is a design decision,
+ * so a reviewer is not led to read "Lungs" as a claim that tuberculosis affects nothing else.
+ *
  * WHAT IS IN, therefore: the disease cards' written text, what the app says about the pathogen
  * types, the cell cards, the antigen classes, the organs, the reason given for each event, the
  * fifteen "why it works this way" boxes, and any other shown sentence that asserts something
@@ -91,8 +98,22 @@ const dz = part(
   'Every word of text the app shows on a disease card. **The two fields to check first are ' +
     'Prevent and Treat**: they are the only place the app comes close to saying what a person ' +
     'should do, they are read by children, and a wrong one is the only kind of error here that ' +
-    'could matter outside the game.',
+    'could matter outside the game. **The last row of each card is different in kind.** ' +
+    '"Can infect" lists the organs the GAME lets that disease damage. It is a design ' +
+    'simplification, not a claim that the disease affects nothing else. Please flag it only ' +
+    'where an organ we list is wrong for that disease, or where an organ that matters for it is ' +
+    'missing.',
 );
+const TROPISM = asDict<string[] | 'any'>(read('rules/tropism.json')['TROPISM']);
+const ORGAN_NAME = asDict<Dict<unknown>>(read('rules/board.json')['ORGANS']);
+/** The organs the game lets a disease damage, in the words the card uses. */
+const canInfect = (disease: string): string | null => {
+  const v = TROPISM[disease];
+  if (v === undefined) return null;
+  if (v === 'any') return 'In the game, this disease can damage any organ.';
+  const names = v.map((k) => String(ORGAN_NAME[k]?.['name'] ?? k));
+  return `In the game, this disease can damage only: ${names.join(', ')}.`;
+};
 for (const name of Object.keys(DZINFO)) {
   const info = DZINFO[name] ?? {};
   for (const [f, label] of INFO_FIELD) {
@@ -104,6 +125,15 @@ for (const name of Object.keys(DZINFO)) {
   const fact = FACT[name];
   if (fact) {
     dz.push({ id: `DISEASE/${name}/Fact`, subject: name, label: 'Card fact', text: fact });
+  }
+  const organs = canInfect(name);
+  if (organs) {
+    dz.push({
+      id: `DISEASE/${name}/CanInfect`,
+      subject: name,
+      label: 'Can infect (game simplification)',
+      text: organs,
+    });
   }
 }
 
@@ -342,8 +372,10 @@ this same data.
 Generated ${today} from \`packages/content/src\` — pack \`${String(pack['packId'])}\`, content \`${String(pack['packVersion'])}\`, rules \`${String(pack['rulesVersion'])}\`.
 
 **${String(total)} claims.** Game mechanics are deliberately excluded: how a disease behaves on
-the board, which organs it can reach in play, how many hits it takes, and the four stat bars are
-design decisions rather than medical claims, and are not here to be reviewed.
+the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
+design decisions rather than medical claims, and are not here to be reviewed. **One exception:**
+each card's "Can infect" line is included, labelled as a game simplification, so that a case
+where the simplification is actually wrong can still be caught.
 
 Every claim carries a stable id such as \`DISEASE/Rabies/Treat\`. Quoting the id is enough for a
 correction to be found and applied.

@@ -1,16 +1,16 @@
 {
-  "generated": "2026-09-09",
+  "generated": "2026-09-13",
   "pack": {
     "packId": "immunity-wars-core",
     "packVersion": "1.0.0",
     "rulesVersion": "3.1.0"
   },
-  "total": 696,
+  "total": 802,
   "parts": [
     {
       "key": "diseases",
       "title": "Part 1 — The disease cards",
-      "blurb": "Every word of text the app shows on a disease card. **The two fields to check first are Prevent and Treat**: they are the only place the app comes close to saying what a person should do, they are read by children, and a wrong one is the only kind of error here that could matter outside the game.",
+      "blurb": "Every word of text the app shows on a disease card. **The two fields to check first are Prevent and Treat**: they are the only place the app comes close to saying what a person should do, they are read by children, and a wrong one is the only kind of error here that could matter outside the game. **The last row of each card is different in kind.** \"Can infect\" lists the organs the GAME lets that disease damage. It is a design simplification, not a claim that the disease affects nothing else. Please flag it only where an organ we list is wrong for that disease, or where an organ that matters for it is missing.",
       "claims": [
         {
           "id": "DISEASE/Influenza/Discovered",
@@ -49,6 +49,12 @@
           "text": "Flu mutates fast. Last year's antibodies may not fit."
         },
         {
+          "id": "DISEASE/Influenza/CanInfect",
+          "subject": "Influenza",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Common cold/Discovered",
           "subject": "Common cold",
           "label": "Discovered",
@@ -83,6 +89,12 @@
           "subject": "Common cold",
           "label": "Card fact",
           "text": "Over 100 strains; no lasting immunity."
+        },
+        {
+          "id": "DISEASE/Common cold/CanInfect",
+          "subject": "Common cold",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/COVID-19/Discovered",
@@ -121,6 +133,12 @@
           "text": "Can inflame the heart muscle (myocarditis) as well as the lungs."
         },
         {
+          "id": "DISEASE/COVID-19/CanInfect",
+          "subject": "COVID-19",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Heart."
+        },
+        {
           "id": "DISEASE/RSV/Discovered",
           "subject": "RSV",
           "label": "Discovered",
@@ -157,6 +175,12 @@
           "text": "Mild in adults, dangerous for babies."
         },
         {
+          "id": "DISEASE/RSV/CanInfect",
+          "subject": "RSV",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Measles/Discovered",
           "subject": "Measles",
           "label": "Discovered",
@@ -185,6 +209,12 @@
           "subject": "Measles",
           "label": "Treat",
           "text": "No antiviral; vitamin A and supportive care. Prevention is everything."
+        },
+        {
+          "id": "DISEASE/Measles/CanInfect",
+          "subject": "Measles",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Brain."
         },
         {
           "id": "DISEASE/Mumps/Discovered",
@@ -217,6 +247,12 @@
           "text": "Supportive care only."
         },
         {
+          "id": "DISEASE/Mumps/CanInfect",
+          "subject": "Mumps",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain, Spleen."
+        },
+        {
           "id": "DISEASE/Rubella/Discovered",
           "subject": "Rubella",
           "label": "Discovered",
@@ -245,6 +281,12 @@
           "subject": "Rubella",
           "label": "Treat",
           "text": "No cure; prevention protects the next generation."
+        },
+        {
+          "id": "DISEASE/Rubella/CanInfect",
+          "subject": "Rubella",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Heart."
         },
         {
           "id": "DISEASE/Smallpox/Discovered",
@@ -277,6 +319,12 @@
           "text": "None needed. This card is a trophy: proof that immunology WINS."
         },
         {
+          "id": "DISEASE/Smallpox/CanInfect",
+          "subject": "Smallpox",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Liver."
+        },
+        {
           "id": "DISEASE/Nipah/Discovered",
           "subject": "Nipah",
           "label": "Discovered",
@@ -307,6 +355,12 @@
           "text": "No specific cure. Supportive care."
         },
         {
+          "id": "DISEASE/Nipah/CanInfect",
+          "subject": "Nipah",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain, Lungs."
+        },
+        {
           "id": "DISEASE/Hand-foot-and-mouth/Discovered",
           "subject": "Hand-foot-and-mouth",
           "label": "Discovered",
@@ -335,6 +389,12 @@
           "subject": "Hand-foot-and-mouth",
           "label": "Treat",
           "text": "Self-limiting."
+        },
+        {
+          "id": "DISEASE/Hand-foot-and-mouth/CanInfect",
+          "subject": "Hand-foot-and-mouth",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Heart."
         },
         {
           "id": "DISEASE/Chickenpox/Discovered",
@@ -373,6 +433,12 @@
           "text": "Hides in nerves for decades. Returns as shingles."
         },
         {
+          "id": "DISEASE/Chickenpox/CanInfect",
+          "subject": "Chickenpox",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Brain."
+        },
+        {
           "id": "DISEASE/Glandular fever/Discovered",
           "subject": "Glandular fever",
           "label": "Discovered",
@@ -409,6 +475,12 @@
           "text": "Hides inside your own B-cells; risks spleen rupture."
         },
         {
+          "id": "DISEASE/Glandular fever/CanInfect",
+          "subject": "Glandular fever",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Spleen, Liver."
+        },
+        {
           "id": "DISEASE/Cytomegalovirus/Discovered",
           "subject": "Cytomegalovirus",
           "label": "Discovered",
@@ -437,6 +509,12 @@
           "subject": "Cytomegalovirus",
           "label": "Treat",
           "text": "Antivirals only when it reactivates."
+        },
+        {
+          "id": "DISEASE/Cytomegalovirus/CanInfect",
+          "subject": "Cytomegalovirus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Lungs."
         },
         {
           "id": "DISEASE/Tuberculosis/Discovered",
@@ -475,6 +553,12 @@
           "text": "Can lie dormant in the lungs for years."
         },
         {
+          "id": "DISEASE/Tuberculosis/CanInfect",
+          "subject": "Tuberculosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Whooping cough/Discovered",
           "subject": "Whooping cough",
           "label": "Discovered",
@@ -511,6 +595,12 @@
           "text": "Violent coughing fits; DPT vaccine prevents it."
         },
         {
+          "id": "DISEASE/Whooping cough/CanInfect",
+          "subject": "Whooping cough",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Meningitis/Discovered",
           "subject": "Meningitis",
           "label": "Discovered",
@@ -539,6 +629,12 @@
           "subject": "Meningitis",
           "label": "Treat",
           "text": "Emergency antibiotics. Every hour counts."
+        },
+        {
+          "id": "DISEASE/Meningitis/CanInfect",
+          "subject": "Meningitis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Pneumonia/Discovered",
@@ -571,6 +667,12 @@
           "text": "Antibiotics and oxygen."
         },
         {
+          "id": "DISEASE/Pneumonia/CanInfect",
+          "subject": "Pneumonia",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Strep throat/Discovered",
           "subject": "Strep throat",
           "label": "Discovered",
@@ -599,6 +701,12 @@
           "subject": "Strep throat",
           "label": "Treat",
           "text": "Antibiotics. Which are given mainly to prevent the heart damage."
+        },
+        {
+          "id": "DISEASE/Strep throat/CanInfect",
+          "subject": "Strep throat",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Kidneys."
         },
         {
           "id": "DISEASE/Leprosy/Discovered",
@@ -631,6 +739,12 @@
           "text": "Completely curable with multi-drug therapy. Free worldwide since 1995."
         },
         {
+          "id": "DISEASE/Leprosy/CanInfect",
+          "subject": "Leprosy",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Legionnaires' disease/Discovered",
           "subject": "Legionnaires' disease",
           "label": "Discovered",
@@ -659,6 +773,12 @@
           "subject": "Legionnaires' disease",
           "label": "Treat",
           "text": "Antibiotics."
+        },
+        {
+          "id": "DISEASE/Legionnaires' disease/CanInfect",
+          "subject": "Legionnaires' disease",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Diphtheria/Discovered",
@@ -691,6 +811,12 @@
           "text": "ANTITOXIN. Antibodies. No cell can eat a toxin."
         },
         {
+          "id": "DISEASE/Diphtheria/CanInfect",
+          "subject": "Diphtheria",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart."
+        },
+        {
           "id": "DISEASE/Mucormycosis/Discovered",
           "subject": "Mucormycosis",
           "label": "Discovered",
@@ -719,6 +845,12 @@
           "subject": "Mucormycosis",
           "label": "Treat",
           "text": "Antifungals and surgery. A pure OPPORTUNIST. It only wins when your defences are already down."
+        },
+        {
+          "id": "DISEASE/Mucormycosis/CanInfect",
+          "subject": "Mucormycosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain, Lungs."
         },
         {
           "id": "DISEASE/Aspergillosis/Discovered",
@@ -751,6 +883,12 @@
           "text": "Antifungals. Neutrophils are the key defence. Which is why neutropenia invites it in."
         },
         {
+          "id": "DISEASE/Aspergillosis/CanInfect",
+          "subject": "Aspergillosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Cryptococcus/Discovered",
           "subject": "Cryptococcus",
           "label": "Discovered",
@@ -781,6 +919,12 @@
           "text": "Antifungals. Mostly attacks people with HIV."
         },
         {
+          "id": "DISEASE/Cryptococcus/CanInfect",
+          "subject": "Cryptococcus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Pneumocystis pneumonia/Discovered",
           "subject": "Pneumocystis pneumonia",
           "label": "Discovered",
@@ -809,6 +953,12 @@
           "subject": "Pneumocystis pneumonia",
           "label": "Treat",
           "text": "Antibiotics/antifungals. It is a signpost of a collapsed immune system."
+        },
+        {
+          "id": "DISEASE/Pneumocystis pneumonia/CanInfect",
+          "subject": "Pneumocystis pneumonia",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Dengue/Discovered",
@@ -847,6 +997,12 @@
           "text": "Crashes the marrow's platelet supply."
         },
         {
+          "id": "DISEASE/Dengue/CanInfect",
+          "subject": "Dengue",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Bone Marrow."
+        },
+        {
           "id": "DISEASE/Chikungunya/Discovered",
           "subject": "Chikungunya",
           "label": "Discovered",
@@ -881,6 +1037,12 @@
           "subject": "Chikungunya",
           "label": "Card fact",
           "text": "Mosquito virus; joint pain, sometimes myocarditis."
+        },
+        {
+          "id": "DISEASE/Chikungunya/CanInfect",
+          "subject": "Chikungunya",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Heart."
         },
         {
           "id": "DISEASE/Japanese encephalitis/Discovered",
@@ -919,6 +1081,12 @@
           "text": "Mosquito-borne brain infection; vaccine-preventable."
         },
         {
+          "id": "DISEASE/Japanese encephalitis/CanInfect",
+          "subject": "Japanese encephalitis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Yellow fever/Discovered",
           "subject": "Yellow fever",
           "label": "Discovered",
@@ -955,6 +1123,12 @@
           "text": "Attacks the liver. Hence the jaundice."
         },
         {
+          "id": "DISEASE/Yellow fever/CanInfect",
+          "subject": "Yellow fever",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Kidneys."
+        },
+        {
           "id": "DISEASE/Zika/Discovered",
           "subject": "Zika",
           "label": "Discovered",
@@ -985,6 +1159,12 @@
           "text": "No specific treatment."
         },
         {
+          "id": "DISEASE/Zika/CanInfect",
+          "subject": "Zika",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/West Nile fever/Discovered",
           "subject": "West Nile fever",
           "label": "Discovered",
@@ -1013,6 +1193,12 @@
           "subject": "West Nile fever",
           "label": "Treat",
           "text": "Supportive care."
+        },
+        {
+          "id": "DISEASE/West Nile fever/CanInfect",
+          "subject": "West Nile fever",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Rabies/Discovered",
@@ -1051,6 +1237,12 @@
           "text": "Creeps inside nerves where antibodies can't follow."
         },
         {
+          "id": "DISEASE/Rabies/CanInfect",
+          "subject": "Rabies",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/HIV/Discovered",
           "subject": "HIV",
           "label": "Discovered",
@@ -1079,6 +1271,12 @@
           "subject": "HIV",
           "label": "Treat",
           "text": "Antiretroviral therapy: not a cure, but people now live full lives, and treatment makes them unable to pass it on. Attacking the immune system itself is why HIV is so dangerous."
+        },
+        {
+          "id": "DISEASE/HIV/CanInfect",
+          "subject": "HIV",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow, Spleen."
         },
         {
           "id": "DISEASE/Hepatitis B/Discovered",
@@ -1111,6 +1309,12 @@
           "text": "Antivirals control it; the vaccine prevents it."
         },
         {
+          "id": "DISEASE/Hepatitis B/CanInfect",
+          "subject": "Hepatitis B",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Hepatitis C/Discovered",
           "subject": "Hepatitis C",
           "label": "Discovered",
@@ -1141,6 +1345,12 @@
           "text": "CURABLE since 2014 with direct-acting antivirals. One of medicine's great wins."
         },
         {
+          "id": "DISEASE/Hepatitis C/CanInfect",
+          "subject": "Hepatitis C",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Chagas disease/Discovered",
           "subject": "Chagas disease",
           "label": "Discovered",
@@ -1169,6 +1379,12 @@
           "subject": "Chagas disease",
           "label": "Treat",
           "text": "Drugs work early; once the heart is damaged, it is irreversible."
+        },
+        {
+          "id": "DISEASE/Chagas disease/CanInfect",
+          "subject": "Chagas disease",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart."
         },
         {
           "id": "DISEASE/Lyme disease/Discovered",
@@ -1207,6 +1423,12 @@
           "text": "Tick bite; can cause Lyme carditis in the heart."
         },
         {
+          "id": "DISEASE/Lyme disease/CanInfect",
+          "subject": "Lyme disease",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain, Heart."
+        },
+        {
           "id": "DISEASE/Plague/Discovered",
           "subject": "Plague",
           "label": "Discovered",
@@ -1243,6 +1465,12 @@
           "text": "Flea bites. The historical Black Death."
         },
         {
+          "id": "DISEASE/Plague/CanInfect",
+          "subject": "Plague",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Spleen."
+        },
+        {
           "id": "DISEASE/Scrub typhus/Discovered",
           "subject": "Scrub typhus",
           "label": "Discovered",
@@ -1271,6 +1499,12 @@
           "subject": "Scrub typhus",
           "label": "Treat",
           "text": "Doxycycline. Cheap and highly effective."
+        },
+        {
+          "id": "DISEASE/Scrub typhus/CanInfect",
+          "subject": "Scrub typhus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Brain."
         },
         {
           "id": "DISEASE/Malaria/Discovered",
@@ -1303,6 +1537,12 @@
           "text": "Antimalarials. P. vivax needs a SECOND drug to clear the liver. Or it relapses months later."
         },
         {
+          "id": "DISEASE/Malaria/CanInfect",
+          "subject": "Malaria",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Malaria (blood)/Discovered",
           "subject": "Malaria (blood)",
           "label": "Discovered",
@@ -1331,6 +1571,12 @@
           "subject": "Malaria (blood)",
           "label": "Treat",
           "text": "NOW antibodies and phagocytes can reach it. This is the stage you can actually fight."
+        },
+        {
+          "id": "DISEASE/Malaria (blood)/CanInfect",
+          "subject": "Malaria (blood)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Spleen, Brain."
         },
         {
           "id": "DISEASE/Kala-azar/Discovered",
@@ -1363,6 +1609,12 @@
           "text": "Liposomal amphotericin B. India has driven cases down dramatically."
         },
         {
+          "id": "DISEASE/Kala-azar/CanInfect",
+          "subject": "Kala-azar",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Spleen, Bone Marrow."
+        },
+        {
           "id": "DISEASE/Sleeping sickness/Discovered",
           "subject": "Sleeping sickness",
           "label": "Discovered",
@@ -1391,6 +1643,12 @@
           "subject": "Sleeping sickness",
           "label": "Treat",
           "text": "Drugs exist, and cases have collapsed. Its trick. Changing disguise. Is why a vaccine is so hard."
+        },
+        {
+          "id": "DISEASE/Sleeping sickness/CanInfect",
+          "subject": "Sleeping sickness",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Filariasis/Discovered",
@@ -1423,6 +1681,12 @@
           "text": "Antiparasitic drugs kill the worms; the swelling is often permanent."
         },
         {
+          "id": "DISEASE/Filariasis/CanInfect",
+          "subject": "Filariasis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow, Spleen."
+        },
+        {
           "id": "DISEASE/Snake venom/Discovered",
           "subject": "Snake venom",
           "label": "Discovered",
@@ -1451,6 +1715,12 @@
           "subject": "Snake venom",
           "label": "Treat",
           "text": "ANTIVENOM. Borrowed antibodies. PASSIVE immunity: instant, but temporary."
+        },
+        {
+          "id": "DISEASE/Snake venom/CanInfect",
+          "subject": "Snake venom",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Kidneys."
         },
         {
           "id": "DISEASE/Russell's viper venom/Discovered",
@@ -1483,6 +1753,12 @@
           "text": "Antivenom, urgently. Dialysis may be needed for the kidneys."
         },
         {
+          "id": "DISEASE/Russell's viper venom/CanInfect",
+          "subject": "Russell's viper venom",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Red scorpion sting/Discovered",
           "subject": "Red scorpion sting",
           "label": "Discovered",
@@ -1511,6 +1787,12 @@
           "subject": "Red scorpion sting",
           "label": "Treat",
           "text": "The drug prazosin transformed survival. An Indian medical breakthrough."
+        },
+        {
+          "id": "DISEASE/Red scorpion sting/CanInfect",
+          "subject": "Red scorpion sting",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Lungs."
         },
         {
           "id": "DISEASE/Tetanus/Discovered",
@@ -1549,6 +1831,12 @@
           "text": "A toxin that locks muscles ('lockjaw')."
         },
         {
+          "id": "DISEASE/Tetanus/CanInfect",
+          "subject": "Tetanus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/MRSA/Discovered",
           "subject": "MRSA",
           "label": "Discovered",
@@ -1583,6 +1871,12 @@
           "subject": "MRSA",
           "label": "Card fact",
           "text": "A superbug. In the blood it can seed ANY organ, including heart valves."
+        },
+        {
+          "id": "DISEASE/MRSA/CanInfect",
+          "subject": "MRSA",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage any organ."
         },
         {
           "id": "DISEASE/Cellulitis/Discovered",
@@ -1621,6 +1915,12 @@
           "text": "Staph/Strep skin infection; can settle on heart valves."
         },
         {
+          "id": "DISEASE/Cellulitis/CanInfect",
+          "subject": "Cellulitis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow, Heart."
+        },
+        {
           "id": "DISEASE/Leptospirosis/Discovered",
           "subject": "Leptospirosis",
           "label": "Discovered",
@@ -1655,6 +1955,12 @@
           "subject": "Leptospirosis",
           "label": "Card fact",
           "text": "Enters through cuts in floodwater. A monsoon risk."
+        },
+        {
+          "id": "DISEASE/Leptospirosis/CanInfect",
+          "subject": "Leptospirosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys, Liver."
         },
         {
           "id": "DISEASE/Gas gangrene/Discovered",
@@ -1693,6 +1999,12 @@
           "text": "Destroys deep tissue fast; a surgical emergency."
         },
         {
+          "id": "DISEASE/Gas gangrene/CanInfect",
+          "subject": "Gas gangrene",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys, Liver."
+        },
+        {
           "id": "DISEASE/Syphilis/Discovered",
           "subject": "Syphilis",
           "label": "Discovered",
@@ -1723,6 +2035,12 @@
           "text": "Penicillin. Still completely effective after 80 years."
         },
         {
+          "id": "DISEASE/Syphilis/CanInfect",
+          "subject": "Syphilis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain, Heart."
+        },
+        {
           "id": "DISEASE/Brucellosis/Discovered",
           "subject": "Brucellosis",
           "label": "Discovered",
@@ -1751,6 +2069,12 @@
           "subject": "Brucellosis",
           "label": "Treat",
           "text": "Long courses of antibiotics."
+        },
+        {
+          "id": "DISEASE/Brucellosis/CanInfect",
+          "subject": "Brucellosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Spleen, Liver."
         },
         {
           "id": "DISEASE/Cold sore/Discovered",
@@ -1789,6 +2113,12 @@
           "text": "Retreats into nerves to hide from antibodies."
         },
         {
+          "id": "DISEASE/Cold sore/CanInfect",
+          "subject": "Cold sore",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Human papillomavirus/Discovered",
           "subject": "Human papillomavirus",
           "label": "Discovered",
@@ -1817,6 +2147,12 @@
           "subject": "Human papillomavirus",
           "label": "Treat",
           "text": "No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts."
+        },
+        {
+          "id": "DISEASE/Human papillomavirus/CanInfect",
+          "subject": "Human papillomavirus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Ebola/Discovered",
@@ -1849,6 +2185,12 @@
           "text": "Antibody treatments and supportive care; survival has improved greatly."
         },
         {
+          "id": "DISEASE/Ebola/CanInfect",
+          "subject": "Ebola",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Spleen."
+        },
+        {
           "id": "DISEASE/Anthrax/Discovered",
           "subject": "Anthrax",
           "label": "Discovered",
@@ -1877,6 +2219,12 @@
           "subject": "Anthrax",
           "label": "Treat",
           "text": "Antibiotics plus ANTITOXIN. The toxin must be neutralised separately."
+        },
+        {
+          "id": "DISEASE/Anthrax/CanInfect",
+          "subject": "Anthrax",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Hookworm/Discovered",
@@ -1909,6 +2257,12 @@
           "text": "Deworming tablets plus iron."
         },
         {
+          "id": "DISEASE/Hookworm/CanInfect",
+          "subject": "Hookworm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow."
+        },
+        {
           "id": "DISEASE/Schistosomiasis/Discovered",
           "subject": "Schistosomiasis",
           "label": "Discovered",
@@ -1937,6 +2291,12 @@
           "subject": "Schistosomiasis",
           "label": "Treat",
           "text": "Praziquantel. A single effective drug."
+        },
+        {
+          "id": "DISEASE/Schistosomiasis/CanInfect",
+          "subject": "Schistosomiasis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Spleen."
         },
         {
           "id": "DISEASE/Guinea worm/Discovered",
@@ -1969,6 +2329,12 @@
           "text": "Wind the worm out slowly. Proof that prevention alone can defeat a disease."
         },
         {
+          "id": "DISEASE/Guinea worm/CanInfect",
+          "subject": "Guinea worm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow."
+        },
+        {
           "id": "DISEASE/Histoplasmosis/Discovered",
           "subject": "Histoplasmosis",
           "label": "Discovered",
@@ -1997,6 +2363,12 @@
           "subject": "Histoplasmosis",
           "label": "Treat",
           "text": "Antifungals; often self-limiting in healthy people."
+        },
+        {
+          "id": "DISEASE/Histoplasmosis/CanInfect",
+          "subject": "Histoplasmosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Spleen."
         },
         {
           "id": "DISEASE/Typhoid/Discovered",
@@ -2035,6 +2407,12 @@
           "text": "Unclean water; hits liver and spleen."
         },
         {
+          "id": "DISEASE/Typhoid/CanInfect",
+          "subject": "Typhoid",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Spleen."
+        },
+        {
           "id": "DISEASE/Cholera/Discovered",
           "subject": "Cholera",
           "label": "Discovered",
@@ -2069,6 +2447,12 @@
           "subject": "Cholera",
           "label": "Card fact",
           "text": "Dehydration wrecks the kidneys."
+        },
+        {
+          "id": "DISEASE/Cholera/CanInfect",
+          "subject": "Cholera",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
         },
         {
           "id": "DISEASE/Dysentery/Discovered",
@@ -2107,6 +2491,12 @@
           "text": "Bloody diarrhoea from dirty water."
         },
         {
+          "id": "DISEASE/Dysentery/CanInfect",
+          "subject": "Dysentery",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Food poisoning/Discovered",
           "subject": "Food poisoning",
           "label": "Discovered",
@@ -2143,6 +2533,12 @@
           "text": "Some E. coli damage the kidneys (HUS)."
         },
         {
+          "id": "DISEASE/Food poisoning/CanInfect",
+          "subject": "Food poisoning",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Listeria/Discovered",
           "subject": "Listeria",
           "label": "Discovered",
@@ -2173,6 +2569,12 @@
           "text": "Antibiotics."
         },
         {
+          "id": "DISEASE/Listeria/CanInfect",
+          "subject": "Listeria",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Stomach ulcer (H. pylori)/Discovered",
           "subject": "Stomach ulcer (H. pylori)",
           "label": "Discovered",
@@ -2201,6 +2603,12 @@
           "subject": "Stomach ulcer (H. pylori)",
           "label": "Treat",
           "text": "Antibiotics CURE it. Ulcers were once thought to be caused by stress."
+        },
+        {
+          "id": "DISEASE/Stomach ulcer (H. pylori)/CanInfect",
+          "subject": "Stomach ulcer (H. pylori)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Rotavirus/Discovered",
@@ -2239,6 +2647,12 @@
           "text": "A top cause of child diarrhoea. Vaccine-preventable."
         },
         {
+          "id": "DISEASE/Rotavirus/CanInfect",
+          "subject": "Rotavirus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Hepatitis A/Discovered",
           "subject": "Hepatitis A",
           "label": "Discovered",
@@ -2273,6 +2687,12 @@
           "subject": "Hepatitis A",
           "label": "Card fact",
           "text": "A liver virus from contaminated food or water."
+        },
+        {
+          "id": "DISEASE/Hepatitis A/CanInfect",
+          "subject": "Hepatitis A",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Hepatitis E/Discovered",
@@ -2311,6 +2731,12 @@
           "text": "Waterborne liver virus."
         },
         {
+          "id": "DISEASE/Hepatitis E/CanInfect",
+          "subject": "Hepatitis E",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Norovirus/Discovered",
           "subject": "Norovirus",
           "label": "Discovered",
@@ -2345,6 +2771,12 @@
           "subject": "Norovirus",
           "label": "Card fact",
           "text": "The 'winter vomiting' bug."
+        },
+        {
+          "id": "DISEASE/Norovirus/CanInfect",
+          "subject": "Norovirus",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
         },
         {
           "id": "DISEASE/Polio/Discovered",
@@ -2383,6 +2815,12 @@
           "text": "Enters via the gut, attacks nerves."
         },
         {
+          "id": "DISEASE/Polio/CanInfect",
+          "subject": "Polio",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Botulism/Discovered",
           "subject": "Botulism",
           "label": "Discovered",
@@ -2411,6 +2849,12 @@
           "subject": "Botulism",
           "label": "Treat",
           "text": "ANTITOXIN. (In tiny doses this same toxin is Botox.)"
+        },
+        {
+          "id": "DISEASE/Botulism/CanInfect",
+          "subject": "Botulism",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Shiga toxin (E. coli O157)/Discovered",
@@ -2443,6 +2887,12 @@
           "text": "Supportive care and dialysis. Antibiotics can make it WORSE by releasing more toxin."
         },
         {
+          "id": "DISEASE/Shiga toxin (E. coli O157)/CanInfect",
+          "subject": "Shiga toxin (E. coli O157)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Roundworm/Discovered",
           "subject": "Roundworm",
           "label": "Discovered",
@@ -2471,6 +2921,12 @@
           "subject": "Roundworm",
           "label": "Treat",
           "text": "Deworming tablets. Too big for any cell to swallow."
+        },
+        {
+          "id": "DISEASE/Roundworm/CanInfect",
+          "subject": "Roundworm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs, Liver."
         },
         {
           "id": "DISEASE/Tapeworm/Discovered",
@@ -2503,6 +2959,12 @@
           "text": "Antiparasitic drugs plus anti-seizure medicine."
         },
         {
+          "id": "DISEASE/Tapeworm/CanInfect",
+          "subject": "Tapeworm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Whipworm/Discovered",
           "subject": "Whipworm",
           "label": "Discovered",
@@ -2531,6 +2993,12 @@
           "subject": "Whipworm",
           "label": "Treat",
           "text": "Deworming tablets."
+        },
+        {
+          "id": "DISEASE/Whipworm/CanInfect",
+          "subject": "Whipworm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow."
         },
         {
           "id": "DISEASE/Amoebiasis/Discovered",
@@ -2563,6 +3031,12 @@
           "text": "Metronidazole; the abscess may need draining."
         },
         {
+          "id": "DISEASE/Amoebiasis/CanInfect",
+          "subject": "Amoebiasis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Giardia/Discovered",
           "subject": "Giardia",
           "label": "Discovered",
@@ -2591,6 +3065,12 @@
           "subject": "Giardia",
           "label": "Treat",
           "text": "Antiparasitic drugs."
+        },
+        {
+          "id": "DISEASE/Giardia/CanInfect",
+          "subject": "Giardia",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Toxoplasmosis/Discovered",
@@ -2623,6 +3103,12 @@
           "text": "Drugs only when it reactivates."
         },
         {
+          "id": "DISEASE/Toxoplasmosis/CanInfect",
+          "subject": "Toxoplasmosis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
+        },
+        {
           "id": "DISEASE/Candida/Discovered",
           "subject": "Candida",
           "label": "Discovered",
@@ -2651,6 +3137,12 @@
           "subject": "Candida",
           "label": "Treat",
           "text": "Antifungals. The classic OPPORTUNIST."
+        },
+        {
+          "id": "DISEASE/Candida/CanInfect",
+          "subject": "Candida",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage any organ."
         },
         {
           "id": "DISEASE/Scabies/Discovered",
@@ -2683,6 +3175,12 @@
           "text": "Permethrin cream or ivermectin. Cheap and curable. But it keeps coming back if only one person is treated."
         },
         {
+          "id": "DISEASE/Scabies/CanInfect",
+          "subject": "Scabies",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Bone Marrow."
+        },
+        {
           "id": "DISEASE/Ringworm/Discovered",
           "subject": "Ringworm",
           "label": "Discovered",
@@ -2711,6 +3209,12 @@
           "subject": "Ringworm",
           "label": "Treat",
           "text": "Antifungal cream. The commonest fungal infection on Earth. And one of the most misnamed."
+        },
+        {
+          "id": "DISEASE/Ringworm/CanInfect",
+          "subject": "Ringworm",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Impetigo/Discovered",
@@ -2743,6 +3247,12 @@
           "text": "Antibiotic cream or tablets."
         },
         {
+          "id": "DISEASE/Impetigo/CanInfect",
+          "subject": "Impetigo",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Kidneys."
+        },
+        {
           "id": "DISEASE/Trachoma/Discovered",
           "subject": "Trachoma",
           "label": "Discovered",
@@ -2771,6 +3281,12 @@
           "subject": "Trachoma",
           "label": "Treat",
           "text": "A single dose of azithromycin. Surgery for the eyelid. **A disease of poverty, cured by soap and water.**"
+        },
+        {
+          "id": "DISEASE/Trachoma/CanInfect",
+          "subject": "Trachoma",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Conjunctivitis/Discovered",
@@ -2803,6 +3319,12 @@
           "text": "Usually clears itself. A NAKED virus. No envelope, so it survives on surfaces for days and hand-gel works poorly on it."
         },
         {
+          "id": "DISEASE/Conjunctivitis/CanInfect",
+          "subject": "Conjunctivitis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Molluscum contagiosum/Discovered",
           "subject": "Molluscum contagiosum",
           "label": "Discovered",
@@ -2831,6 +3353,12 @@
           "subject": "Molluscum contagiosum",
           "label": "Treat",
           "text": "Usually clears on its own. But it can take a year. Your immune system gets there eventually."
+        },
+        {
+          "id": "DISEASE/Molluscum contagiosum/CanInfect",
+          "subject": "Molluscum contagiosum",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Endocarditis/Discovered",
@@ -2863,6 +3391,12 @@
           "text": "Weeks of intravenous antibiotics; sometimes surgery to replace the valve."
         },
         {
+          "id": "DISEASE/Endocarditis/CanInfect",
+          "subject": "Endocarditis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart."
+        },
+        {
           "id": "DISEASE/Gonorrhoea/Discovered",
           "subject": "Gonorrhoea",
           "label": "Discovered",
@@ -2891,6 +3425,12 @@
           "subject": "Gonorrhoea",
           "label": "Treat",
           "text": "Antibiotics. But it has now defeated almost every antibiotic we have. The WHO lists it as a PRIORITY superbug. This is antibiotic resistance happening in real time."
+        },
+        {
+          "id": "DISEASE/Gonorrhoea/CanInfect",
+          "subject": "Gonorrhoea",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys, Heart."
         },
         {
           "id": "DISEASE/Chlamydia/Discovered",
@@ -2923,6 +3463,12 @@
           "text": "Antibiotics. Easy to cure. But only if you know you have it."
         },
         {
+          "id": "DISEASE/Chlamydia/CanInfect",
+          "subject": "Chlamydia",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Genital herpes/Discovered",
           "subject": "Genital herpes",
           "label": "Discovered",
@@ -2951,6 +3497,12 @@
           "subject": "Genital herpes",
           "label": "Treat",
           "text": "Antivirals control outbreaks. It is never cleared. A lifelong passenger."
+        },
+        {
+          "id": "DISEASE/Genital herpes/CanInfect",
+          "subject": "Genital herpes",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Trichomoniasis/Discovered",
@@ -2983,6 +3535,12 @@
           "text": "A single course of metronidazole cures it."
         },
         {
+          "id": "DISEASE/Trichomoniasis/CanInfect",
+          "subject": "Trichomoniasis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Hepatitis D/Discovered",
           "subject": "Hepatitis D",
           "label": "Discovered",
@@ -3011,6 +3569,12 @@
           "subject": "Hepatitis D",
           "label": "Treat",
           "text": "Hard to treat. Prevention through the Hep B vaccine is the real answer."
+        },
+        {
+          "id": "DISEASE/Hepatitis D/CanInfect",
+          "subject": "Hepatitis D",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Transfusion malaria/Discovered",
@@ -3043,6 +3607,12 @@
           "text": "Antimalarials. This is why safe transfusion is a public-health issue, not just a hospital one."
         },
         {
+          "id": "DISEASE/Transfusion malaria/CanInfect",
+          "subject": "Transfusion malaria",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
+        },
+        {
           "id": "DISEASE/Catheter sepsis/Discovered",
           "subject": "Catheter sepsis",
           "label": "Discovered",
@@ -3071,6 +3641,12 @@
           "subject": "Catheter sepsis",
           "label": "Treat",
           "text": "Antifungals. A reminder that medicine itself can open a door."
+        },
+        {
+          "id": "DISEASE/Catheter sepsis/CanInfect",
+          "subject": "Catheter sepsis",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage any organ."
         },
         {
           "id": "DISEASE/Cannula infection/Discovered",
@@ -3103,6 +3679,12 @@
           "text": "Antibiotics. And remove the line."
         },
         {
+          "id": "DISEASE/Cannula infection/CanInfect",
+          "subject": "Cannula infection",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Bone Marrow."
+        },
+        {
           "id": "DISEASE/Tetanus toxin/Discovered",
           "subject": "Tetanus toxin",
           "label": "Discovered",
@@ -3131,6 +3713,12 @@
           "subject": "Tetanus toxin",
           "label": "Treat",
           "text": "Only antibodies can neutralise it. No cell can eat a toxin."
+        },
+        {
+          "id": "DISEASE/Tetanus toxin/CanInfect",
+          "subject": "Tetanus toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Cholera toxin/Discovered",
@@ -3163,6 +3751,12 @@
           "text": "Rehydration; antibodies neutralise the toxin."
         },
         {
+          "id": "DISEASE/Cholera toxin/CanInfect",
+          "subject": "Cholera toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys."
+        },
+        {
           "id": "DISEASE/Clostridial toxin/Discovered",
           "subject": "Clostridial toxin",
           "label": "Discovered",
@@ -3191,6 +3785,12 @@
           "subject": "Clostridial toxin",
           "label": "Treat",
           "text": "Antitoxin, surgery, antibiotics."
+        },
+        {
+          "id": "DISEASE/Clostridial toxin/CanInfect",
+          "subject": "Clostridial toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Kidneys, Liver."
         },
         {
           "id": "DISEASE/Diphtheria toxin/Discovered",
@@ -3223,6 +3823,12 @@
           "text": "Antitoxin. Antibodies, urgently."
         },
         {
+          "id": "DISEASE/Diphtheria toxin/CanInfect",
+          "subject": "Diphtheria toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart."
+        },
+        {
           "id": "DISEASE/Shingles/Discovered",
           "subject": "Shingles",
           "label": "Discovered",
@@ -3251,6 +3857,12 @@
           "subject": "Shingles",
           "label": "Treat",
           "text": "Antivirals. Proof that some viruses never truly leave."
+        },
+        {
+          "id": "DISEASE/Shingles/CanInfect",
+          "subject": "Shingles",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Brain."
         },
         {
           "id": "DISEASE/Dengue (ADE)/Discovered",
@@ -3283,6 +3895,12 @@
           "text": "Antibodies will NOT work here. Use cells."
         },
         {
+          "id": "DISEASE/Dengue (ADE)/CanInfect",
+          "subject": "Dengue (ADE)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver, Bone Marrow."
+        },
+        {
           "id": "DISEASE/Malaria (relapse)/Discovered",
           "subject": "Malaria (relapse)",
           "label": "Discovered",
@@ -3311,6 +3929,12 @@
           "subject": "Malaria (relapse)",
           "label": "Treat",
           "text": "A second drug is needed specifically for the liver forms."
+        },
+        {
+          "id": "DISEASE/Malaria (relapse)/CanInfect",
+          "subject": "Malaria (relapse)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Liver."
         },
         {
           "id": "DISEASE/Tuberculosis (reactivated)/Discovered",
@@ -3343,6 +3967,12 @@
           "text": "Months of combination antibiotics."
         },
         {
+          "id": "DISEASE/Tuberculosis (reactivated)/CanInfect",
+          "subject": "Tuberculosis (reactivated)",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
+        },
+        {
           "id": "DISEASE/Pneumococcal pneumonia/Discovered",
           "subject": "Pneumococcal pneumonia",
           "label": "Discovered",
@@ -3371,6 +4001,12 @@
           "subject": "Pneumococcal pneumonia",
           "label": "Treat",
           "text": "Antibiotics."
+        },
+        {
+          "id": "DISEASE/Pneumococcal pneumonia/CanInfect",
+          "subject": "Pneumococcal pneumonia",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Lungs."
         }
       ]
     },
