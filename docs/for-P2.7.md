@@ -415,3 +415,95 @@ behaviour is exactly what was ruled.
 screens per pass (46 under SIZE200), none NOT REACHED; every check 0 under all four mechanisms,
 occlusion included; 22 nesting landings checked, 0 wrong, 1 NOT REACHED (inspect sheet → cell
 card: no cell stood on the node the walk inspected, which the deal decides); offline met.
+
+---
+
+## 11. Piece 2, the dock and the draw inside End turn: HANDOFF, nothing built
+
+**Written 13 September 2026, at a context clear, immediately after #81 (piece 1) merged**, so a
+fresh session can start piece 2 without the conversation. Everything below is either ruled, with
+where, or marked as not yet decided. Nothing of piece 2 exists in code.
+
+### Where things stand
+
+- **Merged:** #79 (the medical review), #80 (round one, #69's fix, the play screen rulings), #81
+  (piece 1: the navigation stack, the floating close, the back gesture, the audit at 34 controls).
+- **No PR is open.** The piece 2 branch, `phase2/p2-7-piece2-dock-draw`, holds only this handoff.
+- **One PR at a time, and Shantanu merges.** Fetch before pushing to an open branch: he merges
+  `main` into open PR branches.
+
+### What piece 2 is, from the rulings
+
+- **§9 ruling 1, the dock:** the next step in a dock at the bottom of the play screen, ONE height in
+  every state, so selecting changes what it says and moves nothing; the top row keeps only the turn
+  line and Menu.
+- **§9 ruling 2, no Draw button:** End turn plays the spread, the app sends `draw` itself, and the
+  reveal shows what arrived, its button beginning planning. The engine is unchanged. A draw that
+  brings nothing (after the infection window, the engine's mop-up sentinel) goes straight to
+  planning; a draw that wins the game goes to Result; on the first turn the draw follows the goal
+  dialog. `APP_FLOW.md`'s PLAY section is already amended to say so.
+- **The split, §9's ruled table, row 2:** the dock is where a drawer's pick lands, so it comes
+  before the drawers. **Not piece 2's:** the drawers and the main screen without scroll (piece 3),
+  and planning's layout (piece 4). So after piece 2 the pieces grid, the antibody panel, the body
+  panel and the log still sit in the page's scroll. That intermediate state is expected and is not
+  a defect.
+
+### ⚠️ The first action is to measure and propose, not to build
+
+Piece 1 went proposal, ruling, build, and piece 2 does the same wherever the rulings leave a choice.
+**Measure first**, on the shipped build at 360 × 780 and again at 200% text:
+
+1. **The command bar's height with each of the fourteen pieces selected.** The largest action set
+   has to fit the dock's 220px budget (§9's height table) or the proposal says what happens.
+2. **The dock with nothing selected:** what it would hold (today the memory response and antivenom
+   rows) and its height.
+3. **The top row once Draw and Begin command leave it**, and what the freed height does.
+
+**Choices the proposal will likely need ruled. None is decided:**
+
+1. **The dock and the floating close both live at the bottom.** When a card, the inspect sheet or
+   the pause menu shows the floating close over the game, where is the dock: covered by the layer,
+   or does the floating close sit above it? Found while writing this handoff; neither ruling
+   anticipated it.
+2. **The dev shell's turn buttons** (`APP_FLOW.md` §2 ruling 6): keep Draw so the perf driver's
+   coupling holds verbatim, or follow the app and re-measure the driver.
+3. **What the dock shows while a spread plays** (input is disabled) and **while the reveal is up**.
+4. **The dock at larger text sizes.** Ruling 5 says nothing is ever cut off and the main screen may
+   scroll as the last resort; whether the dock caps its height and scrolls inside, or grows.
+5. **The reveal's button words.** "Continue" today; ruling 2 says its button begins planning.
+6. **Help's "A turn" section** says "Tap Draw a card". It is catalogue text, not engine text; its
+   provenance is in [`HELP_DRAFT.md`](HELP_DRAFT.md). Say whether the rewording needs Kartik.
+
+### What piece 2 changes beyond the screen
+
+- **The Gate 1 audit** clicks "Draw a card" in its walk, in the walk to the Result and in the
+  offline steps; `tools/perf/measure.ts` and `tools/perf/measure-full.ts` drive a turn by its button
+  text too. Each walk changes, and its controls re-run.
+- **The audit must still hold, every run:** 34 controls all firing the right way; 44 screens per
+  pass (46 under SIZE200), none NOT REACHED; every check 0 under all four mechanisms, occlusion
+  included; nesting landings 0 wrong (22 in the last run, 1 NOT REACHED by the deal); offline met.
+  Control and text-run counts are samples, not thresholds (`FINDINGS.md` #68).
+
+### Facts from building piece 1 that the code does not say loudly
+
+- **The navigation stack** is in `packages/ui/src/nav/`: `useNav` and `NavHost` in the shell,
+  `useNavLayer` in a component. The shell registers the pause menu with `useNavLayerWith` and a
+  MEMOISED api object; passing the `nav` object itself re-registers the layer on every render and
+  reorders the stack, which breaks "Settings closes back to the pause menu".
+- **`FLOAT_RESERVE` (5.5rem)** is the space a scrolling surface keeps free at its bottom for the
+  floating close. It is in rem so it grows with the text. `NavHost` adds a spacer at the end of the
+  page while the button shows, because the inspect sheet is not modal.
+- **Occlusion asks whether a control HIDES text, not whether it overlaps it** (`FINDINGS.md` #70).
+  A dock over page content is exactly the surface this check now watches.
+
+### How measurements were taken in this phase
+
+- A puppeteer-core script placed in tools/perf with a `.tmp.ts` suffix (a scratchpad cannot resolve
+  workspace dependencies), run with `npx tsx` against the shipped build served by
+  `pnpm --filter @immunity-wars/app preview` on port 4173, and deleted after. Page-side code passed
+  to `page.evaluate` as strings, because tsx wraps functions in a helper the page does not have.
+- **`pnpm verify` deletes and rebuilds the app's build output**, so it never runs while the audit
+  is running against the preview.
+- The design review happened on a private artifact page of side-by-side phone mockups drawn to one
+  scale from measurements; Shantanu has its link. Piece 2's proposal can extend it or be text, as
+  the choices warrant.
