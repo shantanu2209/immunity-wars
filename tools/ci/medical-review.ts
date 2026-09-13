@@ -392,7 +392,12 @@ for (const p of parts) {
       md.push('| Claim id | Field | What the app says |');
       md.push('|---|---|---|');
     }
-    md.push(`| \`${c.id}\` | ${c.label} | ${c.text.replace(/\|/g, '\\|')} |`);
+    // Backslashes BEFORE pipes (CodeQL js/incomplete-sanitization, on PR #79). Escaping only the
+    // pipe lets a backslash already in the text consume that escape, and the pipe then ends the
+    // table cell. No claim contains either character today (measured: 0 of 802), so the output
+    // is unchanged; the order is what keeps it true when one does.
+    const cell = c.text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+    md.push(`| \`${c.id}\` | ${c.label} | ${cell} |`);
   }
 }
 md.push(
