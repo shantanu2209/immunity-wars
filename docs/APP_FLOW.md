@@ -41,6 +41,11 @@ inspect (built) · command bar (built, persistent) · pause menu · production/a
 > What happened. Quick picks slide up from the bottom with part of the board still visible; reading
 > surfaces open full height. The command bar becomes the DOCK (§4, PLAY). Every drawer, card and
 > page closes from one floating button at the bottom, and closing returns one level (§2, ruling 1).
+>
+> ✅ *Built 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §15): Pieces, Antibodies and The body open
+> from the bottom over the board, What happened opens full height, each is one level on the stack, and
+> a tap on the board around an open drawer closes it. At 360 × 780 the main screen does not scroll; at
+> 360 × 640 it scrolls 67px, recorded under ruling 6 rather than fitted.*
 
 ### Dialogs (modal over Play; block play until acknowledged; drain through ONE queue)
 

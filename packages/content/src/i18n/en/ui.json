@@ -53,6 +53,7 @@
   "dock.targetCount": "{n} targets",
   "dock.whatsHere": "What's here",
   "dock.undo": "Undo",
+  "drawer.pieces": "Pieces",
   "undo.noMoves": "Undo: nothing to undo yet. Only moves can be undone",
   "undo.committed": "Undo ended for this turn: {action} committed",
   "undo.resumed": "Undo unavailable this turn: the game was resumed mid-turn",

@@ -33,6 +33,7 @@ export {
 export { shouldDraw, type DrawMoment } from './play/autoDraw';
 export { Dock, DOCK_ZONES, type DockProps, type DockUndo } from './panels/Dock';
 export { DockSheet, TargetList } from './panels/DockSheet';
+export { Drawer, DrawerRow, DRAWERS, type DrawerKind } from './panels/Drawer';
 export { effectChips, turnLine, rareLogLine, apTermLines, type EffectChip } from './play/effects';
 export {
   RevealBody,

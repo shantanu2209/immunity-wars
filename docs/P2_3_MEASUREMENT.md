@@ -319,3 +319,15 @@ what piece 2 adds.** It is stated against row 2 (tap to visible response, under 
 ruling on whether that row governs it: the tap's own visible response is the spread ending, and the
 reveal is what follows. **Two of three 6× samples are over 100ms if it does.** The first instrument
 for this number was wrong and was discarded ([`for-P2.7.md`](for-P2.7.md) §13, item 7).
+
+> ✅ **RULED 13 September 2026, by Shantanu**, taking Claude's recommendation ("Will go with what you
+> recommend for the stuff open from piece 2"):
+>
+> - **Row 2 does not govern the draw's render.** The tap's own visible response is the spread ending;
+>   the reveal is what follows it. The 73 to 145ms above stays on the record as measured, not as a
+>   breach.
+> - **It is re-timed on the real low-end handset before the Phase 2 closeout**, and the closeout states
+>   that number beside this one. If Shantanu then reads it differently, that is where it is held to
+>   100ms.
+> - **The performance rows are owed a re-time after pieces 2 and 3**, which changed the play screen
+>   after these numbers were taken; that re-time runs before the closeout too.
