@@ -97,7 +97,16 @@ const CHROME =
   process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 
 interface Finding {
-  check: 'touch' | 'contrast' | 'nontext' | 'scale' | 'layout' | 'size' | 'offline' | 'occlusion';
+  check:
+    | 'touch'
+    | 'contrast'
+    | 'nontext'
+    | 'scale'
+    | 'layout'
+    | 'size'
+    | 'offline'
+    | 'occlusion'
+    | 'dock';
   screen: string;
   path: string;
   text: string;
@@ -111,6 +120,9 @@ interface ScreenResult {
   /** The layout passes only: the CSS width and root font size the screen was measured at. */
   width?: number;
   rootFontPx?: number;
+  /** The base pass only: the dock's height on this screen, whether it sat at the bottom of the
+   *  screen, and what it was showing; null where it is not mounted or is hidden behind planning. */
+  dock?: { height: number; fixed: boolean; mode: string } | null;
   findings: Finding[];
 }
 
@@ -381,6 +393,9 @@ const WHERE = `
   const button = (label) => [...document.querySelectorAll('button')].some((b) => vis(b) && (b.textContent || '').trim() === label);
   if (q('[role=dialog][aria-label="Pathogen card"]')) return 'pathogen card';
   if (q('[data-cell-card-open]')) return 'cell card';
+  if (q('[data-dock-sheet=targets]')) return 'dock targets';
+  if (q('[data-dock-sheet=ap]')) return 'AP terms';
+  if (button('Plan your turn')) return 'reveal';
   if (q('[data-screen=library-why]')) return 'library why page';
   const help = q('[data-screen=help]');
   if (help) {
@@ -397,6 +412,16 @@ const WHERE = `
   if (q('[data-command-stage]')) return 'play';
   if (button('New game')) return 'title';
   return 'unknown';
+})()
+`;
+
+/** The dock as it stands on this screen, or null when it is not mounted or hidden with its stage. */
+const DOCK_PROBE = `
+(() => {
+  const d = document.querySelector('[data-dock]');
+  if (!d || d.getClientRects().length === 0) return null;
+  const r = d.getBoundingClientRect();
+  return { height: Math.round(r.height * 10) / 10, fixed: d.getAttribute('data-dock-fixed') === '1', mode: d.getAttribute('data-dock') || '' };
 })()
 `;
 
@@ -516,8 +541,8 @@ interface NestResult {
   expected: string;
   /** Where it landed, or NOT REACHED. */
   actual: string;
-  /** How it was closed: the floating button, or the phone's back gesture. */
-  via: 'close' | 'gesture';
+  /** How it was closed: the floating button, the phone's back gesture, or a reload and Continue. */
+  via: 'close' | 'gesture' | 'resume';
   ok: boolean;
 }
 
@@ -566,7 +591,79 @@ const notReached = (screen: string, why = 'the walk could not open it'): ScreenR
   findings: [{ check: 'touch', screen, path: '', text: '', detail: `NOT REACHED: ${why}` }],
 });
 
+/**
+ * THE DOCK'S ONE HEIGHT (docs/for-P2.7.md §9 ruling 1; §12, ruled 13 September 2026). Selecting a
+ * piece must change what the dock says and move nothing, so on every screen of the base pass where
+ * the dock sits at the bottom of the screen it must be one height. A zone that outgrows its minimum
+ * (a message wrapping to a third line, a row too long for its slot) grows the dock rather than
+ * clipping, which is right, and which this is the only instrument able to see.
+ *
+ * Standard text only: at larger sizes the dock is allowed to leave the bottom of the screen and
+ * grow (§12 ruling 3), and that is the layout checks' business. A run that measured the dock at
+ * the bottom of no screen is NOT REACHED, never clean.
+ */
+function dockFindings(
+  records: readonly { screen: string; height: number; fixed: boolean }[],
+): Finding[] {
+  const fixed = records.filter((r) => r.fixed);
+  if (fixed.length === 0) {
+    return [
+      {
+        check: 'dock',
+        screen: 'dock, one height',
+        path: '',
+        text: '',
+        detail: 'NOT REACHED: no screen measured the dock at the bottom of the screen',
+      },
+    ];
+  }
+  const counts = new Map<number, number>();
+  for (const r of fixed)
+    counts.set(Math.round(r.height), (counts.get(Math.round(r.height)) ?? 0) + 1);
+  if (counts.size <= 1) return [];
+  let usual = 0;
+  let most = 0;
+  for (const [h, n] of counts) {
+    if (n > most) {
+      usual = h;
+      most = n;
+    }
+  }
+  return fixed
+    .filter((r) => Math.round(r.height) !== usual)
+    .map((r) => ({
+      check: 'dock' as const,
+      screen: r.screen,
+      path: '',
+      text: '',
+      detail: `the dock is ${String(r.height)}px here and ${String(usual)}px on ${String(most)} other screens`,
+    }));
+}
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** Waits for a button by its exact text without clicking it; false when it never comes. */
+async function waitFor(page: Page, label: string, ms: number): Promise<boolean> {
+  return page
+    .waitForFunction(
+      (l: string) =>
+        [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === l),
+      { timeout: ms },
+      label,
+    )
+    .then(() => true)
+    .catch(() => false);
+}
+
+/** The Title's Continue carries its subtitle inside the button, so match the label's start. */
+const clickContinue = (page: Page): Promise<boolean> =>
+  page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')].find((x) =>
+      x.textContent?.trim().startsWith('Continue'),
+    );
+    b?.click();
+    return b !== undefined;
+  });
 
 /** Advances a spread frame through the tap-anywhere overlay; false when no burst is playing. */
 const advance = (page: Page): Promise<boolean> =>
@@ -584,10 +681,12 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
     findings: Omit<Finding, 'screen'>[];
   };
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
+  const dock = (await page.evaluate(DOCK_PROBE)) as ScreenResult['dock'];
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
+    dock,
     findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
   });
 }
@@ -643,6 +742,8 @@ async function walk(
   rootPct: string | null = null,
   nesting: NestResult[] | null = null,
 ): Promise<void> {
+  coverage.cellCard = false;
+  coverage.targets = false;
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   // THE FIRST-ENCOUNTER HINTS ARE RESET AT THE TOP OF EVERY PASS.
@@ -840,12 +941,16 @@ async function walk(
   await sleep(400);
   await step(page, 'goal dialog', results);
   await click(page, 'Begin');
-  await sleep(200);
-  await step(page, 'play, infection phase', results);
-  await click(page, 'Draw a card');
-  await sleep(600);
-  await step(page, 'reveal dialog', results);
-  await click(page, 'Continue');
+  // THE DRAW IS THE APP'S (docs/for-P2.7.md §12, ruling 2): the reveal follows Begin with nothing
+  // pressed. "Play, infection phase" was walked as a screen until then; it is no longer a resting
+  // state, so it is no longer a screen, and a reveal that never comes is NOT REACHED.
+  if (await waitFor(page, 'Plan your turn', 8000)) {
+    await sleep(300);
+    await step(page, 'reveal dialog', results);
+  } else {
+    results.push(notReached('reveal dialog', 'no reveal followed Begin: the draw did not happen'));
+  }
+  await click(page, 'Plan your turn');
   await sleep(300);
   await step(page, 'planning', results);
   // PLANNING → PATHOGEN CARD closes back to planning (ruling 9).
@@ -916,14 +1021,11 @@ async function walk(
     }
     if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
       await sleep(300);
+      await step(page, 'cell card, from the inspect sheet', results);
+      coverage.cellCard = true;
       await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
-    } else {
-      nestNotReached(
-        nesting,
-        'Inspect sheet → cell card',
-        'no cell stood on the node the walk inspected (the deal decides)',
-      );
     }
+    // Not reached here, the walk to the Result keeps trying, turn after turn (see `coverage`).
     await nest(page, nesting, 'Inspect sheet → close', 'play');
   } else {
     nestNotReached(
@@ -931,7 +1033,6 @@ async function walk(
       'Inspect sheet → pathogen card',
       'no invader token tap opened the sheet',
     );
-    nestNotReached(nesting, 'Inspect sheet → cell card', 'no invader token tap opened the sheet');
     results.push({
       screen: 'inspect sheet',
       controls: 0,
@@ -966,9 +1067,15 @@ async function walk(
     results.push(notReached('command, a first encounter hint'));
     results.push(notReached('command, hint dismissed'));
   }
-  await clickSel(page, '[data-bar-ap]');
-  await sleep(200);
-  await step(page, 'command, B-Cell selected, AP terms open', results);
+  // THE AP TERMS open over the board, so the dock keeps its height (§12, ruling 2).
+  if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
+    await sleep(250);
+    await step(page, 'AP terms, over the dock', results);
+    await nest(page, nesting, 'Dock → AP terms → close', 'play');
+  } else {
+    results.push(notReached('AP terms, over the dock', 'the AP figure was not tappable'));
+    nestNotReached(nesting, 'Dock → AP terms → close', 'the AP figure was not tappable');
+  }
   await page.evaluate(() => {
     const chip = [...document.querySelectorAll('button')].find((b) =>
       /^ENV\b/.test(b.innerText.trim()),
@@ -977,20 +1084,73 @@ async function walk(
   });
   await sleep(300);
   await step(page, 'command, family ENV selected', results);
-  await clickSel(page, '[data-bar-card="1"]');
-  await sleep(300);
-  await step(page, 'cell card', results);
-  await closeLevel(page);
   await clickSel(page, '[data-piece="cell:neutrophil"]');
   await sleep(300);
   await step(page, 'command, Neutrophil selected', results);
-  // The sheet's other door, offered only when the selected cell stands with something: a
-  // per-run screen, recorded under its own name when the deck offers it.
-  const opened = await click(page, "What's here");
-  if (opened) {
+  // A CARD BEHIND EVERY NAME (for-P2.7.md §14, ruling 5): the selected cell's name opens its card,
+  // on every run, where the inspect sheet's door depends on the deal.
+  if (await clickSel(page, '[data-dock-card]')) {
     await sleep(300);
-    await step(page, "inspect sheet, from What's here", results);
-    await closeLevel(page);
+    await step(page, 'cell card, from the dock', results);
+    await nest(page, nesting, 'Dock name → cell card → close', 'play');
+  } else {
+    results.push(notReached('cell card, from the dock', 'the selected cell showed no card button'));
+    nestNotReached(nesting, 'Dock name → cell card → close', 'no card button on the name');
+  }
+  // A ROW WITH SEVERAL TARGETS opens them over the board (§12, ruling 2). Tried here, and on every
+  // turn of the walk to the Result until the deal offers one.
+  await tryDockTargets(page, results, step, nesting);
+  await click(page, 'Deselect');
+  await sleep(200);
+  // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
+  // covers the fullest slot set. The Monocyte is moved off the bloodstream by a ring if it stands
+  // there, the screen is audited, and the move is undone.
+  await clickSel(page, '[data-piece="cell:macrophage"]');
+  await sleep(250);
+  const recallNow = (): Promise<boolean> =>
+    page.evaluate(() => document.querySelector('[data-dock-move="recall"]') !== null);
+  if (!(await recallNow())) {
+    const ring = await page.$('circle[stroke-dasharray="6 4"]');
+    if (ring) {
+      try {
+        await ring.click();
+      } catch {
+        // The ring moved under the tap; the check below says whether Recall is showing.
+      }
+      await sleep(400);
+      if (!(await page.evaluate(() => document.querySelector('[data-dock-card]') !== null))) {
+        await clickSel(page, '[data-piece="cell:macrophage"]');
+        await sleep(250);
+      }
+    }
+  }
+  if (await recallNow()) {
+    await step(page, 'command, Monocyte off the bloodstream, Recall showing', results);
+  } else {
+    results.push(
+      notReached(
+        'command, Monocyte off the bloodstream, Recall showing',
+        'no move ring took the Monocyte off the bloodstream',
+      ),
+    );
+  }
+  if (await clickSel(page, '[data-dock-undo="available"]')) await sleep(300);
+  await click(page, 'Deselect');
+  await sleep(200);
+  // A RESIDENT SELECTED, the shortest name and one of the widest. The walk had never selected a
+  // resident, so the one-height check had never seen the name line with a resident's name in it,
+  // and five of the seven wrapped it onto a second row (for-P2.7.md §14).
+  for (const organ of ['liver', 'lungs']) {
+    if (await clickSel(page, `[data-piece="resident:${organ}"]`)) {
+      await sleep(250);
+      await step(page, `command, the ${organ} resident selected`, results);
+      await click(page, 'Deselect');
+      await sleep(200);
+    } else {
+      results.push(
+        notReached(`command, the ${organ} resident selected`, 'no piece chip for that resident'),
+      );
+    }
   }
   await click(page, 'Menu');
   await sleep(300);
@@ -1028,8 +1188,44 @@ async function walk(
     await sleep(150);
     if (!more) break;
   }
-  await sleep(600);
-  await step(page, 'play, next turn', results);
+  // The spread ends and the app draws: the next turn opens on its reveal (§12, ruling 2).
+  if (await waitFor(page, 'Plan your turn', 8000)) {
+    await sleep(300);
+    await step(page, 'reveal, after End turn', results);
+  } else {
+    results.push(notReached('reveal, after End turn', 'no reveal followed the spread'));
+  }
+  await click(page, 'Plan your turn');
+  await sleep(300);
+  await step(page, 'planning, next turn', results);
+  // A GAME CLOSED MID-SPREAD resumes before its draw, because the session writes the autosave as
+  // the spread starts; with no Draw button the same rule must draw on resume, or the player has
+  // nothing to press (§12, "What the measurement changes", 2). Reloaded the way a closed tab is.
+  await click(page, 'Command your cells');
+  await sleep(900);
+  await click(page, 'End turn');
+  await sleep(350);
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  await page.evaluate((p: string | null) => {
+    if (p) document.documentElement.style.fontSize = p;
+  }, rootPct);
+  await sleep(300);
+  await clickContinue(page);
+  await waitFor(page, 'Plan your turn', 8000);
+  await sleep(300);
+  if (nesting !== null) {
+    const actual = await whereNow(page);
+    nesting.push({
+      path: 'A game closed mid-spread → Continue',
+      expected: 'reveal',
+      actual,
+      via: 'resume',
+      ok: actual === 'reveal',
+    });
+  }
+  await click(page, 'Plan your turn');
+  await sleep(300);
   // Settings from the Title WITH a save (the first visit had none, so the delete row was
   // disabled): quit keeps the save, the row is live, its confirm is measured, and Continue
   // resumes the game for the walk to the Result.
@@ -1071,22 +1267,102 @@ async function walk(
   await sleep(700);
 }
 
+/**
+ * WHAT THE DEAL DECIDES, TRIED UNTIL IT COMES (docs/for-P2.7.md §13). Two screens exist only when
+ * the board co-operates: the cell card, whose one door since piece 2 is the inspect sheet of a node
+ * where a cell stands beside a pathogen (FINDINGS #71), and a dock row's list of targets, which
+ * needs a piece with several. On a first turn neither is likely, and the first audit of piece 2
+ * reached neither in any pass: two screens nobody had measured, under a clean total. So the walk
+ * tries them where it can and the walk to the Result keeps trying on every idle turn, while the
+ * invaders pile up; only a run that never reaches one records it NOT REACHED. Reset per walk.
+ */
+const coverage = { cellCard: false, targets: false };
+
+/** Opens a dock row's targets when some piece has several, audits them, closes them. */
+async function tryDockTargets(
+  page: Page,
+  results: ScreenResult[],
+  step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  nesting: NestResult[] | null,
+): Promise<void> {
+  if (coverage.targets) return;
+  const pieceKeys = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-piece]')].map((e) => e.getAttribute('data-piece') ?? ''),
+  );
+  for (const p of pieceKeys) {
+    await clickSel(page, `[data-piece="${p}"]`);
+    await sleep(220);
+    if (await clickSel(page, '[data-dock-row][data-dock-targets]')) {
+      await sleep(250);
+      await step(page, 'dock targets', results);
+      await nest(page, nesting, 'Dock row → its targets → close', 'play');
+      coverage.targets = true;
+      return;
+    }
+  }
+}
+
+/** Opens the inspect sheet on a node where a cell stands, then that cell's card; audits the card. */
+async function tryCellCard(
+  page: Page,
+  results: ScreenResult[],
+  step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  nesting: NestResult[] | null,
+): Promise<void> {
+  if (coverage.cellCard) return;
+  const n = await page.evaluate(() => document.querySelectorAll('[data-invader]').length);
+  for (let i = 0; i < n; i += 1) {
+    const el = (await page.$$('[data-invader]'))[i];
+    if (!el) continue;
+    try {
+      await el.click();
+    } catch {
+      continue;
+    }
+    await sleep(280);
+    const sheet = await page.evaluate(
+      () => document.querySelector('[data-inspect-sheet]') !== null,
+    );
+    if (!sheet) {
+      // The tap selected a piece instead; the same tap again lets it go.
+      try {
+        await (await page.$$('[data-invader]'))[i]?.click();
+      } catch {
+        /* moved under us */
+      }
+      await sleep(150);
+      continue;
+    }
+    if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
+      await sleep(300);
+      await step(page, 'cell card, from the inspect sheet', results);
+      await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
+      await closeLevel(page);
+      coverage.cellCard = true;
+      return;
+    }
+    await closeLevel(page);
+  }
+}
+
 /** The Result screen: an idle game on Training is lost within a handful of turns. */
 async function walkToResult(
   page: Page,
   results: ScreenResult[],
   step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  nesting: NestResult[] | null = null,
 ): Promise<void> {
   for (let turn = 0; turn < 14; turn += 1) {
     const ended = await page.evaluate(() => document.body.innerText.includes('Play again'));
     if (ended) break;
-    if (await click(page, 'Draw a card')) {
-      await sleep(400);
-      await click(page, 'Continue');
-      await sleep(200);
-      await click(page, 'Command your cells');
-      await sleep(700);
-    }
+    // The app draws at the start of every turn (§12, ruling 2); a mop-up draw shows no reveal.
+    await waitFor(page, 'Plan your turn', 1500);
+    if (await click(page, 'Plan your turn')) await sleep(250);
+    if (await click(page, 'Command your cells')) await sleep(700);
+    await tryDockTargets(page, results, step, nesting);
+    await click(page, 'Deselect');
+    await sleep(150);
+    await tryCellCard(page, results, step, nesting);
     await click(page, 'End turn');
     for (let i = 0; i < 40; i += 1) {
       await sleep(120);
@@ -1095,6 +1371,24 @@ async function walkToResult(
       const more = await advance(page);
       if (!more && i > 8) break;
     }
+  }
+  if (!coverage.cellCard) {
+    results.push(
+      notReached(
+        'cell card, from the inspect sheet',
+        'no node with a cell beside a pathogen opened in the walk or 14 idle turns (FINDINGS #71)',
+      ),
+    );
+    nestNotReached(nesting, 'Inspect sheet → cell card', 'no cell card door opened');
+  }
+  if (!coverage.targets) {
+    results.push(
+      notReached(
+        'dock targets',
+        'no piece had a row with several targets in the walk or 14 idle turns',
+      ),
+    );
+    nestNotReached(nesting, 'Dock row → its targets → close', 'no row with several targets');
   }
   const ended = await page.evaluate(() => document.body.innerText.includes('Play again'));
   if (ended) await step(page, 'result', results);
@@ -1641,6 +1935,93 @@ async function controls(page: Page): Promise<string[]> {
     once.length === 1 && once[0]?.ok === true,
   );
 
+  // ------------------------------------------------------------------------------------------
+  // THE DOCK'S ONE HEIGHT (docs/for-P2.7.md §12): the check must report a screen where the dock
+  // is a different height, must pass screens where it is one height (to the pixel it rounds to),
+  // and must call a run with no dock measured NOT REACHED rather than clean.
+  // ------------------------------------------------------------------------------------------
+  line(
+    'dock fires: a screen where the dock is another height is reported, by name',
+    dockFindings([
+      { screen: 'a', height: 248, fixed: true },
+      { screen: 'b', height: 266, fixed: true },
+      { screen: 'c', height: 248, fixed: true },
+    ]).some((f) => f.screen === 'b' && f.detail.startsWith('the dock is 266px')),
+  );
+  line(
+    'dock passes: one height across screens is NOT reported',
+    dockFindings([
+      { screen: 'a', height: 248, fixed: true },
+      { screen: 'b', height: 248.2, fixed: true },
+      { screen: 'c', height: 480, fixed: false },
+    ]).length === 0,
+  );
+  line(
+    'dock fires: a run that measured no dock at the bottom is NOT REACHED, never clean',
+    dockFindings([{ screen: 'a', height: 480, fixed: false }]).some((f) =>
+      f.detail.startsWith('NOT REACHED'),
+    ),
+  );
+
+  // ------------------------------------------------------------------------------------------
+  // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands
+  // anywhere but a reveal, and pass the game closed mid-spread that the walk itself relies on. The
+  // fires half resumes a game saved at planning, after its draw, which has no draw to make and so
+  // lands on planning; each half runs in its own browser context, so no save leaks between them.
+  // ------------------------------------------------------------------------------------------
+  const resumeLanding = async (midSpread: boolean): Promise<string> => {
+    const context = await page.browser().createBrowserContext();
+    try {
+      const p = await context.newPage();
+      await p.setViewport({ width: 360, height: 780 });
+      await p.goto(URL, { waitUntil: 'load' });
+      await waitClick(p, 'New game');
+      await p
+        .waitForFunction(
+          () =>
+            [...document.querySelectorAll('*')].some(
+              (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+            ),
+          { timeout: 8000 },
+        )
+        .catch(() => undefined);
+      await p.evaluate(() => {
+        const el = [...document.querySelectorAll('*')].find(
+          (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+        ) as HTMLElement | undefined;
+        el?.click();
+      });
+      await sleep(300);
+      await click(p, 'Start and replace');
+      await waitClick(p, 'Begin');
+      await waitClick(p, 'Plan your turn');
+      await sleep(300);
+      if (midSpread) {
+        await waitClick(p, 'Command your cells');
+        await sleep(900);
+        await waitClick(p, 'End turn');
+        await sleep(350);
+      }
+      await p.reload({ waitUntil: 'load' });
+      await p.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+      await sleep(300);
+      await clickContinue(p);
+      await waitFor(p, 'Plan your turn', 5000);
+      await sleep(400);
+      return await whereNow(p);
+    } finally {
+      await context.close();
+    }
+  };
+  line(
+    'resume fires: a resumed game that lands anywhere but a reveal is reported',
+    (await resumeLanding(false)) === 'planning',
+  );
+  line(
+    'resume passes: a game closed mid-spread reaches its reveal',
+    (await resumeLanding(true)) === 'reveal',
+  );
+
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
   return lines;
 }
@@ -1713,8 +2094,8 @@ async function playATurn(
     .then(() => click(page, 'Start and replace'))
     .catch(() => undefined);
   await step('Begin', () => waitClick(page, 'Begin'));
-  await step('Draw a card', () => waitClick(page, 'Draw a card'));
-  await step('Continue', () => waitClick(page, 'Continue'));
+  // The draw is the app's (§12, ruling 2): the reveal follows Begin with nothing pressed.
+  await step('Plan your turn', () => waitClick(page, 'Plan your turn'));
   await step('Command your cells', () => waitClick(page, 'Command your cells'));
   await step('select the Monocyte', async () => {
     await page
@@ -1801,7 +2182,7 @@ try {
   const nesting: NestResult[] = [];
   if (!offlineOnly) {
     await walk(page, results, audit, null, nesting);
-    await walkToResult(page, results, audit);
+    await walkToResult(page, results, audit, nesting);
   }
 
   // FONT200: the same screens at 360px with the root font size at 200% — the browser
@@ -1882,6 +2263,18 @@ try {
 
   const count = (rs: ScreenResult[], check: Finding['check']): number =>
     rs.reduce((n, s) => n + s.findings.filter((f) => f.check === check).length, 0);
+  // The dock's one height, over the base pass's screens (§12).
+  const dockRecords = results.flatMap((r) =>
+    r.dock ? [{ screen: r.screen, height: r.dock.height, fixed: r.dock.fixed }] : [],
+  );
+  const dock = offlineOnly
+    ? null
+    : {
+        screensMeasured: dockRecords.length,
+        screensAtTheBottom: dockRecords.filter((r) => r.fixed).length,
+        heights: [...new Set(dockRecords.filter((r) => r.fixed).map((r) => r.height))],
+        findings: dockFindings(dockRecords),
+      };
   const out = {
     url: URL,
     when: new Date().toISOString(),
@@ -1893,6 +2286,7 @@ try {
     zoom200,
     size200,
     nesting,
+    dock,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -1915,6 +2309,7 @@ try {
       nestingChecked: nesting.length,
       nestingWrong: nesting.filter((n) => !n.ok && n.actual !== 'NOT REACHED').length,
       nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
+      dockFindings: dock ? dock.findings.length : null,
       offlineMet: off['met'],
     },
   };

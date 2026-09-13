@@ -84,6 +84,13 @@ export interface BoardOffer {
   invaderId?: string;
   /** Localised, e.g. "Snipe Influenza". */
   label: string;
+  /**
+   * The label's two halves, for the dock's half-width slot, which sets them on two lines
+   * (for-P2.7.md §14): the verb as the label has it ("Coat", not "Tag", on a worm), and whom.
+   * Both are the same words the label is made of, so the slot and the label cannot disagree.
+   */
+  verb?: string;
+  target?: string;
   /** Localised cost hint, e.g. "2 AP", or null when it costs the usual. */
   cost: string | null;
   /**
@@ -228,6 +235,8 @@ export function bodyOffers(view: SessionView): Offered {
         cell: null,
         invaderId: id,
         label: `${t('action.memoryKill')} ${String(iv.disease ?? '')}`,
+        verb: t('action.memoryKill'),
+        target: String(iv.disease ?? ''),
         cost: hard ? apLabel(1) : null,
         params: { action: 'memoryKill', invaderId: id },
       });
@@ -245,6 +254,8 @@ export function bodyOffers(view: SessionView): Offered {
         cell: null,
         invaderId: iv.id,
         label: `${t('action.antivenom')} ${iv.disease}`,
+        verb: t('action.antivenom'),
+        target: String(iv.disease),
         cost: apLabel(3),
         params: { action: 'antivenom', invaderId: iv.id },
       });
@@ -428,6 +439,8 @@ export function offeredActions(view: SessionView): Offered {
         cell,
         invaderId: iv.id,
         label: `${verbFor(action, iv.type)} ${iv.disease}`,
+        verb: verbFor(action, iv.type),
+        target: iv.disease,
         cost,
         detail,
         params: { action, cell, invaderId: iv.id },
@@ -624,6 +637,8 @@ function residentOffers(view: SessionView, organ: string): Offered {
         organ,
         invaderId: iv.id,
         label: `${t('action.engulf')} ${iv.disease}`,
+        verb: t('action.engulf'),
+        target: String(iv.disease),
         cost: null,
         params: { action: 'resengulf', organ, invaderId: iv.id },
       });
@@ -712,6 +727,9 @@ export interface ActionRow {
   action: string;
   /** Localised: "Engulf Rotavirus" / "Engulf" (greyed). */
   label: string;
+  /** The offer's verb and target, the two halves of `label`; null on a greyed row. */
+  verb: string | null;
+  target: string | null;
   cost: string | null;
   /** The offer's detail (odds), or null. */
   detail: string | null;
@@ -800,6 +818,8 @@ export function actionRows(view: SessionView): ActionRow[] {
           id: `${action}:${o.id}`,
           action,
           label: o.label,
+          verb: 'verb' in o ? (o.verb ?? null) : null,
+          target: 'target' in o ? (o.target ?? null) : null,
           cost: 'cost' in o ? (o.cost ?? null) : null,
           detail: 'detail' in o ? (o.detail ?? null) : null,
           available: true,
@@ -819,6 +839,8 @@ export function actionRows(view: SessionView): ActionRow[] {
       id: action,
       action,
       label: t(`action.${action}`),
+      verb: null,
+      target: null,
       cost: null,
       detail: null,
       available: false,
@@ -827,4 +849,100 @@ export function actionRows(view: SessionView): ActionRow[] {
     });
   }
   return rows;
+}
+
+/**
+ * THE DOCK'S ROWS (docs/for-P2.7.md §12, ruling 2, 13 September 2026): the dock has two row slots
+ * and one height, and the action list above could not hold them, because it has one row per
+ * TARGET: a B-Cell on an idle board reached 16 rows and 950px.
+ *
+ * So the dock has one row per ACTION. With one target the row is that target's row, word for word,
+ * and sends its offer, as the list did. With several it names the action and how many ("Neutralise:
+ * 5 targets"), and the dock opens them as a list over the board. With none it is the greyed row and
+ * its reason. The rows below are grouped, never re-decided: every available row `actionRows` makes
+ * is a target of exactly one dock row, which `dock-rows.test.ts` holds on recorded states.
+ *
+ * `produce` is left out: it was greyed on every turn measured, because producing is the antibody
+ * panel's. Without it no piece has more than two actions, which is what makes two slots enough.
+ */
+export const DOCK_OMITS: ReadonlySet<string> = new Set(['produce']);
+
+/** The dock's row slots. A catalogue that outgrew them is caught by `dock-rows.test.ts`. */
+export const DOCK_ROW_SLOTS = 2;
+
+export interface DockRow {
+  action: string;
+  /** Localised: the one target's own label, "Neutralise: 5 targets", or the action's name. */
+  label: string;
+  /**
+   * The slot's two lines (for-P2.7.md §14): the verb, and under it the target, "5 targets", or
+   * nothing. Measured before building: in the button's font at 360 CSS px every action word and
+   * every disease name alone fits the half-width slot's 150px, and a name with its cost or its
+   * odds does not, so the cost rides line one and the NK's odds ride the message line.
+   */
+  verb: string;
+  target: string | null;
+  cost: string | null;
+  detail: string | null;
+  available: boolean;
+  /** One target: the offer the row sends. Several or none: null. */
+  offerId: string | null;
+  /** Every available row this one stands for, in `actionRows` order. */
+  targets: ActionRow[];
+  /** A greyed row: why, localised. */
+  reason: string | null;
+}
+
+export function dockRows(view: SessionView): DockRow[] {
+  const rows = actionRows(view);
+  const order: string[] = [];
+  for (const r of rows) {
+    if (!DOCK_OMITS.has(r.action) && !order.includes(r.action)) order.push(r.action);
+  }
+  return order.map((action): DockRow => {
+    const mine = rows.filter((r) => r.action === action);
+    const available = mine.filter((r) => r.available);
+    const only = available[0];
+    if (available.length === 1 && only) {
+      return {
+        action,
+        label: only.label,
+        verb: only.verb ?? only.label,
+        target: only.target,
+        cost: only.cost,
+        detail: only.detail,
+        available: true,
+        offerId: only.offerId,
+        targets: available,
+        reason: null,
+      };
+    }
+    if (available.length > 1) {
+      return {
+        action,
+        label: t('dock.targets', { action: t(`action.${action}`), n: available.length }),
+        verb: t(`action.${action}`),
+        target: t('dock.targetCount', { n: available.length }),
+        cost: null,
+        detail: null,
+        available: true,
+        offerId: null,
+        targets: available,
+        reason: null,
+      };
+    }
+    const first = mine[0];
+    return {
+      action,
+      label: first?.label ?? t(`action.${action}`),
+      verb: first?.label ?? t(`action.${action}`),
+      target: null,
+      cost: null,
+      detail: null,
+      available: false,
+      offerId: null,
+      targets: [],
+      reason: first?.reason ?? null,
+    };
+  });
 }

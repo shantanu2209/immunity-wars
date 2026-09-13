@@ -20,8 +20,19 @@ export {
 } from './board/Board';
 export { InspectSheet } from './panels/InspectSheet';
 export { PieceStrip, type PieceChip } from './panels/PieceStrip';
-export { ActionList } from './panels/ActionList';
-export { actionRows, ACTION_CATALOGUE, MOVE_LIKE, type ActionRow } from './play/offered';
+export {
+  actionRows,
+  dockRows,
+  ACTION_CATALOGUE,
+  DOCK_OMITS,
+  DOCK_ROW_SLOTS,
+  MOVE_LIKE,
+  type ActionRow,
+  type DockRow,
+} from './play/offered';
+export { shouldDraw, type DrawMoment } from './play/autoDraw';
+export { Dock, DOCK_ZONES, type DockProps, type DockUndo } from './panels/Dock';
+export { DockSheet, TargetList } from './panels/DockSheet';
 export { effectChips, turnLine, rareLogLine, apTermLines, type EffectChip } from './play/effects';
 export {
   RevealBody,
@@ -42,7 +53,6 @@ export {
   type Depth,
 } from './play/planning';
 export { invaderNowLine } from './panels/invaderNow';
-export { CommandBar, type BarButton } from './panels/CommandBar';
 export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
@@ -60,6 +70,8 @@ export {
   useNav,
   useNavLayer,
   useNavLayerWith,
+  useNavState,
+  type NavState,
   type Nav,
   type NavLayerApi,
 } from './nav/NavHost';

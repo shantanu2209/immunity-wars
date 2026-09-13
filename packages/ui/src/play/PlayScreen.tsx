@@ -1,9 +1,10 @@
 /**
  * The Play surface — THE COMPONENT BOTH SHELLS MOUNT (docs/APP_FLOW.md ruling 6).
  *
- * The app shell mounts it inside the screen machine with player controls; the dev shell
- * mounts it with its own instrumented controls (button text unchanged, so
- * tools/perf/measure.ts's coupling holds verbatim), the checks panel and the skip toggle.
+ * The app shell mounts it inside the screen machine with its top row (the turn line and Menu);
+ * the dev shell mounts it with its own instrumented controls, the checks panel and the skip
+ * toggle. Neither shell has a Draw button: this screen sends the draw itself (`autoDraw.ts`), and
+ * the turn's next step is the dock's (docs/for-P2.7.md §12, ruled 13 September 2026).
  * Ported from the P2.2 dev shell; the burst machinery keeps its exact shape:
  *
  * - The subscribe listener only queues; the animation loop drains at the RULED pacing
@@ -39,28 +40,32 @@ import { engineText } from '../engineText';
 import {
   CLONE_TARGET,
   MOVE_LIKE,
-  actionRows,
   bodyOffers,
   diseaseLabel,
+  dockRows,
   offeredActions,
   type BoardOffer,
+  type DockRow,
   type Offered,
 } from './offered';
+import { shouldDraw } from './autoDraw';
 import { EffectsStrip } from '../panels/EffectsStrip';
 import { apTermLines, effectChips, rareLogLine } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
-import { GRACE_CLEAR, ORGANS, SPEED } from '@immunity-wars/content';
+import { GRACE_CLEAR, NK_HITS, ORGANS, SPEED } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
-import { useNavLayer } from '../nav/NavHost';
+import { useNavLayer, useNavState } from '../nav/NavHost';
 import { GoalBody } from '../dialogs/GoalBody';
 import { RevealBody, revealCrisis, type RevealArrival } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
-import { CommandBar } from '../panels/CommandBar';
+import { ApTerms } from '../panels/ApTerms';
+import { Dock } from '../panels/Dock';
+import { DockSheet, TargetList } from '../panels/DockSheet';
 import { InspectSheet } from '../panels/InspectSheet';
 import { HintLine } from '../panels/HintLine';
 import {
@@ -83,7 +88,6 @@ import { PlanningScreen } from './PlanningScreen';
 import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
-import { SpreadNarration, diceOf } from './SpreadNarration';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
@@ -201,6 +205,22 @@ export function PlayScreen({
   useNavLayer('inspect', inspect !== null, () => setInspect(null));
   useNavLayer('pathogen-card', card !== null, () => setCard(null));
   useNavLayer('cell-card', cellCard !== null, () => setCellCard(null));
+  // WHAT THE DOCK OPENS OVER THE BOARD (§12, ruling 2): a row's several targets, and the AP terms.
+  const [targetsFor, setTargetsFor] = useState<DockRow | null>(null);
+  const [apSheet, setApSheet] = useState(false);
+  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
+  useNavLayer('ap-terms', apSheet, () => setApSheet(false));
+  // Whether the floating close is showing (the dock hides under it, §12 ruling 1) and whether
+  // anything is open over the game (the draw waits for the player to come back).
+  const navState = useNavState();
+
+  // WHERE THE DOCK SITS (§12, ruling 3): at the bottom of the screen while the top row, the board
+  // and the dock all fit it; otherwise straight after the board, in a page that scrolls. Measured,
+  // not assumed, whenever the board, the dock, the screen or anything above the board changes size.
+  const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const dockRef = useRef<HTMLDivElement | null>(null);
+  const [dockFixed, setDockFixed] = useState(true);
+  const [dockHeight, setDockHeight] = useState(0);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -381,7 +401,8 @@ export function PlayScreen({
           }
         />
       ),
-      dismissLabel: t('reveal.continue'),
+      // The reveal's button begins planning, and says so (§12 ruling 5).
+      dismissLabel: t('reveal.plan'),
     });
   }, [authView, enqueueDialog]);
 
@@ -391,6 +412,51 @@ export function PlayScreen({
       if (!r.ok) setLastError(r.error ?? null);
     });
   };
+
+  // THE DRAW INSIDE END TURN (§9 ruling 2, §12): the moment the rule says so, once a turn. It runs
+  // after the goal and reveal effects above, and reads the queue synchronously, so a new game's goal
+  // dialog, enqueued in this same flush, is answered first.
+  const sentDrawRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (
+      !shouldDraw({
+        game: authView.game,
+        playing,
+        dialogPending: dialogs.hasPending(),
+        covered: navState.depth > 0,
+        sentForTurn: sentDrawRef.current,
+      })
+    )
+      return;
+    sentDrawRef.current = Number(authView.game['turn']);
+    send({ action: 'draw' });
+    // `send` is rebuilt every render and does not decide anything; what decides is listed.
+  }, [authView, playing, dialogs.current, navState.depth]);
+
+  useLayoutEffect(() => {
+    const board = boardWrapRef.current;
+    const dock = dockRef.current;
+    const root = rootRef.current;
+    if (!board || !dock || !root || typeof window === 'undefined') return undefined;
+    const measure = (): void => {
+      // Behind the planning screen the stage is hidden and measures nothing: keep what was known.
+      if (board.getClientRects().length === 0) return;
+      const bottom = board.getBoundingClientRect().bottom + window.scrollY;
+      const h = dock.getBoundingClientRect().height;
+      setDockHeight(h);
+      setDockFixed(bottom + h <= window.innerHeight);
+    };
+    measure();
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    ro?.observe(board);
+    ro?.observe(dock);
+    ro?.observe(root);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
@@ -436,7 +502,7 @@ export function PlayScreen({
   const multiChoice = [...byInvader.values()].some((os) => os.length > 1);
   // The bar keeps only the MOVEMENT buttons (recall); every other action is a row in the
   // action list, named with its target (S25 item 1).
-  const barButtons = offered.buttons.filter((b) => b.place !== 'panel' && MOVE_LIKE.has(b.action));
+  const moveButtons = offered.buttons.filter((b) => b.place !== 'panel' && MOVE_LIKE.has(b.action));
   const panelButtons = offered.buttons.filter((b) => b.place === 'panel');
   let hint: string | null = null;
   if (byInvader.size > 0)
@@ -687,8 +753,42 @@ export function PlayScreen({
         ? t('regen.helped')
         : t('regen.wait', { n: r.wait });
   }
-  const rows = playing ? [] : actionRows(authView);
+  const rows: DockRow[] = playing ? [] : dockRows(authView);
 
+  // THE DOCK'S MESSAGE LINE: one thing, the most useful. What the board offers when it offers
+  // something; otherwise why the piece cannot act; a note (why a spent cell is back when it is, the
+  // lymph shortcut withheld) rides after it.
+  const note = offered.note ?? (selectedCell ? (why[selectedCell] ?? null) : null);
+  let message: string | null;
+  let messageTone: 'hint' | 'muted' | 'memory' | 'alert' = 'muted';
+  if (!selectedCell && !selectedResident) {
+    // What the body's rings are when it has some; otherwise the prompt to pick a piece.
+    message = noSelectionHint ?? t('commandBar.selectPrompt');
+    messageTone = noSelectionHint !== null ? 'memory' : 'muted';
+  } else if (byInvader.size > 0 || moveCount > 0) {
+    message = hint;
+    messageTone = 'hint';
+  } else if (offered.reason !== null) {
+    message = offered.reason;
+    messageTone = 'alert';
+  } else {
+    message = hint;
+  }
+  if (note !== null) message = message === null ? note : `${message} ${t('inspect.sep')} ${note}`;
+  const speed = selectedCell
+    ? ((SPEED as Record<string, number | undefined>)[selectedCell] ?? null)
+    : null;
+  // The NK Cell's odds ride the lead, not its slots: every NK strike has the same odds, and with them
+  // beside a target's name the name did not fit a half-width slot (measured, for-P2.7.md §14).
+  const speedLine = speed !== null ? t('commandBar.speed', { n: speed }) : null;
+  const lead = selectedResident
+    ? t('resident.of', { organ: organDisplayName(selectedResident) })
+    : selectedCell === 'nk' && speedLine !== null
+      ? `${speedLine} ${t('inspect.sep')} ${t('actions.hitsOn', { n: NK_HITS })}`
+      : speedLine;
+  const apTerms = apTermLines(authView);
+  // WHAT'S HERE, back as a slot (§14, ruling 3): offered when the selected piece stands with
+  // something the inspect sheet can show.
   const selectedNode = selectedCell
     ? inspectInfoForCell(game, selectedCell, authView.queries.readyTurn)
     : selectedResident
@@ -807,7 +907,6 @@ export function PlayScreen({
         render={renderControls}
         ctx={{ game, phase, playing, planning: planningActive, lastError, send }}
       />
-      <LiveNarration store={frameStore} />
       <EffectsStrip chips={effectChips(authView)} />
       {planning !== null && planningActive ? (
         <>
@@ -835,54 +934,53 @@ export function PlayScreen({
           extra render per draw cheap. Measured in P2_3_MEASUREMENT.md, "Added 6 September". */}
       <div data-command-stage="1" hidden={planningActive}>
         <>
-          <LiveBoard
+          <div ref={boardWrapRef}>
+            <LiveBoard
+              store={frameStore}
+              game={game}
+              selectedCell={selectedCell}
+              selectedResident={selectedResident}
+              readyTurn={authView.queries.readyTurn}
+              artMetrics={artMetrics}
+              targets={boardTargets}
+              onTap={playing ? undefined : handleBoardTap}
+            />
+          </div>
+          {/* THE DOCK (§9 ruling 1, §12). Straight after the board in the page, so that when it
+              cannot sit at the bottom of the screen it is the next thing below the board; in piece
+              3 the panels between here and the end of the page move into drawers. */}
+          <Dock
+            dockRef={dockRef}
             store={frameStore}
-            game={game}
-            selectedCell={selectedCell}
-            selectedResident={selectedResident}
-            readyTurn={authView.queries.readyTurn}
-            artMetrics={artMetrics}
-            targets={boardTargets}
-            onTap={playing ? undefined : handleBoardTap}
-          />
-          <CommandBar
-            selectedCellName={
+            selectedName={
               selectedCell
                 ? cellDisplayName(selectedCell)
                 : selectedResident
                   ? residentDisplayName(selectedResident)
                   : null
             }
-            qualifier={
-              selectedResident
-                ? t('resident.of', { organ: organDisplayName(selectedResident) })
-                : null
-            }
-            speed={
-              selectedCell
-                ? ((SPEED as Record<string, number | undefined>)[selectedCell] ?? null)
-                : null
-            }
-            apTerms={apTermLines(authView)}
-            note={offered.note ?? (selectedCell ? (why[selectedCell] ?? null) : null)}
-            noSelectionHint={noSelectionHint}
+            lead={lead}
+            message={message}
+            messageTone={messageTone}
+            notice={lastError ? engineText(lastError) : null}
             ap={Number(game['ap'] ?? 0)}
-            hint={hint}
-            buttons={barButtons.map((b) => ({ id: b.id, label: b.label }))}
-            noAction={offered.reason}
+            apTermsAvailable={apTerms.length > 0}
+            onAp={() => setApSheet(true)}
             undo={authView.undo}
             inCommand={phase === 'command'}
-            notice={lastError ? engineText(lastError) : null}
-            canInspect={canInspect}
-            disabled={playing}
             rows={rows}
-            hasMovement={moveCount > 0}
-            onOffer={sendOffer}
-            onButton={sendOffer}
-            onUndo={() => send({ action: 'undo' })}
-            onInspect={() => {
-              if (selectedNode) setInspect(selectedNode);
+            moveButtons={moveButtons.map((b) => ({ id: b.id, label: b.label }))}
+            onMoveButton={sendOffer}
+            noRowsText={selectedCell && rows.length === 0 ? t('actions.none') : null}
+            disabled={playing}
+            endTurnDisabled={playing || phase !== 'command'}
+            onEndTurn={() => send({ action: 'endCommand' })}
+            onRow={(row) => {
+              if (row.targets.length > 1) setTargetsFor(row);
+              else if (row.offerId !== null) sendOffer(row.offerId);
             }}
+            onUndo={() => send({ action: 'undo' })}
+            onDeselect={selectedCell || selectedResident ? deselect : null}
             onCard={
               selectedCell
                 ? () =>
@@ -892,10 +990,35 @@ export function PlayScreen({
                         ? unavailableText(unavailableByCell[selectedCell])
                         : null,
                     })
-                : undefined
+                : null
             }
-            onDeselect={deselect}
+            cardLabel={
+              selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null
+            }
+            onWhatsHere={
+              canInspect && selectedNode !== null ? () => setInspect(selectedNode) : null
+            }
+            resetKey={[selectedCell, selectedResident, turnNow, game['ap'], phase].join('|')}
+            fixed={dockFixed}
+            hidden={navState.floating}
           />
+          {targetsFor !== null ? (
+            <DockSheet kind="targets" title={t(`action.${targetsFor.action}`)}>
+              <TargetList
+                targets={targetsFor.targets}
+                disabled={playing}
+                onOffer={(id) => {
+                  setTargetsFor(null);
+                  sendOffer(id);
+                }}
+              />
+            </DockSheet>
+          ) : null}
+          {apSheet ? (
+            <DockSheet kind="ap" title={null}>
+              <ApTerms terms={apTerms} total={Number(game['ap'] ?? 0)} />
+            </DockSheet>
+          ) : null}
           <PieceStrip
             pieces={pieces}
             selectedCell={selectedCell}
@@ -976,6 +1099,11 @@ export function PlayScreen({
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
           {card ? <PathogenCard subject={card} /> : null}
           {cellCard ? <CellCard subject={cellCard} /> : null}
+          {/* While the dock sits at the bottom of the screen the page ends in its height, so the
+              last lines of the page never scroll under it; the occlusion check is what says so. */}
+          {dockFixed ? (
+            <div aria-hidden="true" data-dock-spacer="" style={{ height: dockHeight }} />
+          ) : null}
         </>
       </div>
     </div>
@@ -1008,13 +1136,6 @@ function LiveControls({
       })}
     </>
   );
-}
-
-function LiveNarration({ store }: { store: FrameStore }): ReactElement | null {
-  const frame = useFrame(store);
-  return frame ? (
-    <SpreadNarration label={frame.label} n={frame.n} of={frame.of} dice={diceOf(frame.dice)} />
-  ) : null;
 }
 
 type BoardProps = Parameters<typeof Board>[0];

@@ -60,6 +60,52 @@ const clickButton = (page: Page, label: string): Promise<void> =>
     b.click();
   }, label);
 
+/**
+ * From the start of a turn to its command phase, as a player gets there now: the app draws, the
+ * reveal (when something arrived; a mop-up draw shows none) is dismissed by its button, and the dev
+ * shell's Begin command is pressed. Coupled to the catalogue's reveal.plan text, the same kind of
+ * coupling as the button labels.
+ */
+async function openCommand(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const b = [...document.querySelectorAll('button')].find((x) =>
+        x.textContent?.includes('Begin command'),
+      );
+      return b ? !b.disabled : false;
+    },
+    { timeout: 30000 },
+  );
+  // Waited for, not clicked blind: the reveal shows one render after Begin command enables, and a
+  // reveal left pending holds the next turn's draw (measure-full.ts says how this was found).
+  // Tolerant: a mop-up draw shows no reveal.
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('button')].some(
+          (x) => x.textContent?.trim() === 'Plan your turn',
+        ),
+      { timeout: 10000 },
+    )
+    .catch(() => undefined);
+  await page.evaluate(() => {
+    const b = [...document.querySelectorAll('button')].find(
+      (x) => x.textContent?.trim() === 'Plan your turn',
+    );
+    if (b) b.click();
+  });
+  await clickButton(page, 'Begin command');
+  await page.waitForFunction(
+    () => {
+      const b = [...document.querySelectorAll('button')].find((x) =>
+        x.textContent?.includes('End command'),
+      );
+      return b ? !b.disabled : false;
+    },
+    { timeout: 30000 },
+  );
+}
+
 const metricsOf = (page: Page): Promise<PageMetrics> =>
   page.evaluate(
     () => (globalThis as unknown as { __iwMetrics: PageMetrics }).__iwMetrics,
@@ -89,6 +135,12 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
     // The goal dialog (P2.5 piece 3) opens once on a fresh game; a real player dismisses it
     // before touching the board, so the measured taps and spreads run without it. Tolerant,
     // like the reveal dismissal below; coupled to the catalogue's goal.begin text.
+    // WAITED FOR since piece 2: the app's draw waits for the goal dialog to be answered
+    // (docs/for-P2.7.md §12), so a Begin pressed before the dialog renders leaves the game undrawn.
+    await page.waitForFunction(
+      () => [...document.querySelectorAll('button')].some((x) => x.textContent?.trim() === 'Begin'),
+      { timeout: 60000 },
+    );
     await page.evaluate(() => {
       // Exact match on purpose: includes('Begin') would hit "Begin command" first.
       const b = [...document.querySelectorAll('button')].find(
@@ -96,6 +148,13 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
       );
       if (b) b.click();
     });
+
+    // THE DRAW IS THE APP'S (docs/for-P2.7.md §12, ruling 6, 13 September 2026): the dev shell
+    // follows the app, so Begin is followed by the draw with nothing pressed, then the reveal and
+    // planning, behind which the board is hidden. The taps below therefore run in the COMMAND
+    // phase, a player's selection, where they used to run on the pre-draw board, which is no
+    // longer a resting state. A changed condition, stated with the numbers.
+    await openCommand(page);
 
     // --- tap -> visible: 24 alternating cell selections through Session ---
     const cells = ['macrophage', 'neutrophil', 'tcell', 'nk'];
@@ -116,45 +175,16 @@ async function measureRate(rate: number): Promise<Record<string, unknown>> {
     // --- per-redraw work: four full turns of real spreads ---
     for (let t = 0; t < 4; t += 1) {
       const before = await status(page);
-      if (!before.includes('phase infection')) break; // game ended early; keep what we have
-      await clickButton(page, 'Draw');
-      await page.waitForFunction(
-        () => {
-          const b = [...document.querySelectorAll('button')].find((x) =>
-            x.textContent?.includes('Begin command'),
-          );
-          return b ? !b.disabled : false;
-        },
-        { timeout: 30000 },
-      );
-      // The card reveal (P2.5 piece 3) modalizes the draw. A real player dismisses it before
-      // commanding, so the measured spread must run without a lingering dialog. Tolerant on
-      // purpose — a mop-up draw shows no dialog. Coupled to the catalogue's reveal.continue
-      // text, the same kind of coupling as the button labels above.
-      await page.evaluate(() => {
-        const b = [...document.querySelectorAll('button')].find((x) =>
-          x.textContent?.includes('Continue'),
-        );
-        if (b) b.click();
-      });
-      await clickButton(page, 'Begin command');
-      await page.waitForFunction(
-        () => {
-          const b = [...document.querySelectorAll('button')].find((x) =>
-            x.textContent?.includes('End command'),
-          );
-          return b ? !b.disabled : false;
-        },
-        { timeout: 30000 },
-      );
+      if (!before.includes('phase command')) break; // game ended early; keep what we have
       await clickButton(page, 'End command');
       await page.waitForFunction(
         () => {
           const p = document.querySelector('p')?.textContent ?? '';
-          return !p.includes('SPREAD') && p.includes('phase infection');
+          return !p.includes('SPREAD') && !p.includes('phase command');
         },
         { timeout: 120000 },
       );
+      if ((await status(page)).includes('phase infection')) await openCommand(page);
     }
 
     const m = await metricsOf(page);

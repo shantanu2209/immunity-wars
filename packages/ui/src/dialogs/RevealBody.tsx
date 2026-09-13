@@ -21,6 +21,7 @@ import { ROUTES } from '@immunity-wars/content';
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { CardIcon } from '../panels/CardIcon';
 import { RichText } from '../panels/LogPanel';
 
 export interface RevealArrival {
@@ -90,7 +91,25 @@ export function RevealBody({
       {arrivals.map((a, i) => {
         const inner = (
           <>
-            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#2E2A28' }}>{a.disease}</span>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#2E2A28',
+              }}
+            >
+              {a.disease}
+              {/* A card behind every name (for-P2.7.md §14, ruling 5): the icon, where "Tap for its
+                  card" was. The whole row is the button. */}
+              {!a.novel && onCard ? (
+                <span style={{ color: '#8E6E53' }}>
+                  <CardIcon />
+                </span>
+              ) : null}
+            </span>
             <span style={{ fontSize: '0.8125rem', color: '#78665D' }}>
               {t('reveal.enteredVia')} {routeName(a.lane)}
             </span>
@@ -102,11 +121,6 @@ export function RevealBody({
             {a.remembered ? (
               <span style={{ fontSize: '0.8125rem', color: '#1F6F8B', fontWeight: 700 }}>
                 {t('reveal.remembered')}
-              </span>
-            ) : null}
-            {!a.novel && onCard ? (
-              <span style={{ fontSize: '0.8125rem', color: '#8E6E53' }}>
-                {t('reveal.tapForCard')}
               </span>
             ) : null}
           </>

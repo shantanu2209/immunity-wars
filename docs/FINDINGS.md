@@ -3973,3 +3973,89 @@ The stack test's control expected a close that pops two levels to be caught on e
 and fired on its first run because one path cannot catch it: one level above the base, popping two
 lands where popping one does, because the base is never popped. It is pinned in the stack test as a
 blind spot with its own assertion rather than weakened until it passed.
+
+---
+
+## 71. A proposal claimed the inspect sheet "opens" the cell card, and it does only when the deal puts a cell beside a pathogen; and the ruled dock had no place for the one movement that is a button
+
+**Found 13 September 2026, building piece 2 of the play screen** ([`for-P2.7.md`](for-P2.7.md)
+§12 and §13). Both are in the thing being built, not in an instrument, so both are filed.
+
+### The claim that was too strong
+
+§12's choice 2 moved About this cell out of the dock and said where it went: "the inspect sheet
+opens it today, and piece 3's Pieces drawer would too". **The first half is true only
+sometimes.** The inspect sheet opens from a tap on a node, and it lists the cells standing there;
+but a tap on a cell selects the cell instead, so the sheet shows a cell only when that cell shares
+its node with a pathogen or a resident. On the main screen after piece 2, then, a player can reach
+a cell's card only when the deal puts it beside something. The command bar's button reached every
+selected cell's card, every time.
+
+**Nothing is lost for good**: the cards are unchanged and piece 3's Pieces drawer is ruled to carry
+the door. What is lost is the interval between piece 2 and piece 3, and the audit's "cell card"
+screen, which became deal-dependent and is recorded NOT REACHED on a run whose deal gives no such
+node. The proposal should have said "sometimes", and the ruling was taken on the stronger word.
+
+### The movement the dock had no zone for
+
+The dock's zones were drawn from the command bar's parts as measured, and one part of the bar was
+not in the measurement's composition: **"Recall to bloodstream"**, a movement offered as a button
+rather than a ring, for every cell but the B-Cell whenever it stands off the bloodstream. The
+Monocyte and the Eosinophil already fill both row slots, so for them it has nowhere to go.
+
+It is built for now as a row below the slots, so no action is lost, where it grows the dock for
+those two cells and the audit's one-height check says so. **Its placement is a question for
+Shantanu**, with the engine's own answer beside it: `recall` moves a cell from anywhere to the
+bloodstream in one action (`packages/engine/src/actions.ts`), which makes it a movement with a
+fixed destination, and "movement is on the board" is already ruled (4 September).
+
+---
+
+## 72. The inspect sheet's cell rows could not wrap, so at 200% page zoom their Card button sat past the edge of the screen, and no audit had ever looked at a sheet with a cell in it at that size
+
+**Found 13 September 2026, by the Gate 1 audit's ZOOM200 pass on the second run of piece 2**
+([`for-P2.7.md`](for-P2.7.md) §13). Three layout findings, all on the cell card screen: a "Card"
+button at 136 to 196px of a 180px layout.
+
+### Why nothing had seen it
+
+The sheet's invader rows wrap; its cell rows did not, and their name button would not shrink, so a
+cell name plus its Card button needed more than 180px. The defect was older than piece 2. What was
+new was **coverage**: the audit reached the cell card through the command bar's button until piece
+2 removed it (#71), so it never needed a sheet with a cell row open, and the "inspect sheet → cell
+card" nesting path was NOT REACHED in the piece 1 audit. When piece 2's walk learned to keep trying
+until a cell stood beside a pathogen, the first pass to reach that screen at 180px found it. The
+same shape as #66 and #68: a clean total over a screen nobody had measured.
+
+### Fixed inside piece 2, against the usual rule, and why
+
+A defect in the thing being built is filed and waits its turn. This one was fixed in the same change
+because the piece's own bar (§11) is every check at 0 under all four mechanisms, and the fix is the
+invader rows' own pattern in the same file: the row wraps and the name button may shrink. The
+decision is recorded here so it is visible, not taken quietly.
+
+---
+
+## 73. A selected piece chip's border grew from 1.5 to 3px, and at 200% page zoom the 3px it took from the name clipped "Alveolar macrophage"
+
+**Found 13 September 2026, by the Gate 1 audit's ZOOM200 pass on piece 2's amended build**
+([`for-P2.7.md`](for-P2.7.md) §14). One layout finding: the name on the Lungs resident's chip clipped
+with an ellipsis, 122px of text in 120px, only while that chip was selected.
+
+### Why nothing had seen it
+
+The piece grid's names are one line with an ellipsis **on purpose**: the 5 September pass chose it so
+fourteen chips of unequal names stay fourteen equal boxes. A clip is only a defect when the text does
+not fit, and unselected the name fits a 180px layout by about 1px. Selected, the ring was a border 3px
+wide instead of 1.5, which took 3px from the name. **No audit walk had ever selected a resident**; the
+walk added for the dock's one-height check (the same day, for a different defect) was the first.
+
+### The fix, and what it does not fix
+
+The border stays 1.5px and the ring is an inset shadow, which draws the same orange and takes no
+room, so the selected chip's name has exactly the unselected chip's width. Wrapping the name instead
+was declined because it would undo the recorded equal-boxes choice. **What remains is thin:** at
+180px the widest resident name fits by about 1px, so a slightly wider face could clip it again. The
+grid is replaced by piece 3's Pieces drawer, whose layout is measured then. One visual detail changed:
+a selected resident's double border renders as a single line, because a double border needs 3px to
+show two; unselected residents already rendered that way.

@@ -269,3 +269,53 @@ run: initial render 88 / 44 / 18ms at 1×, 159 / 187 / 105 at 4×, 299 / 152 / 1
 
 **No breach is carried into the closeout from this screen.** What the closeout inherits is the
 handset pass and the p95s named here.
+
+## Added 13 September 2026 — the re-measure after piece 2 of the play screen (the dock, the draw inside End turn)
+
+**What these numbers cannot say, first.** No handset. The drivers' games are unseeded. **Two
+conditions changed**, so no row below is a like-for-like comparison with 6 September:
+
+- **The selection taps now run in the COMMAND phase.** The dev shell follows the app
+  ([`for-P2.7.md`](for-P2.7.md) §12, ruling 6), so Begin is followed by the app's draw, the reveal
+  and planning, behind which the board is hidden; the pre-draw board the taps used to run on is no
+  longer a resting state. A command-phase selection also renders the dock.
+- **The play screen changed**: the command bar and the action list are gone, the dock renders
+  instead, and the spread's narration plays in the dock rather than a banner above the board.
+
+**Several numbers fell by a large factor and the reason is not established.** They are reported,
+not credited to piece 2.
+
+**Conditions:** i7-12700F (20 threads), Windows, headless system Chrome over CDP, 360 × 780, the dev
+shell (`/dev.html`) of the shipped build served by `vite preview`, CPU throttling as given.
+
+`tools/perf/measure-full.ts`, five command taps per level:
+
+| device · throttle | initial render (3 loads) | selection tap busy p50 / p95 | command tap busy p50 / p95 / max | per-redraw work p50 / p95 | long tasks |
+|---|---|---|---|---|---|
+| i7-12700F · 1× | 69.8 / 51.4 / 20.7ms | 1.0 / 1.5ms | 5.2 / 7.0 / 7.0ms | 0.5 / 1.1ms (19 frames) | 0 |
+| i7-12700F · 6× | 565.7 / 143.5 / 132.4ms | 7.2 / 13.3ms | 42.9 / 55.5 / 55.5ms | 5.2 / 8.5ms (20 frames) | 2, max 97ms, 168ms total |
+| *6 September (late), 6×, for reference* | *299 / 152 / 186ms* | *38.7ms p50* | *96.4 / 97.6 / 97.6ms* | *26.7 / 52.6ms* | |
+
+`tools/perf/measure.ts` (P2.3's driver, now against the full play screen): 1× initial render 63.8 /
+29.1 / 24.8ms, selection tap busy p50 0.9ms, per-redraw work p50 0.6ms (16 frames), no long tasks;
+6× initial render 638.2 / 158.4 / 142.3ms, selection tap busy p50 7.4ms, per-redraw work p50 4.0 and
+p95 9.9ms (20 frames), 2 long tasks, max 104ms. Every burst's tail assertion passed at both levels.
+
+**Against §4's rows at 6×:** initial render within 1s on every load (the first, cold, at 638ms);
+selection tap and command tap within 100ms; per-redraw work within 32ms at p50 and p95.
+
+**The one render piece 2 adds, reported once as ruling 6 asked.** When a spread's last frame has
+played, the play screen now sends the draw itself and the reveal renders. Timed from the driver's tap
+that plays the last frame to the reveal's button painted (a requestAnimationFrame then a 0ms timer,
+the probe `metrics.ts` uses), three turns per level:
+
+| device · throttle | tap to reveal in the DOM | tap to reveal painted |
+|---|---|---|
+| i7-12700F · 1× | 7.1 / 7.4 / 12.8ms | 20.3 / 20.4 / 20.4ms |
+| i7-12700F · 6× | 67.7 / 77.7 / 128.0ms | 73.3 / 85.8 / **145.3ms** |
+
+**It includes the spread's own final commit, which existed before piece 2, so it is an upper bound on
+what piece 2 adds.** It is stated against row 2 (tap to visible response, under 100ms) without a
+ruling on whether that row governs it: the tap's own visible response is the spread ending, and the
+reveal is what follows. **Two of three 6× samples are over 100ms if it does.** The first instrument
+for this number was wrong and was discarded ([`for-P2.7.md`](for-P2.7.md) §13, item 7).

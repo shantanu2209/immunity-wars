@@ -25,24 +25,36 @@ export interface DialogQueue {
   current: QueuedDialog | null;
   enqueue: (d: QueuedDialog) => void;
   dismiss: () => void;
+  /**
+   * Whether a dialog is showing or queued, answered NOW rather than at the next render. A new
+   * game's goal dialog is enqueued in an effect, and the draw's effect runs in the same flush: read
+   * from `current`, it would see no dialog and draw before the goal was ever shown.
+   */
+  hasPending: () => boolean;
 }
 
 export function useDialogQueue(): DialogQueue {
   const [queue, setQueue] = useState<QueuedDialog[]>([]);
   // Ids ever enqueued — the dedupe guard. A ref, not state: it never affects rendering.
   const seenRef = useRef<Set<string>>(new Set());
+  // How many are showing or queued, kept in step synchronously with every enqueue and dismiss.
+  const pendingRef = useRef(0);
 
   const enqueue = useCallback((d: QueuedDialog): void => {
     if (seenRef.current.has(d.id)) return;
     seenRef.current.add(d.id);
+    pendingRef.current += 1;
     setQueue((q) => [...q, d]);
   }, []);
 
   const dismiss = useCallback((): void => {
+    pendingRef.current = Math.max(0, pendingRef.current - 1);
     setQueue((q) => q.slice(1));
   }, []);
 
-  return { current: queue[0] ?? null, enqueue, dismiss };
+  const hasPending = useCallback((): boolean => pendingRef.current > 0, []);
+
+  return { current: queue[0] ?? null, enqueue, dismiss, hasPending };
 }
 
 export function DialogHost({

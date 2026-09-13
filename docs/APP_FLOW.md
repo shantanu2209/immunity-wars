@@ -123,6 +123,12 @@ builds a spinner for a network we do not use.
    > The dev shell's turn buttons are this ruling's. Whether they follow the app or keep Draw for
    > the perf driver is decided in the piece that removes it, with the driver's coupling re-measured
    > rather than assumed.*
+   >
+   > ✅ *Ruled 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §12, ruling 6): **the dev shell
+   > follows the app.** Its Draw button is gone; Begin command and End command (spread) keep their
+   > text. `tools/perf/measure.ts` and `measure-full.ts` wait for the app's draw and dismiss the
+   > reveal by its button instead of pressing Draw, and were re-run; the coupling changed loudly,
+   > with its numbers, which is what this ruling exists to guarantee.*
 7. **Result is a screen, not a dialog** — it ends the session cleanly before navigation.
 
 ---
@@ -166,12 +172,25 @@ P2.5 piece 1). All text through the i18n catalogue.
   moving it was found. Ruling 1 of [`for-P2.7.md`](for-P2.7.md) §9 puts it back at the bottom as
   the DOCK: one height in every state, holding the selected piece's actions above the turn's next
   step.*
+  ✅ *Built 13 September 2026 (§12, rulings 1 to 4): four zones (the piece, AP, Undo and Deselect;
+  one message line; two row slots, one per action; End turn alone). It hides, keeping its height,
+  while the floating close shows; it sits at the bottom of the screen while the top row, board and
+  dock fit, and straight after the board otherwise; a spread's narration plays inside it. A row's
+  several targets and the AP terms open over the board.*
+  ✅ *Amended 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §14): the action area is a 2 × 2 grid of
+  half-width slots in the same height (the verb and its cost, then the target), holding the piece's
+  actions, Recall to bloodstream and What's here. A card icon beside a name opens its card: the
+  selected cell's name in the dock, and in place of every "Card" button in the inspect sheet,
+  planning and the reveal.*
 - Inspect sheet (built) on node tap.
 - Turn controls: Draw · Begin command · End command — player wording from the catalogue.
   ⚠️ *13 September 2026 (ruling 2): there is no Draw control. The draw is never a choice (the
   engine refuses every other action before it), so End turn plays the spread and the app sends the
   draw; the reveal's button begins planning, and planning's dock button begins command. The engine
   is unchanged.*
+  ✅ *Built 13 September 2026 (§12): the play screen sends the draw on one rule, which also covers a
+  game resumed before its draw (the autosave is written as a spread starts). The reveal's button
+  says "Plan your turn".*
 - Status strip: turn/maxTurn, phase, AP, deck count (the data the dev shell shows; player
   presentation is Claude Design's).
 - **Pause button (always reachable) → pause menu sheet: Resume · Quit to title (→ confirm:
