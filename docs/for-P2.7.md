@@ -1047,3 +1047,182 @@ while `pnpm verify` is running.
 - **Then the S25 pass**, which also measures what no headless run can: an Android font's widths ("Recall
   to bloodstream" is 146 of a slot's 150px in Arial; the widest resident name has about 6px to spare in
   the Pieces drawer at 180px).
+
+---
+
+## 17. Piece 4, planning: MEASURED AND PROPOSED, nothing built
+
+Written 13 September 2026, after #83 (piece 3) merged, from §16's "After piece 3 merges". **Nothing is
+built until the choices below are ruled.** The proposal is also drawn, to one scale, on a private
+artifact page of its own; Shantanu has the link.
+
+### What these numbers cannot say
+
+- **Every game was played idle** on Training, one game per mechanism, six turns each: nothing pressed
+  but Command your cells and End turn. The pathogen counts are an idle board's, 1 to 14 invaders in 1
+  to 11 groups.
+- **The effects strip showed one chip at most**, with or without its reason line. Two chips at once
+  were not reached.
+- **A spent cell was reached only through a crisis event** (Lymphopenia took the Killer T-Cell offline
+  on turns 4 and 5 of the Standard game), never through a cell's own action, so the longest
+  spent-cells line is not measured. A two-cell line was measured as text in the dock, in 3 below.
+- **Not reached:** the Phase 3 allocation block, which single-player never shows; a mop-up draw; any
+  handset. The faces are the development PC's (a button's Arial, the page's inherited Times New
+  Roman); an Android phone's differ.
+- **The four arrangements are computed, not measured.** Each is the sum of parts measured below, with
+  the dock at its zone minimums, the height the audit measured on 20 screens (§15). None is built.
+- **Conditions of every figure:** CSS px; the shipped build at `a6803fb` (#83's merge) served by
+  `vite preview`; headless system Chrome 153 on the development PC (i7-12700F); no CPU throttling,
+  which does not change a layout height. Three mechanisms, each a fresh browser context: **Standard**
+  360 × 780, re-probed at 360 × 640 on the same state; **FONT200** 360 × 780 with the root at 200%;
+  **ZOOM200** 180 × 390.
+
+### 1. Planning today, part by part
+
+Standard, 360 × 780. The parts that do not change turn to turn: the page's top padding 8, the top row
+44, a 6px gap, the heading "Plan your turn" 21, the AP line 44 (72 more with its terms open), the body
+view 504 (the figure 280 × 475 and its hint line 15), "Command your cells" 48 below a 10px margin, and
+the page's bottom padding 8.
+
+| Turn | Invaders | Groups | Effects strip | Spent cells | Pathogen list | Button's bottom | Log | Page | Scroll at 780 | Scroll at 640 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | 1 | none | none | 114 | 811 | 108 | 933 | 153 | 293 |
+| 2 | 4 | 3 | none | none | 204 | 901 | 177 | 1,092 | 312 | 452 |
+| 3 | 6 | 4 | 59.5 | none | 289 | 1,046 | 223 | 1,283 | 503 | 643 |
+| 4 | 8 | 6 | 59.5 | 16 | 379 | 1,152 | 264 | 1,430 | 650 | 790 |
+| 5 | 12 | 9 | 43.3 | 16 | 554 | 1,310 | 328 | 1,652 | 872 | 1,012 |
+| 6 | 14 | 10 | none | none | 599 | 1,296 | 326 | 1,636 | 856 | 996 |
+
+A group's row is 45. With every group opened, turn 6's list is 1,215 and the page 2,252. The strip
+adds exactly its own height: its bottom margin and planning's top margin collapse into one 6px gap.
+
+**At 200% text** the button's bottom is 1,070 to 1,852 on a 780px screen under FONT200 (page 1,380 to
+2,557) and 723 to 1,851 on a 390px screen under ZOOM200 (page 941 to 2,367). The figure is sized in px
+and does not grow with text; its hint line wraps to 54 under FONT200, and under ZOOM200 the figure
+narrows to 146 × 248 with a hint of 45.
+
+### 2. The body view at other widths
+
+The figure's frame is 224 × 380 (`packages/content/src/board/anatomy.json`), so its height follows its
+width. Measured on turn 1 by setting the figure's maximum width; the last column is the measured view
+less its 15px hint:
+
+| Figure width | Figure height | Body view with its hint | Without its hint |
+|---|---|---|---|
+| 280, today | 475 | 504 | 489 |
+| 250 | 424.1 | 453.1 | 438.1 |
+| **224** | **380** | **409** | **394** |
+| 200 | 339.3 | 368.3 | 353.3 |
+| 190 | 322.3 | 351.3 | 336.3 |
+| 170 | 288.4 | 317.4 | 302.4 |
+| 150 | 254.5 | 283.5 | 268.5 |
+
+**§9's "about 410" is the figure at 224, its frame's own size; ruling 10's 284 is the figure at 150.**
+
+### 3. Planning's words in the dock's zones
+
+Measured with the dock's own elements in a command phase at 360 × 780: a real action slot and the real
+message line, cloned inside the dock, given each text, measured, and removed.
+
+- **A half-width slot** leaves 155px of text, in bold 14px Arial: "Pathogens in the body" 150.1,
+  "Pathogens" 71.6, "What happened" 104.2; on its second line, in 12px, "14 in the body" 75.4. A slot
+  with both lines is 44 tall, the zone's row.
+- **The message line** is 344 wide, 13px, 17.55 a line, in a zone of 36. The figure's hint "Tap an
+  organ, an entry or the bloodstream to see what is there" is one line; one spent cell as measured in
+  the game ("Killer T-Cell · Offline — back in 2 turns") is one line; two spent cells written out in
+  full are two lines, 35.1.
+- **The name line** holds "You will have 12 Action Points to spend" at 257.5 of 344. Planning has no
+  Undo and no Deselect beside it.
+
+### What the measurement changes
+
+1. **§9's planning table does not fit the built dock.** It was drawn with a 220 dock, and the dock is
+   248 (§12's choice 2). The table also has no row for the page's padding (8 above, 8 below), the gap
+   under the top row (6), the heading (21), the spent-cells line (16 when shown) or the effects strip
+   (43.3 to 59.5 when shown). Built as ruled, with the heading gone and the figure's hint in the dock as
+   the approved drawing had them, **planning is 810 and scrolls 30 at 780 with nothing showing**, 89.5
+   with the tallest strip measured.
+2. **The log still sits under planning** and has no row in the table. Under ruling 4 it becomes a
+   drawer.
+3. **The figure's filter lives in the list it filters.** A tap on a place filters the pathogen rows
+   ("Showing: Liver", "Show all"). With the rows in a drawer, the filter needs a home there.
+
+### The structure proposed
+
+- **Common to every arrangement below.** "Command your cells" is the dock's next step, where End turn
+  will be (ruled). The pathogen list opens as a drawer (ruled), and so does What happened (ruling 4).
+  The figure is 224 wide (§9's about 410). Its hint is said in the dock's message line, as the approved
+  drawing had it. The AP figure's terms open over the figure, as the dock's AP sheet does in command.
+  The Phase 3 allocation block stays in the page above the dock, for Phase 3 to shape.
+- **The engine, the planning model and its tests are unchanged**: the dock's button sends the model's
+  own params. The organs' flight (block e) reads the figure's rectangles at the tap wherever the button
+  is; its organs start smaller.
+
+### Four arrangements, computed
+
+Standard. Every total is the page's padding, the top row and the gap under it (58 above, 8 below),
+what the arrangement puts in the page, and the dock.
+
+| Arrangement | In the page | Dock | Total | At 780, nothing showing | At 780, the tallest strip measured | At 640 |
+|---|---|---|---|---|---|---|
+| **(a) As ruled**: the AP line and a row of drawer buttons in the page | AP line 44 and its gap 6, figure 394, drawer row 52 | 248 | 810 | scrolls 30 | scrolls 89.5 | scrolls 170 |
+| **(b) Into the dock**: the AP figure in the name line, Pathogens and What happened as two slots | figure 394 | 248 | 708 | 72 spare | 12.5 spare | scrolls 68 |
+| **(c) A planning dock without its action area**, the drawer row above it | figure 394, drawer row 52 | 150 | 662 | 118 spare | 58.5 spare | scrolls 22 |
+| **(d) As ruled, with the figure shrunk to fit** | as (a) | 248 | 780 | the figure 206 wide | the figure 171 wide | scrolls 140 |
+
+A spent-cells line adds 16 to (a) and (d) and nothing to (b) and (c), whose message line holds it.
+(c)'s dock is its name line, message and next step at their minimums; it turns ruling 1's one height
+into one height in command and another in planning.
+
+**At 200% text** every arrangement scrolls, as ruling 5 allows: the dock is sized in rem and the figure
+in px. Computed from the zone minimums under FONT200, (b)'s dock is 494 and planning 992; (c)'s dock is
+298 and planning at least 844, its drawer row's wrapped height not measured. Not computed under
+ZOOM200, where the zones' words wrap at 180px.
+
+### Four choices, each with a recommendation
+
+1. **The arrangement. Recommendation: (b).** It keeps ruling 1's one height and the figure at its ruled
+   size, fits every Standard state measured at 780, and gives planning's two drawers the dock's action
+   area, which (a) leaves empty in planning. Its risk is its margin: 12.5 with the tallest strip
+   measured, so a second chip at once (not reached; 30 to 47 with its gap, from the chips measured)
+   would scroll planning by about 18 to 34. (c) fits with room for that and nearly fits 640, at the
+   price of amending ruling 1. (a) scrolls on every turn measured. (d) shrinks the figure toward the
+   284 that ruling 10 declined.
+2. **The Pathogens slot's words. Recommendation: "Pathogens" over "{n} in the body"** (71.6 and 75.4 of
+   155), rather than "Pathogens in the body" (150.1 of 155). §15 learned that a margin of a few pixels is
+   spent by the next frame put around it, and an Android face is not Arial. Two new catalogue keys.
+3. **A tap on the figure. Recommendation: it opens the Pathogens drawer showing that place's rows**,
+   with "Showing: Liver", the organ's damage effect when it has one, and "Show all" at the drawer's top;
+   closing the drawer clears the filter. The alternative is a ring on the figure filtering rows nobody
+   can see until the drawer is opened, which is a control whose effect is hidden.
+4. **Which cells are out. Recommendation: in the dock's message line, in place of the figure's hint
+   while any cell is out.** Two spent cells fill its two lines, and the hint beside them would grow the
+   dock past its one height.
+
+### Calls made where the rulings are silent, each to overrule
+
+- **The heading "Plan your turn" goes.** The approved drawing had none, and the reveal's button says it.
+- **The AP line's teaching line** ("Tap the Action Points to see what is making the number") **goes**,
+  as it did from the dock in command, where the figure is underlined instead.
+- **The Pathogens drawer is a quick pick**: it slides up with the top of the figure still showing and
+  scrolls inside when the list is long (turn 6's list is 599). What happened opens full height, as it
+  does from the main screen.
+- **At 640 planning scrolls** (ruling 10) and the dock joins the end of the page, §12's ruling 3 applied
+  to planning. At 200% text planning scrolls (ruling 5).
+
+### What building it changes beyond the screen
+
+- **The Gate 1 audit walk** gains planning with its AP sheet, the Pathogens drawer from its slot and
+  from a tap on the figure, the What happened drawer from planning, and the path drawer → pathogen card
+  → Back, landing on the drawer, which replaces "Planning → pathogen card". The no-scroll check reaches
+  planning at rest. Under (b) the dock's one-height check reaches planning's screens unchanged; under
+  (c) it needs a second height and controls of its own.
+- **`tools/perf/measure.ts` and `measure-full.ts`** press "Command your cells" by its words, which stay.
+- **`APP_FLOW.md`'s planning bullet** is amended when it is built.
+
+### Found on the way
+
+**A dash a player reads, joined in code** ([`FINDINGS.md`](FINDINGS.md) #74): "Offline — back in 2
+turns", in the inspect sheet, a cell card and planning's spent-cells line, where the no-dashes check
+cannot see it. Filed, not fixed. Recommendation: the fix inside piece 4, which rebuilds the line it sits
+in, and the check's reach ruled separately.

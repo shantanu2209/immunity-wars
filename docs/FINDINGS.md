@@ -4059,3 +4059,45 @@ was declined because it would undo the recorded equal-boxes choice. **What remai
 grid is replaced by piece 3's Pieces drawer, whose layout is measured then. One visual detail changed:
 a selected resident's double border renders as a single line, because a double border needs 3px to
 show two; unselected residents already rendered that way.
+
+---
+
+## 74. "Offline — back in 2 turns": a dash a player reads, joined in code between two catalogue strings, where the no-dashes check cannot see it
+
+**Found 13 September 2026, measuring planning for piece 4 of the play screen**
+([`for-P2.7.md`](for-P2.7.md) §17). The measurement read planning's spent-cells line back as "Killer
+T-Cell · Offline — back in 2 turns". Filed, not fixed: it is in the thing being built, and nothing
+downstream measures with it.
+
+### Where it is
+
+`unavailableText` in `packages/ui/src/panels/InspectSheet.tsx` joins two clean catalogue strings with a
+literal em dash, `` `${what} — ${when}` ``. It reaches three surfaces a player reads: the inspect sheet's
+cell rows, a cell card's status line (opened from the dock or from the sheet), and planning's
+spent-cells line. A scan of `packages/ui/src` and `packages/app/src` for a dash on every line that is
+not a comment found this join and nothing else a player sees; the other hits are the dev shell's
+heading and two check lines only the dev shell shows.
+
+It came in with `c74ee3b`, on 4 September 2026, the day before the no-dashes preference was stated.
+
+### Why nothing had seen it
+
+`packages/content/src/no-dashes.test.ts` sweeps tables: the UI catalogue, the cell cards, and the
+content prose the UI renders. Both halves of this sentence pass it, because each is a clean catalogue
+entry. The dash exists only in the sentence the code composes, which no table holds, and the
+`iw/no-hardcoded-jsx-text` rule reads text written in JSX, not a character inside a template literal.
+The check's header says it sweeps "the surfaces the UI authors"; a sentence the UI composes in code is
+one of them.
+
+The join is outside the catalogue for the Hindi edition too: a translation of both halves would still
+render the English em dash between them.
+
+### The fix, and the question beside it
+
+**The product fix is small:** the join becomes a catalogue template (for example
+`inspect.unavailableWhen`, "{what}, {when}"), so the separator is swept and translated like every other
+word. **The question is the instrument's reach, and it is Shantanu's:** whether the no-dashes check
+should also read the string and template literals in `packages/ui` and `packages/app` source, with a
+control that plants a dash in a template literal (it must fire) and one in a comment (it must pass).
+Recommendation: the fix inside piece 4, which rebuilds the planning line this text sits in; the check's
+reach ruled separately.
