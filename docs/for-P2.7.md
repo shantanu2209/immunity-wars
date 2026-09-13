@@ -507,3 +507,204 @@ Piece 1 went proposal, ruling, build, and piece 2 does the same wherever the rul
 - The design review happened on a private artifact page of side-by-side phone mockups drawn to one
   scale from measurements; Shantanu has its link. Piece 2's proposal can extend it or be text, as
   the choices warrant.
+
+---
+
+## 12. Piece 2, the dock and the draw inside End turn: MEASURED AND PROPOSED, nothing built
+
+Written 13 September 2026 from §11's handoff. **Nothing is built until the choices below are ruled.**
+The proposal is also drawn, to one scale, on a private artifact page of its own; Shantanu has the
+link.
+
+### What these numbers cannot say
+
+- **Every game was played idle** on Training: no action but one move a turn, so that Undo would
+  show. The action sets are an idle board's. The B-Cell's largest set, 16 rows, came from invaders
+  piling up on turns 4 to 6 of a game nobody was playing. **The largest set in a played game is not
+  measured, and it has no fixed upper bound**, because the list has one row per target.
+- **One deal per text mechanism.** The FONT200 and ZOOM200 games never gave the B-Cell a target, so
+  their largest bars are lower bounds.
+- **Not reached:** a rejection notice in the bar (none was triggered); a mop-up draw or a draw that
+  wins (six turns of fifteen never leave the infection window); the inspect sheet with more than one
+  invader (the one measured was 64px tall, and its cap is 46% of the screen); any handset.
+- **Conditions of every figure:** CSS px, measured on the shipped build at `a0fcbf3` (its code is
+  #81's), served by `vite preview`, headless system Chrome on the development PC (i7-12700F), no
+  CPU throttling, which does not change a layout height. Three mechanisms, each a fresh browser:
+  **Standard** 360 × 780; **FONT200** 360 × 780 with the root font at 200%, the lever the app's own
+  Largest setting pulls; **ZOOM200** 180 × 390, Chrome for Android's page zoom at 200%.
+
+### 1. The command bar with each piece selected
+
+Standard, turns 1 to 6, px:
+
+| Piece | Plain | AP terms open | A greyed row's reason open | Undo showing |
+|---|---|---|---|---|
+| Monocyte | 339 to 393 | 421 to 475 | 375 to 429 | 372 to 426 |
+| Neutrophil | 291 | 373 | 327 | 324 |
+| B-Cell | 368 to **950** | 450 to **1,032** | 404 to 971 | 401 to 983 |
+| Killer T-Cell | **249** to 275 | 331 to 357 | 296 | 282 to 308 |
+| Helper T-Cell | 279 | 361 | no rows | 312 |
+| NK Cell | 249 to 275 | 331 to 357 | 296 | 282 to 308 |
+| Eosinophil | 339 | 421 | 375 | 372 |
+| the seven residents | 291 to 308 | 373 to 390 | 327 to 359 | 324 to 341 |
+
+The B-Cell's rows, turns 1 to 6: 3, 3, 3, 9, 13, 16, of which 0, 0, 0, 7, 12, 15 available. Its
+produce row was greyed on every turn measured.
+
+**What the height is made of**, measured part by part on turns 1 to 3:
+
+| Part | px |
+|---|---|
+| border and padding | 14 |
+| gaps between the parts | 18 |
+| the name line: name, a resident's organ, speed, the AP figure, the board's hint and any reason, all wrapping in one row | 70 to 129 |
+| the action list: "Actions" 15, "Movement is on the board" 15, then 44 a row with 4 between | 70 to 159 |
+| the footer: What's here, About this cell, Deselect | 44 |
+| the line saying why Undo is unavailable | 15 |
+
+**At 200% text:** FONT200 469 to 707 plain and 829 at its largest, on a 780px screen; ZOOM200 374 to
+548 plain and 630 at its largest, on a 390px screen.
+
+### 2. The bar with nothing selected
+
+**174px** at Standard: 14 border and padding, 12 gaps, the prompt line 16, the action list 111 ("Actions"
+and the body's two rows, Memory response and Antivenom, both greyed), the undo line 15. 207 with Undo
+showing. FONT200 273 (267 with Undo); ZOOM200 205 (223).
+
+### 3. The top row
+
+| | Standard | FONT200 | ZOOM200 |
+|---|---|---|---|
+| today: turn line, Draw a card, Command your cells, End turn, Menu | 112 | 202 | 188 |
+| without the three turn buttons | 60 | 98 | 84 |
+| freed | 52 | 104 | 104 |
+| during a spread, with the frame's headline added to it | 136 | 240 | 212 |
+
+The 60 is a 44px button with 8px of padding above and below it; §9's height table said 44.
+
+### Also measured, for the choices
+
+- **During a spread** the narration banner sits between the top row and the board, 66 to 178px tall at
+  Standard as dice accumulate (95 to 263 FONT200, 62 to 286 ZOOM200), so the board moves down as the
+  frames play. The bar stays, disabled, at 147.
+- **What is on top in the bottom band a dock would occupy** (220px at 780, 209 at 640), sampled at
+  both edges and the middle, while each layer shows the floating close:
+
+  | Layer | The bottom band |
+  |---|---|
+  | pathogen card, cell card, pause menu | the layer's scrim across all of it; the floating close on top at 720 to 768 (580 to 628 at 640) |
+  | inspect sheet | **not modal:** the sheet across its own strip, the floating close in the middle, and **the page itself beside the floating close, below it and above the sheet** |
+
+- **The planning screen's button sits at 876px**, below the fold at 780 (1,090 FONT200; 743 on a
+  390px screen at ZOOM200). Piece 4's.
+- After every one of the 18 spreads a draw was offered and a reveal followed.
+- **Read from the code, not measured:** the session writes the autosave after it emits a spread's
+  burst (`packages/session/src/local.ts`, lines 191 to 200), so a game closed mid-spread resumes at
+  infection with nothing drawn.
+
+### What the measurement changes in the handoff
+
+1. **No selected piece fits the dock's 220px.** The smallest bar measured is 249 and a Monocyte's is
+   339. The 220 in §9's height table was proposed, never measured against the bar. So the dock's
+   height is a choice (2 below), not a trim.
+2. **A game resumed mid-spread would have nothing to press.** Without a Draw button, infection before
+   the draw is a dead end unless the app draws on resume as well, and Gate 1 forbids an unreachable
+   state. It is not a choice; the structure covers it.
+3. The top row without its turn buttons is 60, not 44.
+
+### The structure proposed
+
+- **PlayScreen sends the draw**, because both shells mount it, from one pure decision: the phase is
+  infection, nothing is drawn, the game is not over, no spread is playing and no dialog is showing;
+  once a turn. That one rule covers every way into the state: after a spread has finished playing
+  (the draw waits for the last frame, so the spread is watched before the reveal), a new game after
+  the goal dialog's Begin, a game resumed mid-spread, and the dev shell's skip toggle. The reveal, the
+  mop-up draw going straight to planning, and the draw that wins (a one-frame spread, then Result) are
+  existing machinery and do not change. A rejected draw shows in the dock like any rejection and is
+  not retried.
+- **The engine, its rules and `Session` are unchanged.** One fact for Phase 3: in a multiplayer game
+  the engine accepts a draw only from the captain, so only the captain's client may send it.
+- **The dock** is one component at the bottom of the play screen during command: the selection, then
+  the turn's next step, End turn. The top row keeps the turn line and Menu. Planning keeps its own
+  button until piece 4, as the split rules. In piece 2's intermediate state the pieces, antibodies,
+  body and log still scroll above the dock, so the page ends in a spacer of the dock's height, as it
+  does for the floating close.
+- **The instruments.** A unit test on the draw decision with both halves: a planted rule that also
+  draws while a spread plays must be caught, and the resumed state must draw. The audit's three walks
+  stop pressing Draw a card; the walk gains the dock with nothing selected, the dock during a spread,
+  and one path, a game resumed mid-spread reaching its reveal, recorded NOT REACHED rather than
+  omitted, with a control that turns the draw off and must see the path go unreached. The occlusion
+  check already reports a visible dock under the floating close.
+
+### Seven choices, each with a recommendation
+
+1. **The dock and the floating close, both at the bottom.**
+   (a) **A layer covers the dock.** While any layer shows the floating close, the dock is hidden and
+   inert but keeps its height, so nothing moves, and the floating close sits where it does today.
+   Cards, dialogs and the pause menu already scrim the whole screen, so the only change is the
+   inspect sheet, the one layer that is not modal, and piece 3's quick-pick drawers, which share its
+   shape. (b) **The floating close sits above the dock** and layers sit above the close. The dock
+   stays live under every layer, so End turn could be pressed while a card is being read, and a
+   sheet over the board has about 460px at 780 and 320 at 640. (c) **One bottom button**, saying
+   Close or Back while a layer is up and End turn otherwise. A second tap on Close would end the turn,
+   and ending a turn cannot be undone. **Recommendation: (a).** It is already true for four of the
+   five layers, and the measurement shows the fifth leaves End turn's future edges live beside the
+   floating close.
+2. **The dock's height**, since no selected piece fits 220.
+   (A) **Everything today's bar holds**, one row per action rather than per target, three row
+   slots: about 446px, so the main screen misses 780 by about 97 and scrolls, against ruling 4.
+   (B) **The budget kept by moving parts out**, about 230 to 248px (below). (C) **220 with the rows
+   scrolling inside the dock**, against ruling 4, which lets only reading surfaces scroll.
+   **Recommendation: (B)**, in four zones:
+   - **Name line, 44:** name, AP figure, Undo, Deselect. Undo stays visible in command and greyed
+     when unavailable; tapping it greyed shows its reason, as a greyed row does, replacing the
+     always-on undo line.
+   - **Hint, one or two lines, 18 to 36:** speed and a resident's organ, then the board's hint or
+     why nothing is offered; a rejection takes its place, in red.
+   - **Two row slots, 92:** one row per action. With one target the row names it, as now; with
+     several it says how many and opens them as a list over the board. Leaving the produce row out
+     (greyed on every turn measured; producing is the Antibodies panel's) means no piece has more
+     than two actions.
+   - **End turn, 44**, alone on its row.
+
+   Leaving the dock: "Actions" and "Movement is on the board" (the hint says it); What's here (the
+   node tap already opens the sheet); About this cell (the inspect sheet opens it today, and piece
+   3's Pieces drawer would too). **This changes three earlier calls, and they are yours:** the list's
+   target-named rows (S25 item 1, 4 September), the footer, and the undo line (S25 item 2's
+   instrumentation, kept visible because it teaches).
+   With (B) the main screen is 44 + 339 + 48 + 230 to 248 = **661 to 679**: 101 to 119 spare at
+   780, and **−21 to −39 at 640**, against §9's −11.
+3. **The dock at larger text sizes.** (a) Fixed at the bottom at every size, scrolling inside when it
+   must: at 200% it would cover most of a 780px screen and all of a 390px one. (b) **Fixed while the
+   top row, the board and the dock all fit the screen; otherwise it joins the end of the page, which
+   scrolls**, ruling 5's last resort, with End turn still last. Sized in rem either way, so it is one
+   height at each text size. **Recommendation: (b).**
+4. **While a spread plays, and while the reveal is up.** The dock **shows the narration**: the frame's
+   headline, its number, the dice and "Tap to continue" fill the dock's zones, End turn's included,
+   so the board stops moving down as frames play and the top row stops growing. The tallest banner
+   measured, 178px, fits. Under the reveal the dock is covered like any layer under a dialog.
+   **Recommendation: as described.**
+5. **The reveal's button.** **"Plan your turn"**, the words of the planning screen's own title, as a
+   new catalogue key so a translation may word a button differently from a heading. The goal
+   dialog's Begin is unchanged. **Recommendation: as described.**
+6. **The dev shell's turn buttons** (`APP_FLOW.md` §2 ruling 6). (a) Keep Draw, with the app's draw
+   switched off in the dev shell: the drivers hold verbatim, but they measure a turn no player sees
+   and PlayScreen carries a mode only instrumentation uses. (b) **Follow the app:** Draw goes, Begin
+   command and End command (spread) stay, `measure.ts` and `measure-full.ts` wait for the reveal
+   instead of pressing Draw, both re-run at 1× and 6× and reported against `P2_3_MEASUREMENT.md`, and
+   the one render piece 2 adds (the draw's view and the reveal, straight after a spread's last frame)
+   is reported once. **Recommendation: (b).** The ruling protects the coupling from dying silently;
+   a re-measure is the loud way to change it.
+7. **Help's "A turn" section.** Its Infection and Command paragraphs are tagged [Fresh] in
+   [`HELP_DRAFT.md`](HELP_DRAFT.md), written for the phone, not Kartik's rulebook; the Spread
+   paragraph beside them is his, and stays untouched. Proposed:
+   - **Infection:** "At the start of each turn the app draws the turn's cards, places each new
+     invader at the start of its route, and shows you what arrived, with this turn's crisis event if
+     one fired. Then it shows the body from the outside so you can plan: what is coming, where it is
+     heading, and how many Action Points you have."
+   - **Command:** "Your part. Tap Command your cells and spend your Action Points in any order, on
+     any cells. Tap End turn when you are done. Unspent points are lost at the end of the turn."
+
+   **Recommendation: yours to approve, not Kartik's.** No rule changes, and the sentences follow
+   his ruling on the draft (the rulebook's phase names as headings, the app's button names in the
+   text). Showing him the Infection sentence costs nothing, because it describes his phase.
