@@ -64,7 +64,7 @@ import { RevealBody, revealCrisis, type RevealArrival } from '../dialogs/RevealB
 import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { ApTerms } from '../panels/ApTerms';
-import { Dock } from '../panels/Dock';
+import { Dock, type DockProps } from '../panels/Dock';
 import { DockSheet, TargetList } from '../panels/DockSheet';
 import { Drawer, DrawerRow, type DrawerKind } from '../panels/Drawer';
 import { InspectSheet } from '../panels/InspectSheet';
@@ -85,7 +85,7 @@ import {
 import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
 import { CellCard, type CellCardSubject } from '../panels/CellCard';
 import { unavailableText } from '../panels/InspectSheet';
-import { PlanningScreen } from './PlanningScreen';
+import { PathogenList, PlanningScreen, spentCellsLine } from './PlanningScreen';
 import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
@@ -211,17 +211,26 @@ export function PlayScreen({
   const [apSheet, setApSheet] = useState(false);
   useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
   useNavLayer('ap-terms', apSheet, () => setApSheet(false));
-  // THE DRAWERS (piece 3, §9 rulings 3 and 7): one open at a time, one level on the stack.
+  // THE DRAWERS (piece 3, §9 rulings 3 and 7): one open at a time, one level on the stack. Planning
+  // has two of its own, Pathogens and What happened (piece 4, §17), and a tap on its figure opens the
+  // Pathogens drawer at that place; closing the drawer, by any close, clears the place.
   const [drawer, setDrawer] = useState<DrawerKind | null>(null);
-  useNavLayer('drawer', drawer !== null, () => setDrawer(null));
+  const [planFocus, setPlanFocus] = useState<string | null>(null);
+  const closeDrawer = (): void => {
+    setDrawer(null);
+    setPlanFocus(null);
+  };
+  useNavLayer('drawer', drawer !== null, closeDrawer);
   // Whether the floating close is showing (the dock hides under it, §12 ruling 1) and whether
   // anything is open over the game (the draw waits for the player to come back).
   const navState = useNavState();
 
-  // WHERE THE DOCK SITS (§12, ruling 3): at the bottom of the screen while the top row, the board
-  // and the dock all fit it; otherwise straight after the board, in a page that scrolls. Measured,
-  // not assumed, whenever the board, the dock, the screen or anything above the board changes size.
+  // WHERE THE DOCK SITS (§12, ruling 3): at the bottom of the screen while the top row, what the dock
+  // follows (the board and its drawer row, or since piece 4 planning's figure) and the dock all fit
+  // it; otherwise straight after them, in a page that scrolls. Measured, not assumed, whenever any of
+  // them, the screen or anything above them changes size.
   const boardWrapRef = useRef<HTMLDivElement | null>(null);
+  const planWrapRef = useRef<HTMLDivElement | null>(null);
   const dockRef = useRef<HTMLDivElement | null>(null);
   const [dockFixed, setDockFixed] = useState(true);
   const [dockHeight, setDockHeight] = useState(0);
@@ -436,31 +445,6 @@ export function PlayScreen({
     send({ action: 'draw' });
     // `send` is rebuilt every render and does not decide anything; what decides is listed.
   }, [authView, playing, dialogs.current, navState.depth]);
-
-  useLayoutEffect(() => {
-    const board = boardWrapRef.current;
-    const dock = dockRef.current;
-    const root = rootRef.current;
-    if (!board || !dock || !root || typeof window === 'undefined') return undefined;
-    const measure = (): void => {
-      // Behind the planning screen the stage is hidden and measures nothing: keep what was known.
-      if (board.getClientRects().length === 0) return;
-      const bottom = board.getBoundingClientRect().bottom + window.scrollY;
-      const h = dock.getBoundingClientRect().height;
-      setDockHeight(h);
-      setDockFixed(bottom + h <= window.innerHeight);
-    };
-    measure();
-    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
-    ro?.observe(board);
-    ro?.observe(dock);
-    ro?.observe(root);
-    window.addEventListener('resize', measure);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, []);
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
@@ -890,6 +874,36 @@ export function PlayScreen({
       for (const g of ghosts) g.remove();
     };
   }, [planningActive]);
+
+  useLayoutEffect(() => {
+    const dock = dockRef.current;
+    const root = rootRef.current;
+    if (!dock || !root || typeof window === 'undefined') return undefined;
+    const measure = (): void => {
+      // What the dock follows: planning's figure while planning shows, otherwise the board and its
+      // drawer row. The one that is hidden measures nothing, so it is never the one read.
+      const plan = planWrapRef.current;
+      const content =
+        plan !== null && plan.getClientRects().length > 0 ? plan : boardWrapRef.current;
+      if (content === null || content.getClientRects().length === 0) return;
+      const bottom = content.getBoundingClientRect().bottom + window.scrollY;
+      const h = dock.getBoundingClientRect().height;
+      setDockHeight(h);
+      setDockFixed(bottom + h <= window.innerHeight);
+    };
+    measure();
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    for (const el of [boardWrapRef.current, planWrapRef.current, dock, root]) {
+      if (el !== null) ro?.observe(el);
+    }
+    window.addEventListener('resize', measure);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+    // Subscribed again when planning shows or goes, because planning's wrapper mounts with it.
+  }, [planningActive]);
+
   const openPathogenCard = (invaderId: string): void => {
     const node = inspectInfoForInvader(game, invaderId, authView.queries.readyTurn);
     const iv = node?.invaders.find((x) => x.id === invaderId);
@@ -903,6 +917,104 @@ export function PlayScreen({
     });
   };
 
+  // WHICH CELLS ARE OUT, said in planning's dock in place of the figure's hint (§17, choice 4).
+  const spentCells = spentCellsLine(
+    pieces
+      .filter((p) => p.kind === 'cell')
+      .map((p) => ({ key: p.key, unavailable: p.unavailable })),
+    why,
+  );
+  // THE DOCK'S TWO STEPS: command (§12) and, since piece 4, planning (§17, ruled (b)): the same four
+  // zones at the same height, each saying what its step offers.
+  const dockStep: Omit<DockProps, 'store' | 'dockRef' | 'fixed' | 'hidden'> =
+    planning !== null && planningActive
+      ? {
+          mode: 'planning',
+          selectedName: null,
+          lead: null,
+          message: spentCells ?? t('planning.figureHint'),
+          messageTone: spentCells !== null ? 'fact' : 'muted',
+          notice: lastError ? engineText(lastError) : null,
+          ap: planning.apNext,
+          apLabel: t('planning.apNext', { n: planning.apNext }),
+          apTermsAvailable: apTerms.length > 0,
+          onAp: () => setApSheet(true),
+          undo: authView.undo,
+          inCommand: false,
+          rows: [],
+          moveButtons: [],
+          onMoveButton: sendOffer,
+          noRowsText: null,
+          slots: [
+            {
+              id: 'pathogens',
+              label: t('planning.pathogensSlot'),
+              sub:
+                planning.total === 0
+                  ? t('planning.pathogenCountNone')
+                  : t('planning.pathogenCount', { n: planning.total }),
+              onPress: () => setDrawer('pathogens'),
+            },
+            { id: 'log', label: t('log.title'), sub: null, onPress: () => setDrawer('log') },
+          ],
+          disabled: playing,
+          next: {
+            key: planning.mode === 'allocate' ? 'confirmAllocation' : 'beginCommand',
+            label: planning.button.label,
+          },
+          nextDisabled: playing,
+          onNext: () => commandFromPlanning(planning.button.params),
+          onRow: () => undefined,
+          onUndo: () => undefined,
+          onDeselect: null,
+          onCard: null,
+          cardLabel: null,
+          onWhatsHere: null,
+          resetKey: ['planning', turnNow, planning.apNext].join('|'),
+        }
+      : {
+          mode: 'command',
+          selectedName: selectedCell
+            ? cellDisplayName(selectedCell)
+            : selectedResident
+              ? residentDisplayName(selectedResident)
+              : null,
+          lead,
+          message,
+          messageTone,
+          notice: lastError ? engineText(lastError) : null,
+          ap: Number(game['ap'] ?? 0),
+          apTermsAvailable: apTerms.length > 0,
+          onAp: () => setApSheet(true),
+          undo: authView.undo,
+          inCommand: phase === 'command',
+          rows,
+          moveButtons: moveButtons.map((b) => ({ id: b.id, label: b.label })),
+          onMoveButton: sendOffer,
+          noRowsText: selectedCell && rows.length === 0 ? t('actions.none') : null,
+          disabled: playing,
+          nextDisabled: playing || phase !== 'command',
+          onNext: () => send({ action: 'endCommand' }),
+          onRow: (row) => {
+            if (row.targets.length > 1) setTargetsFor(row);
+            else if (row.offerId !== null) sendOffer(row.offerId);
+          },
+          onUndo: () => send({ action: 'undo' }),
+          onDeselect: selectedCell || selectedResident ? deselect : null,
+          onCard: selectedCell
+            ? () =>
+                setCellCard({
+                  cell: selectedCell,
+                  now: unavailableByCell[selectedCell]
+                    ? unavailableText(unavailableByCell[selectedCell])
+                    : null,
+                })
+            : null,
+          cardLabel: selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null,
+          onWhatsHere: canInspect && selectedNode !== null ? () => setInspect(selectedNode) : null,
+          resetKey: [selectedCell, selectedResident, turnNow, game['ap'], phase].join('|'),
+        };
+
   return (
     <div ref={rootRef}>
       <style>{FLIGHT_CSS}</style>
@@ -914,17 +1026,40 @@ export function PlayScreen({
       <EffectsStrip chips={effectChips(authView)} />
       {planning !== null && planningActive ? (
         <>
-          <PlanningScreen
-            model={planning}
-            cells={pieces
-              .filter((p) => p.kind === 'cell')
-              .map((p) => ({ key: p.key, unavailable: p.unavailable }))}
-            apTerms={apTermLines(authView)}
-            why={why}
-            onCommand={commandFromPlanning}
-            onPathogenCard={openPathogenCard}
-          />
-          <LiveLog store={frameStore} game={game} />
+          {/* PLANNING (piece 4, §17): the figure alone in the page. Its list and the log open as
+              drawers from the dock, and a tap on a place opens the list at that place. */}
+          <div ref={planWrapRef}>
+            <PlanningScreen
+              model={planning}
+              focus={planFocus}
+              disabled={playing}
+              onFigureTap={(place) => {
+                setPlanFocus(place);
+                if (place !== null) setDrawer('pathogens');
+              }}
+            />
+          </div>
+          {drawer === 'pathogens' ? (
+            <Drawer kind="pathogens" onClose={closeDrawer}>
+              <PathogenList
+                model={planning}
+                focus={planFocus}
+                disabled={playing}
+                onShowAll={() => setPlanFocus(null)}
+                onPathogenCard={openPathogenCard}
+              />
+            </Drawer>
+          ) : null}
+          {drawer === 'log' ? (
+            <Drawer kind="log" onClose={closeDrawer}>
+              <LiveLog store={frameStore} game={game} />
+            </Drawer>
+          ) : null}
+          {apSheet ? (
+            <DockSheet kind="ap" title={null}>
+              <ApTerms terms={apTerms} total={planning.apNext} />
+            </DockSheet>
+          ) : null}
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
           {card ? <PathogenCard subject={card} /> : null}
           {cellCard ? <CellCard subject={cellCard} /> : null}
@@ -967,61 +1102,6 @@ export function PlayScreen({
             </div>
             <DrawerRow disabled={playing} onOpen={setDrawer} />
           </div>
-          {/* THE DOCK (§9 ruling 1, §12). Straight after the drawer row in the page, so that when
-              it cannot sit at the bottom of the screen it is the next thing below them. */}
-          <Dock
-            dockRef={dockRef}
-            store={frameStore}
-            selectedName={
-              selectedCell
-                ? cellDisplayName(selectedCell)
-                : selectedResident
-                  ? residentDisplayName(selectedResident)
-                  : null
-            }
-            lead={lead}
-            message={message}
-            messageTone={messageTone}
-            notice={lastError ? engineText(lastError) : null}
-            ap={Number(game['ap'] ?? 0)}
-            apTermsAvailable={apTerms.length > 0}
-            onAp={() => setApSheet(true)}
-            undo={authView.undo}
-            inCommand={phase === 'command'}
-            rows={rows}
-            moveButtons={moveButtons.map((b) => ({ id: b.id, label: b.label }))}
-            onMoveButton={sendOffer}
-            noRowsText={selectedCell && rows.length === 0 ? t('actions.none') : null}
-            disabled={playing}
-            endTurnDisabled={playing || phase !== 'command'}
-            onEndTurn={() => send({ action: 'endCommand' })}
-            onRow={(row) => {
-              if (row.targets.length > 1) setTargetsFor(row);
-              else if (row.offerId !== null) sendOffer(row.offerId);
-            }}
-            onUndo={() => send({ action: 'undo' })}
-            onDeselect={selectedCell || selectedResident ? deselect : null}
-            onCard={
-              selectedCell
-                ? () =>
-                    setCellCard({
-                      cell: selectedCell,
-                      now: unavailableByCell[selectedCell]
-                        ? unavailableText(unavailableByCell[selectedCell])
-                        : null,
-                    })
-                : null
-            }
-            cardLabel={
-              selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null
-            }
-            onWhatsHere={
-              canInspect && selectedNode !== null ? () => setInspect(selectedNode) : null
-            }
-            resetKey={[selectedCell, selectedResident, turnNow, game['ap'], phase].join('|')}
-            fixed={dockFixed}
-            hidden={navState.floating}
-          />
           {targetsFor !== null ? (
             <DockSheet kind="targets" title={t(`action.${targetsFor.action}`)}>
               <TargetList
@@ -1034,7 +1114,7 @@ export function PlayScreen({
               />
             </DockSheet>
           ) : null}
-          {apSheet ? (
+          {apSheet && !planningActive ? (
             <DockSheet kind="ap" title={null}>
               <ApTerms terms={apTerms} total={Number(game['ap'] ?? 0)} />
             </DockSheet>
@@ -1084,7 +1164,7 @@ export function PlayScreen({
               <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
             </Drawer>
           ) : null}
-          {drawer === 'log' ? (
+          {drawer === 'log' && !planningActive ? (
             // A reading surface: full height, scrolling, and still narrating a spread's frames as
             // they land, because the log reads the shown frame.
             <Drawer kind="log" onClose={() => setDrawer(null)}>
@@ -1146,13 +1226,24 @@ export function PlayScreen({
           <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
           {card ? <PathogenCard subject={card} /> : null}
           {cellCard ? <CellCard subject={cellCard} /> : null}
-          {/* While the dock sits at the bottom of the screen the page ends in its height, so the
-              last lines of the page never scroll under it; the occlusion check is what says so. */}
-          {dockFixed ? (
-            <div aria-hidden="true" data-dock-spacer="" style={{ height: dockHeight }} />
-          ) : null}
         </>
       </div>
+      {/* THE DOCK (§9 ruling 1, §12; planning's too since piece 4, §17). After the stage in the page,
+          so that when it cannot sit at the bottom of the screen it is the next thing below whichever
+          step is showing: planning's figure, or the board and its drawer row. Everything else in
+          the stage is fixed over the page. */}
+      <Dock
+        dockRef={dockRef}
+        store={frameStore}
+        {...dockStep}
+        fixed={dockFixed}
+        hidden={navState.floating}
+      />
+      {/* While the dock sits at the bottom of the screen the page ends in its height, so the last
+          lines of the page never scroll under it; the occlusion check is what says so. */}
+      {dockFixed ? (
+        <div aria-hidden="true" data-dock-spacer="" style={{ height: dockHeight }} />
+      ) : null}
     </div>
   );
 }
