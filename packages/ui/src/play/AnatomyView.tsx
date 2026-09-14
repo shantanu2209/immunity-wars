@@ -37,6 +37,12 @@ const DEPTH_COLOUR: Record<Depth, string> = {
 };
 
 const frame = FRAME as { asset: string; w: number; h: number };
+/**
+ * The figure's widest on the planning screen: its frame's own width, 224 in the pack, the body view of
+ * about 410px that for-P2.7.md §9's height table rules (§17 measured 409). A frame unit is then a CSS
+ * pixel, so HIT_R's circle is 48px across (60 at the 280 used before piece 4).
+ */
+const FIGURE_MAX = frame.w;
 const organPos = ANATOMY_POS as Record<string, Pt>;
 const entryPos = ANATOMY_ENTRY as Record<string, Pt>;
 const hubPos = ANATOMY_HUB as Pt;
@@ -82,7 +88,13 @@ export function AnatomyView({
     <svg
       data-anatomy="1"
       viewBox={`0 0 ${String(frame.w)} ${String(frame.h)}`}
-      style={{ width: '100%', maxWidth: 280, height: 'auto', display: 'block', margin: '0 auto' }}
+      style={{
+        width: '100%',
+        maxWidth: FIGURE_MAX,
+        height: 'auto',
+        display: 'block',
+        margin: '0 auto',
+      }}
       onPointerDown={handlePointer}
     >
       <image href={`/art/${frame.asset}@3x.webp`} x={0} y={0} width={frame.w} height={frame.h} />

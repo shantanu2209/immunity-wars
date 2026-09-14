@@ -31,7 +31,7 @@ export {
   type DockRow,
 } from './play/offered';
 export { shouldDraw, type DrawMoment } from './play/autoDraw';
-export { Dock, DOCK_ZONES, type DockProps, type DockUndo } from './panels/Dock';
+export { Dock, DOCK_ZONES, type DockProps, type DockSlot, type DockUndo } from './panels/Dock';
 export { DockSheet, TargetList } from './panels/DockSheet';
 export { Drawer, DrawerRow, DRAWERS, type DrawerKind } from './panels/Drawer';
 export { effectChips, turnLine, rareLogLine, apTermLines, type EffectChip } from './play/effects';
@@ -44,7 +44,12 @@ export {
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
 export { CellCard, type CellCardSubject } from './panels/CellCard';
-export { PlanningScreen, type PlanningCell } from './play/PlanningScreen';
+export {
+  PathogenList,
+  PlanningScreen,
+  spentCellsLine,
+  type PlanningCell,
+} from './play/PlanningScreen';
 export {
   planningModel,
   depthOf,
