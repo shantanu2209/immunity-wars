@@ -54,7 +54,9 @@
  *            still in the viewport, no text clipped to an ellipsis.
  *   OFFLINE  after the first load, the network is cut: a full turn is played and every
  *            failed request recorded; then a reload with no network, which MUST render the
- *            app and let a turn be played (the service worker's precache; FINDINGS #59).
+ *            app and let a turn be played (the service worker's precache; FINDINGS #59). The
+ *            art on the screen the turn ends on must all be served: `<img>`, and SVG `<image>`
+ *            since piece 4 (docs/for-P2.7.md §18), which left that screen no `<img>` at all.
  *   OCCLUSION nothing readable sits under a fixed control. Every scroll area and the page are
  *            scrolled to their end, and every text run still on screen is checked against every
  *            fixed or sticky control over it, at the very point they overlap. Added with the
@@ -75,7 +77,8 @@
  * a 0.8125rem span. Layout, under each mechanism: a 600px block, a block that fits; a control
  * past the edge, one inside; an ellipsis that clips, one that does not. Offline: a fresh URL
  * must fail, a precached one must be served (on an origin with no worker that half cannot
- * run and says so). Occlusion: text under a fixed button, text clear of it, and text under a
+ * run and says so), and the art count the check rests on: an SVG image nothing precached is
+ * counted broken, one the build precached is not. Occlusion: text under a fixed button, text clear of it, and text under a
  * fixed button but behind a modal scrim, which the button is not what hides. Nesting: a close
  * that goes two levels must be reported, a close that goes one must not. Any control failing stops the audit and says the instrument is broken.
  * A check that has never failed is not known to work, and a check that has never been
@@ -421,15 +424,61 @@ const WHERE = `
 })()
 `;
 
+/**
+ * THE ART IN THE PAGE, and whether it is served with whatever network there is: each `<img>` is
+ * broken when it finished loading with no pixels, and each SVG `<image>`'s URL is fetched, broken
+ * when the fetch fails. SVG art is not in `document.images`, and since piece 4 it is the only art the
+ * screen a turn ends on shows: planning's list, whose icons were the `<img>` the offline check used
+ * to count, is in a closed drawer (docs/for-P2.7.md §18). An `<image>` hidden with the command stage
+ * is fetched too, which is the point: it is the board's art.
+ */
+const ART_PROBE = `
+(async () => {
+  const imgs = [...document.images];
+  const brokenImg = imgs.filter((i) => i.complete && i.naturalWidth === 0).length;
+  const urls = [...new Set([...document.querySelectorAll('image')].map((e) => e.getAttribute('href') || e.getAttribute('xlink:href') || '').filter((u) => u !== ''))];
+  let brokenSvg = 0;
+  for (const u of urls) {
+    try {
+      if (!(await fetch(u, { cache: 'no-store' })).ok) brokenSvg += 1;
+    } catch {
+      brokenSvg += 1;
+    }
+  }
+  return { images: imgs.length + urls.length, brokenImages: brokenImg + brokenSvg, svgArt: urls.length };
+})()
+`;
+
 /** How far the page is taller than the screen, when the play screen is at rest: its command stage
- *  shown and no floating close, so nothing is open over it. Null on every other screen. */
+ *  or, since piece 4, planning showing (docs/for-P2.7.md §17), and no floating close, so nothing is
+ *  open over it. Null on every other screen. */
 const REST_PROBE = `
 (() => {
-  const stage = document.querySelector('[data-command-stage]');
-  if (!stage || stage.getClientRects().length === 0) return null;
+  const shown = (s) => { const el = document.querySelector(s); return !!el && el.getClientRects().length > 0; };
+  if (!shown('[data-command-stage]') && !shown('[data-screen=planning]')) return null;
   if (document.querySelector('[data-nav-close]')) return null;
   const el = document.scrollingElement || document.documentElement;
   return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
+})()
+`;
+
+/**
+ * A place on planning's figure with a pathogen standing at it, in screen coordinates after scrolling
+ * it into view; null when no place has one. The figure resolves a tap to the nearest marker from the
+ * pointer's own coordinates, so the walk clicks at the marker's centre (piece 4, §17, choice 3).
+ */
+const FIGURE_MARKER = `
+(() => {
+  const svg = document.querySelector('svg[data-anatomy]');
+  if (!svg || svg.getClientRects().length === 0) return null;
+  const g = [...svg.querySelectorAll('[data-anatomy-place]')].find((x) => Number(x.getAttribute('data-anatomy-count')) > 0);
+  if (!g) return null;
+  g.scrollIntoView({ block: 'center' });
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const cx = Number(g.getAttribute('data-cx'));
+  const cy = Number(g.getAttribute('data-cy'));
+  return { x: r.left + (cx * r.width) / vb.width, y: r.top + (cy * r.height) / vb.height };
 })()
 `;
 
@@ -659,9 +708,9 @@ function dockFindings(
 }
 
 /**
- * THE MAIN SCREEN DOES NOT SCROLL (docs/for-P2.7.md §9, ruling 4; piece 3). On every screen of the
- * base pass (360 × 780, Standard text) where the play screen is at rest, the page must not be taller
- * than the screen. Larger text may scroll as the last resort (ruling 5) and a 640px phone is checked,
+ * THE MAIN SCREEN DOES NOT SCROLL (docs/for-P2.7.md §9, ruling 4; piece 3, and planning since piece
+ * 4, §17). On every screen of the base pass (360 × 780, Standard text) where the play screen is at
+ * rest, the page must not be taller than the screen. Larger text may scroll as the last resort (ruling 5) and a 640px phone is checked,
  * not chased (ruling 6), so neither is this check's business. A 1px tolerance, for subpixel rounding.
  * A run that measured no screen at rest is NOT REACHED, never clean.
  */
@@ -1017,22 +1066,76 @@ async function walk(
   await click(page, 'Plan your turn');
   await sleep(300);
   await step(page, 'planning', results);
-  // PLANNING → PATHOGEN CARD closes back to planning (ruling 9).
-  await clickSel(page, '[data-planning-group] > button');
-  await sleep(250);
-  if (await clickSel(page, '[data-planning-member] button')) {
+  // THE PATHOGENS DRAWER (piece 4, docs/for-P2.7.md §17): planning's list left the page for a drawer
+  // opened from the dock's slot. PATHOGENS DRAWER → PATHOGEN CARD closes back to the drawer, and the
+  // drawer back to planning (ruling 9).
+  if (await clickSel(page, '[data-dock-slot="pathogens"]')) {
     await sleep(300);
-    await nest(page, nesting, 'Planning → pathogen card', 'planning');
+    await step(page, 'planning, Pathogens drawer', results);
+    await clickSel(page, '[data-drawer="pathogens"] [data-planning-group] > button');
+    await sleep(250);
+    if (await clickSel(page, '[data-drawer="pathogens"] [data-planning-member] button')) {
+      await sleep(300);
+      await nest(page, nesting, 'Pathogens drawer → pathogen card', 'drawer: pathogens');
+    } else {
+      nestNotReached(
+        nesting,
+        'Pathogens drawer → pathogen card',
+        'no pathogen row in the drawer offered a card',
+      );
+    }
+    await nest(page, nesting, 'Planning → Pathogens drawer → close', 'planning');
   } else {
+    results.push(notReached('planning, Pathogens drawer', 'no Pathogens slot in the dock'));
+    nestNotReached(nesting, 'Pathogens drawer → pathogen card', 'no Pathogens slot in the dock');
+    nestNotReached(nesting, 'Planning → Pathogens drawer → close', 'no Pathogens slot in the dock');
+  }
+  // A TAP ON THE FIGURE opens the drawer at that place (§17, choice 3): a real pointer click at a
+  // marker's centre, because the figure resolves the tap from the pointer's coordinates.
+  const marker = (await page.evaluate(FIGURE_MARKER)) as { x: number; y: number } | null;
+  if (marker !== null) {
+    await page.mouse.click(marker.x, marker.y);
+    await sleep(350);
+  }
+  if (
+    marker !== null &&
+    (await page.evaluate(
+      () => document.querySelector('[data-drawer="pathogens"] [data-planning-showing]') !== null,
+    ))
+  ) {
+    await step(page, 'planning, Pathogens drawer at a place', results);
+    await nest(page, nesting, 'Figure tap → Pathogens drawer → close', 'planning');
+  } else {
+    const why =
+      marker === null
+        ? 'no place on the figure had a pathogen'
+        : 'a tap on a marker did not open the drawer at its place';
+    results.push(notReached('planning, Pathogens drawer at a place', why));
+    nestNotReached(nesting, 'Figure tap → Pathogens drawer → close', why);
+    if (marker !== null) await closeLevel(page);
+  }
+  // WHAT HAPPENED, from planning's dock.
+  if (await clickSel(page, '[data-dock-slot="log"]')) {
+    await sleep(300);
+    await step(page, 'planning, What happened drawer', results);
+    await nest(page, nesting, 'Planning → What happened → close', 'planning');
+  } else {
+    results.push(notReached('planning, What happened drawer', 'no What happened slot in the dock'));
     nestNotReached(
       nesting,
-      'Planning → pathogen card',
-      'no pathogen row on planning offered a card',
+      'Planning → What happened → close',
+      'no What happened slot in the dock',
     );
   }
-  await clickSel(page, '[data-planning-ap]');
-  await sleep(200);
-  await step(page, 'planning, AP terms open', results);
+  // THE AP TERMS, from the dock's AP figure since piece 4: a sheet over the figure, one close away.
+  if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
+    await sleep(250);
+    await step(page, 'planning, AP terms open', results);
+    await nest(page, nesting, 'Planning → AP terms → close', 'planning');
+  } else {
+    results.push(notReached('planning, AP terms open', 'the AP figure was not tappable'));
+    nestNotReached(nesting, 'Planning → AP terms → close', 'the AP figure was not tappable');
+  }
   await click(page, 'Command your cells');
   await sleep(900);
   await step(page, 'command, nothing selected', results);
@@ -1805,8 +1908,46 @@ async function controls(page: Page): Promise<string[]> {
             return false;
           }
         }, precached);
+  // THE ART COUNT the offline check rests on (docs/for-P2.7.md §18), both ways, with the network
+  // still cut: an SVG image whose URL nothing precached must be counted broken, and one the build
+  // precached must not be. Planted on the title screen and compared with its own art before them.
+  const artWith = async (
+    href: string | null,
+  ): Promise<{ images: number; brokenImages: number }> => {
+    if (href !== null) {
+      await page.evaluate((h: string) => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('data-control', 'art');
+        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        image.setAttribute('href', h);
+        svg.appendChild(image);
+        document.body.prepend(svg);
+      }, href);
+    }
+    const art = (await page.evaluate(ART_PROBE)) as { images: number; brokenImages: number };
+    await page.evaluate(UNPLANT);
+    return art;
+  };
+  const artBase = await artWith(null);
+  const artMissing = await artWith('/art/control-art-does-not-exist.webp');
+  const artPrecached = served === null ? null : await artWith('/art/path-virus@3x.webp');
   await page.setOfflineMode(false);
   line('offline fires: a fresh URL fails with the network cut', failed);
+  line(
+    'offline art fires: an SVG image nothing precached is counted broken with the network cut',
+    artMissing.images === artBase.images + 1 &&
+      artMissing.brokenImages === artBase.brokenImages + 1,
+  );
+  if (artPrecached === null)
+    lines.push(
+      'CONTROL offline art passes: NOT RUN — no service worker controls this origin; the offline check will report not met',
+    );
+  else
+    line(
+      'offline art passes: an SVG image the build precached is NOT counted broken',
+      artPrecached.images === artBase.images + 1 &&
+        artPrecached.brokenImages === artBase.brokenImages,
+    );
   if (served === null)
     lines.push(
       'CONTROL offline passes: NOT RUN — no service worker controls this origin (the dev server has none); the offline check will report not met',
@@ -2158,9 +2299,13 @@ async function waitClick(page: Page, label: string, ms = 8000): Promise<boolean>
   return click(page, label);
 }
 
-async function playATurn(
-  page: Page,
-): Promise<{ turn: string | null; brokenImages: number; images: number; steps: string[] }> {
+async function playATurn(page: Page): Promise<{
+  turn: string | null;
+  brokenImages: number;
+  images: number;
+  svgArt: number;
+  steps: string[];
+}> {
   // Every step is recorded so a failed offline play says WHERE it stopped, not only that it did.
   const steps: string[] = [];
   const step = async (label: string, run: () => Promise<boolean>): Promise<void> => {
@@ -2226,12 +2371,17 @@ async function playATurn(
     const more = await advance(page);
     if (!more && i > 6) break;
   }
-  const r = await page.evaluate(() => ({
-    turn: (document.body.innerText.match(/Turn (\d+) of/) ?? [])[1] ?? null,
-    brokenImages: [...document.images].filter((i) => i.complete && i.naturalWidth === 0).length,
-    images: document.images.length,
-  }));
-  return { ...r, steps };
+  const turn = (await page.evaluate(
+    () => (document.body.innerText.match(/Turn (\d+) of/) ?? [])[1] ?? null,
+  )) as string | null;
+  // The art counted with ART_PROBE: `<img>` and SVG `<image>` both, because since piece 4 the screen
+  // a turn ends on holds only the second (docs/for-P2.7.md §18).
+  const art = (await page.evaluate(ART_PROBE)) as {
+    images: number;
+    brokenImages: number;
+    svgArt: number;
+  };
+  return { turn, ...art, steps };
 }
 
 async function offline(page: Page): Promise<Record<string, unknown>> {
@@ -2273,8 +2423,11 @@ async function offline(page: Page): Promise<Record<string, unknown>> {
     reloadOffline: reload,
     reloadPlayed,
     reloadFailedRequests: failedRequests.slice(0, 8),
-    // MET means: a turn played after the reload with no network, on a command screen that
-    // holds images and none of them broken, and no request failed along the way.
+    // MET means: a turn played after the reload with no network, on the screen the turn ends on,
+    // whose art (`<img>`, and SVG `<image>` since piece 4) is there and none of it broken, and no
+    // request failed along the way. It read "a command screen that holds images" until piece 4
+    // left that screen without a single `<img>`, and the images > 0 guard said NOT MET on a build
+    // that had played offline cleanly: the guard doing its job (docs/for-P2.7.md §18).
     met:
       reloadPlayed !== null &&
       reloadPlayed.turn !== null &&
