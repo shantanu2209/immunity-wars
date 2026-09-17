@@ -69,7 +69,11 @@ export interface InvaderOffer {
   label: string;
 }
 
-/** "Spent · back in 2 turns" — the words for a dimmed cell, all through the catalogue. */
+/**
+ * "Spent, back in 2 turns": the words for a dimmed cell, all through the catalogue, the join
+ * included. The join was a literal dash written here until piece 4, outside every catalogue check
+ * (FINDINGS #74).
+ */
 export function unavailableText(u: Unavailable): string {
   if (u.kind === 'hiv') return t('inspect.hiv');
   if (u.kind === 'infected') return t('inspect.infected');
@@ -81,7 +85,7 @@ export function unavailableText(u: Unavailable): string {
       : u.backIn === 1
         ? t('inspect.backInOne')
         : t('inspect.backIn', { n: u.backIn });
-  return `${what} — ${when}`;
+  return t('inspect.unavailableWhen', { what, when });
 }
 
 export function InspectSheet({
