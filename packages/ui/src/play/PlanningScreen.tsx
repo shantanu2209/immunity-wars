@@ -1,17 +1,22 @@
 /**
- * THE PLANNING SCREEN (P2.5 item 12) — the body from the outside, between the draw's reveal
- * and the command phase. It answers "what is happening to the body" where the board answers
- * "what can I reach". View-only: its one action is the bottom button, which begins command
- * (or, under Phase 3's allocation, confirms the plan).
+ * THE PLANNING SCREEN (P2.5 item 12): the body from the outside, between the draw's reveal and the
+ * command phase. It answers "what is happening to the body" where the board answers "what can I
+ * reach". View-only: its one action is the dock's next step, which begins command (or, under Phase
+ * 3's allocation, confirms the plan).
+ *
+ * LAID OUT FOR THE PHONE BY PIECE 4 (docs/for-P2.7.md §17, ruled 13 September 2026). The page holds
+ * the figure, and what the page used to stack under it lives where the main screen keeps the same
+ * kinds of thing. The dock (built by the play screen): the Action Points for the turn to come, the
+ * figure's hint or which cells are out, Pathogens and What happened as two slots, and Command your
+ * cells. A drawer: the pathogen summary, opened from its slot or at a place by a tap on the figure.
  *
  * Blocks, in the ruled order (P2_5_PROGRESS.md, "Item 12"):
- *   a — the silhouette with organs and HP: lands with step 4, after the entry-lane ruling.
- *       The slot is the top of this component.
- *   b — the pathogen summary: counts by type, then one row per board token group with its
- *       DEPTH in colour and in words (green entry lane, amber bloodstream, red organ lane);
- *       tap a row to expand its pathogens, tap a pathogen for its card.
- *   c — the cells: a FACT beside the AP line (which are spent, and when they are back), not a
- *       roster — removed at the S25 second pass; the cell cards open from the inspect sheet.
+ *   a — the silhouette with organs and HP, at its frame's own width (`AnatomyView`).
+ *   b — the pathogen summary, now the Pathogens drawer (`PathogenList`): counts by type, then one
+ *       row per board token group with its DEPTH in colour and in words (green entry lane, amber
+ *       bloodstream, red organ lane); tap a row to expand its pathogens, tap a pathogen for its card.
+ *   c — the cells: a FACT, not a roster (`spentCellsLine`), said in the dock's message line in place
+ *       of the figure's hint; the cell cards open from the inspect sheet.
  *   d — the Phase 3 allocation slot: designed in, rendered only when the view carries an
  *       allocation phase, which single-player never does.
  *
@@ -23,7 +28,6 @@ import { useState } from 'react';
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
 import { cellDisplayName, typeDisplayName } from '../names';
-import { ApTerms } from '../panels/ApTerms';
 import { CardIcon } from '../panels/CardIcon';
 import { organEffect, unavailableText } from '../panels/InspectSheet';
 import { invaderNowLine } from '../panels/invaderNow';
@@ -94,18 +98,6 @@ const CARD_BUTTON: CSSProperties = {
   border: '1.5px solid #B03A2E',
   background: '#FFFDF9',
   cursor: 'pointer',
-};
-const BIG: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '1rem',
-  fontWeight: 700,
-  borderRadius: 10,
-  border: '2px solid #B03A2E',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
 };
 
 function GroupRow({
@@ -251,185 +243,166 @@ function AllocationBlock({ slot }: { slot: AllocationSlot }): ReactElement {
   );
 }
 
-export function PlanningScreen({
+/**
+ * BLOCK C — which cells are out, and why when there is a why (the engine's `regenBreakdown`), as one
+ * line for the dock's message; null when every cell is ready.
+ */
+export function spentCellsLine(
+  cells: readonly PlanningCell[],
+  why: Readonly<Record<string, string>> = {},
+): string | null {
+  const out = cells.filter((c) => c.unavailable !== null);
+  if (out.length === 0) return null;
+  return out
+    .map((c) =>
+      [
+        `${cellDisplayName(c.key)} ${t('inspect.sep')} ${c.unavailable ? unavailableText(c.unavailable) : ''}`,
+        why[c.key],
+      ]
+        .filter((x) => x !== undefined)
+        .join(`. `),
+    )
+    .join(` ${t('inspect.sep')} `);
+}
+
+/**
+ * BLOCK B — THE PATHOGENS DRAWER's content (piece 4, §17). With a place in focus, which a tap on the
+ * figure gives it (choice 3), the rows are that place's, under a line saying so, with the organ's
+ * damage effect when it has one and a way to show them all. Closing the drawer clears the place;
+ * that is the shell's to do, because the drawer's close is on the navigation stack.
+ */
+export function PathogenList({
   model,
-  cells,
-  apTerms = [],
-  why = {},
+  focus,
   disabled = false,
-  onCommand,
+  onShowAll,
   onPathogenCard,
 }: {
   model: PlanningModel;
-  cells: PlanningCell[];
-  /**
-   * THE AP FIGURE'S TERMS (6 September 2026), localised by the shell from the engine's
-   * `apBreakdown`: tapping "You will have N Action Points" lists what is making N.
-   */
-  apTerms?: readonly { text: string; delta: number }[];
-  /** Why a spent cell is back when it is back, by cell key — beside the facts line. */
-  why?: Readonly<Record<string, string>>;
+  focus: string | null;
   disabled?: boolean;
-  /** Sends the model's button params — `beginCommand`, or `confirmAllocation` under allocation. */
-  onCommand: (params: Record<string, unknown>) => void;
+  onShowAll: () => void;
   onPathogenCard: (invaderId: string) => void;
 }): ReactElement {
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const toggle = (k: string): void => setOpen((o) => ({ ...o, [k]: !o[k] }));
-  const [apOpen, setApOpen] = useState(false);
-  // BLOCK A's expand-a-lane: the figure's focused place filters the rows; tap-again clears.
-  const [focus, setFocus] = useState<string | null>(null);
   const rows = focus === null ? model.groups : model.groups.filter((grp) => grp.place === focus);
+  // A DAMAGED ORGAN's "When damaged" column, one tap from its pips (6 September 2026): the planning
+  // screen's half of the home that let the permanent organ-damage chip leave the strip; the inspect
+  // sheet's organ row is the other.
+  const organ =
+    focus === null ? undefined : model.places.find((p) => p.place === focus && p.kind === 'organ');
+  const effect = focus === null ? null : organEffect(focus);
   return (
-    <div data-screen="planning" style={{ marginTop: 6 }}>
-      <div style={{ fontSize: '1.125rem', fontWeight: 700, color: '#2E2A28' }}>
-        {t('planning.title')}
-      </div>
-      {/* THE AP FIGURE DRILLS INTO ITS TERMS (6 September 2026): the number is the surface, its
-          breakdown the explanation, one tap away and never a banner. */}
-      <button
-        data-planning-ap="1"
-        disabled={apTerms.length === 0}
-        onClick={() => setApOpen((v) => !v)}
-        style={{
-          minHeight: 44,
-          padding: '0 4px',
-          fontSize: '0.8125rem',
-          color: '#78665D',
-          background: 'transparent',
-          border: 'none',
-          cursor: apTerms.length > 0 ? 'pointer' : 'default',
-          textAlign: 'left',
-          font: 'inherit',
-        }}
-      >
-        {t('planning.apNext', { n: model.apNext })}
-        {apTerms.length > 0 ? (
-          <span style={{ display: 'block', fontSize: '0.75rem', color: '#8E6E53' }}>
-            {t('ap.tap')}
+    <section data-block="pathogens" style={{ fontSize: '0.8125rem', padding: '0 4px' }}>
+      {focus !== null ? (
+        <div
+          data-planning-showing={focus}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            flexWrap: 'wrap',
+            marginBottom: 4,
+          }}
+        >
+          <span style={{ fontWeight: 700, color: '#2E2A28' }}>
+            {t('planning.showing', { place: placeName(focus) })}
           </span>
-        ) : null}
-      </button>
-      {apOpen && apTerms.length > 0 ? <ApTerms terms={apTerms} total={model.apNext} /> : null}
-      {/* THE CELLS AS A FACT, not a roster (S25 second pass, 5 September 2026): the planning
-          screen is about the body and the threats; which cells are spent belongs beside the
-          AP line, and the cell cards open from the inspect sheet. Since 6 September the fact
-          carries its WHY (the engine's `regenBreakdown`) when there is one. */}
-      {cells.some((c) => c.unavailable !== null) ? (
-        <div data-planning-cell-facts="1" style={{ fontSize: '0.8125rem', color: '#7A5600' }}>
-          {cells
-            .filter((c) => c.unavailable !== null)
-            .map((c) =>
-              [
-                `${cellDisplayName(c.key)} ${t('inspect.sep')} ${c.unavailable ? unavailableText(c.unavailable) : ''}`,
-                why[c.key],
-              ]
-                .filter((x) => x !== undefined)
-                .join(`. `),
-            )
-            .join(` ${t('inspect.sep')} `)}
+          {organ?.hp && organ.hp.hp < organ.hp.max && effect !== null ? (
+            <span data-planning-organ-effect={focus} style={{ color: '#B03A2E' }}>
+              {t('effects.organEffect', { effect })}
+            </span>
+          ) : null}
+          <button
+            data-planning-show-all="1"
+            style={{
+              ...CARD_BUTTON,
+              width: 'auto',
+              padding: '0 10px',
+              // In rem, so the words grow with the text size: a button does not inherit the page's
+              // size, and the audit's 200% passes found this one fixed at 13.3px (for-P2.7.md §18).
+              fontSize: '0.8125rem',
+              border: '1.5px solid #8E6E53',
+            }}
+            onClick={onShowAll}
+          >
+            {t('planning.showAll')}
+          </button>
         </div>
       ) : null}
-      {/* BLOCK A — the body from the outside: organs with integrity, entries, the bloodstream. */}
-      <section data-block="anatomy" data-planning-focus={focus ?? undefined} style={PANEL}>
-        <AnatomyView
-          markers={model.places}
-          focus={focus}
-          disabled={disabled}
-          onTap={(place) => setFocus((f) => (place === null || place === f ? null : place))}
-        />
-        <div style={{ fontSize: '0.75rem', color: '#78665D', textAlign: 'center' }}>
-          {focus === null ? (
-            t('planning.figureHint')
-          ) : (
-            <span
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
-            >
-              <span style={{ fontWeight: 700, color: '#2E2A28' }}>
-                {t('planning.showing', { place: placeName(focus) })}
+      <div style={TITLE}>{t('planning.pathogens')}</div>
+      {model.total === 0 ? (
+        <div style={{ color: '#78665D' }}>{t('planning.noPathogens')}</div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
+            {model.byType.map((c) => (
+              <span
+                key={c.type}
+                data-type-count={c.type}
+                data-n={c.count}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  border: '1.5px solid #8E6E53',
+                  borderRadius: 8,
+                  padding: '2px 8px',
+                  minHeight: 28,
+                }}
+              >
+                {c.art ? <img src={`/art/${c.art}@3x.webp`} width={20} height={20} alt="" /> : null}
+                <span>{c.novel ? t('inspect.unknown') : typeDisplayName(c.type)}</span>
+                <span style={{ fontWeight: 700 }}>{t('planning.times', { n: c.count })}</span>
               </span>
-              {(() => {
-                // A DAMAGED ORGAN's "When damaged" column, one tap from its pips (6 September
-                // 2026) — the planning screen's half of the home that let the permanent
-                // organ-damage chip leave the strip; the inspect sheet's organ row is the other.
-                const marker = model.places.find((p) => p.place === focus && p.kind === 'organ');
-                const effect = organEffect(focus);
-                return marker?.hp && marker.hp.hp < marker.hp.max && effect !== null ? (
-                  <span data-planning-organ-effect={focus} style={{ color: '#B03A2E' }}>
-                    {t('effects.organEffect', { effect })}
-                  </span>
-                ) : null;
-              })()}
-              <button
-                data-planning-show-all="1"
-                style={{ ...CARD_BUTTON, border: '1.5px solid #8E6E53' }}
-                onClick={() => setFocus(null)}
-              >
-                {t('planning.showAll')}
-              </button>
-            </span>
-          )}
-        </div>
-      </section>
-      <section data-block="pathogens" style={PANEL}>
-        <div style={TITLE}>{t('planning.pathogens')}</div>
-        {model.total === 0 ? (
-          <div style={{ color: '#78665D' }}>{t('planning.noPathogens')}</div>
-        ) : (
-          <>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
-              {model.byType.map((c) => (
-                <span
-                  key={c.type}
-                  data-type-count={c.type}
-                  data-n={c.count}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    border: '1.5px solid #8E6E53',
-                    borderRadius: 8,
-                    padding: '2px 8px',
-                    minHeight: 28,
-                  }}
-                >
-                  {c.art ? (
-                    <img src={`/art/${c.art}@3x.webp`} width={20} height={20} alt="" />
-                  ) : null}
-                  <span>{c.novel ? t('inspect.unknown') : typeDisplayName(c.type)}</span>
-                  <span style={{ fontWeight: 700 }}>{t('planning.times', { n: c.count })}</span>
-                </span>
-              ))}
-            </div>
-            {rows.length === 0 ? (
-              <div
-                style={{ color: '#78665D', minHeight: 44, display: 'flex', alignItems: 'center' }}
-              >
-                {t('planning.emptyPlace')}
-              </div>
-            ) : null}
-            {rows.map((grp) => (
-              <GroupRow
-                key={grp.key}
-                group={grp}
-                open={open[grp.key] === true}
-                disabled={disabled}
-                onToggle={() => toggle(grp.key)}
-                onPathogenCard={onPathogenCard}
-              />
             ))}
-          </>
-        )}
+          </div>
+          {rows.length === 0 ? (
+            <div style={{ color: '#78665D', minHeight: 44, display: 'flex', alignItems: 'center' }}>
+              {t('planning.emptyPlace')}
+            </div>
+          ) : null}
+          {rows.map((grp) => (
+            <GroupRow
+              key={grp.key}
+              group={grp}
+              open={open[grp.key] === true}
+              disabled={disabled}
+              onToggle={() => toggle(grp.key)}
+              onPathogenCard={onPathogenCard}
+            />
+          ))}
+        </>
+      )}
+    </section>
+  );
+}
+
+export function PlanningScreen({
+  model,
+  focus,
+  disabled = false,
+  onFigureTap,
+}: {
+  model: PlanningModel;
+  /** The place the Pathogens drawer is showing, ringed on the figure; null when none is. */
+  focus: string | null;
+  disabled?: boolean;
+  /** A tap on (or near) a marker, or on nothing: the shell opens the drawer at a place (§17). */
+  onFigureTap: (place: string | null) => void;
+}): ReactElement {
+  return (
+    <div data-screen="planning" style={{ marginTop: 6 }}>
+      {/* BLOCK A — the body from the outside: organs with integrity, entries, the bloodstream. */}
+      <section
+        data-block="anatomy"
+        data-planning-focus={focus ?? undefined}
+        style={{ ...PANEL, marginTop: 0 }}
+      >
+        <AnatomyView markers={model.places} focus={focus} disabled={disabled} onTap={onFigureTap} />
       </section>
       {model.allocation ? <AllocationBlock slot={model.allocation} /> : null}
-      <button
-        data-planning-button={model.mode}
-        style={BIG}
-        disabled={disabled}
-        onClick={() => onCommand(model.button.params)}
-      >
-        {model.button.label}
-      </button>
     </div>
   );
 }
