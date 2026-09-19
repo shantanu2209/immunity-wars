@@ -727,7 +727,7 @@ waits for it**: where "Recall to bloodstream" goes (below, and [`FINDINGS.md`](F
   after the goal dialog, every turn after a spread, and a game resumed before its draw. The dialog
   queue answers "is one pending" synchronously, because the goal is enqueued in the same effect flush
   the draw reads it in.
-- **The dock** (`packages/ui/src/panels/Dock.tsx`) replaces the command bar and the action list, both
+- **The dock** (`panels/Dock.tsx`, deleted in piece 5 (§19)) replaces the command bar and the action list, both
   deleted: the name line (the piece, AP, Undo, Deselect), one message line, two row slots, End turn
   alone. Zone minimums in rem. Hidden with its height kept while the floating close shows. At the
   bottom of the screen while the top row, the board and the dock fit, otherwise straight after the
@@ -1249,7 +1249,7 @@ and a move to (c) is a ruling away.
   (`packages/ui/src/play/PlanningScreen.tsx`, `AnatomyView.tsx`), with Phase 3's allocation slot under
   it when the view carries one. The heading, the AP line and its teaching line, the pathogen list, the
   button and the log left the page.
-- **One dock serves both steps of the turn** (`packages/ui/src/panels/Dock.tsx`,
+- **One dock serves both steps of the turn** (`panels/Dock.tsx`, deleted in piece 5 (§19),
   `packages/ui/src/play/PlayScreen.tsx`). It moved out of the command stage to just after it, so it
   follows whichever step is showing and measures itself against planning's figure or against the board
   and its drawer row. In planning, at the same 248px: "You will have n Action Points to spend" in the
@@ -1341,3 +1341,105 @@ NOT REACHED; the scale finding above under FONT200 and SIZE200; nesting 34 landi
   (`help.s4.p3`, tagged Fresh in [`HELP_DRAFT.md`](HELP_DRAFT.md)): "command bar" has been stale since
   piece 2, and Help's wording is his, so it is not changed here.
 - **Still open from #74:** whether the no-dashes check should read code as well as tables.
+
+---
+
+## 19. Piece 5, the frame: RULED AND BUILT, 20 September 2026
+
+### The rulings (Shantanu, 19 and 20 September 2026)
+
+His phone's Chrome tab is about **360 × 680** once the browser's own bars are drawn, not the 780 every
+measurement so far assumed, which is why planning still scrolled in his hands after piece 4. So every
+stage now has **one format**: a fixed top bar, a **play area of the same height in every stage** ("equal
+play area height for all phases is important"), a middle that scrolls only as the last resort, and one
+advance button at the bottom.
+
+- **Top bar:** the turn as "1/15" and the AP on the left; a short banner for what is in force between;
+  a chat icon and the menu on the right. The deck count is gone.
+- **Planning:** the figure with no box; the pathogen list in the middle; a tap on a place filters the
+  list, a tap elsewhere shows them all; no type chips.
+- **Command:** three equal buttons, **Cells, Antibodies, The body**, each opening its view in the middle.
+  **Antibodies can be produced without selecting the B-Cell first.** The AP and speed text leave the
+  middle. A pathogen tapped shows in one level.
+- **"What happened" becomes the chat icon**, opening Messages in tabs; its first tab is "System messages",
+  the players' own chat being Phase 3's.
+- **Cards open full window.**
+
+**What these supersede**, recorded rather than silently replaced: §12 ruling 1's dock (its one height
+becomes the play area's), §15's four drawers (three become views in the middle, What happened becomes
+Messages), and §17/§18's arrangement (b): planning's dock, its two slots and the Pathogens drawer.
+§12 ruling 1's other half stands: the advance button hides **keeping its height** while the floating
+close shows, so nothing moves.
+
+### What was built
+
+- **`packages/ui/src/play/Frame.tsx`** (new): `TopBar`, `PlayArea` (the board's own aspect ratio from
+  `geometry.json`, capped at 55dvh), the toast, `ActionsView` (the 2 × 2 action grid of §14, now in the
+  middle), `SpreadView`, `TabRow` and `AdvanceButton`. `panels/Dock.tsx` is deleted.
+- **`PlayScreen.tsx`** is one screen tall (`100dvh` less the body's margin) and says what the middle
+  shows in one priority order: a spread, the AP terms, what is in force, planning's list, a tapped node,
+  a row's targets, then the Cells, Antibodies or Body view, else the actions.
+- **Planning**: the figure fills the play area; the list sits in the middle with a lone pathogen's row
+  opening its card; a tap on the play area's empty sides counts as elsewhere.
+- **Produce without the B-Cell**: `produceOffers(view)` in `offered.ts` offers it whenever the B-Cell is
+  unspent, not suppressed, and can act. **The engine is unchanged**: `produce` never needed the B-Cell
+  selected, only the UI did.
+- **Cards** (pathogen and cell) are full window. The cell card gains Speed, and Dice for the NK Cell,
+  from the content tables.
+- **Catalogue:** short banner and turn keys, `chat.*`, `tabs.cells`, `planning.tapBodyForAll`,
+  `cellCard.speed`/`dice` added; the dock's, the drawers' and planning's retired keys removed with their
+  last uses, `commandBar.deselect` among them.
+
+### Two things found on the way, both in the product
+
+1. **The floating close made the page 88px taller than the screen.** NavHost's spacer is there so a
+   scrolling page's last lines clear the button; the frame never scrolls, so it only pushed the page
+   past the screen. The frame now lets the spacer overlap its own bottom (a negative margin while the
+   close shows), so nothing moves and the page is 680 at 680.
+2. **The close then covered the tab row by 2px** at 360 × 680: the advance button's slot was 2.75rem
+   and the close's footprint larger. The slot is 3rem.
+
+### What the instruments gained
+
+- **The play area's one height** replaces the dock's (§12), with three controls: another height is
+  reported by name, both stages at one height pass, and a run that measured only one stage is NOT
+  REACHED.
+- **A 360 × 680 pass of the no-scroll check**: planning and command at rest, and command **with a view
+  open under the close**, which is the case (1) above lived in and which nothing at rest could see.
+- **The antibodies view is walked with nothing selected and REQUIRES its Produce button**: a view
+  without one is a finding, so the ruling is checked, not assumed.
+- The walk reaches the planning list's card, the list at a place and cleared again, Messages from both
+  stages, and the three views; selectors moved from the drawers and the dock to the tabs, the chat icon
+  and the menu icon.
+
+### What the first audit of the build found
+
+1. **The AP figure was 42 × 44**, under the 44px minimum: `minWidth` 44.
+2. **At 200% page zoom (a 180px layout) the top bar was 9px too wide** and the menu left the screen. The
+   bar wraps as the last resort, with the banner's basis at 0 so on any wider screen it shrinks first.
+3. **A tap beside the figure left the list filtered** (the walk's own "elsewhere" tap): fixed as above.
+4. **Offline NOT MET on a build that played offline cleanly**: the instrument read the turn from the
+   text "Turn N of", which this piece removed. It reads the top bar's turn now. Fixed inline, because it
+   is the instrument.
+
+### The Gate 1 audit on the build the PR carries
+
+**Conditions:** the shipped build served by `vite preview`, headless system Chrome on the development PC
+(i7-12700F), 360 × 780 CSS px and the three 200% mechanisms, plus the 360 × 680 scroll pass; unseeded
+games (#68); no handset.
+
+**44 controls, all firing the right way** (the dock's three replaced by the play area's three). **56
+screens per pass (58 under SIZE200). NOT REACHED: one door the deal decides**, a row's targets under
+ZOOM200, reached in the other passes; the first run's two NOT REACHED under SIZE200 (the inspect sheet,
+a row's targets) were reached in this one. **Every check 0 under all four mechanisms**: touch, contrast,
+non-text, scaling, layout, size, occlusion. **Nesting: 32 landings, 0 wrong.** **The play area: 338.7px
+on all 28 screens** it was measured on, across planning, command and the spread. **No scroll: 0px on all
+17 screens at rest**, the three at 360 × 680 among them. **Offline met**, the turn read as "2/15".
+
+**What these numbers cannot say:** the 680 pass measures one game's first turn; nothing here was on a
+handset, and his phone is the check that matters for (1) above.
+
+### Left for Shantanu's look
+
+- **Whether the frame reads right on his phone**, at 680 in the Chrome tab: this is built to be looked at.
+- **Still open:** Help's `s4.p3` ("in the command bar"), now staler, and the #74 instrument question.

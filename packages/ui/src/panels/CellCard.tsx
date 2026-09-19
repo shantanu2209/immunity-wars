@@ -7,7 +7,7 @@
  * "Right now" is the one line about THIS cell rather than the cell type: spent or offline,
  * and when it is back — the same line the piece strip and the inspect sheet show.
  */
-import { CELL_CARDS, UM } from '@immunity-wars/content';
+import { CELL_CARDS, NK_HITS, SPEED, UM } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
@@ -34,6 +34,7 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
   const { cell } = subject;
   const card = (CELL_CARDS as Record<string, Fields | undefined>)[cell] ?? {};
   const tag = (UM as Record<string, { r?: string } | undefined>)[cell]?.r;
+  const speed = (SPEED as Record<string, number | undefined>)[cell] ?? null;
   const fields = [
     ['cellCard.role', card.role],
     ['cellCard.home', card.home],
@@ -47,33 +48,19 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
       role="dialog"
       aria-label={t('cellCard.title')}
       style={{
+        // A FULL WINDOW, as the pathogen card is (Shantanu, 20 September 2026).
         position: 'fixed',
         inset: 0,
-        background: 'rgba(46,42,40,0.45)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: '#FFFDF9',
+        overflowY: 'auto',
         zIndex: 40,
-        // The card sits above the floating close, which closes it (for-P2.7.md §9, ruling 8), so
-        // its last line is never under the button; the percentage below is of what is left.
-        paddingTop: '4vh',
-        paddingBottom: FLOAT_RESERVE,
+        padding: `14px 14px ${FLOAT_RESERVE}`,
         boxSizing: 'border-box',
       }}
     >
       <div
         data-cell-card-open={cell}
-        style={{
-          width: 'min(92vw, 420px)',
-          maxHeight: '100%',
-          overflowY: 'auto',
-          background: '#FFFDF9',
-          border: '2px solid #8E6E53',
-          borderRadius: 12,
-          padding: 14,
-          fontSize: '0.875rem',
-          color: '#2E2A28',
-        }}
+        style={{ maxWidth: 560, margin: '0 auto', fontSize: '0.875rem', color: '#2E2A28' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={`/art/cell-${cell}@3x.webp`} width={48} height={48} alt="" />
@@ -98,6 +85,20 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
             </div>
           ) : null,
         )}
+        {speed !== null ? (
+          // HOW FAR IT MOVES, and the NK Cell's odds (piece 5, §19): they were said beside the
+          // selected cell until the middle kept only what a turn needs. The numbers are content's.
+          <div data-cell-card-speed={speed} style={{ marginTop: 8 }}>
+            <div style={LABEL}>{t('cellCard.speed')}</div>
+            <div>{speed}</div>
+          </div>
+        ) : null}
+        {cell === 'nk' ? (
+          <div style={{ marginTop: 8 }}>
+            <div style={LABEL}>{t('cellCard.dice')}</div>
+            <div>{t('actions.hitsOn', { n: NK_HITS })}</div>
+          </div>
+        ) : null}
         {card.fact ? (
           <div style={{ marginTop: 8, fontStyle: 'italic', color: '#78665D' }}>{card.fact}</div>
         ) : null}

@@ -131,33 +131,19 @@ export function PathogenCard({
       role="dialog"
       aria-label={t('card.title')}
       style={{
+        // A FULL WINDOW (Shantanu, 20 September 2026): nothing else can be done while a card is
+        // open, so nothing of the screen behind it shows. It scrolls, and keeps its last lines clear
+        // of the floating close that closes it (for-P2.7.md §9, ruling 8).
         position: 'fixed',
         inset: 0,
-        background: 'rgba(46,42,40,0.45)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: '#FFFDF9',
+        overflowY: 'auto',
         zIndex: 40,
-        // The card sits above the floating close, which closes it (for-P2.7.md §9, ruling 8), so
-        // its last line is never under the button; the percentage below is of what is left.
-        paddingTop: '4vh',
-        paddingBottom: FLOAT_RESERVE,
+        padding: `14px 14px ${FLOAT_RESERVE}`,
         boxSizing: 'border-box',
       }}
     >
-      <div
-        style={{
-          width: 'min(92vw, 420px)',
-          maxHeight: '100%',
-          overflowY: 'auto',
-          background: '#FFFDF9',
-          border: '2px solid #B03A2E',
-          borderRadius: 12,
-          padding: 14,
-          fontSize: '0.875rem',
-          color: '#2E2A28',
-        }}
-      >
+      <div style={{ maxWidth: 560, margin: '0 auto', fontSize: '0.875rem', color: '#2E2A28' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <img src={`/art/path-${type}@3x.webp`} width={48} height={48} alt="" />
           <div style={{ flex: '1 1 auto' }}>

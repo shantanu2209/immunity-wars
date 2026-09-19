@@ -24,9 +24,7 @@ export const organEffect = (organ: string): string | null => {
   return typeof e === 'string' && e.trim() !== '' ? e : null;
 };
 import { t } from '../i18n';
-import { FLOAT_RESERVE } from '../nav/NavHost';
 import { CardIcon } from './CardIcon';
-import { invaderNowLine } from './invaderNow';
 import {
   cellDisplayName as cellName,
   organDisplayName,
@@ -121,25 +119,10 @@ export function InspectSheet({
   hint?: ReactElement | null;
 }): ReactElement {
   return (
-    <div
-      data-inspect-sheet=""
-      style={{
-        position: 'fixed',
-        left: '50%',
-        // Above the floating close, which closes this sheet (for-P2.7.md §9, ruling 8).
-        bottom: FLOAT_RESERVE,
-        transform: 'translateX(-50%)',
-        width: 'min(92vw, 420px)',
-        maxHeight: '46vh',
-        overflowY: 'auto',
-        background: '#FFFDF9',
-        border: '2px solid #8E6E53',
-        borderRadius: 12,
-        boxShadow: '0 6px 24px rgba(46,42,40,0.25)',
-        padding: 8,
-        zIndex: 10,
-      }}
-    >
+    // IN THE MIDDLE, not over the board (piece 5, docs/for-P2.7.md §19): what stands on a tapped node
+    // shows below the play area, so the board stays in view, and the floating close returns to the
+    // actions.
+    <div data-inspect-sheet="" data-middle-view="node">
       {hint}
       {info.invaders.map((iv, i) => (
         <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
@@ -163,11 +146,8 @@ export function InspectSheet({
                 {t('inspect.sep')} {t('inspect.coated')}
               </span>
             ) : null}
-            {invaderNowLine(iv) !== null ? (
-              <span style={{ display: 'block', fontSize: '0.8125rem', color: '#7A5600' }}>
-                {invaderNowLine(iv)}
-              </span>
-            ) : null}
+            {/* What this pathogen is doing right now (a malaria stage, hiding inside a cell) is the
+                card's "Right now" since piece 5 (§19): one tap to the card, no line in between. */}
           </span>
           {!iv.novel && onCard ? (
             // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
