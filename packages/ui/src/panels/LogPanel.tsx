@@ -108,7 +108,14 @@ const COLOUR: Record<string, string> = {
   big: '#2E2A28',
 };
 
-export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement {
+export function LogPanel({
+  lines,
+  titled = true,
+}: {
+  lines: readonly LogLine[];
+  /** Whether it heads itself; the messages panel's tab names it instead (piece 5, §19). */
+  titled?: boolean;
+}): ReactElement {
   const [all, setAll] = useState(false);
   const shown = all ? lines : lines.slice(0, SHOWN);
   return (
@@ -123,9 +130,11 @@ export function LogPanel({ lines }: { lines: readonly LogLine[] }): ReactElement
         fontSize: '0.8125rem',
       }}
     >
-      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
-        {t('log.title')}
-      </div>
+      {titled ? (
+        <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
+          {t('log.title')}
+        </div>
+      ) : null}
       {shown.length === 0 ? (
         <div style={{ color: '#78665D' }}>{t('log.empty')}</div>
       ) : (

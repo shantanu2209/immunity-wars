@@ -30,7 +30,7 @@ import {
   SettingsScreen,
   TitleScreen,
   t,
-  turnLine,
+  MenuIcon,
   useNav,
   useNavLayerWith,
   type ArtMetrics,
@@ -357,30 +357,30 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
-            renderControls={(ctx) => (
-              // THE TOP ROW keeps only the turn line and Menu (for-P2.7.md §9 ruling 1). The turn's
-              // next step is the dock's; the draw is the app's (§12 ruling 2); the spread's headline
-              // plays in the dock (§12 ruling 4). One 44px row: its padding went with the buttons.
-              <div
+            renderControls={() => (
+              // THE MENU, an icon at the right of the play screen's top bar (piece 5 of the play
+              // screen, for-P2.7.md §19): the turn and the AP are the bar's own now, and the deck's
+              // count left it.
+              <button
+                data-menu=""
+                aria-label={t('play.pause')}
+                onClick={() => setPaused(true)}
                 style={{
-                  display: 'flex',
-                  gap: 8,
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
                   minHeight: 44,
+                  minWidth: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  background: 'transparent',
+                  border: '1.5px solid #8E6E53',
+                  borderRadius: 8,
+                  color: '#2E2A28',
+                  cursor: 'pointer',
                 }}
               >
-                <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
-                  {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])}{' '}
-                  {t('play.deck')} {String(ctx.game['deckCount'])}
-                </span>
-                <button
-                  style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
-                  onClick={() => setPaused(true)}
-                >
-                  {t('play.pause')}
-                </button>
-              </div>
+                <MenuIcon />
+              </button>
             )}
           />
           {paused ? (

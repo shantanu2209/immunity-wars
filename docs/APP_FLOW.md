@@ -171,6 +171,13 @@ P2.5 piece 1). All text through the i18n catalogue.
 - States: normal / overwrite-confirm showing.
 
 ### PLAY
+- ✅ *20 September 2026, piece 5 ([`for-P2.7.md`](for-P2.7.md) §19), superseding the dock and drawer
+  notes below where they disagree:* every stage is ONE FRAME, one screen tall. A top bar (turn as
+  "1/15", AP, a short banner for what is in force, Messages, menu); a play area of one height in every
+  stage (the body in planning, the board in command and the spread); a middle holding planning's
+  pathogen list, the actions, or the Cells, Antibodies or Body view, scrolling only as the last resort;
+  one advance button. "What happened" is Messages' System messages tab. Antibodies are produced without
+  selecting the B-Cell. Cards open full window. The deck count is gone.
 - The board (built): radial board, fan-of-types tokens, badges, move-target rings.
 - Command bar (built): selected cell, AP, action buttons; persistent at bottom.
   ⚠️ *13 September 2026: the build had placed it inline at 459px, under the board, and no ruling
