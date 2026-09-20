@@ -3,9 +3,10 @@
  * before navigation. States: win / loss (loss names the organ that fell). The shell clears
  * the autosave before showing this screen, so Continue never offers a finished game.
  */
-import type { CSSProperties, ReactElement } from 'react';
+import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { LogPanel, type LogLine } from '../panels/LogPanel';
 
 const BTN: CSSProperties = {
   display: 'block',
@@ -29,6 +30,7 @@ export function ResultScreen({
   won,
   lossOrgan,
   stats,
+  log = [],
   onPlayAgain,
   onChangeDifficulty,
   onTitle,
@@ -37,10 +39,16 @@ export function ResultScreen({
   /** Display name of the organ that fell; null on a win or a non-organ loss. */
   lossOrgan: string | null;
   stats: ResultStats;
+  /**
+   * The finished game's log (§21 H): a player who has just lost asks what happened, and Messages
+   * lived inside the play frame, which is gone by the time they can ask.
+   */
+  log?: readonly LogLine[];
   onPlayAgain: () => void;
   onChangeDifficulty: () => void;
   onTitle: () => void;
 }): ReactElement {
+  const [showLog, setShowLog] = useState(false);
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
       <h1 style={{ fontSize: '1.625rem', color: won ? '#2F6B4A' : '#B03A2E' }}>
@@ -62,6 +70,23 @@ export function ResultScreen({
           {t('result.antibodies')} <span style={{ fontWeight: 700 }}>{stats.antibodiesMade}</span>
         </div>
       </div>
+      {log.length > 0 ? (
+        <>
+          <button
+            style={BTN}
+            data-result-log={showLog ? 'open' : 'closed'}
+            aria-expanded={showLog}
+            onClick={() => setShowLog((v) => !v)}
+          >
+            {showLog ? t('result.hideLog') : t('result.showLog')}
+          </button>
+          {showLog ? (
+            <div style={{ textAlign: 'left', maxHeight: '40dvh', overflowY: 'auto' }}>
+              <LogPanel lines={log} titled={false} />
+            </div>
+          ) : null}
+        </>
+      ) : null}
       <button style={BTN} onClick={onPlayAgain}>
         {t('result.playAgain')}
       </button>

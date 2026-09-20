@@ -29,7 +29,9 @@ interface Pt {
 }
 
 const ICON = 30; // the board's LARGE_PX, in the frame's 1× space
-const HIT_R = 24; // coarse pointing: nearest marker within this radius takes the tap
+// Coarse pointing: the nearest marker within this radius takes the tap. 26 frame units is 46px across
+// at the 339px the figure is drawn at on a 360px phone since piece 5 (for-P2.7.md §19).
+const HIT_R = 26;
 const DEPTH_COLOUR: Record<Depth, string> = {
   entry: '#2F6B4A',
   blood: '#7A5600',
@@ -37,12 +39,6 @@ const DEPTH_COLOUR: Record<Depth, string> = {
 };
 
 const frame = FRAME as { asset: string; w: number; h: number };
-/**
- * The figure's widest on the planning screen: its frame's own width, 224 in the pack, the body view of
- * about 410px that for-P2.7.md §9's height table rules (§17 measured 409). A frame unit is then a CSS
- * pixel, so HIT_R's circle is 48px across (60 at the 280 used before piece 4).
- */
-const FIGURE_MAX = frame.w;
 const organPos = ANATOMY_POS as Record<string, Pt>;
 const entryPos = ANATOMY_ENTRY as Record<string, Pt>;
 const hubPos = ANATOMY_HUB as Pt;
@@ -73,9 +69,13 @@ export function AnatomyView({
 
   const handlePointer = (e: ReactPointerEvent<SVGSVGElement>): void => {
     if (disabled) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - r.left) * frame.w) / r.width;
-    const y = ((e.clientY - r.top) * frame.h) / r.height;
+    // Through the SVG's own transform, as the board does (piece 5, §19): the figure fills the play
+    // area's height now, and the transform stays right however its box is letterboxed.
+    const ctm = e.currentTarget.getScreenCTM();
+    if (!ctm) return;
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    const x = pt.x;
+    const y = pt.y;
     let best: { place: string; d: number } | null = null;
     for (const { m, p } of placed) {
       const d = Math.hypot(p.x - x, p.y - y);
@@ -89,9 +89,11 @@ export function AnatomyView({
       data-anatomy="1"
       viewBox={`0 0 ${String(frame.w)} ${String(frame.h)}`}
       style={{
-        width: '100%',
-        maxWidth: FIGURE_MAX,
-        height: 'auto',
+        // THE PLAY AREA'S HEIGHT (piece 5, §19): the figure is as tall as the board is in command,
+        // its width following from its frame's shape, so the two stages share one height.
+        height: '100%',
+        width: 'auto',
+        maxWidth: '100%',
         display: 'block',
         margin: '0 auto',
       }}
