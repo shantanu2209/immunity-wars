@@ -61,12 +61,15 @@ import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { FLOAT_RESERVE, useNavLayer, useNavState } from '../nav/NavHost';
 import { GoalBody } from '../dialogs/GoalBody';
-import { RevealBody, revealCrisis, type RevealArrival } from '../dialogs/RevealBody';
+import { revealCrisis, type RevealArrival, type RevealCrisis } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/AntibodyPanel';
 import { ApTerms } from '../panels/ApTerms';
 import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
+import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
+import { CoachLine } from '../panels/CoachLine';
+import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
@@ -162,6 +165,7 @@ export interface PlayControlsCtx {
 export function PlayScreen({
   session,
   artMetrics,
+  coach = false,
   skipBursts = false,
   onCheck,
   onFrame,
@@ -181,6 +185,11 @@ export function PlayScreen({
   hintsSeen?: readonly HintSubject[];
   onHintsSeen?: (seen: readonly HintSubject[]) => void;
   artMetrics?: ArtMetrics;
+  /**
+   * THE COACH (piece 8, §20): on for a first game only. The shell decides, because whether this
+   * device has played before is a preference, and the play screen holds no preferences.
+   */
+  coach?: boolean;
   /** Ignore bursts, render authoritative views only — the reconnection rehearsal. */
   skipBursts?: boolean;
   /** Tail-assertion and skip reports; both shells receive them, the dev shell displays them. */
@@ -244,6 +253,20 @@ export function PlayScreen({
   const navState = useNavState();
   // THE TOAST: a greyed button's reason, said over the play area and gone (refusals ride it too).
   const [said, setSaid] = useState<string | null>(null);
+  // The coach's own state: the step the player has waved away, and whether they ended it.
+  const [coachDone, setCoachDone] = useState<string | null>(null);
+  const [coachOff, setCoachOff] = useState(false);
+
+  // THE ARRIVALS STAGE (piece 6, §20): this draw's cards, the turn's event, and what the spread
+  // did, shown as a stage of the frame rather than a dialog over it. Null when no draw is waiting
+  // to be looked at.
+  const [arrivals, setArrivals] = useState<{
+    list: RevealArrival[];
+    crisis: RevealCrisis | null;
+  } | null>(null);
+  // The burst's own narration lines, kept so the spread can be read at rest on that stage.
+  const spreadLinesRef = useRef<string[]>([]);
+  const [spreadLines, setSpreadLines] = useState<string[]>([]);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -289,6 +312,8 @@ export function PlayScreen({
         frameStore.set(null);
         if (pv) setAuthView(pv);
         setPlaying(false);
+        setSpreadLines(spreadLinesRef.current);
+        spreadLinesRef.current = [];
         return;
       }
       lastFrameRef.current = f;
@@ -306,11 +331,13 @@ export function PlayScreen({
     const unsubscribe = session.subscribe((ev) => {
       if (ev.kind === 'burst') {
         if (skipRef.current) {
+          setSpreadLines(ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
           onCheckRef.current?.(
             `burst skipped (${ev.frames.length} frames) — rendering authoritative views only`,
           );
           return;
         }
+        spreadLinesRef.current.push(...ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
         queueRef.current.push(...ev.frames);
         burstSizeRef.current = queueRef.current.length;
         if (!playingRef.current) {
@@ -403,31 +430,11 @@ export function PlayScreen({
         novel: iv['novel'] === true,
       }));
     if (arrivals.length === 0) return;
-    const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
-    enqueueDialog({
-      id: `reveal-t${String(g['turn'])}`,
-      title: t('reveal.title'),
-      body: (
-        <RevealBody
-          arrivals={arrivals}
-          // THE CRISIS SECTION (ruled 6 September 2026): the turn's event rides the one
-          // interruption the turn already has, never a dialog of its own.
-          crisis={revealCrisis(g, effectChips(authView))}
-          onCard={(a) =>
-            setCard({
-              disease: a.disease,
-              type: a.type,
-              remembered: a.remembered || memory[a.disease] === true,
-              // An arrival is at its route's entry: nothing invader-specific to say yet.
-              now: null,
-            })
-          }
-        />
-      ),
-      // The reveal's button begins planning, and says so (§12 ruling 5).
-      dismissLabel: t('reveal.plan'),
-    });
-  }, [authView, enqueueDialog]);
+    // THE STAGE, not a dialog (piece 6, §20). The crisis section rides it exactly as it rode the
+    // reveal (ruled 6 September 2026): the turn's event belongs to the one interruption the turn
+    // already has.
+    setArrivals({ list: arrivals, crisis: revealCrisis(g, effectChips(authView)) });
+  }, [authView]);
 
   const send = (action: Record<string, unknown>): void => {
     setLastError(null);
@@ -914,8 +921,11 @@ export function PlayScreen({
   );
   const chips = effectChips(authView);
   const toastText = said ?? (lastError ? engineText(lastError) : null);
+  // THE ARRIVALS STAGE while a draw is waiting to be looked at (piece 6, §20). It outranks
+  // planning: the cards are what planning is planned against, so they are seen first.
+  const arrivalsNow = !playing && arrivals !== null && arrivals.list.length > 0 ? arrivals : null;
   // Planning's model while planning shows, or null: one name, so every use of it is narrowed.
-  const plan = planning !== null && planningActive ? planning : null;
+  const plan = arrivalsNow === null && planning !== null && planningActive ? planning : null;
   const apShown = plan !== null ? plan.apNext : Number(game['ap'] ?? 0);
   /** One of command's three views, or none: a second tap on its button closes it. */
   const openTab = (kind: MiddleTab): void => {
@@ -925,6 +935,38 @@ export function PlayScreen({
   };
   const tabOpen: MiddleTab | null =
     drawer === 'pieces' || drawer === 'antibodies' || drawer === 'body' ? drawer : null;
+
+  /**
+   * THE COACH'S LINE (piece 8, §20), or null. Everything it reads is already on this render: the
+   * stage the frame is showing, the turn, the points left, whether a piece is selected, and how
+   * many actions `offered.ts` is offering. It is never told a rule of its own.
+   */
+  const coachNow =
+    coach && !coachOff && !playing
+      ? coachStep({
+          stage:
+            arrivalsNow !== null
+              ? 'arrivals'
+              : plan !== null
+                ? 'planning'
+                : playing
+                  ? 'spread'
+                  : 'command',
+          turn: Number(game['turn'] ?? 0),
+          ap: Number(game['ap'] ?? 0),
+          selected: selectedCell !== null || selectedResident !== null,
+          offeredCount: rows.length + moveButtons.length,
+          canProduce: Object.keys(produceByFamily).length > 0,
+        })
+      : null;
+  const coachLine =
+    coachNow !== null && coachNow.id !== coachDone ? (
+      <CoachLine
+        text={t(coachNow.key)}
+        onNext={() => setCoachDone(coachNow.id)}
+        onStop={() => setCoachOff(true)}
+      />
+    ) : null;
 
   /** WHAT THE MIDDLE SHOWS (§19), the first that applies: a spread, a view opened over the stage's
    *  own content, then the stage's own content. */
@@ -942,6 +984,8 @@ export function PlayScreen({
           <EffectsStrip chips={chips} />
         </div>
       );
+    if (arrivalsNow !== null)
+      return <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />;
     if (plan !== null)
       return (
         <div data-middle-view="planning">
@@ -1165,7 +1209,34 @@ export function PlayScreen({
           />
         }
       />
-      <PlayArea stage={plan !== null ? 'planning' : playing ? 'spread' : 'command'}>
+      <PlayArea
+        stage={
+          arrivalsNow !== null
+            ? 'arrivals'
+            : plan !== null
+              ? 'planning'
+              : playing
+                ? 'spread'
+                : 'command'
+        }
+      >
+        {arrivalsNow !== null ? (
+          <ArrivalsGrid
+            arrivals={arrivalsNow.list}
+            onCard={(a) =>
+              setCard({
+                disease: a.disease,
+                type: a.type,
+                remembered:
+                  a.remembered ||
+                  ((game['memory'] as Record<string, unknown> | undefined) ?? {})[a.disease] ===
+                    true,
+                // An arrival is at its route's entry: nothing invader-specific to say yet.
+                now: null,
+              })
+            }
+          />
+        ) : null}
         {plan !== null ? (
           <PlanningScreen
             model={plan}
@@ -1180,7 +1251,7 @@ export function PlayScreen({
             rectangles after that commit. Measured in P2_3_MEASUREMENT.md, "Added 6 September". */}
         <div
           data-command-stage="1"
-          hidden={plan !== null}
+          hidden={plan !== null || arrivalsNow !== null}
           style={{ position: 'absolute', inset: 0 }}
         >
           <LiveBoard
@@ -1210,34 +1281,42 @@ export function PlayScreen({
         data-middle=""
         style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
+        {coachLine}
         {middle()}
       </div>
       <div
         data-bottom=""
         style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 6 }}
       >
-        {plan === null ? <TabRow active={tabOpen} disabled={playing} onTab={openTab} /> : null}
+        {plan === null && arrivalsNow === null ? (
+          <TabRow active={tabOpen} disabled={playing} onTab={openTab} />
+        ) : null}
         <AdvanceButton
           keyName={
             playing
               ? 'spread'
-              : plan !== null
-                ? plan.mode === 'allocate'
-                  ? 'confirmAllocation'
-                  : 'beginCommand'
-                : 'endTurn'
+              : arrivalsNow !== null
+                ? 'planTurn'
+                : plan !== null
+                  ? plan.mode === 'allocate'
+                    ? 'confirmAllocation'
+                    : 'beginCommand'
+                  : 'endTurn'
           }
           label={
             playing
               ? t('spread.tapToContinue')
-              : plan !== null
-                ? plan.button.label
-                : t('play.endCommand')
+              : arrivalsNow !== null
+                ? t('reveal.plan')
+                : plan !== null
+                  ? plan.button.label
+                  : t('play.endCommand')
           }
-          disabled={playing || (plan === null && phase !== 'command')}
+          disabled={playing || (plan === null && arrivalsNow === null && phase !== 'command')}
           hidden={navState.floating}
           onPress={() => {
-            if (plan !== null) commandFromPlanning(plan.button.params);
+            if (arrivalsNow !== null) setArrivals(null);
+            else if (plan !== null) commandFromPlanning(plan.button.params);
             else send({ action: 'endCommand' });
           }}
         />

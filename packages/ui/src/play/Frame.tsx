@@ -172,7 +172,7 @@ export function PlayArea({
   stage,
   children,
 }: {
-  stage: 'planning' | 'command' | 'spread';
+  stage: 'arrivals' | 'planning' | 'command' | 'spread';
   children: ReactNode;
 }): ReactElement {
   return (

@@ -54,6 +54,7 @@ import {
   type TextSize,
 } from './settings';
 import { clearHints, readHints, writeHints } from './hints';
+import { clearPlayed, readPlayed, writePlayed } from './played';
 import { startServiceWorker } from './serviceWorker';
 
 const SAVE_ID = 'autosave';
@@ -66,6 +67,7 @@ const initialSettings = readSettings(prefStore);
 /** FIRST-ENCOUNTER HINTS: its own key, never a field on the settings object. `hints.ts` says why
  *  (adding one would reset every player's text size). Read once, like the settings. */
 const initialHintsSeen = readHints(prefStore).seen;
+const initialPlayed = readPlayed(prefStore).played;
 applyTextSize(initialSettings.textSize);
 
 type Screen =
@@ -129,6 +131,13 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
   const [saveFailed, setSaveFailed] = useState(false);
   const [hintsSeen, setHintsSeen] = useState<readonly string[]>(initialHintsSeen);
+  // Whether this device has ever started a game: the difficulty screen's recommendation and the
+  // coach both ask it (piece 7 item 8, piece 8).
+  const [played, setPlayed] = useState(initialPlayed);
+  // Coached for a first game only. Captured when the screen mounts, not read live: startNew sets
+  // `played` as the game begins, and a coach that vanished on its own first render would be a
+  // puzzle to debug and no help to anyone.
+  const coachRef = useRef(!initialPlayed);
   const rememberHints = (seen: readonly string[]): void => {
     setHintsSeen(seen);
     writeHints(prefStore, seen);
@@ -136,6 +145,12 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   const resetHints = (): void => {
     clearHints(prefStore);
     setHintsSeen([]);
+    // ONE ROW, ONE QUESTION (item 3, 19 September 2026): "show the first-game guidance again"
+    // covers everything a first game shows and a later one does not, so the device is new again
+    // rather than partly new.
+    clearPlayed(prefStore);
+    setPlayed(false);
+    coachRef.current = true;
   };
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
@@ -181,6 +196,10 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
 
   const startNew = (difficulty: string): void => {
     difficultyRef.current = difficulty;
+    // This device has now played (piece 7 item 8, piece 8): the first-game guidance is for the
+    // game that is starting, not the ones after it.
+    writePlayed(prefStore);
+    setPlayed(true);
     sessionRef.current = watchForSaveFailure(
       LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID }),
     );
@@ -246,7 +265,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         )
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
-      hintsSeenAny={hintsSeen.length > 0}
+      hintsSeenAny={hintsSeen.length > 0 || played}
       onResetHints={resetHints}
       onDeleteSave={deleteSave}
     />
@@ -258,6 +277,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
       onOpen={(s) => nav.push({ name: 'help', section: s })}
       onNext={(s) => nav.replace({ name: 'help', section: s })}
       onWhy={(entry) => nav.push({ name: 'library', view: { kind: 'why', entry } })}
+      onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
     />
   );
 
@@ -292,7 +312,6 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
-            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
             onAbout={() => nav.push({ name: 'about' })}
           />
         </>
@@ -300,7 +319,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     }
 
     if (screen.name === 'difficulty') {
-      return <DifficultyScreen hasSave={save !== null} onStart={startNew} />;
+      return <DifficultyScreen hasSave={save !== null} firstGame={!played} onStart={startNew} />;
     }
 
     if (screen.name === 'result') {
@@ -334,7 +353,6 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
-            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
             onAbout={() => nav.push({ name: 'about' })}
           />
         </>
@@ -354,6 +372,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
           <PlayScreen
             session={session}
             artMetrics={artMetrics}
+            coach={coachRef.current}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}

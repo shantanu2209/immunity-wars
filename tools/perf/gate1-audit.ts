@@ -408,7 +408,7 @@ const WHERE = `
   if (view) return 'view: ' + view.getAttribute('data-middle-view');
   const drawer = q('[data-drawer]');
   if (drawer) return 'drawer: ' + drawer.getAttribute('data-drawer');
-  if (button('Plan your turn')) return 'reveal';
+  if (q('[data-play-area=arrivals]')) return 'arrivals';
   if (q('[data-screen=library-why]')) return 'library why page';
   const help = q('[data-screen=help]');
   if (help) {
@@ -941,11 +941,49 @@ async function walk(
         'Help section → why link → library page',
         'no section had a why link',
       );
+    // THE LIBRARY IS A ROW OF THIS INDEX since piece 7 (item 2): reached here, and closing it
+    // lands back on the contents it was opened from.
+    if (await clickSel(page, '[data-help-library]')) {
+      await sleep(300);
+      await step(page, 'library, index, from How to play', results);
+      await nest(page, nesting, 'How to play → Disease library → close', 'help index');
+    } else {
+      results.push(
+        notReached('library, index, from How to play', 'no library row in the contents'),
+      );
+      nestNotReached(nesting, 'How to play → Disease library → close', 'no library row');
+    }
+    // A READER GOING IN ORDER can step back a section without going out to the contents (item 4).
+    if (await clickSel(page, '[data-help-section=s2]')) {
+      await sleep(250);
+      if (await clickSel(page, '[data-help-prev]')) {
+        await sleep(250);
+        const back = await whereNow(page);
+        if (back !== 'help section: 1. The idea') {
+          results.push(notReached('help, Previous from section 2', `it landed on ${back}`));
+        } else {
+          await step(page, 'help, Previous from section 2', results);
+        }
+      } else {
+        results.push(notReached('help, Previous from section 2', 'section 2 offered no Previous'));
+      }
+      await closeLevel(page);
+    } else {
+      results.push(notReached('help, Previous from section 2', 'section 2 did not open'));
+    }
     await nest(page, nesting, 'Help index → close', 'title');
   }
-  // The disease library from the Title (P2.6 piece 4): the index, one card over it, the why
-  // section, then back out. Every row of the index is a control the audit measures.
-  if (await click(page, 'Disease library')) {
+  // The disease library (P2.6 piece 4), reached through How to play since piece 7: the index,
+  // one card over it, the why section, then back out. Every row of the index is a control.
+  const openLibrary = async (): Promise<boolean> => {
+    if (!(await click(page, 'How to play'))) return false;
+    await sleep(250);
+    const hit = await clickSel(page, '[data-help-library]');
+    await sleep(250);
+    if (!hit) await closeLevel(page);
+    return hit;
+  };
+  if (await openLibrary()) {
     await sleep(300);
     await step(page, 'library, index', results);
     if (await clickSel(page, '[data-library-row]')) {
@@ -1008,7 +1046,7 @@ async function walk(
       }
       await nest(page, nesting, 'Library why page → close', 'library index');
     }
-    await nest(page, nesting, 'Library index → close', 'title');
+    await nest(page, nesting, 'Library index → close', 'help index');
   }
   // About (P2.6): the Title's fourth slot, and the only one that never opens over play.
   if (await click(page, 'About')) {
@@ -1046,6 +1084,21 @@ async function walk(
   // this very change, caught by reading coverage rather than the verdict, and fixed inline.
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  // ⚠️ AND PUTS THE DEVICE BACK TO NEW, which is CLAUDE.md's question asked of a new surface:
+  // does this screen consume something when it is shown? The coach and the difficulty screen's
+  // recommendation are shown to a device that has never started a game, and the four passes share
+  // one browser profile — so the FIRST pass consumed them and the other three reported the coach
+  // NOT REACHED, exactly as the first-encounter hints did at P2.6 (FINDINGS #66). The flag is
+  // cleared and the page reloaded, because the app reads it once at load.
+  await page.evaluate(() => {
+    try {
+      localStorage.removeItem('immunity-wars.played');
+    } catch {
+      // A browser refusing storage is the app's own degradation; the walk carries on.
+    }
+  });
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   await page.evaluate((p: string | null) => {
     if (p) document.documentElement.style.fontSize = p;
   }, rootPct);
@@ -1075,9 +1128,45 @@ async function walk(
   // state, so it is no longer a screen, and a reveal that never comes is NOT REACHED.
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
-    await step(page, 'reveal dialog', results);
+    await step(page, 'arrivals', results);
+    // A CARD TURNS OVER (piece 6, §20), and its card icon opens the pathogen card from the back,
+    // which closes back to the stage (ruling 9). A draw of novel arrivals alone offers no card.
+    if (await clickSel(page, '[data-arrival]')) {
+      await sleep(250);
+      await step(page, 'arrivals, a card turned over', results);
+      if (await clickSel(page, '[data-arrival-card]')) {
+        await sleep(300);
+        await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
+      } else {
+        nestNotReached(
+          nesting,
+          'Arrivals card → pathogen card',
+          'the card that turned over is novel',
+        );
+      }
+    } else {
+      results.push(notReached('arrivals, a card turned over', 'no card to turn over'));
+      nestNotReached(nesting, 'Arrivals card → pathogen card', 'no card to turn over');
+    }
   } else {
-    results.push(notReached('reveal dialog', 'no reveal followed Begin: the draw did not happen'));
+    results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
+    results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
+    nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
+  }
+  // THE COACH (piece 8, §20) is on for a first game on a fresh profile. It is measured as its own
+  // screen — it is player-visible text on a 360px phone like everything else — and then stopped, so
+  // the screens after it are measured without it.
+  if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
+    await step(page, 'arrivals, the coach', results);
+    await clickSel(page, '[data-coach-stop]');
+    await sleep(200);
+    if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
+      results.push(notReached('the coach stops', 'Stop left it on screen'));
+    }
+  } else {
+    results.push(
+      notReached('arrivals, the coach', 'no coach on this pass: the profile has played'),
+    );
   }
   await click(page, 'Plan your turn');
   await sleep(300);
@@ -1435,9 +1524,9 @@ async function walk(
   // The spread ends and the app draws: the next turn opens on its reveal (§12, ruling 2).
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
-    await step(page, 'reveal, after End turn', results);
+    await step(page, 'arrivals, after End turn', results);
   } else {
-    results.push(notReached('reveal, after End turn', 'no reveal followed the spread'));
+    results.push(notReached('arrivals, after End turn', 'no reveal followed the spread'));
   }
   await click(page, 'Plan your turn');
   await sleep(300);
@@ -1462,10 +1551,10 @@ async function walk(
     const actual = await whereNow(page);
     nesting.push({
       path: 'A game closed mid-spread → Continue',
-      expected: 'reveal',
+      expected: 'arrivals',
       actual,
       via: 'resume',
-      ok: actual === 'reveal',
+      ok: actual === 'arrivals',
     });
   }
   await click(page, 'Plan your turn');
@@ -2320,12 +2409,12 @@ async function controls(page: Page): Promise<string[]> {
     }
   };
   line(
-    'resume fires: a resumed game that lands anywhere but a reveal is reported',
+    'resume fires: a resumed game that lands anywhere but the arrivals stage is reported',
     (await resumeLanding(false)) === 'planning',
   );
   line(
-    'resume passes: a game closed mid-spread reaches its reveal',
-    (await resumeLanding(true)) === 'reveal',
+    'resume passes: a game closed mid-spread reaches its arrivals stage',
+    (await resumeLanding(true)) === 'arrivals',
   );
 
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);

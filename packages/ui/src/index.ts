@@ -55,12 +55,8 @@ export {
   apTermLines,
   type EffectChip,
 } from './play/effects';
-export {
-  RevealBody,
-  revealCrisis,
-  type RevealArrival,
-  type RevealCrisis,
-} from './dialogs/RevealBody';
+export { ArrivalsGrid, ArrivalsNotes } from './play/Arrivals';
+export { revealCrisis, type RevealArrival, type RevealCrisis } from './dialogs/RevealBody';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
 export { CellCard, type CellCardSubject } from './panels/CellCard';

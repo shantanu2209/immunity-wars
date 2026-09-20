@@ -14,8 +14,9 @@ structure slots in; design that fights it gets renegotiated here first.
 ```
 TITLE ──────────────┬─ Continue ──────────────────────→ PLAY (restored)   [only if a save exists]
                     ├─ New game → DIFFICULTY SELECT ──→ PLAY (fresh)
-                    ├─ How to play ──→ HELP                                [P2.6]
-                    ├─ Disease library ──→ LIBRARY                         [P2.6]
+                    ├─ How to play ──→ HELP ──→ LIBRARY                    [P2.6; the library
+                    │                                                       is a row of HELP
+                    │                                                       since 20 Sep 2026]
                     ├─ Settings ──→ SETTINGS                               [P2.6]
                     └─ About ──→ ABOUT                                     [P2.6]
 
@@ -154,12 +155,14 @@ Elements and states, not look. Every interactive element ≥44px (the touch patt
 P2.5 piece 1). All text through the i18n catalogue.
 
 ### TITLE
-- Game name + credit line (Kartik's design credit is contractual; exact copy from README).
+- Game name. ⚠️ *20 September 2026 (item 1, §20): the credit line is ABOUT's, not the Title's.
+  Kartik's design credit is contractual and unchanged; this is only where it is shown.*
 - **Continue** — present ONLY when a save exists; shows the save's difficulty and turn
   (available from the stored `GameState`) so the player knows what they are resuming.
 - **New game** — always present. If a save exists, tapping it leads to the overwrite confirm
   AFTER difficulty is chosen (choose first, confirm before the old game is destroyed).
-- [P2.6 slots, absent in minimum: How to play · Disease library · Settings · About.]
+- [P2.6 slots, absent in minimum: How to play · Settings · About. The disease library is reached
+  through How to play since 20 September 2026 (item 2, §20).]
 - States: with-save / without-save. First-run onboarding hook attaches here later.
 
 ### DIFFICULTY SELECT
@@ -178,6 +181,11 @@ P2.5 piece 1). All text through the i18n catalogue.
   pathogen list, the actions, or the Cells, Antibodies or Body view, scrolling only as the last resort;
   one advance button. "What happened" is Messages' System messages tab. Antibodies are produced without
   selecting the B-Cell. Cards open full window. The deck count is gone.
+- ✅ *20 September 2026, pieces 6 and 8 ([`for-P2.7.md`](for-P2.7.md) §20):* the draw is a STAGE of
+  the frame, not a dialog over it: the play area holds this draw's cards, which turn over on a tap
+  and open their pathogen card, and the middle says what the spread did and what the turn's event
+  was. A COACH reads the game state and names the next thing to do through a first game, stoppable
+  at every step and turned back on from Settings.
 - The board (built): radial board, fan-of-types tokens, badges, move-target rings.
 - Command bar (built): selected cell, AP, action buttons; persistent at bottom.
   ⚠️ *13 September 2026: the build had placed it inline at 459px, under the board, and no ruling

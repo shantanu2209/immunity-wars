@@ -1489,3 +1489,105 @@ no scroll on 17 screens at rest, the three at 360 × 641 among them; offline met
 two passes: a row's targets, which the deal decides. **One finding the reorder itself caused and which
 the audit caught**: at 200% text the Produce label made the row 433px wide on a 360px page; the button
 shrinks and wraps its own text now.
+
+---
+
+## 20. Pieces 6, 7 and 8: the arrivals stage, the title and help pass, and the coach
+
+Built 20 September 2026, from the remaining items of the 19 September message. Items 10 to 13 were
+piece 5 (§19); what is left is 7 (piece 6), 1 to 6 and 8 (piece 7), and 9 (piece 8).
+
+### Piece 6, the arrivals stage (item 7)
+
+**The draw stops being a dialog over the game and becomes a stage of the frame**, in the format §19
+fixed: the play area holds this draw's cards, the middle says what the spread did and what the
+turn's event was, and the one button begins planning. `dialogs/RevealBody.tsx` keeps the types and
+`revealCrisis`; the body that rendered them as a dialog is deleted.
+
+- **The cards are drawn from data, not from the printed deck's artwork** (`play/Arrivals.tsx`): the
+  kind's art (`path-*`, the same files the board uses), the disease's name, its antibody class. A
+  disease added to the content pack has a front the moment it has a row, so the printed deck and the
+  app cannot drift apart. The PDF of fronts was not needed and no new art was drawn.
+- **A tap turns a card over**: where it came in, novel or remembered, the class that neutralises it,
+  and the card icon, which opens the full pathogen card from either face. **The back is a summary,
+  not the full card** — the full card is a window of its own and does not fit a tile, and item 11
+  forbids an intermediate level that says nothing, so the icon goes straight to the card.
+- **"What just happened"** in the middle is the burst's own narration lines, kept so the spread can
+  be read at rest. Item 7 asked whether the spread could go in the banner area; it goes in the
+  middle, which is the empty space that stage has.
+- **The crisis section rides the stage**, exactly as it rode the reveal (ruled 6 September 2026).
+
+### Piece 7, the title and help pass (items 1 to 6, 8)
+
+| item | what changed |
+|---|---|
+| 1 | The Title drops the credit line. About carries it, and `title.tagline` is retired |
+| 2 | **The disease library moves inside How to play**, as a row below the ten sections and set apart from them: it is reference, not a step on the way to playing. The Title is five rows, not six |
+| 3 | The settings row says what it does: **First game guidance · Show it again**, and it now clears everything a first game shows — the coach, the first-encounter hints, and the difficulty recommendation |
+| 4 | **Previous beside Next** inside a section, so a reader going in order can step back without going out to the contents. See the note below |
+| 5 | **A library row is the name and the class, nothing else.** 106 rows, all 48px. The organs, "arises from", and "nothing produces it" are in the card the row opens |
+| 6 | **Drafted, not shipped**: [`HELP_SHORTER_DRAFT.md`](HELP_SHORTER_DRAFT.md), 4,638 characters to 2,290, with the art proposed per section. **Kartik reviews it**; the app's text is unchanged until he does |
+| 8 | **"Recommended for your first game" shows to a device that has not started one.** A new preference module, `app/played.ts`, with its own key for the reason `hints.ts` states: a field added to `Settings` would fail `safeParse` and silently reset every player's text size |
+
+> ⚠️ **Item 4's symptom did not reproduce, and that is reported rather than quietly fixed.** It says
+> that pressing back after Next lands on the Title. Measured on this build: from a section reached
+> by two Nexts, **both the close button and the phone's back gesture land on the contents**, which
+> is what §10 ruled on 13 September (siblings are not levels, or reading all ten sections would take
+> ten closes to leave). So the ruling holds and no navigation changed. What was added is the
+> control the item was reaching for: **Previous**, which steps back a section without leaving.
+> **If the symptom is real on the phone, this is the place to say so** and §10 gets revisited.
+
+### Piece 8, the coach (item 9)
+
+*"When I say scripted I don't mean hardcoded"* (20 September). So the coach is **a pure function of
+the state the player is in** (`play/coach.ts`), not a sequence played back at them: it reads the
+stage, the turn, the points left, whether a piece is selected, **how many actions `offered.ts` is
+offering**, and whether anything can be produced, and names the next thing to do. A player who does
+something unexpected is not off the rails, because there are no rails.
+
+- **It can never ask for what the engine would refuse.** Legality lives in `offered.ts` and nowhere
+  else, so the coach is given the offer COUNT and never its own idea of what is legal; when nothing
+  is offered it says so instead. That is the suite `coach.test.ts` spends the most tests on.
+- **It is silent during a spread**, when nothing is accepted anyway.
+- **It stops**: three turns, a Got it for the step, and a Stop that ends it. Settings turns it back
+  on, with the hints and the recommendation, under one row.
+- **The first-encounter hints stay.** They teach a SUBJECT on first contact; the coach teaches the
+  TURN. Item 9 offered replacing one with the other; both are kept because they answer different
+  questions, and one Settings row now governs both. **If the two feel like too much on the phone,
+  that is the thing to say after a game.**
+
+### What the instruments gained
+
+- The walk reaches the arrivals stage, a card turned over, the card behind it, the coach (and stops
+  it), the library through How to play, and Previous from section 2. `WHERE` names the arrivals
+  stage; the resume checks land on it by name.
+- **A new NOT REACHED, found and fixed by the convention that exists for it.** The coach and the
+  recommendation are shown to a device that has never played, and the four passes share one browser
+  profile: the first pass consumed them and the other three reported the coach NOT REACHED. This is
+  CLAUDE.md's question — *does this screen consume something when it is shown?* — and the answer was
+  yes for the second time (FINDINGS #66 was the first). The walk now clears the flag and reloads.
+
+### The Gate 1 audit on the build the PR carries
+
+**Conditions:** the shipped build served by `vite preview`, headless system Chrome on the
+development PC (i7-12700F), 360 × 780 CSS px and the three 200% mechanisms, plus the 360 × 641
+scroll pass; unseeded games (#68); no handset.
+
+**44 controls, all firing the right way. 59 screens per pass (61 under SIZE200), NONE NOT REACHED in
+any pass** — including the two the deal decides, which this run reached everywhere. **Every check 0
+under all four mechanisms**: touch, contrast, non-text, scaling, layout, size, occlusion. **Nesting:
+33 landings, 0 wrong, 0 NOT REACHED.** **The play area: 338.7px on all 30 screens**, across arrivals,
+planning, command and the spread. **No scroll at rest: 0px on all 15 screens**, the three at
+360 × 641 among them. **Offline met.**
+
+**What the first run of these three pieces found, all fixed here:** the card icon on a turned-over
+card was 26 × 26 against a 44 minimum; Previous and Next side by side were 185px wide in a 180px
+layout; and the coach's NOT REACHED above.
+
+### Left for Shantanu and Kartik
+
+- **The shorter Help is a draft awaiting Kartik's review.** Nothing of it is in the app.
+- **Whether the coach and the first-encounter hints are too much together**, which only a game on
+  the phone can say.
+- **Whether item 4's back-to-Title symptom is real on the phone**, since it does not reproduce here.
+- **Still open:** the #74 instrument question, declined for now (§19).
