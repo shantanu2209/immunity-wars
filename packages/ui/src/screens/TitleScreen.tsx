@@ -30,7 +30,6 @@ export function TitleScreen({
   onNewGame,
   onSettings,
   onHelp,
-  onLibrary,
   onAbout,
 }: {
   /** Present when an autosave exists; Continue renders only then. */
@@ -40,13 +39,13 @@ export function TitleScreen({
   /** The four P2.6 Title slots (APP_FLOW §4), in the order they are shown. */
   onSettings: () => void;
   onHelp: () => void;
-  onLibrary: () => void;
   onAbout: () => void;
 }): ReactElement {
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
+      {/* NO CREDIT LINE HERE (item 1, 19 September 2026): About carries it, and the Title is
+          the screen a newcomer must read fastest. */}
       <h1 style={{ fontSize: '1.875rem', color: '#B03A2E' }}>{t('title.name')}</h1>
-      <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('title.tagline')}</p>
       {save ? (
         <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onContinue}>
           {t('title.continue')}
@@ -61,9 +60,6 @@ export function TitleScreen({
       </button>
       <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onHelp}>
         {t('title.help')}
-      </button>
-      <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onLibrary}>
-        {t('title.library')}
       </button>
       <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onSettings}>
         {t('title.settings')}

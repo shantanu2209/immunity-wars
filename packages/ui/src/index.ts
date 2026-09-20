@@ -31,20 +31,37 @@ export {
   type DockRow,
 } from './play/offered';
 export { shouldDraw, type DrawMoment } from './play/autoDraw';
-export { Dock, DOCK_ZONES, type DockProps, type DockSlot, type DockUndo } from './panels/Dock';
-export { DockSheet, TargetList } from './panels/DockSheet';
-export { Drawer, DrawerRow, DRAWERS, type DrawerKind } from './panels/Drawer';
-export { effectChips, turnLine, rareLogLine, apTermLines, type EffectChip } from './play/effects';
 export {
-  RevealBody,
-  revealCrisis,
-  type RevealArrival,
-  type RevealCrisis,
-} from './dialogs/RevealBody';
+  ActionsView,
+  AdvanceButton,
+  PlayArea,
+  SpreadView,
+  TabRow,
+  Toast,
+  TopBar,
+  type ActionsUndo,
+  type Banner,
+  type MiddleTab,
+} from './play/Frame';
+export { ChatIcon, MenuIcon } from './panels/BarIcons';
+export { DockSheet, TargetList } from './panels/DockSheet';
+export { Drawer, type DrawerKind } from './panels/Drawer';
+export {
+  effectBanner,
+  effectChips,
+  turnLine,
+  turnShort,
+  rareLogLine,
+  apTermLines,
+  type EffectChip,
+} from './play/effects';
+export { ArrivalsGrid, ArrivalsNotes } from './play/Arrivals';
+export { revealCrisis, type RevealArrival, type RevealCrisis } from './dialogs/RevealBody';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
 export { CellCard, type CellCardSubject } from './panels/CellCard';
 export {
+  AllocationBlock,
   PathogenList,
   PlanningScreen,
   spentCellsLine,
@@ -99,7 +116,7 @@ export {
   type BoardOffer,
   type ButtonOffer,
 } from './play/offered';
-export { producibleFamilies, NEUTRALISE_TOXIN_AP } from './play/offered';
+export { producibleFamilies, produceOffers, NEUTRALISE_TOXIN_AP } from './play/offered';
 export { AntibodyPanel, type FamilyRow, type FamilyDetail } from './panels/AntibodyPanel';
 export {
   BodyPanel,

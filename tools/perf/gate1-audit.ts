@@ -109,7 +109,7 @@ interface Finding {
     | 'size'
     | 'offline'
     | 'occlusion'
-    | 'dock'
+    | 'playArea'
     | 'scroll';
   screen: string;
   path: string;
@@ -124,9 +124,9 @@ interface ScreenResult {
   /** The layout passes only: the CSS width and root font size the screen was measured at. */
   width?: number;
   rootFontPx?: number;
-  /** The base pass only: the dock's height on this screen, whether it sat at the bottom of the
-   *  screen, and what it was showing; null where it is not mounted or is hidden behind planning. */
-  dock?: { height: number; fixed: boolean; mode: string } | null;
+  /** The base pass only: the play area's height on this screen and the stage it holds; null where
+   *  it is not on screen (piece 5, §19). */
+  playArea?: { height: number; stage: string } | null;
   /** The base pass only: how far the page is taller than the screen while the play screen is at
    *  rest (its stage shown, nothing open over it); null on any other screen. */
   rest?: { overflow: number } | null;
@@ -400,11 +400,15 @@ const WHERE = `
   const button = (label) => [...document.querySelectorAll('button')].some((b) => vis(b) && (b.textContent || '').trim() === label);
   if (q('[role=dialog][aria-label="Pathogen card"]')) return 'pathogen card';
   if (q('[data-cell-card-open]')) return 'cell card';
-  if (q('[data-dock-sheet=targets]')) return 'dock targets';
-  if (q('[data-dock-sheet=ap]')) return 'AP terms';
+  // The middle's views since piece 5 (docs/for-P2.7.md §19): each is one level on the stack.
+  if (q('[data-middle-view=targets]')) return 'dock targets';
+  if (q('[data-middle-view=ap]')) return 'AP terms';
+  if (q('[data-middle-view=effects]')) return 'effects';
+  const view = q('[data-middle-view=cells],[data-middle-view=antibodies],[data-middle-view=body]');
+  if (view) return 'view: ' + view.getAttribute('data-middle-view');
   const drawer = q('[data-drawer]');
   if (drawer) return 'drawer: ' + drawer.getAttribute('data-drawer');
-  if (button('Plan your turn')) return 'reveal';
+  if (q('[data-play-area=arrivals]')) return 'arrivals';
   if (q('[data-screen=library-why]')) return 'library why page';
   const help = q('[data-screen=help]');
   if (help) {
@@ -482,13 +486,14 @@ const FIGURE_MARKER = `
 })()
 `;
 
-/** The dock as it stands on this screen, or null when it is not mounted or hidden with its stage. */
-const DOCK_PROBE = `
+/** The play area as it stands on this screen and the stage it holds, or null when it is not on
+ *  screen (piece 5, docs/for-P2.7.md §19). */
+const PLAY_AREA_PROBE = `
 (() => {
-  const d = document.querySelector('[data-dock]');
+  const d = document.querySelector('[data-play-area]');
   if (!d || d.getClientRects().length === 0) return null;
   const r = d.getBoundingClientRect();
-  return { height: Math.round(r.height * 10) / 10, fixed: d.getAttribute('data-dock-fixed') === '1', mode: d.getAttribute('data-dock') || '' };
+  return { height: Math.round(r.height * 10) / 10, stage: d.getAttribute('data-play-area') || '' };
 })()
 `;
 
@@ -659,33 +664,31 @@ const notReached = (screen: string, why = 'the walk could not open it'): ScreenR
 });
 
 /**
- * THE DOCK'S ONE HEIGHT (docs/for-P2.7.md §9 ruling 1; §12, ruled 13 September 2026). Selecting a
- * piece must change what the dock says and move nothing, so on every screen of the base pass where
- * the dock sits at the bottom of the screen it must be one height. A zone that outgrows its minimum
- * (a message wrapping to a third line, a row too long for its slot) grows the dock rather than
- * clipping, which is right, and which this is the only instrument able to see.
+ * THE PLAY AREA'S ONE HEIGHT (piece 5, docs/for-P2.7.md §19; "equal play area height for all
+ * phases is important", Shantanu, 20 September 2026). The figure in planning and the board in
+ * command sit in one box, so on every screen of the base pass that shows it, in either stage, it
+ * must be one height. It replaces the dock's one-height check (§12), whose dock piece 5 retired.
  *
- * Standard text only: at larger sizes the dock is allowed to leave the bottom of the screen and
- * grow (§12 ruling 3), and that is the layout checks' business. A run that measured the dock at
- * the bottom of no screen is NOT REACHED, never clean.
+ * Standard text only. A run that did not measure BOTH stages is NOT REACHED, never clean: one
+ * stage alone is one height trivially.
  */
-function dockFindings(
-  records: readonly { screen: string; height: number; fixed: boolean }[],
+function playAreaFindings(
+  records: readonly { screen: string; height: number; stage: string }[],
 ): Finding[] {
-  const fixed = records.filter((r) => r.fixed);
-  if (fixed.length === 0) {
+  const stages = new Set(records.map((r) => r.stage));
+  if (!stages.has('planning') || !stages.has('command')) {
     return [
       {
-        check: 'dock',
-        screen: 'dock, one height',
+        check: 'playArea',
+        screen: 'play area, one height',
         path: '',
         text: '',
-        detail: 'NOT REACHED: no screen measured the dock at the bottom of the screen',
+        detail: `NOT REACHED: the play area was measured in ${stages.size === 0 ? 'no stage' : [...stages].join(' and ')} only`,
       },
     ];
   }
   const counts = new Map<number, number>();
-  for (const r of fixed)
+  for (const r of records)
     counts.set(Math.round(r.height), (counts.get(Math.round(r.height)) ?? 0) + 1);
   if (counts.size <= 1) return [];
   let usual = 0;
@@ -696,14 +699,14 @@ function dockFindings(
       most = n;
     }
   }
-  return fixed
+  return records
     .filter((r) => Math.round(r.height) !== usual)
     .map((r) => ({
-      check: 'dock' as const,
+      check: 'playArea' as const,
       screen: r.screen,
       path: '',
       text: '',
-      detail: `the dock is ${String(r.height)}px here and ${String(usual)}px on ${String(most)} other screens`,
+      detail: `the play area is ${String(r.height)}px here (${r.stage}) and ${String(usual)}px on ${String(most)} other screens`,
     }));
 }
 
@@ -758,12 +761,25 @@ async function waitFor(page: Page, label: string, ms: number): Promise<boolean> 
  * so a miss never leaves a drawer open over the rest of the walk.
  */
 async function pick(page: Page, piece: string): Promise<boolean> {
-  if (!(await clickSel(page, '[data-drawer-button="pieces"]'))) return false;
+  if (!(await clickSel(page, '[data-tab="pieces"]'))) return false;
   await sleep(250);
   const hit = await clickSel(page, `[data-piece="${piece}"]`);
   await sleep(250);
   if (!hit) await closeLevel(page);
   return hit;
+}
+
+/**
+ * Deselects the way a player does since piece 5 (docs/for-P2.7.md §19): the Cells view opens and
+ * the selected chip is tapped again, which deselects and closes the view. With nothing selected the
+ * view is closed again, so a miss never leaves it open over the rest of the walk.
+ */
+async function deselect(page: Page): Promise<void> {
+  if (!(await clickSel(page, '[data-tab="pieces"]'))) return;
+  await sleep(250);
+  const hit = await clickSel(page, '[data-piece][data-selected]');
+  await sleep(250);
+  if (!hit) await closeLevel(page);
 }
 
 /** The Title's Continue carries its subtitle inside the button, so match the label's start. */
@@ -792,13 +808,13 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
     findings: Omit<Finding, 'screen'>[];
   };
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
-  const dock = (await page.evaluate(DOCK_PROBE)) as ScreenResult['dock'];
+  const playArea = (await page.evaluate(PLAY_AREA_PROBE)) as ScreenResult['playArea'];
   const rest = (await page.evaluate(REST_PROBE)) as ScreenResult['rest'];
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
-    dock,
+    playArea,
     rest,
     findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
   });
@@ -925,11 +941,49 @@ async function walk(
         'Help section → why link → library page',
         'no section had a why link',
       );
+    // THE LIBRARY IS A ROW OF THIS INDEX since piece 7 (item 2): reached here, and closing it
+    // lands back on the contents it was opened from.
+    if (await clickSel(page, '[data-help-library]')) {
+      await sleep(300);
+      await step(page, 'library, index, from How to play', results);
+      await nest(page, nesting, 'How to play → Disease library → close', 'help index');
+    } else {
+      results.push(
+        notReached('library, index, from How to play', 'no library row in the contents'),
+      );
+      nestNotReached(nesting, 'How to play → Disease library → close', 'no library row');
+    }
+    // A READER GOING IN ORDER can step back a section without going out to the contents (item 4).
+    if (await clickSel(page, '[data-help-section=s2]')) {
+      await sleep(250);
+      if (await clickSel(page, '[data-help-prev]')) {
+        await sleep(250);
+        const back = await whereNow(page);
+        if (back !== 'help section: 1. The idea') {
+          results.push(notReached('help, Previous from section 2', `it landed on ${back}`));
+        } else {
+          await step(page, 'help, Previous from section 2', results);
+        }
+      } else {
+        results.push(notReached('help, Previous from section 2', 'section 2 offered no Previous'));
+      }
+      await closeLevel(page);
+    } else {
+      results.push(notReached('help, Previous from section 2', 'section 2 did not open'));
+    }
     await nest(page, nesting, 'Help index → close', 'title');
   }
-  // The disease library from the Title (P2.6 piece 4): the index, one card over it, the why
-  // section, then back out. Every row of the index is a control the audit measures.
-  if (await click(page, 'Disease library')) {
+  // The disease library (P2.6 piece 4), reached through How to play since piece 7: the index,
+  // one card over it, the why section, then back out. Every row of the index is a control.
+  const openLibrary = async (): Promise<boolean> => {
+    if (!(await click(page, 'How to play'))) return false;
+    await sleep(250);
+    const hit = await clickSel(page, '[data-help-library]');
+    await sleep(250);
+    if (!hit) await closeLevel(page);
+    return hit;
+  };
+  if (await openLibrary()) {
     await sleep(300);
     await step(page, 'library, index', results);
     if (await clickSel(page, '[data-library-row]')) {
@@ -992,7 +1046,7 @@ async function walk(
       }
       await nest(page, nesting, 'Library why page → close', 'library index');
     }
-    await nest(page, nesting, 'Library index → close', 'title');
+    await nest(page, nesting, 'Library index → close', 'help index');
   }
   // About (P2.6): the Title's fourth slot, and the only one that never opens over play.
   if (await click(page, 'About')) {
@@ -1030,6 +1084,21 @@ async function walk(
   // this very change, caught by reading coverage rather than the verdict, and fixed inline.
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+  // ⚠️ AND PUTS THE DEVICE BACK TO NEW, which is CLAUDE.md's question asked of a new surface:
+  // does this screen consume something when it is shown? The coach and the difficulty screen's
+  // recommendation are shown to a device that has never started a game, and the four passes share
+  // one browser profile — so the FIRST pass consumed them and the other three reported the coach
+  // NOT REACHED, exactly as the first-encounter hints did at P2.6 (FINDINGS #66). The flag is
+  // cleared and the page reloaded, because the app reads it once at load.
+  await page.evaluate(() => {
+    try {
+      localStorage.removeItem('immunity-wars.played');
+    } catch {
+      // A browser refusing storage is the app's own degradation; the walk carries on.
+    }
+  });
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   await page.evaluate((p: string | null) => {
     if (p) document.documentElement.style.fontSize = p;
   }, rootPct);
@@ -1059,75 +1128,123 @@ async function walk(
   // state, so it is no longer a screen, and a reveal that never comes is NOT REACHED.
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
-    await step(page, 'reveal dialog', results);
+    await step(page, 'arrivals', results);
+    // A CARD TURNS OVER (piece 6, §20), and its card icon opens the pathogen card from the back,
+    // which closes back to the stage (ruling 9). A draw of novel arrivals alone offers no card.
+    if (await clickSel(page, '[data-arrival]')) {
+      await sleep(250);
+      await step(page, 'arrivals, a card turned over', results);
+      if (await clickSel(page, '[data-arrival-card]')) {
+        await sleep(300);
+        await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
+      } else {
+        nestNotReached(
+          nesting,
+          'Arrivals card → pathogen card',
+          'the card that turned over is novel',
+        );
+      }
+    } else {
+      results.push(notReached('arrivals, a card turned over', 'no card to turn over'));
+      nestNotReached(nesting, 'Arrivals card → pathogen card', 'no card to turn over');
+    }
   } else {
-    results.push(notReached('reveal dialog', 'no reveal followed Begin: the draw did not happen'));
+    results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
+    results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
+    nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
+  }
+  // THE COACH (piece 8, §20) is on for a first game on a fresh profile. It is measured as its own
+  // screen — it is player-visible text on a 360px phone like everything else — and then stopped, so
+  // the screens after it are measured without it.
+  if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
+    await step(page, 'arrivals, the coach', results);
+    await clickSel(page, '[data-coach-stop]');
+    await sleep(200);
+    if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
+      results.push(notReached('the coach stops', 'Stop left it on screen'));
+    }
+  } else {
+    results.push(
+      notReached('arrivals, the coach', 'no coach on this pass: the profile has played'),
+    );
   }
   await click(page, 'Plan your turn');
   await sleep(300);
   await step(page, 'planning', results);
-  // THE PATHOGENS DRAWER (piece 4, docs/for-P2.7.md §17): planning's list left the page for a drawer
-  // opened from the dock's slot. PATHOGENS DRAWER → PATHOGEN CARD closes back to the drawer, and the
-  // drawer back to planning (ruling 9).
-  if (await clickSel(page, '[data-dock-slot="pathogens"]')) {
-    await sleep(300);
-    await step(page, 'planning, Pathogens drawer', results);
-    await clickSel(page, '[data-drawer="pathogens"] [data-planning-group] > button');
+  // PLANNING'S LIST IS IN THE MIDDLE (piece 5, docs/for-P2.7.md §19): the Pathogens drawer is gone.
+  // A PATHOGEN CARD from the list closes back to planning (ruling 9). A lone pathogen's row opens its
+  // card; a group opens to its members, each with a card button.
+  let listCard = await clickSel(page, '[data-middle-view=planning] [data-opens-card]');
+  if (!listCard) {
+    await clickSel(page, '[data-middle-view=planning] [data-planning-group] > button');
     await sleep(250);
-    if (await clickSel(page, '[data-drawer="pathogens"] [data-planning-member] button')) {
-      await sleep(300);
-      await nest(page, nesting, 'Pathogens drawer → pathogen card', 'drawer: pathogens');
-    } else {
-      nestNotReached(
-        nesting,
-        'Pathogens drawer → pathogen card',
-        'no pathogen row in the drawer offered a card',
-      );
-    }
-    await nest(page, nesting, 'Planning → Pathogens drawer → close', 'planning');
-  } else {
-    results.push(notReached('planning, Pathogens drawer', 'no Pathogens slot in the dock'));
-    nestNotReached(nesting, 'Pathogens drawer → pathogen card', 'no Pathogens slot in the dock');
-    nestNotReached(nesting, 'Planning → Pathogens drawer → close', 'no Pathogens slot in the dock');
+    listCard = await clickSel(page, '[data-middle-view=planning] [data-planning-member] button');
   }
-  // A TAP ON THE FIGURE opens the drawer at that place (§17, choice 3): a real pointer click at a
-  // marker's centre, because the figure resolves the tap from the pointer's coordinates.
+  if (listCard) {
+    await sleep(300);
+    await step(page, 'pathogen card, from planning', results);
+    await nest(page, nesting, 'Planning list → pathogen card', 'planning');
+  } else {
+    results.push(notReached('pathogen card, from planning', 'no row in the list offered a card'));
+    nestNotReached(nesting, 'Planning list → pathogen card', 'no row in the list offered a card');
+  }
+  // A TAP ON THE FIGURE filters the list to that place, and a tap elsewhere on the body lists them
+  // all again (§19). Not a layer: a filter, so no close. A real pointer click at a marker's centre,
+  // because the figure resolves the tap from the pointer's coordinates.
   const marker = (await page.evaluate(FIGURE_MARKER)) as { x: number; y: number } | null;
   if (marker !== null) {
     await page.mouse.click(marker.x, marker.y);
     await sleep(350);
   }
-  if (
-    marker !== null &&
-    (await page.evaluate(
-      () => document.querySelector('[data-drawer="pathogens"] [data-planning-showing]') !== null,
-    ))
-  ) {
-    await step(page, 'planning, Pathogens drawer at a place', results);
-    await nest(page, nesting, 'Figure tap → Pathogens drawer → close', 'planning');
-  } else {
-    const why =
-      marker === null
-        ? 'no place on the figure had a pathogen'
-        : 'a tap on a marker did not open the drawer at its place';
-    results.push(notReached('planning, Pathogens drawer at a place', why));
-    nestNotReached(nesting, 'Figure tap → Pathogens drawer → close', why);
-    if (marker !== null) await closeLevel(page);
-  }
-  // WHAT HAPPENED, from planning's dock.
-  if (await clickSel(page, '[data-dock-slot="log"]')) {
+  const showing = (): Promise<boolean> =>
+    page.evaluate(
+      () => document.querySelector('[data-middle-view=planning] [data-planning-showing]') !== null,
+    );
+  if (marker !== null && (await showing())) {
+    await step(page, 'planning, list at a place', results);
+    // Elsewhere on the body: the play area's top left corner, away from every marker.
+    const box = (await page.evaluate(() => {
+      const r = document.querySelector('[data-play-area]')?.getBoundingClientRect();
+      return r ? { x: r.left + 6, y: r.top + 6 } : null;
+    })) as { x: number; y: number } | null;
+    if (box !== null) await page.mouse.click(box.x, box.y);
     await sleep(300);
-    await step(page, 'planning, What happened drawer', results);
-    await nest(page, nesting, 'Planning → What happened → close', 'planning');
+    if (await showing()) {
+      results.push({
+        screen: 'planning, list at a place',
+        controls: 0,
+        textRuns: 0,
+        findings: [
+          {
+            check: 'touch',
+            screen: 'planning, list at a place',
+            path: '',
+            text: '',
+            detail: 'a tap away from every marker left the list filtered',
+          },
+        ],
+      });
+    }
   } else {
-    results.push(notReached('planning, What happened drawer', 'no What happened slot in the dock'));
-    nestNotReached(
-      nesting,
-      'Planning → What happened → close',
-      'no What happened slot in the dock',
+    results.push(
+      notReached(
+        'planning, list at a place',
+        marker === null
+          ? 'no place on the figure had a pathogen'
+          : 'a tap on a marker did not filter the list',
+      ),
     );
   }
-  // THE AP TERMS, from the dock's AP figure since piece 4: a sheet over the figure, one close away.
+  // MESSAGES, from the top bar's chat icon (§19): "What happened" is its System messages tab.
+  if (await clickSel(page, '[data-chat]')) {
+    await sleep(300);
+    await step(page, 'planning, Messages', results);
+    await nest(page, nesting, 'Planning → Messages → close', 'planning');
+  } else {
+    results.push(notReached('planning, Messages', 'no chat icon in the top bar'));
+    nestNotReached(nesting, 'Planning → Messages → close', 'no chat icon in the top bar');
+  }
+  // THE AP TERMS, from the top bar's AP figure (§19): a view in the middle, one close away.
   if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
     await sleep(250);
     await step(page, 'planning, AP terms open', results);
@@ -1234,47 +1351,70 @@ async function walk(
     results.push(notReached('command, a first encounter hint'));
     results.push(notReached('command, hint dismissed'));
   }
-  // THE AP TERMS open over the board, so the dock keeps its height (§12, ruling 2).
+  // THE AP TERMS, from the top bar, open in the middle below the play area (§19).
   if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
     await sleep(250);
-    await step(page, 'AP terms, over the dock', results);
-    await nest(page, nesting, 'Dock → AP terms → close', 'play');
+    await step(page, 'AP terms, in the middle', results);
+    await nest(page, nesting, 'Top bar → AP terms → close', 'play');
   } else {
-    results.push(notReached('AP terms, over the dock', 'the AP figure was not tappable'));
-    nestNotReached(nesting, 'Dock → AP terms → close', 'the AP figure was not tappable');
+    results.push(notReached('AP terms, in the middle', 'the AP figure was not tappable'));
+    nestNotReached(nesting, 'Top bar → AP terms → close', 'the AP figure was not tappable');
   }
-  // THE ANTIBODIES DRAWER (piece 3, docs/for-P2.7.md §15): the panel left the main screen. Opened
-  // with the B-Cell selected, so the Produce button is measured too; a class selected inside it;
-  // then closed back to the game in one close (ruling 9).
-  if (await clickSel(page, '[data-drawer-button="antibodies"]')) {
+  // THE ANTIBODIES VIEW, WITH NOTHING SELECTED (§19): "selecting the B-Cell should not be necessary
+  // first" (Shantanu, 19 September 2026). So the walk deselects, opens the view, selects a family,
+  // and REQUIRES its Produce button: a view without one is a finding, not a screen measured clean.
+  // Then closed back to the game in one close (ruling 9).
+  await deselect(page);
+  if (await clickSel(page, '[data-tab="antibodies"]')) {
     await sleep(300);
-    await step(page, 'drawer: antibodies', results);
+    await step(page, 'view: antibodies', results);
     await page.evaluate(() => {
-      const chip = [...document.querySelectorAll('[data-drawer] button')].find((b) =>
-        /^ENV\b/.test((b as HTMLElement).innerText.trim()),
+      const chip = [...document.querySelectorAll('[data-middle-view=antibodies] button')].find(
+        (b) => /^ENV\b/.test((b as HTMLElement).innerText.trim()),
       ) as HTMLElement | undefined;
       chip?.click();
     });
     await sleep(300);
-    await step(page, 'drawer: antibodies, family ENV selected', results);
-    await nest(page, nesting, 'Antibodies drawer → close', 'play');
+    await step(page, 'view: antibodies, family ENV selected', results);
+    const produce = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-middle-view=antibodies] button')].some((b) =>
+        /^Produce\b/.test((b as HTMLElement).innerText.trim()),
+      ),
+    );
+    if (!produce) {
+      results.push({
+        screen: 'view: antibodies, family ENV selected',
+        controls: 0,
+        textRuns: 0,
+        findings: [
+          {
+            check: 'touch',
+            screen: 'view: antibodies, family ENV selected',
+            path: '',
+            text: '',
+            detail: 'no Produce button with nothing selected (ruled 19 September 2026)',
+          },
+        ],
+      });
+    }
+    await nest(page, nesting, 'Antibodies view → close', 'play');
   } else {
-    results.push(notReached('drawer: antibodies', 'no Antibodies drawer button'));
-    nestNotReached(nesting, 'Antibodies drawer → close', 'no Antibodies drawer button');
+    results.push(notReached('view: antibodies', 'no Antibodies button'));
+    nestNotReached(nesting, 'Antibodies view → close', 'no Antibodies button');
   }
-  // THE OTHER THREE DRAWERS, each opened, audited, and closed back to the game.
-  for (const [kind, screen] of [
-    ['pieces', 'drawer: pieces'],
-    ['body', 'drawer: the body'],
-    ['log', 'drawer: what happened'],
+  // THE OTHER TWO VIEWS, then MESSAGES: each opened, audited, and closed back to the game.
+  for (const [sel, screen] of [
+    ['[data-tab="pieces"]', 'view: cells'],
+    ['[data-tab="body"]', 'view: the body'],
+    ['[data-chat]', 'Messages'],
   ] as const) {
-    if (await clickSel(page, `[data-drawer-button="${kind}"]`)) {
+    if (await clickSel(page, sel)) {
       await sleep(300);
       await step(page, screen, results);
       await nest(page, nesting, `${screen} → close`, 'play');
     } else {
-      results.push(notReached(screen, 'no drawer button'));
-      nestNotReached(nesting, `${screen} → close`, 'no drawer button');
+      results.push(notReached(screen, 'no button to open it'));
+      nestNotReached(nesting, `${screen} → close`, 'no button to open it');
     }
   }
   await pick(page, 'cell:neutrophil');
@@ -1293,7 +1433,7 @@ async function walk(
   // A ROW WITH SEVERAL TARGETS opens them over the board (§12, ruling 2). Tried here, and on every
   // turn of the walk to the Result until the deal offers one.
   await tryDockTargets(page, results, step, nesting);
-  await click(page, 'Deselect');
+  await deselect(page);
   await sleep(200);
   // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
   // covers the fullest slot set. The Monocyte is moved off the bloodstream by a ring if it stands
@@ -1328,7 +1468,7 @@ async function walk(
     );
   }
   if (await clickSel(page, '[data-dock-undo="available"]')) await sleep(300);
-  await click(page, 'Deselect');
+  await deselect(page);
   await sleep(200);
   // A RESIDENT SELECTED, the shortest name and one of the widest. The walk had never selected a
   // resident, so the one-height check had never seen the name line with a resident's name in it,
@@ -1337,7 +1477,7 @@ async function walk(
     if (await pick(page, `resident:${organ}`)) {
       await sleep(250);
       await step(page, `command, the ${organ} resident selected`, results);
-      await click(page, 'Deselect');
+      await deselect(page);
       await sleep(200);
     } else {
       results.push(
@@ -1345,7 +1485,7 @@ async function walk(
       );
     }
   }
-  await click(page, 'Menu');
+  await clickSel(page, '[data-menu]');
   await sleep(300);
   await step(page, 'pause sheet', results);
   // Settings over the paused game: the game stays mounted (hidden) underneath, and the delete
@@ -1384,9 +1524,9 @@ async function walk(
   // The spread ends and the app draws: the next turn opens on its reveal (§12, ruling 2).
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
-    await step(page, 'reveal, after End turn', results);
+    await step(page, 'arrivals, after End turn', results);
   } else {
-    results.push(notReached('reveal, after End turn', 'no reveal followed the spread'));
+    results.push(notReached('arrivals, after End turn', 'no reveal followed the spread'));
   }
   await click(page, 'Plan your turn');
   await sleep(300);
@@ -1411,10 +1551,10 @@ async function walk(
     const actual = await whereNow(page);
     nesting.push({
       path: 'A game closed mid-spread → Continue',
-      expected: 'reveal',
+      expected: 'arrivals',
       actual,
       via: 'resume',
-      ok: actual === 'reveal',
+      ok: actual === 'arrivals',
     });
   }
   await click(page, 'Plan your turn');
@@ -1422,7 +1562,7 @@ async function walk(
   // Settings from the Title WITH a save (the first visit had none, so the delete row was
   // disabled): quit keeps the save, the row is live, its confirm is measured, and Continue
   // resumes the game for the walk to the Result.
-  await click(page, 'Menu');
+  await clickSel(page, '[data-menu]');
   await sleep(200);
   await click(page, 'Quit to title');
   await sleep(200);
@@ -1479,8 +1619,8 @@ async function tryDockTargets(
   nesting: NestResult[] | null,
 ): Promise<void> {
   if (coverage.targets) return;
-  // The pieces are in the Pieces drawer since piece 3: read their keys there, then pick each.
-  if (!(await clickSel(page, '[data-drawer-button="pieces"]'))) return;
+  // The pieces are in the Cells view since piece 5: read their keys there, then pick each.
+  if (!(await clickSel(page, '[data-tab="pieces"]'))) return;
   await sleep(250);
   const pieceKeys = await page.evaluate(() =>
     [...document.querySelectorAll('[data-piece]')].map((e) => e.getAttribute('data-piece') ?? ''),
@@ -1556,7 +1696,7 @@ async function walkToResult(
     if (await click(page, 'Plan your turn')) await sleep(250);
     if (await click(page, 'Command your cells')) await sleep(700);
     await tryDockTargets(page, results, step, nesting);
-    await click(page, 'Deselect');
+    await deselect(page);
     await sleep(150);
     await tryCellCard(page, results, step, nesting);
     await click(page, 'End turn');
@@ -2170,29 +2310,28 @@ async function controls(page: Page): Promise<string[]> {
   );
 
   // ------------------------------------------------------------------------------------------
-  // THE DOCK'S ONE HEIGHT (docs/for-P2.7.md §12): the check must report a screen where the dock
-  // is a different height, must pass screens where it is one height (to the pixel it rounds to),
-  // and must call a run with no dock measured NOT REACHED rather than clean.
+  // THE PLAY AREA'S ONE HEIGHT (docs/for-P2.7.md §19): the check must report a screen where the play
+  // area is another height, pass both stages at one height (to the pixel it rounds to), and call a
+  // run that measured only one stage NOT REACHED rather than clean.
   // ------------------------------------------------------------------------------------------
   line(
-    'dock fires: a screen where the dock is another height is reported, by name',
-    dockFindings([
-      { screen: 'a', height: 248, fixed: true },
-      { screen: 'b', height: 266, fixed: true },
-      { screen: 'c', height: 248, fixed: true },
-    ]).some((f) => f.screen === 'b' && f.detail.startsWith('the dock is 266px')),
+    'play area fires: a screen where it is another height is reported, by name',
+    playAreaFindings([
+      { screen: 'a', height: 300, stage: 'planning' },
+      { screen: 'b', height: 340, stage: 'command' },
+      { screen: 'c', height: 300, stage: 'command' },
+    ]).some((f) => f.screen === 'b' && f.detail.startsWith('the play area is 340px')),
   );
   line(
-    'dock passes: one height across screens is NOT reported',
-    dockFindings([
-      { screen: 'a', height: 248, fixed: true },
-      { screen: 'b', height: 248.2, fixed: true },
-      { screen: 'c', height: 480, fixed: false },
+    'play area passes: both stages at one height are NOT reported',
+    playAreaFindings([
+      { screen: 'a', height: 300, stage: 'planning' },
+      { screen: 'b', height: 300.2, stage: 'command' },
     ]).length === 0,
   );
   line(
-    'dock fires: a run that measured no dock at the bottom is NOT REACHED, never clean',
-    dockFindings([{ screen: 'a', height: 480, fixed: false }]).some((f) =>
+    'play area fires: a run that measured one stage only is NOT REACHED, never clean',
+    playAreaFindings([{ screen: 'a', height: 300, stage: 'command' }]).some((f) =>
       f.detail.startsWith('NOT REACHED'),
     ),
   );
@@ -2270,12 +2409,12 @@ async function controls(page: Page): Promise<string[]> {
     }
   };
   line(
-    'resume fires: a resumed game that lands anywhere but a reveal is reported',
+    'resume fires: a resumed game that lands anywhere but the arrivals stage is reported',
     (await resumeLanding(false)) === 'planning',
   );
   line(
-    'resume passes: a game closed mid-spread reaches its reveal',
-    (await resumeLanding(true)) === 'reveal',
+    'resume passes: a game closed mid-spread reaches its arrivals stage',
+    (await resumeLanding(true)) === 'arrivals',
   );
 
   if (!ok.every(Boolean)) throw new Error(`A CONTROL FAILED:\n${lines.join('\n')}`);
@@ -2359,7 +2498,7 @@ async function playATurn(page: Page): Promise<{
   await step('Command your cells', () => waitClick(page, 'Command your cells'));
   await step('select the Monocyte', async () => {
     await page
-      .waitForFunction(() => document.querySelector('[data-drawer-button="pieces"]') !== null, {
+      .waitForFunction(() => document.querySelector('[data-tab="pieces"]') !== null, {
         timeout: 8000,
       })
       .catch(() => undefined);
@@ -2371,8 +2510,11 @@ async function playATurn(page: Page): Promise<{
     const more = await advance(page);
     if (!more && i > 6) break;
   }
+  // The turn as the top bar shows it since piece 5 ("2/15", docs/for-P2.7.md §19). This read the
+  // page's text for "Turn N of", which piece 5 removed, and said NOT MET on a build that had played
+  // a turn offline cleanly: the guard firing on the instrument, fixed inline.
   const turn = (await page.evaluate(
-    () => (document.body.innerText.match(/Turn (\d+) of/) ?? [])[1] ?? null,
+    () => (document.querySelector('[data-turn]')?.textContent ?? '').trim() || null,
   )) as string | null;
   // The art counted with ART_PROBE: `<img>` and SVG `<image>` both, because since piece 4 the screen
   // a turn ends on holds only the second (docs/for-P2.7.md §18).
@@ -2382,6 +2524,66 @@ async function playATurn(page: Page): Promise<{
     svgArt: number;
   };
   return { turn, ...art, steps };
+}
+
+/**
+ * THE MAIN SCREEN AT 360 x 641 (piece 5, docs/for-P2.7.md §19): the S25's Chrome tab, measured by
+ * Shantanu on 20 September 2026 (360 x 641 of a 360 x 780 screen, DPR 3), and where
+ * planning scrolled on the build before this one. Planning and command at rest, and command with a
+ * view open under the floating close, whose spacer made the page 88px taller than the screen on this
+ * piece's first build: nothing at rest could have seen that. A screen not reached is NOT REACHED.
+ */
+async function restAt641(page: Page): Promise<{ screen: string; overflow: number }[]> {
+  const out: { screen: string; overflow: number }[] = [];
+  const overflow = (): Promise<number> =>
+    page.evaluate(() => {
+      const el = document.scrollingElement || document.documentElement;
+      return Math.max(0, Math.round(el.scrollHeight - window.innerHeight));
+    });
+  const miss = (screen: string): void => {
+    out.push({ screen, overflow: -1 });
+  };
+  await page.goto(URL, { waitUntil: 'load' });
+  await waitClick(page, 'New game');
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('*')].some(
+          (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+        ),
+      { timeout: 8000 },
+    )
+    .catch(() => undefined);
+  await page.evaluate(() => {
+    const el = [...document.querySelectorAll('*')].find(
+      (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+    ) as HTMLElement | undefined;
+    el?.click();
+  });
+  await sleep(300);
+  await click(page, 'Start and replace');
+  await waitClick(page, 'Begin');
+  if (!(await waitClick(page, 'Plan your turn'))) {
+    miss('planning @360x641');
+    miss('command, nothing selected @360x641');
+    miss('command, a view open @360x641');
+    return out;
+  }
+  await sleep(400);
+  out.push({ screen: 'planning @360x641', overflow: await overflow() });
+  if (!(await waitClick(page, 'Command your cells'))) {
+    miss('command, nothing selected @360x641');
+    miss('command, a view open @360x641');
+    return out;
+  }
+  await sleep(900);
+  out.push({ screen: 'command, nothing selected @360x641', overflow: await overflow() });
+  if (await clickSel(page, '[data-tab="antibodies"]')) {
+    await sleep(300);
+    out.push({ screen: 'command, a view open @360x641', overflow: await overflow() });
+    await closeLevel(page);
+  } else miss('command, a view open @360x641');
+  return out;
 }
 
 async function offline(page: Page): Promise<Record<string, unknown>> {
@@ -2524,6 +2726,11 @@ try {
   }
   await page5.close();
 
+  const page6 = await browser.newPage();
+  await page6.setViewport({ width: 360, height: 641 });
+  const at641 = offlineOnly ? [] : await restAt641(page6);
+  await page6.close();
+
   const page3 = await browser.newPage();
   await page3.setViewport({ width: 360, height: 780 });
   const off = await offline(page3);
@@ -2535,37 +2742,48 @@ try {
   const restRecords = results.flatMap((r) =>
     r.rest ? [{ screen: r.screen, overflow: r.rest.overflow }] : [],
   );
+  // The 641 pass's screens join them; one it did not reach is a finding, not an absence.
+  const at641Findings: Finding[] = at641
+    .filter((r) => r.overflow < 0)
+    .map((r) => ({
+      check: 'scroll' as const,
+      screen: r.screen,
+      path: '',
+      text: '',
+      detail: 'NOT REACHED: the 360 x 641 pass could not open it',
+    }));
+  restRecords.push(...at641.filter((r) => r.overflow >= 0));
   const mainScreen = offlineOnly
     ? null
     : {
         screensAtRest: restRecords.length,
         overflows: restRecords.map((r) => `${r.screen}: ${String(r.overflow)}`),
-        findings: restFindings(restRecords),
+        findings: [...restFindings(restRecords), ...at641Findings],
       };
-  // The dock's one height, over the base pass's screens (§12).
-  const dockRecords = results.flatMap((r) =>
-    r.dock ? [{ screen: r.screen, height: r.dock.height, fixed: r.dock.fixed }] : [],
+  // The play area's one height, over the base pass's screens (§19).
+  const areaRecords = results.flatMap((r) =>
+    r.playArea ? [{ screen: r.screen, height: r.playArea.height, stage: r.playArea.stage }] : [],
   );
-  const dock = offlineOnly
+  const playArea = offlineOnly
     ? null
     : {
-        screensMeasured: dockRecords.length,
-        screensAtTheBottom: dockRecords.filter((r) => r.fixed).length,
-        heights: [...new Set(dockRecords.filter((r) => r.fixed).map((r) => r.height))],
-        findings: dockFindings(dockRecords),
+        screensMeasured: areaRecords.length,
+        stages: [...new Set(areaRecords.map((r) => r.stage))],
+        heights: [...new Set(areaRecords.map((r) => r.height))],
+        findings: playAreaFindings(areaRecords),
       };
   const out = {
     url: URL,
     when: new Date().toISOString(),
     viewport:
-      "360x780 CSS px; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2; SIZE200 at 360x780 with the app's own text size at Largest",
+      "360x780 CSS px, and the main screen's scroll again at 360x641; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2; SIZE200 at 360x780 with the app's own text size at Largest",
     controls: controlLines,
     screens: results,
     font200,
     zoom200,
     size200,
     nesting,
-    dock,
+    playArea,
     mainScreen,
     offline: off,
     totals: {
@@ -2589,7 +2807,7 @@ try {
       nestingChecked: nesting.length,
       nestingWrong: nesting.filter((n) => !n.ok && n.actual !== 'NOT REACHED').length,
       nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
-      dockFindings: dock ? dock.findings.length : null,
+      playAreaFindings: playArea ? playArea.findings.length : null,
       mainScreenScrollFindings: mainScreen ? mainScreen.findings.length : null,
       offlineMet: off['met'],
     },

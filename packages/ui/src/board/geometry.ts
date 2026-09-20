@@ -27,6 +27,9 @@ const organTable = ORGAN_POS as Record<string, Pt>;
  *  11) — positions stay in the 660-unit canvas; only the visible window tightens. */
 const crop = CROP as { x: number; y: number; w: number; h: number };
 export const VIEWBOX = `${crop.x} ${crop.y} ${crop.w} ${crop.h}`;
+/** The board's shape as a CSS aspect ratio, width over height: the play area's shape in every stage
+ *  (piece 5 of the play screen, docs/for-P2.7.md §19). From the crop, so no number is authored here. */
+export const BOARD_ASPECT = `${crop.w} / ${crop.h}`;
 export const HUB_POS = HUB as Pt;
 export const LANES: readonly string[] = Object.keys(routeTable);
 export const BOARD_ORGANS: readonly string[] = Object.keys(organTable);
