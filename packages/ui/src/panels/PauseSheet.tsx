@@ -25,11 +25,14 @@ const BTN: CSSProperties = {
 };
 
 export function PauseSheet({
+  onResume,
   onQuit,
   onSettings,
   onHelp,
 }: {
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
+  /** Back to the game: the same thing the floating close does. */
+  onResume: () => void;
   onQuit: () => void;
   /** Settings and How to play over the paused game (APP_FLOW §4: "P2.6 adds: Settings ·
    *  How to play"). */
@@ -74,6 +77,11 @@ export function PauseSheet({
           </>
         ) : (
           <>
+            {/* RESUME IS THE FIRST ROW (§21 I): the floating close does the same thing, but
+                nothing on the menu said so, and it is the one thing a paused player wants. */}
+            <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onResume}>
+              {t('pause.resume')}
+            </button>
             <button style={BTN} onClick={onHelp}>
               {t('pause.help')}
             </button>

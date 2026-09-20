@@ -23,6 +23,7 @@ import {
   HelpScreen,
   LibraryScreen,
   NavHost,
+  logLinesOf,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -30,7 +31,7 @@ import {
   SettingsScreen,
   TitleScreen,
   t,
-  turnLine,
+  MenuIcon,
   useNav,
   useNavLayerWith,
   type ArtMetrics,
@@ -54,6 +55,7 @@ import {
   type TextSize,
 } from './settings';
 import { clearHints, readHints, writeHints } from './hints';
+import { clearPlayed, readPlayed, writePlayed } from './played';
 import { startServiceWorker } from './serviceWorker';
 
 const SAVE_ID = 'autosave';
@@ -66,6 +68,7 @@ const initialSettings = readSettings(prefStore);
 /** FIRST-ENCOUNTER HINTS: its own key, never a field on the settings object. `hints.ts` says why
  *  (adding one would reset every player's text size). Read once, like the settings. */
 const initialHintsSeen = readHints(prefStore).seen;
+const initialPlayed = readPlayed(prefStore).played;
 applyTextSize(initialSettings.textSize);
 
 type Screen =
@@ -129,6 +132,15 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
   const [saveFailed, setSaveFailed] = useState(false);
   const [hintsSeen, setHintsSeen] = useState<readonly string[]>(initialHintsSeen);
+  // Whether this device has ever started a game: the difficulty screen's recommendation and the
+  // coach both ask it (piece 7 item 8, piece 8).
+  const [played, setPlayed] = useState(initialPlayed);
+  /**
+   * One id per game, so a new game is a new play screen. Without it the screen is reused and its
+   * per-game memory — the view it last saw, what the coach was told to stop saying — carries into
+   * the next game (§21).
+   */
+  const [gameId, setGameId] = useState(0);
   const rememberHints = (seen: readonly string[]): void => {
     setHintsSeen(seen);
     writeHints(prefStore, seen);
@@ -136,6 +148,11 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   const resetHints = (): void => {
     clearHints(prefStore);
     setHintsSeen([]);
+    // ONE ROW, ONE QUESTION (item 3, 19 September 2026): "show the first-game guidance again"
+    // covers everything a first game shows and a later one does not, so the device is new again
+    // rather than partly new.
+    clearPlayed(prefStore);
+    setPlayed(false);
   };
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
@@ -181,6 +198,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
 
   const startNew = (difficulty: string): void => {
     difficultyRef.current = difficulty;
+    setGameId((n) => n + 1);
     sessionRef.current = watchForSaveFailure(
       LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID }),
     );
@@ -189,6 +207,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   };
 
   const continueSave = (): void => {
+    setGameId((n) => n + 1);
     void storage.get(SAVE_ID).then((s) => {
       if (!s) {
         refreshSave();
@@ -213,6 +232,11 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   };
 
   const onGameEnd = (finalView: ViewState): void => {
+    // A FIRST GAME IS ONE YOU HAVE FINISHED (§21). Written here rather than at the start, so a
+    // player who quits mid-game and comes back is still coached, and so that a game resumed after a
+    // reload keeps its coach. Losing counts: Gate 1 says a loss is finishing.
+    writePlayed(prefStore);
+    setPlayed(true);
     // RESULT is the one place the autosave is deleted: Continue never offers a finished game.
     void storage.delete(SAVE_ID).catch(() => undefined);
     sessionRef.current = null;
@@ -246,7 +270,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         )
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
-      hintsSeenAny={hintsSeen.length > 0}
+      hintsSeenAny={hintsSeen.length > 0 || played}
       onResetHints={resetHints}
       onDeleteSave={deleteSave}
     />
@@ -258,6 +282,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
       onOpen={(s) => nav.push({ name: 'help', section: s })}
       onNext={(s) => nav.replace({ name: 'help', section: s })}
       onWhy={(entry) => nav.push({ name: 'library', view: { kind: 'why', entry } })}
+      onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
     />
   );
 
@@ -292,7 +317,6 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
-            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
             onAbout={() => nav.push({ name: 'about' })}
           />
         </>
@@ -300,7 +324,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     }
 
     if (screen.name === 'difficulty') {
-      return <DifficultyScreen hasSave={save !== null} onStart={startNew} />;
+      return <DifficultyScreen hasSave={save !== null} firstGame={!played} onStart={startNew} />;
     }
 
     if (screen.name === 'result') {
@@ -315,6 +339,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             organsDamaged: countDamagedOrgans(g),
             antibodiesMade: sumMade(g),
           }}
+          log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
           onTitle={quitToTitle}
@@ -334,7 +359,6 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
-            onLibrary={() => nav.push({ name: 'library', view: { kind: 'index' } })}
             onAbout={() => nav.push({ name: 'about' })}
           />
         </>
@@ -352,39 +376,42 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         {screen.name === 'library' ? libraryScreen(screen.view) : null}
         <div hidden={overPlay}>
           <PlayScreen
+            key={gameId}
             session={session}
             artMetrics={artMetrics}
+            coach={!played}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
-            renderControls={(ctx) => (
-              // THE TOP ROW keeps only the turn line and Menu (for-P2.7.md §9 ruling 1). The turn's
-              // next step is the dock's; the draw is the app's (§12 ruling 2); the spread's headline
-              // plays in the dock (§12 ruling 4). One 44px row: its padding went with the buttons.
-              <div
+            renderControls={() => (
+              // THE MENU, an icon at the right of the play screen's top bar (piece 5 of the play
+              // screen, for-P2.7.md §19): the turn and the AP are the bar's own now, and the deck's
+              // count left it.
+              <button
+                data-menu=""
+                aria-label={t('play.pause')}
+                onClick={() => setPaused(true)}
                 style={{
-                  display: 'flex',
-                  gap: 8,
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
                   minHeight: 44,
+                  minWidth: 44,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  background: 'transparent',
+                  border: '1.5px solid #8E6E53',
+                  borderRadius: 8,
+                  color: '#2E2A28',
+                  cursor: 'pointer',
                 }}
               >
-                <span style={{ fontSize: '0.8125rem', color: '#7C6A61' }}>
-                  {turnLine(ctx.game)} {t('commandBar.ap')} {String(ctx.game['ap'])}{' '}
-                  {t('play.deck')} {String(ctx.game['deckCount'])}
-                </span>
-                <button
-                  style={{ minHeight: 44, fontSize: '0.875rem', marginLeft: 'auto' }}
-                  onClick={() => setPaused(true)}
-                >
-                  {t('play.pause')}
-                </button>
-              </div>
+                <MenuIcon />
+              </button>
             )}
           />
           {paused ? (
             <PauseSheet
+              onResume={() => setPaused(false)}
               onQuit={quitToTitle}
               // The menu stays open under what it opens, so closing that returns to the menu
               // (ruling 9). It used to close itself first, which is why Back landed on the game.

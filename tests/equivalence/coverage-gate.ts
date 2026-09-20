@@ -1003,7 +1003,7 @@ const dl: string[] = [
   '',
   ...deferredMp.map(row),
   '',
-  '## Phase 3 — reachable once a competent bot exists (' + deferredBot.length + ' arms)',
+  '## Deferred until a competent bot exists (' + deferredBot.length + ' arms)',
   '',
   "Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never",
   'emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot',
@@ -1014,6 +1014,11 @@ const dl: string[] = [
   'building a competent bot is an engine change that breaks the corpus — which Phase 2 forbids in',
   'its own definition of done. They move here, alongside the seat-filling AI they are the same',
   'work as. See docs/PHASE2_BRIEF.md v1.1 §6, review item A.',
+  '',
+  '**NO LONGER PHASE 3 EITHER, ruled 20 September 2026** (docs/PHASE3_BRIEF.md §4): a dropped',
+  "player's seats are handed on by the captain or waited for, so Phase 3 needs no AI to fill a",
+  'seat, and the bot stops being part of it. It is its own piece of work, whenever it is taken,',
+  'because it is an engine change that deliberately re-baselines the corpus.',
   '',
   ...deferredBot.map(row),
   '',
@@ -1027,7 +1032,7 @@ writeFileSync('docs/COVERAGE_DEFERRED.md', dl.join('\n') + '\n');
 
 console.log('');
 console.log('  deferred to Phase 3 (multiplayer) : ' + deferredMp.length);
-console.log('  deferred to Phase 3 (bot)         : ' + deferredBot.length);
+console.log('  deferred until a competent bot    : ' + deferredBot.length);
 console.log('  uncategorised, still open         : ' + rest.length);
 console.log('  wrote docs/COVERAGE_EXCLUSIONS.md and docs/COVERAGE_DEFERRED.md');
 

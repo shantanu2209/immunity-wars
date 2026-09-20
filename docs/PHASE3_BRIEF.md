@@ -1,0 +1,210 @@
+# The Immunity Wars — Phase 3 Brief
+
+**Version:** 1.0 · 20 September 2026
+**Owner:** Shantanu (build direction) / Kartik (design)
+**Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
+
+Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
+[`TASK_E_CLOSEOUT.md`](TASK_E_CLOSEOUT.md) (the measurements that already decided things),
+[`SEAM_DECISIONS.md`](SEAM_DECISIONS.md) and [`FINDINGS.md`](FINDINGS.md) #40.
+
+> ⚠️ **This brief expects to be wrong somewhere.** Phase 2's brief was reviewed before any of its
+> code existed and **seven real defects were found in it** ([`PHASE2_BRIEF_REVIEW.md`](PHASE2_BRIEF_REVIEW.md)),
+> including two sentences that contradicted each other. The same review is owed here, and the place
+> to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
+> to be consistent.
+
+---
+
+## 0. Objective
+
+> Two people who know each other, in different cities, play one game on their own phones, by
+> sharing a code. Nobody signs up for anything.
+
+Phase 2 changed everything a player can see. **Phase 3 changes who is in the room, and nothing about
+the rules.** The engine is fixed; the equivalence corpus remains the oracle.
+
+---
+
+## 1. The stopping rule
+
+**Two gates. Both must pass. Neither implies the other.**
+
+### Gate A — it works, objectively
+
+- [ ] Two devices, different networks, join one room by code and play a full game to a Result
+- [ ] Every action is applied **once**, in one order, and every client's view agrees at the end of
+      each action — asserted by a check, not by watching
+- [ ] A player who drops and rejoins with the same code gets their seats back and the game continues
+- [ ] A player who drops and does **not** come back does not block the table: the captain reassigns
+      or the table waits, and that choice is visible to everyone
+- [ ] The captain dropping promotes a new captain deterministically, and every client agrees who
+- [ ] The last player leaving ends the game; a room held open for the grace period and then
+      discarded cannot be rejoined
+- [ ] A client on an old protocol version is refused with a message a player can act on, and can
+      **never** desynchronise a newer room
+- [ ] **The 22 deferred multiplayer coverage arms are covered** ([`COVERAGE_DEFERRED.md`](COVERAGE_DEFERRED.md))
+- [ ] Single player is unchanged and still works with no network at all
+
+### Gate B — it is affordable and it is ours
+
+- [ ] The relay runs inside a free plan at the measured traffic of a real game, with the numbers
+      recorded and the plan's limits re-read **on the day**, not trusted from this document
+- [ ] **The platform is replaceable:** the room's rules are a plain module with no Cloudflare types
+      in it, and the platform adapter is small enough to rewrite in a day. Proven by a test that
+      runs the room module with no Cloudflare runtime at all
+- [ ] No personal data anywhere: no accounts, no stored names, nothing on the server that outlives
+      the room
+
+---
+
+## 2. What is already true, and must not be re-derived
+
+Phase 3 starts further along than it looks.
+
+| | |
+|---|---|
+| **The engine is already multiplayer** | `g.multiplayer`, `g.captain`, `owner: Record<seat, pid>`, per-player `apBudget`, the allocation phase, and ownership checks are all in `packages/engine/src/actions.ts`. **Phase 3 builds transport and seats for rules that already exist**, and changes none of them |
+| **The seat model is the engine's** | 7 cells + 7 organ residents = 14 seats, keyed as the engine keys them (`res_<organ>` for a resident) |
+| **There is a working reference** | `tools/legacy/server.js`, 346 lines: one room, 14 seats, a captain, ownership enforcement, reconnect by persistent id. READ-ONLY, like all of `tools/legacy` — the same role legacy played for the Phase 1 port |
+| **`Session` was built for this** | `sendAction` is async even locally **so that `RelaySession` is a second implementation and not a rewrite**; `Session` never hands out `GameState`; the `view`/`burst` union already expresses what a spread is |
+| **`PlayerRef` is device-local and opaque** | It authenticates nothing and is minted on the device. That is exactly right for an invite-only room and would be wrong for a public one, which is one more reason there is no public one |
+| **The engine cannot be replayed** | Six unseeded `Math.random()` calls, no injection point (#40). Two clients applying one action diverge silently. **`viewState` is the unit of synchronisation, never `Action`** |
+| **Size was measured** | Every measured state gzips **under 3.5 KiB**; deltas buy about 2× on that; **the tail is the burst at 25.6 KiB**, because `endCommand` returns up to 10 full projections. Every figure is a FLOOR: measured single-player, under a bot that dies at turn 8.6 |
+| **`packages/protocol` is 11 lines of scaffold** | It becomes real here |
+
+---
+
+## 3. Order of work
+
+Sequenced so the thing that could invalidate the rest happens first.
+
+| # | Stage | Why here |
+|---|---|---|
+| **P3.1** | **The room as a pure module**, with no network: rooms, seats, captain, join, drop, rejoin, reassign, end. Driven by tests only | It is the half that carries every rule in §5, and it can be finished before a single byte crosses a wire |
+| **P3.2** | **The protocol**: message types and Zod schemas both ways, `rulesVersion` and a protocol version on every message, with a refusal path proven by a control | Zod at every trust boundary is a standing rule; a relay is the largest trust boundary this project has ever had |
+| **P3.3** | **The measurement: frames or state?** One room, two clients, a real spread. What it costs to send 10 frames versus one state and a dice log | The Task E question. Decided by measurement, before the transport is written around either answer |
+| **P3.4** | **`RelaySession`** — the second implementation of `Session`, against a local relay on the development machine | No cloud involved yet |
+| **P3.5** | **The Cloudflare adapter**: one Durable Object per room, WebSockets, the free-plan numbers measured | Small by design; §6 |
+| **P3.6** | **Two real devices, two networks**, a full game, and the 22 coverage arms | Gate A |
+| **P3.7** | The multiplayer screens: create, join, the lobby, seat assignment, the away state | They are the last thing, because until P3.6 nobody knows what they must show |
+
+---
+
+## 4. The rulings already made
+
+Given by Shantanu on 20 September 2026, in the conversation this brief was written from.
+
+1. **An internet relay, not LAN.** The product is an installed Android app; LAN would mean a phone
+   running a server, which is a second and harder transport that only works on one Wi-Fi.
+2. **Private rooms by invite code. No lobby, no matchmaking, no strangers** — which is also
+   `CLAUDE.md`'s standing rule, and the brief proposed something weaker before being corrected.
+3. **No free-text chat in v1.** In a children's app it is the one feature that brings moderation
+   obligations and Play Families scrutiny. The Messages panel keeps its System tab (piece 5).
+4. **No AI. There is no seat-filling bot in Phase 3.** *"If some non captain player drops, captain
+   can decide who takes over. If captain leaves we make someone else captain. If last player leaves
+   game ends. Since it is code based sharing we can assume people know each other, so the person who
+   drops can rejoin by entering the code again, and if the remaining players so choose they can wait
+   for the player to rejoin before continuing."*
+   **This deletes the ugliest thing in the phase.** The roadmap said Phase 3 would build AI takeover,
+   which is the same work as a competent reference bot, which is an engine change that breaks the
+   byte-identical corpus. **A rule that says "the table decides" needs no AI at all**, so the bot
+   leaves Phase 3 entirely and the corpus is not re-baselined here.
+   `COVERAGE_DEFERRED.md`'s 17 bot arms are relabelled accordingly, at the generator.
+5. **Cloudflare, free plan, for now** — with the right to move later, which §6 makes a requirement
+   rather than a hope.
+
+---
+
+## 5. The room's rules, written down so they can be argued with
+
+This is the section most likely to be wrong. Every line is a ruling or a proposed default, marked.
+
+**A room** is a code and a set of members. It exists in memory only. Nothing about it is written to
+disk anywhere, ever.
+
+- **Joining.** A member is a `PlayerRef` (device-local, opaque) plus a display name typed for this
+  room. *Proposed:* the name lives in the room and dies with it. Nothing is stored on the server and
+  nothing identifies a child.
+- **Seats.** 14, the engine's own. A member holds zero or more. *Proposed:* the captain assigns at
+  the start; a member may pick a free seat themselves before the game begins.
+- **The captain** is the first member to join. The engine already gives the captain the allocation
+  and End turn powers, so this is the engine's notion, not a new one.
+- **Dropping** is the connection closing. The member stays a member and their seats stay theirs,
+  **marked away**, visible to everyone (Gate A). Nothing is forfeited by dropping.
+- **The table's choice.** *Ruled:* the captain may reassign an away member's seats to anyone
+  present, or the table may simply wait. Nothing forces the issue and no timer decides it. The game
+  advances when the captain ends the turn, which is already the engine's rule.
+- **Captain succession.** *Proposed default:* when the captain is away, the **next member in join
+  order who is connected** becomes captain. Deterministic, so every client agrees without a vote.
+  *Open:* whether the original captain gets it back on return. **Recommendation: no** — a rule that
+  swaps authority twice on a flaky connection is worse than one that swaps it once.
+- **Rejoining.** The same code plus the same `PlayerRef` restores the member and any seats still
+  theirs. Seats reassigned while away are gone; they take what is free.
+- **The room's end.** When the last connected member leaves, the room is **held for a grace period
+  and then discarded.** *Proposed default: 10 minutes.* A family losing Wi-Fi for ninety seconds
+  should not destroy a forty-minute game; a room nobody returns to should not live forever.
+- **After the grace period** the game is gone. There is no server-side save, because there is no
+  server-side storage. *Open, and worth deciding deliberately:* whether the captain's device keeps
+  the autosave it already writes in single player, so a dead room can be restarted from the last
+  state. **Recommendation: yes, and say so in the UI** — the machinery exists.
+
+---
+
+## 6. The relay, and the right to leave it
+
+**One room is one Durable Object**, holding that room's state, with WebSockets. The free plan
+carries about 3 million requests a month; **incoming WebSocket messages are billed 20 to 1 and
+outgoing are free**, which is the direction this traffic goes, since a relay broadcasts after each
+action. At our scale this is comfortably free, and it scales to zero when nobody is playing.
+**Gate B requires the limits to be re-read on the day**: a published number in a brief is a claim
+with an expiry date.
+
+**The platform must be replaceable, and that is a gate item, not an intention.**
+
+- The room's rules are a plain module: no Cloudflare types, no `env`, no `WebSocket` in its
+  signatures. It takes messages in and returns messages out.
+- The adapter is the only thing that knows about Durable Objects, and it is small enough to rewrite
+  in a day. **Proven by running the room module under plain Node in the test suite** — if that test
+  passes, the module is portable by construction rather than by assertion.
+- The fallback, if Cloudflare's terms change: a small always-free VM, at the cost of owning an
+  operating system to patch.
+
+⚠️ **This is the project's first long-running listening process, and that changes a security
+claim.** [`SECURITY_NOTES.md`](SECURITY_NOTES.md)'s current property is *"no open advisory is in a
+process that listens; every open advisory is in a one-shot tool the maintainer runs on inputs the
+maintainer chose."* **A relay breaks that sentence the day it ships.** The relay's dependency set is
+therefore part of Gate B: it is kept minimal, and the property is restated to cover it.
+
+---
+
+## 7. Out of scope
+
+No public matchmaking, no lobby of strangers, no friend lists — permanently, not just here.
+No free-text chat. No accounts, ever.
+**No AI seat-filling and no competent reference bot** (§4, ruling 4). It is an engine change that
+deliberately re-baselines the corpus and it is its own piece of work, whenever it is taken.
+No Capacitor packaging — Phase 4, and it must not start until [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)'s
+handset measurement exists.
+No spectators. The legacy server had them; nobody has asked for them.
+No engine rule changes.
+
+---
+
+## 8. Definition of done
+
+- [ ] Gate A — every item, verified, on two real devices on two networks
+- [ ] Gate B — inside a free plan with the numbers recorded, portable by a passing test, no personal
+      data
+- [ ] `RelaySession` is a second implementation of `Session`, and `LocalSession` is untouched by it
+- [ ] `rulesVersion` and a protocol version on every message and every state, with the refusal path
+      proven by a control — the thing Phase 1 recorded as Phase 3's to make true
+- [ ] The 22 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest
+- [ ] Corpus still green; the engine unchanged
+- [ ] A Phase 3 closeout: what is proven, what is not, what Phase 4 inherits
+
+---
+
+*Phase 4 preview: Capacitor packaging, signing, Play Console, the closed-testing period, and the
+handset measurement Phase 2 still owes — which is the one thing that can still reopen Capacitor
+versus React Native, and which must be taken before, not during.*

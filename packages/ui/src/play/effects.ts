@@ -22,6 +22,7 @@ import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import { t } from '../i18n';
+import type { LogLine } from '../panels/LogPanel';
 
 export interface EffectChip {
   id: string;
@@ -218,6 +219,42 @@ export function rareLogLine(g: ViewState): { t: number; text: string; kind: stri
   };
 }
 
+/** The effects' short names for the top bar's banner (piece 5, §19): a crisis event's own name when
+ *  the chip carries one, otherwise these. */
+const SHORT: Readonly<Record<string, string>> = {
+  window: 'effects.short.window',
+  noProduce: 'effects.short.noProduce',
+  capTurns: 'effects.short.capTurns',
+  skipMarch: 'effects.short.skipMarch',
+  neutrophilOffline: 'effects.short.neutrophilOffline',
+  tcellOffline: 'effects.short.tcellOffline',
+  memoryReady: 'effects.short.memoryReady',
+};
+
+/**
+ * THE TOP BAR'S BANNER (piece 5, §19): the first effect in force by a short name, with how many more
+ * there are. A tap opens them all, in full, in the middle. Null when nothing is in force.
+ */
+export function effectBanner(
+  chips: readonly EffectChip[],
+): { text: string; kind: EffectChip['kind'] } | null {
+  const first = chips[0];
+  if (!first) return null;
+  const key = SHORT[first.id];
+  const name = first.event ?? (key !== undefined ? t(key) : first.text);
+  const more = chips.length - 1;
+  return { text: more > 0 ? `${name} ${t('effects.more', { n: more })}` : name, kind: first.kind };
+}
+
+/** The turn as the top bar says it (piece 5, §19): "3/15" in the arrival window, "Clear in 2" after. */
+export function turnShort(g: ViewState): string {
+  const turn = num(g['turn']);
+  const maxTurn = num(g['maxTurn']);
+  if (maxTurn > 0 && turn > maxTurn)
+    return t('play.turnClearShort', { k: maxTurn + GRACE_CLEAR - turn });
+  return t('play.turnShort', { n: turn, max: maxTurn });
+}
+
 /** The turn line for the shell: "Turn 3 of 15" inside the arrival window, the countdown after. */
 export function turnLine(g: ViewState): string {
   const turn = num(g['turn']);
@@ -261,4 +298,21 @@ export function apTermLines(view: SessionView): { text: string; delta: number }[
         return { text: t('ap.event'), delta: term.delta };
     }
   });
+}
+
+/**
+ * THE LOG, AS LINES, from any view: the engine's entries plus the rare event's authored one,
+ * newest first. Extracted at §21 H so the Result screen can show what happened without a second
+ * copy of the rule that files the rare line — two assemblies of one list is how they drift.
+ */
+export function logLinesOf(g: ViewState): LogLine[] {
+  const engineLines: LogLine[] = (
+    (g['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+  const rare = rareLogLine(g);
+  return rare
+    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
+        (a, b) => b.t - a.t,
+      )
+    : engineLines;
 }

@@ -26,10 +26,18 @@ const DIFFS = ['training', 'normal', 'hard'] as const;
 
 export function DifficultyScreen({
   hasSave,
+  firstGame = true,
   onStart,
 }: {
   /** When true, picking a difficulty asks before replacing the saved game. */
   hasSave: boolean;
+  /**
+   * True until this device has started a game (item 8, 19 September 2026). The recommendation is
+   * guidance for a newcomer; a returning player has already answered the question it answers, and
+   * the screen is under test for whether a newcomer can choose unaided (NEWCOMER_TEST.md), which
+   * is a question about the first time only.
+   */
+  firstGame?: boolean;
   onStart: (difficulty: string) => void;
 }): ReactElement {
   const [pendingDiff, setPendingDiff] = useState<string | null>(null);
@@ -64,7 +72,7 @@ export function DifficultyScreen({
           onClick={() => pick(d)}
         >
           <span style={{ fontWeight: 700 }}>{t(`difficulty.${d}`)}</span>
-          {d === 'training' ? (
+          {d === 'training' && firstGame ? (
             // The interface carries the first-game guidance, not the newcomer-test script —
             // Shantanu's ruling, 30 Aug 2026 (docs/NEWCOMER_TEST.md): whether a newcomer can
             // tell where to start is part of what the test measures.
