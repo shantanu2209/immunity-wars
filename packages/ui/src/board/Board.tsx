@@ -631,7 +631,11 @@ export function Board({
   targets = [],
   readyTurn = {},
   onTap,
+  fill = false,
 }: {
+  /** Fill the box it is placed in, keeping its shape (the play area, piece 5, §19). The tap still
+   *  resolves through the SVG's own transform, so letterboxing moves nothing. */
+  fill?: boolean;
   /** The session's per-cell return turn — what a spent cell's badge shows. */
   readyTurn?: ReadyTurn;
   view: ViewState;
@@ -742,7 +746,7 @@ export function Board({
       onClick={handleTap}
       style={{
         width: '100%',
-        maxWidth: 660,
+        ...(fill ? { height: '100%' } : { maxWidth: 660 }),
         display: 'block',
         background: CLASSIC.paper,
         fontFamily: BOARD_FONT,

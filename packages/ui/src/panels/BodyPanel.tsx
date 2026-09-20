@@ -113,17 +113,9 @@ export function BodyPanel({
   return (
     <div
       data-panel="body"
-      style={{
-        marginTop: 6,
-        padding: '6px 8px',
-        border: '1.5px solid #C48377',
-        borderRadius: 10,
-        background: '#FFFDF9',
-        fontSize: '0.875rem',
-      }}
+      // NO BOX AND NO TITLE since piece 5 (§19): The body tab that opened this view names it.
+      style={{ marginTop: 6, fontSize: '0.875rem' }}
     >
-      <div style={{ ...LABEL, marginBottom: 2 }}>{t('body.title')}</div>
-
       <div style={ROW}>
         <span style={{ flex: '1 1 160px' }}>
           <span style={LABEL}>{t('body.antivenom')}</span>{' '}

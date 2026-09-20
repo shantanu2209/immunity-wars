@@ -301,6 +301,7 @@ export function HelpScreen({
   onOpen,
   onNext,
   onWhy,
+  onLibrary,
 }: {
   /** The open section, or null for the index. */
   section: HelpSectionKey | null;
@@ -314,6 +315,12 @@ export function HelpScreen({
   onNext: (key: HelpSectionKey) => void;
   /** Open one of the library's "why it works this way" entries (the cross-link, P2.6). */
   onWhy: (entry: string) => void;
+  /**
+   * The disease library, which is a row of THIS index since piece 7 (item 2, 19 September 2026)
+   * rather than a slot on the Title: it is reference, not a tenth of the way to play, so it sits
+   * below the ten and set apart from them.
+   */
+  onLibrary: () => void;
 }): ReactElement {
   if (section === null) {
     return (
@@ -325,11 +332,22 @@ export function HelpScreen({
             {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
           </button>
         ))}
+        <div style={{ marginTop: 22 }}>
+          <p style={LEAD}>{t('help.libraryLead')}</p>
+          <button
+            style={{ ...ROW_BTN, borderColor: '#C48377' }}
+            onClick={onLibrary}
+            data-help-library=""
+          >
+            {t('title.library')}
+          </button>
+        </div>
       </div>
     );
   }
   const i = HELP_SECTION_KEYS.indexOf(section);
   const next = HELP_SECTION_KEYS[i + 1] ?? null;
+  const prev = i > 0 ? (HELP_SECTION_KEYS[i - 1] ?? null) : null;
   return (
     <div style={PAGE} data-screen="help">
       <h1 style={TITLE}>
@@ -353,11 +371,28 @@ export function HelpScreen({
           ))}
         </section>
       ) : null}
-      {next ? (
-        <button style={BTN} onClick={() => onNext(next)}>
-          {t('help.next')}
-        </button>
-      ) : null}
+      {/* They wrap at 200% page zoom (a 180px layout), where side by side they were 185px wide:
+          the audit's finding on this piece's first run. */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {prev ? (
+          <button
+            style={{ ...BTN, flex: '1 1 8rem', minWidth: 0 }}
+            onClick={() => onNext(prev)}
+            data-help-prev={prev}
+          >
+            {t('help.previous')}
+          </button>
+        ) : null}
+        {next ? (
+          <button
+            style={{ ...BTN, flex: '1 1 8rem', minWidth: 0 }}
+            onClick={() => onNext(next)}
+            data-help-next={next}
+          >
+            {t('help.next')}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

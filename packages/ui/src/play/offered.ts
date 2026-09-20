@@ -350,6 +350,33 @@ export function producibleFamilies(view: SessionView): {
   return out;
 }
 
+/**
+ * PRODUCTION WITHOUT SELECTING THE B-CELL (piece 5 of the play screen, docs/for-P2.7.md §19): the
+ * Antibodies view makes antibodies directly. The rules never needed the B-Cell selected: the engine's
+ * `produce` takes only the class. These are the same offers the B-Cell's selection used to open,
+ * under the same conditions: the command phase, the B-Cell neither spent nor offline, and an Action
+ * Point or a free B-Cell action to pay with.
+ */
+export function produceOffers(view: SessionView): ButtonOffer[] {
+  const g = view.game;
+  if (String(g['phase']) !== 'command') return [];
+  if (isSpent(g, 'bcell') || isSuppressed(g, 'bcell') || !canAct(g, 'bcell')) return [];
+  const out: ButtonOffer[] = [];
+  for (const f of producibleFamilies(view)) {
+    if (!f.ok) continue;
+    out.push({
+      id: `produce:${f.family}`,
+      action: 'produce',
+      cell: 'bcell',
+      label: `${t('action.produce')} ${familyLabel(f.family)}`,
+      params: { action: 'produce', family: f.family },
+      place: 'panel',
+      family: f.family,
+    });
+  }
+  return out;
+}
+
 export function offeredActions(view: SessionView): Offered {
   const g = view.game;
   const cell = view.selection.cell;

@@ -39,13 +39,12 @@ import {
   INV_HP,
   NOVEL_ANTIGENS,
   TOXIN_MAKERS,
-  TROPISM,
   WHY,
 } from '@immunity-wars/content';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { organDisplayName, typeDisplayName } from '../names';
+import { typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
 import type { HelpSectionKey } from './HelpScreen';
 import { BODY as P, ITEM, PAGE, ROW_BTN, TITLE } from './chrome';
@@ -143,12 +142,6 @@ function classBadge(disease: string): ReactElement | null {
       {fam.short ?? cls}
     </span>
   );
-}
-
-function organsOf(disease: string): string {
-  const targets = (TROPISM as Record<string, readonly string[] | undefined>)[disease] ?? [];
-  if (targets.includes('any')) return t('card.anyOrgan');
-  return targets.map((o) => organDisplayName(o)).join(', ');
 }
 
 /**
@@ -319,17 +312,11 @@ export function LibraryScreen({
               onClick={() => onView({ kind: 'card', disease: e.disease })}
               data-library-row={e.disease}
             >
-              <span style={{ fontWeight: 700 }}>{e.disease}</span>
+              {/* ONE SHAPE FOR EVERY ROW (item 5, 19 September 2026): the name, then the class
+                  pushed to the end. The organs, the parent it arises from and "nothing produces
+                  it" are in the card this row opens. */}
+              <span style={{ fontWeight: 700, flex: '1 1 auto', minWidth: 0 }}>{e.disease}</span>
               {classBadge(e.disease)}
-              <span style={MUTED}>{organsOf(e.disease)}</span>
-              {e.from !== null ? (
-                <span style={{ ...MUTED, width: '100%' }}>
-                  {t('library.arisesFrom', { parent: e.from })}
-                </span>
-              ) : null}
-              {e.neverProduced ? (
-                <span style={{ ...MUTED, width: '100%' }}>{t('library.neverProduced')}</span>
-              ) : null}
             </button>
           ))}
         </section>
