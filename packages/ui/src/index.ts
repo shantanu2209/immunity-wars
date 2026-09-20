@@ -51,6 +51,7 @@ export {
   effectChips,
   turnLine,
   turnShort,
+  logLinesOf,
   rareLogLine,
   apTermLines,
   type EffectChip,

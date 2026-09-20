@@ -23,6 +23,7 @@ import {
   HelpScreen,
   LibraryScreen,
   NavHost,
+  logLinesOf,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -134,10 +135,12 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   // Whether this device has ever started a game: the difficulty screen's recommendation and the
   // coach both ask it (piece 7 item 8, piece 8).
   const [played, setPlayed] = useState(initialPlayed);
-  // Coached for a first game only. Captured when the screen mounts, not read live: startNew sets
-  // `played` as the game begins, and a coach that vanished on its own first render would be a
-  // puzzle to debug and no help to anyone.
-  const coachRef = useRef(!initialPlayed);
+  /**
+   * One id per game, so a new game is a new play screen. Without it the screen is reused and its
+   * per-game memory — the view it last saw, what the coach was told to stop saying — carries into
+   * the next game (§21).
+   */
+  const [gameId, setGameId] = useState(0);
   const rememberHints = (seen: readonly string[]): void => {
     setHintsSeen(seen);
     writeHints(prefStore, seen);
@@ -150,7 +153,6 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     // rather than partly new.
     clearPlayed(prefStore);
     setPlayed(false);
-    coachRef.current = true;
   };
   const sessionRef = useRef<LocalSession | null>(null);
   const difficultyRef = useRef<string>('training');
@@ -196,10 +198,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
 
   const startNew = (difficulty: string): void => {
     difficultyRef.current = difficulty;
-    // This device has now played (piece 7 item 8, piece 8): the first-game guidance is for the
-    // game that is starting, not the ones after it.
-    writePlayed(prefStore);
-    setPlayed(true);
+    setGameId((n) => n + 1);
     sessionRef.current = watchForSaveFailure(
       LocalSession.createGame({ difficulty }, { storage, saveId: SAVE_ID }),
     );
@@ -208,6 +207,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   };
 
   const continueSave = (): void => {
+    setGameId((n) => n + 1);
     void storage.get(SAVE_ID).then((s) => {
       if (!s) {
         refreshSave();
@@ -232,6 +232,11 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   };
 
   const onGameEnd = (finalView: ViewState): void => {
+    // A FIRST GAME IS ONE YOU HAVE FINISHED (§21). Written here rather than at the start, so a
+    // player who quits mid-game and comes back is still coached, and so that a game resumed after a
+    // reload keeps its coach. Losing counts: Gate 1 says a loss is finishing.
+    writePlayed(prefStore);
+    setPlayed(true);
     // RESULT is the one place the autosave is deleted: Continue never offers a finished game.
     void storage.delete(SAVE_ID).catch(() => undefined);
     sessionRef.current = null;
@@ -334,6 +339,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             organsDamaged: countDamagedOrgans(g),
             antibodiesMade: sumMade(g),
           }}
+          log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
           onTitle={quitToTitle}
@@ -370,9 +376,10 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         {screen.name === 'library' ? libraryScreen(screen.view) : null}
         <div hidden={overPlay}>
           <PlayScreen
+            key={gameId}
             session={session}
             artMetrics={artMetrics}
-            coach={coachRef.current}
+            coach={!played}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
@@ -404,6 +411,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
           />
           {paused ? (
             <PauseSheet
+              onResume={() => setPaused(false)}
               onQuit={quitToTitle}
               // The menu stays open under what it opens, so closing that returns to the menu
               // (ruling 9). It used to close itself first, which is why Back landed on the game.

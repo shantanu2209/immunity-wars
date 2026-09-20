@@ -1591,3 +1591,111 @@ layout; and the coach's NOT REACHED above.
   the phone can say.
 - **Whether item 4's back-to-Title symptom is real on the phone**, since it does not reproduce here.
 - **Still open:** the #74 instrument question, declined for now (§19).
+
+---
+
+## 21. Item 13: a game played start to finish, and what it showed
+
+Played 20 September 2026 on the shipped build at **360 × 641**, Training, fresh profile, Title to
+Result: a loss on turn 10 to Heart damage, then Play again and a second game. This is item 13 of the
+19 September message, which asks for the UX to be looked at and not only for faults.
+
+**What it is not:** it is one game, on a development PC, driven mostly through the page rather than a
+thumb. It cannot say how the board feels to tap, and the numbers below are heights, not opinions.
+
+### ⚠️ A correction, first, because I got one wrong
+
+**I reported to myself that "Play again skips the arrivals stage and opens on the board."** It does
+not. The goal dialog was up, and I had queried for the wrong attribute when checking for one.
+Tapping Begin gives the arrivals stage exactly as a first game does. **Nothing was broken and the
+claim was mine, not the app's** — recorded because a false finding that gets quietly dropped is how
+a real one gets dismissed later.
+
+### The three faults it did find, fixed here
+
+1. **The coach spoke before the game began.** With the goal dialog still up and the turn not yet
+   drawn, it was already saying *"Tap one of your cells on the board"* underneath it. The coach now
+   has a `waiting` stage for every moment the player is not being asked for anything — a dialog up,
+   or the turn not drawn — and says nothing in it. `coach.test.ts` carries the control.
+2. **The coach ran again for a second game in the same sitting.** The device's "has played" flag was
+   written when a game STARTED, and the play screen captured it once per page load. It is now
+   written **when a game ENDS** (a loss counts, as Gate 1 says), which is also better on its own
+   terms: a player who quits mid-first-game and comes back is still coached, and the difficulty
+   screen's recommendation stands until a game has actually been finished.
+3. **Per-game state outlived its game.** The play screen is now keyed by the game, so the coach steps
+   waved away, the open view and the planning filter cannot carry into the next one. This is
+   robustness rather than an observed defect: say so, rather than claiming a fix for a bug nobody saw.
+
+### The streamlining it found, none of it built, all of it Shantanu's call
+
+Heights are CSS px at 360 × 641, where the middle is **176px in planning and 126px in command**.
+
+| # | What the game does now | Cost, measured | What could be done |
+|---|---|---|---|
+| **A** | The **Cells view** lists 14 chips: seven cells and seven resident macrophages | **414px of content in 126px** — three and a half screens for the commonest action in the game | Put the seven residents behind a toggle, and order the cells that can act first. The residents are rarely the answer and they are half the list |
+| **B** | The **coach sits in the middle**, above the actions | With it up, a selected cell's action rows are **160px in 126px**: the rows a newcomer needs are the ones it pushes off | Move it over the play area, which has room in every stage, or make it one line with a × and put Stop in the menu |
+| **C** | The coach says "tap one of your cells", and the prompt line below says "Tap one of your cells to command it" | Two lines, ~90px of 126px, saying one thing | Show the prompt only when the coach is not up |
+| **D** | **Planning's list** grows with the body | 212px on turn 2, **450px by turn 6**, against 176px | Denser rows first (one line each); if that is not enough, group by place with counts and open a place to see its rows |
+| **E** | **"What just happened"** lists the spread's frame labels | Includes "The march" and "Next turn", which are the animation's words, not events | Drop the turn-advance label; keep what actually happened |
+| **F** | **Board move rings are 26px**, and 27 of them can be on screen at once | Under the 44px minimum, though a tap resolves to the nearest node, which hides it | Invisible 44px hit areas over the rings. The audit's touch check cannot see SVG targets, so this is also a gap in the instrument |
+| **G** | The **Title** is the name and four buttons | Removing the credit line (item 1) took the only sentence saying what the game is; the lower half of the screen is empty | One short line about the game, not a credit, or art. This is Gate 2 territory as much as UX |
+| **H** | **Result** says "Lost to damage: Heart" and offers three buttons | No way to see what actually happened; Messages lives inside the play frame and the game is over | A "What happened" button on Result, opening the same Messages panel |
+| **I** | The **pause menu** is closed to resume | Nothing says "Resume"; the floating close is the way back | Add Resume as the first row. It is the one thing a paused player certainly wants |
+
+**Two things measured and found FINE**, recorded because they were what I expected to find wrong:
+an action that cannot be taken is visibly different from one that can (grey on grey against dark on
+red, `Frame.tsx`), and the page never scrolled at 641 in any stage of any turn of either game.
+
+### Left for the phone
+
+Tap accuracy on the board, how the 900ms spread pacing reads to a person, and whether the coach and
+the first-encounter hints are too much together. None of the three can be answered from here.
+
+### One instrument defect, found by `pnpm verify` during this round
+
+**`auto-draw.test.ts` asserted that an idle game lasts at least 5 turns, and an idle Hard game
+lasted 4.** The floor came from a single measurement on 13 September ("9 to 10 turns at every
+difficulty"), and the games are UNSEEDED ([`FINDINGS.md`](FINDINGS.md) #68), so that was one sample
+of a distribution used as a bound on it.
+
+**Measured before changing anything**, because a red test during a change looks like the change:
+**3 failures in 23 runs with this session's changes applied, 0 in 22 on the unchanged code of the
+same day.** At that sample size the difference is chance (p ≈ 0.11), and no mechanism connects them
+— the suite drives the engine through `LocalSession` and touches neither the app shell nor the
+coach nor anything else this session altered.
+
+**The floor is 3 now**, which is what the assertion is for: a loop that stopped immediately still
+fails it. The two lines under it — that it drew on every turn played and resumed on every turn
+played — are the property the suite exists to check, and they are untouched. Fixed inline, because
+a gate that reddens on its own tail is an instrument defect, not a product one.
+
+### ✅ All nine RULED on 20 September ("agree with all of them"), and eight built. Measured.
+
+Heights at 360 × 641, before → after, on the shipped build.
+
+| # | What was done | Measured |
+|---|---|---|
+| **A** | The Cells view shows the seven cells, **ready ones first**, with the seven residents behind a control | **414px → 252px** of content in a 126px middle |
+| **B** | The coach's line moved **onto the play area**, which has room in every stage, and out of the middle | With a cell selected, its action rows were 160px in a 126px middle; now **126px in 126px: they fit** |
+| **C** | The prompt line stands down while the coach is up | The two lines that said one thing are one line |
+| **D** | Planning's list is **one row per place**, opening to its pathogens; a place tapped on the figure opens as that one place | **765px over 13 rows at turn 7 → 352px over 8 places at turn 8.** Density alone did not do it: shrinking the art and running the place onto the name moved a row from 56px to 58px, because the row simply wrapped instead. The unit was wrong, not the padding |
+| **E** | The spread summary drops the burst's last label | "Next turn" is gone; what happened stays |
+| **F** | **Nothing. It needed nothing, and that is the finding** | The drawn ring is 26px but a board tap resolves to the nearest candidate within **60 viewBox units ≈ 66px** at the reference width (`board/tap.ts`, which says so in its own header). I measured the drawing and reported it as the target. **No code was added, because adding a 44px hit area over a 66px one is dead code that looks like diligence** |
+| **G** | The Title carries one line saying what the game is, and no credit | About keeps the credit, which is where item 1 put it |
+| **H** | Result has **What happened**, opening the finished game's log | The rare event's line is filed by `logLinesOf`, which the play screen now shares, so the two cannot drift |
+| **I** | **Resume** is the first row of the pause menu | |
+
+**One more, found while looking at B on the build:** the first-encounter hint sat over the top of
+the board and the coach over the bottom, together covering most of it. **The coach now stands down
+while a hint is on screen** — the same rule as C, for the same reason: the hint is about the thing
+just tapped and is the more specific of the two.
+
+**The audit after all of it:** 44 controls right; **60 screens per pass (62 under SIZE200)**; every
+check 0 under all four mechanisms; nesting 33 landings, 0 wrong; the play area 338.7px on 29 screens;
+no scroll at rest on 15 screens; offline met. One NOT REACHED, in the base pass only: a row with
+several targets, which the deal decides.
+
+**What is still true after the work:** planning's list scrolls when the body is busy (8 places is
+352px against 176), and the Cells view scrolls at 252px against 126. Both are far better and neither
+is solved; the middle is 126px and the game has more to say than that. The remaining fix is a design
+decision about what a player needs to see at once, and it should be taken with a phone in hand.

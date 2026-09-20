@@ -170,9 +170,16 @@ export function TopBar({
  */
 export function PlayArea({
   stage,
+  coach = null,
   children,
 }: {
   stage: 'arrivals' | 'planning' | 'command' | 'spread';
+  /**
+   * The coach's line, laid over the bottom of the play area rather than put in the middle
+   * (§21 B): the middle is 126px in command at 360 x 641 and the coach was taking 90 of them,
+   * which is exactly the space a newcomer's action rows need.
+   */
+  coach?: ReactNode;
   children: ReactNode;
 }): ReactElement {
   return (
@@ -188,6 +195,9 @@ export function PlayArea({
       }}
     >
       {children}
+      {coach !== null ? (
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 4 }}>{coach}</div>
+      ) : null}
     </div>
   );
 }

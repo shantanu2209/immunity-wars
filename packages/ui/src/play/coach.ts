@@ -25,8 +25,11 @@
 
 /** What the coach is allowed to know: the screen's state, and what the engine is offering. */
 export interface CoachInput {
-  /** The stage showing, exactly as the frame names it. */
-  stage: 'arrivals' | 'planning' | 'command' | 'spread';
+  /**
+   * The stage showing, exactly as the frame names it, or 'waiting' for any moment the player is
+   * not being asked for anything: a dialog is up, or the turn has not been drawn yet.
+   */
+  stage: 'arrivals' | 'planning' | 'command' | 'spread' | 'waiting';
   /** The turn number, so the coach can stop being useful and go away. */
   turn: number;
   /** Action Points left this turn. */
@@ -56,7 +59,8 @@ export function coachStep(input: CoachInput): CoachStep | null {
   if (input.turn > COACH_TURNS) return null;
   switch (input.stage) {
     case 'spread':
-      // Nothing is accepted while frames play, so nothing is asked for.
+    case 'waiting':
+      // Nothing is accepted while frames play or while a dialog waits, so nothing is asked for.
       return null;
     case 'arrivals':
       return { id: 'arrivals', key: 'coach.arrivals' };

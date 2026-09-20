@@ -8,7 +8,7 @@
  *
  * Dumb by design: the shell says which pieces exist and which is selected; names are content.
  */
-import type { CSSProperties, ReactElement } from 'react';
+import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
@@ -72,6 +72,18 @@ export function PieceStrip({
   onSelectResident: (organ: string) => void;
   onDeselect: () => void;
 }): ReactElement {
+  const [showResidents, setShowResidents] = useState(false);
+  /**
+   * WHAT CAN ACT COMES FIRST, AND THE RESIDENTS WAIT BEHIND A CONTROL (§21 A). Fourteen chips were
+   * 414px of content in a 126px middle at 360 x 641, for the commonest action in the game, and half
+   * of them were resident macrophages which are rarely the answer. Order is stable within each
+   * group, so a chip does not move between renders for any reason but becoming unavailable.
+   */
+  const cells = pieces.filter((p) => p.kind === 'cell');
+  const residents = pieces.filter((p) => p.kind !== 'cell');
+  const ready = cells.filter((p) => !p.unavailable);
+  const waiting = cells.filter((p) => p.unavailable);
+  const shown = [...ready, ...waiting, ...(showResidents ? residents : [])];
   return (
     // NO TITLE since piece 5 (§19): the Cells tab that opened this view already says what it is.
     <div data-panel="pieces" style={{ marginTop: 6 }}>
@@ -83,7 +95,7 @@ export function PieceStrip({
           paddingBottom: 4,
         }}
       >
-        {pieces.map((p) => {
+        {shown.map((p) => {
           const selected = p.kind === 'cell' ? p.key === selectedCell : p.key === selectedResident;
           const art = p.kind === 'cell' ? `cell-${p.key}` : 'cell-macrophage';
           const name = p.kind === 'cell' ? cellDisplayName(p.key) : residentDisplayName(p.key);
@@ -126,6 +138,28 @@ export function PieceStrip({
           );
         })}
       </div>
+      {residents.length > 0 ? (
+        <button
+          data-pieces-residents={showResidents ? 'open' : 'closed'}
+          aria-expanded={showResidents}
+          onClick={() => setShowResidents((v) => !v)}
+          style={{
+            minHeight: 44,
+            width: '100%',
+            marginTop: 4,
+            fontSize: '0.8125rem',
+            borderRadius: 8,
+            border: '1.5px solid #8E6E53',
+            background: '#F6F1EC',
+            color: '#2E2A28',
+            cursor: 'pointer',
+          }}
+        >
+          {showResidents
+            ? t('pieces.hideResidents')
+            : t('pieces.showResidents', { n: residents.length })}
+        </button>
+      ) : null}
       {selectedCell !== null && why[selectedCell] !== undefined ? (
         <div
           data-piece-why={selectedCell}

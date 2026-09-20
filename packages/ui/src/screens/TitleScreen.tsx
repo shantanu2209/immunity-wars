@@ -44,8 +44,10 @@ export function TitleScreen({
   return (
     <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
       {/* NO CREDIT LINE HERE (item 1, 19 September 2026): About carries it, and the Title is
-          the screen a newcomer must read fastest. */}
+          the screen a newcomer must read fastest. ONE LINE SAYING WHAT THE GAME IS stays, because
+          removing the credit took the only sentence that did (§21 G). */}
       <h1 style={{ fontSize: '1.875rem', color: '#B03A2E' }}>{t('title.name')}</h1>
+      <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('title.blurb')}</p>
       {save ? (
         <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onContinue}>
           {t('title.continue')}
