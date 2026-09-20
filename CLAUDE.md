@@ -14,9 +14,16 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 2** — the renderer rewrite. Spec: @docs/PHASE2_BRIEF.md (v1.7).
-Phase 1 is closed; its spec and closeout are `docs/PHASE1_BRIEF.md` and
-`docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not proven.
+**Current phase: Phase 3** — playing together: a relay, private rooms by invite code, no strangers.
+Spec: @docs/PHASE3_BRIEF.md (v1.0).
+
+**Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
+acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,
+and Gate 2. **The handset pass is the one that bites: Phase 4 must not start without it**, or
+locked decision #1 (Capacitor vs React Native) goes into it unresolved. Spec:
+`docs/PHASE2_BRIEF.md` (v1.7). Phase 1 is closed; its spec and closeout are
+`docs/PHASE1_BRIEF.md` and `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not
+proven.
 
 **This is a public repository.** Do not commit personal details of either contributor beyond
 what is in the README credits — no school, no address, no contact details, no photographs.
