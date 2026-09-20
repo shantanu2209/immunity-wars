@@ -1,6 +1,6 @@
 # The Immunity Wars — Roadmap
 
-**Last updated:** 5 August 2026
+**Last updated:** 20 September 2026
 Where the project is going, what each stage produces, and how you know it is finished.
 
 ---
@@ -12,8 +12,8 @@ affordable. Each phase ends with something you can hold, open, or install.
 
 ```
 Phase 1  Foundations ─────────── CLOSED (docs/PHASE1_CLOSEOUT.md)
-Phase 2  The app people see ──── in progress (P2.1 to P2.5 closed; P2.6 under way)
-Phase 3  Playing together
+Phase 2  The app people see ──── PAUSED, not closed (docs/PHASE2_PAUSE.md)
+Phase 3  Playing together ─────── starting (docs/PHASE3_BRIEF.md)
 Phase 4  Android
 Phase 5  iOS
 Phase 6  The classroom layer
@@ -58,19 +58,25 @@ The one thing that would make it urgent instead: Phase 2 adding a dev server. Th
 written down where whoever adds one will meet it.
 
 **Coverage gate:** met at 95.46% of coverable arms, with exclusions enumerated and self-policing.
-Two deferred lists carry into Phase 3 — the 8 multiplayer arms and, since 18 Aug 2026, the 9
-bot-conditional ones. The bot moved out of Phase 2 because it is inlined in the engine and
-`simulate()` is compared byte-identically, so building a competent one is an engine change that
-breaks the corpus during a renderer rewrite ([`FINDINGS.md`](docs/FINDINGS.md) #1).
+⚠️ *Corrected 20 September 2026, twice: the counts were stale and one list has moved again.*
+The generated list ([`docs/COVERAGE_DEFERRED.md`](docs/COVERAGE_DEFERRED.md)) holds **22 multiplayer
+arms**, which Phase 3 must cover, and **17 bot-conditional arms**, which are **no longer Phase 3
+either**: with no AI seat-filling there (PHASE3_BRIEF §4, ruling 4), they wait for whenever a
+competent bot is built. This paragraph said 8 and 9, and said both carried into Phase 3. The bot is
+inlined in the engine and `simulate()` is compared byte-identically, so building a competent one is
+an engine change that breaks the corpus ([`FINDINGS.md`](docs/FINDINGS.md) #1) — which is why it
+keeps being pushed out of phases rather than squeezed into them.
 
 ---
 
 ## Phase 2 — The app people see
 
 **Goal:** stop being a browser page and become an application.
-**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v1.7. **Status:** P2.1 to P2.5 closed
-(the seam and boundary, the slice, the screening measurement, the art pipeline, the full UI:
-[`docs/P2_5_CLOSEOUT.md`](docs/P2_5_CLOSEOUT.md)). **P2.6 in progress** from 6 September 2026.
+**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v1.7. **Status: PAUSED on 20 September
+2026, and paused is not closed** — [`docs/PHASE2_PAUSE.md`](docs/PHASE2_PAUSE.md) says which three
+items are owed and what each costs to leave. P2.1 to P2.6 closed; P2.7 (polish) stopped partway by
+ruling, with the UX judged acceptable for now. **The handset performance pass is still owed and
+Phase 4 must not start without it.**
 *This line said "P2.1 complete" and "v1.1" until 6 September 2026; the documentation sweep
 checks only that the roadmap is not calling an earlier phase current, so the sub-phase and
 version here are a person's to keep true.*
@@ -102,10 +108,19 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 ## Phase 3 — Playing together
 
 **Goal:** two people in different cities play the same game.
+**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.0, written 20 September 2026, review owed.
 
-- Multi-room relay replacing the single-room LAN server
+- Multi-room relay replacing the single-room LAN server. **On Cloudflare Durable Objects, one room
+  per object, inside the free plan** — ruled 20 September 2026, with the right to move later made a
+  gate item rather than a hope
 - Private rooms by invite code. **No strangers, no public matchmaking** — that decision holds
-- Reconnection, and AI takeover when someone drops mid-game
+- Reconnection. ⚠️ *Corrected 20 September 2026:* this said **"and AI takeover when someone drops
+  mid-game"**. There is no AI in Phase 3. The captain hands an away player's seats on, or the
+  table waits, and a dropped player rejoins with the same code (PHASE3_BRIEF §4, ruling 4). AI
+  takeover is the same work as a competent reference bot, which is an engine change that breaks the
+  byte-identical corpus — so removing it from this phase removes a corpus re-baselining from it too
+- **No free-text chat in v1**, ruled the same day: in a children's app it is the one feature that
+  carries moderation obligations
 - Protocol versioning so an old client can never desynchronise a new server
 - **Multiplayer test coverage** — Task B's corpus was single-player and this is a known gap
 
