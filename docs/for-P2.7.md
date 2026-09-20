@@ -1668,3 +1668,34 @@ coach nor anything else this session altered.
 fails it. The two lines under it — that it drew on every turn played and resumed on every turn
 played — are the property the suite exists to check, and they are untouched. Fixed inline, because
 a gate that reddens on its own tail is an instrument defect, not a product one.
+
+### ✅ All nine RULED on 20 September ("agree with all of them"), and eight built. Measured.
+
+Heights at 360 × 641, before → after, on the shipped build.
+
+| # | What was done | Measured |
+|---|---|---|
+| **A** | The Cells view shows the seven cells, **ready ones first**, with the seven residents behind a control | **414px → 252px** of content in a 126px middle |
+| **B** | The coach's line moved **onto the play area**, which has room in every stage, and out of the middle | With a cell selected, its action rows were 160px in a 126px middle; now **126px in 126px: they fit** |
+| **C** | The prompt line stands down while the coach is up | The two lines that said one thing are one line |
+| **D** | Planning's list is **one row per place**, opening to its pathogens; a place tapped on the figure opens as that one place | **765px over 13 rows at turn 7 → 352px over 8 places at turn 8.** Density alone did not do it: shrinking the art and running the place onto the name moved a row from 56px to 58px, because the row simply wrapped instead. The unit was wrong, not the padding |
+| **E** | The spread summary drops the burst's last label | "Next turn" is gone; what happened stays |
+| **F** | **Nothing. It needed nothing, and that is the finding** | The drawn ring is 26px but a board tap resolves to the nearest candidate within **60 viewBox units ≈ 66px** at the reference width (`board/tap.ts`, which says so in its own header). I measured the drawing and reported it as the target. **No code was added, because adding a 44px hit area over a 66px one is dead code that looks like diligence** |
+| **G** | The Title carries one line saying what the game is, and no credit | About keeps the credit, which is where item 1 put it |
+| **H** | Result has **What happened**, opening the finished game's log | The rare event's line is filed by `logLinesOf`, which the play screen now shares, so the two cannot drift |
+| **I** | **Resume** is the first row of the pause menu | |
+
+**One more, found while looking at B on the build:** the first-encounter hint sat over the top of
+the board and the coach over the bottom, together covering most of it. **The coach now stands down
+while a hint is on screen** — the same rule as C, for the same reason: the hint is about the thing
+just tapped and is the more specific of the two.
+
+**The audit after all of it:** 44 controls right; **60 screens per pass (62 under SIZE200)**; every
+check 0 under all four mechanisms; nesting 33 landings, 0 wrong; the play area 338.7px on 29 screens;
+no scroll at rest on 15 screens; offline met. One NOT REACHED, in the base pass only: a row with
+several targets, which the deal decides.
+
+**What is still true after the work:** planning's list scrolls when the body is busy (8 places is
+352px against 176), and the Cells view scrolls at 252px against 126. Both are far better and neither
+is solved; the middle is 126px and the game has more to say than that. The remaining fix is a design
+decision about what a player needs to see at once, and it should be taken with a phone in hand.

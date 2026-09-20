@@ -22,6 +22,7 @@ import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import { t } from '../i18n';
+import type { LogLine } from '../panels/LogPanel';
 
 export interface EffectChip {
   id: string;
@@ -297,4 +298,21 @@ export function apTermLines(view: SessionView): { text: string; delta: number }[
         return { text: t('ap.event'), delta: term.delta };
     }
   });
+}
+
+/**
+ * THE LOG, AS LINES, from any view: the engine's entries plus the rare event's authored one,
+ * newest first. Extracted at §21 H so the Result screen can show what happened without a second
+ * copy of the rule that files the rare line — two assemblies of one list is how they drift.
+ */
+export function logLinesOf(g: ViewState): LogLine[] {
+  const engineLines: LogLine[] = (
+    (g['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
+  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
+  const rare = rareLogLine(g);
+  return rare
+    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
+        (a, b) => b.t - a.t,
+      )
+    : engineLines;
 }

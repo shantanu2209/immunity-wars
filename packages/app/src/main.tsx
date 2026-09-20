@@ -23,6 +23,7 @@ import {
   HelpScreen,
   LibraryScreen,
   NavHost,
+  logLinesOf,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -338,6 +339,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             organsDamaged: countDamagedOrgans(g),
             antibodiesMade: sumMade(g),
           }}
+          log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
           onTitle={quitToTitle}
@@ -409,6 +411,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
           />
           {paused ? (
             <PauseSheet
+              onResume={() => setPaused(false)}
               onQuit={quitToTitle}
               // The menu stays open under what it opens, so closing that returns to the menu
               // (ruling 9). It used to close itself first, which is why Back landed on the game.

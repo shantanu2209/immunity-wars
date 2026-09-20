@@ -22,7 +22,7 @@
  * Dumb by design: `planningModel` decided everything; every string is the catalogue's.
  */
 import type { CSSProperties, ReactElement } from 'react';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
@@ -120,11 +120,11 @@ function GroupRow({
   const style: CSSProperties = { ...ROW_BUTTON, borderLeft: `6px solid ${colour}`, paddingLeft: 8 };
   const content = (
     <>
-      <span style={{ position: 'relative', flex: '0 0 auto', width: 36, height: 36 }}>
+      <span style={{ position: 'relative', flex: '0 0 auto', width: 24, height: 24 }}>
         <img
           src={`/art/path-${group.novel ? 'virus' : group.type}@3x.webp`}
-          width={36}
-          height={36}
+          width={24}
+          height={24}
           alt=""
           style={group.novel ? { filter: 'brightness(0.2)' } : undefined}
         />
@@ -151,7 +151,7 @@ function GroupRow({
         ) : null}
       </span>
       <span style={{ flex: '1 1 auto', minWidth: 0 }}>
-        <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>
           {only !== undefined && !only.novel
             ? only.disease
             : group.novel
@@ -176,7 +176,9 @@ function GroupRow({
             {t('inspect.sep')} {t('planning.hidden')}
           </span>
         ) : null}
-        <span style={{ display: 'block', color: '#4A423E' }}>
+        <span style={{ color: '#4A423E' }}>
+          {' '}
+          {t('inspect.sep')}{' '}
           {only !== undefined && !only.novel
             ? `${typeDisplayName(group.type)} ${t('inspect.sep')} ${group.where}`
             : group.where}
@@ -288,6 +290,64 @@ export function spentCellsLine(
 }
 
 /**
+ * ONE ROW PER PLACE (§21 D, measured): the list is the places that have something in them, and a
+ * tap opens one to its pathogens. Before this, every group had its own row and the list reached
+ * 765px against a 176px middle by turn 7 — the screen a player must read to plan, three times
+ * taller than the space it has. A place is where the player is already thinking ("what is coming
+ * up the Gut?") and it is the same unit the figure's own taps use, so the two agree.
+ */
+function PlaceRow({
+  place,
+  groups,
+  open,
+  disabled,
+  onToggle,
+  onPathogenCard,
+}: {
+  place: string;
+  groups: readonly PlanningGroup[];
+  open: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+  onPathogenCard: (invaderId: string) => void;
+}): ReactElement {
+  const first = groups[0];
+  if (first === undefined) return <Fragment />;
+  const count = groups.reduce((n, g) => n + g.count, 0);
+  const colour = DEPTH_COLOUR[first.depth];
+  return (
+    <div data-planning-place={place} data-count={count}>
+      <button
+        style={{ ...ROW_BUTTON, borderLeft: `6px solid ${colour}`, paddingLeft: 8 }}
+        disabled={disabled}
+        aria-expanded={open}
+        onClick={onToggle}
+      >
+        <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 700, fontSize: '0.8125rem' }}>
+          {placeName(place)}
+        </span>
+        <span style={{ color: '#78665D' }}>{t('planning.herePathogens', { n: count })}</span>
+        <span style={{ color: colour, fontWeight: 700, fontSize: '0.75rem', flex: '0 0 auto' }}>
+          {t(DEPTH_LABEL[first.depth])}
+        </span>
+      </button>
+      {open
+        ? groups.map((grp) => (
+            <GroupRow
+              key={grp.key}
+              group={grp}
+              open
+              disabled={disabled}
+              onToggle={() => undefined}
+              onPathogenCard={onPathogenCard}
+            />
+          ))
+        : null}
+    </div>
+  );
+}
+
+/**
  * BLOCK B — THE PATHOGENS IN THE BODY, in the middle below the figure (§19). Deepest first, so on a
  * short screen what scrolls out of sight is the least urgent. With a place in focus (a tap on the
  * figure) the rows are that place's, under a line saying so, with the organ's damage effect when it
@@ -310,6 +370,13 @@ export function PathogenList({
   // A DAMAGED ORGAN's "When damaged" column, one tap from its pips (6 September 2026): the planning
   // screen's half of the home that let the permanent organ-damage chip leave the strip; the inspect
   // sheet's organ row is the other.
+  // The rows gathered by place, deepest first, which is the order the model already carries.
+  const places: [string, PlanningGroup[]][] = [];
+  for (const grp of rows) {
+    const found = places.find(([p]) => p === grp.place);
+    if (found) found[1].push(grp);
+    else places.push([grp.place, [grp]]);
+  }
   const organ =
     focus === null ? undefined : model.places.find((p) => p.place === focus && p.kind === 'organ');
   const effect = focus === null ? null : organEffect(focus);
@@ -336,13 +403,16 @@ export function PathogenList({
           {t('planning.emptyPlace')}
         </div>
       ) : (
-        rows.map((grp) => (
-          <GroupRow
-            key={grp.key}
-            group={grp}
-            open={open[grp.key] === true}
+        places.map(([place, groups]) => (
+          <PlaceRow
+            key={place}
+            place={place}
+            groups={groups}
+            // A place tapped on the figure is the one place shown, and it is open: the player has
+            // already said which place they mean.
+            open={focus !== null || open[place] === true}
             disabled={disabled}
-            onToggle={() => toggle(grp.key)}
+            onToggle={() => toggle(place)}
             onPathogenCard={onPathogenCard}
           />
         ))

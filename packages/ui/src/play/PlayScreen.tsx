@@ -51,11 +51,11 @@ import {
 } from './offered';
 import { shouldDraw } from './autoDraw';
 import { EffectsStrip } from '../panels/EffectsStrip';
-import { apTermLines, effectBanner, effectChips, rareLogLine, turnShort } from './effects';
+import { apTermLines, effectBanner, effectChips, logLinesOf, turnShort } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
-import { LogPanel, type LogLine } from '../panels/LogPanel';
+import { LogPanel } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -312,7 +312,9 @@ export function PlayScreen({
         frameStore.set(null);
         if (pv) setAuthView(pv);
         setPlaying(false);
-        setSpreadLines(spreadLinesRef.current);
+        // THE LAST FRAME IS THE NEW TURN ARRIVING, not something that happened in the spread
+        // (§21 E): "Next turn" is the animation's own word and it is dropped from the summary.
+        setSpreadLines(spreadLinesRef.current.slice(0, -1));
         spreadLinesRef.current = [];
         return;
       }
@@ -941,8 +943,12 @@ export function PlayScreen({
    * stage the frame is showing, the turn, the points left, whether a piece is selected, and how
    * many actions `offered.ts` is offering. It is never told a rule of its own.
    */
+  // ONE TEACHER AT A TIME (§21, the same rule as the prompt line): a first-encounter hint is
+  // about the thing just tapped and is the more specific of the two, so the coach stands down
+  // while one is on screen. Seen on the build: the hint over the top of the board and the coach
+  // over the bottom of it, together covering most of the board.
   const coachNow =
-    coach && !coachOff && !playing
+    coach && !coachOff && !playing && hintShown === null
       ? coachStep({
           stage:
             dialogs.current !== null
@@ -1142,7 +1148,9 @@ export function PlayScreen({
             : null
         }
         cardLabel={selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null}
-        prompt={message}
+        // ONE INSTRUCTION AT A TIME (§21 C): the coach and this line were saying the same
+        // thing, in 90px of a 126px middle.
+        prompt={coachLine !== null ? null : message}
         promptTone={messageTone}
         undo={authView.undo}
         inCommand={phase === 'command'}
@@ -1216,6 +1224,7 @@ export function PlayScreen({
         }
       />
       <PlayArea
+        coach={coachLine}
         stage={
           arrivalsNow !== null
             ? 'arrivals'
@@ -1287,7 +1296,6 @@ export function PlayScreen({
         data-middle=""
         style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
-        {coachLine}
         {middle()}
       </div>
       <div
@@ -1408,17 +1416,7 @@ function LiveBoard({
 function LiveLog({ store, game }: { store: FrameStore; game: ViewState }): ReactElement {
   const frame = useFrame(store);
   const shown = frame ? frame.view : game;
-  const engineLines: LogLine[] = (
-    (shown['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
-  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
-  // THE RARE EVENT'S LINE (6 September 2026): the engine banners a rare event and never logs
-  // it, so the UI authors one entry from the content's own words, dated to the turn it fired,
-  // and files it among the engine's lines by turn (newest first, stable within a turn).
-  const rare = rareLogLine(shown);
-  const lines: LogLine[] = rare
-    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
-        (a, b) => b.t - a.t,
-      )
-    : engineLines;
-  return <LogPanel lines={lines} titled={false} />;
+  // THE RARE EVENT'S LINE (6 September 2026) is filed among the engine's by `logLinesOf`, which
+  // the Result screen shares (§21 H).
+  return <LogPanel lines={logLinesOf(shown)} titled={false} />;
 }

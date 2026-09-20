@@ -763,6 +763,11 @@ async function waitFor(page: Page, label: string, ms: number): Promise<boolean> 
 async function pick(page: Page, piece: string): Promise<boolean> {
   if (!(await clickSel(page, '[data-tab="pieces"]'))) return false;
   await sleep(250);
+  // The residents wait behind a control since §21 A: open it when the piece wanted is one.
+  if (piece.startsWith('resident:')) {
+    await clickSel(page, '[data-pieces-residents=closed]');
+    await sleep(200);
+  }
   const hit = await clickSel(page, `[data-piece="${piece}"]`);
   await sleep(250);
   if (!hit) await closeLevel(page);
@@ -1174,6 +1179,8 @@ async function walk(
   // PLANNING'S LIST IS IN THE MIDDLE (piece 5, docs/for-P2.7.md §19): the Pathogens drawer is gone.
   // A PATHOGEN CARD from the list closes back to planning (ruling 9). A lone pathogen's row opens its
   // card; a group opens to its members, each with a card button.
+  await clickSel(page, '[data-middle-view=planning] [data-planning-place] > button');
+  await sleep(250);
   let listCard = await clickSel(page, '[data-middle-view=planning] [data-opens-card]');
   if (!listCard) {
     await clickSel(page, '[data-middle-view=planning] [data-planning-group] > button');
@@ -1727,8 +1734,15 @@ async function walkToResult(
     nestNotReached(nesting, 'Dock row → its targets → close', 'no row with several targets');
   }
   const ended = await page.evaluate(() => document.body.innerText.includes('Play again'));
-  if (ended) await step(page, 'result', results);
-  else
+  if (ended) {
+    await step(page, 'result', results);
+    if (await clickSel(page, '[data-result-log=closed]')) {
+      await sleep(300);
+      await step(page, 'result, what happened', results);
+    } else {
+      results.push(notReached('result, what happened', 'the Result offered no log'));
+    }
+  } else
     results.push({
       screen: 'result',
       controls: 0,
