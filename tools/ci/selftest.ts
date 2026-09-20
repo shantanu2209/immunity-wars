@@ -156,11 +156,15 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'docs-phase-marker',
-    why: 'CLAUDE.md said "Current phase: Phase 1" for the whole first session of Phase 2, and ROADMAP.md agreed with it. A stale phase marker is not wrong enough to notice, so it survives.',
+    why: 'CLAUDE.md said "Current phase: Phase 1" for the whole first session of Phase 2, and ROADMAP.md agreed with it. A stale phase marker is not wrong enough to notice, so it survives. ⚠️ THIS CONTROL WENT INERT ON 21 September 2026 (docs/FINDINGS.md #76): it looked for the literal "Phase 2", so the moment the marker moved to Phase 3 the mutation changed nothing and the harness said so — correctly, because an inert control is reported, not passed. It reads the number out of the file now, and its expectation no longer names a phase either.',
     file: 'CLAUDE.md',
-    mutate: (t) => t.replace('**Current phase: Phase 2**', '**Current phase: Phase 1**'),
+    mutate: (t) =>
+      t.replace(
+        /\*\*Current phase: Phase (\d+)\*\*/,
+        (_m, n: string) => `**Current phase: Phase ${String(Number(n) + 1)}**`,
+      ),
     gate: 'pnpm docs:check',
-    expect: 'but the spec it names is PHASE2_BRIEF.md',
+    expect: 'but the spec it names is',
   },
   {
     id: 'docs-dead-link',
@@ -206,6 +210,81 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm docs:check',
     expect: '(unused — mustPass control)',
     mustPass: true,
+  },
+  {
+    id: 'boundaries-room-node',
+    why: "GATE B (docs/PHASE3_BRIEF.md §6): the room must be platform-free, or 'we can move off Cloudflare later' is a hope rather than a property. A room that can read a file is a room that has a platform in it.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) => `import { readFileSync } from 'node:fs';\nvoid readFileSync;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'room-no-node-builtins',
+  },
+  {
+    id: 'boundaries-room-engine-permitted',
+    why: 'The other half: the room is the AUTHORITY, so it must be allowed to reach the engine exactly as session does. A rule that forbade everything downstream would satisfy the control above while making the room unbuildable.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      `import { resolveSpread } from '@immunity-wars/engine';\nvoid resolveSpread;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
+    id: 'room-away-seats',
+    why: "Ruling 4 (20 September 2026): a disconnection keeps the member's seats. If dropping freed them, a flaky connection would cost someone their cell mid-game and the table would never be asked.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '        replace(room, msg.ref, (m) => ({ ...m, connected: false })),',
+        '        replace(room, msg.ref, (m) => ({ ...m, connected: false, seats: [] })),',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'keeps an away member and their seats',
+  },
+  {
+    id: 'room-captain-order',
+    why: 'Succession must read JOIN ORDER, so two clients handed the same room name the same captain without exchanging a word. Sorting by nothing makes it depend on array order, which is a different thing that usually agrees — the worst kind of wrong.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '  const next = [...connected(room)].sort((a, b) => a.joinOrder - b.joinOrder)[0];',
+        '  const next = [...connected(room)].reverse()[0];',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'passes to the next member in join order who is connected',
+  },
+  {
+    id: 'room-seat-of-present-player',
+    why: "The captain may hand on an AWAY member's seat. Letting them take a seat from someone sitting in it turns 'the table decides not to wait' into 'the captain overrules a player', which is not the ruling.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '      if (holder?.connected === true)',
+        '      if (holder?.connected === false && false)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'cannot take a seat from someone who is HERE',
+  },
+  {
+    id: 'room-ownership',
+    why: "Ownership is the room's business: without this check any member could move anyone's cell, and the engine would not stop them, because the engine is told the acting pid by the room.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '      if (seat !== null && !me.seats.includes(seat))',
+        '      if (false && seat !== null && !me.seats.includes(seat))',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'is refused when the sender does not hold that seat',
+  },
+  {
+    id: 'room-grace',
+    why: 'The grace period is the difference between a family losing Wi-Fi for ninety seconds and losing a forty-minute game. A sweep that never discards leaks rooms; one that always discards destroys them.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace('  return now - room.emptySince >= graceMs ? null : room;', '  return room;'),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'discards it once the period is up',
   },
   {
     id: 'format',

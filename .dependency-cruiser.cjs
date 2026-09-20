@@ -103,6 +103,32 @@ module.exports = {
       to: { path: '^packages/(ui|app|server)' },
     },
     {
+      name: 'room-no-downstream',
+      severity: 'error',
+      comment:
+        'The room is the authority in multiplayer, not a participant. It may reach the engine ' +
+        'and the content pack, as packages/session does on a single device, and it must never ' +
+        'reach the UI, the app shell, the server or the session. A room that imported the UI ' +
+        'could not run on a server at all; a room that imported the session would have two ' +
+        'copies of the seam. docs/PHASE3_BRIEF.md §2.',
+      from: { path: '^packages/room' },
+      to: { path: '^packages/(ui|app|server|session)' },
+    },
+    {
+      name: 'room-no-node-builtins',
+      severity: 'error',
+      comment:
+        'GATE B, AS A CHECK RATHER THAN AN INTENTION (docs/PHASE3_BRIEF.md §6). The room must be ' +
+        'replaceable-platform code: no filesystem, no network, no process, no timers of its own. ' +
+        'Its entry points take a timestamp and return messages, so it runs under a Durable ' +
+        'Object, ' +
+        'under plain Node in a test, and under whatever replaces them. The day this rule is ' +
+        'relaxed is the day the portability claim in the brief stops being true, and the brief ' +
+        'makes that claim a gate item.',
+      from: { path: '^packages/room' },
+      to: { dependencyTypes: ['core'] },
+    },
+    {
       name: 'ui-app-no-unresolvable',
       severity: 'error',
       comment:
