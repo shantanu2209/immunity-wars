@@ -2438,13 +2438,13 @@ async function playATurn(page: Page): Promise<{
 }
 
 /**
- * THE MAIN SCREEN AT 360 x 680 (piece 5, docs/for-P2.7.md §19): the height of Shantanu's phone's
- * Chrome tab, where the S25's 780 is about 680 once the browser's own bars are drawn, and where
+ * THE MAIN SCREEN AT 360 x 641 (piece 5, docs/for-P2.7.md §19): the S25's Chrome tab, measured by
+ * Shantanu on 20 September 2026 (360 x 641 of a 360 x 780 screen, DPR 3), and where
  * planning scrolled on the build before this one. Planning and command at rest, and command with a
  * view open under the floating close, whose spacer made the page 88px taller than the screen on this
  * piece's first build: nothing at rest could have seen that. A screen not reached is NOT REACHED.
  */
-async function restAt680(page: Page): Promise<{ screen: string; overflow: number }[]> {
+async function restAt641(page: Page): Promise<{ screen: string; overflow: number }[]> {
   const out: { screen: string; overflow: number }[] = [];
   const overflow = (): Promise<number> =>
     page.evaluate(() => {
@@ -2475,25 +2475,25 @@ async function restAt680(page: Page): Promise<{ screen: string; overflow: number
   await click(page, 'Start and replace');
   await waitClick(page, 'Begin');
   if (!(await waitClick(page, 'Plan your turn'))) {
-    miss('planning @360x680');
-    miss('command, nothing selected @360x680');
-    miss('command, a view open @360x680');
+    miss('planning @360x641');
+    miss('command, nothing selected @360x641');
+    miss('command, a view open @360x641');
     return out;
   }
   await sleep(400);
-  out.push({ screen: 'planning @360x680', overflow: await overflow() });
+  out.push({ screen: 'planning @360x641', overflow: await overflow() });
   if (!(await waitClick(page, 'Command your cells'))) {
-    miss('command, nothing selected @360x680');
-    miss('command, a view open @360x680');
+    miss('command, nothing selected @360x641');
+    miss('command, a view open @360x641');
     return out;
   }
   await sleep(900);
-  out.push({ screen: 'command, nothing selected @360x680', overflow: await overflow() });
+  out.push({ screen: 'command, nothing selected @360x641', overflow: await overflow() });
   if (await clickSel(page, '[data-tab="antibodies"]')) {
     await sleep(300);
-    out.push({ screen: 'command, a view open @360x680', overflow: await overflow() });
+    out.push({ screen: 'command, a view open @360x641', overflow: await overflow() });
     await closeLevel(page);
-  } else miss('command, a view open @360x680');
+  } else miss('command, a view open @360x641');
   return out;
 }
 
@@ -2638,8 +2638,8 @@ try {
   await page5.close();
 
   const page6 = await browser.newPage();
-  await page6.setViewport({ width: 360, height: 680 });
-  const at680 = offlineOnly ? [] : await restAt680(page6);
+  await page6.setViewport({ width: 360, height: 641 });
+  const at641 = offlineOnly ? [] : await restAt641(page6);
   await page6.close();
 
   const page3 = await browser.newPage();
@@ -2653,23 +2653,23 @@ try {
   const restRecords = results.flatMap((r) =>
     r.rest ? [{ screen: r.screen, overflow: r.rest.overflow }] : [],
   );
-  // The 680 pass's screens join them; one it did not reach is a finding, not an absence.
-  const at680Findings: Finding[] = at680
+  // The 641 pass's screens join them; one it did not reach is a finding, not an absence.
+  const at641Findings: Finding[] = at641
     .filter((r) => r.overflow < 0)
     .map((r) => ({
       check: 'scroll' as const,
       screen: r.screen,
       path: '',
       text: '',
-      detail: 'NOT REACHED: the 360 x 680 pass could not open it',
+      detail: 'NOT REACHED: the 360 x 641 pass could not open it',
     }));
-  restRecords.push(...at680.filter((r) => r.overflow >= 0));
+  restRecords.push(...at641.filter((r) => r.overflow >= 0));
   const mainScreen = offlineOnly
     ? null
     : {
         screensAtRest: restRecords.length,
         overflows: restRecords.map((r) => `${r.screen}: ${String(r.overflow)}`),
-        findings: [...restFindings(restRecords), ...at680Findings],
+        findings: [...restFindings(restRecords), ...at641Findings],
       };
   // The play area's one height, over the base pass's screens (§19).
   const areaRecords = results.flatMap((r) =>
@@ -2687,7 +2687,7 @@ try {
     url: URL,
     when: new Date().toISOString(),
     viewport:
-      "360x780 CSS px, and the main screen's scroll again at 360x680; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2; SIZE200 at 360x780 with the app's own text size at Largest",
+      "360x780 CSS px, and the main screen's scroll again at 360x641; FONT200 at the same width with the root font size at 200%; ZOOM200 at 180x390 CSS px, device scale 2; SIZE200 at 360x780 with the app's own text size at Largest",
     controls: controlLines,
     screens: results,
     font200,

@@ -1443,3 +1443,49 @@ handset, and his phone is the check that matters for (1) above.
 
 - **Whether the frame reads right on his phone**, at 680 in the Chrome tab: this is built to be looked at.
 - **Still open:** Help's `s4.p3` ("in the command bar"), now staler, and the #74 instrument question.
+
+### Amended 20 September 2026, on the S25's real viewport
+
+**Shantanu measured his phone: 360 × 641 CSS px, DPR 3, of a 360 × 780 screen.** Not the 680 this
+piece was built and measured against. Measured on the build at all three heights (headless Chrome,
+the shipped build on `vite preview`, Training turn 1, CSS px):
+
+| | 641 | 680 | 780 |
+|---|---|---|---|
+| play area | 339 | 339 | 339 |
+| the middle, planning | 176 | 215 | 315 |
+| the middle, command | 126 | 165 | 265 |
+| page scroll at rest | **0** | 0 | 0 |
+| Produce, in the antibodies view | 125px below the fold | 86 below | visible |
+
+Fixed furniture is 170: top bar 44, tabs 44, the advance button 48, gaps and margins 34.
+
+**Ruling 1 (a): the play area keeps its height; the middle scrolls when it must.** *"We cannot design
+for the Chrome screen. The game will be played in an Android app which will likely use the full
+screen."* The alternatives measured and declined: capping the play area at 45dvh (288 at 641, the
+middle 177) would shrink the board on every screen to fix a height the app will not have; shrinking it
+only while a view is open would move the board under the player's thumb, which §12 ruling 1 forbids in
+the close's case. **So 641 is a screen the frame must not BREAK on, not the screen it is designed for**,
+and the check at 641 is the page-scroll one, which passes at 0 on all three of its screens.
+
+**Ruling 2 (a): the action is never the thing below the fold.** In the antibodies view the name and
+Produce sit on one row directly under the class chips, with the breakdown below them; the view loses
+its title and box, as the Cells and Body views do, because the tab that opened it already names it.
+The view's content falls 334 → 276, and Produce is visible at 780 and 26px below the fold at 641
+(from 125). `pieces.title` retired with its last use.
+
+**Ruling 3: the short-screen pass is at 641**, on ruling 1's basis: the app's full screen is the design
+target and 641 is the floor the frame must survive.
+
+**Ruling 4: `help.s4.p3`** now reads "Tap the AP figure at the top of the screen" — the one stale
+phrase, nothing else of Help touched; the draft is Kartik's review in piece 7.
+
+**Ruling 5: the no-dashes check is NOT extended to code.** Recorded as declined for now, not forgotten:
+[`FINDINGS.md`](FINDINGS.md) #74 stays open.
+
+**The audit after these changes:** 44 controls right; 56 screens per pass (58 under SIZE200); every
+check 0 under all four mechanisms; nesting 32 landings, 0 wrong; the play area 338.7px on 28 screens;
+no scroll on 17 screens at rest, the three at 360 × 641 among them; offline met. One NOT REACHED, in
+two passes: a row's targets, which the deal decides. **One finding the reorder itself caused and which
+the audit caught**: at 200% text the Produce label made the row 433px wide on a 360px page; the button
+shrinks and wraps its own text now.

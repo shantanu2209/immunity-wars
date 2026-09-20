@@ -73,10 +73,8 @@ export function PieceStrip({
   onDeselect: () => void;
 }): ReactElement {
   return (
+    // NO TITLE since piece 5 (§19): the Cells tab that opened this view already says what it is.
     <div data-panel="pieces" style={{ marginTop: 6 }}>
-      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
-        {t('pieces.title')}
-      </div>
       <div
         style={{
           display: 'grid',

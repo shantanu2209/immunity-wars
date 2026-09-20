@@ -73,21 +73,12 @@ export function AntibodyPanel({
   const name = (f: string): string =>
     String((FAMILIES as Record<string, { name?: unknown }>)[f]?.name ?? f);
   return (
-    <div
-      style={{
-        marginTop: 6,
-        padding: '6px 8px',
-        border: '1.5px solid #C48377',
-        borderRadius: 10,
-        background: '#FFFDF9',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#2E2A28' }}>
-          {t('antibody.title')}
-        </span>
-        <span style={{ fontSize: '0.75rem', color: '#78665D' }}>{t('antibody.selectHint')}</span>
-      </div>
+    // NO BOX AND NO TITLE since piece 5 (docs/for-P2.7.md §19): the tab that opened this view
+    // already names it, and in a 126px middle at 360 x 641 the repetition cost the action its room.
+    <div>
+      {selectedFamily === null ? (
+        <div style={{ fontSize: '0.75rem', color: '#78665D' }}>{t('antibody.selectHint')}</div>
+      ) : null}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
         {rows.map((r) => {
           const selected = r.family === selectedFamily;
@@ -117,7 +108,37 @@ export function AntibodyPanel({
       </div>
       {selectedFamily !== null ? (
         <div style={{ marginTop: 8, fontSize: '0.8125rem', color: '#2E2A28' }}>
-          <div style={{ fontWeight: 700 }}>{name(selectedFamily)}</div>
+          {/* THE ACTION IS NEVER THE THING BELOW THE FOLD (ruled 20 September 2026, §19): the name
+              and Produce sit on one row directly under the chips, and the breakdown below them, so
+              what the middle scrolls for is the explanation. Produce was 125px past the fold at
+              360 x 641 when it followed the breakdown. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, flex: '1 1 auto', minWidth: 0 }}>
+              {name(selectedFamily)}
+            </span>
+            {produce[selectedFamily] ? (
+              <button
+                style={{
+                  minHeight: 44,
+                  padding: '0 14px',
+                  fontSize: '0.875rem',
+                  borderRadius: 8,
+                  border: '1.5px solid #B03A2E',
+                  background: '#FFFDF9',
+                  cursor: 'pointer',
+                  // It shrinks and wraps its own text rather than pushing the row past the screen:
+                  // at 200% text the label is 433px wide on a 360px page (the audit's finding, §19).
+                  flex: '0 1 auto',
+                  maxWidth: '100%',
+                  overflowWrap: 'anywhere',
+                }}
+                disabled={disabled || !onProduce}
+                onClick={() => onProduce?.(produce[selectedFamily]?.id ?? '')}
+              >
+                {produce[selectedFamily]?.label}
+              </button>
+            ) : null}
+          </div>
           {detail ? (
             <>
               <div style={{ color: '#78665D' }}>
@@ -143,24 +164,6 @@ export function AntibodyPanel({
                 </div>
               ))}
             </>
-          ) : null}
-          {produce[selectedFamily] ? (
-            <button
-              style={{
-                minHeight: 44,
-                marginTop: 6,
-                padding: '0 14px',
-                fontSize: '0.875rem',
-                borderRadius: 8,
-                border: '1.5px solid #B03A2E',
-                background: '#FFFDF9',
-                cursor: 'pointer',
-              }}
-              disabled={disabled || !onProduce}
-              onClick={() => onProduce?.(produce[selectedFamily]?.id ?? '')}
-            >
-              {produce[selectedFamily]?.label}
-            </button>
           ) : null}
         </div>
       ) : null}
