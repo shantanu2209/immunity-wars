@@ -30,9 +30,16 @@ describe('it stops', () => {
   });
 });
 
-describe('it is silent while a spread plays', () => {
-  it('says nothing, because nothing is accepted then', () => {
+describe('it is silent where the player is not being asked for anything', () => {
+  it('says nothing while a spread plays, because nothing is accepted then', () => {
     expect(coachStep(at({ stage: 'spread' }))).toBeNull();
+  });
+
+  // The control for the defect found by playing a game (§21): before Begin the goal dialog is up
+  // and the turn is not drawn, and the coach was saying "tap one of your cells" behind it.
+  it('says nothing while a dialog is up or the turn is not drawn', () => {
+    expect(coachStep(at({ stage: 'waiting' }))).toBeNull();
+    expect(coachStep(at({ stage: 'waiting', selected: true, offeredCount: 3 }))).toBeNull();
   });
 });
 

@@ -945,13 +945,19 @@ export function PlayScreen({
     coach && !coachOff && !playing
       ? coachStep({
           stage:
-            arrivalsNow !== null
-              ? 'arrivals'
-              : plan !== null
-                ? 'planning'
-                : playing
-                  ? 'spread'
-                  : 'command',
+            dialogs.current !== null
+              ? 'waiting'
+              : arrivalsNow !== null
+                ? 'arrivals'
+                : plan !== null
+                  ? 'planning'
+                  : playing
+                    ? 'spread'
+                    : // Before the draw the player is not being asked for anything either: the app
+                      // is about to send it (§12 ruling 2), and the board is not theirs to act on.
+                      phase === 'command'
+                      ? 'command'
+                      : 'waiting',
           turn: Number(game['turn'] ?? 0),
           ap: Number(game['ap'] ?? 0),
           selected: selectedCell !== null || selectedResident !== null,
