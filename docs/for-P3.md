@@ -316,3 +316,71 @@ neither is measuring itself.
   decompresses it on arrival. Both sides have `CompressionStream`, so nothing waits on the platform.
 - **P3.6 owes the re-measure on full-length games**, with the criteria above unchanged: this section
   states in advance what "passing" means, so a later run cannot move the line.
+
+---
+
+## 4. P3.4, `RelaySession`: MEASURED AND PROPOSED, one ruling needed before building
+
+### The question the brief did not see
+
+`SessionView` is more than the engine's view. It also carries `queries` — what the UI reads on
+every render to decide what is clickable — and `scoped`, the answers for the selected piece (its
+move destinations, the selected family's production detail). **`LocalSession` computes both from
+the full `GameState` with engine functions, and a relay client never holds a `GameState`**: that is
+seam 1's rule, and the reason Phase 2 ruled Decision C at all ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md)
+§3). So in multiplayer they have to come from the relay, and there are two ways:
+
+- **ALL:** with every authoritative view, the relay sends `queries` and the scoped answers for
+  **every** cell and family. The client serves its own selection from them, exactly as
+  `LocalSession` does, and a tap never waits on the network.
+- **ASK:** the relay sends `queries` only, and a client asks for `scoped` whenever its selection
+  changes. A round trip on every tap, which on Indian mobile networks is 100 to 300 ms before the
+  move rings appear.
+
+### The measurement
+
+**Conditions:** `tools/perf/queries-measure.ts`, 18 two-player games through the room, 618
+authoritative views; every answer taken through `LocalSession`'s own code path (resume the room's
+state, set each selection, read the view), so the sizes are exact rather than modelled; gzip per
+message; Node 24 on the development PC.
+
+| One view message, gzipped | p50 | max |
+|---|---|---|
+| the view alone, as sent today | 1.7 KiB | 2.9 KiB |
+| + `queries`, needed either way | 2.2 KiB | 3.5 KiB |
+| **+ scoped answers for every cell and family (ALL)** | **2.5 KiB** | **3.9 KiB** |
+| one scoped answer (an ASK reply) | 0.2 KiB | 0.2 KiB |
+
+| Whole game per client, gzipped, views and bursts | p50 | max |
+|---|---|---|
+| ASK | 102.1 KiB | 149.1 KiB |
+| **ALL** | **116.7 KiB** | **163.7 KiB** |
+
+**ALL costs 0.3 KiB per view over what is needed either way, about 14% on a whole game.** Phase 2
+measured the same everything-for-every-subject payload at 90% of the view
+([`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md)) — uncompressed, single-player, bursts excluded. Compressed
+and inside a whole game it nearly disappears, because move lists are exactly the repetitive structure
+a dictionary coder is best at. **Phase 2's ruling was right for Phase 2's question and does not carry
+over**: there the cost was bytes in memory on one device; here the alternative costs a round trip on
+every tap.
+
+**The whole-game margin from §3 moves by the same 14%**: the 45-turn extrapolation becomes roughly
+1.1 to 1.8 MB against 2 MB. P3.6's re-measure on full-length games stands, and deltas remain the
+fallback.
+
+### The proposal
+
+1. **ALL.** The relay sends the full query set with every authoritative view; `RelaySession` serves
+   selection locally from it. The UI cannot tell the two sessions apart, which is what seam 1
+   promised, and no tap waits on the network.
+2. **The query builder moves out of `LocalSession` into its own small package**, imported by both
+   `LocalSession` and the room. That is what makes "the relay computes what `LocalSession` computes"
+   true by construction: one implementation, not two that agree by test. The alternative — a second
+   copy in the room — is the duplicate-calculation shape Phase 2 ruled against when `apFor` became a
+   wrapper over `apBreakdown`.
+
+**Why (2) needs a ruling:** the brief's definition of done says *"`LocalSession` is untouched"* by
+`RelaySession`. Moving the builder is a refactor of `LocalSession` with its behaviour unchanged —
+proven by a test that the extracted builder produces byte-identical `queries` and `scoped` on the
+state corpus — but it is not "untouched" in the letter. The amendment would read: *`LocalSession`'s
+behaviour is untouched; its query builder is shared, with byte-identical output proven.*
