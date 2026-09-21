@@ -4243,7 +4243,7 @@ ruling 2), and it is one more reason there is no public room.
 
 ---
 
-## 78. Captain succession does not reach the engine, so a captain dropping mid-game stalls the table — OPEN, awaiting a ruling
+## 78. Captain succession did not reach the engine, so a captain dropping mid-game stalled the table — CLOSED by ruling, 21 September 2026
 
 **Found 21 September 2026, during P3.2**, reading how the engine enforces the captain while fixing
 #77. **Not fixed**, deliberately: both ways of fixing it cross a line this phase has drawn.
@@ -4280,3 +4280,21 @@ never reached in play because a LAN table's captain rarely drops.
 exact failure the architecture exists to prevent. A small, isolated engine addition, with the corpus
 proving nothing else moved, is the honest cost. **This is Shantanu's call**, because it amends the
 phase's "engine unchanged" line.
+
+### ✅ CLOSED, 21 September 2026 — fix (2), by ruling
+
+*"For the ruling happy to go with your recommendation."* The engine gained one action,
+`handOverCaptaincy` ([`DEVIATIONS.md`](DEVIATIONS.md) #7), and the room sends it whenever succession
+changes the captain during a game. The known-gap test was inverted exactly as it was written to be:
+it now asserts that the new captain can begin command after the old one drops, that every client's
+view shows the engine's new captain, and that the unallocated pool carries over.
+
+**What the fix found on its way in, all instruments doing their jobs:**
+
+- **The engine's string catalogue drift test failed** — the new error string had no catalogue entry.
+  Regenerated with its own generator; the diff was exactly one message and two call sites.
+- **`coverage:positions` failed** — inserting the action moved every recorded coverage position
+  below it. Regenerated with `coverage:all` and `coverage:gate`, which pass.
+- **Two multiplayer coverage arms are now covered** that nothing reached before, by the new
+  confinement tests: *"Only the captain can confirm allocation"* and one arm of *"Only the captain
+  ends the turn"*. The deferred multiplayer list is **20, from 22**.

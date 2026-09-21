@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.0 · 20 September 2026
+**Version:** 1.1 · 21 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,19 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.1 records
+
+v1.1 changes one line of §8, by ruling (Shantanu, 21 September 2026: *"For the ruling happy to go
+with your recommendation"*):
+
+- **"The engine unchanged" now has one stated exception: `handOverCaptaincy`**
+  ([`DEVIATIONS.md`](DEVIATIONS.md) #7, from [`FINDINGS.md`](FINDINGS.md) #78). P3.2 found that the
+  engine keeps its own copy of the captain and enforces it, so a captain dropping mid-game stalled
+  the table — the stall ruling 4 exists to prevent. The alternative fix re-implemented an engine
+  rule in the room. **The corpus is the proof it is confined**: it stays green, and a direct
+  comparison against legacy holds six other multiplayer paths byte-identical. §8 carries the marked
+  amendment in place.
 
 ---
 
@@ -200,7 +213,9 @@ No engine rule changes.
 - [ ] `rulesVersion` and a protocol version on every message and every state, with the refusal path
       proven by a control — the thing Phase 1 recorded as Phase 3's to make true
 - [ ] The 22 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest
-- [ ] Corpus still green; the engine unchanged
+- [ ] Corpus still green; the engine unchanged **but for `handOverCaptaincy`**. ⚠️ *Amended in
+      v1.1 (21 September 2026):* this read "the engine unchanged". The one addition is ruled,
+      recorded as DEVIATIONS #7, and held to legacy on every other multiplayer path
 - [ ] A Phase 3 closeout: what is proven, what is not, what Phase 4 inherits
 
 ---

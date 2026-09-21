@@ -118,6 +118,30 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;
       return ok();
     }
+    if (a.action === 'handOverCaptaincy') {
+      // DEVIATION — docs/DEVIATIONS.md #7, from docs/FINDINGS.md #78. Legacy has no way to change
+      // the captain once `newGame` has set it, so when a captain dropped mid-game the table could
+      // not allocate, begin command or end the turn until they came back: the stall the room's
+      // succession rule (docs/PHASE3_BRIEF.md §4, ruling 4) exists to prevent. The room passes
+      // the captaincy on; this is how the engine hears about it, so the rule lives here.
+      //
+      // Only the captain hands it over — the room sends it on behalf of one who has dropped — so
+      // no other player can use it to seize the captaincy.
+      if (a.pid !== g.captain) return err('Only the captain can hand over the captaincy.');
+      const to = a.toPid as string;
+      if (!g.players || !g.players.includes(to)) return err('Unknown player.');
+      if (to === g.captain) return ok();
+      const from = g.captain as string;
+      if (g.phase === 'allocation') {
+        // "Unallocated AP sits with the captain" (allocateAP above), so during allocation the
+        // pool goes with the captaincy, or the new captain would have nothing to hand out. In
+        // command the old captain's budget is theirs to spend and stays theirs.
+        g.apBudget[to] = (g.apBudget[to] || 0) + (g.apBudget[from] || 0);
+        g.apBudget[from] = 0;
+      }
+      g.captain = to;
+      return ok();
+    }
     if (a.action === 'confirmAllocation') {
       if (g.phase !== 'allocation') return err('Not in the allocation phase.');
       if (a.pid !== g.captain) return err('Only the captain can confirm allocation.');

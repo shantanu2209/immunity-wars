@@ -109,19 +109,13 @@ describe('a real game, through the wire', () => {
 });
 
 /**
- * ⚠️ A KNOWN GAP, PINNED RATHER THAN LEFT IN PROSE (docs/FINDINGS.md #78). Open, awaiting a ruling.
- *
- * The room passes the captaincy on when the captain drops (ruling 4), but the ENGINE holds its own
- * copy of who the captain is — `g.captain`, given once at `newGame` — and enforces it for the
- * allocation, Begin command and End turn. Nothing keeps the two in step, so after a succession
- * mid-game the new captain is refused by the engine and the table cannot move until the old
- * captain returns: exactly the stall ruling 4 exists to prevent.
- *
- * This test asserts the gap as it stands, so that fixing it turns this red and forces whoever
- * fixes it to invert the assertion — a gap that closes silently is as bad as one that opens so.
+ * FINDINGS #78, CLOSED 21 September 2026 by DEVIATIONS #7 (ruled by Shantanu). This block was a
+ * KNOWN-GAP test asserting the engine's refusal of the new captain, pinned so that closing the gap
+ * would turn it red and force its inversion. It did, and this is the inversion: when the captain
+ * drops mid-game the room tells the engine, and the table keeps moving.
  */
-describe('KNOWN GAP #78: captain succession does not reach the engine', () => {
-  it('leaves the engine refusing the new captain after the old one drops mid-game', () => {
+describe('captain succession reaches the engine (FINDINGS #78, closed)', () => {
+  const twoSeated = (): { say: (m: Inbound) => ReturnType<typeof step>; room: () => RoomState } => {
     let room = createRoom('ABC123', T0);
     const say = (m: Inbound): ReturnType<typeof step> => {
       const s = step(room, m, T0);
@@ -133,16 +127,52 @@ describe('KNOWN GAP #78: captain succession does not reach the engine', () => {
     say({ kind: 'claimSeat', ref: 'p_one', seat: 'bcell' });
     say({ kind: 'claimSeat', ref: 'p_two', seat: 'neutrophil' });
     say({ kind: 'start', ref: 'p_one', difficulty: 'training' });
+    return { say, room: () => room };
+  };
+
+  it('lets the new captain act after the old one drops mid-game', () => {
+    const { say, room } = twoSeated();
     say({ kind: 'action', ref: 'p_one', action: { action: 'draw' } });
-    say({ kind: 'disconnect', ref: 'p_one' });
-    expect(room.captain).toBe('p_two'); // the room has moved on
+    const drop = say({ kind: 'disconnect', ref: 'p_one' });
+    expect(room().captain).toBe('p_two');
+    // Every client hears the engine's new captain, not just the room's.
+    const view = drop.out.find((o) => o.message.kind === 'view')?.message;
+    expect(view?.kind === 'view' && (view.view as Record<string, unknown>)['captain']).toBe('m2');
     const s = say({ kind: 'action', ref: 'p_two', action: { action: 'beginCommand' } });
-    const refusal = s.out.find((o) => o.message.kind === 'error')?.message;
-    // …and the engine has not: it still answers to the old captain.
-    expect(refusal).toEqual({
-      kind: 'error',
-      code: 'engine',
-      detail: 'Only the captain begins the command phase.',
+    expect(s.out.some((o) => o.message.kind === 'error')).toBe(false);
+  });
+
+  it('carries the unallocated pool over, so the new captain can hand it out', () => {
+    const { say, room } = twoSeated();
+    say({ kind: 'action', ref: 'p_one', action: { action: 'draw' } });
+    say({ kind: 'action', ref: 'p_one', action: { action: 'beginCommand' } });
+    const g = room().game as { apBudget: Record<string, number> };
+    const pool = g.apBudget['m1'] ?? 0;
+    expect(pool).toBeGreaterThan(0);
+    say({ kind: 'disconnect', ref: 'p_one' });
+    expect(g.apBudget['m2']).toBe(pool);
+    const s = say({ kind: 'action', ref: 'p_two', action: { action: 'confirmAllocation' } });
+    expect(s.out.some((o) => o.message.kind === 'error')).toBe(false);
+  });
+
+  it("refuses the action from any client: it is the room's to send, never a player's", () => {
+    const { say } = twoSeated();
+    const s = say({
+      kind: 'action',
+      ref: 'p_two',
+      action: { action: 'handOverCaptaincy', toPid: 'm2' },
     });
+    expect(s.out.find((o) => o.message.kind === 'error')?.message).toEqual({
+      kind: 'error',
+      code: 'roomOnly',
+    });
+  });
+
+  it('does not touch the engine in the lobby, where there is no game yet', () => {
+    let room = createRoom('ABC123', T0);
+    room = step(room, { kind: 'join', ref: 'p_one', name: 'K' }, T0).room;
+    room = step(room, { kind: 'join', ref: 'p_two', name: 'S' }, T0).room;
+    const s = step(room, { kind: 'disconnect', ref: 'p_one' }, T0);
+    expect(s.out.some((o) => o.message.kind === 'view')).toBe(false);
   });
 });

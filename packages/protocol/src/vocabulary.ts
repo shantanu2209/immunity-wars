@@ -70,6 +70,8 @@ export const ERROR_CODES = [
   'nobodySeated',
   'notStarted',
   'notYourPiece',
+  /** An action that is the ROOM's to send, never a player's: `handOverCaptaincy` (FINDINGS #78). */
+  'roomOnly',
   'engine',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];

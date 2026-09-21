@@ -349,6 +349,42 @@ const CONTROLS: readonly Control[] = [
     expect: 'never carries a ref, anywhere in anything it broadcasts',
   },
   {
+    id: 'room-captain-reaches-engine',
+    why: 'FINDINGS #78: the engine enforces its OWN copy of the captain. If the room stops telling it, a captain dropping mid-game stalls the table until they return — the stall ruling 4 exists to prevent.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      return { room: next, out: [broadcast(next), ...syncCaptain(next)] };\n    }\n\n    case 'leave':",
+        "      return { room: next, out: [broadcast(next)] };\n    }\n\n    case 'leave':",
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'lets the new captain act after the old one drops mid-game',
+  },
+  {
+    id: 'room-only-action',
+    why: "handOverCaptaincy is the room's to send. A client that could send it could make themselves captain; the room refuses it from every client, independently of the engine's own check.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "const ROOM_ONLY: ReadonlySet<string> = new Set(['handOverCaptaincy']);",
+        'const ROOM_ONLY: ReadonlySet<string> = new Set([]);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'refuses the action from any client',
+  },
+  {
+    id: 'engine-captaincy-holder-only',
+    why: 'DEVIATIONS #7: only the current captain may hand the captaincy over. Without the check, any player — or a client the room failed to stop — could seize it.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (a.pid !== g.captain) return err('Only the captain can hand over the captaincy.');",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/captaincy.test.ts',
+    expect: 'refuses anyone but the captain',
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',

@@ -15,7 +15,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
 **Current phase: Phase 3** — playing together: a relay, private rooms by invite code, no strangers.
-Spec: @docs/PHASE3_BRIEF.md (v1.0).
+Spec: @docs/PHASE3_BRIEF.md (v1.1).
 
 **Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
 acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,

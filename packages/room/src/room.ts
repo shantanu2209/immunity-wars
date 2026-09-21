@@ -156,6 +156,39 @@ const ownerMap = (room: RoomState): Record<string, string> => {
   return owner;
 };
 
+/**
+ * ACTIONS ONLY THE ROOM SENDS. `handOverCaptaincy` is how the engine learns the room has a new
+ * captain (FINDINGS #78, DEVIATIONS #7); a player who could send it could make themselves captain,
+ * so it is refused from every client, and the engine separately refuses it from anyone but the
+ * current captain.
+ */
+const ROOM_ONLY: ReadonlySet<string> = new Set(['handOverCaptaincy']);
+
+/**
+ * THE ENGINE HEARS ABOUT A NEW CAPTAIN (FINDINGS #78, ruled 21 September 2026). The room decides
+ * who the captain is; the engine keeps its own copy, given once at `newGame`, and enforces it for
+ * the allocation, Begin command and End turn. Without this, a captain dropping mid-game stalled the
+ * table until they came back — the exact stall ruling 4 exists to prevent.
+ *
+ * Sent as the engine's current captain, because only the captain may hand over. Returns the view
+ * everyone needs, since `captain` is in the view; nothing when there is nothing to change.
+ */
+function syncCaptain(room: RoomState): Outbound[] {
+  if (room.phase !== 'playing' || room.game === null || room.captain === null) return [];
+  const captain = find(room, room.captain);
+  if (!captain) return [];
+  const g = room.game as GameState;
+  const to = pidOf(captain);
+  if (g.captain === to) return [];
+  const result = applyAction(g, {
+    action: 'handOverCaptaincy',
+    pid: g.captain,
+    toPid: to,
+  } as unknown as Action) as { ok: boolean };
+  if (!result.ok) return [];
+  return [{ to: 'all', message: { kind: 'view', view: viewState(g) } }];
+}
+
 /** The seat an action is for, or null when the action is nobody's seat in particular. */
 function seatOf(action: Record<string, unknown>): string | null {
   const cell = action['cell'];
@@ -176,7 +209,7 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
           replace(room, msg.ref, (m) => ({ ...m, connected: true, name: msg.name })),
           now,
         );
-        return { room: back, out: [you(back, msg.ref), broadcast(back)] };
+        return { room: back, out: [you(back, msg.ref), broadcast(back), ...syncCaptain(back)] };
       }
       if (room.phase === 'ended') return reject(room, msg.ref, 'gameEnded');
       const member: Member = {
@@ -190,7 +223,7 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         { ...room, members: [...room.members, member], nextJoinOrder: room.nextJoinOrder + 1 },
         now,
       );
-      return { room: next, out: [you(next, msg.ref), broadcast(next)] };
+      return { room: next, out: [you(next, msg.ref), broadcast(next), ...syncCaptain(next)] };
     }
 
     case 'disconnect': {
@@ -200,14 +233,14 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         replace(room, msg.ref, (m) => ({ ...m, connected: false })),
         now,
       );
-      return { room: next, out: [broadcast(next)] };
+      return { room: next, out: [broadcast(next), ...syncCaptain(next)] };
     }
 
     case 'leave': {
       // A DECISION, not an accident: the member goes and their seats are freed for the table.
       if (!find(room, msg.ref)) return { room, out: [] };
       const next = settle({ ...room, members: room.members.filter((m) => m.ref !== msg.ref) }, now);
-      return { room: next, out: [broadcast(next)] };
+      return { room: next, out: [broadcast(next), ...syncCaptain(next)] };
     }
 
     case 'claimSeat': {
@@ -283,6 +316,8 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       if (!me) return reject(room, msg.ref, 'notInRoom');
       if (room.phase !== 'playing' || room.game === null)
         return reject(room, msg.ref, 'notStarted');
+      if (typeof msg.action['action'] === 'string' && ROOM_ONLY.has(msg.action['action']))
+        return reject(room, msg.ref, 'roomOnly');
       // OWNERSHIP IS THE ROOM'S; LEGALITY IS THE ENGINE'S. The seat check is here because the
       // room knows who holds what; everything else goes to `applyAction` unaltered.
       const seat = seatOf(msg.action);

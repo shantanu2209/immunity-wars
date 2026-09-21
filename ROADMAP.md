@@ -108,7 +108,8 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 ## Phase 3 — Playing together
 
 **Goal:** two people in different cities play the same game.
-**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.0, written 20 September 2026, review owed.
+**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.1 (21 September 2026: one ruled engine
+addition, `handOverCaptaincy`). P3.1 and P3.2 built.
 
 - Multi-room relay replacing the single-room LAN server. **On Cloudflare Durable Objects, one room
   per object, inside the free plan** — ruled 20 September 2026, with the right to move later made a

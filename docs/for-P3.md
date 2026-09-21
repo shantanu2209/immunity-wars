@@ -160,7 +160,7 @@ views, which the protocol's own constructed view could not have caught). The eng
 ids. Now members are named on the wire by public id, the engine is given `m<id>` as player ids, and a
 ref crosses the wire once, in `join`. The room's `assignSeat` takes a public id accordingly.
 
-### What it found, and did NOT fix — FINDINGS #78, needs a ruling
+### What it found, and fixed after a ruling — FINDINGS #78
 
 **Captain succession does not reach the engine.** The room moves the captaincy when the captain
 drops; the engine keeps enforcing its own copy, so the new captain is refused and the table stalls
@@ -168,6 +168,12 @@ until the old one returns. Both fixes cross a line — re-implementing an engine
 adding an engine action in a phase whose definition of done says the engine is unchanged.
 Recommendation: a small, isolated engine action, the corpus proving nothing else moved. **Pinned
 as a known-gap test** that goes red when the gap closes.
+
+**Ruled the same day: fix (2).** The engine gained `handOverCaptaincy` (DEVIATIONS #7), the room
+sends it on every succession during a game, and the known-gap test was inverted as it was written
+to be. Brief v1.1 amends "engine unchanged" to name the exception. On its way in the fix tripped the
+engine catalogue's drift test and `coverage:positions`, both correctly, and covered two multiplayer
+arms nothing had reached: the deferred list is 20, from 22.
 
 ### The instruments
 
