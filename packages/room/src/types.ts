@@ -37,28 +37,14 @@
  * outlives the game (`CLAUDE.md`, "No personal data").
  */
 
-/** The fourteen seats, exactly as the engine keys them: seven cells and seven organ residents. */
-export const CELL_SEATS = [
-  'macrophage',
-  'neutrophil',
-  'bcell',
-  'tcell',
-  'helper',
-  'nk',
-  'eosinophil',
-] as const;
+import type { ErrorCode, RoomProjection } from '@immunity-wars/protocol';
 
-export const ORGAN_SEATS = [
-  'res_heart',
-  'res_lungs',
-  'res_liver',
-  'res_brain',
-  'res_spleen',
-  'res_kidneys',
-  'res_marrow',
-] as const;
-
-export const SEATS: readonly string[] = [...CELL_SEATS, ...ORGAN_SEATS];
+/**
+ * The fourteen seats and the refusal codes are the PROTOCOL's (P3.2): the client and the relay
+ * share one copy of each, so they cannot disagree about what a seat is called.
+ */
+export { CELL_SEATS, ORGAN_SEATS, SEATS } from '@immunity-wars/protocol';
+export type { RoomProjection } from '@immunity-wars/protocol';
 
 /** One person in the room. Members survive a disconnection; they are removed only by leaving. */
 export interface Member {
@@ -117,42 +103,32 @@ export type Inbound =
       readonly kind: 'assignSeat';
       readonly ref: string;
       readonly seat: string;
-      /** Who gets it; null frees the seat. */
-      readonly to: string | null;
+      /**
+       * Who gets it, by PUBLIC id (their join order), or null to free it. Not a ref: refs never
+       * reach clients (P3.2, FINDINGS #77), so a client could not name one if it wanted to.
+       */
+      readonly to: number | null;
     }
   | { readonly kind: 'start'; readonly ref: string; readonly difficulty: string }
   | { readonly kind: 'action'; readonly ref: string; readonly action: Record<string, unknown> };
 
 /** What the room says back. The adapter turns these into frames on a socket and nothing more. */
 export type Message =
+  /** Who you are in this room: your public id, sent to one connection after it joins. */
+  | { readonly kind: 'joined'; readonly id: number }
   | { readonly kind: 'room'; readonly room: RoomProjection }
   | { readonly kind: 'view'; readonly view: unknown }
   | { readonly kind: 'burst'; readonly frames: readonly unknown[] }
-  | { readonly kind: 'error'; readonly error: string };
+  /**
+   * A refusal, as a CODE the client words through its catalogue. `detail` is the engine's own
+   * text when the engine refused, and otherwise a hint for the wording (a holder's name).
+   */
+  | { readonly kind: 'error'; readonly code: ErrorCode; readonly detail?: string };
 
 /** One message and who it goes to: everyone in the room, or one member. */
 export interface Outbound {
   readonly to: 'all' | string;
   readonly message: Message;
-}
-
-/**
- * What the room looks like to a client: members, their seats, who is away, who is captain.
- * **Never the game state** — that goes out as a `view`, which is the engine's projection, exactly
- * as seam 1 requires. A room projection carries no engine state at all.
- */
-export interface RoomProjection {
-  readonly code: string;
-  readonly phase: RoomPhase;
-  readonly captain: string | null;
-  readonly members: readonly {
-    readonly ref: string;
-    readonly name: string;
-    readonly connected: boolean;
-    readonly seats: readonly string[];
-  }[];
-  /** Seats nobody holds, in the engine's own order. */
-  readonly freeSeats: readonly string[];
 }
 
 export interface Step {

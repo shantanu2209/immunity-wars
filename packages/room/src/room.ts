@@ -29,13 +29,13 @@
 import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
+import { SEATS, type ErrorCode, type RoomProjection, type Seat } from '@immunity-wars/protocol';
+
 import {
   GRACE_MS,
-  SEATS,
   type Inbound,
   type Member,
   type Outbound,
-  type RoomProjection,
   type RoomState,
   type Step,
 } from './types.js';
@@ -62,31 +62,51 @@ const seatHolder = (room: RoomState, seat: string): Member | undefined =>
 /** Everyone with a connection open right now. */
 const connected = (room: RoomState): readonly Member[] => room.members.filter((m) => m.connected);
 
+/**
+ * WHAT A CLIENT SEES OF THE ROOM, and it contains no ref (P3.2, FINDINGS #77). A ref is the only
+ * credential a rejoin needs; P3.1 broadcast every member's, so any member could take over any
+ * other's seats by "rejoining" as them. Members are named by their public id, their join order.
+ */
 export function project(room: RoomState): RoomProjection {
   const taken = new Set(room.members.flatMap((m) => m.seats));
+  const idOf = (ref: string | null): number | null =>
+    ref === null ? null : (find(room, ref)?.joinOrder ?? null);
   return {
     code: room.code,
     phase: room.phase,
-    captain: room.captain,
+    captain: idOf(room.captain),
     members: room.members.map((m) => ({
-      ref: m.ref,
+      id: m.joinOrder,
       name: m.name,
       connected: m.connected,
-      seats: m.seats,
+      seats: m.seats as Seat[],
     })),
     freeSeats: SEATS.filter((s) => !taken.has(s)),
   };
 }
+
+/** Tells one connection its own public id: the only way a client learns which member it is. */
+const you = (room: RoomState, ref: string): Outbound => ({
+  to: ref,
+  message: { kind: 'joined', id: find(room, ref)?.joinOrder ?? 0 },
+});
 
 const broadcast = (room: RoomState): Outbound => ({
   to: 'all',
   message: { kind: 'room', room: project(room) },
 });
 
-const reject = (room: RoomState, ref: string, error: string): Step => ({
+const reject = (room: RoomState, ref: string, code: ErrorCode, detail?: string): Step => ({
   room,
-  out: [{ to: ref, message: { kind: 'error', error } }],
+  out: [
+    {
+      to: ref,
+      message: detail === undefined ? { kind: 'error', code } : { kind: 'error', code, detail },
+    },
+  ],
 });
+
+const isSeat = (s: string): s is Seat => (SEATS as readonly string[]).includes(s);
 
 /**
  * THE CAPTAIN, after any change to who is connected.
@@ -118,12 +138,21 @@ const replace = (room: RoomState, ref: string, f: (m: Member) => Member): RoomSt
 });
 
 /**
- * The game's owner map, which is the seats in the engine's own vocabulary: seat key to the ref
- * that holds it. The engine reads `owner` to enforce who may act; the room decides what is in it.
+ * THE ENGINE NEVER SEES A REF (P3.2, FINDINGS #77). Its player id is the member's PUBLIC id, as
+ * `m<id>`, because the engine projects `captain`, `owner` and `apBudget` keyed by player id into
+ * every view — and every view goes to every client. Handing it refs, as P3.1 did, broadcast every
+ * member's credential in every view; the wire suite found it on its first run against real views,
+ * where the constructed view the protocol suite uses could not have.
+ */
+const pidOf = (m: Member): string => `m${String(m.joinOrder)}`;
+
+/**
+ * The game's owner map, in the engine's vocabulary: seat key to the player id that holds it. The
+ * engine projects it and does not enforce it; ownership is enforced here, in `step`.
  */
 const ownerMap = (room: RoomState): Record<string, string> => {
   const owner: Record<string, string> = {};
-  for (const m of room.members) for (const s of m.seats) owner[s] = m.ref;
+  for (const m of room.members) for (const s of m.seats) owner[s] = pidOf(m);
   return owner;
 };
 
@@ -147,9 +176,9 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
           replace(room, msg.ref, (m) => ({ ...m, connected: true, name: msg.name })),
           now,
         );
-        return { room: back, out: [broadcast(back)] };
+        return { room: back, out: [you(back, msg.ref), broadcast(back)] };
       }
-      if (room.phase === 'ended') return reject(room, msg.ref, 'This game has ended.');
+      if (room.phase === 'ended') return reject(room, msg.ref, 'gameEnded');
       const member: Member = {
         ref: msg.ref,
         name: msg.name,
@@ -161,7 +190,7 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         { ...room, members: [...room.members, member], nextJoinOrder: room.nextJoinOrder + 1 },
         now,
       );
-      return { room: next, out: [broadcast(next)] };
+      return { room: next, out: [you(next, msg.ref), broadcast(next)] };
     }
 
     case 'disconnect': {
@@ -183,13 +212,11 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
 
     case 'claimSeat': {
       const me = find(room, msg.ref);
-      if (!me) return reject(room, msg.ref, 'You are not in this room.');
-      if (room.phase !== 'lobby')
-        return reject(room, msg.ref, 'Seats are taken before the game starts.');
-      if (!SEATS.includes(msg.seat)) return reject(room, msg.ref, 'No such seat.');
+      if (!me) return reject(room, msg.ref, 'notInRoom');
+      if (room.phase !== 'lobby') return reject(room, msg.ref, 'lobbyClosed');
+      if (!isSeat(msg.seat)) return reject(room, msg.ref, 'noSuchSeat');
       const holder = seatHolder(room, msg.seat);
-      if (holder && holder.ref !== msg.ref)
-        return reject(room, msg.ref, `${holder.name} has that seat.`);
+      if (holder && holder.ref !== msg.ref) return reject(room, msg.ref, 'seatTaken', holder.name);
       if (me.seats.includes(msg.seat)) return { room, out: [] };
       const next = replace(room, msg.ref, (m) => ({ ...m, seats: [...m.seats, msg.seat] }));
       return { room: next, out: [broadcast(next)] };
@@ -197,9 +224,8 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
 
     case 'releaseSeat': {
       const me = find(room, msg.ref);
-      if (!me) return reject(room, msg.ref, 'You are not in this room.');
-      if (room.phase !== 'lobby')
-        return reject(room, msg.ref, 'Seats are taken before the game starts.');
+      if (!me) return reject(room, msg.ref, 'notInRoom');
+      if (room.phase !== 'lobby') return reject(room, msg.ref, 'lobbyClosed');
       if (!me.seats.includes(msg.seat)) return { room, out: [] };
       const next = replace(room, msg.ref, (m) => ({
         ...m,
@@ -210,16 +236,15 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
 
     case 'assignSeat': {
       // THE TABLE'S CHOICE (ruling 4): the captain hands an AWAY member's seat on, or frees it.
-      if (room.captain !== msg.ref) return reject(room, msg.ref, 'Only the captain assigns seats.');
-      if (!SEATS.includes(msg.seat)) return reject(room, msg.ref, 'No such seat.');
+      if (room.captain !== msg.ref) return reject(room, msg.ref, 'notCaptain');
+      if (!isSeat(msg.seat)) return reject(room, msg.ref, 'noSuchSeat');
       const holder = seatHolder(room, msg.seat);
       if (holder?.connected === true)
-        return reject(room, msg.ref, `${holder.name} is here and holding that seat.`);
-      const to = msg.to === null ? null : (find(room, msg.to) ?? null);
-      if (msg.to !== null && to === null)
-        return reject(room, msg.ref, 'That player is not in this room.');
-      if (to && !to.connected)
-        return reject(room, msg.ref, `${to.name} is away. Give the seat to someone who is here.`);
+        return reject(room, msg.ref, 'seatHeldByPresent', holder.name);
+      const to =
+        msg.to === null ? null : (room.members.find((m) => m.joinOrder === msg.to) ?? null);
+      if (msg.to !== null && to === null) return reject(room, msg.ref, 'noSuchMember');
+      if (to && !to.connected) return reject(room, msg.ref, 'memberAway', to.name);
       const cleared: RoomState = {
         ...room,
         members: room.members.map((m) => ({ ...m, seats: m.seats.filter((s) => s !== msg.seat) })),
@@ -232,17 +257,19 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
     }
 
     case 'start': {
-      if (room.captain !== msg.ref) return reject(room, msg.ref, 'Only the captain starts.');
-      if (room.phase !== 'lobby') return reject(room, msg.ref, 'The game has already started.');
+      if (room.captain !== msg.ref) return reject(room, msg.ref, 'notCaptain');
+      if (room.phase !== 'lobby') return reject(room, msg.ref, 'alreadyStarted');
       const seated = room.members.filter((m) => m.seats.length > 0);
-      if (seated.length === 0) return reject(room, msg.ref, 'Take a seat before starting.');
+      if (seated.length === 0) return reject(room, msg.ref, 'nobodySeated');
+      const captainMember = find(room, msg.ref);
+      if (!captainMember) return reject(room, msg.ref, 'notInRoom');
       // The engine is told who owns what and who is captain. Nothing about the rules changes.
       const game = newGame({
         difficulty: msg.difficulty,
         multiplayer: true,
-        captain: room.captain,
+        captain: pidOf(captainMember),
         owner: ownerMap(room),
-        players: room.members.map((m) => m.ref),
+        players: room.members.map(pidOf),
       });
       const next: RoomState = { ...room, phase: 'playing', game };
       return {
@@ -253,21 +280,23 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
 
     case 'action': {
       const me = find(room, msg.ref);
-      if (!me) return reject(room, msg.ref, 'You are not in this room.');
+      if (!me) return reject(room, msg.ref, 'notInRoom');
       if (room.phase !== 'playing' || room.game === null)
-        return reject(room, msg.ref, 'The game has not started.');
+        return reject(room, msg.ref, 'notStarted');
       // OWNERSHIP IS THE ROOM'S; LEGALITY IS THE ENGINE'S. The seat check is here because the
       // room knows who holds what; everything else goes to `applyAction` unaltered.
       const seat = seatOf(msg.action);
-      if (seat !== null && !me.seats.includes(seat))
-        return reject(room, msg.ref, 'That is not one of your pieces.');
+      if (seat !== null && !me.seats.includes(seat)) return reject(room, msg.ref, 'notYourPiece');
       const game = room.game as GameState;
-      const result = applyAction(game, { ...msg.action, pid: msg.ref } as unknown as Action) as {
+      // The sender's PUBLIC id, stamped after the spread so an action cannot carry another's.
+      const result = applyAction(game, { ...msg.action, pid: pidOf(me) } as unknown as Action) as {
         ok: boolean;
         error?: string;
         frames?: readonly unknown[];
       };
-      if (!result.ok) return reject(room, msg.ref, result.error ?? 'rejected');
+      // The ENGINE's refusal: its own text rides as the detail, and the client renders it through
+      // the engine catalogue exactly as single player does.
+      if (!result.ok) return reject(room, msg.ref, 'engine', result.error ?? '');
       const out: Outbound[] = [];
       // BURST FIRST, THEN THE VIEW, for the reason `LocalSession` states: a subscriber that skips
       // the animation must still land on the right state, and the burst's tail equals the view.
