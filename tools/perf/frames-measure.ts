@@ -229,3 +229,42 @@ for (const k of ['A_raw', 'A_gz', 'C_raw', 'C_gz', 'B_raw', 'B_gz']) {
     `  ${k.padEnd(6)} max ${kib(Math.max(...xs)).padStart(10)}  (${((Math.max(...xs) / (64 * 1024)) * 100).toFixed(1)}% of 64 KiB)`,
   );
 }
+
+/* --- growth: what a turn costs as the game gets older, so a 45-turn game can be judged ---------- */
+// These games end early (idle play), so "a whole game" here is not a whole real game. The honest
+// move is to report what one TURN costs at each age, and extrapolate in the open, labelled as such.
+console.log('');
+console.log(
+  'PER TURN, gzipped (candidate A), by the turn it happened on — what a longer game adds',
+);
+const byTurn = new Map<number, number[]>();
+for (const d of ['training', 'normal', 'hard']) {
+  for (let i = 0; i < GAMES; i += 1) {
+    const cap = playOne(d);
+    let turn = 0;
+    let acc = 0;
+    for (const m of cap.messages.filter((x) => x.to === 'all' || x.to === 'p_one')) {
+      acc += gz(m.text);
+      if (m.kind === 'burst') {
+        (byTurn.get(turn) ?? byTurn.set(turn, []).get(turn))?.push(acc);
+        acc = 0;
+        turn += 1;
+      }
+    }
+  }
+}
+const turnsSeen = [...byTurn.keys()].sort((a, b) => a - b);
+for (const t of turnsSeen) {
+  const xs = byTurn.get(t) ?? [];
+  console.log(
+    `  turn ${String(t + 1).padStart(2)}: p50 ${kib(q(xs, 0.5)).padStart(9)}  max ${kib(Math.max(...xs)).padStart(9)}  (n ${xs.length})`,
+  );
+}
+const late = turnsSeen.slice(-3).flatMap((t) => byTurn.get(t) ?? []);
+const worstLate = Math.max(...late);
+console.log(
+  `EXTRAPOLATION, labelled as such: a 45-turn game at the WORST late-turn cost seen here, every turn:`,
+);
+console.log(
+  `  45 x ${kib(worstLate)} = ${kib(45 * worstLate)}  (${(((45 * worstLate) / (2 * 1024 * 1024)) * 100).toFixed(1)}% of 2 MB)`,
+);

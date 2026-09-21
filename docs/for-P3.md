@@ -248,3 +248,71 @@ both worlds:
 games driven through the room, which end early, like Task E's bot; late-game states are larger by an
 amount these games cannot reach. So the verdict is judged on its margin: a candidate that passes
 by 10× is a different claim from one that passes by 10%.
+
+### The measurement, run after the criteria above were committed
+
+**Conditions:** `tools/perf/frames-measure.ts`, 18 two-player games through the room (6 per
+difficulty), all 14 seats held, idle play (draw, begin, confirm, end the turn); every message as the
+protocol encodes it, counted for one client; gzip at Node's default level, per message; Node 24 on
+the development PC. **Games lasted 5 to 11 turns (p50 9)**, because idle play loses early.
+
+| Candidate | Whole game, max | vs 2 MB | Largest spread message | vs 64 KiB |
+|---|---|---|---|---|
+| A, frames whole, uncompressed | 3,370 KiB | **164%: fails** | 593 KiB | **927%: fails** |
+| **A, frames whole, gzip per message** | **197 KiB** | **9.6%** | **25.9 KiB** | **40.5%** |
+| C, deltas, uncompressed | 2,415 KiB | **118%: fails** | 444 KiB | **694%: fails** |
+| C, deltas, gzip per message | 150 KiB | 7.3% | 15.7 KiB | 24.6% |
+| B, state plus the dice (disqualified) | 1,440 / 128 KiB | 70% / 6.3% | 79 / 4.8 KiB | 124% / 7.6% |
+
+**A view as sent: p50 8.5 KiB, max 70.5 KiB, uncompressed.**
+
+**What a turn costs as the game ages** (candidate A, gzip): median **7.0 KiB at turn 2, rising to
+12.8 KiB by turn 10 and 13.7 KiB at turn 11**; the worst turn seen was **35.4 KiB**, at turn 9.
+
+### The verdict, by the rule committed before the run
+
+**No candidate passes uncompressed.** The worse of the two worlds — a relay that compresses nothing —
+fails every candidate on both criteria, frames whole by 9× on the largest message. So compression is
+not an optimisation here: **it is required**, and it cannot be left to a platform that has not been
+shown to negotiate it.
+
+**Chosen: A with application-level compression.** Frames stay whole, as the engine produced them, and
+the relay gzips each message itself (`CompressionStream`, in Workers and in Android's WebView), so
+nothing depends on `permessage-deflate`. It passes both criteria on every game measured, and it is
+simpler to get right than C, which would add a diff on the relay and a patch in `RelaySession` for a
+further saving.
+
+**And the margin is thinner than the table makes it look, which is the finding that matters.** The
+games measured are a quarter the length of a real one, and a turn's cost roughly doubles over them.
+Extrapolated in the open — not measured — a 45-turn game costs a client **about 1.0 MB at the median
+trend and 1.6 MB if every turn cost the worst seen** (78% of the limit). The largest single message
+grows the same way, so a long game's late spreads could approach 64 KiB. **Neither criterion is known
+to hold for a whole real game; both are known to hold for every game these measurements could
+reach.**
+
+**So two things are owed, and both are recorded rather than assumed:**
+
+1. **P3.6 re-measures on real two-device games** that run their full length. The script re-runs as it
+   is; it needs longer games, not a new instrument.
+2. **C is the prepared fallback.** On the measured games deltas cut the largest message by 40%
+   (25.9 to 15.7 KiB), plausibly because deflate looks back only 32 KiB and a burst's frames sit up to
+   ~60 KiB apart — so gzip alone cannot see most of the repetition between them. That cause is the
+   likely one, not a measured one.
+
+**B stays disqualified.** It would have been the smallest compressed (4.8 KiB for the largest message)
+and it would have sent the deck — the future — to every client, and handed out `GameState`, which
+seam 1 never does.
+
+**A cross-check that agrees.** Task E measured the largest compressed burst at **25.6 KiB**, from
+single-player games under the reference bot ([`TASK_E_CLOSEOUT.md`](TASK_E_CLOSEOUT.md)). This
+measurement, from multiplayer games through the room and the protocol, finds **25.9 KiB**. Two
+instruments that share nothing but the engine landing within 2% of each other is some evidence that
+neither is measuring itself.
+
+### What P3.4 inherits
+
+- **Compression is the adapter's and the session's job, not the protocol's.** `encode` keeps
+  returning text; the relay adapter compresses each message before it leaves, and `RelaySession`
+  decompresses it on arrival. Both sides have `CompressionStream`, so nothing waits on the platform.
+- **P3.6 owes the re-measure on full-length games**, with the criteria above unchanged: this section
+  states in advance what "passing" means, so a later run cannot move the line.
