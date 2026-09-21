@@ -15,5 +15,12 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
   }
 }

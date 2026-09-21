@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 180 entries (9.4% of the 1916 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1932 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -25,15 +25,16 @@ weaker than a demonstration and is labelled so deliberately.
 - `93` `const pool = g.apBudget[g.captain as string] || 0; // unallocated AP sits with the captain`
 - `114` `const fromBudget = g.apBudget[from] ?? 0;`
 - `118` `g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;`
-- `293` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
-- `294` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
-- `295` `g.ab[f] = (g.ab[f] ?? 0) + made;`
-- `296` `g.made[f] = (g.made[f] ?? 0) + 1;`
-- `338` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `388` `const held = g.ab[f] ?? 0;`
-- `449` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `553` `const heldForTag = g.ab[f] ?? 0;`
-- `790` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
+- `139` `g.apBudget[to] = (g.apBudget[to] || 0) + (g.apBudget[from] || 0);`
+- `317` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
+- `318` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
+- `319` `g.ab[f] = (g.ab[f] ?? 0) + made;`
+- `320` `g.made[f] = (g.made[f] ?? 0) + 1;`
+- `362` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `412` `const held = g.ab[f] ?? 0;`
+- `473` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `577` `const heldForTag = g.ab[f] ?? 0;`
+- `814` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
 
 ### ap.ts
 
@@ -159,7 +160,7 @@ report as rule A: every arm that leaves this list is named.
 
 ### actions.ts
 
-- `179` `if (g.suppress) {`
+- `203` `if (g.suppress) {`
 
 ### effects.ts
 
@@ -195,7 +196,7 @@ report as rule A: every arm that leaves this list is named.
 
 Each carries the demonstration that established it.
 
-### actions.ts:221
+### actions.ts:245
 
 ```
 if (!c) return err('Illegal move.');
@@ -203,7 +204,7 @@ if (!c) return err('Illegal move.');
 
 unreachable in move: the `!d` guard two lines up already rejected any cell key that moveDestinations returns [] for — and moveDestinations opens with the same g.cells lookup — so by the time c is read, the key is known to resolve
 
-### actions.ts:251
+### actions.ts:275
 
 ```
 if (!to) return err('No lymphatic link from this route.');
@@ -211,7 +212,7 @@ if (!to) return err('No lymphatic link from this route.');
 
 unreachable: a route with no lymph link was rejected two guards earlier (the LYMPH_GROUP check), so lymphPartners is never empty here
 
-### actions.ts:374
+### actions.ts:398
 
 ```
 if (iv.type === 'malaria' && iv.stage === 'liver') {
@@ -219,7 +220,7 @@ if (iv.type === 'malaria' && iv.stage === 'liver') {
 
 unreachable: the ok2 type gate three lines earlier rejects malaria unless stage is blood or sporozoite, so a liver-stage malaria never arrives here. Demonstrated: applyAction returns 'Antibodies cannot neutralise that.'
 
-### actions.ts:377
+### actions.ts:401
 
 ```
 if (iv.inMac) {
@@ -227,7 +228,7 @@ if (iv.inMac) {
 
 unreachable in neutralise: inMac is only ever set on a hidesInMac card, and the sole such card (Kala-azar) is a parasite, which ok2 rejects first
 
-### actions.ts:400
+### actions.ts:424
 
 ```
 if (iv.variant && d6() <= 3) {
@@ -235,7 +236,7 @@ if (iv.variant && d6() <= 3) {
 
 unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
 
-### actions.ts:400
+### actions.ts:424
 
 ```
 if (iv.variant && d6() <= 3) {
@@ -243,7 +244,7 @@ if (iv.variant && d6() <= 3) {
 
 unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
 
-### actions.ts:513
+### actions.ts:537
 
 ```
 if (org) {
@@ -251,7 +252,7 @@ if (org) {
 
 repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; this re-reads the same key two lines later for the compiler's sake
 
-### actions.ts:532
+### actions.ts:556
 
 ```
 `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
@@ -259,7 +260,7 @@ repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; 
 
 the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan
 
-### actions.ts:550
+### actions.ts:574
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -267,7 +268,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:550
+### actions.ts:574
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -275,7 +276,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:691
+### actions.ts:715
 
 ```
 `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
@@ -283,7 +284,7 @@ unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/w
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:706
+### actions.ts:730
 
 ```
 `The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,
@@ -291,7 +292,7 @@ the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstra
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:760
+### actions.ts:784
 
 ```
 if (c) {
@@ -299,7 +300,7 @@ if (c) {
 
 the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan
 
-### actions.ts:780
+### actions.ts:804
 
 ```
 if (pool.length) {
@@ -307,7 +308,7 @@ if (pool.length) {
 
 pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games
 
-### actions.ts:782
+### actions.ts:806
 
 ```
 c = DECK_MASTER.find((x) => x.dz === dz) || null;
@@ -315,7 +316,7 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
-### actions.ts:788
+### actions.ts:812
 
 ```
 if (c) g.discard.push(c as never);
@@ -323,7 +324,7 @@ if (c) g.discard.push(c as never);
 
 conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games
 
-### actions.ts:804
+### actions.ts:828
 
 ```
 if (c.novel) {

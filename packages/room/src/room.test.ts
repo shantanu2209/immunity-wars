@@ -33,8 +33,11 @@ function run(
 
 const join = (ref: string, name: string): Inbound => ({ kind: 'join', ref, name });
 const seat = (ref: string, s: string): Inbound => ({ kind: 'claimSeat', ref, seat: s });
+/** The refusal CODES a step produced: the room sends codes, never English (P3.2). */
 const errorsOf = (out: ReturnType<typeof step>['out']): string[] =>
-  out.flatMap((o) => (o.message.kind === 'error' ? [o.message.error] : []));
+  out.flatMap((o) => (o.message.kind === 'error' ? [o.message.code] : []));
+const detailsOf = (out: ReturnType<typeof step>['out']): (string | undefined)[] =>
+  out.flatMap((o) => (o.message.kind === 'error' ? [o.message.detail] : []));
 const member = (room: RoomState, ref: string) => room.members.find((m) => m.ref === ref);
 
 describe('joining', () => {
@@ -46,12 +49,51 @@ describe('joining', () => {
 
   it('tells everyone, and the projection carries no game state at all', () => {
     const { out } = run([join('a', 'Kartik')]);
-    const msg = out[0]?.message;
-    expect(out[0]?.to).toBe('all');
+    // A join sends two things: 'joined' to the joiner alone, then the room to everyone.
+    const broadcastOut = out.find((o) => o.message.kind === 'room');
+    const msg = broadcastOut?.message;
+    expect(broadcastOut?.to).toBe('all');
     expect(msg?.kind).toBe('room');
     if (msg?.kind !== 'room') throw new Error('expected a room message');
     expect(Object.keys(msg.room)).toEqual(['code', 'phase', 'captain', 'members', 'freeSeats']);
     expect(msg.room.freeSeats).toHaveLength(14);
+  });
+});
+
+describe('what reaches a client, and what never does (P3.2, FINDINGS #77)', () => {
+  it('names members by public id, and the captain by id too', () => {
+    const { room } = run([join('a', 'Kartik'), join('b', 'Shantanu')]);
+    const p = project(room);
+    expect(p.members.map((m) => m.id)).toEqual([1, 2]);
+    expect(p.captain).toBe(1);
+  });
+
+  it('never carries a ref, anywhere in anything it broadcasts', () => {
+    // Refs chosen so that a match could not be a coincidence of ordinary text.
+    const refA = 'p_SECRET_ref_aaaa';
+    const refB = 'p_SECRET_ref_bbbb';
+    let room = createRoom('ABC123', T0);
+    const everything: string[] = [];
+    for (const m of [
+      join(refA, 'K'),
+      join(refB, 'S'),
+      seat(refB, 'nk'),
+      { kind: 'disconnect', ref: refB } as Inbound,
+      join(refB, 'S'),
+    ]) {
+      const st = step(room, m, T0);
+      room = st.room;
+      for (const o of st.out) everything.push(JSON.stringify(o.message));
+    }
+    const wire = everything.join('\n');
+    expect(wire).not.toContain('SECRET');
+  });
+
+  it('tells a joiner its own id, and only that joiner', () => {
+    const s = step(run([join('a', 'K')]).room, join('b', 'S'), T0);
+    const joined = s.out.find((o) => o.message.kind === 'joined');
+    expect(joined?.to).toBe('b');
+    expect(joined?.message).toEqual({ kind: 'joined', id: 2 });
   });
 });
 
@@ -65,7 +107,8 @@ describe('a seat', () => {
     ]);
     expect(member(room, 'a')?.seats).toEqual(['bcell']);
     expect(member(room, 'b')?.seats).toEqual([]);
-    expect(errorsOf(out)[0]).toContain('K');
+    expect(errorsOf(out)).toEqual(['seatTaken']);
+    expect(detailsOf(out)).toEqual(['K']);
   });
 
   // The permitting twin: a rule that rejected every claim would pass the test above.
@@ -86,7 +129,7 @@ describe('a seat', () => {
 
   it('that does not exist is refused', () => {
     const { out } = run([join('a', 'K'), seat('a', 'pancreas')]);
-    expect(errorsOf(out)).toEqual(['No such seat.']);
+    expect(errorsOf(out)).toEqual(['noSuchSeat']);
   });
 });
 
@@ -159,7 +202,7 @@ describe('the captain reassigning seats', () => {
       .room;
 
   it("hands an away member's seat to someone present", () => {
-    const s = step(away(), { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 'a' }, T0);
+    const s = step(away(), { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 1 }, T0);
     expect(member(s.room, 'a')?.seats).toEqual(['helper']);
     expect(member(s.room, 'b')?.seats).toEqual([]);
   });
@@ -171,14 +214,14 @@ describe('the captain reassigning seats', () => {
 
   it('cannot take a seat from someone who is HERE — the ruling is about waiting, not overruling', () => {
     const room = run([join('a', 'K'), join('b', 'S'), seat('b', 'helper')]).room;
-    const s = step(room, { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 'a' }, T0);
-    expect(errorsOf(s.out)[0]).toContain('holding that seat');
+    const s = step(room, { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 1 }, T0);
+    expect(errorsOf(s.out)).toEqual(['seatHeldByPresent']);
     expect(member(s.room, 'b')?.seats).toEqual(['helper']);
   });
 
   it('cannot be done by anyone else', () => {
-    const s = step(away(), { kind: 'assignSeat', ref: 'b', seat: 'helper', to: 'b' }, T0);
-    expect(errorsOf(s.out)).toEqual(['Only the captain assigns seats.']);
+    const s = step(away(), { kind: 'assignSeat', ref: 'b', seat: 'helper', to: 2 }, T0);
+    expect(errorsOf(s.out)).toEqual(['notCaptain']);
   });
 
   it('cannot hand a seat to someone who is away either', () => {
@@ -190,8 +233,8 @@ describe('the captain reassigning seats', () => {
       { kind: 'disconnect', ref: 'b' },
       { kind: 'disconnect', ref: 'c' },
     ]).room;
-    const s = step(room, { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 'c' }, T0);
-    expect(errorsOf(s.out)[0]).toContain('away');
+    const s = step(room, { kind: 'assignSeat', ref: 'a', seat: 'helper', to: 3 }, T0);
+    expect(errorsOf(s.out)).toEqual(['memberAway']);
   });
 });
 
@@ -215,7 +258,7 @@ describe('rejoining', () => {
       seat('b', 'eosinophil'),
       { kind: 'disconnect', ref: 'b' },
     ]).room;
-    room = step(room, { kind: 'assignSeat', ref: 'a', seat: 'eosinophil', to: 'a' }, T0).room;
+    room = step(room, { kind: 'assignSeat', ref: 'a', seat: 'eosinophil', to: 1 }, T0).room;
     room = step(room, join('b', 'S'), T0).room;
     expect(member(room, 'b')?.seats).toEqual([]);
     expect(member(room, 'a')?.seats).toEqual(['eosinophil']);
@@ -274,26 +317,27 @@ describe('starting the game', () => {
     expect(s.room.phase).toBe('playing');
     const g = s.room.game as Record<string, unknown>;
     expect(g['multiplayer']).toBe(true);
-    expect(g['captain']).toBe('a');
-    expect(g['owner']).toEqual({ bcell: 'a', neutrophil: 'b' });
+    // Public ids, never refs: the engine projects these into every view (FINDINGS #77).
+    expect(g['captain']).toBe('m1');
+    expect(g['owner']).toEqual({ bcell: 'm1', neutrophil: 'm2' });
     expect(s.out.some((o) => o.message.kind === 'view')).toBe(true);
   });
 
   it("is nobody else's", () => {
     const s = step(seated(), { kind: 'start', ref: 'b', difficulty: 'training' }, T0);
-    expect(errorsOf(s.out)).toEqual(['Only the captain starts.']);
+    expect(errorsOf(s.out)).toEqual(['notCaptain']);
   });
 
   it('needs somebody seated', () => {
     const room = run([join('a', 'K')]).room;
     const s = step(room, { kind: 'start', ref: 'a', difficulty: 'training' }, T0);
-    expect(errorsOf(s.out)).toEqual(['Take a seat before starting.']);
+    expect(errorsOf(s.out)).toEqual(['nobodySeated']);
   });
 
   it('closes the lobby: seats are not claimed once it has begun', () => {
     const started = step(seated(), { kind: 'start', ref: 'a', difficulty: 'training' }, T0).room;
     const s = step(started, seat('b', 'nk'), T0);
-    expect(errorsOf(s.out)[0]).toContain('before the game starts');
+    expect(errorsOf(s.out)).toEqual(['lobbyClosed']);
   });
 });
 
@@ -314,7 +358,7 @@ describe('an action', () => {
       { kind: 'action', ref: 'b', action: { action: 'move', cell: 'bcell' } },
       T0,
     );
-    expect(errorsOf(s.out)).toEqual(['That is not one of your pieces.']);
+    expect(errorsOf(s.out)).toEqual(['notYourPiece']);
   });
 
   // The permitting twin, and it matters: a room that refused every action would pass the test
@@ -328,19 +372,37 @@ describe('an action', () => {
   it("is the ENGINE's to refuse when it is illegal, and the room passes that refusal on", () => {
     // Nothing is drawn yet, so commanding is the engine's to reject — not the room's.
     const s = step(playing(), { kind: 'action', ref: 'a', action: { action: 'beginCommand' } }, T0);
-    expect(errorsOf(s.out)).toHaveLength(1);
-    expect(errorsOf(s.out)[0]).not.toBe('That is not one of your pieces.');
+    // The engine said no, in its own words, which the client renders through the engine
+    // catalogue as single player does.
+    expect(errorsOf(s.out)).toEqual(['engine']);
+    expect(detailsOf(s.out)[0]).toBeTruthy();
+  });
+
+  it("cannot smuggle someone else's pid inside the action: the room stamps the sender's own", () => {
+    // 'b' asks to begin command as the captain 'a'. The engine gives beginCommand to the captain
+    // only, so if the smuggled pid won, this would be accepted.
+    const drawn = step(
+      playing(),
+      { kind: 'action', ref: 'a', action: { action: 'draw' } },
+      T0,
+    ).room;
+    const s = step(
+      drawn,
+      { kind: 'action', ref: 'b', action: { action: 'beginCommand', pid: 'a' } },
+      T0,
+    );
+    expect(errorsOf(s.out)).toEqual(['engine']);
   });
 
   it('is refused before the game starts', () => {
     const room = run([join('a', 'K')]).room;
     const s = step(room, { kind: 'action', ref: 'a', action: { action: 'draw' } }, T0);
-    expect(errorsOf(s.out)).toEqual(['The game has not started.']);
+    expect(errorsOf(s.out)).toEqual(['notStarted']);
   });
 
   it('is refused from someone who is not in the room at all', () => {
     const s = step(playing(), { kind: 'action', ref: 'z', action: { action: 'draw' } }, T0);
-    expect(errorsOf(s.out)).toEqual(['You are not in this room.']);
+    expect(errorsOf(s.out)).toEqual(['notInRoom']);
   });
 });
 

@@ -287,6 +287,104 @@ const CONTROLS: readonly Control[] = [
     expect: 'discards it once the period is up',
   },
   {
+    id: 'protocol-version-check',
+    why: 'Gate A: a client on an old version "can never desynchronise a newer room". The only way a peer that cannot read a message is kept from acting on a misreading is to refuse it before its body is looked at.',
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (header.data.v !== PROTOCOL_VERSION || header.data.rules !== RULES_VERSION) {',
+        '  if (false) {',
+      ),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'refuses a peer on another protocol version',
+  },
+  {
+    id: 'protocol-encode-stamps',
+    why: 'Every message carries both versions because the ENCODER stamps them, not because every call site remembers to. An encoder that forgot would make every version check compare against nothing.',
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace(
+        '  JSON.stringify({ v: PROTOCOL_VERSION, rules: RULES_VERSION, ...message });',
+        '  JSON.stringify({ ...message });',
+      ),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'because the encoder stamps them',
+  },
+  {
+    id: 'protocol-view-bytes',
+    why: 'MEASURED before the schema was written (docs/for-P3.md §2): z.object({}) is the natural spelling and it STRIPS every field, delivering an empty view and reporting success. Task C2 all over again, on the wire.',
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace('const View = z.record(z.string(), z.unknown());', 'const View = z.object({});'),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'delivers a view byte for byte',
+  },
+  {
+    id: 'protocol-view-bytes-real',
+    why: 'The same mutation against REAL views from a game played through the room: the protocol suite may not import the engine, so this is where the measurement is kept as a test rather than as a number in a document.',
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace('const View = z.record(z.string(), z.unknown());', 'const View = z.object({});'),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'delivers every real view byte for byte',
+  },
+  {
+    id: 'room-no-ref-in-view',
+    why: "FINDINGS #77: the engine projects captain, owner and apBudget keyed by player id into EVERY view. Given refs, as P3.1 gave it, every view broadcast every member's credential. The wire suite found it against real views on its first run.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        'const pidOf = (m: Member): string => `m${String(m.joinOrder)}`;',
+        'const pidOf = (m: Member): string => m.ref;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'never carries a ref, in any message, across a whole game',
+  },
+  {
+    id: 'room-no-ref-in-projection',
+    why: 'FINDINGS #77, the other door: P3.1 put each member\'s ref in the room projection itself, so any member could "rejoin" as any other and take their seats in one message.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) => t.replace('      id: m.joinOrder,', '      id: m.joinOrder,\n      ref: m.ref,'),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'never carries a ref, anywhere in anything it broadcasts',
+  },
+  {
+    id: 'room-captain-reaches-engine',
+    why: 'FINDINGS #78: the engine enforces its OWN copy of the captain. If the room stops telling it, a captain dropping mid-game stalls the table until they return — the stall ruling 4 exists to prevent.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      return { room: next, out: [broadcast(next), ...syncCaptain(next)] };\n    }\n\n    case 'leave':",
+        "      return { room: next, out: [broadcast(next)] };\n    }\n\n    case 'leave':",
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'lets the new captain act after the old one drops mid-game',
+  },
+  {
+    id: 'room-only-action',
+    why: "handOverCaptaincy is the room's to send. A client that could send it could make themselves captain; the room refuses it from every client, independently of the engine's own check.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "const ROOM_ONLY: ReadonlySet<string> = new Set(['handOverCaptaincy']);",
+        'const ROOM_ONLY: ReadonlySet<string> = new Set([]);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'refuses the action from any client',
+  },
+  {
+    id: 'engine-captaincy-holder-only',
+    why: 'DEVIATIONS #7: only the current captain may hand the captaincy over. Without the check, any player — or a client the room failed to stop — could seize it.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (a.pid !== g.captain) return err('Only the captain can hand over the captaincy.');",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/captaincy.test.ts',
+    expect: 'refuses anyone but the captain',
+  },
+  {
     id: 'format',
     why: 'Added at F0 after 21 files drifted out of style unnoticed. It fired on its own commit.',
     file: 'packages/engine/src/index.ts',

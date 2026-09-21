@@ -4190,3 +4190,111 @@ literal.** Where a control targets something that legitimately changes with the 
 a version, a count — the mutation must be derived from the file rather than pinned to today's value.
 Otherwise the control retires quietly at exactly the moment its subject starts moving, which is the
 moment it is most needed.
+
+---
+
+## 77. The room handed out every member's credential twice over: in its own projection, and inside every engine view
+
+**Found 21 September 2026, during P3.2**, in two steps. **Fixed in the same change**, because the
+protocol decides what crosses the wire and this was the wire's defect.
+
+### The credential
+
+A `PlayerRef` authenticates nothing in principle — it is an opaque device-minted string — but it is
+**the only thing a rejoin needs**: P3.1's room restores a member and their seats to whoever joins
+with that member's ref. So in practice it is a credential, and whoever knows a member's ref can
+become that member.
+
+### Door one: the room projection
+
+P3.1's `project()` put each member's `ref` in the room message broadcast to everyone. Any member
+could read any other's ref and "rejoin" as them, taking their seats, in one message. **Found by
+reading P3.1 while designing the wire format**, not by a test: no P3.1 test asked what a client
+could learn, because P3.1 had no notion of a client.
+
+### Door two: every view, found only by real data
+
+With door one closed, the new wire suite — which plays a real game through the room and decodes
+everything it sends — failed on its first run: *"expected '{"v":1,…"kind":"joined"…' not to contain
+'p_one'"*. **The engine projects `captain`, `owner` and `apBudget` keyed by player id into every
+view**, and the room had been giving the engine refs as player ids. Every view broadcast every
+credential.
+
+**The protocol suite could not have found this**, because it tests the wire on a constructed view,
+being forbidden to import the engine (`protocol-no-implementations`). It took the suite where the
+engine and the protocol meet, running on real views. The same lesson as the measurement that chose
+the view's schema: **a constructed input tests what its author thought of.**
+
+### The fix
+
+- **Members are named on the wire by a public id** — their join order — in the projection, in the
+  captain field, and as the target of `assignSeat`. A ref travels client-to-relay in `join` and
+  nowhere else, and is never sent to a client.
+- **The engine is given public ids as player ids** (`m<id>`), never refs. Nothing in the engine
+  needs a player id to be secret or device-minted; it is a label.
+- **Two controls**: `room-no-ref-in-projection` and `room-no-ref-in-view`, each re-opening one door
+  and required to redden the test that watches it.
+
+### What this does NOT make true
+
+A ref is still a bearer token: anyone who learns one off a device can rejoin as that member. That
+is acceptable for rooms entered by an invite code between people who know each other (brief §4,
+ruling 2), and it is one more reason there is no public room.
+
+---
+
+## 78. Captain succession did not reach the engine, so a captain dropping mid-game stalled the table — CLOSED by ruling, 21 September 2026
+
+**Found 21 September 2026, during P3.2**, reading how the engine enforces the captain while fixing
+#77. **Not fixed**, deliberately: both ways of fixing it cross a line this phase has drawn.
+
+### The gap
+
+The room passes the captaincy to the next connected member when the captain drops (ruling 4). **The
+engine holds its own copy** — `g.captain`, given once at `newGame` — and enforces it for the
+allocation, *Begin command* and *End turn*. The unallocated Action Point pool also sits in
+`apBudget[g.captain]`. Nothing keeps the engine's copy in step with the room's, so after a
+succession mid-game **the new captain is refused by the engine**, and the table cannot move until the
+old captain returns. That is exactly the stall ruling 4 exists to prevent.
+
+**Pinned, not left in prose:** `packages/room/src/wire.test.ts`, *"KNOWN GAP #78"*, asserts the
+engine's refusal as it stands, so closing the gap turns the test red and forces its inversion.
+
+**Legacy had the same gap.** `tools/legacy/server.js` updates its room's captain in
+`ensureCaptain()` and never the game's, so the LAN version would have stalled the same way. It was
+never reached in play because a LAN table's captain rarely drops.
+
+### The two fixes, and what each costs
+
+1. **The room writes the engine's `captain` field, and moves the unallocated pool with it.** No new
+   rule is invented — the engine takes its captain as configuration, and the room would keep that
+   configuration true. **But moving the pool is an engine rule** ("unallocated AP sits with the
+   captain") re-implemented outside the engine, which `CLAUDE.md`'s first hard rule forbids.
+2. **An engine action, say `handOverCaptaincy`, applied by the room through `applyAction`.** The rule
+   lives in the engine where rules live. **But it is an engine change**, and this phase's definition
+   of done says the engine is unchanged. It would not break the corpus — the corpus never sends the
+   new action — but it adds behaviour, and it would be measured and isolated the way v1.6 of the
+   Phase 2 brief handled `apFor`.
+
+**Recommendation: (2).** The pool's location is a rule, and a rule re-implemented in the room is the
+exact failure the architecture exists to prevent. A small, isolated engine addition, with the corpus
+proving nothing else moved, is the honest cost. **This is Shantanu's call**, because it amends the
+phase's "engine unchanged" line.
+
+### ✅ CLOSED, 21 September 2026 — fix (2), by ruling
+
+*"For the ruling happy to go with your recommendation."* The engine gained one action,
+`handOverCaptaincy` ([`DEVIATIONS.md`](DEVIATIONS.md) #7), and the room sends it whenever succession
+changes the captain during a game. The known-gap test was inverted exactly as it was written to be:
+it now asserts that the new captain can begin command after the old one drops, that every client's
+view shows the engine's new captain, and that the unallocated pool carries over.
+
+**What the fix found on its way in, all instruments doing their jobs:**
+
+- **The engine's string catalogue drift test failed** — the new error string had no catalogue entry.
+  Regenerated with its own generator; the diff was exactly one message and two call sites.
+- **`coverage:positions` failed** — inserting the action moved every recorded coverage position
+  below it. Regenerated with `coverage:all` and `coverage:gate`, which pass.
+- **Two multiplayer coverage arms are now covered** that nothing reached before, by the new
+  confinement tests: *"Only the captain can confirm allocation"* and one arm of *"Only the captain
+  ends the turn"*. The deferred multiplayer list is **20, from 22**.

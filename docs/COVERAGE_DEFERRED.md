@@ -10,17 +10,15 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (22 arms)
+## Phase 3 — multiplayer (20 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
 
 - `actions.ts:89` `if (a.pid !== g.captain) return err('Only the captain allocates Action Points.');`
 - `actions.ts:94` `if (amt > pool) return err('Not enough unallocated AP.');`
-- `actions.ts:123` `if (a.pid !== g.captain) return err('Only the captain can confirm allocation.');`
-- `actions.ts:158` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
-- `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
-- `actions.ts:168` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
+- `actions.ts:182` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
+- `actions.ts:192` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
 - `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
 - `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
 - `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
@@ -81,17 +79,17 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `schema.ts:600` `if (!cells.includes(c)) {`
 - `schema.ts:616` `if (!placed.includes(o)) {`
 - `schema.ts:648` `if (!placedRoutes.includes(r)) {`
-- `actions.ts:169` `if (g.phase !== 'command') return err('Not in command.');`
-- `actions.ts:240` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:309` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:337` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:450` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:480` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:597` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:602` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:605` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
+- `actions.ts:193` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:264` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:294` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:333` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:361` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:363` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:474` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:504` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:621` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:626` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:629` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
 - `construct.ts:164` `default:`
 - `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`

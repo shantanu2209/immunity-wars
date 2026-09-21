@@ -3,15 +3,15 @@
     "namespace": "engine",
     "locale": "en",
     "generatedBy": "tests/equivalence/i18n-extract.ts",
-    "sites": 198,
+    "sites": 200,
     "queryProseSites": 34,
-    "messages": 181,
+    "messages": 182,
     "unextractedSites": [
-      "actions.ts:302 pushLog(msg)",
-      "actions.ts:492 pushLog(died\n          ? `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`\n          : `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`)",
-      "actions.ts:568 pushLog(iv.type === 'worm'\n          ? `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`\n          : `Antibody <b>tagged</b> ${iv.disease}.`)",
-      "actions.ts:588 pushLog(died\n          ? `<b>Monocyte</b> engulfed ${iv.disease}.`\n          : `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`)",
-      "actions.ts:808 pushLog(entryMsg)"
+      "actions.ts:326 pushLog(msg)",
+      "actions.ts:516 pushLog(died\n          ? `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`\n          : `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`)",
+      "actions.ts:592 pushLog(iv.type === 'worm'\n          ? `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`\n          : `Antibody <b>tagged</b> ${iv.disease}.`)",
+      "actions.ts:612 pushLog(died\n          ? `<b>Monocyte</b> engulfed ${iv.disease}.`\n          : `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`)",
+      "actions.ts:832 pushLog(entryMsg)"
     ],
     "note": "Nothing consumes this yet — Phase 2 does. tests/equivalence/src/i18n-engine.test.ts is what keeps it honest."
   },
@@ -97,6 +97,7 @@
   "actions.onlyTheCaptainAllocatesActionPoints": "Only the captain allocates Action Points.",
   "actions.onlyTheCaptainBeginsTheCommand": "Only the captain begins the command phase.",
   "actions.onlyTheCaptainCanConfirmAllocation": "Only the captain can confirm allocation.",
+  "actions.onlyTheCaptainCanHandOver": "Only the captain can hand over the captaincy.",
   "actions.onlyTheCaptainDrawsTheNext": "Only the captain draws the next infection.",
   "actions.onlyTheCaptainEndsTheTurn": "Only the captain ends the turn.",
   "actions.onlyTheEosinophil2DamageAnd": "Only the Eosinophil (2 damage) and the Monocyte (1 damage) can strike a worm or parasite from the outside — the Neutrophil and NK Cell cannot.",

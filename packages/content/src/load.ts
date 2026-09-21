@@ -118,7 +118,12 @@ function parseBoard(): Record<string, unknown> {
 
 const pack = { ...parseRules(), ...parseBoard() };
 
-/** The pack stamp. Every state and network message carries rulesVersion (BRIEF §3, seam 7). */
+/**
+ * The pack stamp. **Every network message carries `RULES_VERSION`** (P3.2: stamped by the
+ * protocol's `encode`, refused on mismatch). **Saved game state does not** — that is seam 7's
+ * deferred pack check. This comment read "every state and network message carries rulesVersion"
+ * from Phase 1, when neither did (docs/FINDINGS.md #26); it is now half true, and says which half.
+ */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;
 export const RULES_VERSION = pack['rulesVersion'] as string;

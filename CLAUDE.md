@@ -15,7 +15,7 @@ Repository is on Shantanu's account; Kartik does not have one.
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
 **Current phase: Phase 3** — playing together: a relay, private rooms by invite code, no strangers.
-Spec: @docs/PHASE3_BRIEF.md (v1.0).
+Spec: @docs/PHASE3_BRIEF.md (v1.1).
 
 **Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
 acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,
@@ -96,10 +96,14 @@ contract Task B was measured against.
   `tsconfig.base.json`.
 - Zod at every trust boundary: network messages, content pack loading, saved games.
   Types are compile-time only and do nothing for malformed runtime input.
-- **`rulesVersion` is on the content pack only — NOT on game state, NOT on network messages.**
-  This line previously asserted that every state and message carries it. Neither does, and
-  `packages/protocol` is a 20-line scaffold. Phase 3 owns making it true, alongside seam 7's
-  deferred pack check — see `docs/FINDINGS.md` #26. *Corrected 12 Aug 2026, at Task D.*
+- **`rulesVersion` is on the content pack and on every NETWORK MESSAGE — NOT on game state.**
+  Every message both ways is written by `encode` in `packages/protocol`, which stamps it with the
+  protocol version and `RULES_VERSION`; a peer on either other version is refused before its
+  body is read, with controls on both the check and the stamping (P3.2, `docs/for-P3.md` §2).
+  **Saved games still carry no version**, which is seam 7's deferred pack check and still Phase
+  3's to decide. *Corrected 21 Sep 2026, at P3.2.* This line said messages did not carry it,
+  true until this change; before that, *corrected 12 Aug 2026 at Task D*, it asserted that every
+  state and message carried it when neither did (`docs/FINDINGS.md` #26).
 - All player-visible strings go in i18n catalogues. Never hardcode UI text — a Hindi edition
   is a committed grant deliverable and retrofitting is expensive.
 

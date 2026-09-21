@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "@immunity-wars/content": "workspace:*",
-    "@immunity-wars/engine": "workspace:*"
+    "@immunity-wars/engine": "workspace:*",
+    "@immunity-wars/protocol": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^4.1.11"
