@@ -2,7 +2,7 @@
   "name": "@immunity-wars/perf",
   "version": "0.0.0",
   "private": true,
-  "description": "P2.3 measurement driver: CPU-throttled CDP runs against the dev shell, reading the page's own __iwMetrics.",
+  "description": "Measurement instruments: P2.3 CDP runs against the dev shell reading __iwMetrics, the Gate 1 audit, and P3.3 frames-or-state (bytes on the wire, through the room).",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -12,5 +12,9 @@
   },
   "devDependencies": {
     "puppeteer-core": "^25.10.0"
+  },
+  "dependencies": {
+    "@immunity-wars/protocol": "workspace:*",
+    "@immunity-wars/room": "workspace:*"
   }
 }

@@ -192,3 +192,59 @@ arms nothing had reached: the deferred list is 20, from 22.
 The room forwards the engine's bursts whole. Whether ten full projections should cross the wire,
 or one state plus the dice, is P3.3's measurement — and it now has a real, versioned, byte-exact
 wire to measure on.
+
+---
+
+## 3. P3.3, frames or state: the criteria, written BEFORE the measurement
+
+This section was committed with the measurement script and before its first run, deliberately: a
+threshold fitted to the number it judges is not a test ([`FINDINGS.md`](FINDINGS.md) #34). The
+numbers below are mine, proposed; each carries its reason, so it can be argued with rather than
+inherited.
+
+### What is being decided
+
+How a spread reaches a client. Today the engine returns up to ten frames per `endCommand`, each a
+**full projection**, and the room forwards them whole. The candidates:
+
+| | What crosses the wire | What it needs |
+|---|---|---|
+| **A. Frames whole** | every frame's full view, as now | nothing new |
+| **C. Frames as deltas** | the first frame whole, each later one as a JSON diff against the one before | a diff on the relay and a patch in `RelaySession` |
+| **B. State plus the dice** | the full `GameState` before the spread and every random draw it made, so the client re-runs the spread | the engine in the client's session, every RNG draw captured on the relay, and **the full state — deck order included — sent to every client** |
+
+**B is disqualified before measuring, and on grounds that are not size.** The full `GameState`
+includes `deck`, which is the future: a client holding it knows what arrives next turn, in a
+cooperative game whose tension is not knowing. Sending it would also contradict seam 1, which keeps
+`GameState` inside the session and never hands it out. B's size is measured anyway, so the record
+says what it would have saved.
+
+### Two worlds, because the platform is not yet known
+
+**Whether Cloudflare's relay compresses WebSocket messages is UNKNOWN until P3.5 connects to one.**
+The runtime supports `permessage-deflate` only behind a compatibility flag, and a closed workerd
+issue reports the server side never accepting it, with no resolution visible. Task E recorded that
+compression is the load-bearing assumption under this whole question. So every figure is taken in
+both worlds:
+
+- **uncompressed**, what a client receives if the transport compresses nothing;
+- **gzip per message**, what `permessage-deflate` without context takeover gives, and equally what
+  application-level `CompressionStream` gives, which exists in both Workers and Android's WebView
+  and does not depend on the platform negotiating anything.
+
+### The criteria
+
+1. **A whole game costs a client at most 2 MB of data, as actually sent.** A common Indian mobile
+   plan gives 1 to 2 GB a day; 2 MB is a tenth of a percent of that for a forty-minute game, which
+   no family should notice. Checked in the world the platform actually provides.
+2. **No single message exceeds 64 KiB as sent**, so the largest burst arrives in under half a second
+   on a 1 Mbps link — a crowded 4G or a decent 3G connection — and a spread never waits on bytes.
+3. **Choose the simplest candidate that meets both in the WORSE of the two worlds.** If A does,
+   choose A: it needs nothing new, and it keeps the relay forwarding what the engine said.
+   Otherwise choose whichever of "A with application-level compression" and C is simpler to get
+   right, and say why.
+
+**What the numbers will not be able to say**, stated now: the games measured are idle multiplayer
+games driven through the room, which end early, like Task E's bot; late-game states are larger by an
+amount these games cannot reach. So the verdict is judged on its margin: a candidate that passes
+by 10× is a different claim from one that passes by 10%.
