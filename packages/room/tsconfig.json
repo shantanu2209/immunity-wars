@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+
+    // PORTABILITY, AS A COMPILER SETTING (docs/PHASE3_BRIEF.md, Gate B): no DOM and no Node
+    // types. A room that cannot see `window` or `process` cannot accidentally be written
+    // against either, and the module stays runnable on any platform that can call a function.
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

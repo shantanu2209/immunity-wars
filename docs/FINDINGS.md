@@ -4139,3 +4139,54 @@ the instrument, and Gate 1's "works offline, fully" rests on it.
 
 **The re-run on the fixed instrument: offline met**, with 22 and 23 pieces of art counted on the screens
 the two offline turns ended on, all of them SVG and none broken, and no request failed.
+
+---
+
+## 76. The phase-marker control went inert the moment the phase moved, because it looked for the literal "Phase 2"
+
+**Found 21 September 2026, by `pnpm ci:selftest` during P3.1** — the first run of the harness after
+`CLAUDE.md`'s marker moved to Phase 3.
+
+### What the harness said
+
+```
+✗ docs-phase-marker    THE MUTATION DID NOTHING — this control is inert
+```
+
+### Why
+
+The control existed because `CLAUDE.md` said *"Current phase: Phase 1"* through the whole first
+session of Phase 2 ([`for-P2.7.md`](for-P2.7.md) and `CLAUDE.md`'s own note). Its mutation was
+written as `t.replace('**Current phase: Phase 2**', '**Current phase: Phase 1**')`, which is exactly
+the phase it was written in. When PR #92 moved the marker to Phase 3, the mutation stopped matching
+anything, and a control whose mutation changes nothing checks nothing.
+
+**The same staleness it was built to catch, in the control itself** — one level up, where nothing
+was watching. The expectation had the same shape: it looked for `but the spec it names is
+PHASE2_BRIEF.md`, so even a working mutation would have reported the wrong reason from Phase 3 on.
+
+### What made it visible
+
+**The harness reports an inert control as a FAILURE rather than a pass**, which is the only reason
+this was a one-line fix rather than a silent hole:
+
+> `if (mutated === original) { ... "THE MUTATION DID NOTHING — this control is inert" }`
+
+That branch was written when the harness was, on the argument that *"an inert control is the worst
+outcome: it reports nothing wrong while checking nothing"*. It had never fired before. **It is now
+the second instrument in this repository to catch a defect in another instrument** (#42 was the
+first), and it caught this one on the first run after the change that caused it.
+
+### The fix, inline, because it is the instrument
+
+The mutation reads the number out of the file — `/\*\*Current phase: Phase (\d+)\*\*/`, bumping it
+by one — and the expectation no longer names a phase. It now fires in any phase, including the ones
+after this.
+
+### The rule this earns
+
+**A control whose mutation is a literal from the document it guards has the same lifetime as that
+literal.** Where a control targets something that legitimately changes with the calendar — a phase,
+a version, a count — the mutation must be derived from the file rather than pinned to today's value.
+Otherwise the control retires quietly at exactly the moment its subject starts moving, which is the
+moment it is most needed.

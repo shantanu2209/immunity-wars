@@ -1,0 +1,27 @@
+{
+  "name": "@immunity-wars/room",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Phase 3, P3.1. The room's rules as a pure reducer: no sockets, no clock, no platform.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "comment:why-this-package-may-import-the-engine": "It is the authority in multiplayer: it applies actions and projects views, which is what packages/session does on a single device. docs/PHASE3_BRIEF.md §2. It may NOT reach ui, app, server or session, which room-no-downstream enforces, and it must stay free of platform APIs, which room-no-node-builtins enforces — that rule is Gate B's portability requirement expressed as a check.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@immunity-wars/content": "workspace:*",
+    "@immunity-wars/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}
