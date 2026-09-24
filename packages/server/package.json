@@ -15,7 +15,8 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "build": "tsc -p tsconfig.json",
-    "relay": "tsx src/main.ts"
+    "relay": "tsx src/main.ts",
+    "bundle": "tsx src/bundle.ts"
   },
   "dependencies": {
     "@immunity-wars/protocol": "workspace:*",
@@ -26,6 +27,7 @@
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/session-core": "workspace:*",
     "@types/ws": "8.18.1",
+    "esbuild": "^0.28.2",
     "vitest": "^4.1.11"
   },
   "comment:why-ws-is-pinned": "The first dependency of a process that LISTENS (docs/SECURITY_NOTES.md). Pinned exactly so that an upgrade is a decision with an audit beside it, never a side effect of an install. No dependencies of its own.",

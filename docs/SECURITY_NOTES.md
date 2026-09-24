@@ -382,10 +382,49 @@ so it is written for that:
 
 - **No TLS** on the development relay (`ws://`). It listens on this machine unless told otherwise;
   production is `wss://` with a certificate on our own server (P3.5).
-- **No per-address rate limit or connection cap.** A code is the only way into a room, and with no
-  rate limit, guessing is bounded only by the 244 million. That is enough for a development relay
-  and is **owed at P3.5**. *Updated 24 September 2026:* this said "where the platform provides the
-  limiting", which was Cloudflare. On our own server nothing provides it, so the relay does.
+- ~~No per-address rate limit or connection cap.~~ **Built at P3.5**, below. (It read: owed at
+  P3.5, and before that, "where the platform provides the limiting", when that was Cloudflare.)
 - **No `Origin` check.** A browser page on any site can open a WebSocket to the relay, but the relay
   keeps no cookies and grants nothing by origin, so there is nothing for a cross-site page to borrow
   that it could not get by connecting directly.
+
+## Added 24 September 2026 — P3.5, the relay on our own server: what is built, and what is not yet run
+
+The relay moved to an Oracle Cloud server of ours (brief v1.3), so what a managed platform would have
+provided is ours to provide. **Built on the development PC and tested; nothing is deployed yet.**
+
+### In the relay
+
+- **Limits** (`packages/server/src/hub.ts`, `LIMITS`), counted by network address, held in memory
+  only and never logged: 32 connections from one address and 1,000 on the relay; 10 messages a second
+  per connection with bursts of 30, judged on arrival so a flood never enters the queue; 20 wrong room
+  codes per address per 10 minutes, after which even a right code is refused, so a hit cannot be told
+  from a miss; 30 seconds to join a room after connecting. **Generous on purpose:** Indian mobile
+  networks put many customers behind one address, and so does a family's Wi-Fi. The numbers are a
+  recommendation awaiting Shantanu's ruling (`docs/for-P3.md` §5).
+- **The address** is the connection's own, unless it comes from the TLS front on the same machine, in
+  which case it is the last `X-Forwarded-For` entry, the one the front wrote. Believed from anyone
+  else, that header would let a sender choose the address it is counted by.
+- **A heartbeat**: every connection is pinged every 20 seconds, and one that has not answered by the
+  next ping is ended, so a silent phone shows as away within about 40 seconds (FINDINGS #84).
+- Each has a test that must refuse and a twin that must permit, and a selftest control.
+
+### On the server, by `packages/server/deploy/setup.sh`, not yet run
+
+- **Node and Caddy from their own signed package repositories**, and **automatic security updates for
+  both as well as Ubuntu**, restarting at 03:30 IST only when an update needs it (awaiting ruling).
+- **The relay as its own user**, with no login and no home, fenced off by its service: no new
+  privileges, a read-only system, no access to home folders or devices, network sockets only, 512 MB.
+- **Caddy in front for the certificate, with no access log.**
+- **The firewall opened for ports 80 and 443 only**, in the server's own iptables and in Oracle's
+  security list.
+- **One bundled file, not a checkout.** No repository, no package manager and no build tools on the
+  server; the bundle is tested as itself before any deploy (`bundle-recipe` control).
+
+### What the property now covers
+
+The listening process on the server loads Node, the bundle (`ws`, `zod` and our own code) and
+Caddy in front of it, on Ubuntu. **`pnpm audit` covers only the bundle's part.** Node, Caddy and the
+operating system are covered by their automatic security updates, which is a different kind of
+cover: it depends on the updates arriving and installing, which the setup script's dry run shows and
+nothing yet monitors.

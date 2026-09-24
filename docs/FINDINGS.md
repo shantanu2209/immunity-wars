@@ -4403,3 +4403,28 @@ test --force`) the toolchain battery asks for. It did not reproduce in three rer
 was not captured**, which is the defect in how it was watched, and why this entry exists: the next
 sighting must record the name and the assertion. Whether it has anything to do with P3.4's changes
 is not known. Unexplained, and recorded as that rather than as noise.
+
+---
+
+## 84. A phone that lost its signal would have stayed "present" at the table for up to hours: the P3.4 relay never pinged anyone
+
+**Found 24 September 2026, planning P3.5**, by asking what the relay sees when a phone goes out of
+signal rather than closing its connection. **Fixed in P3.5**, because Gate A depends on it.
+
+The P3.4 relay learned that a member was away only from the connection's close. A phone that closes
+the app sends one. **A phone that loses its signal sends nothing**, and the relay's side of the
+connection stays open until the operating system gives up on it, which by default can take hours.
+Until then the room would show that player present, the table would wait for them, and the captain
+could not hand their seats on, since the room only lets an AWAY member's seats be reassigned. That is
+Gate A's "a player who drops … does not block the table", failed in the commonest way a phone drops.
+
+**The fix:** the Node adapter pings every connection every 20 seconds and ends any that has not
+answered the previous ping, which marks its member away through the ordinary close. So a silent
+phone shows as away within about 40 seconds.
+
+**Proved by** `packages/server/src/node.test.ts`: a real client that never answers pings is shown
+away within a few heartbeats, while one that answers stays present. **Control:** `node-heartbeat`
+removes the ending and the test goes red.
+
+**Why P3.4 did not catch it:** every P3.4 test closed its connections cleanly. A silent connection is
+the case no test had built.

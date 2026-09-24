@@ -12,10 +12,12 @@ export {
   CLOSE,
   CODE_ALPHABET,
   Hub,
+  LIMITS,
   mintCode,
   normalise,
   type Codec,
   type HubOptions,
+  type Limits,
   type Link,
 } from './hub.js';
 export { listen, type Relay, type RelayOptions } from './node.js';

@@ -479,6 +479,86 @@ const CONTROLS: readonly Control[] = [
     expect: 'takes over from the old one',
   },
   {
+    id: 'hub-connection-limits',
+    why: 'The relay is on the open internet, where anyone can open sockets without a code. Without a cap, one sender can hold every connection the server has.',
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) =>
+      t.replace(
+        '    if (this.counted.size >= this.limits.total || held >= this.limits.perAddress) {',
+        '    if (false) {',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'refuses a connection past the per-address limit',
+  },
+  {
+    id: 'hub-message-rate',
+    why: 'Judged on arrival, before a frame waits its turn: a flood that is let into the queue delays every other player on the relay.',
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) => t.replace('      if (c.tokens < 1) {', '      if (false) {'),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'closes a connection that sends past its burst',
+  },
+  {
+    id: 'hub-wrong-codes',
+    why: 'Knowing a code is the only way into a room (ruling 2). Unslowed, a guesser tries codes as fast as the network allows.',
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) =>
+      t.replace(
+        '        this.recentWrongCodes(address, now) >= this.limits.wrongCodes',
+        '        this.recentWrongCodes(address, now) >= Number.POSITIVE_INFINITY',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'makes an address wait after too many wrong codes',
+  },
+  {
+    id: 'hub-join-deadline',
+    why: 'A connection that never joins a room holds a place under the limits for nothing; enough of them fill the relay without a single message sent.',
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) =>
+      t.replace(
+        '        if (this.links.get(link) === null && now - c.openedAt >= this.limits.joinWithinMs)',
+        '        if (false)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'closes a connection that never joins a room in time',
+  },
+  {
+    id: 'node-forwarded-for-from-front-only',
+    why: 'The relay believes X-Forwarded-For only from the TLS front on its own machine. Believed from anyone, the header lets any sender choose the address the limits count them by.',
+    file: 'packages/server/src/node.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (!trustProxy || !LOOPBACK.has(peer)) return peer;',
+        '  if (!trustProxy) return peer;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'ignores the header from anyone who is not this machine',
+  },
+  {
+    id: 'node-heartbeat',
+    why: 'Gate A: a drop is visible to everyone. A phone that loses its signal sends nothing, so only a ping it fails to answer can show the table that it has gone.',
+    file: 'packages/server/src/node.ts',
+    mutate: (t) =>
+      t.replace(
+        '      if (answered.get(socket) === false) {\n        socket.terminate();\n        continue;\n      }',
+        '      if (answered.get(socket) === false) {\n        continue;\n      }',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'is marked away within a few heartbeats',
+  },
+  {
+    id: 'bundle-recipe',
+    why: 'P3.5 ruling 4: production runs ONE bundled file, and its one real risk is that the bundle is not the code the tests ran. A recipe that leaves a workspace package out builds without complaint and cannot start on the server.',
+    file: 'packages/server/src/bundle.ts',
+    mutate: (t) =>
+      t.replace(
+        "    external: ['bufferutil', 'utf-8-validate'],",
+        "    external: ['bufferutil', 'utf-8-validate', '@immunity-wars/room'],",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'the bundle exited with',
+  },
+  {
     id: 'relay-selection-boundary',
     why: 'A relay client clears the selection where LocalSession does: after a draw or an end of turn, and not when command begins. Read off the view, because another player may cross the boundary; phase is the tempting and wrong signal.',
     file: 'packages/session/src/relay.ts',

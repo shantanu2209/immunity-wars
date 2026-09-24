@@ -564,3 +564,56 @@ this stage's first measurement.
    risk is that the bundle is not the code the tests ran, so **the relay's integration test runs
    against the bundled file itself** before any deploy, with a control that breaks the bundle and
    must turn it red.
+
+### Settled: the hostname
+
+The domain can be used: nothing is published at its root, and its one other subdomain sits behind a
+sign-in. The relay's address is **`wss://immunity-wars.kartikchaudhary.com/relay`**, with the DNS
+record added at the domain's registrar ([`packages/server/deploy/README.md`](../packages/server/deploy/README.md),
+step 4).
+
+### Open rulings, put to Shantanu on 24 September 2026
+
+Built on the recommended default where the build needs one; each is a small change if ruled
+otherwise.
+
+1. **FINDINGS #80's one-word fix.** Recommended: take it, as its own PR after P3.5.
+2. **FINDINGS #81, ownership after a reassignment.** Recommended: rule now that the multiplayer
+   screens read ownership from the room's projection, never from the engine's `owner`.
+3. **Multiplayer autosave (brief §5's open question).** New since the brief recommended it: a relay
+   client holds no `GameState`, so a save would mean sending one device the whole game, hidden deck
+   included, and a restart would mean the relay trusting a game uploaded from a phone.
+   Recommended: **no autosave in multiplayer v1**; the grace period covers a lost connection, restarts
+   happen at night, and deploys wait for an empty relay.
+4. **The Phase 3 brief review.** Recommended: after P3.5, before P3.6, because P3.6 checks Gate A
+   against the brief's words.
+5. **Restarts for security updates.** Recommended, and built: automatic, at 03:30 IST, only when an
+   update needs one. A restart ends every game in progress.
+6. **The limits.** Recommended, and built: the generous values in
+   [`SECURITY_NOTES.md`](SECURITY_NOTES.md), because shared addresses are common on Indian mobile
+   networks.
+7. **The server key.** Recommended, and written into the guide: a passphrase Shantanu types himself,
+   held by the Windows key agent, so no script ever sees it.
+
+### P3.5, part one: built on the development PC. Nothing deployed
+
+- **The limits** in the hub, each with a refusing test, a permitting twin and a control:
+  `hub-connection-limits`, `hub-message-rate`, `hub-wrong-codes`, `hub-join-deadline`.
+- **The address** a connection is counted by, believing `X-Forwarded-For` only from the TLS front on
+  the same machine (`node-forwarded-for-from-front-only`).
+- **The heartbeat**, which found FINDINGS #84: a phone that loses its signal would otherwise have
+  stayed "present" for up to hours (`node-heartbeat`).
+- **The bundle**: `pnpm --filter @immunity-wars/server bundle` writes one file of about 1.2 MB. The
+  bundle test builds it with the production recipe, starts it as its own Node process in a folder
+  where nothing from this repository can be found, and plays a turn with two clients who agree
+  (`bundle-recipe` breaks the recipe and the test goes red).
+- **The server's setup, the deploy, and Shantanu's guide** in
+  [`packages/server/deploy/`](../packages/server/deploy/README.md). **Not yet run anywhere**: they
+  are checked on the server the first time, and that first run is where they will be found wrong if
+  they are.
+
+**Measured:** the server package's suite went from 22 tests to 35. Seven new controls, each run and
+seen to fire on its own test.
+
+**Not yet built:** the tool that measures the relay's time per action on the server itself, for Gate
+B. It is written when there is a server to run it on.
