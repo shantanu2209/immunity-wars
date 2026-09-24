@@ -108,14 +108,16 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 ## Phase 3 — Playing together
 
 **Goal:** two people in different cities play the same game.
-**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.2 (21 September 2026: one ruled engine
+**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.3 (21 September 2026: one ruled engine
 addition, `handOverCaptaincy`; 24 September: the query builder shared between `LocalSession` and the
-relay). P3.1 to P3.4 built: the room, the protocol, the frames-or-state measurement, and
+relay, and the relay's home moved from Cloudflare to Oracle). P3.1 to P3.4 built: the room, the protocol, the frames-or-state measurement, and
 `RelaySession` against a relay on the development machine.
 
-- Multi-room relay replacing the single-room LAN server. **On Cloudflare Durable Objects, one room
-  per object, inside the free plan** — ruled 20 September 2026, with the right to move later made a
-  gate item rather than a hope
+- Multi-room relay replacing the single-room LAN server. **On an Oracle Cloud Always Free server in
+  India, one Node process holding every room** — ruled 24 September 2026, replacing "Cloudflare
+  Durable Objects, inside the free plan" (ruled 20 September) after a measured comparison
+  ([`docs/for-P3.md`](docs/for-P3.md) §5). The right to move later stays a gate item rather than a
+  hope
 - Private rooms by invite code. **No strangers, no public matchmaking** — that decision holds
 - Reconnection. ⚠️ *Corrected 20 September 2026:* this said **"and AI takeover when someone drops
   mid-game"**. There is no AI in Phase 3. The captain hands an away player's seats on, or the

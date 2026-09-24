@@ -452,8 +452,97 @@ the nine above and `frame-limit` on the protocol's bomb test, are now permanent 
 - **Nothing reconnects by itself.** Rejoining with the same code and the same `self` works, and is
   tested. Doing it without asking is the multiplayer screens' job (P3.7).
 - **The Node relay has no rate limit, no connection cap and no TLS**
-  ([`SECURITY_NOTES.md`](SECURITY_NOTES.md), "the relay"). These are owed at P3.5, where the
-  platform provides them.
-- **P3.5 writes a second `node.ts`, not a second hub.** One Durable Object per room means the hub's
-  map of rooms becomes the platform's, and the per-room half is what carries over. Gate B's "rewrite
-  in a day" is measured then, not now.
+  ([`SECURITY_NOTES.md`](SECURITY_NOTES.md), "the relay"). These are owed at P3.5.
+- ⚠️ *Superseded the same day by §5.* These two lines assumed Cloudflare: the limits "where the
+  platform provides them", and "P3.5 writes a second `node.ts`, not a second hub", for one Durable
+  Object per room. With the relay on Oracle, P3.5 deploys `node.ts` as it is, and the limits are the
+  relay's own.
+
+---
+
+## 5. P3.5, the relay's home: ORACLE, ruled 24 September 2026. The deployment PROPOSED, nothing built
+
+### The ruling
+
+*"If this seems fine then let's adjust what needs adjusting from cloudflare to oracle."* Oracle
+Cloud's Always Free tier replaces "Cloudflare, free plan, for now" (ruling 5, 20 September). Brief
+v1.3. On keeping the server from being reclaimed: *"Pay as you go is also a genuine option to go
+for"*, and other projects of ours may genuinely use the spare capacity, *"not just for the sake of
+keeping the server up"*.
+
+Also ruled the same day: a join naming a code the relay does not hold is refused (*"Yes incorrect
+code should be refused"*), which is how P3.4 built it.
+
+### The comparison that decided it
+
+**Conditions.** The free allowances were read on each provider's pages on 24 September 2026. The
+AWS, Azure and Oracle-reclamation rows were read from search-result summaries rather than the
+providers' own pages; re-read them before relying on them. What a game costs was measured on the
+development PC (Intel i7-12700F, Node 24) through the real hub with real gzip framing, over 30
+two-player games that only drew, began, confirmed and ended each turn (9 turns median, so short):
+
+- **Relay time per action:** p50 0.6 ms; an end of turn p50 1.5 ms, p95 3.9 ms, worst 9.5 ms.
+- **Data out per player:** p50 14 KiB a turn, at most 24 KiB. For a full 45-turn game the planning
+  figure is **up to 2 MB per player**, consistent with §3's extrapolation.
+- **A room's state:** about 17 KiB. Memory is not a limit anywhere.
+
+| | Free for how long | What binds us | Free games a month | Lag from India |
+|---|---|---|---|---|
+| **Oracle** | Always | Nothing at our scale: 10 TB a month out; 2 Arm cores, 12 GB | Effectively unlimited | Regions in Hyderabad and Mumbai |
+| **Cloudflare** | Always | Running time: a room held in memory for a 40-minute game and the 10-minute grace costs about 384 of 13,000 GB-s a day | About 1,000 (33 a day) | Not documented: nothing says a data centre in India hosts Durable Objects |
+| **Google** | Always | 1 GB a month out, and US regions only | About 125 four-player | A round trip to the US |
+| **AWS** | 6 months | The free plan account closes when the credits or six months run out | — | — |
+| **Azure** | 12 months (a VM) | Paid after the first year | — | — |
+
+The lag column is typical internet behaviour, not a measurement of ours; measuring it from a phone is
+this stage's first measurement.
+
+### What the choice costs, so it is not forgotten
+
+- **We own an operating system.** Patching is ours; security updates install themselves (below).
+- **Oracle reclaims free servers that look idle**: CPU, network and, for Arm, memory all under 20%
+  over seven days. Pay As You Go is reported by the community, not by Oracle's pages, to prevent it,
+  charging only above the Always Free limits; a budget alert catches a mistake. By design nothing on
+  the server needs keeping, so a reclaimed server is a rebuild from a script, not a loss.
+- **Rate limiting, a connection cap and TLS are ours**, where a managed platform would have provided
+  them.
+- **A published allowance has an expiry date.** Oracle halved its Arm allowance in June 2026, from 4
+  cores and 24 GB to 2 and 12. Gate B re-reads it on the day of deployment.
+
+### The proposal: what P3.5 builds, in order
+
+1. **On the development PC, nothing deployed:**
+   - a per-address connection cap and a per-connection message rate in the Node adapter, with the
+     address held in memory only and never logged;
+   - the relay as **one bundled file** (esbuild, `ws` included), so the server runs one file on
+     Node's long-term-support release and nothing is built or installed there;
+   - **the server setup as a script**: an unprivileged user for the relay; a service that restarts
+     it on failure and at boot; automatic security updates; a firewall open only for SSH (keys only)
+     and HTTPS; Caddy for the certificate, with **no access logs**, because an IP address is personal
+     data under the DPDP Act;
+   - a deploy script from the development PC, and a rebuild script for a reclaimed server.
+2. **Shantanu's steps**, which nobody else can take: the account, with a phone and a card that is
+   not charged; the home region; Pay As You Go and the budget alert, if taken; the server created
+   in Oracle's console, with the exact clicks supplied; the public key from the development PC added
+   to it; a hostname.
+3. **Setup over SSH from the development PC**, each step asked for first.
+4. **Measured and recorded, for Gate B:** lag from a phone in India; relay time per action on the
+   server itself (this section's measurement, re-run there); data per game; the free allowance
+   re-read that day.
+
+### Rulings needed before building
+
+1. **The home region: Hyderabad or Mumbai.** It is chosen once, at sign-up; Always Free servers can
+   exist only there; Oracle's pages do not say it can be changed.
+2. **The hostname**, which the certificate needs and Android requires (it blocks unencrypted
+   connections by default): a free subdomain, such as DuckDNS, or a domain of our own. The app will
+   carry the address, so changing it later means an app update, and a free subdomain service can
+   disappear. **Recommendation: a free subdomain is enough for P3.5 and P3.6; a domain of our own
+   before any build reaches a tester.**
+3. **Isolation when other projects share the server.** The free Arm allowance splits into two
+   servers of one core and 6 GB each. **Recommendation: the relay's server runs only things that
+   store no personal data, and anything that stores personal data gets the other server.** It costs
+   nothing, and a break-in through one cannot reach the other.
+4. **One bundled file rather than a checkout of the repository** on the server. **Recommendation:
+   the bundle**: nothing to build or install there, and the smallest set of code on a machine the
+   internet can reach.

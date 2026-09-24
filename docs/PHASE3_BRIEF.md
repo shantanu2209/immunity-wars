@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.2 · 24 September 2026
+**Version:** 1.3 · 24 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,25 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.3 records
+
+v1.3 changes ruling 5, by ruling (Shantanu, 24 September 2026: *"let's adjust what needs adjusting
+from cloudflare to oracle"*), after the comparison in [`for-P3.md`](for-P3.md) §5:
+
+- **The relay's home is Oracle Cloud's Always Free tier, not Cloudflare's free plan.** Oracle's
+  free allowance is far larger at our scale (10 TB a month out; two Arm cores and 12 GB), it has
+  regions in India, and the Node relay P3.4 built runs there unchanged. Cloudflare's free plan would
+  have held about 33 in-memory games a day, and its documentation does not say that any data centre
+  in India hosts a Durable Object. **The cost is that we own an operating system**, and that Oracle
+  reclaims free servers that look idle; both are carried into §6. Pay As You Go, which the community
+  reports keeps a free server from being reclaimed, is *"a genuine option to go for"* in his words.
+- **The right to move later is unchanged**, and is now a right to move TO Cloudflare, or to any
+  other server, as much as away from Oracle.
+- **Also recorded:** a join naming a code the relay does not hold is refused (*"Yes incorrect code
+  should be refused"*), which is how P3.4 built it.
+
+§1 Gate B, §3 P3.5, §4 ruling 5 and §6 carry the marked amendments in place.
 
 ## What v1.2 records
 
@@ -76,9 +95,10 @@ the rules.** The engine is fixed; the equivalence corpus remains the oracle.
 
 - [ ] The relay runs inside a free plan at the measured traffic of a real game, with the numbers
       recorded and the plan's limits re-read **on the day**, not trusted from this document
-- [ ] **The platform is replaceable:** the room's rules are a plain module with no Cloudflare types
+- [ ] **The platform is replaceable:** the room's rules are a plain module with no platform types
       in it, and the platform adapter is small enough to rewrite in a day. Proven by a test that
-      runs the room module with no Cloudflare runtime at all
+      runs the room module with no platform runtime at all. ⚠️ *Amended in v1.3:* this said
+      "Cloudflare" in both places, when Cloudflare was the platform
 - [ ] No personal data anywhere: no accounts, no stored names, nothing on the server that outlives
       the room
 
@@ -111,7 +131,7 @@ Sequenced so the thing that could invalidate the rest happens first.
 | **P3.2** | **The protocol**: message types and Zod schemas both ways, `rulesVersion` and a protocol version on every message, with a refusal path proven by a control | Zod at every trust boundary is a standing rule; a relay is the largest trust boundary this project has ever had |
 | **P3.3** | **The measurement: frames or state?** One room, two clients, a real spread. What it costs to send 10 frames versus one state and a dice log | The Task E question. Decided by measurement, before the transport is written around either answer |
 | **P3.4** | **`RelaySession`** — the second implementation of `Session`, against a local relay on the development machine | No cloud involved yet |
-| **P3.5** | **The Cloudflare adapter**: one Durable Object per room, WebSockets, the free-plan numbers measured | Small by design; §6 |
+| **P3.5** | **The Oracle deployment**: the P3.4 relay on an Oracle Always Free server in India, encrypted, supervised and patched, the free-tier numbers measured. ⚠️ *Amended in v1.3:* this was "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
 | **P3.6** | **Two real devices, two networks**, a full game, and the 22 coverage arms | Gate A |
 | **P3.7** | The multiplayer screens: create, join, the lobby, seat assignment, the away state | They are the last thing, because until P3.6 nobody knows what they must show |
 
@@ -137,8 +157,10 @@ Given by Shantanu on 20 September 2026, in the conversation this brief was writt
    byte-identical corpus. **A rule that says "the table decides" needs no AI at all**, so the bot
    leaves Phase 3 entirely and the corpus is not re-baselined here.
    `COVERAGE_DEFERRED.md`'s 17 bot arms are relabelled accordingly, at the generator.
-5. **Cloudflare, free plan, for now** — with the right to move later, which §6 makes a requirement
-   rather than a hope.
+5. **Oracle Cloud, Always Free tier** — with the right to move later, which §6 makes a requirement
+   rather than a hope. ⚠️ *Amended in v1.3 (24 September 2026):* this ruling read **"Cloudflare, free
+   plan, for now"** (20 September). Changed by ruling after the comparison in
+   [`for-P3.md`](for-P3.md) §5; what the change costs is in §6.
 
 ---
 
@@ -179,22 +201,43 @@ disk anywhere, ever.
 
 ## 6. The relay, and the right to leave it
 
-**One room is one Durable Object**, holding that room's state, with WebSockets. The free plan
-carries about 3 million requests a month; **incoming WebSocket messages are billed 20 to 1 and
-outgoing are free**, which is the direction this traffic goes, since a relay broadcasts after each
-action. At our scale this is comfortably free, and it scales to zero when nobody is playing.
-**Gate B requires the limits to be re-read on the day**: a published number in a brief is a claim
-with an expiry date.
+⚠️ *Rewritten in v1.3 (24 September 2026), when the platform changed from Cloudflare to Oracle.*
+v1.2 read: one room per Durable Object, about 3 million requests a month free, incoming WebSocket
+messages billed 20 to 1 and outgoing free. [`for-P3.md`](for-P3.md) §5 has the comparison that
+changed it.
+
+**One Node process on one Oracle Always Free server** holds every room in memory: the relay P3.4
+built (`packages/server`), behind a front that terminates TLS, in a home region in India. Read on
+24 September 2026: 10 TB a month outbound, and an Arm allowance of 2 cores and 12 GB, **halved from
+4 and 24 in June 2026**. That halving is why **Gate B requires the limits to be re-read on the
+day**: a published number in a brief is a claim with an expiry date.
+
+**What owning the server costs, carried here so it is not forgotten:**
+
+- **An operating system to patch.** Security updates install themselves; the setup is a script.
+- **Oracle reclaims free servers that look idle** — CPU, network and (for Arm) memory all under
+  20% over seven days. A relay for a few games a week looks idle. Pay As You Go is reported by the
+  community, not by Oracle, to prevent it, charging only above the free limits, with a budget alert
+  to catch a mistake. And by design nothing on the server needs keeping, so a reclaimed server is a
+  rebuild from the script, not a loss.
+- **Rate limiting, a connection cap and TLS are ours**, where a managed platform would have provided
+  them.
+- **Other projects of ours may share the server's allowance**, as genuine workloads. Proposed
+  default, for ruling at P3.5: nothing that stores personal data shares a server with the relay.
+  The free Arm allowance splits into two servers, so that isolation costs nothing.
 
 **The platform must be replaceable, and that is a gate item, not an intention.**
 
-- The room's rules are a plain module: no Cloudflare types, no `env`, no `WebSocket` in its
+- The room's rules are a plain module: no platform types, no `env`, no `WebSocket` in its
   signatures. It takes messages in and returns messages out.
-- The adapter is the only thing that knows about Durable Objects, and it is small enough to rewrite
-  in a day. **Proven by running the room module under plain Node in the test suite** — if that test
-  passes, the module is portable by construction rather than by assertion.
-- The fallback, if Cloudflare's terms change: a small always-free VM, at the cost of owning an
-  operating system to patch.
+- The adapter is the only thing that knows about the platform (`packages/server/src/node.ts`), and
+  it is small enough to rewrite in a day. **Proven by running the room module under plain Node in the
+  test suite** — if that test passes, the module is portable by construction rather than by
+  assertion.
+- The fallback, if Oracle's terms change: Cloudflare's Durable Objects, one room per object, which
+  means a second adapter and the hub's per-room half; or any other server, which means the same
+  adapter unchanged. ⚠️ *Amended in v1.3:* the fallback was "a small always-free VM", with
+  Cloudflare the platform.
 
 ⚠️ **This is the project's first long-running listening process, and that changes a security
 claim.** [`SECURITY_NOTES.md`](SECURITY_NOTES.md)'s current property is *"no open advisory is in a
