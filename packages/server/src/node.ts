@@ -1,9 +1,9 @@
 /**
- * THE NODE ADAPTER: the hub on a WebSocket server, for the development machine (P3.4) and for the
- * brief's fallback, "a small always-free VM" (§6), should Cloudflare's terms ever change.
+ * THE NODE ADAPTER: the hub on a WebSocket server, on the development machine (P3.4) and in
+ * production on an Oracle Cloud server (P3.5, ruled 24 September 2026).
  *
  * Deliberately a few lines. Everything that is not "bytes in, bytes out, a socket closed" is the
- * hub's or the room's, so this file is what P3.5 rewrites for a Durable Object, and nothing else.
+ * hub's or the room's, so this file is what a move to another platform rewrites, and nothing else.
  *
  * `ws` is the one dependency, and the first in a process that LISTENS. `docs/SECURITY_NOTES.md`
  * records it: pinned exactly, no dependencies of its own, and the listening-process property

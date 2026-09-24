@@ -7,9 +7,10 @@
  * ============================================================================================
  *
  * Gate B of the brief requires the platform to be replaceable, and requires it PROVEN rather than
- * intended: "the room's rules are a plain module with no Cloudflare types in it, and the platform
- * adapter is small enough to rewrite in a day". A module that takes a message and returns the next
- * state plus what to send is a module that runs under plain Node in a test, which is the proof.
+ * intended: "the room's rules are a plain module with no platform types in it, and the platform
+ * adapter is small enough to rewrite in a day" (v1.3; it named Cloudflare when that was the
+ * platform). A module that takes a message and returns the next state plus what to send is a
+ * module that runs under plain Node in a test, which is the proof.
  *
  * So, deliberately:
  *

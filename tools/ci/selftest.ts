@@ -213,7 +213,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'boundaries-room-node',
-    why: "GATE B (docs/PHASE3_BRIEF.md §6): the room must be platform-free, or 'we can move off Cloudflare later' is a hope rather than a property. A room that can read a file is a room that has a platform in it.",
+    why: "GATE B (docs/PHASE3_BRIEF.md §6): the room must be platform-free, or 'we can move to another platform later' is a hope rather than a property. A room that can read a file is a room that has a platform in it.",
     file: 'packages/room/src/room.ts',
     mutate: (t) => `import { readFileSync } from 'node:fs';\nvoid readFileSync;\n${t}`,
     gate: 'pnpm boundaries',

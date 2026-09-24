@@ -4,7 +4,9 @@
  *
  * P3.3 found that no candidate passes uncompressed — frames whole reach 593 KiB in one burst — and
  * that whether Cloudflare's relay negotiates `permessage-deflate` is unknown. So the application
- * compresses, and nothing waits on the platform.
+ * compresses, and nothing waits on the platform. (The relay moved to our own server on 24 September
+ * 2026, where that question does not arise; the reason that stands is the second one, that nothing
+ * waits on whichever platform it is.)
  *
  * **One definition, in the package both sides share.** P3.3's record said compression would be
  * "the adapter's and the session's job, not the protocol's", meaning `encode` keeps returning text.

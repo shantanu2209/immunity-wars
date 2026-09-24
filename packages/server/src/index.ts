@@ -2,7 +2,8 @@
  * @immunity-wars/server — the relay (Phase 3).
  *
  * `hub.ts` is the relay without a platform: rooms, connections, framing, routing. `node.ts` puts it
- * on a WebSocket server. P3.5's Cloudflare adapter is a second `node.ts`, not a second hub.
+ * on a WebSocket server, which is what runs in production. A move to another platform would be a
+ * second `node.ts`, not a second hub.
  */
 
 export const PACKAGE_NAME = '@immunity-wars/server';

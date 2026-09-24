@@ -348,14 +348,15 @@ own phone.
 |---|---|---|---|
 | The development relay | `pnpm --filter @immunity-wars/server relay` | `127.0.0.1:8787` by default; the LAN only when started with `HOST=0.0.0.0`, deliberately | `ws`, `zod`, and this repository's own `protocol`, `room`, `session-core`, `engine`, `content` |
 
-P3.5 replaces it in production with a Cloudflare Durable Object, and that adapter's dependencies get
-the same re-read when it lands.
+P3.5 deploys this same relay to an Oracle Cloud server (ruled 24 September 2026, replacing
+Cloudflare), so the row above is production's too. What P3.5 adds in front of it — a TLS front and
+an operating system that is ours to patch — gets the same re-read when it lands.
 
 - **`ws` 8.21.3**, pinned exactly, with **no dependencies of its own**: the only third-party code in
   the relay besides `zod`, which the protocol already used for every trust boundary.
 - **`pnpm audit`, 24 September 2026: "No known vulnerabilities found."**
 
-> ### The property, restated for a relay: no open advisory is in a process that listens, and the relay's dependency set is `ws`, `zod` and our own code. Re-read whenever any of those moves, and whenever P3.5's adapter gains a dependency.
+> ### The property, restated for a relay: no open advisory is in a process that listens, and the relay's dependency set is `ws`, `zod` and our own code. Re-read whenever any of those moves, and whenever P3.5's deployment adds one.
 
 ### What the relay does about input it did not ask for
 
@@ -380,10 +381,11 @@ so it is written for that:
 ### Not built, and why each is acceptable for now
 
 - **No TLS** on the development relay (`ws://`). It listens on this machine unless told otherwise;
-  production is `wss://` behind Cloudflare (P3.5).
+  production is `wss://` with a certificate on our own server (P3.5).
 - **No per-address rate limit or connection cap.** A code is the only way into a room, and with no
   rate limit, guessing is bounded only by the 244 million. That is enough for a development relay
-  and is **owed at P3.5**, where the platform provides the limiting.
+  and is **owed at P3.5**. *Updated 24 September 2026:* this said "where the platform provides the
+  limiting", which was Cloudflare. On our own server nothing provides it, so the relay does.
 - **No `Origin` check.** A browser page on any site can open a WebSocket to the relay, but the relay
   keeps no cookies and grants nothing by origin, so there is nothing for a cross-site page to borrow
   that it could not get by connecting directly.

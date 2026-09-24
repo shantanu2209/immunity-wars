@@ -150,8 +150,7 @@ module.exports = {
       comment:
         'GATE B, AS A CHECK RATHER THAN AN INTENTION (docs/PHASE3_BRIEF.md §6). The room must be ' +
         'replaceable-platform code: no filesystem, no network, no process, no timers of its own. ' +
-        'Its entry points take a timestamp and return messages, so it runs under a Durable ' +
-        'Object, ' +
+        'Its entry points take a timestamp and return messages, so it runs under the Node relay, ' +
         'under plain Node in a test, and under whatever replaces them. The day this rule is ' +
         'relaxed is the day the portability claim in the brief stops being true, and the brief ' +
         'makes that claim a gate item.',
