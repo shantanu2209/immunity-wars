@@ -29,7 +29,8 @@
  * ============================================================================================
  *
  * A `PlayerRef` is the only thing a rejoin needs, so it is a credential in practice even though it
- * authenticates nothing in principle. It travels client-to-relay in `join` and nowhere else; the
+ * authenticates nothing in principle. It travels client-to-relay in `join` (or `create`, which is
+ * a join to a room the relay makes for it) and nowhere else; the
  * relay binds it to the connection and stamps every later message itself. **It is never sent to
  * clients**: members are named on the wire by a public `id`, their join order. (P3.1's room
  * broadcast every ref, which let any member take over any other's seats in one message; corrected
@@ -60,13 +61,30 @@ const ClientBody = z.discriminatedUnion('kind', [
     // Typed for this room, never stored. Bounded so a name cannot be a payload.
     name: z.string().trim().min(1).max(24),
   }),
+  /**
+   * A NEW ROOM, and the relay mints its code (P3.4): the room never invents one, and a client that
+   * chose its own could choose one somebody else is using. Otherwise exactly a join.
+   */
+  z.object({
+    kind: z.literal('create'),
+    ref: z.string().min(1).max(64),
+    name: z.string().trim().min(1).max(24),
+  }),
   z.object({ kind: z.literal('leave') }),
   z.object({ kind: z.literal('claimSeat'), seat: Seat }),
   z.object({ kind: z.literal('releaseSeat'), seat: Seat }),
   z.object({ kind: z.literal('assignSeat'), seat: Seat, to: MemberId.nullable() }),
   z.object({ kind: z.literal('start'), difficulty: z.enum(['training', 'normal', 'hard']) }),
   // The action is the engine's to judge; the room judges only whose piece it is.
-  z.object({ kind: z.literal('action'), action: z.record(z.string(), z.unknown()) }),
+  z.object({
+    kind: z.literal('action'),
+    /**
+     * The client's own number for this action, echoed in the `result` that answers it. Without
+     * it a client could not tell its own answer from a view another player's action caused.
+     */
+    id: z.number().int().nonnegative(),
+    action: z.record(z.string(), z.unknown()),
+  }),
 ]);
 
 export type ClientMessage = z.infer<typeof ClientBody>;
@@ -96,7 +114,29 @@ const ServerBody = z.discriminatedUnion('kind', [
   /** Who you are in this room, sent to one connection after it joins. */
   z.object({ kind: z.literal('joined'), id: MemberId }),
   z.object({ kind: z.literal('room'), room: RoomProjectionSchema }),
-  z.object({ kind: z.literal('view'), view: View }),
+  z.object({
+    kind: z.literal('view'),
+    view: View,
+    /**
+     * What LocalSession computes beside the view, computed by the relay from the same builder
+     * (`@immunity-wars/session-core`): the selection-independent answers, and the scoped answers
+     * for EVERY cell and family, so a client serves its own selection without a round trip.
+     * Carried untouched for the same reason the view is (see the header of this file).
+     */
+    queries: z.record(z.string(), z.unknown()),
+    scoped: z.object({
+      moveDestinations: z.record(z.string(), z.unknown()),
+      productionDetail: z.record(z.string(), z.unknown()),
+    }),
+  }),
+  /** The answer to one action, to the player who sent it and nobody else. */
+  z.object({
+    kind: z.literal('result'),
+    id: z.number().int().nonnegative(),
+    ok: z.boolean(),
+    code: z.enum(ERROR_CODES).optional(),
+    detail: z.string().optional(),
+  }),
   z.object({ kind: z.literal('burst'), frames: z.array(Frame) }),
   z.object({
     kind: z.literal('error'),

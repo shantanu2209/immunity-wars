@@ -20,14 +20,24 @@ import {
 
 const CLIENT: readonly ClientMessage[] = [
   { kind: 'join', code: 'ABC123', ref: 'p_device', name: 'Kartik' },
+  { kind: 'create', ref: 'p_device', name: 'Kartik' },
   { kind: 'leave' },
   { kind: 'claimSeat', seat: 'bcell' },
   { kind: 'releaseSeat', seat: 'res_liver' },
   { kind: 'assignSeat', seat: 'nk', to: 2 },
   { kind: 'assignSeat', seat: 'nk', to: null },
   { kind: 'start', difficulty: 'training' },
-  { kind: 'action', action: { action: 'move', cell: 'neutrophil', to: 3 } },
+  { kind: 'action', id: 7, action: { action: 'move', cell: 'neutrophil', to: 3 } },
 ];
+
+/** What a view carries beside itself since v2 (P3.4): the relay's answers, as LocalSession's. */
+const BESIDE = {
+  queries: { state: { hivActive: false }, perCell: { helperWith: { bcell: null } } },
+  scoped: {
+    moveDestinations: { neutrophil: [{ zone: 'hub' }], bcell: [] },
+    productionDetail: { ENV: { base: 1, net: 1 } },
+  },
+};
 
 const SERVER: readonly ServerMessage[] = [
   { kind: 'joined', id: 1 },
@@ -41,9 +51,14 @@ const SERVER: readonly ServerMessage[] = [
       freeSeats: ['nk'],
     },
   },
-  { kind: 'view', view: { phase: 'infection', turn: 1 } },
+  { kind: 'view', view: { phase: 'infection', turn: 1 }, ...BESIDE },
+  { kind: 'result', id: 7, ok: true },
+  { kind: 'result', id: 8, ok: false, code: 'engine', detail: 'Draw first.' },
+  { kind: 'result', id: 9, ok: false, code: 'undoIsSinglePlayer' },
   { kind: 'burst', frames: [{ label: 'The march', dice: null, view: { turn: 2 } }] },
   { kind: 'error', code: 'notCaptain' },
+  { kind: 'error', code: 'noSuchRoom' },
+  { kind: 'error', code: 'version' },
   { kind: 'error', code: 'engine', detail: 'Draw first.' },
 ];
 
@@ -111,7 +126,7 @@ describe('a peer on another version is refused, before its body is read', () => 
 
   it('refuses even a perfectly formed body when the version is wrong', () => {
     // The body would parse. It must not be looked at.
-    const body = { kind: 'action', action: { action: 'draw' } };
+    const body = { kind: 'action', id: 1, action: { action: 'draw' } };
     expect(decodeClient(withHeader(PROTOCOL_VERSION + 1, RULES_VERSION, body)).ok).toBe(false);
   });
 });
@@ -171,10 +186,25 @@ describe('a view arrives byte for byte (the measurement in docs/for-P3.md §2, p
   };
 
   it('delivers a view byte for byte', () => {
-    const d = decodeServer(encode({ kind: 'view', view }));
+    const d = decodeServer(encode({ kind: 'view', view, ...BESIDE }));
     expect(d.ok).toBe(true);
     if (d.ok && d.message.kind === 'view') {
       expect(JSON.stringify(d.message.view)).toBe(JSON.stringify(view));
+    }
+  });
+
+  it('delivers what comes beside a view byte for byte too: its queries and scoped answers', () => {
+    // Engine-derived like the view, so held to the same standard: nothing reordered or dropped.
+    const queries = { zeta: { b: 2, a: 1 }, state: { hivActive: true }, alpha: [3, 1, 2] };
+    const scoped = {
+      moveDestinations: { nk: [{ step: 3 }, { step: 1 }], macrophage: [] },
+      productionDetail: { TOX: { reduced: true, base: 2 }, ENV: null },
+    };
+    const d = decodeServer(encode({ kind: 'view', view, queries, scoped }));
+    expect(d.ok).toBe(true);
+    if (d.ok && d.message.kind === 'view') {
+      expect(JSON.stringify(d.message.queries)).toBe(JSON.stringify(queries));
+      expect(JSON.stringify(d.message.scoped)).toBe(JSON.stringify(scoped));
     }
   });
 

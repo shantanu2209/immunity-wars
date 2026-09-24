@@ -9,6 +9,7 @@
  * **What this suite does NOT test:** whether an action is legal. That is `applyAction`'s, and the
  * corpus is its oracle. The room decides ownership only, and these tests hold exactly that line.
  */
+import { CELL_KEYS, FAMILIES } from '@immunity-wars/session-core';
 import { describe, expect, it } from 'vitest';
 
 import { createRoom, project, step, sweep } from './room.js';
@@ -33,11 +34,23 @@ function run(
 
 const join = (ref: string, name: string): Inbound => ({ kind: 'join', ref, name });
 const seat = (ref: string, s: string): Inbound => ({ kind: 'claimSeat', ref, seat: s });
-/** The refusal CODES a step produced: the room sends codes, never English (P3.2). */
+/**
+ * The refusal CODES a step produced: the room sends codes, never English (P3.2). Read from both
+ * places a refusal can be, since an action's refusal is a failed `result` (P3.4).
+ */
+type Sent = ReturnType<typeof step>['out'][number]['message'];
+const refusal = (m: Sent): { code?: string; detail?: string } | null =>
+  m.kind === 'error' ? m : m.kind === 'result' && !m.ok ? m : null;
 const errorsOf = (out: ReturnType<typeof step>['out']): string[] =>
-  out.flatMap((o) => (o.message.kind === 'error' ? [o.message.code] : []));
+  out.flatMap((o) => {
+    const r = refusal(o.message);
+    return r ? [r.code ?? ''] : [];
+  });
 const detailsOf = (out: ReturnType<typeof step>['out']): (string | undefined)[] =>
-  out.flatMap((o) => (o.message.kind === 'error' ? [o.message.detail] : []));
+  out.flatMap((o) => {
+    const r = refusal(o.message);
+    return r ? [r.detail] : [];
+  });
 const member = (room: RoomState, ref: string) => room.members.find((m) => m.ref === ref);
 
 describe('joining', () => {
@@ -341,6 +354,34 @@ describe('starting the game', () => {
   });
 });
 
+describe('arriving after the game has started (P3.4)', () => {
+  const started = (): RoomState =>
+    step(
+      run([join('a', 'K'), join('b', 'S'), seat('a', 'bcell'), seat('b', 'nk')]).room,
+      { kind: 'start', ref: 'a', difficulty: 'training' },
+      T0,
+    ).room;
+
+  it('hands a rejoining member the board, addressed to them alone', () => {
+    const away = step(started(), { kind: 'disconnect', ref: 'b' }, T0).room;
+    const s = step(away, join('b', 'S'), T0);
+    const views = s.out.filter((o) => o.message.kind === 'view');
+    // Without it they see nothing until somebody acts, and a table waiting on them will not.
+    expect(views.map((o) => o.to)).toContain('b');
+  });
+
+  it('hands a new member the board too, since the captain may seat them in an away seat', () => {
+    const s = step(started(), join('c', 'T'), T0);
+    expect(s.out.some((o) => o.to === 'c' && o.message.kind === 'view')).toBe(true);
+  });
+
+  // The permitting twin's mirror: there is no board in the lobby, so nothing is sent.
+  it('sends no view to someone joining the lobby', () => {
+    const s = step(run([join('a', 'K')]).room, join('b', 'S'), T0);
+    expect(s.out.some((o) => o.message.kind === 'view')).toBe(false);
+  });
+});
+
 describe('an action', () => {
   const playing = (): RoomState => {
     const room = run([
@@ -355,7 +396,7 @@ describe('an action', () => {
   it("is refused when the sender does not hold that seat: ownership is the room's business", () => {
     const s = step(
       playing(),
-      { kind: 'action', ref: 'b', action: { action: 'move', cell: 'bcell' } },
+      { kind: 'action', id: 1, ref: 'b', action: { action: 'move', cell: 'bcell' } },
       T0,
     );
     expect(errorsOf(s.out)).toEqual(['notYourPiece']);
@@ -364,14 +405,18 @@ describe('an action', () => {
   // The permitting twin, and it matters: a room that refused every action would pass the test
   // above. The draw belongs to no seat, so it is the action that proves the path is open.
   it('reaches the engine when the room has no objection', () => {
-    const s = step(playing(), { kind: 'action', ref: 'a', action: { action: 'draw' } }, T0);
+    const s = step(playing(), { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } }, T0);
     expect(errorsOf(s.out)).toEqual([]);
     expect(s.out.some((o) => o.message.kind === 'view')).toBe(true);
   });
 
   it("is the ENGINE's to refuse when it is illegal, and the room passes that refusal on", () => {
     // Nothing is drawn yet, so commanding is the engine's to reject — not the room's.
-    const s = step(playing(), { kind: 'action', ref: 'a', action: { action: 'beginCommand' } }, T0);
+    const s = step(
+      playing(),
+      { kind: 'action', id: 1, ref: 'a', action: { action: 'beginCommand' } },
+      T0,
+    );
     // The engine said no, in its own words, which the client renders through the engine
     // catalogue as single player does.
     expect(errorsOf(s.out)).toEqual(['engine']);
@@ -383,12 +428,12 @@ describe('an action', () => {
     // only, so if the smuggled pid won, this would be accepted.
     const drawn = step(
       playing(),
-      { kind: 'action', ref: 'a', action: { action: 'draw' } },
+      { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } },
       T0,
     ).room;
     const s = step(
       drawn,
-      { kind: 'action', ref: 'b', action: { action: 'beginCommand', pid: 'a' } },
+      { kind: 'action', id: 1, ref: 'b', action: { action: 'beginCommand', pid: 'a' } },
       T0,
     );
     expect(errorsOf(s.out)).toEqual(['engine']);
@@ -396,13 +441,54 @@ describe('an action', () => {
 
   it('is refused before the game starts', () => {
     const room = run([join('a', 'K')]).room;
-    const s = step(room, { kind: 'action', ref: 'a', action: { action: 'draw' } }, T0);
+    const s = step(room, { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } }, T0);
     expect(errorsOf(s.out)).toEqual(['notStarted']);
   });
 
   it('is refused from someone who is not in the room at all', () => {
-    const s = step(playing(), { kind: 'action', ref: 'z', action: { action: 'draw' } }, T0);
+    const s = step(playing(), { kind: 'action', id: 1, ref: 'z', action: { action: 'draw' } }, T0);
     expect(errorsOf(s.out)).toEqual(['notInRoom']);
+  });
+
+  // PROTOCOL v2 (P3.4): every action is answered, by its own id, to its sender alone.
+  it('is answered with a result carrying its own id, to the sender alone, after the view', () => {
+    const s = step(playing(), { kind: 'action', id: 42, ref: 'a', action: { action: 'draw' } }, T0);
+    const results = s.out.filter((o) => o.message.kind === 'result');
+    expect(results).toEqual([{ to: 'a', message: { kind: 'result', id: 42, ok: true } }]);
+    // Last, so a sender whose promise resolves on it already holds the view the action caused.
+    expect(s.out.findIndex((o) => o.message.kind === 'result')).toBeGreaterThan(
+      s.out.findIndex((o) => o.message.kind === 'view'),
+    );
+  });
+
+  it('is answered by id when refused too, and a refusal is never an `error`', () => {
+    const s = step(playing(), { kind: 'action', id: 7, ref: 'z', action: { action: 'draw' } }, T0);
+    expect(s.out).toEqual([
+      { to: 'z', message: { kind: 'result', id: 7, ok: false, code: 'notInRoom' } },
+    ]);
+  });
+
+  it('carries every scoped answer beside the view, for every cell and every family', () => {
+    const s = step(playing(), { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } }, T0);
+    const view = s.out.find((o) => o.message.kind === 'view')?.message;
+    if (view?.kind !== 'view') throw new Error('no view');
+    expect(Object.keys(view.scoped.moveDestinations)).toEqual([...CELL_KEYS]);
+    expect(Object.keys(view.scoped.productionDetail)).toEqual([...FAMILIES]);
+    expect(Object.keys(view.queries).length).toBeGreaterThan(0);
+  });
+
+  // UNDO IS SINGLE-PLAYER IN v1 (FINDINGS #79): the engine's undo stack is the game's, not a
+  // player's, so in a room it would unwind whoever moved last.
+  it('is refused when it is an undo, before the engine sees it', () => {
+    const drawn = step(
+      playing(),
+      { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } },
+      T0,
+    ).room;
+    const snapshot = JSON.stringify(drawn.game);
+    const s = step(drawn, { kind: 'action', id: 2, ref: 'a', action: { action: 'undo' } }, T0);
+    expect(errorsOf(s.out)).toEqual(['undoIsSinglePlayer']);
+    expect(JSON.stringify(drawn.game)).toBe(snapshot);
   });
 });
 

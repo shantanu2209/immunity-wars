@@ -38,6 +38,7 @@
  */
 
 import type { ErrorCode, RoomProjection } from '@immunity-wars/protocol';
+import type { AllScoped, PrecomputedQueries } from '@immunity-wars/session-core';
 
 /**
  * The fourteen seats and the refusal codes are the PROTOCOL's (P3.2): the client and the relay
@@ -110,15 +111,39 @@ export type Inbound =
       readonly to: number | null;
     }
   | { readonly kind: 'start'; readonly ref: string; readonly difficulty: string }
-  | { readonly kind: 'action'; readonly ref: string; readonly action: Record<string, unknown> };
+  | {
+      readonly kind: 'action';
+      readonly ref: string;
+      /** The client's own number for this action, echoed in the `result` that answers it. */
+      readonly id: number;
+      readonly action: Record<string, unknown>;
+    };
 
 /** What the room says back. The adapter turns these into frames on a socket and nothing more. */
 export type Message =
   /** Who you are in this room: your public id, sent to one connection after it joins. */
   | { readonly kind: 'joined'; readonly id: number }
   | { readonly kind: 'room'; readonly room: RoomProjection }
-  | { readonly kind: 'view'; readonly view: unknown }
+  | {
+      readonly kind: 'view';
+      readonly view: unknown;
+      /** `precompute`'s answers for this view, as `LocalSession` computes them (P3.4). */
+      readonly queries: PrecomputedQueries;
+      /** Every scoped answer, for every cell and family: a client picks its own selection's. */
+      readonly scoped: AllScoped;
+    }
   | { readonly kind: 'burst'; readonly frames: readonly unknown[] }
+  /**
+   * The answer to one ACTION, to its sender only (P3.4). Refusals of an action come as a failed
+   * result rather than an `error`, so the sender can match the refusal to the action it sent.
+   */
+  | {
+      readonly kind: 'result';
+      readonly id: number;
+      readonly ok: boolean;
+      readonly code?: ErrorCode;
+      readonly detail?: string;
+    }
   /**
    * A refusal, as a CODE the client words through its catalogue. `detail` is the engine's own
    * text when the engine refused, and otherwise a hint for the wording (a holder's name).

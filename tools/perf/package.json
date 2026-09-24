@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@immunity-wars/protocol": "workspace:*",
-    "@immunity-wars/room": "workspace:*"
+    "@immunity-wars/room": "workspace:*",
+    "@immunity-wars/session": "workspace:*"
   }
 }

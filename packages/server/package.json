@@ -2,7 +2,7 @@
   "name": "@immunity-wars/server",
   "version": "0.0.0",
   "private": true,
-  "description": "Relay server.",
+  "description": "The relay (Phase 3): the hub, platform-free, and a Node adapter on ws for the development machine.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -14,6 +14,20 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
-    "build": "tsc -p tsconfig.json"
-  }
+    "build": "tsc -p tsconfig.json",
+    "relay": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@immunity-wars/protocol": "workspace:*",
+    "@immunity-wars/room": "workspace:*",
+    "ws": "8.21.3"
+  },
+  "devDependencies": {
+    "@immunity-wars/session": "workspace:*",
+    "@immunity-wars/session-core": "workspace:*",
+    "@types/ws": "8.18.1",
+    "vitest": "^4.1.11"
+  },
+  "comment:why-ws-is-pinned": "The first dependency of a process that LISTENS (docs/SECURITY_NOTES.md). Pinned exactly so that an upgrade is a decision with an audit beside it, never a side effect of an install. No dependencies of its own.",
+  "comment:why-session-is-a-dev-dependency": "Only relay.test.ts imports it: the integration test plays RelaySession against this relay and holds it against LocalSession. The relay itself never runs client code."
 }

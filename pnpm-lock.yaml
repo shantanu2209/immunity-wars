@@ -122,14 +122,59 @@ importers:
       '@immunity-wars/protocol':
         specifier: workspace:*
         version: link:../protocol
+      '@immunity-wars/session-core':
+        specifier: workspace:*
+        version: link:../session-core
     devDependencies:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@26.6.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.0(@types/node@26.6.1)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.7))
 
-  packages/server: {}
+  packages/server:
+    dependencies:
+      '@immunity-wars/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@immunity-wars/room':
+        specifier: workspace:*
+        version: link:../room
+      ws:
+        specifier: 8.21.3
+        version: 8.21.3
+    devDependencies:
+      '@immunity-wars/session':
+        specifier: workspace:*
+        version: link:../session
+      '@immunity-wars/session-core':
+        specifier: workspace:*
+        version: link:../session-core
+      '@types/ws':
+        specifier: 8.18.1
+        version: 8.18.1
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@26.6.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.0(@types/node@26.6.1)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.7))
 
   packages/session:
+    dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../content
+      '@immunity-wars/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@immunity-wars/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@immunity-wars/session-core':
+        specifier: workspace:*
+        version: link:../session-core
+    devDependencies:
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@types/node@26.6.1)(@vitest/coverage-v8@4.1.11)(vite@8.3.0(@types/node@26.6.1)(esbuild@0.28.2)(terser@5.51.2)(tsx@4.23.7))
+
+  packages/session-core:
     dependencies:
       '@immunity-wars/content':
         specifier: workspace:*
@@ -242,6 +287,9 @@ importers:
       '@immunity-wars/session':
         specifier: workspace:*
         version: link:../../packages/session
+      '@immunity-wars/session-core':
+        specifier: workspace:*
+        version: link:../../packages/session-core
       '@immunity-wars/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -309,6 +357,9 @@ importers:
       '@immunity-wars/room':
         specifier: workspace:*
         version: link:../../packages/room
+      '@immunity-wars/session':
+        specifier: workspace:*
+        version: link:../../packages/session
     devDependencies:
       puppeteer-core:
         specifier: ^25.10.0
@@ -1778,6 +1829,9 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@typescript-eslint/eslint-plugin@8.70.0':
     resolution: {integrity: sha512-/v8HZt6RlyIZxB3ntehELOcUcfxKPVGWXnQdJuHRmzrqgF8nQypcC/oxGW+Ot4VGKDq81XugPKxx0n5PBtf9PA==}
@@ -4742,6 +4796,10 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/trusted-types@2.0.7': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 26.6.1
 
   '@typescript-eslint/eslint-plugin@8.70.0(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3))(eslint@10.10.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.9.3)':
     dependencies:

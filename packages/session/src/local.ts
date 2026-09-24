@@ -8,20 +8,9 @@
  */
 
 import * as engine from '@immunity-wars/engine';
-import { apBreakdown, regenBreakdown, uid } from '@immunity-wars/engine/internal';
+import { advanceIdsPast, precompute, scope } from '@immunity-wars/session-core';
 
 import { newPlayerRef } from './player-ref.js';
-import {
-  CELL_KEYS,
-  FAMILIES,
-  INVADER_ONLY,
-  ORGAN_ONLY,
-  PER_CELL,
-  PER_FAMILY,
-  PER_INVADER,
-  PER_ORGAN,
-  STATE_ONLY,
-} from './queries.js';
 import { MemoryStorage, type Storage } from './storage.js';
 import {
   NO_SELECTION,
@@ -31,7 +20,6 @@ import {
   type NewGameConfig,
   type PlayerRef,
   type PrecomputedQueries,
-  type ProductionSummary,
   type ScopedQueries,
   type Selection,
   type Session,
@@ -328,136 +316,12 @@ export class LocalSession implements Session {
     };
   }
 
+  /** The builder is `@immunity-wars/session-core`'s since P3.4, shared with the relay. */
   private precompute(game: ViewState): PrecomputedQueries {
-    const invaders = (game['invaders'] as unknown[] | undefined) ?? [];
-    const organs = (this.g['organList'] as string[] | undefined) ?? [];
-
-    const state: Record<string, unknown> = {};
-    for (const n of STATE_ONLY) state[n] = call(n, this.g);
-
-    const perInvader: Record<string, unknown[]> = {};
-    for (const n of PER_INVADER) perInvader[n] = invaders.map((iv) => call(n, this.g, iv));
-    for (const n of INVADER_ONLY) perInvader[n] = invaders.map((iv) => call(n, iv));
-
-    const perCell: Record<string, Record<string, unknown>> = {};
-    for (const n of PER_CELL) {
-      const row: Record<string, unknown> = {};
-      for (const c of CELL_KEYS) row[c] = call(n, this.g, c);
-      perCell[n] = row;
-    }
-
-    const perOrgan: Record<string, Record<string, unknown>> = {};
-    for (const n of PER_ORGAN) {
-      const row: Record<string, unknown> = {};
-      for (const o of organs) row[o] = call(n, this.g, o);
-      perOrgan[n] = row;
-    }
-    for (const n of ORGAN_ONLY) {
-      const row: Record<string, unknown> = {};
-      for (const o of organs) row[o] = call(n, o);
-      perOrgan[n] = row;
-    }
-
-    const perFamily: Record<string, Record<string, unknown>> = {};
-    for (const n of PER_FAMILY) {
-      const row: Record<string, unknown> = {};
-      for (const f of FAMILIES) row[f] = call(n, this.g, f);
-      perFamily[n] = row;
-    }
-
-    // The three fields the always-on antibody panel reads from productionBreakdown. The other six
-    // are the tooltip, and are selection-scoped — measured at ~85% of that object's bytes.
-    const production: Record<string, ProductionSummary> = {};
-    for (const f of FAMILIES) {
-      const pb = call('productionBreakdown', this.g, f) as Record<string, unknown>;
-      production[f] = {
-        net: Number(pb['net'] ?? 0),
-        boosted: Boolean(pb['boosted']),
-        reduced: Boolean(pb['reduced']),
-        blocked: pb['blocked'] !== null && pb['blocked'] !== undefined,
-      };
-    }
-
-    // WHEN A SPENT CELL IS BACK, AND WHY — see `PrecomputedQueries.regen`. The engine's own
-    // `regenBreakdown` (6 September 2026): the Neutrophil's return turn is null while the
-    // marrow is damaged because the spread will not regenerate it then — the ENGINE's reading
-    // of the marrow, which retires the one this session used to make from hp < max (that copy
-    // was conservative on Hard, where a compensated marrow does regenerate; the engine's is
-    // exact). `readyTurn` is derived from it so the board's badge is unchanged.
-    const engineState = this.g as unknown as Parameters<typeof regenBreakdown>[0];
-    const regen = regenBreakdown(engineState);
-    const readyTurn: Record<string, number | null> = {
-      neutrophil: regen.neutrophil?.readyTurn ?? null,
-      eosinophil: regen.eosinophil?.readyTurn ?? null,
-    };
-
-    // THE ACTION POINT TOTAL AS TERMS — see `PrecomputedQueries.ap`.
-    const ap = apBreakdown(engineState);
-
-    // THE CRISIS EFFECTS IN FORCE — the view drops `fx`; the strip needs its durations.
-    const fx = (this.g['fx'] as Record<string, unknown> | undefined) ?? {};
-    const effects = {
-      capTurns: Number(fx['capTurns'] ?? 0),
-      noProduce: fx['noProduce'] === true,
-      apMod: Number(fx['apMod'] ?? 0),
-      skipMarch: fx['skipMarch'] === true,
-    };
-
-    return {
-      state,
-      perInvader,
-      perCell,
-      perOrgan,
-      perFamily,
-      production,
-      readyTurn,
-      effects,
-      ap,
-      regen,
-    };
+    return precompute(this.g, game);
   }
 
   private scope(): ScopedQueries {
-    const { cell, family } = this.selection;
-    return {
-      moveDestinations: cell
-        ? ((call('moveDestinations', this.g, cell) as unknown[] | undefined) ?? [])
-        : null,
-      productionDetail: family ? call('productionBreakdown', this.g, family) : null,
-    };
+    return scope(this.g, this.selection);
   }
-}
-
-/**
- * THE ENGINE'S ID COUNTER IS NOT IN THE STATE (FINDINGS #56, found 5 September 2026 by the
- * planning screen's walkthrough). Invader ids come from a module-level counter that `newGame`
- * resets; a saved game carries the ids but not the counter, so in a fresh process — a page
- * reload, a phone unlocked hours later — the counter starts at zero and the next arrival is
- * `i1` again, colliding with an invader already in the body. Every id-keyed path then answers
- * for the wrong pathogen: attack rings, the inspect sheet, the memory response, the planning
- * rows. `gamestate-round-trip` cannot see it: the counter is outside the state it round-trips.
- *
- * WORKAROUND, at the join that owns resume: read the largest id the save carries (in the body
- * and in the undo snapshots) and advance the counter past it. Only ever ADVANCE — the counter
- * is shared by every session in the process, and lowering it for one would poison another.
- * One id is consumed to read the counter; ids need only be unique, so that costs nothing.
- * The engine is frozen in Phase 2; Phase 3 puts the counter in `GameState` and deletes this.
- */
-function advanceIdsPast(g: Record<string, unknown>): void {
-  let max = 0;
-  const seen = (id: unknown): void => {
-    const m = /^i(\d+)$/.exec(String(id));
-    if (m) max = Math.max(max, Number(m[1]));
-  };
-  for (const iv of (g['invaders'] as { id?: unknown }[] | undefined) ?? []) seen(iv.id);
-  for (const snap of (g['undo'] as { invaders?: { id?: unknown }[] }[] | undefined) ?? []) {
-    for (const iv of snap.invaders ?? []) seen(iv.id);
-  }
-  for (const r of Object.values(
-    (g['residents'] as Record<string, { infectedBy?: unknown }> | undefined) ?? {},
-  )) {
-    if (r.infectedBy) seen(r.infectedBy);
-  }
-  let current = Number(uid().slice(1));
-  while (current < max) current = Number(uid().slice(1));
 }

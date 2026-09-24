@@ -230,6 +230,60 @@ const CONTROLS: readonly Control[] = [
     mustPass: true,
   },
   {
+    id: 'boundaries-room-downstream',
+    why: 'room-no-downstream had no failure control from P3.1 to P3.4, which is how its missing trailing slash went unseen. The relative reach is the spelling that RESOLVES; the package specifier would be unresolvable from the room, the same hole ui-app-no-unresolvable closes for ui and app only, by ruling.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      `import { LocalSession } from '../../session/src/index.js';\nvoid LocalSession;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'room-no-downstream',
+  },
+  {
+    id: 'boundaries-room-session-core-permitted',
+    why: 'P3.4, FOUND BY THE FIRST REAL IMPORT: room-no-downstream matched ^packages/(...|session) with no trailing slash, so it also matched packages/session-core and refused the edge the ruling of 24 September 2026 requires, the room computing its views with the shared builder. No failure control could have said so.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      `import { scopeFrom } from '@immunity-wars/session-core';\nvoid scopeFrom;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
+    id: 'boundaries-session-core-downstream',
+    why: 'The shared builder must not reach what uses it, or it becomes one of two copies again. Every package downstream of session-core also imports it, so this mutation makes a cycle too; the diagnostic required is the boundary rule, not no-circular.',
+    file: 'packages/session-core/src/build.ts',
+    mutate: (t) => `import { createRoom } from '../../room/src/index.js';\nvoid createRoom;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'session-core-no-downstream',
+  },
+  {
+    id: 'boundaries-session-core-engine-permitted',
+    why: "The other half: the builder runs the engine's queries, so it must be allowed to reach the engine.",
+    file: 'packages/session-core/src/build.ts',
+    mutate: (t) =>
+      `import { resolveSpread } from '@immunity-wars/engine';\nvoid resolveSpread;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
+    id: 'boundaries-session-core-node',
+    why: "GATE B through the room: the room runs session-core on every view, and room-no-node-builtins looks only at the room's own files.",
+    file: 'packages/session-core/src/build.ts',
+    mutate: (t) => `import { readFileSync } from 'node:fs';\nvoid readFileSync;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'session-core-no-node-builtins',
+  },
+  {
+    id: 'boundaries-ui-session-core',
+    why: "session-core is engine code for seam 1: it runs the engine's queries on a GameState. The UI gets its types through the session, which re-exports them.",
+    file: 'packages/ui/src/index.ts',
+    mutate: (t) =>
+      `import { precompute } from '../../session-core/src/index.js';\nvoid precompute;\n${t}`,
+    gate: 'pnpm boundaries',
+    expect: 'ui-app-no-engine',
+  },
+  {
     id: 'room-away-seats',
     why: "Ruling 4 (20 September 2026): a disconnection keeps the member's seats. If dropping freed them, a flaky connection would cost someone their cell mid-game and the table would never be asked.",
     file: 'packages/room/src/room.ts',
@@ -371,6 +425,106 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'refuses the action from any client',
+  },
+  {
+    id: 'room-ids-across-rooms',
+    why: 'FINDINGS #56 on a relay: the engine hands out invader ids from one counter per process, and newGame in ANY room resets it. Without advancing it before every engine call, a game starting at one table makes another table hand one id to two pathogens, and every id-keyed action can then hit the wrong one.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) => t.replace('  advanceIdsPast(game as unknown as Record<string, unknown>);\n', ''),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'holds across two rooms interleaved in one process',
+  },
+  {
+    id: 'room-undo-refused',
+    why: "FINDINGS #79: the engine's undo stack is the game's, not a player's. In a room an undo would unwind whoever moved last, possibly another player.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (name === 'undo') return refuse(",
+        "      if (false && name === 'undo') return refuse(",
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'is refused when it is an undo, before the engine sees it',
+  },
+  {
+    id: 'room-rejoin-view',
+    why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) => t.replace('            ...current(back, msg.ref),\n', ''),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'hands a rejoining member the board',
+  },
+  {
+    id: 'frame-limit',
+    why: 'A gzip frame inflates about a thousandfold, so a limit on the bytes received is no limit on the bytes decoded. The relay listens on the open internet, where anyone can open a socket without a code.',
+    file: 'packages/protocol/src/frame.ts',
+    mutate: (t) => t.replace('        if (length > limit) {', '        if (false) {'),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'refuses a frame that would unpack past its limit',
+  },
+  {
+    id: 'hub-order',
+    why: "Gate A: every client's view agrees after every action. Unpacking is asynchronous, so a relay that handled frames as they finished unpacking would apply a player's actions out of order; the test makes a later frame finish first.",
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) => t.replace('    const run = this.work.then(task);', '    const run = task();'),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: "handles one link's frames in arrival order",
+  },
+  {
+    id: 'hub-takeover',
+    why: "A phone that loses its network often reconnects before the old socket is known to be dead. If the old socket's close were still bound to the member, it would mark as away a member who is sitting right there.",
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) => t.replace('          this.links.set(other, null);\n', ''),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'takes over from the old one',
+  },
+  {
+    id: 'relay-selection-boundary',
+    why: 'A relay client clears the selection where LocalSession does: after a draw or an end of turn, and not when command begins. Read off the view, because another player may cross the boundary; phase is the tempting and wrong signal.',
+    file: 'packages/session/src/relay.ts',
+    mutate: (t) =>
+      t.replace(
+        "JSON.stringify([view['turn'] ?? null,",
+        "JSON.stringify([view['phase'], view['turn'] ?? null,",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'clears the selection where LocalSession clears it',
+  },
+  {
+    id: 'relay-scoped-selection',
+    why: 'The relay sends every scoped answer; the client must serve the one its selection asks for. Serving none would look fine until a player tapped a cell and saw nowhere to move.',
+    file: 'packages/session/src/relay.ts',
+    mutate: (t) =>
+      t.replace(
+        'scopeFrom(this.latest.scoped as unknown as AllScoped, this.selection)',
+        'scopeFrom(this.latest.scoped as unknown as AllScoped, NO_SELECTION)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'shows a relay client exactly what LocalSession shows',
+  },
+  {
+    id: 'session-core-scope-from',
+    why: 'scopeFrom is the one piece of query code only a relay client runs. Reading a family breakdown from the wrong key would show every family the same numbers.',
+    file: 'packages/session-core/src/build.ts',
+    mutate: (t) =>
+      t.replace(
+        'productionDetail: family ? (all.productionDetail[family] ?? null) : null,',
+        "productionDetail: family ? (all.productionDetail['ENV'] ?? null) : null,",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'reads, for every selection, exactly what',
+  },
+  {
+    id: 'session-core-pure',
+    why: "The relay runs the engine's queries seven times where LocalSession runs them once. A query that wrote to the game it read would make a relay game drift from the same game played alone.",
+    file: 'packages/session-core/src/build.ts',
+    mutate: (t) =>
+      t.replace(
+        '  return { moveDestinations, productionDetail };',
+        "  g['__control'] = 1;\n  return { moveDestinations, productionDetail };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'computes every answer at once without changing the game',
   },
   {
     id: 'engine-captaincy-holder-only',

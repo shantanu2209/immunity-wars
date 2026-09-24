@@ -316,3 +316,144 @@ neither is measuring itself.
   decompresses it on arrival. Both sides have `CompressionStream`, so nothing waits on the platform.
 - **P3.6 owes the re-measure on full-length games**, with the criteria above unchanged: this section
   states in advance what "passing" means, so a later run cannot move the line.
+
+---
+
+## 4. P3.4, `RelaySession`: BUILT, 24 September 2026
+
+### The question the brief did not see
+
+`SessionView` is more than the engine's view. It also carries `queries` — what the UI reads on
+every render to decide what is clickable — and `scoped`, the answers for the selected piece (its
+move destinations, the selected family's production detail). **`LocalSession` computes both from
+the full `GameState` with engine functions, and a relay client never holds a `GameState`**: that is
+seam 1's rule, and the reason Phase 2 ruled Decision C at all ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md)
+§3). So in multiplayer they have to come from the relay, and there are two ways:
+
+- **ALL:** with every authoritative view, the relay sends `queries` and the scoped answers for
+  **every** cell and family. The client serves its own selection from them, exactly as
+  `LocalSession` does, and a tap never waits on the network.
+- **ASK:** the relay sends `queries` only, and a client asks for `scoped` whenever its selection
+  changes. A round trip on every tap, which on Indian mobile networks is 100 to 300 ms before the
+  move rings appear.
+
+### The measurement
+
+**Conditions:** `tools/perf/queries-measure.ts`, 18 two-player games through the room, 618
+authoritative views; every answer taken through `LocalSession`'s own code path (resume the room's
+state, set each selection, read the view), so the sizes are exact rather than modelled; gzip per
+message; Node 24 on the development PC.
+
+| One view message, gzipped | p50 | max |
+|---|---|---|
+| the view alone, as sent today | 1.7 KiB | 2.9 KiB |
+| + `queries`, needed either way | 2.2 KiB | 3.5 KiB |
+| **+ scoped answers for every cell and family (ALL)** | **2.5 KiB** | **3.9 KiB** |
+| one scoped answer (an ASK reply) | 0.2 KiB | 0.2 KiB |
+
+| Whole game per client, gzipped, views and bursts | p50 | max |
+|---|---|---|
+| ASK | 102.1 KiB | 149.1 KiB |
+| **ALL** | **116.7 KiB** | **163.7 KiB** |
+
+**ALL costs 0.3 KiB per view over what is needed either way, about 14% on a whole game.** Phase 2
+measured the same everything-for-every-subject payload at 90% of the view
+([`QUERY_PAYLOAD.md`](QUERY_PAYLOAD.md)) — uncompressed, single-player, bursts excluded. Compressed
+and inside a whole game it nearly disappears, because move lists are exactly the repetitive structure
+a dictionary coder is best at. **Phase 2's ruling was right for Phase 2's question and does not carry
+over**: there the cost was bytes in memory on one device; here the alternative costs a round trip on
+every tap.
+
+**The whole-game margin from §3 moves by the same 14%**: the 45-turn extrapolation becomes roughly
+1.1 to 1.8 MB against 2 MB. P3.6's re-measure on full-length games stands, and deltas remain the
+fallback.
+
+### The proposal
+
+1. **ALL.** The relay sends the full query set with every authoritative view; `RelaySession` serves
+   selection locally from it. The UI cannot tell the two sessions apart, which is what seam 1
+   promised, and no tap waits on the network.
+2. **The query builder moves out of `LocalSession` into its own small package**, imported by both
+   `LocalSession` and the room. That is what makes "the relay computes what `LocalSession` computes"
+   true by construction: one implementation, not two that agree by test. The alternative — a second
+   copy in the room — is the duplicate-calculation shape Phase 2 ruled against when `apFor` became a
+   wrapper over `apBreakdown`.
+
+**Why (2) needs a ruling:** the brief's definition of done says *"`LocalSession` is untouched"* by
+`RelaySession`. Moving the builder is a refactor of `LocalSession` with its behaviour unchanged —
+proven by a test that the extracted builder produces byte-identical `queries` and `scoped` on the
+state corpus — but it is not "untouched" in the letter. The amendment would read: *`LocalSession`'s
+behaviour is untouched; its query builder is shared, with byte-identical output proven.*
+
+### Ruled, 24 September 2026
+
+*"I'll go with your recommendations."* Both: **ALL**, and **the builder moves**. The brief's
+definition-of-done line becomes *"`LocalSession`'s behaviour untouched; its query builder shared,
+byte-identical output proven"* ([`PHASE3_BRIEF.md`](PHASE3_BRIEF.md) v1.2).
+
+### What was built
+
+- **`@immunity-wars/session-core`**, a new package: `precompute` and `scope` (the bodies of
+  `LocalSession.precompute` and `LocalSession.scope`, moved with `this.g` as `g`), the query lists,
+  the view and selection types, and FINDINGS #56's `advanceIdsPast`. Added for the relay:
+  `scopeAll` (every cell's and every family's scoped answer) and `scopeFrom` (one selection's,
+  read out of them). `LocalSession` calls the moved functions; `@immunity-wars/session`
+  re-exports the moved types, so its public API is what it was.
+- **Protocol v2** (`packages/protocol`). A view carries `queries` and every scoped answer. An
+  action carries an `id`, and the relay answers it with a `result` for that id, to its sender only.
+  `create` asks the relay for a room, and the relay mints the code. New codes: `noSuchRoom`,
+  `version`, `undoIsSinglePlayer`. **The framing** (`pack`/`unpack`) is written once, here, for
+  both sides: gzip of the UTF-8 of `encode`'s text, with a limit on what a frame may unpack to,
+  64 KiB for a client's message and 8 MiB for the relay's.
+- **The room** sends views with the shared builder's answers. It advances the invader-id counter
+  before every engine call. It answers actions by id, refuses undo, and hands the current board to
+  anyone arriving mid-game.
+- **The relay** (`packages/server`). `hub.ts` holds rooms, connections, framing and routing, with no
+  platform in it, and handles every frame, close and sweep in one chain in arrival order. `node.ts`
+  is the adapter: `ws`, 76 lines of code. `pnpm --filter @immunity-wars/server relay` runs it on
+  this machine.
+- **`RelayRoom` and `RelaySession`** (`packages/session/src/relay.ts`). `RelayRoom` is the
+  connection and the lobby: create, join, seats, start, leave. `RelaySession` implements `Session`
+  for the game, and is handed out when the first view arrives.
+
+### What proves it
+
+| Check | What it measured | How it is known to fire |
+|---|---|---|
+| `tools/perf/queries-identity.ts` | **650 states** (single-player and multiplayer), each under 14 selections: none, 7 cells, 6 families. **9,100 views**, one SHA-256 over all of them: **`68ae2c7d…6c2043` before the move and after it**, and again after the last change to `local.ts` | Flipping `boosted` in the builder gives `fae433ef…`; restored after |
+| `relay-queries.test.ts` (tests/session) | `scopeFrom(scopeAll(g), s)` equals `scope(g, s)` for 16 selections on **208 states**: **1,248** cell selections with moves to compare, **1,456** family selections with a breakdown, **208 of them family X**, which the identity run did not cover. The same states show that computing everything leaves the game unchanged | `session-core-scope-from`, `session-core-pure` |
+| `room.test.ts`, `wire.test.ts`, `ids.test.ts` | Results by id, the refused undo, the board sent to a rejoiner, and queries and scoped answers **byte for byte** on real views through encode and decode. Two rooms interleaved in one process never hand out one id twice | `room-undo-refused`, `room-rejoin-view`, `room-ids-across-rooms`. `ids.test.ts` failed 5 of 5 before the fix |
+| `hub.test.ts` | One link's frames are handled in arrival order **when a later frame finishes unpacking first**. A takeover's old close changes nothing. Other versions are refused. Codes are normalised, discarded after the grace period, and minted without bias | `hub-order`, `hub-takeover` |
+| `relay.test.ts` | Real sockets, gzip, versions. Two clients agree with each other and with the relay after every action. A relay client sees what `LocalSession` sees for every selection. The selection clears where `LocalSession` clears it, with both outcomes exercised. Covered too: rejoin, takeover, undo, ownership, both directions of version refusal, and a gzip bomb | `relay-selection-boundary`, `relay-scoped-selection` |
+
+**Every new check was made to fail on purpose before it was trusted**, and ten product controls,
+the nine above and `frame-limit` on the protocol's bomb test, are now permanent in `tools/ci/selftest.ts`, beside six boundary controls (#82).
+
+### What it found
+
+- **The framing could have taken the whole relay down.** When a frame failed to decompress, the
+  writer's rejection was never awaited. The framing's own refusal tests reported **2 unhandled
+  errors** beside a green test count. Under Node an unhandled rejection ends the process, so one bad
+  frame from one client would have closed every room. Fixed before anything listened. A green count
+  with errors beside it is a red run.
+- **FINDINGS #79:** the engine's undo stack is the whole table's, so undo is refused in rooms.
+- **FINDINGS #80:** the snapshot half of the id workaround reads a key the engine never writes.
+  Unreachable for now.
+- **FINDINGS #81:** a seat reassigned mid-game never reaches the engine's `owner` map, so every
+  view names the old holder. The game still plays.
+- **FINDINGS #82:** `room-no-downstream` refused the ruled edge `room → session-core`, and had
+  never had a failure control. An instrument defect, fixed inline.
+- **FINDINGS #83:** one UI test failed once and never again. Unexplained.
+
+### What is not proven, and what P3.5 inherits
+
+- **Everything above ran on one machine**, over loopback. Real networks, two devices and the
+  22 coverage arms are P3.6's, as the brief orders them.
+- **Nothing reconnects by itself.** Rejoining with the same code and the same `self` works, and is
+  tested. Doing it without asking is the multiplayer screens' job (P3.7).
+- **The Node relay has no rate limit, no connection cap and no TLS**
+  ([`SECURITY_NOTES.md`](SECURITY_NOTES.md), "the relay"). These are owed at P3.5, where the
+  platform provides them.
+- **P3.5 writes a second `node.ts`, not a second hub.** One Durable Object per room means the hub's
+  map of rooms becomes the platform's, and the per-room half is what carries over. Gate B's "rewrite
+  in a day" is measured then, not now.

@@ -85,9 +85,11 @@ module.exports = {
         'this project has found roughly a dozen conventions that were quietly false. ' +
         'What it buys concretely: a UI written against a synchronous in-process applyAction is ' +
         'a fork that nothing fails on until Phase 3 tries to put a network in that gap. ' +
-        'docs/PHASE2_BRIEF.md v1.1 §3, docs/SEAM_DECISIONS.md §1.',
+        'docs/PHASE2_BRIEF.md v1.1 §3, docs/SEAM_DECISIONS.md §1. ' +
+        "SESSION-CORE IS ENGINE CODE FOR THIS RULE (P3.4): it runs the engine's queries on a " +
+        'GameState, so the UI reaches it only through the session, which re-exports its types.',
       from: { path: '^packages/(ui|app)' },
-      to: { path: '^packages/engine' },
+      to: { path: '^packages/(engine|session-core)/' },
     },
     {
       name: 'session-no-downstream',
@@ -98,9 +100,11 @@ module.exports = {
         'back down into the UI, the app shell or the server. A session that imported the UI ' +
         'would make the seam bidirectional, and RelaySession could not then be a second ' +
         'implementation of the same interface: it would need a UI to exist. ' +
-        'docs/SEAM_DECISIONS.md §1.',
-      from: { path: '^packages/session' },
-      to: { path: '^packages/(ui|app|server)' },
+        'docs/SEAM_DECISIONS.md §1. ' +
+        'THE TRAILING SLASH IS LOAD-BEARING (P3.4): without it this rule also matched ' +
+        'packages/session-core, which has a rule of its own below.',
+      from: { path: '^packages/session/' },
+      to: { path: '^packages/(ui|app|server)/' },
     },
     {
       name: 'room-no-downstream',
@@ -110,9 +114,35 @@ module.exports = {
         'and the content pack, as packages/session does on a single device, and it must never ' +
         'reach the UI, the app shell, the server or the session. A room that imported the UI ' +
         'could not run on a server at all; a room that imported the session would have two ' +
-        'copies of the seam. docs/PHASE3_BRIEF.md §2.',
-      from: { path: '^packages/room' },
-      to: { path: '^packages/(ui|app|server|session)' },
+        'copies of the seam. docs/PHASE3_BRIEF.md §2. ' +
+        'THE TRAILING SLASH IS LOAD-BEARING (P3.4, found by the first real import): written as ' +
+        '^packages/(ui|app|server|session) this rule matched packages/session-core as well, and ' +
+        'refused the one edge the P3.4 ruling requires, room -> session-core, the shared builder. ' +
+        'Pinned both ways in tools/ci/selftest.ts.',
+      from: { path: '^packages/room/' },
+      to: { path: '^packages/(ui|app|server|session)/' },
+    },
+    {
+      name: 'session-core-no-downstream',
+      severity: 'error',
+      comment:
+        'SESSION-CORE IS WHAT EVERY HOLDER OF A GameState SHARES (P3.4, ruled 24 September ' +
+        '2026): the query builder LocalSession and the room both call, so the relay computes ' +
+        'what a single-player session computes by construction. It may reach the engine and the ' +
+        'content pack and nothing that uses it: a builder that imported the session or the room ' +
+        'would be one of two copies again, which is what moving it was for.',
+      from: { path: '^packages/session-core/' },
+      to: { path: '^packages/(ui|app|server|session|room)/' },
+    },
+    {
+      name: 'session-core-no-node-builtins',
+      severity: 'error',
+      comment:
+        'GATE B REACHES THROUGH THE ROOM (docs/PHASE3_BRIEF.md §6). The room runs session-core on ' +
+        'every view it sends, so a platform API here is a platform API in the room, and ' +
+        "room-no-node-builtins, which looks only at the room's own files, could not see it.",
+      from: { path: '^packages/session-core/' },
+      to: { dependencyTypes: ['core'] },
     },
     {
       name: 'room-no-node-builtins',
