@@ -12,6 +12,13 @@
  *   B  state plus the dice: the full GameState before the spread plus every random draw it made
  *      (disqualified on grounds other than size, and measured so the record says what it saved)
  *
+ * ⚠️ PROTOCOL v2 (P3.4, 24 September 2026): every view the room sends now carries its queries and
+ * every scoped answer, and every action gets a `result`. Run today, this prices the v2 wire, and
+ * its figures are NOT comparable with the ones recorded in docs/for-P3.md §3, which were taken at
+ * v1. The verdict was about how a spread's FRAMES travel, and frames carry no queries; what the
+ * queries add to the authoritative view was measured separately at P3.4 (queries-measure.ts,
+ * docs/for-P3.md §4).
+ *
  * The criteria were written into docs/for-P3.md §3 BEFORE this ran. Run:
  *   pnpm --filter @immunity-wars/perf exec tsx frames-measure.ts [games-per-difficulty]
  */
@@ -86,9 +93,9 @@ function playOne(difficulty: string): Captured {
     say({ kind: 'claimSeat', ref: 'p_two', seat });
   say({ kind: 'start', ref: 'p_one', difficulty });
   for (let turn = 0; turn < 60; turn += 1) {
-    say({ kind: 'action', ref: 'p_one', action: { action: 'draw' } });
-    say({ kind: 'action', ref: 'p_one', action: { action: 'beginCommand' } });
-    say({ kind: 'action', ref: 'p_one', action: { action: 'confirmAllocation' } });
+    say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'draw' } });
+    say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'beginCommand' } });
+    say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'confirmAllocation' } });
     // B's inputs: the full state the spread starts from, and the draws it consumes.
     cap.stateBeforeSpread.push(JSON.stringify(room.game));
     const real = Math.random;
@@ -98,7 +105,7 @@ function playOne(difficulty: string): Captured {
       return real();
     };
     try {
-      say({ kind: 'action', ref: 'p_one', action: { action: 'endCommand' } });
+      say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'endCommand' } });
     } finally {
       Math.random = real;
     }

@@ -30,6 +30,7 @@ import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
 import { SEATS, type ErrorCode, type RoomProjection, type Seat } from '@immunity-wars/protocol';
+import { advanceIdsPast, precompute, scopeAll } from '@immunity-wars/session-core';
 
 import {
   GRACE_MS,
@@ -106,6 +107,78 @@ const reject = (room: RoomState, ref: string, code: ErrorCode, detail?: string):
   ],
 });
 
+/** The answer to one action, to the member who sent it and nobody else (protocol v2, P3.4). */
+const answer = (
+  ref: string,
+  id: number,
+  refusal?: { readonly code: ErrorCode; readonly detail?: string },
+): Outbound => ({
+  to: ref,
+  message:
+    refusal === undefined
+      ? { kind: 'result', id, ok: true }
+      : refusal.detail === undefined
+        ? { kind: 'result', id, ok: false, code: refusal.code }
+        : { kind: 'result', id, ok: false, code: refusal.code, detail: refusal.detail },
+});
+
+const refuse = (
+  room: RoomState,
+  ref: string,
+  id: number,
+  code: ErrorCode,
+  detail?: string,
+): Step => ({
+  room,
+  out: [answer(ref, id, detail === undefined ? { code } : { code, detail })],
+});
+
+/**
+ * THE AUTHORITATIVE VIEW, WITH WHAT `LocalSession` COMPUTES BESIDE IT (P3.4, ruled 24 September
+ * 2026). The selection-independent queries, and the scoped answers for every cell and family, from
+ * the same builder `LocalSession` calls — so a relay client reads exactly what a single-player one
+ * reads, and serves its own selection without asking. Nothing here depends on who is looking: the
+ * engine's queries take the game, not a player, which is what lets one message go to everyone.
+ */
+function viewFor(game: GameState, to: 'all' | string = 'all'): Outbound {
+  const view = viewState(game) as Readonly<Record<string, unknown>>;
+  const g = game as unknown as Record<string, unknown>;
+  return {
+    to,
+    message: { kind: 'view', view, queries: precompute(g, view), scoped: scopeAll(g) },
+  };
+}
+
+/**
+ * EVERY ENGINE CALL GOES THROUGH HERE (FINDINGS #56, on a relay). The engine's invader-id counter
+ * lives in its module, not in the game, and `newGame` in ANY room resets it — so before touching a
+ * game, the counter is advanced past the highest id that game holds. `ids.test.ts` is the proof
+ * this is needed: without it, two rooms in one process hand out one id to two pathogens.
+ */
+function apply(
+  game: GameState,
+  action: Record<string, unknown>,
+): {
+  ok: boolean;
+  error?: string;
+  frames?: readonly unknown[];
+} {
+  advanceIdsPast(game as unknown as Record<string, unknown>);
+  return applyAction(game, action as unknown as Action) as {
+    ok: boolean;
+    error?: string;
+    frames?: readonly unknown[];
+  };
+}
+
+/**
+ * THE GAME AS IT STANDS, to one member arriving after it started (P3.4). A rejoining player has no
+ * view at all until someone acts, and in a room waiting on them nobody will; a new member placed by
+ * the captain into an away member's seat needs the board they are being handed.
+ */
+const current = (room: RoomState, ref: string): Outbound[] =>
+  room.game === null ? [] : [viewFor(room.game as GameState, ref)];
+
 const isSeat = (s: string): s is Seat => (SEATS as readonly string[]).includes(s);
 
 /**
@@ -180,13 +253,9 @@ function syncCaptain(room: RoomState): Outbound[] {
   const g = room.game as GameState;
   const to = pidOf(captain);
   if (g.captain === to) return [];
-  const result = applyAction(g, {
-    action: 'handOverCaptaincy',
-    pid: g.captain,
-    toPid: to,
-  } as unknown as Action) as { ok: boolean };
+  const result = apply(g, { action: 'handOverCaptaincy', pid: g.captain, toPid: to });
   if (!result.ok) return [];
-  return [{ to: 'all', message: { kind: 'view', view: viewState(g) } }];
+  return [viewFor(g)];
 }
 
 /** The seat an action is for, or null when the action is nobody's seat in particular. */
@@ -209,7 +278,15 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
           replace(room, msg.ref, (m) => ({ ...m, connected: true, name: msg.name })),
           now,
         );
-        return { room: back, out: [you(back, msg.ref), broadcast(back), ...syncCaptain(back)] };
+        return {
+          room: back,
+          out: [
+            you(back, msg.ref),
+            broadcast(back),
+            ...current(back, msg.ref),
+            ...syncCaptain(back),
+          ],
+        };
       }
       if (room.phase === 'ended') return reject(room, msg.ref, 'gameEnded');
       const member: Member = {
@@ -223,7 +300,10 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         { ...room, members: [...room.members, member], nextJoinOrder: room.nextJoinOrder + 1 },
         now,
       );
-      return { room: next, out: [you(next, msg.ref), broadcast(next), ...syncCaptain(next)] };
+      return {
+        room: next,
+        out: [you(next, msg.ref), broadcast(next), ...current(next, msg.ref), ...syncCaptain(next)],
+      };
     }
 
     case 'disconnect': {
@@ -305,39 +385,42 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         players: room.members.map(pidOf),
       });
       const next: RoomState = { ...room, phase: 'playing', game };
-      return {
-        room: next,
-        out: [broadcast(next), { to: 'all', message: { kind: 'view', view: viewState(game) } }],
-      };
+      return { room: next, out: [broadcast(next), viewFor(game)] };
     }
 
     case 'action': {
+      // Every refusal here is a `result` for this action's id, to the sender alone, so a client
+      // can tell its own answer apart from views that other players' actions cause.
       const me = find(room, msg.ref);
-      if (!me) return reject(room, msg.ref, 'notInRoom');
+      if (!me) return refuse(room, msg.ref, msg.id, 'notInRoom');
       if (room.phase !== 'playing' || room.game === null)
-        return reject(room, msg.ref, 'notStarted');
-      if (typeof msg.action['action'] === 'string' && ROOM_ONLY.has(msg.action['action']))
-        return reject(room, msg.ref, 'roomOnly');
+        return refuse(room, msg.ref, msg.id, 'notStarted');
+      const name = msg.action['action'];
+      if (typeof name === 'string' && ROOM_ONLY.has(name))
+        return refuse(room, msg.ref, msg.id, 'roomOnly');
+      // UNDO IS SINGLE-PLAYER IN v1 (FINDINGS #79). The engine keeps one undo stack per game, so
+      // in a room an undo would unwind whichever move came last, possibly another player's.
+      if (name === 'undo') return refuse(room, msg.ref, msg.id, 'undoIsSinglePlayer');
       // OWNERSHIP IS THE ROOM'S; LEGALITY IS THE ENGINE'S. The seat check is here because the
       // room knows who holds what; everything else goes to `applyAction` unaltered.
       const seat = seatOf(msg.action);
-      if (seat !== null && !me.seats.includes(seat)) return reject(room, msg.ref, 'notYourPiece');
+      if (seat !== null && !me.seats.includes(seat))
+        return refuse(room, msg.ref, msg.id, 'notYourPiece');
       const game = room.game as GameState;
       // The sender's PUBLIC id, stamped after the spread so an action cannot carry another's.
-      const result = applyAction(game, { ...msg.action, pid: pidOf(me) } as unknown as Action) as {
-        ok: boolean;
-        error?: string;
-        frames?: readonly unknown[];
-      };
+      const result = apply(game, { ...msg.action, pid: pidOf(me) });
       // The ENGINE's refusal: its own text rides as the detail, and the client renders it through
       // the engine catalogue exactly as single player does.
-      if (!result.ok) return reject(room, msg.ref, 'engine', result.error ?? '');
+      if (!result.ok) return refuse(room, msg.ref, msg.id, 'engine', result.error ?? '');
       const out: Outbound[] = [];
       // BURST FIRST, THEN THE VIEW, for the reason `LocalSession` states: a subscriber that skips
       // the animation must still land on the right state, and the burst's tail equals the view.
       if (result.frames && result.frames.length > 0)
         out.push({ to: 'all', message: { kind: 'burst', frames: result.frames } });
-      out.push({ to: 'all', message: { kind: 'view', view: viewState(game) } });
+      out.push(viewFor(game));
+      // THE RESULT LAST, so a sender whose `sendAction` resolves on it already holds the new view,
+      // as a `LocalSession` caller does when its promise resolves.
+      out.push(answer(msg.ref, msg.id));
       const g = game as unknown as Record<string, unknown>;
       const over = g['won'] === true || Boolean(g['lost']);
       const next: RoomState = over ? { ...room, phase: 'ended' } : room;

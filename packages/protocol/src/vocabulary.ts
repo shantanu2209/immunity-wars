@@ -11,7 +11,19 @@ import { RULES_VERSION } from '@immunity-wars/content';
  * desynchronise a newer room", and the only way a peer that cannot read a message can be kept from
  * acting on a misreading is not to let it in.
  */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
+
+/*
+ * VERSION HISTORY, because a bump with no record teaches nobody what changed.
+ *
+ *   1  P3.2 (21 September 2026): the first wire format.
+ *   2  P3.4 (24 September 2026): a view carries `queries` and every scoped answer (the relay
+ *      computes what LocalSession computes, docs/for-P3.md §4), an action carries an `id`, and
+ *      the relay answers each action with a `result` for that id alone. A `create` message
+ *      asks the relay for a new room, whose code the relay mints, and `join` is refused for a
+ *      code the relay does not hold. No v1 peer ever ran
+ *      against a relay; the bump is made anyway, because the rule is about shape, not audience.
+ */
 
 /**
  * THE RULES' VERSION, from the content pack (`packages/content/src/rules/pack.json`). Carried on
@@ -72,6 +84,22 @@ export const ERROR_CODES = [
   'notYourPiece',
   /** An action that is the ROOM's to send, never a player's: `handOverCaptaincy` (FINDINGS #78). */
   'roomOnly',
+  /**
+   * UNDO IS SINGLE-PLAYER IN v1 (P3.4, FINDINGS #79): the engine keeps one undo stack for the whole
+   * game, so in a room it would unwind whichever move came last — possibly another player's.
+   */
+  'undoIsSinglePlayer',
+  /**
+   * `join` named a code the relay does not hold: mistyped, or a room discarded after its grace
+   * period, which Gate A requires cannot be rejoined (P3.4).
+   */
+  'noSuchRoom',
+  /**
+   * Sent to a peer on ANOTHER version just before the relay closes it (P3.4). That peer reads only
+   * the header, which carries the relay's versions, and so can tell its player which side is out of
+   * date; the body exists because every frame must be a valid message on the version that sends it.
+   */
+  'version',
   'engine',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];

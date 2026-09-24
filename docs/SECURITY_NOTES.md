@@ -334,3 +334,56 @@ runs in the player's browser, serving the build's own files from a cache, and op
 `pnpm audit` after the addition: the same two dispositioned advisories, nothing new. What
 would change this: an advisory on `workbox-*` or the plugin, re-checked whenever
 `packages/app`'s dependencies move.
+
+## Added 24 September 2026 — the relay: the first process that listens for other people's devices
+
+P3.4 adds a relay (`packages/server`), which the brief warned would break this file's property the
+day it shipped (`PHASE3_BRIEF.md` §6). It does not break it; it makes it carry weight for the first
+time. Until now the only listening processes served the maintainer's own files to the maintainer's
+own phone.
+
+### What listens now
+
+| Process | When | Listens on | Loads |
+|---|---|---|---|
+| The development relay | `pnpm --filter @immunity-wars/server relay` | `127.0.0.1:8787` by default; the LAN only when started with `HOST=0.0.0.0`, deliberately | `ws`, `zod`, and this repository's own `protocol`, `room`, `session-core`, `engine`, `content` |
+
+P3.5 replaces it in production with a Cloudflare Durable Object, and that adapter's dependencies get
+the same re-read when it lands.
+
+- **`ws` 8.21.3**, pinned exactly, with **no dependencies of its own**: the only third-party code in
+  the relay besides `zod`, which the protocol already used for every trust boundary.
+- **`pnpm audit`, 24 September 2026: "No known vulnerabilities found."**
+
+> ### The property, restated for a relay: no open advisory is in a process that listens, and the relay's dependency set is `ws`, `zod` and our own code. Re-read whenever any of those moves, and whenever P3.5's adapter gains a dependency.
+
+### What the relay does about input it did not ask for
+
+The relay is the first thing here reachable by a socket from someone who does not know a room code,
+so it is written for that:
+
+- **Every frame is limited twice**: 64 KiB on the wire (`maxPayload`) and 64 KiB **after
+  decompression** (`CLIENT_FRAME_LIMIT`). The second matters more, because gzip inflates about a
+  thousandfold; the relay stops reading a frame the moment it passes the limit. A four-megabyte
+  bomb is refused in `relay.test.ts`, and the relay goes on serving.
+- **A frame that is not a message closes that connection only.** Text frames, bad gzip, bad UTF-8,
+  a body that does not parse, another version: each ends one socket, never the process.
+- **Found while building it:** the framing left a rejected promise unobserved whenever a frame failed
+  to decompress. Under Node that ends the process by default, so **one malformed frame would have
+  closed every room on the relay.** The framing's own refusal tests reported it as unhandled errors,
+  and it was fixed before anything listened.
+- **Room codes** are six characters from a 25-character alphabet, about 244 million codes, drawn
+  from the platform's cryptographic randomness, with rejection sampling so that no character is
+  favoured.
+- **Logged on failure:** an error's message only. Never a frame, a name or a ref.
+
+### Not built, and why each is acceptable for now
+
+- **No TLS** on the development relay (`ws://`). It listens on this machine unless told otherwise;
+  production is `wss://` behind Cloudflare (P3.5).
+- **No per-address rate limit or connection cap.** A code is the only way into a room, and with no
+  rate limit, guessing is bounded only by the 244 million. That is enough for a development relay
+  and is **owed at P3.5**, where the platform provides the limiting.
+- **No `Origin` check.** A browser page on any site can open a WebSocket to the relay, but the relay
+  keeps no cookies and grants nothing by origin, so there is nothing for a cross-site page to borrow
+  that it could not get by connecting directly.

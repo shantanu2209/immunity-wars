@@ -20,6 +20,8 @@ export {
   type Seat,
 } from './vocabulary.js';
 
+export { CLIENT_FRAME_LIMIT, SERVER_FRAME_LIMIT, pack, unpack } from './frame.js';
+
 export {
   RoomProjectionSchema,
   decodeClient,

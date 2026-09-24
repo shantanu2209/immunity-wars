@@ -89,8 +89,8 @@
       "id": "session",
       "title": "Session seam",
       "briefSuite": null,
-      "proves": "That single-player goes through Session and not around it: a full bot game replayed through LocalSession produces the same projection, action for action, as the engine driven directly. Also that the subscription's view/burst split behaves as specified, that Session never hands out GameState, and that Storage round-trips a game.",
-      "doesNotProve": "Anything about a UI, which does not exist yet. Anything about RelaySession, which is Phase 3's — this proves the interface has one working implementation, not that a second one is possible. And nothing about IndexedDbStorage, which NO TEST EXERCISES: there is no browser in the test environment and no IndexedDB shim among the dependencies, so the port is tested through MemoryStorage only. P2.2 is the first moment a browser exists to run it in.",
+      "proves": "That single-player goes through Session and not around it: a full bot game replayed through LocalSession produces the same projection, action for action, as the engine driven directly. Also that the subscription's view/burst split behaves as specified, that Session never hands out GameState, and that Storage round-trips a game. Since P3.4, also that a relay client serving its own selection from the relay's answers (scopeFrom) gets exactly what LocalSession's scope answers, on 208 states, and that computing every answer leaves the game unchanged (relay-queries.test.ts).",
+      "doesNotProve": "Anything about a UI, which does not exist yet. RelaySession end to end: that is packages/server/src/relay.test.ts, over real sockets, which is a package suite and not in this manifest. This suite holds only the one piece of query code a relay client runs. And nothing about IndexedDbStorage, which NO TEST EXERCISES: there is no browser in the test environment and no IndexedDB shim among the dependencies, so the port is tested through MemoryStorage only. P2.2 is the first moment a browser exists to run it in.",
       "negativeControls": 10,
       "controlFiles": [
         "tests/session/src/negative-control.test.ts",

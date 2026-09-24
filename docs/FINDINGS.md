@@ -4298,3 +4298,108 @@ view shows the engine's new captain, and that the unallocated pool carries over.
 - **Two multiplayer coverage arms are now covered** that nothing reached before, by the new
   confinement tests: *"Only the captain can confirm allocation"* and one arm of *"Only the captain
   ends the turn"*. The deferred multiplayer list is **20, from 22**.
+
+---
+
+## 79. Undo in a room would unwind whichever move came last, possibly another player's
+
+**Found 24 September 2026, during P3.4**, designing what `RelaySession` reports for undo. **Resolved in
+the same change by refusal**, not by a fix: a fix would be an engine change.
+
+The engine keeps **one undo stack per game** (`g.undo`), pushed before every undoable action and popped
+by `undo`. In single player that is the player's own history. In a room, two players moving in the
+same command phase push onto the same stack, so an `undo` from either unwinds the last move made by
+**anyone**, including the other player's, action points included. The session-level undo rule
+(moves only, ruled 4 September 2026) cannot help, because it is `LocalSession`'s bookkeeping and the
+stack underneath it is shared.
+
+**What was done:** the room refuses `undo` before the engine sees it, with a new protocol code
+`undoIsSinglePlayer`, and `RelaySession` reports undo as unavailable with a new reason,
+`multiplayer`. Pinned by a room test and by the `room-undo-refused` control.
+
+**What is owed:** the play screen's dock words an unavailable undo by its reason, and has no words for
+`multiplayer`: its type was widened so the build compiles, and it falls back to the "no moves" line.
+No multiplayer screen exists yet, so no player can reach it; **P3.7 owes the wording**. A per-player
+undo stack would be an engine change and is not proposed.
+
+---
+
+## 80. `advanceIdsPast` reads the undo snapshots under a key the engine never writes
+
+**Found 24 September 2026, during P3.4**, moving the function into `@immunity-wars/session-core`.
+**Not fixed**: it is unreachable today, and the move was proven byte-identical, so a behaviour change
+belongs in its own change.
+
+FINDINGS #56's workaround advances the engine's invader-id counter past every id a game holds: in the
+body, in the residents, and **in the undo snapshots**, which it reads as `snap.invaders`. The engine's
+`UndoSnapshot` stores them as **`inv`** (`packages/engine/src/state.ts`). So the snapshot half has
+never read anything since it was written on 5 September.
+
+**Why nothing has gone wrong:** a snapshot only matters if an invader that exists ONLY in a snapshot
+(killed this phase) is restored by an undo after the counter was advanced. `LocalSession` makes undo
+unavailable after resuming mid-command, which is the only time it advances the counter
+(`resumedMidCommand`); the room refuses undo (#79). Both doors are shut, so the dead half guards
+nothing that can happen.
+
+**Proposed:** read `inv`, one word, with a test that an id held only in a snapshot is advanced past.
+It can only ever advance the counter further, which is always safe, since ids need only be unique.
+Worth taking before either door opens.
+
+---
+
+## 81. A seat reassigned mid-game never reaches the engine's `owner` map, so every view names the old holder
+
+**Found 24 September 2026, during P3.4**, by a probe written after #78 to ask whether the room's other
+mid-game changes reach the engine. **Recorded, not fixed.**
+
+`assignSeat` (ruling 4: the captain hands an away member's seat to someone present) changes the ROOM.
+The engine was told the owner map once, at `newGame`, and is never told again. Measured on a
+two-player training game: after the captain took the Neutrophil from an away member, the engine's
+`owner` still read `{"bcell":"m1","neutrophil":"m2"}`, and so does every view the table receives.
+
+**What is not broken:** the engine does not enforce `owner` (ownership is the room's, `room.ts`), and
+action points are spent from the ACTING player's budget, so the new holder can move the piece and pays
+for it themselves. The game plays.
+
+**What is wrong:** anything that reads `view.owner` to answer "whose piece is this" is told the old
+holder. The room projection has the truth.
+
+**Open alongside it, unmeasured:** a member who JOINS mid-game is not in the engine's `players` list,
+and whether the captain's allocation can reach them has not been tried. That is P3.6's coverage-arm
+work.
+
+**Options:** (1) the multiplayer screens read ownership from the room projection and never from
+`view.owner`, with no engine change; (2) an engine action for seat handover, like `handOverCaptaincy`
+(DEVIATIONS #7), which is an engine change. **Recommendation: (1), decided at P3.7**, when there is a
+screen that reads either.
+
+---
+
+## 82. `room-no-downstream` refused the edge the P3.4 ruling requires, because its pattern had no trailing slash
+
+**Found 24 September 2026, during P3.4**, by the first real import of `@immunity-wars/session-core`
+from the room. **An instrument defect, so FIXED INLINE** (`CLAUDE.md`, "fix inline if it is in the
+instrument").
+
+The rule forbade the room from reaching `^packages/(ui|app|server|session)`. With no trailing slash,
+that pattern also matches **`packages/session-core`**, so `pnpm boundaries` went red on
+`room.ts → session-core` — the shared builder the ruling of 24 September requires the room to use.
+It is #41 and #42's family: a boundary rule wrong about what it permits, which no failure control can
+see, because forbidding more only makes a failure control pass harder.
+
+**And the rule had never had a failure control either**, from P3.1 until now. Both halves are now
+pinned in `tools/ci/selftest.ts`: `boundaries-room-downstream` (must fail) and
+`boundaries-room-session-core-permitted` (must pass). `session-no-downstream` had the same missing
+slash, harmlessly, and has it too now. The new package got its own rules
+(`session-core-no-downstream`, `session-core-no-node-builtins`) and `ui-app-no-engine` now covers it,
+each with a control.
+
+---
+
+## 83. One UI test failed once under a forced concurrent run, and never again: unexplained
+
+**Seen 24 September 2026, during P3.4**, in one of the two forced concurrent runs (`pnpm turbo run
+test --force`) the toolchain battery asks for. It did not reproduce in three reruns. **The test's name
+was not captured**, which is the defect in how it was watched, and why this entry exists: the next
+sighting must record the name and the assertion. Whether it has anything to do with P3.4's changes
+is not known. Unexplained, and recorded as that rather than as noise.

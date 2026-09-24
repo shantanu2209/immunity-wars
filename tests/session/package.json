@@ -17,6 +17,7 @@
     "@immunity-wars/engine": "workspace:*",
     "@immunity-wars/equivalence": "workspace:*",
     "@immunity-wars/session": "workspace:*",
+    "@immunity-wars/session-core": "workspace:*",
     "@immunity-wars/ui": "workspace:*"
   },
   "devDependencies": {

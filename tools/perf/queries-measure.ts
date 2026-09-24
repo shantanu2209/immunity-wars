@@ -111,10 +111,10 @@ for (const d of ['training', 'normal', 'hard']) {
       say({ kind: 'claimSeat', ref: 'p_one', seat });
     say({ kind: 'start', ref: 'p_one', difficulty: d });
     for (let turn = 0; turn < 60; turn += 1) {
-      say({ kind: 'action', ref: 'p_one', action: { action: 'draw' } });
-      say({ kind: 'action', ref: 'p_one', action: { action: 'beginCommand' } });
-      say({ kind: 'action', ref: 'p_one', action: { action: 'confirmAllocation' } });
-      say({ kind: 'action', ref: 'p_one', action: { action: 'endCommand' } });
+      say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'draw' } });
+      say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'beginCommand' } });
+      say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'confirmAllocation' } });
+      say({ kind: 'action', id: 0, ref: 'p_one', action: { action: 'endCommand' } });
       g.turns += 1;
       if (room.phase === 'ended') break;
     }

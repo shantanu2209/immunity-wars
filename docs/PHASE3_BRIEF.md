@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.1 · 21 September 2026
+**Version:** 1.2 · 24 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,19 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.2 records
+
+v1.2 changes one line of §8, by ruling (Shantanu, 24 September 2026: *"I'll go with your
+recommendations."*, on [`for-P3.md`](for-P3.md) §4):
+
+- **"`LocalSession` is untouched" now reads "`LocalSession`'s behaviour is untouched".** A relay
+  client never holds a `GameState`, so the answers the UI reads to decide what is clickable must come
+  from the relay. The ruling was that the relay computes them with the SAME code `LocalSession` uses,
+  moved into a shared package (`@immunity-wars/session-core`), rather than with a second copy. That is
+  a refactor of `LocalSession`, so it is not "untouched" in the letter. **The proof that its
+  behaviour is:** 9,100 views over 650 real states, one hash, identical before and after the move,
+  with a control that changes it. §8 carries the marked amendment in place.
 
 ## What v1.1 records
 
@@ -209,7 +222,11 @@ No engine rule changes.
 - [ ] Gate A — every item, verified, on two real devices on two networks
 - [ ] Gate B — inside a free plan with the numbers recorded, portable by a passing test, no personal
       data
-- [ ] `RelaySession` is a second implementation of `Session`, and `LocalSession` is untouched by it
+- [ ] `RelaySession` is a second implementation of `Session`, and `LocalSession`'s behaviour is
+      untouched by it: its query builder is shared, byte-identical output proven. ⚠️ *Amended in
+      v1.2 (24 September 2026):* this read "`LocalSession` is untouched by it". The builder moved to
+      `@immunity-wars/session-core` by ruling, so the relay computes what `LocalSession` computes
+      from one implementation ([`for-P3.md`](for-P3.md) §4)
 - [ ] `rulesVersion` and a protocol version on every message and every state, with the refusal path
       proven by a control — the thing Phase 1 recorded as Phase 3's to make true
 - [ ] The 22 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest

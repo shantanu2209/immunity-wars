@@ -234,7 +234,8 @@ export function Toast({ text }: { text: string }): ReactElement {
 export interface ActionsUndo {
   available: boolean;
   moves: number;
-  reason?: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed';
+  /** `multiplayer` (P3.4) has no wording of its own yet: the multiplayer screens (P3.7) owe it. */
+  reason?: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed' | 'multiplayer';
   committedBy?: string | null;
 }
 
