@@ -546,3 +546,21 @@ this stage's first measurement.
 4. **One bundled file rather than a checkout of the repository** on the server. **Recommendation:
    the bundle**: nothing to build or install there, and the smallest set of code on a machine the
    internet can reach.
+
+### Ruled, 24 September 2026
+
+1. **The home region: delegated** (*"Choose either. I leave it to you."*). **Chosen: Mumbai.** The
+   difference is small: both are in India, a few milliseconds apart for most players. Mumbai is
+   where most of India's undersea cables land and its largest internet exchanges are, so most
+   Indian networks reach it directly. Neither region is known to have more free Arm capacity; if
+   none is free at sign-up, the AMD servers are enough for the relay.
+2. **The hostname: a subdomain of a domain we already hold**, pending one check: the domain
+   carries a contributor's name, so the address the app carries would point at a personal site.
+   **The name is kept out of this repository until that is settled.** If it is not used, another
+   domain will be got.
+3. **Isolation: ruled as recommended** (*"Makes sense."*): the relay's server runs only things that
+   store no personal data; anything that stores personal data gets the other server.
+4. **One bundled file: ruled as recommended** (*"I'll go with your recommendations."*). Its one real
+   risk is that the bundle is not the code the tests ran, so **the relay's integration test runs
+   against the bundled file itself** before any deploy, with a control that breaks the bundle and
+   must turn it red.
