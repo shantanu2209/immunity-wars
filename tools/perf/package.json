@@ -11,7 +11,7 @@
     "build": "echo \"no build output\""
   },
   "devDependencies": {
-    "puppeteer-core": "^25.10.0"
+    "puppeteer-core": "^25.11.0"
   },
   "dependencies": {
     "@immunity-wars/protocol": "workspace:*",
