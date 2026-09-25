@@ -826,3 +826,47 @@ around it.
    to read.
 6. **Sharing the code.** The phone's share sheet (to WhatsApp and the rest) and Copy. Or Copy only.
    **Recommendation: both.**
+
+### Ruled, 25 September 2026
+
+1. **The way in is a *Play together* button on the title screen**, as recommended.
+2. **The name is typed every time** (*"I think make them type every time for now"*). Nothing about a
+   player is kept on the device between rooms. *Not the recommendation*, which was to remember it on
+   the device.
+3. **The allocation starts with every other player at zero and the whole pool with the captain**,
+   who hands it out. *Not the recommendation* (an even split filled in). This is also what the engine
+   does when the phase begins, so the controls start from the engine's own state.
+4. **A dropped connection shows *Reconnect* at once** (*"Let the choice to rejoin be one that is made
+   consciously"*). Nothing rejoins by itself. *Not the recommendation*, which was to rejoin quietly for
+   about 30 seconds first.
+5. **Other players' pieces are shown normally**, with their player's name, inspectable and not
+   movable, as recommended.
+6. **The code is shared through the phone's share sheet and Copy**, as recommended.
+
+### The spike, 25 September 2026: the existing play screen on a `RelaySession`
+
+A throwaway page (deleted, never committed) joined a room on the live relay and handed the existing
+play screen a `RelaySession`: a host holding four cells and a guest holding three, in two browser
+tabs on the development PC.
+
+**It works where the proposal said it would.** The play screen took the relay's session unchanged.
+Both players saw the goal, the drawn card, the planning screen, Phase 2's allocation block, and the
+command phase, all from the relay's views, with nothing below the screens changed.
+
+**What it confirmed, and what it added:**
+
+1. **The table's Action Points shown as each player's own.** In the command phase the guest's screen
+   said *AP 6* with a budget of 0.
+2. **Every piece offered to everyone.** Selecting the host's Monocyte, the guest was offered Engulf
+   and Strike.
+3. **The captain's actions offered to everyone.** The guest's *Command your cells* was refused by the
+   engine (*"Only the captain begins the command phase."*, shown in its own words); *Confirm the plan*
+   and *End turn* were on the guest's screen too.
+4. **New: the allocation block names players by the engine's ids**, *m1* and *m2*, not the names they
+   typed. It must read the room's projection, as ruling 5 on #81 has every screen do.
+5. **New, by timing:** the automatic draw fires on whichever device reaches the moment. The host's
+   drew first here, so the guest's never fired; with the other timing the guest's would be refused.
+6. **New, a wording question for piece B:** the goal says *"You command the body's immune cells"*,
+   true in single player, where one person commands them all.
+
+None of it changes the four pieces. It confirms that piece B is the heaviest.
