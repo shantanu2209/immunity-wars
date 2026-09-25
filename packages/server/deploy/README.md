@@ -38,8 +38,12 @@ match exactly, the nearest one is the right one, and Claude can follow along on 
 In **your own PowerShell window** (not through Claude), once:
 
 ```powershell
+New-Item -ItemType Directory -Force $HOME\.ssh
 ssh-keygen -t ed25519 -f $HOME\.ssh\immunity-wars-relay -C deploy
 ```
+
+The first line makes the folder keys live in; on a PC that has never had a key it does not exist,
+and without it the second line fails with "Saving key … failed: No such file or directory".
 
 It asks for a passphrase. Choose one and keep it to yourself. The `-C deploy` at the end becomes the
 name you log in to the server with. Then, once, in a PowerShell window opened with **Run as
