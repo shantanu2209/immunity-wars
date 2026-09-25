@@ -691,7 +691,9 @@ export function AdvanceButton({
         width: '100%',
         fontSize: '1rem',
         borderRadius: 10,
-        border: waiting ? '2px dashed #C9B8A8' : '2px solid #B03A2E',
+        // The waiting border is the greyed controls' own (#94847A, 3.6:1 on the page, 3.1:1 on the
+        // waiting ground): Gate 1's 3:1 for a control's boundary holds for a greyed one here too.
+        border: waiting ? '2px dashed #94847A' : '2px solid #B03A2E',
         background: waiting ? '#F3EDE6' : '#FFFDF9',
         color: '#2E2A28',
         fontWeight: waiting ? 400 : 700,

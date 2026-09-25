@@ -28,6 +28,10 @@ const CODE: CSSProperties = {
   color: '#2E2A28',
   margin: '6px 0 0',
   textAlign: 'center',
+  // At 200% text or page zoom the six widely spaced characters are wider than a phone: they wrap
+  // onto a second line rather than push the page sideways (the Gate 1 audit, P3.7). They must still
+  // double with the text size, so they are not capped.
+  overflowWrap: 'anywhere',
 };
 
 const MARK: CSSProperties = { fontSize: '0.8125rem', color: '#78665D', marginLeft: 8 };
@@ -135,7 +139,7 @@ export function LobbyScreen({
               color: '#2E2A28',
               cursor: !live || taken ? 'default' : 'pointer',
               background: taken ? '#F3EDE6' : ROW_BTN.background,
-              borderColor: r.mine ? '#B03A2E' : taken ? '#C9B8A8' : '#8E6E53',
+              borderColor: r.mine ? '#B03A2E' : taken ? '#94847A' : '#8E6E53',
             }}
             disabled={!live || taken}
             aria-pressed={r.mine}
