@@ -35,7 +35,7 @@ import {
 import { CELL_KEYS, FAMILIES } from '@immunity-wars/session-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { CLOSE, listen, type Relay } from './index.js';
+import { CLOSE, LIMITS, listen, type Relay } from './index.js';
 
 let relay: Relay;
 let url: string;
@@ -245,6 +245,20 @@ describe('dropping and coming back (Gate A)', () => {
     again.close();
   });
 
+  it('lets a player leave and close at once, and they are GONE, not away holding their seats', async () => {
+    // The app leaves and then closes the connection straight away; the leave must reach the relay
+    // first, or the room keeps the player as away and their seats wait for someone who has left.
+    const a = await RelayRoom.create({ url, name: 'Kartik' });
+    const b = await RelayRoom.join({ url, code: a.code, name: 'Shantanu' });
+    b.claimSeat('nk');
+    await until('B seated', () => a.room?.members[1]?.seats.length === 1);
+    await b.leave();
+    b.close();
+    await until('B gone from the room', () => a.room?.members.length === 1);
+    expect(a.room?.freeSeats).toContain('nk');
+    a.close();
+  });
+
   it('answers an action in flight when the connection drops, rather than leaving it hanging', async () => {
     const t = await table();
     const pending = t.sb.sendAction({ action: 'draw' });
@@ -261,6 +275,28 @@ describe('who may come in', () => {
     await expect(RelayRoom.join({ url, code: 'QQQQQQ', name: 'X' })).rejects.toMatchObject({
       code: 'noSuchRoom',
     });
+  });
+
+  it('says WHY when the relay refuses by closing, so a player told to wait is not told the line dropped', async () => {
+    // Busy and slow-down are refused with a close code and no message (the hub's CLOSE); the
+    // player's words are chosen from that code, so it must reach the caller (P3.7).
+    const busy = await listen({ port: 0, limits: { ...LIMITS, perAddress: 0 } });
+    await expect(
+      RelayRoom.create({ url: `ws://127.0.0.1:${String(busy.port)}`, name: 'X' }),
+    ).rejects.toMatchObject({ code: 'closed', closeCode: CLOSE.busy });
+    await busy.close();
+
+    const strict = await listen({ port: 0, limits: { ...LIMITS, wrongCodes: 1 } });
+    const at = `ws://127.0.0.1:${String(strict.port)}`;
+    await expect(RelayRoom.join({ url: at, code: 'QQQQQQ', name: 'X' })).rejects.toMatchObject({
+      code: 'noSuchRoom',
+      closeCode: null,
+    });
+    await expect(RelayRoom.join({ url: at, code: 'QQQQQQ', name: 'X' })).rejects.toMatchObject({
+      code: 'closed',
+      closeCode: CLOSE.slowDown,
+    });
+    await strict.close();
   });
 
   it('refuses a client on another version, and the room it asked for is untouched', async () => {

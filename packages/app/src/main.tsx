@@ -13,8 +13,14 @@
  * browser profile + origin, no account, nothing leaves the device.
  */
 import { ORGANS } from '@immunity-wars/content';
-import { LocalSession, IndexedDbStorage } from '@immunity-wars/session';
-import type { ViewState } from '@immunity-wars/session';
+import {
+  LocalSession,
+  IndexedDbStorage,
+  RelayError,
+  RelayRoom,
+  type RelaySession,
+} from '@immunity-wars/session';
+import type { PlayerRef, ViewState } from '@immunity-wars/session';
 import {
   AboutScreen,
   CrashScreen,
@@ -22,6 +28,7 @@ import {
   ErrorBoundary,
   HelpScreen,
   LibraryScreen,
+  LobbyScreen,
   NavHost,
   logLinesOf,
   PauseSheet,
@@ -30,6 +37,9 @@ import {
   SaveFailedNotice,
   SettingsScreen,
   TitleScreen,
+  TogetherScreen,
+  entryRefusal,
+  refusalFromClose,
   t,
   MenuIcon,
   useNav,
@@ -38,6 +48,7 @@ import {
   type CrashCase,
   type HelpSectionKey,
   type LibraryView,
+  type LobbyRoom,
   type SaveSummary,
 } from '@immunity-wars/ui';
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
@@ -60,6 +71,21 @@ import { startServiceWorker } from './serviceWorker';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
+/**
+ * WHERE THE RELAY IS (P3.5): the deployed one, unless a build names another. A development relay is
+ * `ws://127.0.0.1:8787`, named with `VITE_RELAY_URL` when the dev server is started.
+ */
+const RELAY_URL = import.meta.env.VITE_RELAY_URL ?? 'wss://immunity-wars.kartikchaudhary.com/relay';
+
+/** Why something to do with a room was refused, as the relay's code and, for some, a name. */
+interface Refusal {
+  code: string;
+  detail?: string;
+}
+
+const refusalOfEntry = (e: unknown): Refusal => ({
+  code: e instanceof RelayError ? entryRefusal(e.code, e.closeCode) : 'unreachable',
+});
 // The preference store is read once, synchronously, before the first render (settings.ts says
 // why); a write that fails keeps the in-memory value for the session. The text size is applied
 // to the root here, before the first paint, so the first frame is already at the chosen size.
@@ -88,7 +114,12 @@ type Screen =
   | { name: 'library'; view: LibraryView }
   /** About: credits, recognition, privacy, licence. The Title is its only door, and unlike the
    *  other three slots it has no reason to open over a paused game. */
-  | { name: 'about' };
+  | { name: 'about' }
+  /** Play together (P3.7 piece A): a name, then create a room or join one by its code. */
+  | { name: 'together' }
+  /** The room before its game starts. A base, like Play, and the back gesture there does nothing:
+   *  leaving a room is a decision made with its own button, never a gesture made by accident. */
+  | { name: 'lobby' };
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -154,8 +185,30 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     clearPlayed(prefStore);
     setPlayed(false);
   };
-  const sessionRef = useRef<LocalSession | null>(null);
+  const sessionRef = useRef<LocalSession | RelaySession | null>(null);
   const difficultyRef = useRef<string>('training');
+
+  /**
+   * PLAYING TOGETHER (P3.7 piece A). The room, and what is needed to come back to it, live in
+   * memory only: the name is typed every time (ruling 2), so nothing about a room outlives the page.
+   * `roomRef` is the room this shell is listening to; a room it has let go of is ignored, so its
+   * closing is never shown as a lost connection.
+   */
+  const roomRef = useRef<RelayRoom | null>(null);
+  const entryRef = useRef<{ name: string; code: string; self: PlayerRef } | null>(null);
+  const [entering, setEntering] = useState<{ busy: boolean; refusal: Refusal | null }>({
+    busy: false,
+    refusal: null,
+  });
+  /** Each attempt to enter a room is numbered, so one that finishes after the player gave up on it
+   *  (closed the screen, or tried again) is closed rather than taking them into a room. */
+  const attemptRef = useRef(0);
+  const screenRef = useRef<Screen>(nav.screen);
+  screenRef.current = nav.screen;
+  const [lobby, setLobby] = useState<{ room: LobbyRoom; me: number } | null>(null);
+  const [lobbyRefusal, setLobbyRefusal] = useState<Refusal | null>(null);
+  const [connectionLost, setConnectionLost] = useState(false);
+  const reconnectingRef = useRef(false);
 
   const refreshSave = (): void => {
     void storage
@@ -223,9 +276,105 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     });
   };
 
+  /** Lets go of the room: the connection closes and the member is AWAY, not gone (ruling 4). */
+  const dropRoom = (): void => {
+    const room = roomRef.current;
+    roomRef.current = null;
+    room?.close();
+    setLobby(null);
+    setLobbyRefusal(null);
+    setConnectionLost(false);
+  };
+
+  /** In a room: its lobby now, and its game the moment the captain starts it. */
+  const attach = (room: RelayRoom, name: string): void => {
+    roomRef.current = room;
+    entryRef.current = { name, code: room.code, self: room.self };
+    setEntering({ busy: false, refusal: null });
+    setLobbyRefusal(null);
+    setConnectionLost(false);
+    if (room.room) setLobby({ room: room.room, me: room.id });
+    room.subscribe((e) => {
+      if (roomRef.current !== room) return;
+      if (e.kind === 'room') setLobby({ room: e.room, me: room.id });
+      else if (e.kind === 'refused')
+        setLobbyRefusal(
+          e.detail === undefined ? { code: e.code } : { code: e.code, detail: e.detail },
+        );
+      else {
+        // The lobby says the connection was lost; a close with a reason of its own (another
+        // screen took this place, or the versions differ) says that reason as well.
+        setConnectionLost(true);
+        const why = refusalFromClose(e.code);
+        setLobbyRefusal(why === 'closed' ? null : { code: why });
+      }
+    });
+    void room.session().then((s) => {
+      if (roomRef.current !== room) return;
+      difficultyRef.current = String(s.getView().game['difficulty'] ?? 'training');
+      setGameId((n) => n + 1);
+      sessionRef.current = s;
+      setPaused(false);
+      nav.reset({ name: 'play' });
+    });
+    nav.reset({ name: 'lobby' });
+  };
+
+  const enter = (name: string, attempt: () => Promise<RelayRoom>): void => {
+    const n = (attemptRef.current += 1);
+    setEntering({ busy: true, refusal: null });
+    attempt().then(
+      (room) => {
+        if (n !== attemptRef.current || screenRef.current.name !== 'together') {
+          room.close();
+          return;
+        }
+        attach(room, name);
+      },
+      (e: unknown) => {
+        if (n === attemptRef.current) setEntering({ busy: false, refusal: refusalOfEntry(e) });
+      },
+    );
+  };
+
+  /** RECONNECT IS A CHOICE (ruling 4): nothing rejoins by itself. The same code and the same
+   *  `self` bring the member back, with any seats still theirs. */
+  const reconnect = (): void => {
+    const e = entryRef.current;
+    if (!e || reconnectingRef.current) return;
+    reconnectingRef.current = true;
+    setLobbyRefusal(null);
+    RelayRoom.join({ url: RELAY_URL, code: e.code, name: e.name, self: e.self })
+      .then(
+        (room) => attach(room, e.name),
+        (err: unknown) => setLobbyRefusal(refusalOfEntry(err)),
+      )
+      .finally(() => {
+        reconnectingRef.current = false;
+      });
+  };
+
+  /** LEAVING GIVES THE SEATS BACK: the message goes first, then the connection closes. */
+  const leaveRoom = (): void => {
+    const room = roomRef.current;
+    roomRef.current = null;
+    entryRef.current = null;
+    if (room) void room.leave().then(() => room.close());
+    dropRoom();
+    nav.reset({ name: 'title' });
+  };
+
+  /** Does something to the room, clearing the last refusal, which was about something else. */
+  const inRoom = (f: (room: RelayRoom) => void): void => {
+    setLobbyRefusal(null);
+    if (roomRef.current) f(roomRef.current);
+  };
+
   const quitToTitle = (): void => {
-    // Quit KEEPS the save (APP_FLOW ruling 4) — the session is simply dropped.
+    // Quit KEEPS the save (APP_FLOW ruling 4) — the session is simply dropped. A game played
+    // together is closed, not left: the player is away and their seats wait for them.
     sessionRef.current = null;
+    dropRoom();
     setPaused(false);
     refreshSave();
     nav.reset({ name: 'title' });
@@ -237,10 +386,14 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     // reload keeps its coach. Losing counts: Gate 1 says a loss is finishing.
     writePlayed(prefStore);
     setPlayed(true);
-    // RESULT is the one place the autosave is deleted: Continue never offers a finished game.
-    void storage.delete(SAVE_ID).catch(() => undefined);
+    // RESULT is the one place the autosave is deleted: Continue never offers a finished game. A game
+    // played together never wrote it, so its end must not delete the single-player game it holds.
+    if (roomRef.current === null) {
+      void storage.delete(SAVE_ID).catch(() => undefined);
+      setSave(null);
+    }
+    dropRoom();
     sessionRef.current = null;
-    setSave(null);
     nav.reset({ name: 'result', finalView, difficulty: difficultyRef.current });
   };
 
@@ -294,6 +447,13 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     />
   );
 
+  /** Play together, fresh: no refusal left over from an earlier try. */
+  const openTogether = (): void => {
+    attemptRef.current += 1;
+    setEntering({ busy: false, refusal: null });
+    nav.push({ name: 'together' });
+  };
+
   /** A game sits under the current screen: Settings, Help or the library opened over it. */
   const underPlay = nav.stack.entries.some((e) => e.kind === 'screen' && e.screen.name === 'play');
 
@@ -315,6 +475,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
+            onTogether={openTogether}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
@@ -325,6 +486,49 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
 
     if (screen.name === 'difficulty') {
       return <DifficultyScreen hasSave={save !== null} firstGame={!played} onStart={startNew} />;
+    }
+
+    if (screen.name === 'together') {
+      return (
+        <TogetherScreen
+          busy={entering.busy}
+          refusal={entering.refusal}
+          onCreate={(name) => enter(name, () => RelayRoom.create({ url: RELAY_URL, name }))}
+          onJoin={(name, code) => enter(name, () => RelayRoom.join({ url: RELAY_URL, code, name }))}
+        />
+      );
+    }
+
+    if (screen.name === 'lobby' && lobby) {
+      const code = lobby.room.code;
+      return (
+        <LobbyScreen
+          room={lobby.room}
+          me={lobby.me}
+          refusal={lobbyRefusal}
+          connectionLost={connectionLost}
+          canShare={typeof navigator.share === 'function'}
+          onShare={() => {
+            navigator.share({ text: t('lobby.shareText', { code }) }).catch(() => undefined);
+          }}
+          // The clipboard exists only on a secure page. The installed app always is one; a build
+          // opened over the home network by address is not, and Copy then says nothing rather
+          // than failing.
+          onCopy={() =>
+            window.isSecureContext
+              ? navigator.clipboard.writeText(code).then(
+                  () => true,
+                  () => false,
+                )
+              : Promise.resolve(false)
+          }
+          onClaim={(seat) => inRoom((r) => r.claimSeat(seat))}
+          onRelease={(seat) => inRoom((r) => r.releaseSeat(seat))}
+          onStart={(difficulty) => inRoom((r) => r.start(difficulty))}
+          onLeave={leaveRoom}
+          onReconnect={reconnect}
+        />
+      );
     }
 
     if (screen.name === 'result') {
@@ -357,6 +561,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
+            onTogether={openTogether}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
@@ -425,7 +630,13 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   };
 
   return (
-    <NavHost nav={nav} baseGuard={(s) => s.name === 'play'} onBaseBack={() => setPaused(true)}>
+    <NavHost
+      nav={nav}
+      baseGuard={(s) => s.name === 'play' || s.name === 'lobby'}
+      onBaseBack={() => {
+        if (screen.name === 'play') setPaused(true);
+      }}
+    >
       {renderScreen()}
     </NavHost>
   );

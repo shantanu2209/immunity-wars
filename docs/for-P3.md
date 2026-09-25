@@ -740,3 +740,218 @@ the recommended default, and one new one:
 **Also settled:** the server key has a passphrase, held by the Windows key agent; and none of P3.4's
 build choices is to be revisited (six-character codes, the frame limits, when the selection clears,
 no automatic reconnect).
+
+---
+
+## 6. P3.7, the multiplayer screens: piece A BUILT, pieces B to D to come
+
+Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
+together: getting into a room, playing their part of a shared game, and what happens when someone
+drops. P3.6 then plays full games on it, on two phones on two networks.
+
+### What already exists to build on
+
+- **The play screen takes any session of the right shape** (`PlaySessionLike`, `PlayScreen.tsx`), so a
+  `RelaySession` fits it as it is. Nothing below the screens needs changing to show a shared game.
+- **Phase 2 designed the allocation phase in**: `planning.ts` reads the pool and each player's budget,
+  and the planning screen has a slot for it (block d), read-only, *"no controls until Phase 3 builds
+  them"*.
+- **The automatic draw already records the rule it must learn**: *"in a multiplayer game the engine
+  accepts a draw only from the captain, so only the captain's client may send it. Nothing here
+  decides that yet"* (`autoDraw.ts`).
+- **The navigation stack, the catalogue and the title screen** take new screens the way Phase 2's did.
+- **`RelayRoom`** creates, joins, claims and releases seats, starts, leaves, and reports the room, its
+  refusals and a closed connection.
+
+### What would go wrong as it stands, measured on 25 September 2026
+
+1. **Every player would see the table's Action Points as their own.** In a multiplayer game the view's
+   `ap` stays at the table's total while each player spends from their own budget. Measured: after
+   the captain split 6 as 3 and 3, the view still said `ap: 6` to both. The screen reads `ap` in five
+   places, including the one that decides which actions to offer, so it would offer actions a player
+   cannot afford.
+2. **Every player would be offered every piece.** The screen assumes one player holds all fourteen
+   seats; the room refuses anyone else's (`notYourPiece`). Offers must come only from the player's own
+   seats, read from the room's projection, never the engine's `owner` (ruled, FINDINGS #81).
+3. **Every player's device would try the captain's actions**: the automatic draw, Begin command,
+   confirming the allocation, End turn. The engine refuses them from anyone but the captain.
+4. **The captain has no way to hand out Action Points**: the allocation slot has no controls.
+5. **Refusals the relay words as codes have no words**: `notYourPiece`, `lobbyClosed`, `noSuchRoom`,
+   `version` and the others arrive as codes, and the undo reason `multiplayer` has no line (#79).
+6. **Nothing shows a lost connection, or rejoins.**
+
+### The proposal, in four pieces
+
+**A. The way in.** From the title screen, *Play together*: type a name, then **Create a room** or
+**Join** with a code. A created room shows its code large, with the phone's share sheet and Copy. The
+lobby shows who is in and who is away, and the fourteen seats: tap a free one to take it, tap your own
+to give it back. The captain chooses the difficulty and starts; everyone else sees that the captain
+is choosing. Every refusal is worded: no such room, the game has already started, the app needs
+updating, too many attempts.
+
+**B. Playing your part.** Actions are offered only for your own seats, and your Action Points are
+your own budget. Other players' pieces show their player's name and can be inspected, not moved. The
+captain's device alone draws, begins command and ends the turn; everyone else sees whose move it is.
+The captain gets the allocation controls, and undo says it is single player only.
+
+**C. When someone drops.** Away players are marked on the seat list and on their pieces. The captain
+can hand an away player's seat to someone present, or free it, or the table waits (ruling 4). Your
+own lost connection shows as such, and the app rejoins by itself.
+
+**D. The end and leaving.** Everyone reaches the Result. *Leave* gives your seats back to the table,
+where closing the app does not.
+
+**Built as before:** each piece with tests that fail first, every string through the catalogue (the
+Hindi edition), no dashes in player text, and the 360-pixel audit extended to the new screens, run
+against a relay on the development PC. **First, a spike**: the existing play screen driven by a
+`RelaySession` in the development shell, to find what reading has missed before anything is designed
+around it.
+
+### Rulings needed before building
+
+1. **Where the way in lives.** A *Play together* button on the title screen, beside *New game*. Or
+   inside *New game*, as a second choice after the difficulty. **Recommendation: the title screen**:
+   the difficulty is the captain's choice in the lobby, not a first step for everyone.
+2. **The name a player types.** Remember it on the device, so it is filled in next time; it is never
+   sent anywhere except when joining a room, and Settings can clear it. Or ask for it every time.
+   **Recommendation: remember it on the device.**
+3. **How the captain hands out Action Points.** A row per player with minus and plus, starting from
+   an even split already filled in, and the pool's remainder shown. Or starting from nothing.
+   **Recommendation: the even split**, so the common case is one tap on Confirm.
+4. **A dropped connection.** The app rejoins by itself for about 30 seconds, quietly, then shows
+   *Reconnect*. Or it shows *Reconnect* at once. **Recommendation: rejoin by itself first**: a phone
+   that loses signal in a lift should not need a child to notice.
+5. **Other players' pieces.** Shown as normal, with the owner's name, inspectable but not movable. Or
+   dimmed. **Recommendation: shown as normal**: in a cooperative game, the whole table is everyone's
+   to read.
+6. **Sharing the code.** The phone's share sheet (to WhatsApp and the rest) and Copy. Or Copy only.
+   **Recommendation: both.**
+
+### Ruled, 25 September 2026
+
+1. **The way in is a *Play together* button on the title screen**, as recommended.
+2. **The name is typed every time** (*"I think make them type every time for now"*). Nothing about a
+   player is kept on the device between rooms. *Not the recommendation*, which was to remember it on
+   the device.
+3. **The allocation starts with every other player at zero and the whole pool with the captain**,
+   who hands it out. *Not the recommendation* (an even split filled in). This is also what the engine
+   does when the phase begins, so the controls start from the engine's own state.
+4. **A dropped connection shows *Reconnect* at once** (*"Let the choice to rejoin be one that is made
+   consciously"*). Nothing rejoins by itself. *Not the recommendation*, which was to rejoin quietly for
+   about 30 seconds first.
+5. **Other players' pieces are shown normally**, with their player's name, inspectable and not
+   movable, as recommended.
+6. **The code is shared through the phone's share sheet and Copy**, as recommended.
+
+### The spike, 25 September 2026: the existing play screen on a `RelaySession`
+
+A throwaway page (deleted, never committed) joined a room on the live relay and handed the existing
+play screen a `RelaySession`: a host holding four cells and a guest holding three, in two browser
+tabs on the development PC.
+
+**It works where the proposal said it would.** The play screen took the relay's session unchanged.
+Both players saw the goal, the drawn card, the planning screen, Phase 2's allocation block, and the
+command phase, all from the relay's views, with nothing below the screens changed.
+
+**What it confirmed, and what it added:**
+
+1. **The table's Action Points shown as each player's own.** In the command phase the guest's screen
+   said *AP 6* with a budget of 0.
+2. **Every piece offered to everyone.** Selecting the host's Monocyte, the guest was offered Engulf
+   and Strike.
+3. **The captain's actions offered to everyone.** The guest's *Command your cells* was refused by the
+   engine (*"Only the captain begins the command phase."*, shown in its own words); *Confirm the plan*
+   and *End turn* were on the guest's screen too.
+4. **New: the allocation block names players by the engine's ids**, *m1* and *m2*, not the names they
+   typed. It must read the room's projection, as ruling 5 on #81 has every screen do.
+5. **New, by timing:** the automatic draw fires on whichever device reaches the moment. The host's
+   drew first here, so the guest's never fired; with the other timing the guest's would be refused.
+6. **New, a wording question for piece B:** the goal says *"You command the body's immune cells"*,
+   true in single player, where one person commands them all.
+
+None of it changes the four pieces. It confirms that piece B is the heaviest.
+
+### Piece A, the way in: BUILT, 25 September 2026
+
+**What a player sees.** The title has *Play together* beside *New game* (ruling 1). It asks for a
+name, typed every time and never kept (ruling 2), then offers **Create a room** or **Join** with a
+code; a code is read however it is typed, in lower case or with spaces. The lobby shows the code
+large, with the phone's share sheet where there is one and Copy always (ruling 6); who is in, who is
+the captain, and who is away; and the fourteen seats, each naming its holder, a resident also naming
+its organ. A free seat is taken with a tap and your own given back with another. The captain chooses
+the difficulty and starts; everyone else reads *Waiting for Asha, the captain, to start the game.*
+Start takes every player to the game. **Leave the room** gives the seats back, and says that closing
+the app does not.
+
+**Every refusal is in words**: each of the relay's codes, each reason it closes a connection for,
+and *could not reach the game* for a connection that never opened, which is not the same as one that
+was lost. A newcomer after the start reads *That game has already started. You can join the next
+one.*
+
+**A lost connection shows Reconnect at once** and nothing rejoins by itself (ruling 4). The seats
+stay readable and cannot be tapped until the player chooses to come back.
+
+**Decided here, not ruled, and easy to change:** the back gesture on the lobby does nothing. Leaving
+a room is its own button with its own explanation, so a gesture made by accident should not do it;
+and taking the player back to the title while still connected would leave them in a room with no way
+to see it.
+
+**Where the relay is:** the deployed one, unless a build names another with `VITE_RELAY_URL`.
+`.claude/launch.json` has `relay-local` and `app-local-relay`, the pair every check below ran on.
+
+**A game played together never deletes the single-player autosave.** The Result is where a finished
+game's save is deleted, and a game played together never wrote one; without this, finishing a game
+with friends would have thrown away the game the player had going on their own.
+
+### What proves it
+
+- **The rules, as pure functions** (`packages/ui/src/together/model.ts`), 12 tests: codes, names,
+  the seat list in the engine's order, when the captain may start, and the words for every refusal
+  code, every close code, a code nobody expected, and a connection that never opened.
+- **Every key the three screens name is in the catalogue**, read out of their source, so a key added
+  to a screen and forgotten in the catalogue fails without being listed twice. Control:
+  `together-keys-in-catalogue`.
+- **Two relay tests over real sockets**, for the two defects building this found (#88). Controls:
+  `relay-entry-close-reason`, `relay-leave-sent-first`.
+- **A walkthrough of three players at 360 × 740**, headless Chrome on the development PC against the
+  local relay: 27 checks pass. Create, join by a code typed in lower case with spaces, take seats,
+  give one back, a dropped connection shown at once and not rejoined by itself, Reconnect restoring
+  the seats, a third player leaving and their seat coming free, the back gesture leaving the captain
+  in the lobby, Start taking both players to the game, and a latecomer refused in words. The
+  walkthrough is a throwaway script, not an instrument; the audit below is the instrument.
+- **The one failure it reported is not this piece's:** the page asks for `/favicon.ico` and the app
+  has none. It had none before P3.7; the app's icon is Phase 4's packaging.
+
+**Found and fixed before it was committed:** a seat that cannot be tapped took the browser's grey for
+a disabled button, so while a connection was lost the whole seat list, and at any time the seats
+other players held, were close to unreadable. The seat's colour is now set: its name is 12.2 to 1
+on a taken seat's ground and its smaller lines 4.68 to 1. The walkthrough checks every seat's colour
+while the connection is lost, and reported all 14 faint with the fix removed.
+
+### What piece A does not do
+
+- **The 360-pixel audit is not yet extended to these screens.** It runs against a build, and a build
+  talks to the deployed relay unless told otherwise; an audit must not fill the live relay with
+  rooms. It is extended once, after piece D, over every new screen, against a build pointed at a
+  relay on the development PC.
+- **A player whose app is closed, or whose page reloads, cannot come back as themselves.** Rejoining
+  needs the same `self`, which lives in memory only, so after a reload the player is a newcomer, and
+  a newcomer is refused once the game has started. Their seats wait, away, until the captain hands
+  them on. This is piece C's, and it needs a ruling: see below.
+- **Everything the spike found is still true on the play screen**, and is piece B's.
+
+### Ruling needed for piece C: coming back after the app closes
+
+Phones close background pages. A player who switches to WhatsApp to send the code, and whose
+browser is reclaimed, loses their place for good as things stand.
+
+- **(a) Keep the room's code and the player's `self` on the device while they are in the room,**
+  and forget both when they leave or the game ends. The title then offers *Rejoin room ABC123*,
+  which the player chooses (ruling 4), and they type their name again (ruling 2). `self` is a random
+  value made on the device; it identifies nothing and no one outside the room.
+- **(b) Keep nothing.** A player who loses the app loses their place, and the captain hands their
+  seats to someone present.
+
+**Recommendation: (a).** It is what makes *closing the app is not leaving* true on a phone, where
+the operating system closes the app more often than the player does. It keeps nothing about the
+player, only which room they were in, and only until they leave it.

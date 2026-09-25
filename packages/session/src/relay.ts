@@ -78,9 +78,16 @@ export interface RelayOptions {
  * WHY A ROOM COULD NOT BE ENTERED, as a code for the catalogue: a room refusal (`noSuchRoom`,
  * `gameEnded`), `version` when the relay speaks another version, or `closed` when the connection
  * ended first.
+ *
+ * `closeCode` is the WebSocket close code when the connection ended first, and null otherwise. The
+ * relay refuses some entries by closing with a reason and sending nothing (`busy`, `slowDown`, the
+ * hub's `CLOSE`), so without it a player told to wait would read that the connection was lost (P3.7).
  */
 export class RelayError extends Error {
-  constructor(readonly code: ErrorCode | 'closed') {
+  constructor(
+    readonly code: ErrorCode | 'closed',
+    readonly closeCode: number | null = null,
+  ) {
     super(code);
     this.name = 'RelayError';
   }
@@ -218,9 +225,16 @@ export class RelayRoom {
     this.send({ kind: 'start', difficulty });
   }
 
-  /** Leaving is a decision: the seats go back to the table. Closing the app is not leaving. */
-  leave(): void {
+  /**
+   * Leaving is a decision: the seats go back to the table. Closing the app is not leaving.
+   *
+   * Settles once the message has gone, because sending is asynchronous (every frame is gzipped
+   * first): a caller that closes the connection the moment `leave` returns would otherwise close it
+   * before the message is sent, and the player would be left in the room, away, holding their seats.
+   */
+  leave(): Promise<void> {
     this.send({ kind: 'leave' });
+    return this.outbound;
   }
 
   /** The game, once it has started. Resolves on the first view, which is the game's start. */
@@ -316,7 +330,7 @@ export class RelayRoom {
   private onClose(code: number): void {
     if (this.isClosed) return;
     this.isClosed = true;
-    this.fail(new RelayError('closed'));
+    this.fail(new RelayError('closed', code));
     this.relaySession?.connectionClosed();
     this.emit({ kind: 'closed', code });
   }

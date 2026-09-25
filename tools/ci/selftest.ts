@@ -495,6 +495,38 @@ const CONTROLS: readonly Control[] = [
     expect: 'leaves the refused connection hearing nothing more from the room',
   },
   {
+    id: 'relay-entry-close-reason',
+    why: 'FINDINGS #88: the relay refuses a busy relay and a guesser of codes by closing with a reason and sending nothing, and RelayRoom dropped the reason, so a player told to wait would have read that the connection was lost.',
+    file: 'packages/session/src/relay.ts',
+    mutate: (t) =>
+      t.replace(
+        "this.fail(new RelayError('closed', code));",
+        "this.fail(new RelayError('closed'));",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'says WHY when the relay refuses by closing',
+  },
+  {
+    id: 'relay-leave-sent-first',
+    why: 'FINDINGS #88: leave() sends asynchronously, so an app that leaves and closes at once closed the connection first, and the player stayed in the room as away, holding the seats Leave says it gives back.',
+    file: 'packages/session/src/relay.ts',
+    mutate: (t) =>
+      t.replace(
+        "    this.send({ kind: 'leave' });\n    return this.outbound;",
+        "    this.send({ kind: 'leave' });\n    return Promise.resolve();",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'lets a player leave and close at once',
+  },
+  {
+    id: 'together-keys-in-catalogue',
+    why: 't() shows a missing key as the key itself, and nothing else notices until a player does. The way-in test reads every key the together screens and the lobby name out of their source; a misspelt one must redden it.',
+    file: 'packages/ui/src/screens/LobbyScreen.tsx',
+    mutate: (t) => t.replace("t('lobby.seats')", "t('lobby.seatz')"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'are in the catalogue',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

@@ -13,6 +13,19 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@immunity-wars/app", "preview"],
       "port": 4173
+    },
+    {
+      "name": "relay-local",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@immunity-wars/server", "relay"],
+      "port": 8787
+    },
+    {
+      "name": "app-local-relay",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@immunity-wars/app", "dev", "--port", "5174", "--strictPort"],
+      "env": { "VITE_RELAY_URL": "ws://127.0.0.1:8787" },
+      "port": 5174
     }
   ]
 }
