@@ -427,6 +427,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'refuses the action from any client',
   },
   {
+    id: 'ids-undo-snapshot-key',
+    why: "FINDINGS #80: the id workaround read undo snapshots as 'invaders' while the engine writes 'inv', so an invader killed this phase, which an undo would bring back, could be handed the same id as a new arrival. The test takes its snapshot from the engine's own pushUndo, so a wrong key reads nothing and the counter falls short.",
+    file: 'packages/session-core/src/ids.ts',
+    mutate: (t) =>
+      t.replace(
+        '    for (const iv of snap.inv ?? []) seen(iv.id);',
+        '    for (const iv of [] as { id?: unknown }[]) seen(iv.id);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-core test',
+    expect: "advances past an id that only the engine's own undo snapshot still holds",
+  },
+  {
     id: 'room-ids-across-rooms',
     why: 'FINDINGS #56 on a relay: the engine hands out invader ids from one counter per process, and newGame in ANY room resets it. Without advancing it before every engine call, a game starting at one table makes another table hand one id to two pathogens, and every id-keyed action can then hit the wrong one.',
     file: 'packages/room/src/room.ts',
