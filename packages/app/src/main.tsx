@@ -18,11 +18,13 @@ import {
   IndexedDbStorage,
   RelayError,
   RelayRoom,
+  asPlayerRef,
   type RelaySession,
 } from '@immunity-wars/session';
 import type { PlayerRef, ViewState } from '@immunity-wars/session';
 import {
   AboutScreen,
+  ConnectionLost,
   CrashScreen,
   DifficultyScreen,
   ErrorBoundary,
@@ -40,6 +42,7 @@ import {
   TogetherScreen,
   entryRefusal,
   refusalFromClose,
+  refusalText,
   t,
   MenuIcon,
   useNav,
@@ -66,6 +69,7 @@ import {
   type TextSize,
 } from './settings';
 import { clearHints, readHints, writeHints } from './hints';
+import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { clearPlayed, readPlayed, writePlayed } from './played';
 import { startServiceWorker } from './serviceWorker';
 
@@ -116,7 +120,7 @@ type Screen =
    *  other three slots it has no reason to open over a paused game. */
   | { name: 'about' }
   /** Play together (P3.7 piece A): a name, then create a room or join one by its code. */
-  | { name: 'together' }
+  | { name: 'together'; rejoin: boolean }
   /** The room before its game starts. A base, like Play, and the back gesture there does nothing:
    *  leaving a room is a decision made with its own button, never a gesture made by accident. */
   | { name: 'lobby' };
@@ -209,6 +213,15 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   const [lobbyRefusal, setLobbyRefusal] = useState<Refusal | null>(null);
   const [connectionLost, setConnectionLost] = useState(false);
   const reconnectingRef = useRef(false);
+  const [reconnecting, setReconnecting] = useState(false);
+  /** THE ROOM THIS DEVICE WAS IN (piece C, ruling (a)): offered on the Title after the app closed. */
+  const [rejoin, setRejoin] = useState<RejoinRecord | null>(() =>
+    readRejoin(prefStore, Date.now()),
+  );
+  const forgetRoom = (): void => {
+    clearRejoin(prefStore);
+    setRejoin(null);
+  };
 
   const refreshSave = (): void => {
     void storage
@@ -290,6 +303,10 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   const attach = (room: RelayRoom, name: string): void => {
     roomRef.current = room;
     entryRef.current = { name, code: room.code, self: room.self };
+    // Kept on the device while the player is in the room, so a phone that closes the app does not
+    // cost them their place (ruling (a)); `rejoin.ts` says what is kept and for how long.
+    writeRejoin(prefStore, room.code, room.self, Date.now());
+    setRejoin(readRejoin(prefStore, Date.now()));
     setEntering({ busy: false, refusal: null });
     setLobbyRefusal(null);
     setConnectionLost(false);
@@ -317,10 +334,16 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
       setPaused(false);
       nav.reset({ name: 'play' });
     });
-    nav.reset({ name: 'lobby' });
+    // A game under way is the play screen's, which follows as soon as the board arrives; showing
+    // the lobby first would flash a room that has already started.
+    if (room.room?.phase !== 'playing') nav.reset({ name: 'lobby' });
   };
 
-  const enter = (name: string, attempt: () => Promise<RelayRoom>): void => {
+  /** Refusals that mean the room is gone, or has no place for this player: forget it. */
+  const goneFor = (refusal: Refusal): boolean =>
+    refusal.code === 'noSuchRoom' || refusal.code === 'gameEnded' || refusal.code === 'lobbyClosed';
+
+  const enter = (name: string, attempt: () => Promise<RelayRoom>, rejoining = false): void => {
     const n = (attemptRef.current += 1);
     setEntering({ busy: true, refusal: null });
     attempt().then(
@@ -332,7 +355,9 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
         attach(room, name);
       },
       (e: unknown) => {
-        if (n === attemptRef.current) setEntering({ busy: false, refusal: refusalOfEntry(e) });
+        const refusal = refusalOfEntry(e);
+        if (rejoining && goneFor(refusal)) forgetRoom();
+        if (n === attemptRef.current) setEntering({ busy: false, refusal });
       },
     );
   };
@@ -343,14 +368,20 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     const e = entryRef.current;
     if (!e || reconnectingRef.current) return;
     reconnectingRef.current = true;
+    setReconnecting(true);
     setLobbyRefusal(null);
     RelayRoom.join({ url: RELAY_URL, code: e.code, name: e.name, self: e.self })
       .then(
         (room) => attach(room, e.name),
-        (err: unknown) => setLobbyRefusal(refusalOfEntry(err)),
+        (err: unknown) => {
+          const refusal = refusalOfEntry(err);
+          if (goneFor(refusal)) forgetRoom();
+          setLobbyRefusal(refusal);
+        },
       )
       .finally(() => {
         reconnectingRef.current = false;
+        setReconnecting(false);
       });
   };
 
@@ -359,6 +390,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     const room = roomRef.current;
     roomRef.current = null;
     entryRef.current = null;
+    forgetRoom();
     if (room) void room.leave().then(() => room.close());
     dropRoom();
     nav.reset({ name: 'title' });
@@ -391,6 +423,9 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     if (roomRef.current === null) {
       void storage.delete(SAVE_ID).catch(() => undefined);
       setSave(null);
+    } else {
+      // The game is over, so there is nothing to come back to.
+      forgetRoom();
     }
     dropRoom();
     sessionRef.current = null;
@@ -451,7 +486,14 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   const openTogether = (): void => {
     attemptRef.current += 1;
     setEntering({ busy: false, refusal: null });
-    nav.push({ name: 'together' });
+    nav.push({ name: 'together', rejoin: false });
+  };
+
+  /** Back to the room this device was in, the name typed again (piece C, rulings (a) and 2). */
+  const openRejoin = (): void => {
+    attemptRef.current += 1;
+    setEntering({ busy: false, refusal: null });
+    nav.push({ name: 'together', rejoin: true });
   };
 
   /** A game sits under the current screen: Settings, Help or the library opened over it. */
@@ -476,6 +518,8 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onTogether={openTogether}
+            rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
+            onRejoin={openRejoin}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
@@ -494,7 +538,13 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
           busy={entering.busy}
           refusal={entering.refusal}
           onCreate={(name) => enter(name, () => RelayRoom.create({ url: RELAY_URL, name }))}
-          onJoin={(name, code) => enter(name, () => RelayRoom.join({ url: RELAY_URL, code, name }))}
+          rejoinCode={screen.rejoin && rejoin !== null ? rejoin.code : null}
+          onJoin={(name, code) => {
+            if (screen.rejoin && rejoin !== null) {
+              const self = asPlayerRef(rejoin.self);
+              enter(name, () => RelayRoom.join({ url: RELAY_URL, code, name, self }), true);
+            } else enter(name, () => RelayRoom.join({ url: RELAY_URL, code, name }));
+          }}
         />
       );
     }
@@ -562,6 +612,8 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
             onTogether={openTogether}
+            rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
+            onRejoin={openRejoin}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
@@ -589,6 +641,9 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             coach={!played && roomRef.current === null}
             // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
             table={roomRef.current !== null && lobby !== null ? lobby : null}
+            // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.
+            onAssignSeat={(seat, to) => inRoom((r) => r.assignSeat(seat, to))}
+            tableRefusal={connectionLost ? null : lobbyRefusal}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
@@ -629,6 +684,16 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             />
           ) : null}
         </div>
+        {connectionLost && roomRef.current !== null ? (
+          // THIS PLAYER'S CONNECTION IS LOST (piece C): shown at once, and nothing rejoins by itself
+          // (ruling 4). Back to the title closes the game without leaving it; the title offers it again.
+          <ConnectionLost
+            reconnecting={reconnecting}
+            refusal={lobbyRefusal ? refusalText(lobbyRefusal.code, lobbyRefusal.detail) : null}
+            onReconnect={reconnect}
+            onTitle={quitToTitle}
+          />
+        ) : null}
       </div>
     );
   };

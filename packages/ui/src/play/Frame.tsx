@@ -22,7 +22,7 @@ import { BOARD_ASPECT } from '../board/geometry';
 import { engineText } from '../engineText';
 import { t } from '../i18n';
 import { actionDisplayName } from '../names';
-import { ChatIcon } from '../panels/BarIcons';
+import { ChatIcon, TableIcon } from '../panels/BarIcons';
 import { CardIcon } from '../panels/CardIcon';
 import { diceOf } from './SpreadNarration';
 import type { DockRow } from './offered';
@@ -65,6 +65,7 @@ export function TopBar({
   onChat,
   chatLabel,
   menu,
+  table = null,
 }: {
   turnText: string;
   apText: string;
@@ -78,6 +79,12 @@ export function TopBar({
   chatLabel: string;
   /** The shell's menu button (the app's) or its instrumented controls (the dev shell's). */
   menu: ReactNode;
+  /**
+   * THE TABLE, in a game played together (P3.7 piece C): who is here and who holds what. Its badge
+   * counts the pieces nobody can move right now, held by someone away or by nobody, so the table
+   * can see without opening it that something waits. Null alone.
+   */
+  table?: { onOpen: () => void; waiting: number } | null;
 }): ReactElement {
   const colour = banner ? BANNER_COLOUR[banner.kind] : null;
   return (
@@ -154,6 +161,44 @@ export function TopBar({
           marginLeft: 'auto',
         }}
       >
+        {table ? (
+          <button
+            data-table-open=""
+            data-waiting={String(table.waiting)}
+            aria-label={
+              table.waiting > 0
+                ? `${t('table.title')}, ${t('table.badge', { n: table.waiting })}`
+                : t('table.title')
+            }
+            onClick={table.onOpen}
+            style={{ ...ICON_BUTTON, position: 'relative' }}
+          >
+            <TableIcon />
+            {table.waiting > 0 ? (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  background: '#B03A2E',
+                  color: '#FFFFFF',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                  padding: '0 4px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {table.waiting}
+              </span>
+            ) : null}
+          </button>
+        ) : null}
         <button data-chat="" aria-label={chatLabel} onClick={onChat} style={ICON_BUTTON}>
           <ChatIcon />
         </button>

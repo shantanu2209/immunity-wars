@@ -41,6 +41,8 @@ export {
   poolLeft,
   removePoint,
   seenBy,
+  tableChanges,
+  tableSummary,
   type Budgets,
   type Draft,
   type Perspective,
@@ -98,6 +100,7 @@ export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export { TogetherScreen } from './screens/TogetherScreen';
 export { LobbyScreen } from './screens/LobbyScreen';
+export { ConnectionLost } from './panels/ConnectionLost';
 export { entryRefusal, refusalFromClose, refusalText, type LobbyRoom } from './together/model';
 export { SettingsScreen, type DeleteSaveBlock, type ChoiceRow } from './screens/SettingsScreen';
 export { HelpScreen, HELP_SECTION_KEYS, type HelpSectionKey } from './screens/HelpScreen';

@@ -18,7 +18,7 @@
  *   `onCheck` — cheap, and the invariant matters everywhere.
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
-import { residentSeat } from '@immunity-wars/protocol';
+import { residentSeat, type Seat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
   useEffect,
@@ -103,6 +103,8 @@ import { AllocationBlock, PathogenList, PlanningScreen, spentCellsLine } from '.
 import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, residentDisplayName } from '../names';
+import { TableView } from '../panels/TableView';
+import { refusalText } from '../together/model';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
 import {
   addPoint,
@@ -111,6 +113,8 @@ import {
   perspectiveOf,
   removePoint,
   seenBy,
+  tableChanges,
+  tableSummary,
   type Budgets,
   type Draft,
   type Table,
@@ -188,8 +192,14 @@ export function PlayScreen({
   hintsSeen = [],
   onHintsSeen,
   table = null,
+  onAssignSeat = null,
+  tableRefusal = null,
 }: {
   session: PlaySessionLike;
+  /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
+  onAssignSeat?: ((seat: Seat, to: number) => void) | null;
+  /** The room's last refusal of something done at the table (a handover), said in the toast. */
+  tableRefusal?: { code: string; detail?: string } | null;
   /**
    * A GAME PLAYED TOGETHER (P3.7 piece B): the room as the relay last described it, and which member
    * this device is. Null alone. The screen reads from it whose Action Points, whose pieces, who is
@@ -264,7 +274,7 @@ export function PlayScreen({
   const [planFocus, setPlanFocus] = useState<string | null>(null);
   /** Closes whatever view the middle shows, before another opens or the board is tapped. */
   const closeMiddle = (): void => {
-    setDrawer((d) => (d === 'log' ? d : null));
+    setDrawer((d) => (d === 'log' || d === 'table' ? d : null));
     setApSheet(false);
     setTargetsFor(null);
     setEffectsOpen(false);
@@ -952,6 +962,19 @@ export function PlayScreen({
     };
   }, [planningActive]);
 
+  // WHAT CHANGED AT THE TABLE (P3.7 piece C), said as it happens: who went away, who came back, who
+  // is captain now, who was handed which piece. Visible to everyone without anyone going to look.
+  const prevTableRef = useRef<Table | null>(null);
+  useEffect(() => {
+    if (table === null) return;
+    const lines = tableChanges(prevTableRef.current, table);
+    prevTableRef.current = table;
+    if (lines.length > 0) setSaid(lines.join(' '));
+  }, [table]);
+  useEffect(() => {
+    if (tableRefusal !== null) setSaid(refusalText(tableRefusal.code, tableRefusal.detail));
+  }, [tableRefusal]);
+
   // THE TOAST CLEARS ITSELF, and a change in what it answered clears it sooner.
   useEffect(() => {
     if (said === null) return undefined;
@@ -1322,6 +1345,17 @@ export function PlayScreen({
         }}
         onChat={() => setDrawer('log')}
         chatLabel={t('chat.open')}
+        table={
+          table !== null
+            ? {
+                onOpen: () => {
+                  closeMiddle();
+                  setDrawer('table');
+                },
+                waiting: tableSummary(table).waiting.length,
+              }
+            : null
+        }
         menu={
           <LiveControls
             store={frameStore}
@@ -1476,6 +1510,17 @@ export function PlayScreen({
             </span>
           </div>
           <LiveLog store={frameStore} game={game} />
+        </Drawer>
+      ) : null}
+      {drawer === 'table' && table !== null ? (
+        // THE TABLE (P3.7 piece C): full height over the game, like the messages.
+        <Drawer kind="table" onClose={() => setDrawer(null)}>
+          <TableView
+            summary={tableSummary(table)}
+            captain={p.captain}
+            captainName={p.captainName}
+            onGive={(seat, to) => onAssignSeat?.(seat, to)}
+          />
         </Drawer>
       ) : null}
       {playing ? (

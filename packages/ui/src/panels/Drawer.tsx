@@ -17,7 +17,7 @@ import { t } from '../i18n';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 
 /** The middle's three views and the messages: the play screen holds one of these, or none. */
-export type DrawerKind = 'pieces' | 'antibodies' | 'body' | 'log';
+export type DrawerKind = 'pieces' | 'antibodies' | 'body' | 'log' | 'table';
 
 /** Each kind's name, for the panel's label. Only the messages open as a panel since piece 5. */
 const LABEL: Record<DrawerKind, string> = {
@@ -25,6 +25,7 @@ const LABEL: Record<DrawerKind, string> = {
   antibodies: 'antibody.title',
   body: 'body.title',
   log: 'chat.open',
+  table: 'table.title',
 };
 
 const MOTION =
