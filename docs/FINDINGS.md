@@ -4428,3 +4428,36 @@ removes the ending and the test goes red.
 
 **Why P3.4 did not catch it:** every P3.4 test closed its connections cleanly. A silent connection is
 the case no test had built.
+
+---
+
+## 85. "No access log" was not "no addresses": Caddy's error log wrote down the address of whoever's request failed
+
+**Found 25 September 2026, deploying P3.5**, by checking the live server's logs for addresses after
+the first games were played through it. **Fixed the same day**, because the players are children
+and an address is personal data under the DPDP Act (`CLAUDE.md`, "No personal data").
+
+The setup gave Caddy no `log` directive, so it wrote no access log, and the setup script and
+`SECURITY_NOTES.md` said so as if that settled it. It did not. **Caddy's error log records the whole
+request that failed**: the client's address, port and headers. The first deploy's premature check
+got a 502, and that one line put this PC's address into the server's system journal. No player had
+connected, so no child's address was ever written; the only address recorded is the maintainer's.
+
+**The fix** (`packages/server/deploy/setup.sh`): every log Caddy writes passes through a filter that
+deletes `request>remote_ip`, `request>client_ip`, `request>remote_port` and `request>headers`
+before it is written. The error itself, its status and its cause are kept.
+
+**Proved both ways on the live server**, with the relay stopped for a few seconds so that Caddy
+would log a 502 on purpose: before the fix the error line carried `remote_ip`, `client_ip`,
+`remote_port` and `headers`; after it, the same line carries its status and no address but the
+relay's own `127.0.0.1`.
+
+**Found on the way, and fixed in the same change:** the setup wrote the new Caddy configuration in
+place and validated it afterwards. A configuration that failed validation would have been left
+live, and Caddy would have failed to start at the next restart, which the 03:30 update window makes
+certain sooner or later. It now validates the new file beside the live one and swaps it in only
+once it passes.
+
+**Still owed:** nothing re-checks this. A future Caddy release could add a field carrying an address
+under a new name, and the filter, which deletes named fields, would not see it. The check above is
+recorded in `SECURITY_NOTES.md` to be repeated after any Caddy upgrade.

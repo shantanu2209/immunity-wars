@@ -410,17 +410,32 @@ would have provided is ours to provide. **Built on the development PC and tested
   next ping is ended, so a silent phone shows as away within about 40 seconds (FINDINGS #84).
 - Each has a test that must refuse and a twin that must permit, and a selftest control.
 
-### On the server, by `packages/server/deploy/setup.sh`, not yet run
+### On the server, by `packages/server/deploy/setup.sh`: RUN, 25 September 2026
 
 - **Node and Caddy from their own signed package repositories**, and **automatic security updates for
   both as well as Ubuntu**, restarting at 03:30 IST only when an update needs it (awaiting ruling).
 - **The relay as its own user**, with no login and no home, fenced off by its service: no new
   privileges, a read-only system, no access to home folders or devices, network sockets only, 512 MB.
-- **Caddy in front for the certificate, with no access log.**
+- **Caddy in front for the certificate, with no access log, and no addresses in any other log.** The
+  second half was added after the first deploy (FINDINGS #85): Caddy's error log recorded the
+  address, port and headers of a request that failed, and did, once, for this PC's own request.
+  Every Caddy log now deletes those fields before it is written.
 - **The firewall opened for ports 80 and 443 only**, in the cloud's own firewall (Google's HTTP and
   HTTPS rules) and, where the image has rules of its own, in the server's iptables.
 - **One bundled file, not a checkout.** No repository, no package manager and no build tools on the
   server; the bundle is tested as itself before any deploy (`bundle-recipe` control).
+
+**As deployed, 25 September 2026:** Google Cloud `e2-micro` in Mumbai, Ubuntu 26.04 LTS, Node
+24.21.0 (NodeSource), Caddy 2.11.4 (Caddy's repository), certificate from Let's Encrypt. Checked on
+the server: SSH accepts keys only (`passwordauthentication no`); automatic updates are allowed from
+Ubuntu, NodeSource and Caddy's repository; the relay listens only on `127.0.0.1:8787`; the relay's
+own log holds nothing but its start and stop lines.
+
+**Repeat after any Caddy upgrade:** stop the relay for a few seconds, request
+`https://<host>/relay` so that Caddy logs a 502, start the relay, and check that the newest
+`http.log.error` line in `journalctl -u caddy` names no address but `127.0.0.1`. It was run on 25
+September 2026 both before the filter (the address present) and after it (absent). Nothing runs it
+automatically yet.
 
 ### What the property now covers
 

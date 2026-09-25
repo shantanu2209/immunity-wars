@@ -127,11 +127,32 @@ EOF
 systemctl daemon-reload
 systemctl enable immunity-wars-relay
 
-echo "== Caddy in front: the certificate, and no access log"
-cat >/etc/caddy/Caddyfile <<EOF
+echo "== Caddy in front: the certificate, no access log, and no addresses in its other logs"
+# Written beside the live file and validated BEFORE it replaces it: a file that failed validation
+# left in place would stop Caddy at the next restart, which the 03:30 update window makes certain.
+cat >/etc/caddy/Caddyfile.new <<EOF
 # The Immunity Wars relay. Caddy obtains and renews the certificate for this name by itself.
-# There is deliberately no 'log' directive: without one Caddy writes no access log, and an
-# address is personal data under the DPDP Act.
+#
+# NO ADDRESS OF ANYONE CONNECTING IS WRITTEN DOWN: an address is personal data under the DPDP Act,
+# and the players are children. The site has no 'log' directive, so Caddy writes no access log.
+# But that is not enough, and was found not to be on 25 September 2026: Caddy's ERROR log records
+# the whole request that failed, the client's address, port and headers included, and on the first
+# deploy a 502 put one into the system journal. So every log Caddy writes deletes those fields
+# before it is written. The error itself, its status and its cause are kept.
+{
+	log default {
+		format filter {
+			wrap json
+			fields {
+				request>remote_ip delete
+				request>client_ip delete
+				request>remote_port delete
+				request>headers delete
+			}
+		}
+	}
+}
+
 ${HOST_NAME} {
 	handle /relay {
 		reverse_proxy 127.0.0.1:8787
@@ -141,7 +162,8 @@ ${HOST_NAME} {
 	}
 }
 EOF
-caddy validate --config /etc/caddy/Caddyfile
+caddy validate --config /etc/caddy/Caddyfile.new --adapter caddyfile
+mv /etc/caddy/Caddyfile.new /etc/caddy/Caddyfile
 systemctl reload caddy || systemctl restart caddy
 
 echo "== this machine's own firewall: web traffic in, where it rejects by default"

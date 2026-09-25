@@ -678,3 +678,43 @@ gigabyte of data, since the free gigabyte applies only to data from North Americ
 **Gate B's "inside a free plan" is amended in the brief (§1, §8)** to "the cost recorded at measured
 traffic", because by ruling it no longer runs on a free plan. The deploy guide says Mumbai, a budget
 alert near the expected cost, and how to read the real bill before the credit hides it.
+
+### P3.5 part two: DEPLOYED, 25 September 2026
+
+**The relay is live at `wss://immunity-wars.kartikchaudhary.com/relay`**, on Google Cloud's
+`e2-micro` in Mumbai: Ubuntu 26.04 LTS, Node 24.21.0, Caddy 2.11.4, a Let's Encrypt certificate.
+Shantanu created the account, the server, the key and the DNS record from the guide; setup and
+deploy ran from the development PC over SSH, with his go-ahead.
+
+**Measured, live, from the development PC** (`tools/perf/relay-live.ts`): six scripted two-player
+games through the internet, the TLS front and the relay in Mumbai, 42 turns and 168 actions.
+
+| | p50 | p95 | max |
+|---|---|---|---|
+| Each action, from `sendAction` to its answer, the new view already in hand | **35 ms** | 44 ms | 345 ms, once |
+| An end of turn, the heaviest action | 38 ms | 48 ms | 55 ms |
+| Creating and joining a room, both clients | 285 ms | | 365 ms |
+| Data to one player, gzipped as sent | **13.0 KiB a turn** | | 18.1 KiB |
+
+- **On the server itself:** the relay used 1.56 s of processor time for those 168 actions and the
+  rooms around them, about 9 ms an action on the `e2-micro`, including the first moments of a
+  freshly started process; and 30 MB of memory idle, 48 MB at its peak.
+- **A full-length game** at the measured rate would be about 0.6 to 0.8 MB per player, under §3's
+  planning figure of 2 MB. Scripted games are short, so that is an extrapolation.
+- **Not yet measured:** from a phone, on a mobile network (P3.6), and the real bill, which Google's
+  report shows a day after use.
+
+**What the live relay found, each fixed and each with a control:**
+
+1. **An action's answer came before the room's end** when that action ended the game, so a client
+   whose promise had resolved still thought the game was on, and the first live run was refused
+   for sending its next draw into an ended room. The answer is now the last thing an action causes
+   (`room-result-after-ending`).
+2. **The deploy checked too early**: one request two seconds after the restart got 502 while the
+   relay was still starting. It now asks for up to 30 seconds.
+3. **Caddy's error log recorded the address of whoever's request failed** (FINDINGS #85). Now
+   filtered out, and proved both ways on the live server with a deliberate 502.
+4. **The setup validated Caddy's configuration after putting it live**, which a bad file would have
+   turned into a Caddy that fails at the next restart. It now validates first.
+5. **The server runs Ubuntu 26.04, not 24.04**, and Google's image has no host firewall at all; the
+   setup now opens host ports only where the host rejects traffic.
