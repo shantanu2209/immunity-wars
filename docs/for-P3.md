@@ -1197,3 +1197,48 @@ twenty are reached.
 
 **P3.7 is therefore done**: all four pieces, the double-tap fix before P3.6 (FINDINGS #90), and the
 audit. P3.6 is next.
+
+## 7. P3.6, two phones on two networks: PREPARED, awaiting the deploy
+
+### Ruled, 25 September 2026
+
+- **R1 (a): the app is served from the relay's own server,** beside the relay, at
+  `https://immunity-wars.kartikchaudhary.com/`. The alternative was GitHub Pages. The same server,
+  certificate and deploy scripts, and nothing new to trust. The game is publicly reachable at that
+  address, linked from nowhere, with no personal data in it.
+- **R2 (a): Gate A's version refusal is checked on a real phone,** with a build that claims the
+  protocol version before the current one, served at a temporary address for the session and taken
+  away after it.
+
+### What is prepared (packages/server/deploy)
+
+- **`setup.sh`**: Caddy serves the app from `/opt/immunity-wars/app/current` beside the relay. The
+  page, the service worker and its manifest are always asked for again, so a new version reaches a
+  phone that has the app. `/old/` is a slot that answers 404 unless the version-check build is in it.
+- **`deploy-app.sh`**: builds the app as players get it and **refuses a build that does not talk to
+  this server's relay**. It installs a new version beside the last three, with no restart and no game
+  touched, and checks the page served is that build's. The build is deployed exactly as the Gate 1
+  audit measures it, the development page with it, because the service worker precaches that page.
+- **`old-build.sh`**: `put` builds from HEAD in a temporary worktree, so the working copy is never
+  patched. The build claims the previous protocol version, registers no service worker, and lives
+  under `/old/`. `remove` takes it away.
+
+**Proved on the development PC before any of it goes near the server:**
+
+- The old build stamps `{v:1, …}` on every message where the current one stamps `{v:2, …}`, and
+  loads from `/old/`. Its first build loaded from `/Git/old/`, because Git Bash rewrote the path
+  argument; the script now prevents that and checks for it.
+- Served under `/old/` against a relay on the PC, creating a room is refused with *"This app and
+  the game server are on different versions. Update the app, then try again."* No lobby is
+  reached, no service worker is registered, and the page has no errors.
+- Git on Windows failed to delete one temporary worktree, whose paths were too long, and left 231 MB
+  behind. The script's clean-up now removes the folder itself and prunes the record.
+
+### What waits
+
+1. **Shantanu's go-ahead to deploy:** `setup.sh` again (the Caddy change), `deploy-app.sh`, and on the
+   day `old-build.sh put`.
+2. **The session** ([`P3_6_SESSION.md`](P3_6_SESSION.md)): about an hour on two phones, one on home
+   Wi-Fi and one on mobile data. It is one game on Training, with each Gate A item where it falls.
+3. **The 20 deferred coverage arms**: automated tests, Claude's, after this is merged.
+4. **Gate B's cost**, read from Google's billing report by SKU after the session.
