@@ -4536,3 +4536,32 @@ the room's code, and before today's fix only once a game had ended.
 member is detached. **Proved** by a hub test in which a refused joiner hears nothing more while the
 game goes on, with a twin that an accepted member keeps hearing the room. Control:
 `hub-refused-join-unbound`.
+
+---
+
+## 88. `RelayRoom` lost the reason a room was refused, and could lose a player's Leave to the close that followed it
+
+**Found 25 September 2026**, building P3.7's way in, by asking what the player is told in each case.
+**Both fixed in the same change**, because the way in cannot word a refusal it is never given, and
+its Leave button says the seats go back.
+
+**1. A refusal by closing arrived as "the connection was lost".** The relay refuses a busy relay
+(`busy`) and an address guessing codes (`slowDown`) by closing the connection with a reason and
+sending nothing (the hub's `CLOSE`). `RelayRoom.create` and `join` rejected with
+`RelayError('closed')` and dropped the close code, so a child told to wait a few minutes would have
+read that the line had dropped, and tried again at once. **Fix:** `RelayError` carries `closeCode`,
+and the way in chooses its words from it; a connection that never opened says *could not reach the
+game* rather than *lost*. **Proved** by a test against real sockets on a relay with its limits
+lowered: busy and slow-down each reach the caller with their close code. Control:
+`relay-entry-close-reason`.
+
+**2. Leave, then close, could lose the Leave.** `leave()` sent asynchronously (every frame is gzipped
+first) and returned nothing, so a caller that closed the connection straight after closed it before
+the message went. The player stayed in the room as away, holding seats that the lobby had just told
+them were given back. **Fix:** `leave()` returns a promise that settles once the message has gone.
+**Proved** by a test that leaves and closes at once: the player is gone from the room and the seat is
+free; with the old `leave()`, the test times out with the player still there. Control:
+`relay-leave-sent-first`.
+
+**Neither was reachable before P3.7**: nothing called either path except the tests, and no test
+asked what a refused caller was told or whether a Leave followed by a close arrived.

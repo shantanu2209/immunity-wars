@@ -28,6 +28,7 @@ export function TitleScreen({
   save,
   onContinue,
   onNewGame,
+  onTogether,
   onSettings,
   onHelp,
   onAbout,
@@ -36,6 +37,8 @@ export function TitleScreen({
   save: SaveSummary | null;
   onContinue: () => void;
   onNewGame: () => void;
+  /** Play together (P3.7, ruled 25 September 2026): beside New game, on the Title. */
+  onTogether: () => void;
   /** The four P2.6 Title slots (APP_FLOW §4), in the order they are shown. */
   onSettings: () => void;
   onHelp: () => void;
@@ -59,6 +62,9 @@ export function TitleScreen({
       ) : null}
       <button style={BTN} onClick={onNewGame}>
         {t('title.newGame')}
+      </button>
+      <button style={BTN} onClick={onTogether} data-title="together">
+        {t('title.together')}
       </button>
       <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onHelp}>
         {t('title.help')}

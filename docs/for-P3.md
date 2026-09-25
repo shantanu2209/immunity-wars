@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: PROPOSED, nothing built
+## 6. P3.7, the multiplayer screens: piece A BUILT, pieces B to D to come
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -870,3 +870,88 @@ command phase, all from the relay's views, with nothing below the screens change
    true in single player, where one person commands them all.
 
 None of it changes the four pieces. It confirms that piece B is the heaviest.
+
+### Piece A, the way in: BUILT, 25 September 2026
+
+**What a player sees.** The title has *Play together* beside *New game* (ruling 1). It asks for a
+name, typed every time and never kept (ruling 2), then offers **Create a room** or **Join** with a
+code; a code is read however it is typed, in lower case or with spaces. The lobby shows the code
+large, with the phone's share sheet where there is one and Copy always (ruling 6); who is in, who is
+the captain, and who is away; and the fourteen seats, each naming its holder, a resident also naming
+its organ. A free seat is taken with a tap and your own given back with another. The captain chooses
+the difficulty and starts; everyone else reads *Waiting for Asha, the captain, to start the game.*
+Start takes every player to the game. **Leave the room** gives the seats back, and says that closing
+the app does not.
+
+**Every refusal is in words**: each of the relay's codes, each reason it closes a connection for,
+and *could not reach the game* for a connection that never opened, which is not the same as one that
+was lost. A newcomer after the start reads *That game has already started. You can join the next
+one.*
+
+**A lost connection shows Reconnect at once** and nothing rejoins by itself (ruling 4). The seats
+stay readable and cannot be tapped until the player chooses to come back.
+
+**Decided here, not ruled, and easy to change:** the back gesture on the lobby does nothing. Leaving
+a room is its own button with its own explanation, so a gesture made by accident should not do it;
+and taking the player back to the title while still connected would leave them in a room with no way
+to see it.
+
+**Where the relay is:** the deployed one, unless a build names another with `VITE_RELAY_URL`.
+`.claude/launch.json` has `relay-local` and `app-local-relay`, the pair every check below ran on.
+
+**A game played together never deletes the single-player autosave.** The Result is where a finished
+game's save is deleted, and a game played together never wrote one; without this, finishing a game
+with friends would have thrown away the game the player had going on their own.
+
+### What proves it
+
+- **The rules, as pure functions** (`packages/ui/src/together/model.ts`), 12 tests: codes, names,
+  the seat list in the engine's order, when the captain may start, and the words for every refusal
+  code, every close code, a code nobody expected, and a connection that never opened.
+- **Every key the three screens name is in the catalogue**, read out of their source, so a key added
+  to a screen and forgotten in the catalogue fails without being listed twice. Control:
+  `together-keys-in-catalogue`.
+- **Two relay tests over real sockets**, for the two defects building this found (#88). Controls:
+  `relay-entry-close-reason`, `relay-leave-sent-first`.
+- **A walkthrough of three players at 360 × 740**, headless Chrome on the development PC against the
+  local relay: 27 checks pass. Create, join by a code typed in lower case with spaces, take seats,
+  give one back, a dropped connection shown at once and not rejoined by itself, Reconnect restoring
+  the seats, a third player leaving and their seat coming free, the back gesture leaving the captain
+  in the lobby, Start taking both players to the game, and a latecomer refused in words. The
+  walkthrough is a throwaway script, not an instrument; the audit below is the instrument.
+- **The one failure it reported is not this piece's:** the page asks for `/favicon.ico` and the app
+  has none. It had none before P3.7; the app's icon is Phase 4's packaging.
+
+**Found and fixed before it was committed:** a seat that cannot be tapped took the browser's grey for
+a disabled button, so while a connection was lost the whole seat list, and at any time the seats
+other players held, were close to unreadable. The seat's colour is now set: its name is 12.2 to 1
+on a taken seat's ground and its smaller lines 4.68 to 1. The walkthrough checks every seat's colour
+while the connection is lost, and reported all 14 faint with the fix removed.
+
+### What piece A does not do
+
+- **The 360-pixel audit is not yet extended to these screens.** It runs against a build, and a build
+  talks to the deployed relay unless told otherwise; an audit must not fill the live relay with
+  rooms. It is extended once, after piece D, over every new screen, against a build pointed at a
+  relay on the development PC.
+- **A player whose app is closed, or whose page reloads, cannot come back as themselves.** Rejoining
+  needs the same `self`, which lives in memory only, so after a reload the player is a newcomer, and
+  a newcomer is refused once the game has started. Their seats wait, away, until the captain hands
+  them on. This is piece C's, and it needs a ruling: see below.
+- **Everything the spike found is still true on the play screen**, and is piece B's.
+
+### Ruling needed for piece C: coming back after the app closes
+
+Phones close background pages. A player who switches to WhatsApp to send the code, and whose
+browser is reclaimed, loses their place for good as things stand.
+
+- **(a) Keep the room's code and the player's `self` on the device while they are in the room,**
+  and forget both when they leave or the game ends. The title then offers *Rejoin room ABC123*,
+  which the player chooses (ruling 4), and they type their name again (ruling 2). `self` is a random
+  value made on the device; it identifies nothing and no one outside the room.
+- **(b) Keep nothing.** A player who loses the app loses their place, and the captain hands their
+  seats to someone present.
+
+**Recommendation: (a).** It is what makes *closing the app is not leaving* true on a phone, where
+the operating system closes the app more often than the player does. It keeps nothing about the
+player, only which room they were in, and only until they leave it.

@@ -195,6 +195,9 @@ importers:
       '@immunity-wars/content':
         specifier: workspace:*
         version: link:../content
+      '@immunity-wars/protocol':
+        specifier: workspace:*
+        version: link:../protocol
       '@immunity-wars/session':
         specifier: workspace:*
         version: link:../session

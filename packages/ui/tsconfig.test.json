@@ -6,9 +6,15 @@
   // source in one tsconfig, `process` and `Buffer` silently become available inside the
   // engine, defeating the "types": [] purity guarantee. Splitting the programs keeps the
   // guarantee on source while still typechecking the tests.
+  //
+  // NODE'S TYPES, IN THE TEST PROGRAM ONLY (P3.7). The paragraph above assumed vitest brings them;
+  // measured, it does not bring the node: modules. The way-in test reads the screens' source to
+  // hold every catalogue key they name, so this program names Node's types itself, as
+  // packages/server's does. The UI's own program (tsconfig.json) is unchanged.
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []
