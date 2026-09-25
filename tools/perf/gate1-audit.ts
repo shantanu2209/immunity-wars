@@ -1879,11 +1879,12 @@ async function walkTogether(
     'play, connection lost',
     'title, a room to rejoin',
     'together, rejoin',
+    'messages, the table',
     'result, together',
   ];
   const GUEST_SCREENS = [
     'lobby, not captain',
-    'planning, waiting for the captain',
+    'arrivals, waiting for the captain',
     'planning, allocation, not captain',
     'command, the captain ends the turn',
     'table, not captain',
@@ -2010,13 +2011,37 @@ async function walkTogether(
     need(await clickSel(page, '[data-bar-ap]'), 'the AP figure could not be opened');
     await at(page, 'AP terms, together');
     await nest(page, nesting, 'Command → AP terms, together → close', 'play');
-    need(await pick(page, 'cell:tcell'), "another player's piece could not be selected");
+    // FROM THE BOARD: the Cells tab lists only the player's own pieces in a game played together
+    // (ruled 25 September 2026), and a tap on a piece's token selects it, as the perf driver does.
+    const tapToken = (cell: string): Promise<void> =>
+      page.evaluate((c: string) => {
+        document
+          .querySelector(`[data-cell="${c}"]`)
+          ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }, cell);
+    await tapToken('tcell');
+    need(
+      await until(page, `!!document.querySelector('[data-owner]')`),
+      "another player's piece could not be selected",
+    );
     await at(page, "command, another player's piece");
-    await deselect(page);
+    await tapToken('tcell');
     need(await clickSel(page, '[data-table-open]'), 'the Table could not be opened');
     need(await until(page, `!!document.querySelector('[data-give]')`), 'the Table had no handover');
     await at(page, 'table, captain');
     await nest(page, nesting, 'Command → the Table → close', 'play');
+    need(await clickSel(page, '[data-chat]'), 'Messages could not be opened');
+    need(
+      await until(page, `!!document.querySelector('[data-table-messages]')`),
+      "Messages did not open on the table's tab",
+    );
+    await clickSel(page, '[data-say="wait"]');
+    need(
+      await until(page, `!!document.querySelector('[data-table-log]')`),
+      'the message did not come back',
+    );
+    await at(page, 'messages, the table');
+    await nest(page, nesting, 'Command → Messages → close', 'play');
     need(await clickSel(page, '[data-menu]'), 'the menu could not be opened');
     need(
       await until(page, `!!document.querySelector('[data-pause="leave"]')`),
@@ -2133,13 +2158,19 @@ async function walkTogether(
     need(await waitFor(page, 'Begin', 15000), 'the game did not start');
     await click(page, 'Begin');
     if (await waitFor(captain, 'Begin', 10000)) await click(captain, 'Begin');
-    need(await waitFor(page, 'Plan your turn', 15000), "the captain's draw did not come");
-    await click(page, 'Plan your turn');
+    need(
+      await until(
+        page,
+        `document.querySelector('[data-play-area]')?.dataset.playArea === 'arrivals'`,
+        15000,
+      ),
+      "the captain's draw did not come",
+    );
     need(
       await until(page, `!!document.querySelector('[data-dock-next][data-waiting]')`),
       'the waiting button did not show',
     );
-    await at2('planning, waiting for the captain');
+    await at2('arrivals, waiting for the captain');
     if (await waitFor(captain, 'Plan your turn', 10000)) await click(captain, 'Plan your turn');
     if (await waitFor(captain, 'Command your cells', 5000))
       await click(captain, 'Command your cells');

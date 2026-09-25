@@ -190,6 +190,12 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 > offline met. A run without `--together` says so as one NOT REACHED line. **What is a
 > sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
 > a drop of 5 is the deck.
+>
+> ⚠️ *And raised again the same day, at the play-test changes* ([`for-P3.md`](for-P3.md) §8):
+> **81 screens per pass (83 under SIZE200), 44 controls, 38 nesting paths**, the table's messages
+> and its Messages close added. The run recorded there had one NOT REACHED, a row with several
+> targets under ZOOM200 and SIZE200, which the deal decides and is explained as #68 says; the rest
+> as above.
 
 *Updated 13 September 2026, at [`FINDINGS.md`](FINDINGS.md) #69's fix: **29 controls** rather than
 27. The two added enter the state this audit could never reach before, a refused service worker

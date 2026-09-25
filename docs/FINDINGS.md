@@ -4640,3 +4640,30 @@ with the guard:** 44 controls all firing the right way, 60 screens per pass (62 
 none NOT REACHED, every check 0, nesting 33 checked and 0 wrong, offline met: the bar of P2.7's last
 run, held. It was not re-run without the wait, so that the audit would have failed without it is
 expected, not measured.
+
+## 91. The app's own build test rebuilt the folder the Gate 1 audit measures, so a `pnpm verify` beside the audit swapped the build under it — FIXED 25 September 2026
+
+**Found 25 September 2026**, by the second audit run of the play-test changes (for-P3 §8), whose
+together walk failed in every pass: *the helper could not join*. The walk's other players are
+fresh browser pages, and they were loading a **production** build, pointed at the live relay, which
+the audit's guard refuses: its `LOCAL_ONLY` shim closes any relay that is not on this machine before
+it opens. Nobody had built one on purpose.
+
+**Why.** `packages/app/src/entries-build.test.ts`, the dev-entry rot check, deleted
+`packages/app/dist` and ran a real `vite build` into it on every test run that was not cached.
+`dist` is what `vite preview` serves, and the audit measures what `vite preview` serves. A
+`pnpm verify` run beside the audit rebuilt it halfway through, without `VITE_RELAY_URL`, and every
+page opened after that was another build. The captain's page went on working from its service
+worker's cache, which is why only the helpers failed, and why the failure said *join* and not
+*build*.
+
+**The guard held.** One diagnostic run with the shim taken off reached the live relay, which refused
+it by protocol version before any room existed. Nothing was created there.
+
+### ✅ FIXED inline, 25 September 2026: an instrument defect
+
+The test builds into a temporary folder of its own and removes it afterwards; `dist` is never
+touched. **Negative control, run by hand:** the dev entry's script pointed at a missing module, and
+the test went red; restored, green. `dist` kept its modification time across the run, and no
+temporary folder was left behind, the failing run's included. The audit was then run again with
+nothing beside it (for-P3 §8).

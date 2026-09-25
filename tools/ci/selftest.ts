@@ -595,6 +595,35 @@ const CONTROLS: readonly Control[] = [
     expect: 'says who went away and who came back',
   },
   {
+    id: 'say-only-the-list',
+    why: "The table's fixed messages (ruled 25 September 2026): no free-text chat in v1, so the room admits only the ids on its list. Without the check any id of the right shape would reach every screen in the room.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (!(SAY_MESSAGES as readonly string[]).includes(msg.message))\n        return reject(room, msg.ref, 'noSuchMessage');\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'are only the ones on the list',
+  },
+  {
+    id: 'say-id-shape',
+    why: "The table's fixed messages travel as a short id, never words (protocol v3). A message field that admitted any string would carry free text to the relay.",
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace('const SayId = z.string().regex(SAY_ID);', 'const SayId = z.string();'),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'refuses a message that is not a short id',
+  },
+  {
+    id: 'produce-for-offer',
+    why: "The one Produce button (ruled 25 September 2026): for the chosen class it sends produceOffers' own offer, or says why not. Without the offer it would say no to a class the B-Cell can produce.",
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) => t.replace('  if (offer) return { offer, reason: null };\n', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'always answers, and only ever with the offer produceOffers makes',
+  },
+  {
     id: 'step-guard',
     why: "FINDINGS #90: a double tap on the play screen's advance button did the next step too; alone, Command your cells tapped twice ended the turn with every point unspent, at gaps of 80 to 400 ms. The button ignores a tap within half a second of its step changing.",
     file: 'packages/ui/src/play/stepGuard.ts',

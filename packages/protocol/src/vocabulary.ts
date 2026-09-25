@@ -11,7 +11,7 @@ import { RULES_VERSION } from '@immunity-wars/content';
  * desynchronise a newer room", and the only way a peer that cannot read a message can be kept from
  * acting on a misreading is not to let it in.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /*
  * VERSION HISTORY, because a bump with no record teaches nobody what changed.
@@ -23,6 +23,11 @@ export const PROTOCOL_VERSION = 2;
  *      asks the relay for a new room, whose code the relay mints, and `join` is refused for a
  *      code the relay does not hold. No v1 peer ever ran
  *      against a relay; the bump is made anyway, because the rule is about shape, not audience.
+ *   3  (25 September 2026, after the first game on the live server): the table's fixed messages.
+ *      A member sends `say` with a message's id, and the relay tells everyone `said`, with who.
+ *      A v2 relay would have closed a `say` as malformed, and a v2 client a `said`. Adding a
+ *      message later does NOT bump the version: the id's shape is the protocol's, the list of ids
+ *      is the room's, and a client that does not know an id shows nothing for it.
  */
 
 /**
@@ -71,6 +76,33 @@ export const residentSeat = (organ: string): string => `res_${organ}`;
 export const pidOf = (id: number): string => `m${String(id)}`;
 
 /**
+ * THE TABLE'S FIXED MESSAGES (ruled 25 September 2026, after the first game on the live server:
+ * "we need to figure out a set of fixed messages because all players will not be in the same room
+ * and we need coordination"). There is no free-text chat in v1 (brief §4, ruling 3): a children's
+ * app with typing in it brings moderation obligations. So what travels is one of these ids and
+ * nothing else; each client words it from its own catalogue (`say.<id>`), the Hindi edition's
+ * included.
+ *
+ * More are added here and in the catalogue. The protocol admits any id of this shape; the ROOM
+ * admits only the ids on this list, and a client shows only the ids it has words for.
+ */
+export const SAY_MESSAGES = [
+  'ready',
+  'wait',
+  'needAp',
+  'spareAp',
+  'onIt',
+  'danger',
+  'endTurn',
+  'goodMove',
+  'thanks',
+] as const;
+export type SayMessage = (typeof SAY_MESSAGES)[number];
+
+/** The shape any message id has on the wire: a short word, never a sentence. */
+export const SAY_ID = /^[a-z][A-Za-z0-9]{0,23}$/;
+
+/**
  * WHY A ROOM SAID NO, as a code rather than a sentence.
  *
  * The UI renders every player-visible string through its catalogue (`CLAUDE.md`), and a Hindi
@@ -112,5 +144,7 @@ export const ERROR_CODES = [
    */
   'version',
   'engine',
+  /** A `say` naming a message the room does not know: only the table's fixed messages travel. */
+  'noSuchMessage',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];

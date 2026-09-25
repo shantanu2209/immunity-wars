@@ -530,6 +530,39 @@ describe('an action', () => {
   });
 });
 
+describe("the table's fixed messages (protocol v3)", () => {
+  const say = (ref: string, message: string): Inbound => ({ kind: 'say', ref, message });
+
+  it('go to everyone, the sender included, with who said them by public id and never a ref', () => {
+    const { out } = run([join('a', 'K'), join('b', 'S'), say('b', 'wait')]);
+    expect(out).toEqual([{ to: 'all', message: { kind: 'said', from: 2, message: 'wait' } }]);
+  });
+
+  it('are only the ones on the list: an id the room does not know is refused, and reaches nobody', () => {
+    const { out } = run([join('a', 'K'), join('b', 'S'), say('b', 'laterMessage')]);
+    expect(errorsOf(out)).toEqual(['noSuchMessage']);
+    expect(out.every((o) => o.to === 'b')).toBe(true);
+  });
+
+  it('are refused from anyone not in the room', () => {
+    const { out } = run([join('a', 'K'), say('z', 'wait')]);
+    expect(errorsOf(out)).toEqual(['notInRoom']);
+  });
+
+  it('work in the lobby and in the game alike', () => {
+    const lobby = run([join('a', 'K'), say('a', 'ready')]);
+    expect(lobby.out[0]?.message).toMatchObject({ kind: 'said', message: 'ready' });
+    const game = run([
+      join('a', 'K'),
+      seat('a', 'bcell'),
+      { kind: 'start', ref: 'a', difficulty: 'training' },
+      say('a', 'goodMove'),
+    ]);
+    expect(game.room.phase).toBe('playing');
+    expect(game.out[0]?.message).toMatchObject({ kind: 'said', from: 1, message: 'goodMove' });
+  });
+});
+
 describe('the reducer itself', () => {
   it('never mutates the room it was given', () => {
     const before = run([join('a', 'K'), join('b', 'S')]).room;

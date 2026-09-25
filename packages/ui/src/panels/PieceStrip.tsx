@@ -54,6 +54,7 @@ export function PieceStrip({
   selectedResident,
   why = {},
   disabled = false,
+  emptyText = null,
   onSelectCell,
   onSelectResident,
   onDeselect,
@@ -68,6 +69,8 @@ export function PieceStrip({
    */
   why?: Readonly<Record<string, string>>;
   disabled?: boolean;
+  /** Said when there are no pieces to list: a player holding none, in a game played together. */
+  emptyText?: string | null;
   onSelectCell: (cell: string) => void;
   onSelectResident: (organ: string) => void;
   onDeselect: () => void;
@@ -87,6 +90,11 @@ export function PieceStrip({
   return (
     // NO TITLE since piece 5 (§19): the Cells tab that opened this view already says what it is.
     <div data-panel="pieces" style={{ marginTop: 6 }}>
+      {pieces.length === 0 && emptyText !== null ? (
+        <div data-pieces-none="" style={{ fontSize: '0.8125rem', color: '#78665D' }}>
+          {emptyText}
+        </div>
+      ) : null}
       <div
         style={{
           display: 'grid',
