@@ -60,8 +60,11 @@ import { t } from '../i18n';
  *   `safe`      a save exists; the crash was on Title, Help, the library or About
  *   `none`      no save at all
  *   `unreadable` a save exists but could not be read
+ *   `together`  a game played together was under way (P3.7 piece D). It has no save on this device:
+ *               the relay holds it, it goes on without this player, and the title offers the room
+ *               again (piece C). The single-player autosave is not read for it and not mentioned.
  */
-export type CrashCase = 'playing' | 'safe' | 'none' | 'unreadable';
+export type CrashCase = 'playing' | 'safe' | 'none' | 'unreadable' | 'together';
 
 const BTN: CSSProperties = {
   display: 'block',
@@ -117,6 +120,7 @@ export function CrashScreen({
       {which === 'safe' ? <p style={P}>{t('crash.safe')}</p> : null}
       {which === 'none' ? <p style={P}>{t('crash.none')}</p> : null}
       {which === 'unreadable' ? <p style={P}>{t('crash.unreadable')}</p> : null}
+      {which === 'together' ? <p style={P}>{t('crash.together')}</p> : null}
 
       {which === 'playing' ? (
         <button

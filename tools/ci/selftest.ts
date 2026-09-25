@@ -595,6 +595,26 @@ const CONTROLS: readonly Control[] = [
     expect: 'says who went away and who came back',
   },
   {
+    id: 'view-queue-own-tail',
+    why: "FINDINGS #89: played together, the next turn's draw can arrive while this device still animates a spread. The renderer's burst-tail check compared the spread's last frame with whatever view came LAST, and failed on a correct game. Each spread must be checked against the view it ended in.",
+    file: 'packages/ui/src/play/viewQueue.ts',
+    mutate: (t) => t.replace('      this.closing = null;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: "the next turn's draw arriving mid-spread is not what the spread is checked against",
+  },
+  {
+    id: 'view-queue-every-view',
+    why: "FINDINGS #89: views that arrived during a spread were dropped but the latest, so the screen jumped from before the spread to the next draw and worked out that draw's arrivals against the state before the spread. Every view must be shown, in order.",
+    file: 'packages/ui/src/play/viewQueue.ts',
+    mutate: (t) =>
+      t.replace(
+        'return this.frames.length > 0 ? undefined : this.views.shift();',
+        'return this.frames.length > 0 ? undefined : this.views.splice(0).at(-1);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'a whole next turn and its spread before this one finishes',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

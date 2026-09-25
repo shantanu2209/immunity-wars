@@ -29,6 +29,7 @@ export function PauseSheet({
   onQuit,
   onSettings,
   onHelp,
+  onLeave = null,
 }: {
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
   /** Back to the game: the same thing the floating close does. */
@@ -38,10 +39,18 @@ export function PauseSheet({
    *  How to play"). */
   onSettings: () => void;
   onHelp: () => void;
+  /**
+   * A GAME PLAYED TOGETHER (P3.7 piece D): leaving it, which gives this player's seats back to the
+   * table for good. Null alone. With it, quitting is closing: the player is away, their seats wait,
+   * and the title offers the room again (piece C), so the two exits are worded apart and each is
+   * confirmed with what it does.
+   */
+  onLeave?: (() => void) | null;
 }): ReactElement {
-  const [confirming, setConfirming] = useState(false);
-  // The quit confirm is a dialog on the stack: the back gesture cancels it.
-  useNavLayer('quit-confirm', confirming, () => setConfirming(false), false);
+  const together = onLeave !== null;
+  const [confirming, setConfirming] = useState<'quit' | 'leave' | null>(null);
+  // The confirm is a dialog on the stack: the back gesture cancels it.
+  useNavLayer('quit-confirm', confirming !== null, () => setConfirming(null), false);
   return (
     <div
       style={{
@@ -65,13 +74,33 @@ export function PauseSheet({
           padding: 16,
         }}
       >
-        {confirming ? (
+        {confirming === 'leave' && onLeave !== null ? (
           <>
-            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('pause.quitNote')}</p>
-            <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onQuit}>
-              {t('pause.quitConfirm')}
+            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('pause.leaveNote')}</p>
+            <button
+              data-pause="leave-confirm"
+              style={{ ...BTN, borderColor: '#B03A2E' }}
+              onClick={onLeave}
+            >
+              {t('pause.leaveConfirm')}
             </button>
-            <button style={BTN} onClick={() => setConfirming(false)}>
+            <button style={BTN} onClick={() => setConfirming(null)}>
+              {t('pause.quitCancel')}
+            </button>
+          </>
+        ) : confirming === 'quit' ? (
+          <>
+            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>
+              {together ? t('pause.closeNote') : t('pause.quitNote')}
+            </p>
+            <button
+              data-pause="quit-confirm"
+              style={{ ...BTN, borderColor: '#B03A2E' }}
+              onClick={onQuit}
+            >
+              {together ? t('pause.closeConfirm') : t('pause.quitConfirm')}
+            </button>
+            <button style={BTN} onClick={() => setConfirming(null)}>
               {t('pause.quitCancel')}
             </button>
           </>
@@ -88,9 +117,14 @@ export function PauseSheet({
             <button style={BTN} onClick={onSettings}>
               {t('pause.settings')}
             </button>
-            <button style={BTN} onClick={() => setConfirming(true)}>
-              {t('pause.quit')}
+            <button data-pause="quit" style={BTN} onClick={() => setConfirming('quit')}>
+              {together ? t('pause.close') : t('pause.quit')}
             </button>
+            {together ? (
+              <button data-pause="leave" style={BTN} onClick={() => setConfirming('leave')}>
+                {t('pause.leave')}
+              </button>
+            ) : null}
           </>
         )}
       </div>

@@ -4565,3 +4565,60 @@ free; with the old `leave()`, the test times out with the player still there. Co
 
 **Neither was reachable before P3.7**: nothing called either path except the tests, and no test
 asked what a refused caller was told or whether a Leave followed by a close arrived.
+
+---
+
+## 89. Played together, the play screen dropped the views that arrived during a spread, and its own tail check failed on a correct game
+
+**Found 25 September 2026**, walking P3.7 piece D to a Result with three players, by the play
+screen's own check: on the screens of the two players who were not captain, the renderer's half of
+`burst-tail-authoritative` reported *"tail !== authoritative view: FAIL — the burst is NOT safely
+skippable"* on several spreads of one game. The captain's screen never did. **Fixed in the same
+change**, because the check is an instrument that fired on a correct game (CLAUDE.md: fix inline
+if it is in the instrument), and the same cause was losing what the screen shows.
+
+**Why.** The screen holds back the views that arrive while a spread animates, so the panels do not
+change under it, and it kept only the latest. Alone, exactly one view arrives during a spread: the
+one it ended in. Played together, the captain taps through the spread and the captain's device
+draws the next card while the others are still animating, so a second view arrives before their
+spread ends. Keeping only the latest:
+
+- **the check compared the spread's last frame with the next turn's draw**, and failed;
+- **the views in between were never shown**: the screen went from before the spread straight to the
+  next draw, and worked out that draw's arrivals against the state from before the spread, so
+  anything the spread itself had made counted as having just arrived.
+
+**The fix** (`packages/ui/src/play/viewQueue.ts`): every view is kept, in order, and shown one at a
+time once the frames are done; each spread's last frame is checked against the view that spread
+ended in, the first to arrive after it. Tested on the orders a table produces (a draw mid-spread,
+and a whole next turn and its spread before this one finishes). Controls: `view-queue-own-tail`,
+`view-queue-every-view`.
+
+**Proved in the app, both ways:** the same three-player walk to a Result reported the failure on
+the old code and none on the new; and with the check made to fail on purpose, all three screens,
+the captain's included, reported it on every spread, so the check does run on every spread and is
+not silent for lack of running.
+
+**The standing invariant is untouched.** `burst-tail-authoritative` at the engine and the session
+held throughout; it was the screen's reading of it that assumed nobody else acts during a spread.
+
+---
+
+## 90. A double tap on the play screen's one advance button does the next step too: "Command your cells" twice ends the turn
+
+**Found 25 September 2026**, by a walkthrough script that tapped the advance button again while the
+relay's answer to its first tap was on its way, and ended a turn it did not mean to. **Measured in
+SINGLE PLAYER**, where it matters most, on the development PC in headless Chrome at 360 × 740: a
+real pointer double tap on *Command your cells* ended the turn at once, the spread playing with every
+Action Point unspent, **at every gap tried: 80, 150, 250 and 400 ms**. A child's double tap is well
+inside that. There is no undo past a spread. **Recorded, not fixed: it is a product defect, and
+predates Phase 3.**
+
+**Why.** The play screen's bottom button is one element whose step changes with the game: *Plan
+your turn*, *Command your cells*, *Confirm the plan*, *End turn*. The first tap's step completes
+before the second tap lands (at once alone; in about one round trip together), so the second tap
+lands on the next step. The same button also shows *Command your cells* for about one frame after a
+draw, before the arrivals stage replaces it, measured in the page at 10 ms.
+
+**Proposed** (for a ruling): the advance button ignores a tap for about half a second after its step
+changes. The steps a double tap would skip into are the costly ones, *End turn* above all.

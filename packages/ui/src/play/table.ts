@@ -222,6 +222,10 @@ export function tableChanges(prev: Table | null, next: Table): string[] {
   if (prev === null) return [];
   const lines: string[] = [];
   const before = new Map(prev.room.members.map((m) => [m.id, m]));
+  const stillHere = new Set(next.room.members.map((m) => m.id));
+  // Someone who LEFT is gone from the room, not away: their seats are the table's again (piece D).
+  for (const m of prev.room.members)
+    if (!stillHere.has(m.id) && m.id !== next.me) lines.push(t('table.left', { name: m.name }));
   for (const m of next.room.members) {
     const was = before.get(m.id);
     if (!was || m.id === next.me || was.connected === m.connected) continue;

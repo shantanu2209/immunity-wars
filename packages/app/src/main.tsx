@@ -105,7 +105,8 @@ type Screen =
   | { name: 'title' }
   | { name: 'difficulty' }
   | { name: 'play' }
-  | { name: 'result'; finalView: ViewState; difficulty: string }
+  /** `together`: the game was played together, and the Result offers another game together. */
+  | { name: 'result'; finalView: ViewState; difficulty: string; together: boolean }
   /** Settings. Opened over a paused game, the game stays mounted underneath (hidden), so nothing
    *  about the session, the selection or a queued dialog is disturbed. Where closing returns to is
    *  the navigation stack's, not this type's (docs/for-P2.7.md §9, ruling 9): the screen used to
@@ -141,7 +142,11 @@ function resultOf(v: ViewState): { won: boolean; lossOrgan: string | null } {
 const isMainScreen = (s: Screen): boolean =>
   s.name === 'title' || s.name === 'play' || s.name === 'result';
 
-function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void }): ReactElement {
+function App({
+  onPlayingChange,
+}: {
+  onPlayingChange: (playing: boolean, together: boolean) => void;
+}): ReactElement {
   // THE NAVIGATION STACK (docs/for-P2.7.md §9 ruling 9, §10 piece 1): every close returns to the
   // level it came from. The shell pushes and resets screens; layers register themselves.
   const nav = useNav<Screen>({ name: 'title' }, isMainScreen);
@@ -162,7 +167,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
   // Whether a game is under way, reported up so the crash screen can tell case A from case B.
   // A ref in the parent rather than state here: this must survive the tree that threw.
   useEffect(() => {
-    onPlayingChange(sessionRef.current !== null);
+    onPlayingChange(sessionRef.current !== null, roomRef.current !== null);
   });
   /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
   const [saveFailed, setSaveFailed] = useState(false);
@@ -420,7 +425,8 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     setPlayed(true);
     // RESULT is the one place the autosave is deleted: Continue never offers a finished game. A game
     // played together never wrote it, so its end must not delete the single-player game it holds.
-    if (roomRef.current === null) {
+    const together = roomRef.current !== null;
+    if (!together) {
       void storage.delete(SAVE_ID).catch(() => undefined);
       setSave(null);
     } else {
@@ -429,7 +435,19 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
     }
     dropRoom();
     sessionRef.current = null;
-    nav.reset({ name: 'result', finalView, difficulty: difficultyRef.current });
+    nav.reset({ name: 'result', finalView, difficulty: difficultyRef.current, together });
+  };
+
+  /**
+   * LEAVING A GAME PLAYED TOGETHER (piece D), from the pause menu: the seats go back to the table and
+   * the room is forgotten on this device. Not the same as Back to the title, which closes the game
+   * and keeps the player's place (piece C).
+   */
+  const leaveGame = (): void => {
+    sessionRef.current = null;
+    setPaused(false);
+    leaveRoom();
+    refreshSave();
   };
 
   const deleteSave = (): void => {
@@ -596,6 +614,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
           log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
+          onTogether={screen.together ? openTogether : null}
           onTitle={quitToTitle}
         />
       );
@@ -677,6 +696,7 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             <PauseSheet
               onResume={() => setPaused(false)}
               onQuit={quitToTitle}
+              onLeave={roomRef.current !== null ? leaveGame : null}
               // The menu stays open under what it opens, so closing that returns to the menu
               // (ruling 9). It used to close itself first, which is why Back landed on the game.
               onSettings={() => nav.push({ name: 'settings' })}
@@ -743,8 +763,15 @@ function AppRoot(): ReactElement {
   const [which, setWhich] = useState<CrashCase | null>(null);
   const [turn, setTurn] = useState<number | null>(null);
   const playingRef = useRef(false);
+  const togetherRef = useRef(false);
 
   const onCrash = (): void => {
+    // A GAME PLAYED TOGETHER has no save on this device: the relay holds it and it goes on. The
+    // single-player autosave is not the player's concern here, so it is not read (piece D).
+    if (togetherRef.current) {
+      setWhich('together');
+      return;
+    }
     // A READ, never a write. If it throws or the record is unreadable, say so rather than
     // guessing: an unreadable save is its own case and gets its own wording.
     storage
@@ -781,7 +808,12 @@ ${detail.stack}`}
         />
       )}
     >
-      <App onPlayingChange={(p) => (playingRef.current = p)} />
+      <App
+        onPlayingChange={(p, together) => {
+          playingRef.current = p;
+          togetherRef.current = together;
+        }}
+      />
     </ErrorBoundary>
   );
 }
