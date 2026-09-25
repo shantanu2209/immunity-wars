@@ -1198,7 +1198,7 @@ twenty are reached.
 **P3.7 is therefore done**: all four pieces, the double-tap fix before P3.6 (FINDINGS #90), and the
 audit. P3.6 is next.
 
-## 7. P3.6, two phones on two networks: PREPARED, awaiting the deploy
+## 7. P3.6, two phones on two networks: the app DEPLOYED, the session to come
 
 ### Ruled, 25 September 2026
 
@@ -1242,3 +1242,27 @@ audit. P3.6 is next.
    Wi-Fi and one on mobile data. It is one game on Training, with each Gate A item where it falls.
 3. **The 20 deferred coverage arms**: automated tests, Claude's, after this is merged.
 4. **Gate B's cost**, read from Google's billing report by SKU after the session.
+
+### Deployed, 25 September 2026 (Shantanu: *"Please do 1 and 2. We can do 3 tomorrow."*)
+
+1. **`setup.sh` again**, with nobody connected (checked first, because a reload of Caddy can end
+   live connections). The new configuration was validated before it replaced the old one. Caddy and
+   the relay are both active; the relay still answers 426 at `/relay`; `/old/` answers 404.
+2. **`deploy-app.sh`**: version `20260925-211931-47fe0f5`, built from the merged `main` with a clean
+   working copy. The build's relay was checked to be `wss://immunity-wars.kartikchaudhary.com/relay`;
+   the page served is that build's, and the service worker is served with `Cache-Control: no-cache`.
+
+**The app is at https://immunity-wars.kartikchaudhary.com/.** Checked from the development PC,
+in headless Chrome at 360 × 740:
+
+- the title renders and the service worker installs;
+- one browser created a room through the live relay and a second joined it by its code, and each saw
+  the other;
+- both left, and neither title offered the room again;
+- the one failed request is `/favicon.ico`, the app's missing icon since before P3.7 (§6, piece A).
+
+**No visitor's address was written down.** Since the change, Caddy's log has 18 lines; the only one
+naming an address is its admin interface recording the configuration reload, from the server to
+itself (`127.0.0.1`). The relay logged nothing.
+
+**Left for the session, as ruled:** `old-build.sh put` on the day, and `remove` after it.
