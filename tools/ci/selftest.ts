@@ -527,6 +527,42 @@ const CONTROLS: readonly Control[] = [
     expect: 'are in the catalogue',
   },
   {
+    id: 'table-offers-own-seats',
+    why: "P3.7 piece B: the room refuses an action on a piece its sender does not hold, so a player must be offered only their own seats' actions. Without the seat rule every player is offered every piece, which the P3.7 spike measured.",
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (seat !== null && !seats.mine(seat)) return theirPiece(seats.theirs(seat));\n',
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'every offer to either player, for every piece and for the body, the room accepts',
+  },
+  {
+    id: 'table-offers-own-budget',
+    why: "P3.7 piece B: in a game played together the view's ap is the table's total and each player spends their own budget, so a screen reading ap offers what a player cannot afford. seenBy puts the player's own budget there.",
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) =>
+      t.replace(
+        "  if (g['multiplayer'] !== true || p.pid === null) return view;",
+        '  return view;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'every offer to either player, for every piece and for the body, the room accepts',
+  },
+  {
+    id: 'table-draw-captain-only',
+    why: "P3.7 piece B: the engine accepts a draw only from the captain, so only the captain's device may send it; before, whichever device reached the moment first sent it, and on the wrong timing the draw was refused.",
+    file: 'packages/ui/src/play/autoDraw.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (!m.mayDraw || m.playing || m.dialogPending || m.covered) return false;',
+        '  if (m.playing || m.dialogPending || m.covered) return false;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: "the draw is the captain's device's alone",
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

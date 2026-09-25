@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: piece A BUILT, pieces B to D to come
+## 6. P3.7, the multiplayer screens: pieces A and B BUILT, C and D to come
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -955,3 +955,90 @@ browser is reclaimed, loses their place for good as things stand.
 **Recommendation: (a).** It is what makes *closing the app is not leaving* true on a phone, where
 the operating system closes the app more often than the player does. It keeps nothing about the
 player, only which room they were in, and only until they leave it.
+
+**Ruled, 25 September 2026: (a)** (*"Will go with your recommendations"*). Piece C builds it.
+
+### Piece B, playing your part: BUILT, 25 September 2026
+
+Everything the spike found on the play screen, fixed:
+
+1. **Your Action Points are your own.** In a game played together the view's `ap` is the table's
+   total, so the screen now reads each player's own budget where it reads `ap`
+   (`packages/ui/src/play/table.ts`, `seenBy`). This reads the engine's rule rather than making one:
+   the engine gives a player exactly `apBudget[pid]`. The bar, the offers and the reasons all follow
+   from that one place. Tapping the AP figure shows the table's total, your own, and what every
+   player has left, which is what the captain needs to see before ending the turn.
+2. **You are offered only your own pieces.** Whose seat is whose comes from the room, never the
+   engine's `owner` (FINDINGS #81). Another player's piece can be selected and read; it offers
+   nothing, and its name is shown with *Asha plays this piece.* (ruling 5). The body's actions,
+   such as ordering antivenom and vaccinating, belong to no piece and are open to anyone with the
+   points.
+3. **The captain's steps are the captain's alone.** Only the captain's device sends the draw, Begin,
+   Confirm and End turn. Everyone else's button says who they are waiting for (*Waiting for Asha to
+   begin*, *Asha ends the turn*) and is drawn as a status, not a button, because it can stay that
+   way for a whole turn.
+4. **The captain hands out the points** (ruling 3). Every other player starts at nothing and the
+   pool is the captain's, which is the engine's own state when the phase begins; each row has −1
+   and +1. Everyone else sees the same block, without buttons.
+5. **Names, not `m1` and `m2`**, everywhere a player is named.
+6. **Undo says why**: *Undo is only in games played alone* (FINDINGS #79).
+7. **The goal is worded for the table**: *Together you command the body's immune cells, each player
+   moving their own.*
+
+**Decided here, not ruled, and easy to change:**
+
+- **The captain's plus and minus change a draft on the captain's phone, and Confirm sends it.** The
+  engine lets only a player give their own points back (`returnAP` takes the sender's), so a point
+  sent on each tap could not be taken back by the captain. On a draft, minus is free; Confirm then
+  sends one `allocateAP` per player and `confirmAllocation`, each checked by the engine as always.
+  The cost: the other players see the points only when the captain confirms.
+- **The first-game coach is off in a game played together.** Its steps (*tap End turn*) are the
+  captain's there, so it would teach half the table something they cannot do.
+
+**Also moved:** the engine's name for a member (`m` and their join order) and a resident's seat
+key were private to the room; they are now in the protocol package, which the room and the screens
+both read, so the two cannot drift.
+
+### What proves it
+
+- **Offered ⊆ accepted, at a table of two** (`tests/session/src/table-offers.test.ts`). Games are
+  played through the room itself: two members take seven seats each, the captain draws, begins,
+  hands out the points (a different split each turn, some leaving the other player with none) and
+  confirms, and both players act, each only through what the screen offers them. At every state,
+  every offer to either player, for every piece and for the body, is sent to a copy of the room.
+  **Measured: 75 states, 6,488 offers, every one accepted**, including actions on pathogens for
+  both players (Engulf, NET, Snipe, NK kill) and the body's.
+  - **Both controls inside the test fire:** offers made as if every seat were the player's were
+    refused `notYourPiece` 5,690 times, and offers made from the table's total were refused by the
+    engine (*No Action Points.*) 3,267 times.
+  - **It permits:** each player was offered and had accepted moves, actions on a pathogen, and the
+    body's actions; another player's piece was offered nothing.
+  - **The draw:** another player's device never sends it, and the engine refused it all 15 times it
+    was tried from there (*Only the captain draws the next infection.*).
+- **Three controls in `tools/ci/selftest.ts`, each run and each red with its own diagnostic:**
+  `table-offers-own-seats` (the seat rule removed), `table-offers-own-budget` (the table's total
+  read), `table-draw-captain-only` (every device draws).
+- **15 tests of the table's rules** (`packages/ui/src/play/table.test.ts`): whose points, whose
+  pieces, the captain, names, and the draft.
+- **A two-player turn at 360 × 740**, headless Chrome against the local relay, 20 checks:
+  - the goal is worded for the table;
+  - only the captain's device draws, and both see the arrivals;
+  - the other player waits, shown as waiting, while the captain begins and hands out points;
+  - the captain gives 3 and takes 1 back;
+  - each bar shows its own player's points (Asha 4, Ravi 2);
+  - another player's piece names who plays it and offers nothing;
+  - the undo line and the AP sheet;
+  - the captain ends the turn for everyone, and the next draw comes to both.
+
+**Found by the walkthrough and fixed before commit:**
+
+- **The line naming who plays a piece was never on screen.** With a piece selected, the actions
+  area shows the piece's name in place of the prompt line, so the line went nowhere; it is now
+  beside the name.
+- **The waiting button looked pressable.** It was drawn exactly like an active button.
+- **The first version of the test proved less than its name.** Its "attacks" check counted producing
+  antibodies, because the driver moved pieces at random and Asha's never met a pathogen; the driver
+  now moves onto pathogens and counts only actions aimed at one.
+- **Two of the three selftest controls failed for the right cause but without their diagnostic.**
+  The games are played while the suite is collected, and the driver threw there, so the file failed
+  without naming a test. The driver now records its problems and a named test reads them.

@@ -31,6 +31,21 @@ export {
   type DockRow,
 } from './play/offered';
 export { shouldDraw, type DrawMoment } from './play/autoDraw';
+export { EVERY_SEAT, type SeatRule } from './play/offered';
+export {
+  ALONE,
+  addPoint,
+  allocationActions,
+  budgetsOf,
+  perspectiveOf,
+  poolLeft,
+  removePoint,
+  seenBy,
+  type Budgets,
+  type Draft,
+  type Perspective,
+  type Table,
+} from './play/table';
 export {
   ActionsView,
   AdvanceButton,

@@ -20,13 +20,16 @@ const LINE = { fontSize: '0.9375rem', color: '#2E2A28', margin: '8px 0' } as con
 export function GoalBody({
   maxTurn,
   lastTurn,
+  together = false,
 }: {
   maxTurn: number;
   lastTurn: number;
+  /** A game played together (P3.7): "you command the body's cells" is true only alone. */
+  together?: boolean;
 }): ReactElement {
   return (
     <div>
-      <div style={LINE}>{t('goal.arrive', { maxTurn })}</div>
+      <div style={LINE}>{t(together ? 'goal.arriveTogether' : 'goal.arrive', { maxTurn })}</div>
       <div style={LINE}>{t('goal.win')}</div>
       <div style={LINE}>{t('goal.lose', { lastTurn })}</div>
     </div>

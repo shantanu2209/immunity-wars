@@ -290,6 +290,12 @@ importers:
       '@immunity-wars/equivalence':
         specifier: workspace:*
         version: link:../equivalence
+      '@immunity-wars/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+      '@immunity-wars/room':
+        specifier: workspace:*
+        version: link:../../packages/room
       '@immunity-wars/session':
         specifier: workspace:*
         version: link:../../packages/session

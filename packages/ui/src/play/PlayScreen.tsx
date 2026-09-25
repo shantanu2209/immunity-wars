@@ -18,6 +18,7 @@
  *   `onCheck` — cheap, and the invariant matters everywhere.
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
+import { residentSeat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
   useEffect,
@@ -103,6 +104,17 @@ import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, residentDisplayName } from '../names';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
+import {
+  addPoint,
+  allocationActions,
+  budgetsOf,
+  perspectiveOf,
+  removePoint,
+  seenBy,
+  type Budgets,
+  type Draft,
+  type Table,
+} from './table';
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
 // its outcome), so they hold longer. A tap anywhere advances immediately.
@@ -175,8 +187,15 @@ export function PlayScreen({
   renderControls,
   hintsSeen = [],
   onHintsSeen,
+  table = null,
 }: {
   session: PlaySessionLike;
+  /**
+   * A GAME PLAYED TOGETHER (P3.7 piece B): the room as the relay last described it, and which member
+   * this device is. Null alone. The screen reads from it whose Action Points, whose pieces, who is
+   * captain and what to call people (`table.ts`); nothing about the rules.
+   */
+  table?: Table | null;
   /**
    * FIRST-ENCOUNTER HINTS. The seen set is the shell's to persist — this screen decides WHEN a
    * hint fires and never touches storage, the same division as everywhere else here.
@@ -207,6 +226,9 @@ export function PlayScreen({
   renderControls: (ctx: PlayControlsCtx) => ReactNode;
 }): ReactElement {
   const [authView, setAuthView] = useState<SessionView>(() => session.getView());
+  const p = perspectiveOf(table);
+  const pRef = useRef(p);
+  pRef.current = p;
   // THE FRAME IS NOT REACT STATE HERE (the full-UI re-measure, 6 September 2026): it lives in
   // an external store that only the board, the narration, the log and the shell's controls
   // subscribe to, so a spread's frames do not re-render the panels — see `frameStore.ts`.
@@ -407,7 +429,13 @@ export function PlayScreen({
         enqueueDialog({
           id: 'goal',
           title: t('goal.title'),
-          body: <GoalBody maxTurn={maxTurn} lastTurn={maxTurn + GRACE_CLEAR} />,
+          body: (
+            <GoalBody
+              maxTurn={maxTurn}
+              lastTurn={maxTurn + GRACE_CLEAR}
+              together={pRef.current.together}
+            />
+          ),
           dismissLabel: t('goal.begin'),
         });
       }
@@ -457,13 +485,14 @@ export function PlayScreen({
         dialogPending: dialogs.hasPending(),
         covered: navState.depth > 0,
         sentForTurn: sentDrawRef.current,
+        mayDraw: p.captain,
       })
     )
       return;
     sentDrawRef.current = Number(authView.game['turn']);
     send({ action: 'draw' });
     // `send` is rebuilt every render and does not decide anything; what decides is listed.
-  }, [authView, playing, dialogs.current, navState.depth]);
+  }, [authView, playing, dialogs.current, navState.depth, p.captain]);
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
@@ -475,7 +504,11 @@ export function PlayScreen({
     session.setSelection({ cell: null, family: null, resident: organ });
   const deselect = (): void => session.setSelection({ cell: null, family: null, resident: null });
 
-  const game = authView.game;
+  // THE VIEW AS THIS PLAYER SEES IT (P3.7): their own Action Points where the screen reads `ap`.
+  // Alone it is the view itself. Everything below reads `view`; the effects above, which watch
+  // for the game's own moments, keep reading the relay's.
+  const view = seenBy(authView, p);
+  const game = view.game;
   const phase = String(game['phase']);
   const selectedCell = authView.selection.cell;
   const selectedResident = authView.selection.resident;
@@ -484,7 +517,7 @@ export function PlayScreen({
   // burst nothing is offered — input is disabled.
   const offered: Offered = playing
     ? { source: 'cell', board: [], buttons: [], reason: null }
-    : offeredActions(authView);
+    : offeredActions(view, p.seats);
 
   // Board targets: one ring per move destination; one ring per ATTACKED INVADER carrying every
   // offer aimed at it (the Eosinophil may strike or degranulate the same worm).
@@ -597,7 +630,7 @@ export function PlayScreen({
     : null;
   // PRODUCTION WITHOUT THE B-CELL SELECTED (§19): the Antibodies view's offers, under the B-Cell's
   // own conditions, whatever is selected.
-  const producing = playing ? [] : produceOffers(authView);
+  const producing = playing ? [] : produceOffers(view, p.seats);
   const produceByFamily: Record<string, { id: string; label: string }> = {};
   for (const b of producing) if (b.family) produceByFamily[b.family] = { id: b.id, label: b.label };
 
@@ -615,7 +648,7 @@ export function PlayScreen({
   // second source) only while nothing is selected.
   const body: Offered = playing
     ? { source: 'body', board: [], buttons: [], reason: null }
-    : bodyOffers(authView);
+    : bodyOffers(view);
   const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
   const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
   const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
@@ -764,7 +797,7 @@ export function PlayScreen({
         ? t('regen.helped')
         : t('regen.wait', { n: r.wait });
   }
-  const rows: DockRow[] = playing ? [] : dockRows(authView);
+  const rows: DockRow[] = playing ? [] : dockRows(view, p.seats);
 
   // THE DOCK'S MESSAGE LINE: one thing, the most useful. What the board offers when it offers
   // something; otherwise why the piece cannot act; a note (why a spent cell is back when it is, the
@@ -803,6 +836,37 @@ export function PlayScreen({
   // watched on the board — and the model, not this component, says when the moment is.
   const planning = playing ? null : planningModel(authView);
   const planningActive = planning !== null && planning.active;
+
+  // THE CAPTAIN'S DRAFT OF THE ALLOCATION (`table.ts`), cleared whenever the turn or the phase moves
+  // on, so a draft never outlives the allocation it was for.
+  const [draft, setDraft] = useState<Draft>({});
+  const [confirming, setConfirming] = useState(false);
+  useEffect(() => setDraft({}), [turnNow, phase]);
+  const budgets: Budgets = Object.fromEntries(
+    (planning?.allocation?.budgets ?? []).map((b) => [b.pid, b.ap]),
+  );
+  const captainPid = planning?.allocation?.captain ?? null;
+
+  /**
+   * CONFIRM, FOR THE CAPTAIN: one `allocateAP` per player the draft gives points to, each answered
+   * before the next is sent, then `confirmAllocation`. A refusal stops it where it is and says why;
+   * whatever was accepted is the engine's, and the draft still shows the rest.
+   */
+  const confirmDraft = async (params: Record<string, unknown>): Promise<void> => {
+    setConfirming(true);
+    setLastError(null);
+    const players = ((authView.game['players'] as unknown[] | undefined) ?? []).map(String);
+    for (const a of allocationActions(draft, budgets, players)) {
+      const r = await session.sendAction(a);
+      if (!r.ok) {
+        setLastError(r.error ?? null);
+        setConfirming(false);
+        return;
+      }
+    }
+    setConfirming(false);
+    commandFromPlanning(params);
+  };
 
   /** The command tap from the planning screen: read the organs' rectangles, then send. */
   const commandFromPlanning = (params: Record<string, unknown>): void => {
@@ -929,6 +993,20 @@ export function PlayScreen({
   // Planning's model while planning shows, or null: one name, so every use of it is narrowed.
   const plan = arrivalsNow === null && planning !== null && planningActive ? planning : null;
   const apShown = plan !== null ? plan.apNext : Number(game['ap'] ?? 0);
+  // WHO THIS PLAYER IS WAITING FOR, when the next step is the captain's and this is not the
+  // captain's device; null otherwise, and always alone.
+  const waitingFor =
+    p.together && !p.captain && !playing && arrivalsNow === null
+      ? (p.captainName ?? t('table.theCaptain'))
+      : null;
+  const waitKey =
+    plan !== null
+      ? plan.mode === 'allocate'
+        ? 'table.waitAllocate'
+        : 'table.waitBegin'
+      : phase === 'command'
+        ? 'table.waitEnd'
+        : 'table.waitDraw';
   /** One of command's three views, or none: a second tap on its button closes it. */
   const openTab = (kind: MiddleTab): void => {
     const again = drawer === kind;
@@ -987,7 +1065,14 @@ export function PlayScreen({
     if (apSheet)
       return (
         <div data-middle-view="ap">
-          <ApTerms terms={apTerms} total={apShown} />
+          <ApTerms
+            terms={apTerms}
+            // Together, the terms add up to the table's points and the bar shows this player's own,
+            // so the sheet names both, and what every player has left (P3.7).
+            total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
+            yours={p.together && plan === null ? apShown : null}
+            players={p.together && plan === null ? budgetsOf(authView, p) : []}
+          />
         </div>
       );
     if (effectsOpen)
@@ -1015,7 +1100,22 @@ export function PlayScreen({
             disabled={playing}
             onPathogenCard={openPathogenCard}
           />
-          {plan.allocation ? <AllocationBlock slot={plan.allocation} /> : null}
+          {plan.allocation ? (
+            <AllocationBlock
+              slot={plan.allocation}
+              nameOf={p.nameOf}
+              control={
+                p.together && p.captain && captainPid !== null
+                  ? {
+                      draft,
+                      onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
+                      onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
+                      disabled: playing || confirming,
+                    }
+                  : null
+              }
+            />
+          ) : null}
         </div>
       );
     if (inspect)
@@ -1129,6 +1229,13 @@ export function PlayScreen({
       );
     return (
       <ActionsView
+        owner={
+          selectedCell !== null && !p.seats.mine(selectedCell)
+            ? p.seats.theirs(selectedCell)
+            : selectedResident !== null && !p.seats.mine(residentSeat(selectedResident))
+              ? p.seats.theirs(residentSeat(selectedResident))
+              : null
+        }
         selectedName={
           selectedCell
             ? cellDisplayName(selectedCell)
@@ -1168,7 +1275,7 @@ export function PlayScreen({
         }
         // A piece with nothing to press (the Helper T-Cell): why it cannot act when it cannot,
         // otherwise that it works by standing with others.
-        emptyText={offered.reason ?? t('actions.none')}
+        emptyText={offered.reason ?? offered.note ?? t('actions.none')}
         emptyTone={offered.reason !== null ? 'alert' : 'muted'}
         disabled={playing}
         onRow={(row) => {
@@ -1305,6 +1412,9 @@ export function PlayScreen({
         {plan === null && arrivalsNow === null ? (
           <TabRow active={tabOpen} disabled={playing} onTab={openTab} />
         ) : null}
+        {/* THE CAPTAIN'S STEPS (P3.7 piece B): beginning command, the allocation and ending the turn
+            are the captain's alone, as the draw is (above); the engine refuses them from anyone else.
+            Every other player's button says who they are waiting for. */}
         <AdvanceButton
           keyName={
             playing
@@ -1318,18 +1428,28 @@ export function PlayScreen({
                   : 'endTurn'
           }
           label={
-            playing
-              ? t('spread.tapToContinue')
-              : arrivalsNow !== null
-                ? t('reveal.plan')
-                : plan !== null
-                  ? plan.button.label
-                  : t('play.endCommand')
+            waitingFor !== null
+              ? t(waitKey, { name: waitingFor })
+              : playing
+                ? t('spread.tapToContinue')
+                : arrivalsNow !== null
+                  ? t('reveal.plan')
+                  : plan !== null
+                    ? plan.button.label
+                    : t('play.endCommand')
           }
-          disabled={playing || (plan === null && arrivalsNow === null && phase !== 'command')}
+          disabled={
+            playing ||
+            confirming ||
+            waitingFor !== null ||
+            (plan === null && arrivalsNow === null && phase !== 'command')
+          }
           hidden={navState.floating}
+          waiting={waitingFor !== null}
           onPress={() => {
             if (arrivalsNow !== null) setArrivals(null);
+            else if (plan !== null && plan.mode === 'allocate')
+              void confirmDraft(plan.button.params);
             else if (plan !== null) commandFromPlanning(plan.button.params);
             else send({ action: 'endCommand' });
           }}
