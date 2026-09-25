@@ -1,8 +1,9 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.6 · 25 September 2026
+**Version:** 1.7 · 25 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
-**Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
+**Status:** Written before any Phase 3 code existed, deliberately. **Reviewed 25 September 2026**,
+after P3.1 to P3.5 ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md)); every item ruled the same day.
 
 Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 [`TASK_E_CLOSEOUT.md`](TASK_E_CLOSEOUT.md) (the measurements that already decided things),
@@ -13,6 +14,23 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.7 records
+
+v1.7 applies the brief review ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md)), every item ruled by
+Shantanu on 25 September 2026, and its seven corrections, each marked in place:
+
+- **R1: P3.7, the multiplayer screens, comes BEFORE P3.6**, all of it (*"No let's do 3.7 first. No
+  point building stuff that may not actually get used"*). P3.6 needs screens to play on; §3's order
+  is changed, and the stage names are kept so that the record still reads.
+- **R2: a newcomer waits for the next game.** Once a game has started the room refuses anyone who
+  was not in it; rejoining is unaffected. The engine fixes its players at the start, so a latecomer
+  could be seated but never given Action Points or the captaincy (FINDINGS #86). Built, with a test
+  that failed first; building it found FINDINGS #87, fixed with it.
+- **R3: a version on every MESSAGE, not every state.** Saved games carry no version, and versioning
+  them is Phase 4's, where app updates begin (§8, §7).
+- **R4: the Play Store update policy is Phase 4's.** The relay refuses any other version exactly,
+  which strands a phone that has not updated yet; nothing in Phase 3 changes (§7).
 
 ## What v1.6 records
 
@@ -120,7 +138,9 @@ with your recommendation"*):
 > sharing a code. Nobody signs up for anything.
 
 Phase 2 changed everything a player can see. **Phase 3 changes who is in the room, and nothing about
-the rules.** The engine is fixed; the equivalence corpus remains the oracle.
+the rules.** The engine is fixed, but for one ruled addition, `handOverCaptaincy` (v1.1, DEVIATIONS
+#7); the equivalence corpus remains the oracle. ⚠️ *Corrected in v1.7* (review C1): this said "the
+engine is fixed" without the exception §8 has named since v1.1.
 
 ---
 
@@ -141,7 +161,8 @@ the rules.** The engine is fixed; the equivalence corpus remains the oracle.
       discarded cannot be rejoined
 - [ ] A client on an old protocol version is refused with a message a player can act on, and can
       **never** desynchronise a newer room
-- [ ] **The 22 deferred multiplayer coverage arms are covered** ([`COVERAGE_DEFERRED.md`](COVERAGE_DEFERRED.md))
+- [ ] **The 20 deferred multiplayer coverage arms are covered** ([`COVERAGE_DEFERRED.md`](COVERAGE_DEFERRED.md)).
+      ⚠️ *Corrected in v1.7* (review C3): this said 22; the captaincy tests covered two (FINDINGS #78)
 - [ ] Single player is unchanged and still works with no network at all
 
 ### Gate B — it is affordable and it is ours
@@ -153,8 +174,10 @@ the rules.** The engine is fixed; the equivalence corpus remains the oracle.
       in it, and the platform adapter is small enough to rewrite in a day. Proven by a test that
       runs the room module with no platform runtime at all. ⚠️ *Amended in v1.3:* this said
       "Cloudflare" in both places, when Cloudflare was the platform
-- [ ] No personal data anywhere: no accounts, no stored names, nothing on the server that outlives
-      the room
+- [ ] No personal data anywhere: no accounts, no stored names, nothing personal written anywhere on
+      the server. In memory, a room lives until its grace period ends, and an address's recent wrong
+      room codes for up to 10 minutes. ⚠️ *Corrected in v1.7* (review C4): this said "nothing on the
+      server that outlives the room", which the wrong-code counter can, briefly
 
 ---
 
@@ -164,14 +187,14 @@ Phase 3 starts further along than it looks.
 
 | | |
 |---|---|
-| **The engine is already multiplayer** | `g.multiplayer`, `g.captain`, `owner: Record<seat, pid>`, per-player `apBudget`, the allocation phase, and ownership checks are all in `packages/engine/src/actions.ts`. **Phase 3 builds transport and seats for rules that already exist**, and changes none of them |
+| **The engine is already multiplayer** | `g.multiplayer`, `g.captain`, `owner: Record<seat, pid>`, per-player `apBudget` and the allocation phase are in `packages/engine/src/actions.ts`. **Phase 3 builds transport and seats for rules that already exist**, and changes none of them but one (`handOverCaptaincy`, §8). ⚠️ *Corrected in v1.7* (review C1, C2): this also said the engine's "ownership checks" were there; **the engine never checks ownership**, only stores and projects `owner`, and the room enforces it. It also said "changes none of them" without the exception |
 | **The seat model is the engine's** | 7 cells + 7 organ residents = 14 seats, keyed as the engine keys them (`res_<organ>` for a resident) |
 | **There is a working reference** | `tools/legacy/server.js`, 346 lines: one room, 14 seats, a captain, ownership enforcement, reconnect by persistent id. READ-ONLY, like all of `tools/legacy` — the same role legacy played for the Phase 1 port |
 | **`Session` was built for this** | `sendAction` is async even locally **so that `RelaySession` is a second implementation and not a rewrite**; `Session` never hands out `GameState`; the `view`/`burst` union already expresses what a spread is |
 | **`PlayerRef` is device-local and opaque** | It authenticates nothing and is minted on the device. That is exactly right for an invite-only room and would be wrong for a public one, which is one more reason there is no public one |
 | **The engine cannot be replayed** | Six unseeded `Math.random()` calls, no injection point (#40). Two clients applying one action diverge silently. **`viewState` is the unit of synchronisation, never `Action`** |
-| **Size was measured** | Every measured state gzips **under 3.5 KiB**; deltas buy about 2× on that; **the tail is the burst at 25.6 KiB**, because `endCommand` returns up to 10 full projections. Every figure is a FLOOR: measured single-player, under a bot that dies at turn 8.6 |
-| **`packages/protocol` is 11 lines of scaffold** | It becomes real here |
+| **Size was measured** | Every measured state gzips **under 3.5 KiB**; deltas buy about 2× on that; **the tail is the burst at 25.6 KiB**, because `endCommand` returns up to 10 full projections. Every figure is a FLOOR: measured single-player, under a bot that dies at turn 8.6. ⚠️ *v1.7 (review C6):* this is where Phase 3 started; P3.3 to P3.5 measured the wire itself, live at 13 KiB a turn to each player ([`for-P3.md`](for-P3.md) §5) |
+| **`packages/protocol` is 11 lines of scaffold** | It becomes real here. ⚠️ *v1.7 (review C6):* it did, at P3.2 and P3.4 |
 
 ---
 
@@ -186,8 +209,8 @@ Sequenced so the thing that could invalidate the rest happens first.
 | **P3.3** | **The measurement: frames or state?** One room, two clients, a real spread. What it costs to send 10 frames versus one state and a dice log | The Task E question. Decided by measurement, before the transport is written around either answer |
 | **P3.4** | **`RelaySession`** — the second implementation of `Session`, against a local relay on the development machine | No cloud involved yet |
 | **P3.5** | **The deployment**: the P3.4 relay on a Google Cloud server in Mumbai, encrypted, supervised and patched, its cost measured. ⚠️ *Amended in v1.4 and v1.5:* v1.4 put it on Google's free server in Oregon; v1.3 on Oracle in India, whose sign-up refused us; v1.0 to v1.2 had "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
-| **P3.6** | **Two real devices, two networks**, a full game, and the 22 coverage arms | Gate A |
-| **P3.7** | The multiplayer screens: create, join, the lobby, seat assignment, the away state | They are the last thing, because until P3.6 nobody knows what they must show |
+| **P3.7** | **The multiplayer screens**: create, join, the lobby, seat assignment, the away state. ⚠️ *Moved ahead of P3.6 in v1.7* (review R1, ruled: *"No let's do 3.7 first. No point building stuff that may not actually get used"*) | P3.6 needs screens to play on. It said: "They are the last thing, because until P3.6 nobody knows what they must show" |
+| **P3.6** | **Two real devices, two networks**, a full game on the P3.7 screens, and the 20 coverage arms | Gate A, on the path players take |
 
 ---
 
@@ -234,7 +257,9 @@ disk anywhere, ever.
   the start; a member may pick a free seat themselves before the game begins.
 - **The captain** is the first member to join. The engine already gives the captain the allocation
   and End turn powers, so this is the engine's notion, not a new one.
-- **Dropping** is the connection closing. The member stays a member and their seats stay theirs,
+- **Dropping** is the connection closing, or failing to answer the relay's ping for about 40
+  seconds, which is how a phone out of signal is noticed (P3.5, FINDINGS #84; *v1.7, review C5*).
+  The member stays a member and their seats stay theirs,
   **marked away**, visible to everyone (Gate A). Nothing is forfeited by dropping.
 - **The table's choice.** *Ruled:* the captain may reassign an away member's seats to anyone
   present, or the table may simply wait. Nothing forces the issue and no timer decides it. The game
@@ -302,6 +327,7 @@ claim.** [`SECURITY_NOTES.md`](SECURITY_NOTES.md)'s current property is *"no ope
 process that listens; every open advisory is in a one-shot tool the maintainer runs on inputs the
 maintainer chose."* **A relay breaks that sentence the day it ships.** The relay's dependency set is
 therefore part of Gate B: it is kept minimal, and the property is restated to cover it.
+*v1.7 (review C7):* restated at P3.4 and P3.5 ([`SECURITY_NOTES.md`](SECURITY_NOTES.md)).
 
 ---
 
@@ -314,7 +340,12 @@ deliberately re-baselines the corpus and it is its own piece of work, whenever i
 No Capacitor packaging — Phase 4, and it must not start until [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)'s
 handset measurement exists.
 No spectators. The legacy server had them; nobody has asked for them.
-No engine rule changes.
+No engine rule changes, but for the one ruled addition, `handOverCaptaincy` (§8). ⚠️ *Corrected in
+v1.7* (review C1): this said "No engine rule changes" without it.
+**No one joins a game already under way** (v1.7, review R2): a newcomer waits for the next one.
+**Versioned saved games** are Phase 4's, where app updates begin (review R3), and so is **the update
+policy**: the relay refuses any other protocol version exactly, which strands a phone mid-update once
+the app is in the Play Store (review R4).
 
 ---
 
@@ -328,9 +359,12 @@ No engine rule changes.
       v1.2 (24 September 2026):* this read "`LocalSession` is untouched by it". The builder moved to
       `@immunity-wars/session-core` by ruling, so the relay computes what `LocalSession` computes
       from one implementation ([`for-P3.md`](for-P3.md) §4)
-- [ ] `rulesVersion` and a protocol version on every message and every state, with the refusal path
-      proven by a control — the thing Phase 1 recorded as Phase 3's to make true
-- [ ] The 22 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest
+- [ ] `rulesVersion` and a protocol version on every message, with the refusal path proven by a
+      control — the thing Phase 1 recorded as Phase 3's to make true. ⚠️ *Amended in v1.7* (review
+      R3): this said "every message and every state"; saved games carry no version, and versioning
+      them is Phase 4's
+- [ ] The 20 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest (22
+      until v1.7, review C3)
 - [ ] Corpus still green; the engine unchanged **but for `handOverCaptaincy`**. ⚠️ *Amended in
       v1.1 (21 September 2026):* this read "the engine unchanged". The one addition is ruled,
       recorded as DEVIATIONS #7, and held to legacy on every other multiplayer path

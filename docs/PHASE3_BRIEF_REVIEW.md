@@ -4,8 +4,11 @@
 P3.5 were built and the relay deployed, and before P3.6. Ruled on 25 September: the review is owed
 before P3.6, because P3.6 checks Gate A against the brief's exact words.
 
-> **STATUS: written, not yet ruled.** Four items need Shantanu's ruling (R1 to R4); the rest are
-> corrections that change no decision (C1 to C7). Section references are to brief v1.6.
+> **STATUS: all four items ruled on, 25 September 2026. The brief is now v1.7.**
+> **R1: (c)**, all of P3.7 before P3.6 (*"No let's do 3.7 first. No point building stuff that may not
+> actually get used."*), not the recommended (a). **R2: (a)**, built. **R3** and **R4** as
+> recommended. C1 to C7 are applied. Section references below are to brief v1.6; this document is
+> left as written, as the record of what the brief said.
 
 **How it was done.** The brief was read against what is built, not against itself, and every claim
 that could be measured was: two of the four ruling items below were found by running the room, not

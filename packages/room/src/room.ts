@@ -289,6 +289,10 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         };
       }
       if (room.phase === 'ended') return reject(room, msg.ref, 'gameEnded');
+      // A NEWCOMER WAITS FOR THE NEXT GAME (ruled 25 September 2026, brief review R2, FINDINGS #86).
+      // The engine fixes its players at `newGame`, so someone arriving later could be seated but
+      // never given Action Points, nor the captaincy. Rejoining, above, is not affected.
+      if (room.phase === 'playing') return reject(room, msg.ref, 'lobbyClosed');
       const member: Member = {
         ref: msg.ref,
         name: msg.name,
@@ -300,10 +304,8 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         { ...room, members: [...room.members, member], nextJoinOrder: room.nextJoinOrder + 1 },
         now,
       );
-      return {
-        room: next,
-        out: [you(next, msg.ref), broadcast(next), ...current(next, msg.ref), ...syncCaptain(next)],
-      };
+      // Only the lobby admits newcomers, and the lobby has no board or engine captain to send.
+      return { room: next, out: [you(next, msg.ref), broadcast(next)] };
     }
 
     case 'disconnect': {

@@ -162,6 +162,33 @@ describe('a frame that is not a message', () => {
   });
 });
 
+describe('a join the room refuses', () => {
+  // The hub binds a link to its room BEFORE the room rules on the join, so a refused joiner stayed
+  // bound and received every broadcast after it: the room, its members' names, the game. Found
+  // building the ruling that newcomers wait for the next game (FINDINGS #87).
+  it('leaves the refused connection hearing nothing more from the room', async () => {
+    const { hub } = makeHub();
+    const a = await opened(hub, 'p_a');
+    const code = a.lastRoom()?.code ?? '';
+    await hub.message(a, frame({ kind: 'claimSeat', seat: 'bcell' }));
+    await hub.message(a, frame({ kind: 'start', difficulty: 'training' }));
+    const late = await opened(hub, 'p_late', code);
+    expect(late.got).toEqual([{ kind: 'error', code: 'lobbyClosed' }]);
+    await hub.message(a, frame({ kind: 'action', id: 1, action: { action: 'draw' } }));
+    expect(late.got).toHaveLength(1);
+  });
+
+  // The permitting twin: an accepted join keeps hearing the room.
+  it('keeps an accepted member hearing the room', async () => {
+    const { hub } = makeHub();
+    const a = await opened(hub, 'p_a');
+    const b = await opened(hub, 'p_b', a.lastRoom()?.code ?? '');
+    const heard = b.got.length;
+    await hub.message(a, frame({ kind: 'claimSeat', seat: 'bcell' }));
+    expect(b.got.length).toBeGreaterThan(heard);
+  });
+});
+
 describe('room codes', () => {
   it('are refused when nobody holds them', async () => {
     const { hub } = makeHub();

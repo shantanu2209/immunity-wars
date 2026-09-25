@@ -370,9 +370,24 @@ describe('arriving after the game has started (P3.4)', () => {
     expect(views.map((o) => o.to)).toContain('b');
   });
 
-  it('hands a new member the board too, since the captain may seat them in an away seat', () => {
-    const s = step(started(), join('c', 'T'), T0);
-    expect(s.out.some((o) => o.to === 'c' && o.message.kind === 'view')).toBe(true);
+  // RULED 25 September 2026 (brief review R2, FINDINGS #86): the engine fixes its players at the
+  // start, so a newcomer could be seated but never given Action Points or the captaincy. P3.4 let
+  // them in and handed them the board; they are now refused, and play the next game.
+  it('refuses a NEW member once the game has started, and shows them nothing of it', () => {
+    const before = started();
+    const s = step(before, join('c', 'T'), T0);
+    expect(s.out).toEqual([{ to: 'c', message: { kind: 'error', code: 'lobbyClosed' } }]);
+    expect(s.room.members.map((m) => m.ref)).toEqual(['a', 'b']);
+  });
+
+  // The permitting twin: refusing newcomers must not refuse the people already in the game.
+  it('still lets a member who dropped back in, with their seats', () => {
+    const away = step(started(), { kind: 'disconnect', ref: 'b' }, T0).room;
+    const back = step(away, join('b', 'S'), T0).room;
+    expect(back.members.find((m) => m.ref === 'b')).toMatchObject({
+      connected: true,
+      seats: ['nk'],
+    });
   });
 
   // The permitting twin's mirror: there is no board in the lobby, so nothing is sent.

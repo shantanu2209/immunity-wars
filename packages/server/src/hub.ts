@@ -319,8 +319,13 @@ export class Hub {
           other.close(CLOSE.replaced, 'replaced');
         }
       }
+      // Bound BEFORE the room rules, so its answer, a welcome or a refusal, reaches this connection.
       this.links.set(link, { code, ref: msg.ref });
       await this.apply(code, { kind: 'join', ref: msg.ref, name: msg.name });
+      // And UNBOUND if the room refused: otherwise the refused joiner went on hearing every
+      // broadcast of a room it is not in, its members' names and its game included (FINDINGS #87).
+      if (this.rooms.get(code)?.members.some((m) => m.ref === msg.ref) !== true)
+        this.links.set(link, null);
       return;
     }
 

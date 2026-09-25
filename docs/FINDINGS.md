@@ -4484,7 +4484,7 @@ recorded in `SECURITY_NOTES.md` to be repeated after any Caddy upgrade.
 
 ---
 
-## 86. A member who joins after the game starts can be seated and can never act, and cannot take the captaincy either
+## 86. A member who joins after the game starts can be seated and can never act, and cannot take the captaincy either — FIXED 25 September 2026
 
 **Found 25 September 2026, during the Phase 3 brief review**, by playing it through the room.
 **Recorded, awaiting a ruling** ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md), R2).
@@ -4505,3 +4505,34 @@ act: the tests stopped at the board arriving.
 **Options** (the review's R2): (a) the room refuses new members once the game has started, with the
 existing `lobbyClosed` code, so no protocol change, while rejoining is unaffected; (b) an engine
 action that adds a player mid-game, a second deviation beside DEVIATIONS #7. **Recommendation: (a).**
+
+### ✅ FIXED, 25 September 2026 — (a), by ruling
+
+*"Yes (a)."* Once a game has started, the room refuses a join from anyone who was not in it, with
+`lobbyClosed`; a member rejoining is unaffected and gets their seats back. P3.4's test that a
+newcomer is handed the board is inverted: the newcomer is refused and shown nothing, and its twin
+holds that a member who dropped still gets back in. The test failed on the old room first. Control:
+`room-newcomer-refused`. Building it found #87.
+
+---
+
+## 87. A connection the room refused stayed attached to the room, and heard everything said in it
+
+**Found 25 September 2026**, building #86's fix, by asking what a refused newcomer's connection
+receives afterwards. **Fixed in the same change.**
+
+The hub attaches a connection to its room **before** the room rules on the join, so that the room's
+answer, a welcome or a refusal, can reach it. It never detached one the room refused. So a refused
+joiner went on receiving every broadcast of a room it was not in: the room's projection, its
+members' names, and every view of the game. **Measured:** after being refused, the connection
+received the board the next action produced.
+
+**It predates #86.** P3.4's room already refused joins to an ended game (`gameEnded`), and those
+connections stayed attached the same way. No test had asked what a refused connection hears next.
+The deployed relay has the defect until the next deploy; it is reachable only by someone who has
+the room's code, and before today's fix only once a game had ended.
+
+**The fix** (`packages/server/src/hub.ts`): after the room rules, a connection whose ref is not a
+member is detached. **Proved** by a hub test in which a refused joiner hears nothing more while the
+game goes on, with a twin that an accepted member keeps hearing the room. Control:
+`hub-refused-join-unbound`.
