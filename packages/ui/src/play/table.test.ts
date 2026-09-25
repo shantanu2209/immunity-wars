@@ -243,3 +243,17 @@ describe('when someone drops (piece C)', () => {
     expect(tableChanges(table(1), table(1))).toEqual([]);
   });
 });
+
+describe('when someone leaves (piece D)', () => {
+  it('says who has left, which is not the same as away, and their pieces wait for the table', () => {
+    const before = table(1);
+    const gone = table(1, { members: before.room.members.filter((m) => m.id !== 2) });
+    const [line] = tableChanges(before, gone);
+    expect(line).toContain('Ravi');
+    const away = table(1, {
+      members: before.room.members.map((m) => (m.id === 2 ? { ...m, connected: false } : m)),
+    });
+    expect(line).not.toBe(tableChanges(before, away)[0]);
+    expect(tableSummary(gone).waiting.map((w) => w.seat)).toContain('nk');
+  });
+});

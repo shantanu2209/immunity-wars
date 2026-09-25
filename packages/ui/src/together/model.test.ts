@@ -122,6 +122,9 @@ describe('every key the new screens name', () => {
     '../screens/TitleScreen.tsx',
     '../panels/TableView.tsx',
     '../panels/ConnectionLost.tsx',
+    '../panels/PauseSheet.tsx',
+    '../screens/ResultScreen.tsx',
+    '../screens/CrashScreen.tsx',
   ];
   const keys = screens.flatMap((f) => {
     const src = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');

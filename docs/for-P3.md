@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: pieces A to C BUILT, D to come
+## 6. P3.7, the multiplayer screens: all four pieces BUILT; the 360-pixel audit to come
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -1104,3 +1104,60 @@ for them, which is also said.
   The walkthrough's two reds on the way were both its own: it closed the Table by tapping the dimmed
   game behind it, which left the page open and the turn button hidden; then it tapped the floating
   Close in the render before the button existed.
+
+### Piece D, the end and leaving: BUILT, 25 September 2026
+
+- **Everyone still in the game reaches the Result**, measured: a three-player game on Hard, played
+  to its end.
+- **The Result after a game played together** offers *Play together again*, which goes to the way
+  in, and *Back to the title*. *Play again* and *Change difficulty* both start a game alone, so they
+  are not offered there. The room has ended with its game, so another game together is a new room
+  and a new code (see the ruling asked below).
+- **Two exits from the menu, each confirmed with what it does:**
+  - *Back to the title* closes the game. *Your seats wait for you while you are away. You can rejoin
+    from the title.* It no longer says *Your game is saved*, which was never true of a game played
+    together.
+  - *Leave the game* gives the seats back. *Leaving gives your seats back to the table, and you
+    cannot come back into this game.* Everyone is told *Meera has left the game.*, and her pieces
+    join the Table's waiting list for the captain to hand on. Alone, the menu is unchanged.
+- **A crash during a game played together** says the game goes on and the player's seats wait,
+  and to rejoin from the title. It does not read or mention the single-player save.
+- **The single-player save survives a game played together**, measured: a game alone saved before a
+  game together is still offered by *Continue* after that game's Result.
+
+### What proves it
+
+- **The walk to a real Result**, three players at 360 × 740, 20 checks, in order:
+  1. Asha saves a game alone first, and the menu alone has no Leave and still says the game is
+     saved.
+  2. Together, Meera leaves from the menu: the confirmation says what leaving does, her title does
+     not offer the room, and everyone is told.
+  3. Ravi goes back to the title from the menu, is told his seats wait, and rejoins.
+  4. The captain ends turns until the body falls, at turn 9 or 10 on Hard.
+  5. Both players still in the game reach the Result, which offers only another game together.
+  6. Asha's game alone is still there, and the ended room is not offered.
+  7. No page errors anywhere.
+- **Two controls on the change the walk forced** (FINDINGS #89): `view-queue-own-tail` and
+  `view-queue-every-view`, each run and each red with its own diagnostic.
+- **Pieces B and C's walks, re-run on the changed spread player:** 20 of 20 and 25 of 25.
+
+### What the walk found
+
+- **FINDINGS #89, fixed:** played together, the play screen dropped the views that arrived while a
+  spread animated, and its own tail check failed on a correct game on the other players' screens.
+  It is fixed, and the fix was proved both ways in the app.
+- **FINDINGS #90, recorded, for a ruling:** a double tap on the play screen's one advance button does
+  the next step too. Measured in single player: *Command your cells* tapped twice ends the turn with
+  every point unspent, at every gap tried from 80 to 400 ms.
+
+### Rulings asked, 25 September 2026
+
+1. **#90, the double tap.** The bottom button ignores a tap for about half a second after its step
+   changes. **Recommendation: yes, and before P3.6**: it costs a player a whole turn with no undo, in
+   single player as much as together, and the P3.6 games are exactly where it would be hit.
+2. **Another game in the same room.** Today a room ends with its game, so a rematch means a new room
+   and a new code for everyone to type. The alternative: after the Result, the captain can start
+   another game in the same room, with the same people and their seats, back through the lobby. It
+   changes the room's rules (`ended` would lead back to `lobby`), so it is a ruling, not a default.
+   **Recommendation: yes, as its own small piece after P3.6**: P3.6 does not need it, and friends
+   who have just finished a game will want the next one.

@@ -106,6 +106,7 @@ import { cellDisplayName, residentDisplayName } from '../names';
 import { TableView } from '../panels/TableView';
 import { refusalText } from '../together/model';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
+import { ViewQueue, type QueuedFrame } from './viewQueue';
 import {
   addPoint,
   allocationActions,
@@ -302,11 +303,12 @@ export function PlayScreen({
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
-  const queueRef = useRef<{ view: ViewState; label: string; dice?: unknown }[]>([]);
+  // THE FRAMES AND THE VIEWS THAT ARRIVE WHILE THEY PLAY, in order (`viewQueue.ts`, FINDINGS #89):
+  // played together, other players go on acting while this device animates a spread.
+  const queue = useRef(new ViewQueue()).current;
   const burstSizeRef = useRef(0);
   const playingRef = useRef(false);
-  const lastFrameRef = useRef<{ view: ViewState } | null>(null);
-  const pendingViewRef = useRef<SessionView | null>(null);
+  const lastFrameRef = useRef<QueuedFrame | null>(null);
   const endedRef = useRef(false);
   const timerRef = useRef<number | null>(null);
   const playNextRef = useRef<(() => void) | null>(null);
@@ -324,25 +326,30 @@ export function PlayScreen({
   const flightRef = useRef<{ from: Map<string, DOMRect>; start: number } | null>(null);
 
   useEffect(() => {
+    // THE TAIL ASSERTION — burst-tail-authoritative, checked by every real consumer. Each spread's
+    // last frame against the view THAT spread ended in, checked once the frame has had its time on
+    // screen, by which point its view has arrived (the two are sent together).
+    const checkTail = (last: QueuedFrame | null): void => {
+      if (!last?.tail) return;
+      const ok = JSON.stringify(last.view) === JSON.stringify(last.tail.view);
+      const line = ok
+        ? `tail === authoritative view: PASS (${String(last.tail.size)} frames)`
+        : 'tail !== authoritative view: FAIL — the burst is NOT safely skippable';
+      onCheckRef.current?.(line);
+      if (!ok) console.error(`[burst] ${line}`);
+    };
     const playNext = (): void => {
-      const f = queueRef.current.shift();
+      checkTail(lastFrameRef.current);
+      const f = queue.nextFrame();
       if (!f) {
         playingRef.current = false;
         timerRef.current = null;
-        const pv = pendingViewRef.current;
-        pendingViewRef.current = null;
-        const last = lastFrameRef.current;
-        if (pv && last) {
-          // THE TAIL ASSERTION — burst-tail-authoritative, checked by every real consumer.
-          const ok = JSON.stringify(last.view) === JSON.stringify(pv.game);
-          const line = ok
-            ? `tail === authoritative view: PASS (${burstSizeRef.current} frames)`
-            : 'tail !== authoritative view: FAIL — the burst is NOT safely skippable';
-          onCheckRef.current?.(line);
-          if (!ok) console.error(`[burst] ${line}`);
-        }
+        lastFrameRef.current = null;
         frameStore.set(null);
-        if (pv) setAuthView(pv);
+        // The first view waiting is shown with the frames' end, so the board never steps back to
+        // before the spread; any after it follow one at a time (the effect below).
+        const next = queue.nextView();
+        if (next) setAuthView(next);
         setPlaying(false);
         // THE LAST FRAME IS THE NEW TURN ARRIVING, not something that happened in the spread
         // (§21 E): "Next turn" is the animation's own word and it is dropped from the summary.
@@ -351,7 +358,7 @@ export function PlayScreen({
         return;
       }
       lastFrameRef.current = f;
-      const n = burstSizeRef.current - queueRef.current.length;
+      const n = burstSizeRef.current - queue.framesLeft;
       // Per-redraw main-thread work (§4 row 2). flushSync is instrumentation — FINDINGS #48.
       const frameStart = performance.now();
       flushSync(() => {
@@ -372,16 +379,15 @@ export function PlayScreen({
           return;
         }
         spreadLinesRef.current.push(...ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
-        queueRef.current.push(...ev.frames);
-        burstSizeRef.current = queueRef.current.length;
+        queue.burst(ev.frames);
+        burstSizeRef.current = queue.framesLeft;
         if (!playingRef.current) {
           playingRef.current = true;
           setPlaying(true);
           playNext();
         }
       } else if (ev.kind === 'view') {
-        if (playingRef.current) pendingViewRef.current = ev.view;
-        else setAuthView(ev.view);
+        if (queue.view(ev.view, playingRef.current)) setAuthView(ev.view);
       }
       // `notice` falls through deliberately: it is the shell's, not this screen's.
     });
@@ -390,6 +396,14 @@ export function PlayScreen({
       if (timerRef.current !== null) clearTimeout(timerRef.current);
     };
   }, [session]);
+
+  // EVERY VIEW IS SHOWN, one at a time and in order, once the frames are done, so each moment the
+  // screen watches for (a card drawn, a turn begun) is seen as it happened (FINDINGS #89).
+  useEffect(() => {
+    if (playingRef.current) return;
+    const next = queue.nextView();
+    if (next) setAuthView(next);
+  }, [authView, playing]);
 
   /** Tap-anywhere during a burst: advance one frame now instead of waiting out the timer. */
   const advanceFrame = (): void => {
