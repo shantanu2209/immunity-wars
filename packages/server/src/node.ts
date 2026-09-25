@@ -1,6 +1,6 @@
 /**
  * THE NODE ADAPTER: the hub on a WebSocket server, on the development machine (P3.4) and in
- * production on an Oracle Cloud server (P3.5, ruled 24 September 2026).
+ * production on a Google Cloud server (P3.5, brief v1.4, 25 September 2026).
  *
  * Deliberately a few lines. Everything that is not "bytes in, bytes out, a socket closed" is the
  * hub's or the room's, so this file is what a move to another platform rewrites, and nothing else.

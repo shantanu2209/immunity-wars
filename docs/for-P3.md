@@ -617,3 +617,47 @@ seen to fire on its own test.
 
 **Not yet built:** the tool that measures the relay's time per action on the server itself, for Gate
 B. It is written when there is a server to run it on.
+
+### Superseded 25 September 2026: Google Cloud, because Oracle refused the sign-up
+
+**What happened.** Oracle's sign-up verified the card and then refused to create the account, on
+every attempt, with a generic *"an error occurred while creating your account"* that names no reason.
+Shantanu asked *"can we try google cloud instead? using a VM or someting like that?"*. Brief v1.4.
+
+**Google's free tier, read on 25 September 2026** (its own pages unless marked):
+
+- One `e2-micro` server (a quarter of a processor sustained, 1 GB of memory), **only in Oregon,
+  Iowa or South Carolina**; 30 GB of **standard** persistent disk; 1 GB a month of data out from
+  North America. A card is required.
+- **The billing account must be upgraded before the 90-day trial ends**, or the server is stopped;
+  the free tier continues on a paid account, which is charged only beyond it.
+- Data beyond the free gigabyte: $0.12 a GB at the base Premium rate, per third-party summaries;
+  **the rate to Asia could not be read** and may be higher. About 8 MB a four-player game, so a few
+  paise a game above about 125 games a month.
+- **The external IP address is reported as free on the free tier**, in a search summary quoting
+  Google; **not confirmed on Google's own pages**. The budget alert is what would show otherwise.
+
+**Measured: the lag from the development PC to each region.**
+
+**Conditions.** 25 September 2026, from the development PC on its usual connection; Google's own
+per-region ping services (`gcping`), timing each request from the moment its secure connection was
+set up to the first byte back, which is the round trip from Google's nearest edge to the region.
+Eight requests per region, the first two discarded as warm-up, the median of the six reported.
+These are Google's services, not our relay; the relay's own round trip is P3.5's first measurement
+once the server exists.
+
+| Region | Free | Median round trip |
+|---|---|---|
+| **`us-west1`, Oregon** | Yes | **242 ms** |
+| `us-central1`, Iowa | Yes | 300 ms |
+| `us-east1`, South Carolina | Yes | 309 ms |
+| `asia-south1`, Mumbai | No | 34 ms |
+
+**Chosen: Oregon**, the fastest free region by measurement. The home-region ruling for Oracle
+(Mumbai) no longer applies. The isolation ruling stands, and has nothing to act on here: a 1 GB
+server cannot host the other projects anyway.
+
+**What changed in part one:** `packages/server/deploy/README.md` rewritten for Google; `setup.sh`
+gains a 1 GB swap file (the server has 1 GB of memory), installs `iptables-persistent`, whose plugin
+actually saves firewall rules and which Google's image lacks, and names no provider, since nothing
+in it is Google's. The relay itself is unchanged.

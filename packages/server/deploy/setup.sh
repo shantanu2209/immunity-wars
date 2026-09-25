@@ -3,10 +3,12 @@
 #
 #   sudo bash setup.sh <hostname>
 #
-# Written for Ubuntu 24.04 on Oracle Cloud's Always Free Arm server. Safe to run twice: every step
-# checks before it changes anything. What it does, and why, is in deploy/README.md; the short form:
+# Written for Ubuntu 24.04 on Google Cloud's free e2-micro server (brief v1.4), and nothing in it is
+# Google's: it runs on any Ubuntu 24.04 server. Safe to run twice: every step checks before it
+# changes anything. What it does, and why, is in deploy/README.md; the short form:
 #
 #   - India time, so the one restart security updates may need happens at 03:30 IST
+#   - a 1 GB swap file, because the free server has 1 GB of memory and a large update can need more
 #   - Node (long-term support) and Caddy, each from its own signed package repository
 #   - security updates installed automatically, Node's and Caddy's included
 #   - a `relay` user with no login and no home, and a service that runs the bundled relay as it,
@@ -27,10 +29,21 @@ fi
 echo "== India time, for the 03:30 restart window"
 timedatectl set-timezone Asia/Kolkata
 
+echo "== a swap file: the free server has 1 GB of memory, and a big package update can want more"
+if [[ ! -f /swapfile ]]; then
+  fallocate -l 1G /swapfile
+  chmod 600 /swapfile
+  mkswap /swapfile
+fi
+swapon --show | grep -q '^/swapfile' || swapon /swapfile
+grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >>/etc/fstab
+
 echo "== packages the steps below need"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-apt-get install -y -q ca-certificates curl gnupg unattended-upgrades netfilter-persistent \
+# iptables-persistent brings netfilter-persistent AND the plugin that actually saves the rules:
+# Oracle's images ship it, Google's do not, and without it the save below would save nothing.
+apt-get install -y -q ca-certificates curl gnupg unattended-upgrades iptables-persistent \
   debian-keyring debian-archive-keyring apt-transport-https
 install -d -m 0755 /etc/apt/keyrings
 
@@ -134,9 +147,10 @@ caddy validate --config /etc/caddy/Caddyfile
 systemctl reload caddy || systemctl restart caddy
 
 echo "== this machine's firewall: web traffic in, nothing else new"
-# Oracle's Ubuntu images reject everything but SSH in iptables, as well as in the cloud's own
-# security list, which is opened in the console (deploy/README.md). Each rule goes in just before
-# that reject, and only if it is not there already.
+# Some clouds' Ubuntu images (Oracle's) reject everything but SSH in iptables; Google's accept by
+# default and filter in the cloud's own firewall instead, opened in the console (deploy/README.md).
+# Each rule goes in just before any reject, or first when there is none, and only if it is not
+# there already, so this is right on both.
 for port in 80 443; do
   if ! iptables -C INPUT -p tcp -m state --state NEW --dport "$port" -j ACCEPT 2>/dev/null; then
     at=$(iptables -L INPUT --line-numbers | awk '/REJECT/ {print $1; exit}')

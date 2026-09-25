@@ -348,8 +348,9 @@ own phone.
 |---|---|---|---|
 | The development relay | `pnpm --filter @immunity-wars/server relay` | `127.0.0.1:8787` by default; the LAN only when started with `HOST=0.0.0.0`, deliberately | `ws`, `zod`, and this repository's own `protocol`, `room`, `session-core`, `engine`, `content` |
 
-P3.5 deploys this same relay to an Oracle Cloud server (ruled 24 September 2026, replacing
-Cloudflare), so the row above is production's too. What P3.5 adds in front of it — a TLS front and
+P3.5 deploys this same relay to a server of ours (ruled 24 September 2026, replacing Cloudflare: at
+first Oracle, and from 25 September Google Cloud, when Oracle's sign-up refused us), so the row
+above is production's too. What P3.5 adds in front of it — a TLS front and
 an operating system that is ours to patch — gets the same re-read when it lands.
 
 - **`ws` 8.21.3**, pinned exactly, with **no dependencies of its own**: the only third-party code in
@@ -390,8 +391,8 @@ so it is written for that:
 
 ## Added 24 September 2026 — P3.5, the relay on our own server: what is built, and what is not yet run
 
-The relay moved to an Oracle Cloud server of ours (brief v1.3), so what a managed platform would have
-provided is ours to provide. **Built on the development PC and tested; nothing is deployed yet.**
+The relay moved to a server of ours (brief v1.3; Google Cloud since v1.4), so what a managed platform
+would have provided is ours to provide. **Built on the development PC and tested; nothing is deployed yet.**
 
 ### In the relay
 
@@ -416,8 +417,8 @@ provided is ours to provide. **Built on the development PC and tested; nothing i
 - **The relay as its own user**, with no login and no home, fenced off by its service: no new
   privileges, a read-only system, no access to home folders or devices, network sockets only, 512 MB.
 - **Caddy in front for the certificate, with no access log.**
-- **The firewall opened for ports 80 and 443 only**, in the server's own iptables and in Oracle's
-  security list.
+- **The firewall opened for ports 80 and 443 only**, in the cloud's own firewall (Google's HTTP and
+  HTTPS rules) and, where the image has rules of its own, in the server's iptables.
 - **One bundled file, not a checkout.** No repository, no package manager and no build tools on the
   server; the bundle is tested as itself before any deploy (`bundle-recipe` control).
 
