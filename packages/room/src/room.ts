@@ -418,13 +418,16 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       if (result.frames && result.frames.length > 0)
         out.push({ to: 'all', message: { kind: 'burst', frames: result.frames } });
       out.push(viewFor(game));
-      // THE RESULT LAST, so a sender whose `sendAction` resolves on it already holds the new view,
-      // as a `LocalSession` caller does when its promise resolves.
-      out.push(answer(msg.ref, msg.id));
       const g = game as unknown as Record<string, unknown>;
       const over = g['won'] === true || Boolean(g['lost']);
       const next: RoomState = over ? { ...room, phase: 'ended' } : room;
       if (over) out.push(broadcast(next));
+      // THE RESULT LAST, so a sender whose `sendAction` resolves on it already holds EVERYTHING the
+      // action caused, as a `LocalSession` caller does when its promise resolves: the new view, and
+      // the room's end when it ended the game. Until 25 September 2026 the room's end came after
+      // the result, and the first run against the live relay acted on a resolved promise, sent the
+      // next draw into an ended room, and was refused.
+      out.push(answer(msg.ref, msg.id));
       return { room: next, out };
     }
 

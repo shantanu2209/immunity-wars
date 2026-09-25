@@ -348,8 +348,9 @@ own phone.
 |---|---|---|---|
 | The development relay | `pnpm --filter @immunity-wars/server relay` | `127.0.0.1:8787` by default; the LAN only when started with `HOST=0.0.0.0`, deliberately | `ws`, `zod`, and this repository's own `protocol`, `room`, `session-core`, `engine`, `content` |
 
-P3.5 deploys this same relay to an Oracle Cloud server (ruled 24 September 2026, replacing
-Cloudflare), so the row above is production's too. What P3.5 adds in front of it — a TLS front and
+P3.5 deploys this same relay to a server of ours (ruled 24 September 2026, replacing Cloudflare: at
+first Oracle, and from 25 September Google Cloud, when Oracle's sign-up refused us), so the row
+above is production's too. What P3.5 adds in front of it — a TLS front and
 an operating system that is ours to patch — gets the same re-read when it lands.
 
 - **`ws` 8.21.3**, pinned exactly, with **no dependencies of its own**: the only third-party code in
@@ -382,10 +383,68 @@ so it is written for that:
 
 - **No TLS** on the development relay (`ws://`). It listens on this machine unless told otherwise;
   production is `wss://` with a certificate on our own server (P3.5).
-- **No per-address rate limit or connection cap.** A code is the only way into a room, and with no
-  rate limit, guessing is bounded only by the 244 million. That is enough for a development relay
-  and is **owed at P3.5**. *Updated 24 September 2026:* this said "where the platform provides the
-  limiting", which was Cloudflare. On our own server nothing provides it, so the relay does.
+- ~~No per-address rate limit or connection cap.~~ **Built at P3.5**, below. (It read: owed at
+  P3.5, and before that, "where the platform provides the limiting", when that was Cloudflare.)
 - **No `Origin` check.** A browser page on any site can open a WebSocket to the relay, but the relay
   keeps no cookies and grants nothing by origin, so there is nothing for a cross-site page to borrow
   that it could not get by connecting directly.
+
+## Added 24 September 2026 — P3.5, the relay on our own server: what is built, and what is not yet run
+
+The relay moved to a server of ours (brief v1.3; Google Cloud since v1.4), so what a managed platform
+would have provided is ours to provide. **Built on the development PC and tested; nothing is deployed yet.**
+
+### In the relay
+
+- **Limits** (`packages/server/src/hub.ts`, `LIMITS`), counted by network address, held in memory
+  only and never logged: 32 connections from one address and 1,000 on the relay; 10 messages a second
+  per connection with bursts of 30, judged on arrival so a flood never enters the queue; 20 wrong room
+  codes per address per 10 minutes, after which even a right code is refused, so a hit cannot be told
+  from a miss; 30 seconds to join a room after connecting. **Generous on purpose:** Indian mobile
+  networks put many customers behind one address, and so does a family's Wi-Fi. **Ruled as built,
+  25 September 2026.**
+- **The address** is the connection's own, unless it comes from the TLS front on the same machine, in
+  which case it is the last `X-Forwarded-For` entry, the one the front wrote. Believed from anyone
+  else, that header would let a sender choose the address it is counted by.
+- **A heartbeat**: every connection is pinged every 20 seconds, and one that has not answered by the
+  next ping is ended, so a silent phone shows as away within about 40 seconds (FINDINGS #84).
+- Each has a test that must refuse and a twin that must permit, and a selftest control.
+
+### On the server, by `packages/server/deploy/setup.sh`: RUN, 25 September 2026
+
+- **Node and Caddy from their own signed package repositories**, and **automatic security updates for
+  both as well as Ubuntu**, restarting at 03:30 IST only when an update needs it (ruled 25
+  September 2026).
+- **The system log keeps 7 days**, then deletes (ruled 25 September 2026). The filter below strips
+  addresses from Caddy's logs; a future Caddy field it does not know would still age out within a
+  week. Files are closed daily, because the log is trimmed by whole file.
+- **The relay as its own user**, with no login and no home, fenced off by its service: no new
+  privileges, a read-only system, no access to home folders or devices, network sockets only, 512 MB.
+- **Caddy in front for the certificate, with no access log, and no addresses in any other log.** The
+  second half was added after the first deploy (FINDINGS #85): Caddy's error log recorded the
+  address, port and headers of a request that failed, and did, once, for this PC's own request.
+  Every Caddy log now deletes those fields before it is written.
+- **The firewall opened for ports 80 and 443 only**, in the cloud's own firewall (Google's HTTP and
+  HTTPS rules) and, where the image has rules of its own, in the server's iptables.
+- **One bundled file, not a checkout.** No repository, no package manager and no build tools on the
+  server; the bundle is tested as itself before any deploy (`bundle-recipe` control).
+
+**As deployed, 25 September 2026:** Google Cloud `e2-micro` in Mumbai, Ubuntu 26.04 LTS, Node
+24.21.0 (NodeSource), Caddy 2.11.4 (Caddy's repository), certificate from Let's Encrypt. Checked on
+the server: SSH accepts keys only (`passwordauthentication no`); automatic updates are allowed from
+Ubuntu, NodeSource and Caddy's repository; the relay listens only on `127.0.0.1:8787`; the relay's
+own log holds nothing but its start and stop lines.
+
+**Repeat after any Caddy upgrade:** stop the relay for a few seconds, request
+`https://<host>/relay` so that Caddy logs a 502, start the relay, and check that the newest
+`http.log.error` line in `journalctl -u caddy` names no address but `127.0.0.1`. It was run on 25
+September 2026 both before the filter (the address present) and after it (absent). Nothing runs it
+automatically yet.
+
+### What the property now covers
+
+The listening process on the server loads Node, the bundle (`ws`, `zod` and our own code) and
+Caddy in front of it, on Ubuntu. **`pnpm audit` covers only the bundle's part.** Node, Caddy and the
+operating system are covered by their automatic security updates, which is a different kind of
+cover: it depends on the updates arriving and installing, which the setup script's dry run shows and
+nothing yet monitors.

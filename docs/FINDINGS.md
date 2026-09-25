@@ -4345,6 +4345,8 @@ nothing that can happen.
 It can only ever advance the counter further, which is always safe, since ids need only be unique.
 Worth taking before either door opens.
 
+**Ruled 25 September 2026: take it** (*"I will go with your recommendations on each"*), as its own small PR after P3.5's.
+
 ---
 
 ## 81. A seat reassigned mid-game never reaches the engine's `owner` map, so every view names the old holder
@@ -4372,6 +4374,9 @@ work.
 `view.owner`, with no engine change; (2) an engine action for seat handover, like `handOverCaptaincy`
 (DEVIATIONS #7), which is an engine change. **Recommendation: (1), decided at P3.7**, when there is a
 screen that reads either.
+
+**Ruled 25 September 2026: (1)** (*"I will go with your recommendations on each"*), now rather than at P3.7: the multiplayer screens take
+ownership from the room's projection, never from the engine's `owner`. No engine change.
 
 ---
 
@@ -4403,3 +4408,61 @@ test --force`) the toolchain battery asks for. It did not reproduce in three rer
 was not captured**, which is the defect in how it was watched, and why this entry exists: the next
 sighting must record the name and the assertion. Whether it has anything to do with P3.4's changes
 is not known. Unexplained, and recorded as that rather than as noise.
+
+---
+
+## 84. A phone that lost its signal would have stayed "present" at the table for up to hours: the P3.4 relay never pinged anyone
+
+**Found 24 September 2026, planning P3.5**, by asking what the relay sees when a phone goes out of
+signal rather than closing its connection. **Fixed in P3.5**, because Gate A depends on it.
+
+The P3.4 relay learned that a member was away only from the connection's close. A phone that closes
+the app sends one. **A phone that loses its signal sends nothing**, and the relay's side of the
+connection stays open until the operating system gives up on it, which by default can take hours.
+Until then the room would show that player present, the table would wait for them, and the captain
+could not hand their seats on, since the room only lets an AWAY member's seats be reassigned. That is
+Gate A's "a player who drops … does not block the table", failed in the commonest way a phone drops.
+
+**The fix:** the Node adapter pings every connection every 20 seconds and ends any that has not
+answered the previous ping, which marks its member away through the ordinary close. So a silent
+phone shows as away within about 40 seconds.
+
+**Proved by** `packages/server/src/node.test.ts`: a real client that never answers pings is shown
+away within a few heartbeats, while one that answers stays present. **Control:** `node-heartbeat`
+removes the ending and the test goes red.
+
+**Why P3.4 did not catch it:** every P3.4 test closed its connections cleanly. A silent connection is
+the case no test had built.
+
+---
+
+## 85. "No access log" was not "no addresses": Caddy's error log wrote down the address of whoever's request failed
+
+**Found 25 September 2026, deploying P3.5**, by checking the live server's logs for addresses after
+the first games were played through it. **Fixed the same day**, because the players are children
+and an address is personal data under the DPDP Act (`CLAUDE.md`, "No personal data").
+
+The setup gave Caddy no `log` directive, so it wrote no access log, and the setup script and
+`SECURITY_NOTES.md` said so as if that settled it. It did not. **Caddy's error log records the whole
+request that failed**: the client's address, port and headers. The first deploy's premature check
+got a 502, and that one line put this PC's address into the server's system journal. No player had
+connected, so no child's address was ever written; the only address recorded is the maintainer's.
+
+**The fix** (`packages/server/deploy/setup.sh`): every log Caddy writes passes through a filter that
+deletes `request>remote_ip`, `request>client_ip`, `request>remote_port` and `request>headers`
+before it is written. The error itself, its status and its cause are kept.
+
+**Proved both ways on the live server**, with the relay stopped for a few seconds so that Caddy
+would log a 502 on purpose: before the fix the error line carried `remote_ip`, `client_ip`,
+`remote_port` and `headers`; after it, the same line carries its status and no address but the
+relay's own `127.0.0.1`.
+
+**Found on the way, and fixed in the same change:** the setup wrote the new Caddy configuration in
+place and validated it afterwards. A configuration that failed validation would have been left
+live, and Caddy would have failed to start at the next restart, which the 03:30 update window makes
+certain sooner or later. It now validates the new file beside the live one and swaps it in only
+once it passes.
+
+**Still owed:** nothing re-checks this. A future Caddy release could add a field carrying an address
+under a new name, and the filter, which deletes named fields, would not see it. The check above is
+recorded in `SECURITY_NOTES.md` to be repeated after any Caddy upgrade.

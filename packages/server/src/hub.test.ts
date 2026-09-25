@@ -17,7 +17,16 @@ import {
 import { GRACE_MS } from '@immunity-wars/room';
 import { describe, expect, it } from 'vitest';
 
-import { CLOSE, CODE_ALPHABET, Hub, mintCode, type Codec, type Link } from './hub.js';
+import {
+  CLOSE,
+  CODE_ALPHABET,
+  Hub,
+  LIMITS,
+  mintCode,
+  type Codec,
+  type Limits,
+  type Link,
+} from './hub.js';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -54,13 +63,17 @@ class FakeLink implements Link {
 
 const frame = (m: ClientMessage): Uint8Array => encoder.encode(encode(m));
 
-function makeHub(codec: Codec = plain()): { hub: Hub; clock: { t: number } } {
+function makeHub(
+  codec: Codec = plain(),
+  limits: Limits = LIMITS,
+): { hub: Hub; clock: { t: number } } {
   const clock = { t: 1_000_000 };
   let n = 0;
   const hub = new Hub({
     now: () => clock.t,
     mintCode: () => `ROOM${String((n += 1))}`,
     codec,
+    limits,
   });
   return { hub, clock };
 }
@@ -188,5 +201,106 @@ describe('room codes', () => {
     expect(code).toBe(CODE_ALPHABET.slice(0, 6));
     const random = mintCode((n) => crypto.getRandomValues(new Uint8Array(n)));
     expect(random).toMatch(new RegExp(`^[${CODE_ALPHABET}]{6}$`));
+  });
+});
+
+/**
+ * THE LIMITS (P3.5), each with its permitted twin: a limit that refused everyone would pass every
+ * "is refused" test, so each also shows the next person, or the same person later, getting in.
+ */
+describe('the limits', () => {
+  const small: Limits = {
+    perAddress: 2,
+    total: 3,
+    messagesPerSecond: 2,
+    burst: 3,
+    wrongCodes: 2,
+    wrongCodeWindowMs: 60_000,
+    joinWithinMs: 30_000,
+  };
+
+  it('refuses a connection past the per-address limit, and not one from another address', () => {
+    const { hub } = makeHub(plain(), small);
+    const [a1, a2, a3, b1] = [new FakeLink(), new FakeLink(), new FakeLink(), new FakeLink()];
+    expect(hub.open(a1, 'A')).toBe(true);
+    expect(hub.open(a2, 'A')).toBe(true);
+    expect(hub.open(a3, 'A')).toBe(false);
+    expect(a3.closedWith).toBe(CLOSE.busy);
+    expect(hub.open(b1, 'B')).toBe(true);
+  });
+
+  it('lets an address back in once one of its connections has closed', async () => {
+    const { hub } = makeHub(plain(), small);
+    const [a1, a2, a3] = [new FakeLink(), new FakeLink(), new FakeLink()];
+    hub.open(a1, 'A');
+    hub.open(a2, 'A');
+    await hub.closed(a1);
+    expect(hub.open(a3, 'A')).toBe(true);
+  });
+
+  it('refuses a connection past the whole relay limit, from any address', () => {
+    const { hub } = makeHub(plain(), small);
+    for (const address of ['A', 'B', 'C']) expect(hub.open(new FakeLink(), address)).toBe(true);
+    const late = new FakeLink();
+    expect(hub.open(late, 'D')).toBe(false);
+    expect(late.closedWith).toBe(CLOSE.busy);
+  });
+
+  it('closes a connection that sends past its burst at once, and not one that keeps to the rate', async () => {
+    const { hub, clock } = makeHub(plain(), small);
+    const flood = await opened(hub, 'p_flood');
+    // The create spent one of three; two more fit the burst, and the next does not.
+    await hub.message(flood, frame({ kind: 'claimSeat', seat: 'bcell' }));
+    await hub.message(flood, frame({ kind: 'claimSeat', seat: 'nk' }));
+    expect(flood.closedWith).toBeNull();
+    await hub.message(flood, frame({ kind: 'claimSeat', seat: 'tcell' }));
+    expect(flood.closedWith).toBe(CLOSE.tooFast);
+
+    const steady = await opened(hub, 'p_steady');
+    for (let i = 0; i < 10; i += 1) {
+      clock.t += 500; // two a second, the sustained rate
+      await hub.message(steady, frame({ kind: 'releaseSeat', seat: 'bcell' }));
+    }
+    expect(steady.closedWith).toBeNull();
+  });
+
+  it('makes an address wait after too many wrong codes, and not a different address', async () => {
+    const { hub, clock } = makeHub(plain(), small);
+    const room = await opened(hub, 'p_host');
+    const code = room.lastRoom()?.code ?? '';
+    const guesser = new FakeLink();
+    hub.open(guesser, 'G');
+    await hub.message(guesser, frame({ kind: 'join', code: 'WRONG1', ref: 'p_g', name: 'G' }));
+    await hub.message(guesser, frame({ kind: 'join', code: 'WRONG2', ref: 'p_g', name: 'G' }));
+    // Even the RIGHT code is refused now, so a hit cannot be told from a miss.
+    clock.t += 1_000;
+    await hub.message(guesser, frame({ kind: 'join', code, ref: 'p_g', name: 'G' }));
+    expect(guesser.closedWith).toBe(CLOSE.slowDown);
+    // As the platform would, once the socket the hub closed is gone.
+    await hub.closed(guesser);
+
+    const friend = new FakeLink();
+    hub.open(friend, 'F');
+    await hub.message(friend, frame({ kind: 'join', code, ref: 'p_f', name: 'F' }));
+    expect(friend.lastRoom()?.members).toHaveLength(2);
+
+    // And the same address is let back in once the window has passed.
+    clock.t += small.wrongCodeWindowMs;
+    const later = new FakeLink();
+    hub.open(later, 'G');
+    await hub.message(later, frame({ kind: 'join', code, ref: 'p_g', name: 'G' }));
+    expect(later.closedWith).toBeNull();
+    expect(later.lastRoom()?.members).toHaveLength(3);
+  });
+
+  it('closes a connection that never joins a room in time, and not one that did', async () => {
+    const { hub, clock } = makeHub(plain(), small);
+    const idle = new FakeLink();
+    hub.open(idle, 'I');
+    const member = await opened(hub, 'p_m');
+    clock.t += small.joinWithinMs;
+    await hub.sweep();
+    expect(idle.closedWith).toBe(CLOSE.joinTimeout);
+    expect(member.closedWith).toBeNull();
   });
 });

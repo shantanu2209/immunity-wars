@@ -25,6 +25,20 @@
  * Rooms, in memory, until `sweep` discards them after the grace period. Nothing is written
  * anywhere (brief §5); a name typed for a room dies with it. A ref is bound to a connection at
  * `join` or `create` and never sent back out (FINDINGS #77).
+ *
+ * ============================================================================================
+ * THE LIMITS, AND THE ADDRESSES THEY ARE COUNTED BY (P3.5)
+ * ============================================================================================
+ *
+ * The relay is on the open internet, where anyone can open a socket without knowing a code, so it
+ * limits connections, messages and wrong codes (`LIMITS`). They are counted by network address,
+ * which is the only handle a relay has on "the same sender", and it is held IN MEMORY ONLY, for as
+ * long as the connection or the counting window lasts, and never logged: an IP address is personal
+ * data under the DPDP Act.
+ *
+ * They are GENEROUS on purpose. Indian mobile networks put many unrelated customers behind one
+ * shared address, and a family on one Wi-Fi shares one too, so a tight per-address limit would
+ * lock real players out. They exist to stop a flood and to slow code guessing, not to meter play.
  */
 import {
   CLIENT_FRAME_LIMIT,
@@ -65,7 +79,45 @@ export const CLOSE = {
   replaced: 4004,
   /** The member left the room, which is a decision and gives up their seats. */
   left: 4005,
+  /** Too many connections: from this address, or on the whole relay. */
+  busy: 4006,
+  /** More messages than any person sends: over the burst, at the sustained rate. */
+  tooFast: 4007,
+  /** Too many wrong room codes from this address lately: try again in a few minutes. */
+  slowDown: 4008,
+  /** Connected, and never joined or created a room within the time allowed. */
+  joinTimeout: 4009,
 } as const;
+
+export interface Limits {
+  /** Connections open at once from one address. */
+  readonly perAddress: number;
+  /** Connections open at once on the whole relay. */
+  readonly total: number;
+  /** Messages a second one connection may send, sustained. */
+  readonly messagesPerSecond: number;
+  /** Messages one connection may send in a burst above the sustained rate. */
+  readonly burst: number;
+  /** Wrong room codes one address may try within `wrongCodeWindowMs`. */
+  readonly wrongCodes: number;
+  readonly wrongCodeWindowMs: number;
+  /** How long a connection may stay open without being in a room. */
+  readonly joinWithinMs: number;
+}
+
+/**
+ * The limits a relay runs with unless a test says otherwise. Recommended to Shantanu on 24
+ * September 2026, and ruled as built on the 25th (docs/for-P3.md §5).
+ */
+export const LIMITS: Limits = {
+  perAddress: 32,
+  total: 1000,
+  messagesPerSecond: 10,
+  burst: 30,
+  wrongCodes: 20,
+  wrongCodeWindowMs: 10 * 60 * 1000,
+  joinWithinMs: 30 * 1000,
+};
 
 export interface HubOptions {
   /** The clock. Injected, so a test can move time and the platform decides where it comes from. */
@@ -78,6 +130,7 @@ export interface HubOptions {
    * is only demonstrable when a later frame can be made to finish unpacking first.
    */
   readonly codec?: Codec;
+  readonly limits?: Limits;
 }
 
 export interface Codec {
@@ -92,28 +145,76 @@ interface Binding {
   readonly ref: string;
 }
 
+/** What the limits need to know about one open link. The address never leaves this object. */
+interface Counted {
+  readonly address: string;
+  readonly openedAt: number;
+  tokens: number;
+  refilledAt: number;
+}
+
 export class Hub {
   private readonly rooms = new Map<string, RoomState>();
   /** Every open link, and the member it speaks for once it has joined. */
   private readonly links = new Map<Link, Binding | null>();
   private work: Promise<void> = Promise.resolve();
   private readonly codec: Codec;
+  private readonly limits: Limits;
+  private readonly counted = new Map<Link, Counted>();
+  private readonly perAddress = new Map<string, number>();
+  private readonly wrongCodes = new Map<string, number[]>();
 
   constructor(private readonly options: HubOptions) {
     this.codec = options.codec ?? FRAMING;
+    this.limits = options.limits ?? LIMITS;
   }
 
-  open(link: Link): void {
+  /**
+   * A connection opened, from `address`. Refused, and closed as `busy`, when that address or the
+   * whole relay already has as many open as the limits allow. Returns whether it was let in.
+   */
+  open(link: Link, address = 'local'): boolean {
+    const held = this.perAddress.get(address) ?? 0;
+    if (this.counted.size >= this.limits.total || held >= this.limits.perAddress) {
+      link.close(CLOSE.busy, 'busy');
+      return false;
+    }
+    const now = this.options.now();
+    this.perAddress.set(address, held + 1);
+    this.counted.set(link, { address, openedAt: now, tokens: this.limits.burst, refilledAt: now });
     this.links.set(link, null);
+    return true;
   }
 
   /** A frame arrived. Queued behind everything before it; see the header. */
   message(link: Link, bytes: Uint8Array): Promise<void> {
+    // THE RATE IS JUDGED ON ARRIVAL, before the frame waits its turn: a flood must not be able to
+    // fill the queue that everyone else's frames wait in.
+    const c = this.counted.get(link);
+    if (c) {
+      const now = this.options.now();
+      const earned = ((now - c.refilledAt) / 1000) * this.limits.messagesPerSecond;
+      c.tokens = Math.min(this.limits.burst, c.tokens + earned);
+      c.refilledAt = now;
+      if (c.tokens < 1) {
+        link.close(CLOSE.tooFast, 'tooFast');
+        return Promise.resolve();
+      }
+      c.tokens -= 1;
+    }
     return this.enqueue(() => this.handle(link, bytes));
   }
 
   /** The platform says this connection is gone. The member is AWAY, not gone (ruling 4). */
   closed(link: Link): Promise<void> {
+    // Counted down at once, so a closed connection never holds a place another could take.
+    const c = this.counted.get(link);
+    if (c) {
+      this.counted.delete(link);
+      const left = (this.perAddress.get(c.address) ?? 1) - 1;
+      if (left > 0) this.perAddress.set(c.address, left);
+      else this.perAddress.delete(c.address);
+    }
     return this.enqueue(async () => {
       const binding = this.links.get(link);
       this.links.delete(link);
@@ -122,13 +223,22 @@ export class Hub {
     });
   }
 
-  /** Discards every room whose grace period is over. The platform decides how often to call it. */
+  /**
+   * Discards every room whose grace period is over, closes connections that never joined a room
+   * in the time allowed, and forgets wrong codes older than their window. The platform decides how
+   * often to call it.
+   */
   sweep(): Promise<void> {
     return this.enqueue(async () => {
       const now = this.options.now();
       for (const [code, room] of this.rooms) {
         if (sweep(room, now) === null) this.rooms.delete(code);
       }
+      for (const [link, c] of this.counted) {
+        if (this.links.get(link) === null && now - c.openedAt >= this.limits.joinWithinMs)
+          link.close(CLOSE.joinTimeout, 'joinTimeout');
+      }
+      for (const address of [...this.wrongCodes.keys()]) this.recentWrongCodes(address, now);
       await Promise.resolve();
     });
   }
@@ -181,8 +291,22 @@ export class Hub {
         link.close(CLOSE.alreadyJoined, 'alreadyJoined');
         return;
       }
+      // CODE GUESSING IS SLOWED, not stopped: an address that has tried too many wrong codes lately
+      // is told to wait, whatever code it tries next, so a right guess cannot be told from a wrong one.
+      const address = this.counted.get(link)?.address;
+      const now = this.options.now();
+      if (
+        msg.kind === 'join' &&
+        address !== undefined &&
+        this.recentWrongCodes(address, now) >= this.limits.wrongCodes
+      ) {
+        link.close(CLOSE.slowDown, 'slowDown');
+        return;
+      }
       const code = msg.kind === 'create' ? this.newRoom() : normalise(msg.code);
       if (!this.rooms.has(code)) {
+        if (address !== undefined)
+          this.wrongCodes.set(address, [...(this.wrongCodes.get(address) ?? []), now]);
         await this.sendTo([link], { kind: 'error', code: 'noSuchRoom' });
         return;
       }
@@ -218,6 +342,16 @@ export class Hub {
       this.links.set(link, null);
       link.close(CLOSE.left, 'left');
     }
+  }
+
+  /** Wrong codes from `address` still inside the window; older ones are forgotten here. */
+  private recentWrongCodes(address: string, now: number): number {
+    const recent = (this.wrongCodes.get(address) ?? []).filter(
+      (t) => now - t < this.limits.wrongCodeWindowMs,
+    );
+    if (recent.length > 0) this.wrongCodes.set(address, recent);
+    else this.wrongCodes.delete(address);
+    return recent.length;
   }
 
   private newRoom(): string {

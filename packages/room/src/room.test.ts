@@ -461,6 +461,29 @@ describe('an action', () => {
     );
   });
 
+  // Found by the first run against the live relay (P3.5): the room's end came AFTER the result, so
+  // a client whose promise had resolved still thought the game was on, and acted into an ended room.
+  it('is answered last even when it ends the game, after the room says so', () => {
+    let room = playing();
+    let ending: ReturnType<typeof step> | null = null;
+    for (let turn = 0; turn < 80 && ending === null; turn += 1) {
+      for (const action of ['draw', 'beginCommand', 'confirmAllocation', 'endCommand']) {
+        const s = step(room, { kind: 'action', id: turn, ref: 'a', action: { action } }, T0);
+        room = s.room;
+        if (room.phase === 'ended') {
+          ending = s;
+          break;
+        }
+      }
+    }
+    // Not vacuous: a game that nobody defends does end.
+    if (ending === null) throw new Error('no game ended in 80 turns');
+    const kinds = ending.out.map((o) => o.message.kind);
+    expect(kinds[kinds.length - 1]).toBe('result');
+    const ended = ending.out.find((o) => o.message.kind === 'room')?.message;
+    expect(ended?.kind === 'room' && ended.room.phase).toBe('ended');
+  });
+
   it('is answered by id when refused too, and a refusal is never an `error`', () => {
     const s = step(playing(), { kind: 'action', id: 7, ref: 'z', action: { action: 'draw' } }, T0);
     expect(s.out).toEqual([

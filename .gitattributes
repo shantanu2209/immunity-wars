@@ -22,6 +22,10 @@
 *.css    text eol=lf
 *.svg    text eol=lf
 *.txt    text eol=lf
+# Shell scripts run on the relay's Linux server (packages/server/deploy). Checked out with CRLF on
+# Windows, as text=auto would, bash there fails on the first line with a "command not found"
+# naming a stray carriage return.
+*.sh     text eol=lf
 .gitignore     text eol=lf
 .gitattributes text eol=lf
 .nvmrc         text eol=lf

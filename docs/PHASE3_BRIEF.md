@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.3 · 24 September 2026
+**Version:** 1.6 · 25 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,59 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.6 records
+
+v1.6 rules three of §5's open questions, all as recommended (Shantanu, 25 September 2026: *"I will go with your recommendations on each"*),
+marked in place:
+
+- **The original captain does not get the captaincy back on return**, as P3.1 built it.
+- **An empty room is kept for 10 minutes**, as P3.1 built it.
+- **No multiplayer autosave in this version.** ⚠️ This reverses the brief's own recommendation,
+  because its premise was wrong: *"the machinery exists"* holds for single player only. A relay
+  client never holds a `GameState`, so a save would mean sending one device the whole game, hidden
+  deck included, and a restart would mean the relay trusting a game uploaded from a phone.
+
+## What v1.5 records
+
+v1.5 changes ruling 5's region, by ruling (Shantanu, 25 September 2026: *"No going with Mumbai, we
+have 3 months of free then by upgrading I get to keep the free credits so it should last a while"*):
+
+- **The relay's server is Google Cloud's `e2-micro` in Mumbai (`asia-south1`), which is PAID.** It
+  buys the lag: **34 ms** a round trip from the development PC, against 242 ms to Oregon, the fastest
+  free region (for-P3 §5).
+- **What it costs.** About $8 a month for the server and disk (the console's estimate), about $3.65
+  for its public address, and every gigabyte of data, since the free gigabyte applies only to data
+  from North America: **about $12 a month, roughly ₹1,000.** The $300 trial credit pays it at first.
+- ⚠️ **One premise in the ruling is corrected here, as it was in the conversation:** Google's Free
+  Tier page says the credit expires **90 days from sign-up whether or not the account is upgraded**;
+  upgrading keeps the server, not the credit. So the monthly cost begins at day 90.
+- **Gate B's "inside a free plan" is amended accordingly**, in §1 and §8: the relay no longer runs
+  on a free plan, by ruling, so the gate asks for the cost to be measured and recorded instead.
+
+## What v1.4 records
+
+v1.4 changes ruling 5 again (Shantanu, 25 September 2026: *"can we try google cloud instead? using a
+VM or someting like that?"*), because **Oracle refused the sign-up**: after the card was verified,
+its screening failed every attempt with a generic "an error occurred while creating your account".
+Oracle does not say why.
+
+- **The relay's home is Google Cloud's Free Tier: one `e2-micro` server in Oregon (`us-west1`).**
+  The relay and its setup run there unchanged.
+- **What it costs, measured and read on 25 September** ([`for-P3.md`](for-P3.md) §5):
+  - **Lag.** Google's free server exists only in three US regions. Measured from the development PC,
+    a round trip to Oregon takes **242 ms**, against **34 ms** to Google's Mumbai region, which is not
+    free. Oregon was the fastest of the three.
+  - **Data.** 1 GB a month out is free, which is about 125 four-player games; beyond it Google charges
+    per GB, a few paise a game.
+  - **Size.** A quarter of a processor and 1 GB of memory: enough for the relay and nothing else, so
+    other projects of ours cannot share it.
+  - **The account** must be upgraded to a paid billing account before the 90-day trial ends, or the
+    server stops. Only use beyond the free amounts is then charged.
+- **The right to move later is unchanged.** Oracle, if its sign-up ever succeeds, would bring the lag
+  down to about 34 ms with the same scripts; Cloudflare remains the managed alternative.
+
+§3 P3.5, §4 ruling 5 and §6 carry the marked amendments in place.
 
 ## What v1.3 records
 
@@ -93,8 +146,9 @@ the rules.** The engine is fixed; the equivalence corpus remains the oracle.
 
 ### Gate B — it is affordable and it is ours
 
-- [ ] The relay runs inside a free plan at the measured traffic of a real game, with the numbers
-      recorded and the plan's limits re-read **on the day**, not trusted from this document
+- [ ] The relay's cost at the measured traffic of a real game is recorded, with the provider's
+      prices re-read **on the day**, not trusted from this document. ⚠️ *Amended in v1.5:* this read
+      "the relay runs inside a free plan", until the ruling that it runs on a paid server in Mumbai
 - [ ] **The platform is replaceable:** the room's rules are a plain module with no platform types
       in it, and the platform adapter is small enough to rewrite in a day. Proven by a test that
       runs the room module with no platform runtime at all. ⚠️ *Amended in v1.3:* this said
@@ -131,7 +185,7 @@ Sequenced so the thing that could invalidate the rest happens first.
 | **P3.2** | **The protocol**: message types and Zod schemas both ways, `rulesVersion` and a protocol version on every message, with a refusal path proven by a control | Zod at every trust boundary is a standing rule; a relay is the largest trust boundary this project has ever had |
 | **P3.3** | **The measurement: frames or state?** One room, two clients, a real spread. What it costs to send 10 frames versus one state and a dice log | The Task E question. Decided by measurement, before the transport is written around either answer |
 | **P3.4** | **`RelaySession`** — the second implementation of `Session`, against a local relay on the development machine | No cloud involved yet |
-| **P3.5** | **The Oracle deployment**: the P3.4 relay on an Oracle Always Free server in India, encrypted, supervised and patched, the free-tier numbers measured. ⚠️ *Amended in v1.3:* this was "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
+| **P3.5** | **The deployment**: the P3.4 relay on a Google Cloud server in Mumbai, encrypted, supervised and patched, its cost measured. ⚠️ *Amended in v1.4 and v1.5:* v1.4 put it on Google's free server in Oregon; v1.3 on Oracle in India, whose sign-up refused us; v1.0 to v1.2 had "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
 | **P3.6** | **Two real devices, two networks**, a full game, and the 22 coverage arms | Gate A |
 | **P3.7** | The multiplayer screens: create, join, the lobby, seat assignment, the away state | They are the last thing, because until P3.6 nobody knows what they must show |
 
@@ -157,10 +211,12 @@ Given by Shantanu on 20 September 2026, in the conversation this brief was writt
    byte-identical corpus. **A rule that says "the table decides" needs no AI at all**, so the bot
    leaves Phase 3 entirely and the corpus is not re-baselined here.
    `COVERAGE_DEFERRED.md`'s 17 bot arms are relabelled accordingly, at the generator.
-5. **Oracle Cloud, Always Free tier** — with the right to move later, which §6 makes a requirement
-   rather than a hope. ⚠️ *Amended in v1.3 (24 September 2026):* this ruling read **"Cloudflare, free
-   plan, for now"** (20 September). Changed by ruling after the comparison in
-   [`for-P3.md`](for-P3.md) §5; what the change costs is in §6.
+5. **Google Cloud: one `e2-micro` server in Mumbai, paid** — with the right to move later, which §6
+   makes a requirement rather than a hope. ⚠️ *Amended three times.* It read **"Cloudflare, free
+   plan, for now"** (20 September), then **"Oracle Cloud, Always Free tier"** (v1.3, 24 September),
+   then Google's free server in Oregon (v1.4, 25 September, when Oracle's sign-up refused us), then
+   Mumbai for its lag (v1.5, the same day). What each change costs is in §6 and
+   [`for-P3.md`](for-P3.md) §5.
 
 ---
 
@@ -185,46 +241,49 @@ disk anywhere, ever.
   advances when the captain ends the turn, which is already the engine's rule.
 - **Captain succession.** *Proposed default:* when the captain is away, the **next member in join
   order who is connected** becomes captain. Deterministic, so every client agrees without a vote.
-  *Open:* whether the original captain gets it back on return. **Recommendation: no** — a rule that
+  ~~*Open:*~~ **Ruled (v1.6): the original captain does not get it back on return** — a rule that
   swaps authority twice on a flaky connection is worse than one that swaps it once.
 - **Rejoining.** The same code plus the same `PlayerRef` restores the member and any seats still
   theirs. Seats reassigned while away are gone; they take what is free.
 - **The room's end.** When the last connected member leaves, the room is **held for a grace period
-  and then discarded.** *Proposed default: 10 minutes.* A family losing Wi-Fi for ninety seconds
+  and then discarded.** **Ruled (v1.6): 10 minutes.** A family losing Wi-Fi for ninety seconds
   should not destroy a forty-minute game; a room nobody returns to should not live forever.
 - **After the grace period** the game is gone. There is no server-side save, because there is no
-  server-side storage. *Open, and worth deciding deliberately:* whether the captain's device keeps
-  the autosave it already writes in single player, so a dead room can be restarted from the last
-  state. **Recommendation: yes, and say so in the UI** — the machinery exists.
+  server-side storage. **Ruled (v1.6): no multiplayer autosave in this version.** ⚠️ This read
+  *"Open … Recommendation: yes, and say so in the UI — the machinery exists."* The machinery exists
+  in single player only: a relay client holds no `GameState`, so saving would mean sending the
+  captain's device the whole game, hidden deck included, and restarting would mean the relay
+  trusting a game uploaded from a phone. Revisit if real play loses games.
 
 ---
 
 ## 6. The relay, and the right to leave it
 
-⚠️ *Rewritten in v1.3 (24 September 2026), when the platform changed from Cloudflare to Oracle.*
-v1.2 read: one room per Durable Object, about 3 million requests a month free, incoming WebSocket
-messages billed 20 to 1 and outgoing free. [`for-P3.md`](for-P3.md) §5 has the comparison that
-changed it.
+⚠️ *Rewritten in v1.3 (24 September 2026) for Oracle, and again in v1.4 (25 September) for Google,
+when Oracle's sign-up refused us.* v1.2 read: one room per Durable Object, about 3 million requests a
+month free, incoming WebSocket messages billed 20 to 1 and outgoing free. v1.3 read: one Oracle
+Always Free server in India, 10 TB a month out, Arm allowance of 2 cores and 12 GB.
+[`for-P3.md`](for-P3.md) §5 has both comparisons.
 
-**One Node process on one Oracle Always Free server** holds every room in memory: the relay P3.4
-built (`packages/server`), behind a front that terminates TLS, in a home region in India. Read on
-24 September 2026: 10 TB a month outbound, and an Arm allowance of 2 cores and 12 GB, **halved from
-4 and 24 in June 2026**. That halving is why **Gate B requires the limits to be re-read on the
-day**: a published number in a brief is a claim with an expiry date.
+**One Node process on one Google Cloud server in Mumbai** holds every room in memory: the relay
+P3.4 built (`packages/server`), behind a front that terminates TLS. ⚠️ *v1.5:* v1.4 had Google's
+free server in Oregon; Mumbai was ruled for its lag and is paid. Read on 25 September 2026: an
+`e2-micro` (a quarter of a processor sustained, 1 GB). Oracle's allowance was halved in June 2026,
+which is why **Gate B requires the prices and limits to be re-read on the day**: a published number
+in a brief is a claim with an expiry date.
 
 **What owning the server costs, carried here so it is not forgotten:**
 
-- **An operating system to patch.** Security updates install themselves; the setup is a script.
-- **Oracle reclaims free servers that look idle** — CPU, network and (for Arm) memory all under
-  20% over seven days. A relay for a few games a week looks idle. Pay As You Go is reported by the
-  community, not by Oracle, to prevent it, charging only above the free limits, with a budget alert
-  to catch a mistake. And by design nothing on the server needs keeping, so a reclaimed server is a
-  rebuild from the script, not a loss.
+- **Money: about $12 a month, roughly ₹1,000**, from day 90, when the trial credit expires whether
+  or not the account is upgraded. About $8 for the server and disk, about $3.65 for the public
+  address, and every gigabyte of data. A budget alert catches anything beyond that.
+- **Lag: 34 ms** a round trip from the development PC to Mumbai, against 242 ms to Oregon.
+- **An operating system to patch.** Security updates install themselves; the setup is a script. By
+  design nothing on the server needs keeping, so a lost server is a rebuild, not a restore.
 - **Rate limiting, a connection cap and TLS are ours**, where a managed platform would have provided
   them.
-- **Other projects of ours may share the server's allowance**, as genuine workloads. Proposed
-  default, for ruling at P3.5: nothing that stores personal data shares a server with the relay.
-  The free Arm allowance splits into two servers, so that isolation costs nothing.
+- **Nothing else fits on it.** Other projects of ours cannot share a 1 GB server; the P3.5 ruling that
+  anything storing personal data gets a separate server stands for whatever they run on.
 
 **The platform must be replaceable, and that is a gate item, not an intention.**
 
@@ -234,10 +293,9 @@ day**: a published number in a brief is a claim with an expiry date.
   it is small enough to rewrite in a day. **Proven by running the room module under plain Node in the
   test suite** — if that test passes, the module is portable by construction rather than by
   assertion.
-- The fallback, if Oracle's terms change: Cloudflare's Durable Objects, one room per object, which
-  means a second adapter and the hub's per-room half; or any other server, which means the same
-  adapter unchanged. ⚠️ *Amended in v1.3:* the fallback was "a small always-free VM", with
-  Cloudflare the platform.
+- The fallback: any other server, Oracle in India included, which means the same adapter and the
+  same scripts unchanged; or Cloudflare's Durable Objects, one room per object, which means a second
+  adapter and the hub's per-room half. ⚠️ *Amended in v1.3 and v1.4* as the platform moved.
 
 ⚠️ **This is the project's first long-running listening process, and that changes a security
 claim.** [`SECURITY_NOTES.md`](SECURITY_NOTES.md)'s current property is *"no open advisory is in a
@@ -263,8 +321,8 @@ No engine rule changes.
 ## 8. Definition of done
 
 - [ ] Gate A — every item, verified, on two real devices on two networks
-- [ ] Gate B — inside a free plan with the numbers recorded, portable by a passing test, no personal
-      data
+- [ ] Gate B — the cost recorded at measured traffic, portable by a passing test, no personal data.
+      ⚠️ *Amended in v1.5:* this read "inside a free plan", until the ruling for a paid server
 - [ ] `RelaySession` is a second implementation of `Session`, and `LocalSession`'s behaviour is
       untouched by it: its query builder is shared, byte-identical output proven. ⚠️ *Amended in
       v1.2 (24 September 2026):* this read "`LocalSession` is untouched by it". The builder moved to

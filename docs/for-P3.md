@@ -564,3 +564,179 @@ this stage's first measurement.
    risk is that the bundle is not the code the tests ran, so **the relay's integration test runs
    against the bundled file itself** before any deploy, with a control that breaks the bundle and
    must turn it red.
+
+### Settled: the hostname
+
+The domain can be used: nothing is published at its root, and its one other subdomain sits behind a
+sign-in. The relay's address is **`wss://immunity-wars.kartikchaudhary.com/relay`**, with the DNS
+record added at the domain's registrar ([`packages/server/deploy/README.md`](../packages/server/deploy/README.md),
+step 4).
+
+### Open rulings, put to Shantanu on 24 September 2026
+
+Built on the recommended default where the build needs one; each is a small change if ruled
+otherwise.
+
+1. **FINDINGS #80's one-word fix.** Recommended: take it, as its own PR after P3.5.
+2. **FINDINGS #81, ownership after a reassignment.** Recommended: rule now that the multiplayer
+   screens read ownership from the room's projection, never from the engine's `owner`.
+3. **Multiplayer autosave (brief §5's open question).** New since the brief recommended it: a relay
+   client holds no `GameState`, so a save would mean sending one device the whole game, hidden deck
+   included, and a restart would mean the relay trusting a game uploaded from a phone.
+   Recommended: **no autosave in multiplayer v1**; the grace period covers a lost connection, restarts
+   happen at night, and deploys wait for an empty relay.
+4. **The Phase 3 brief review.** Recommended: after P3.5, before P3.6, because P3.6 checks Gate A
+   against the brief's words.
+5. **Restarts for security updates.** Recommended, and built: automatic, at 03:30 IST, only when an
+   update needs one. A restart ends every game in progress.
+6. **The limits.** Recommended, and built: the generous values in
+   [`SECURITY_NOTES.md`](SECURITY_NOTES.md), because shared addresses are common on Indian mobile
+   networks.
+7. **The server key.** Recommended, and written into the guide: a passphrase Shantanu types himself,
+   held by the Windows key agent, so no script ever sees it.
+
+### P3.5, part one: built on the development PC. Nothing deployed
+
+- **The limits** in the hub, each with a refusing test, a permitting twin and a control:
+  `hub-connection-limits`, `hub-message-rate`, `hub-wrong-codes`, `hub-join-deadline`.
+- **The address** a connection is counted by, believing `X-Forwarded-For` only from the TLS front on
+  the same machine (`node-forwarded-for-from-front-only`).
+- **The heartbeat**, which found FINDINGS #84: a phone that loses its signal would otherwise have
+  stayed "present" for up to hours (`node-heartbeat`).
+- **The bundle**: `pnpm --filter @immunity-wars/server bundle` writes one file of about 1.2 MB. The
+  bundle test builds it with the production recipe, starts it as its own Node process in a folder
+  where nothing from this repository can be found, and plays a turn with two clients who agree
+  (`bundle-recipe` breaks the recipe and the test goes red).
+- **The server's setup, the deploy, and Shantanu's guide** in
+  [`packages/server/deploy/`](../packages/server/deploy/README.md). **Not yet run anywhere**: they
+  are checked on the server the first time, and that first run is where they will be found wrong if
+  they are.
+
+**Measured:** the server package's suite went from 22 tests to 35. Seven new controls, each run and
+seen to fire on its own test.
+
+**Not yet built:** the tool that measures the relay's time per action on the server itself, for Gate
+B. It is written when there is a server to run it on.
+
+### Superseded 25 September 2026: Google Cloud, because Oracle refused the sign-up
+
+**What happened.** Oracle's sign-up verified the card and then refused to create the account, on
+every attempt, with a generic *"an error occurred while creating your account"* that names no reason.
+Shantanu asked *"can we try google cloud instead? using a VM or someting like that?"*. Brief v1.4.
+
+**Google's free tier, read on 25 September 2026** (its own pages unless marked):
+
+- One `e2-micro` server (a quarter of a processor sustained, 1 GB of memory), **only in Oregon,
+  Iowa or South Carolina**; 30 GB of **standard** persistent disk; 1 GB a month of data out from
+  North America. A card is required.
+- **The billing account must be upgraded before the 90-day trial ends**, or the server is stopped;
+  the free tier continues on a paid account, which is charged only beyond it.
+- Data beyond the free gigabyte: $0.12 a GB at the base Premium rate, per third-party summaries;
+  **the rate to Asia could not be read** and may be higher. About 8 MB a four-player game, so a few
+  paise a game above about 125 games a month.
+- **The external IP address is reported as free on the free tier**, in a search summary quoting
+  Google; **not confirmed on Google's own pages**. The budget alert is what would show otherwise.
+
+**Measured: the lag from the development PC to each region.**
+
+**Conditions.** 25 September 2026, from the development PC on its usual connection; Google's own
+per-region ping services (`gcping`), timing each request from the moment its secure connection was
+set up to the first byte back, which is the round trip from Google's nearest edge to the region.
+Eight requests per region, the first two discarded as warm-up, the median of the six reported.
+These are Google's services, not our relay; the relay's own round trip is P3.5's first measurement
+once the server exists.
+
+| Region | Free | Median round trip |
+|---|---|---|
+| **`us-west1`, Oregon** | Yes | **242 ms** |
+| `us-central1`, Iowa | Yes | 300 ms |
+| `us-east1`, South Carolina | Yes | 309 ms |
+| `asia-south1`, Mumbai | No | 34 ms |
+
+**Chosen: Oregon**, the fastest free region by measurement. The home-region ruling for Oracle
+(Mumbai) no longer applies. The isolation ruling stands, and has nothing to act on here: a 1 GB
+server cannot host the other projects anyway.
+
+**What changed in part one:** `packages/server/deploy/README.md` rewritten for Google; `setup.sh`
+gains a 1 GB swap file (the server has 1 GB of memory), installs `iptables-persistent`, whose plugin
+actually saves firewall rules and which Google's image lacks, and names no provider, since nothing
+in it is Google's. The relay itself is unchanged.
+
+### Ruled 25 September 2026: Mumbai, paid, for the lag
+
+*"No going with Mumbai, we have 3 months of free then by upgrading I get to keep the free credits so
+it should last a while."* Brief v1.5. The server is Google Cloud's `e2-micro` in `asia-south1`: 34 ms
+a round trip from the development PC, against 242 ms to Oregon.
+
+**One premise corrected, on Google's own Free Tier page, read the same day:** the $300 credit is
+valid for 90 days, and *"you keep any unused credit until it expires 90 days from the Free Trial
+signup"* — upgrading keeps the server running, not the credit. So the relay costs **about $12 a
+month (roughly ₹1,000) from day 90**: about $8 for the server and its standard disk (the console's
+estimate), about $3.65 for the public address ($0.005 an hour, Google's 2024 price), and every
+gigabyte of data, since the free gigabyte applies only to data from North America.
+
+**Gate B's "inside a free plan" is amended in the brief (§1, §8)** to "the cost recorded at measured
+traffic", because by ruling it no longer runs on a free plan. The deploy guide says Mumbai, a budget
+alert near the expected cost, and how to read the real bill before the credit hides it.
+
+### P3.5 part two: DEPLOYED, 25 September 2026
+
+**The relay is live at `wss://immunity-wars.kartikchaudhary.com/relay`**, on Google Cloud's
+`e2-micro` in Mumbai: Ubuntu 26.04 LTS, Node 24.21.0, Caddy 2.11.4, a Let's Encrypt certificate.
+Shantanu created the account, the server, the key and the DNS record from the guide; setup and
+deploy ran from the development PC over SSH, with his go-ahead.
+
+**Measured, live, from the development PC** (`tools/perf/relay-live.ts`): six scripted two-player
+games through the internet, the TLS front and the relay in Mumbai, 42 turns and 168 actions.
+
+| | p50 | p95 | max |
+|---|---|---|---|
+| Each action, from `sendAction` to its answer, the new view already in hand | **35 ms** | 44 ms | 345 ms, once |
+| An end of turn, the heaviest action | 38 ms | 48 ms | 55 ms |
+| Creating and joining a room, both clients | 285 ms | | 365 ms |
+| Data to one player, gzipped as sent | **13.0 KiB a turn** | | 18.1 KiB |
+
+- **On the server itself:** the relay used 1.56 s of processor time for those 168 actions and the
+  rooms around them, about 9 ms an action on the `e2-micro`, including the first moments of a
+  freshly started process; and 30 MB of memory idle, 48 MB at its peak.
+- **A full-length game** at the measured rate would be about 0.6 to 0.8 MB per player, under §3's
+  planning figure of 2 MB. Scripted games are short, so that is an extrapolation.
+- **Not yet measured:** from a phone, on a mobile network (P3.6), and the real bill, which Google's
+  report shows a day after use.
+
+**What the live relay found, each fixed and each with a control:**
+
+1. **An action's answer came before the room's end** when that action ended the game, so a client
+   whose promise had resolved still thought the game was on, and the first live run was refused
+   for sending its next draw into an ended room. The answer is now the last thing an action causes
+   (`room-result-after-ending`).
+2. **The deploy checked too early**: one request two seconds after the restart got 502 while the
+   relay was still starting. It now asks for up to 30 seconds.
+3. **Caddy's error log recorded the address of whoever's request failed** (FINDINGS #85). Now
+   filtered out, and proved both ways on the live server with a deliberate 502.
+4. **The setup validated Caddy's configuration after putting it live**, which a bad file would have
+   turned into a Caddy that fails at the next restart. It now validates first.
+5. **The server runs Ubuntu 26.04, not 24.04**, and Google's image has no host firewall at all; the
+   setup now opens host ports only where the host rejects traffic.
+
+### Ruled 25 September 2026: every open question, as recommended
+
+*"I will go with your recommendations on each. I had added the passphrase. Do not want to revisit
+anything."* The seven questions put to Shantanu on the 24th, two from brief §5 that P3.1 had built on
+the recommended default, and one new one:
+
+| # | Question | Ruled | Where it lands |
+|---|---|---|---|
+| 1 | Restarts for security updates | Automatic, 03:30 IST, only when an update needs one | As built (`setup.sh`) |
+| 2 | The relay's limits | As built | `LIMITS` in `packages/server/src/hub.ts` |
+| 3 | How long the server keeps its system log (new) | 7 days | `setup.sh`: retention 7 days, files closed daily, since the log is trimmed by whole file |
+| 4 | Does the original captain get the captaincy back? | No | As built; brief v1.6 §5 |
+| 5 | How long an empty room is kept | 10 minutes | As built; brief v1.6 §5 |
+| 6 | Multiplayer autosave | Not in this version | Brief v1.6 §5, which reverses its own earlier "yes" |
+| 7 | FINDINGS #80's one-word fix | Take it | Its own small PR, after this one |
+| 8 | FINDINGS #81, whose piece | Screens read the room's projection, never the engine's `owner` | Binds P3.7; no engine change |
+| 9 | The Phase 3 brief review | Before P3.6 | The next piece of work after #80 |
+
+**Also settled:** the server key has a passphrase, held by the Windows key agent; and none of P3.4's
+build choices is to be revisited (six-character codes, the frame limits, when the selection clears,
+no automatic reconnect).
