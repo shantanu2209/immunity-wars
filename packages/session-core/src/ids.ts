@@ -3,7 +3,7 @@
  * `newGame` resets it. `LocalSession` needs this on resume; the room needs it before EVERY engine
  * call, because a relay hosts many rooms in one process and a game starting in one resets the
  * counter for all of them (`packages/room/src/ids.test.ts`, P3.4). Moved here from `LocalSession`
- * unchanged — including the undo-snapshot key it reads, which is recorded as FINDINGS #80.
+ * unchanged, including a wrong undo-snapshot key, FINDINGS #80, fixed on its own afterwards.
  */
 import { uid } from '@immunity-wars/engine/internal';
 
@@ -24,8 +24,8 @@ import { uid } from '@immunity-wars/engine/internal';
  *
  * ⚠️ *P3.4, 24 September 2026:* the sentence above was the plan in Phase 2. Phase 3's brief keeps
  * the engine unchanged but for `handOverCaptaincy`, so the counter is still outside the state and
- * this still runs, now before every engine call a room makes. The undo-snapshot half reads a key
- * the engine does not write (FINDINGS #80), unreachably for now.
+ * this still runs, now before every engine call a room makes. The undo-snapshot half read a key
+ * the engine does not write until FINDINGS #80 was fixed, on 25 September 2026.
  */
 export function advanceIdsPast(g: Record<string, unknown>): void {
   let max = 0;
@@ -34,8 +34,10 @@ export function advanceIdsPast(g: Record<string, unknown>): void {
     if (m) max = Math.max(max, Number(m[1]));
   };
   for (const iv of (g['invaders'] as { id?: unknown }[] | undefined) ?? []) seen(iv.id);
-  for (const snap of (g['undo'] as { invaders?: { id?: unknown }[] }[] | undefined) ?? []) {
-    for (const iv of snap.invaders ?? []) seen(iv.id);
+  // `inv` is the key the engine's `pushUndo` writes. Until FINDINGS #80 this read `invaders`, a key
+  // no snapshot has, so this loop never saw an id.
+  for (const snap of (g['undo'] as { inv?: { id?: unknown }[] }[] | undefined) ?? []) {
+    for (const iv of snap.inv ?? []) seen(iv.id);
   }
   for (const r of Object.values(
     (g['residents'] as Record<string, { infectedBy?: unknown }> | undefined) ?? {},

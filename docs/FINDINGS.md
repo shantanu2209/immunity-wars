@@ -4324,7 +4324,7 @@ undo stack would be an engine change and is not proposed.
 
 ---
 
-## 80. `advanceIdsPast` reads the undo snapshots under a key the engine never writes
+## 80. `advanceIdsPast` reads the undo snapshots under a key the engine never writes — FIXED 25 September 2026
 
 **Found 24 September 2026, during P3.4**, moving the function into `@immunity-wars/session-core`.
 **Not fixed**: it is unreachable today, and the move was proven byte-identical, so a behaviour change
@@ -4346,6 +4346,21 @@ It can only ever advance the counter further, which is always safe, since ids ne
 Worth taking before either door opens.
 
 **Ruled 25 September 2026: take it** (*"I will go with your recommendations on each"*), as its own small PR after P3.5's.
+
+### ✅ FIXED, 25 September 2026
+
+`packages/session-core/src/ids.ts` reads `snap.inv`. **The test takes its snapshot from the engine's
+own `pushUndo`** on a real game, not a hand-written one, because a hand-written snapshot would only
+test the key its author believed in, which is exactly the belief that was wrong.
+
+**The test's first version passed on the unfixed code, and was not trusted.** It killed the one
+invader of a game that had only one, `i1`. `advanceIdsPast` spends one id reading the counter, so an
+id just one above the body's highest is passed by accident, and the defect could not show. The test
+now plays until at least three invaders are in the body, kills the two highest after the snapshot,
+and asserts the gap is more than one before it checks anything. On the unfixed code it then failed
+as it should: the counter handed out `i2` while the snapshot still held `i3`.
+
+**Control:** `ids-undo-snapshot-key` makes the loop read nothing again, and the test goes red.
 
 ---
 
