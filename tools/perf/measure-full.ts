@@ -59,13 +59,28 @@ const summary = (xs: number[]): { n: number; p50: number; p95: number; max: numb
 const status = (page: Page): Promise<string> =>
   page.evaluate(() => document.querySelector('p')?.textContent ?? '');
 
-const clickExact = (page: Page, label: string): Promise<boolean> =>
-  page.evaluate((l: string) => {
+/**
+ * THE STEP GUARD (FINDINGS #90): the play screen's advance button ignores a tap within
+ * `STEP_GUARD_MS` (500 ms, `packages/ui/src/play/stepGuard.ts`) of its step changing, so a
+ * driver that taps it the moment it appears is ignored, and then measures the wrong screen. A tap on
+ * that button waits out the guard first. 550: the guard and a margin; if the guard ever lengthens,
+ * this must follow it, and the audit's per-screen list is where a stale value shows (NOT REACHED).
+ */
+const ADVANCE_WAIT_MS = 550;
+
+async function clickExact(page: Page, label: string): Promise<boolean> {
+  const advance = await page.evaluate((l: string) => {
+    const b = [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === l);
+    return b?.hasAttribute('data-dock-next') === true;
+  }, label);
+  if (advance) await new Promise((r) => setTimeout(r, ADVANCE_WAIT_MS));
+  return page.evaluate((l: string) => {
     const b = [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === l);
     if (!b || b.disabled) return false;
     b.click();
     return true;
   }, label);
+}
 
 const clickIncludes = (page: Page, label: string): Promise<void> =>
   page.evaluate((l: string) => {

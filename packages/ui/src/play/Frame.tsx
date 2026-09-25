@@ -16,7 +16,13 @@
  * Replaces the dock of pieces 2 to 4, whose zones are the middle's actions and the advance button
  * here. Dumb by design: the play screen decides what each part shows.
  */
-import type { CSSProperties, ReactElement, ReactNode } from 'react';
+import {
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 import { BOARD_ASPECT } from '../board/geometry';
 import { engineText } from '../engineText';
@@ -27,6 +33,7 @@ import { CardIcon } from '../panels/CardIcon';
 import { diceOf } from './SpreadNarration';
 import type { DockRow } from './offered';
 import { useFrame, type FrameStore } from './frameStore';
+import { tapCounts } from './stepGuard';
 
 const ICON_BUTTON: CSSProperties = {
   minHeight: 44,
@@ -660,13 +667,23 @@ export function AdvanceButton({
   waiting?: boolean;
   onPress: () => void;
 }): ReactElement {
+  // THE STEP GUARD (FINDINGS #90, `stepGuard.ts`): a tap within half a second of the step changing,
+  // or of the button becoming tappable, is not for the new step. Timed in a layout effect, which
+  // runs before the new step is painted, so no tap can reach it first.
+  const step = `${keyName}|${String(disabled)}`;
+  const changedAt = useRef(0);
+  useLayoutEffect(() => {
+    changedAt.current = performance.now();
+  }, [step]);
   return (
     <button
       data-dock-next={keyName}
       data-waiting={waiting ? '1' : undefined}
       aria-hidden={hidden ? true : undefined}
       disabled={disabled}
-      onClick={onPress}
+      onClick={() => {
+        if (tapCounts(changedAt.current, performance.now())) onPress();
+      }}
       style={{
         // 3rem, not 2.75: the floating close takes this slot's place, and at 2.75 it overlapped the
         // tab row above by 2px at 360 x 680 (measured, §19).

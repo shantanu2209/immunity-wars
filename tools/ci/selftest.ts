@@ -595,6 +595,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'says who went away and who came back',
   },
   {
+    id: 'step-guard',
+    why: "FINDINGS #90: a double tap on the play screen's advance button did the next step too; alone, Command your cells tapped twice ended the turn with every point unspent, at gaps of 80 to 400 ms. The button ignores a tap within half a second of its step changing.",
+    file: 'packages/ui/src/play/stepGuard.ts',
+    mutate: (t) => t.replace('  now - changedAt >= STEP_GUARD_MS;', '  now - changedAt >= 0;'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'is ignored at every gap a double tap was measured to end the turn at',
+  },
+  {
     id: 'view-queue-own-tail',
     why: "FINDINGS #89: played together, the next turn's draw can arrive while this device still animates a spread. The renderer's burst-tail check compared the spread's last frame with whatever view came LAST, and failed on a correct game. Each spread must be checked against the view it ended in.",
     file: 'packages/ui/src/play/viewQueue.ts',

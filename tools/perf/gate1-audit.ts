@@ -563,13 +563,28 @@ async function chooseTextSize(page: Page, size: string): Promise<boolean> {
   return true;
 }
 
-const click = (page: Page, label: string): Promise<boolean> =>
-  page.evaluate((l: string) => {
+/**
+ * THE STEP GUARD (FINDINGS #90): the play screen's advance button ignores a tap within
+ * `STEP_GUARD_MS` (500 ms, `packages/ui/src/play/stepGuard.ts`) of its step changing, so a
+ * driver that taps it the moment it appears is ignored, and then measures the wrong screen. A tap on
+ * that button waits out the guard first. 550: the guard and a margin; if the guard ever lengthens,
+ * this must follow it, and the audit's per-screen list is where a stale value shows (NOT REACHED).
+ */
+const ADVANCE_WAIT_MS = 550;
+
+async function click(page: Page, label: string): Promise<boolean> {
+  const advance = await page.evaluate((l: string) => {
+    const b = [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === l);
+    return b?.hasAttribute('data-dock-next') === true;
+  }, label);
+  if (advance) await new Promise((r) => setTimeout(r, ADVANCE_WAIT_MS));
+  return page.evaluate((l: string) => {
     const b = [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === l);
     if (!b || b.disabled) return false;
     b.click();
     return true;
   }, label);
+}
 
 const clickSel = (page: Page, sel: string): Promise<boolean> =>
   page.evaluate((s: string) => {
