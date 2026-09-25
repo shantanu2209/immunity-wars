@@ -77,13 +77,22 @@ Engine API first; say yes.
 | Region | **`us-west1` (Oregon)**, any zone. Only Oregon, Iowa and South Carolina are free; Oregon measured fastest from here |
 | Machine | Series E2, type **`e2-micro`** |
 | Boot disk | Change it: **Ubuntu 24.04 LTS** (x86/64), disk type **Standard persistent disk**, 30 GB or less |
+| Data protection | **No backups and no snapshot schedule.** Snapshots are charged, and nothing on this server needs keeping |
+| Observability | **Do not install the Ops Agent** |
 | Firewall | Tick **Allow HTTP traffic** and **Allow HTTPS traffic** |
 | Security, then SSH keys | Add an item and paste the whole contents of the `.pub` file |
 | Networking | The defaults, with an ephemeral external IPv4 address |
 
-**Two settings cost money if they are missed:** the boot disk must be **Standard** (the default,
-"Balanced", is charged), and the region must be one of the three free ones. The price estimate beside
-the form may not subtract the free tier; the free usage shows on the bill instead.
+**Settings that cost money if they are missed:** the boot disk must be **Standard** (the default,
+"Balanced", is charged), the region must be one of the three free ones, and backups must be off.
+
+**The monthly estimate beside the form does not subtract the free tier.** It showed $7.11 on 25
+September 2026: $6.11 for the `e2-micro`, which is exactly what the free tier covers, and $1.00 for
+the default Balanced disk, which it does not. With the settings above, the free usage appears on the
+bill with a matching free-tier discount. To check that it does, a day after creating the server: Billing,
+Reports, grouped by SKU, **costs before credits** (the trial's credits hide everything else). One
+line is not confirmed free on Google's own pages: the public IP address, which costs $0.005 an hour
+(about $3.65 a month) on servers outside the free tier. That report is where it will show.
 
 After it is created, tell Claude its **External IP**.
 
