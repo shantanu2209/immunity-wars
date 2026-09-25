@@ -1,6 +1,7 @@
 # Deploying the relay (P3.5)
 
-The relay runs on Google Cloud's free server (one `e2-micro`) in Oregon, behind Caddy, at
+The relay runs on a Google Cloud `e2-micro` in Mumbai (paid, about ₹1,000 a month once the trial
+credit expires), behind Caddy, at
 `wss://immunity-wars.kartikchaudhary.com/relay`. Why Google, what it costs, and why not Oracle, whose
 sign-up refused us: [`docs/for-P3.md`](../../../docs/for-P3.md) §5 and
 [`docs/PHASE3_BRIEF.md`](../../../docs/PHASE3_BRIEF.md) §6.
@@ -23,15 +24,14 @@ match exactly, the nearest one is the right one, and Claude can follow along on 
 ### 1. The Google Cloud account
 
 1. Sign in to the Google Cloud console with your own Google account and start the free trial. It
-   asks for a card; the trial does not charge it.
+   asks for a card; the trial's $300 credit pays for the Mumbai server for the first 90 days.
 2. Create a project, for example `immunity-wars`.
 3. **Before the 90-day trial ends, upgrade the billing account to a paid account** (Billing, then
    "Activate full account" or "Upgrade"). If it is not upgraded, Google stops the server when the
    trial ends. Once upgraded, only use beyond the free amounts is charged.
-4. Create a **budget alert** (Billing, then Budgets and alerts): a monthly budget of a small amount,
-   with alerts sent to your email. The one thing expected to cost anything is data beyond the free
-   1 GB a month, a few paise a game; anything else on the bill is a mistake you hear about the same
-   day.
+4. Create a **budget alert** (Billing, then Budgets and alerts): a monthly budget a little above the
+   expected cost, say $15, with alerts sent to your email. The server is expected to cost about $12
+   a month; anything well beyond that is a mistake you hear about the same day.
 
 ### 2. The key on this PC
 
@@ -74,7 +74,7 @@ Engine API first; say yes.
 | Setting | Value |
 |---|---|
 | Name | `immunity-wars-relay` |
-| Region | **`us-west1` (Oregon)**, any zone. Only Oregon, Iowa and South Carolina are free; Oregon measured fastest from here |
+| Region | **`asia-south1` (Mumbai)**, any zone. Ruled for its lag (34 ms from here, against 242 ms to Oregon); it is not in the free tier |
 | Machine | Series E2, type **`e2-micro`** |
 | Boot disk | Change it: **Ubuntu 24.04 LTS** (x86/64), disk type **Standard persistent disk**, 30 GB or less |
 | Data protection | **No backups and no snapshot schedule.** Snapshots are charged, and nothing on this server needs keeping |
@@ -83,16 +83,16 @@ Engine API first; say yes.
 | Security, then SSH keys | Add an item and paste the whole contents of the `.pub` file |
 | Networking | The defaults, with an ephemeral external IPv4 address |
 
-**Settings that cost money if they are missed:** the boot disk must be **Standard** (the default,
-"Balanced", is charged), the region must be one of the three free ones, and backups must be off.
+**Settings that cost more if they are missed:** the boot disk should be **Standard**, the cheapest,
+and backups must be off. *(In Mumbai nothing is free: the server, disk, public address and data are
+all charged, about $12 a month, paid by the trial credit until it expires 90 days after sign-up,
+whether or not the account is upgraded.)*
 
-**The monthly estimate beside the form does not subtract the free tier.** It showed $7.11 on 25
-September 2026: $6.11 for the `e2-micro`, which is exactly what the free tier covers, and $1.00 for
-the default Balanced disk, which it does not. With the settings above, the free usage appears on the
-bill with a matching free-tier discount. To check that it does, a day after creating the server: Billing,
-Reports, grouped by SKU, **costs before credits** (the trial's credits hide everything else). One
-line is not confirmed free on Google's own pages: the public IP address, which costs $0.005 an hour
-(about $3.65 a month) on servers outside the free tier. That report is where it will show.
+**The monthly estimate beside the form** is the list price, and in Mumbai the list price is what is
+paid (in Oregon it would have been covered by the free tier, which the estimate never subtracts). It
+does not include the public address, about $3.65 a month, or data. To see the real cost, a day after
+creating the server: Billing, Reports, grouped by SKU, **costs before credits** (the trial's credits
+hide everything else).
 
 After it is created, tell Claude its **External IP**.
 

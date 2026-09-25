@@ -661,3 +661,20 @@ server cannot host the other projects anyway.
 gains a 1 GB swap file (the server has 1 GB of memory), installs `iptables-persistent`, whose plugin
 actually saves firewall rules and which Google's image lacks, and names no provider, since nothing
 in it is Google's. The relay itself is unchanged.
+
+### Ruled 25 September 2026: Mumbai, paid, for the lag
+
+*"No going with Mumbai, we have 3 months of free then by upgrading I get to keep the free credits so
+it should last a while."* Brief v1.5. The server is Google Cloud's `e2-micro` in `asia-south1`: 34 ms
+a round trip from the development PC, against 242 ms to Oregon.
+
+**One premise corrected, on Google's own Free Tier page, read the same day:** the $300 credit is
+valid for 90 days, and *"you keep any unused credit until it expires 90 days from the Free Trial
+signup"* — upgrading keeps the server running, not the credit. So the relay costs **about $12 a
+month (roughly ₹1,000) from day 90**: about $8 for the server and its standard disk (the console's
+estimate), about $3.65 for the public address ($0.005 an hour, Google's 2024 price), and every
+gigabyte of data, since the free gigabyte applies only to data from North America.
+
+**Gate B's "inside a free plan" is amended in the brief (§1, §8)** to "the cost recorded at measured
+traffic", because by ruling it no longer runs on a free plan. The deploy guide says Mumbai, a budget
+alert near the expected cost, and how to read the real bill before the credit hides it.

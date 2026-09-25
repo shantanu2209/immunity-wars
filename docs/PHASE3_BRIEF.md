@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.4 · 25 September 2026
+**Version:** 1.5 · 25 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,23 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.5 records
+
+v1.5 changes ruling 5's region, by ruling (Shantanu, 25 September 2026: *"No going with Mumbai, we
+have 3 months of free then by upgrading I get to keep the free credits so it should last a while"*):
+
+- **The relay's server is Google Cloud's `e2-micro` in Mumbai (`asia-south1`), which is PAID.** It
+  buys the lag: **34 ms** a round trip from the development PC, against 242 ms to Oregon, the fastest
+  free region (for-P3 §5).
+- **What it costs.** About $8 a month for the server and disk (the console's estimate), about $3.65
+  for its public address, and every gigabyte of data, since the free gigabyte applies only to data
+  from North America: **about $12 a month, roughly ₹1,000.** The $300 trial credit pays it at first.
+- ⚠️ **One premise in the ruling is corrected here, as it was in the conversation:** Google's Free
+  Tier page says the credit expires **90 days from sign-up whether or not the account is upgraded**;
+  upgrading keeps the server, not the credit. So the monthly cost begins at day 90.
+- **Gate B's "inside a free plan" is amended accordingly**, in §1 and §8: the relay no longer runs
+  on a free plan, by ruling, so the gate asks for the cost to be measured and recorded instead.
 
 ## What v1.4 records
 
@@ -117,8 +134,9 @@ the rules.** The engine is fixed; the equivalence corpus remains the oracle.
 
 ### Gate B — it is affordable and it is ours
 
-- [ ] The relay runs inside a free plan at the measured traffic of a real game, with the numbers
-      recorded and the plan's limits re-read **on the day**, not trusted from this document
+- [ ] The relay's cost at the measured traffic of a real game is recorded, with the provider's
+      prices re-read **on the day**, not trusted from this document. ⚠️ *Amended in v1.5:* this read
+      "the relay runs inside a free plan", until the ruling that it runs on a paid server in Mumbai
 - [ ] **The platform is replaceable:** the room's rules are a plain module with no platform types
       in it, and the platform adapter is small enough to rewrite in a day. Proven by a test that
       runs the room module with no platform runtime at all. ⚠️ *Amended in v1.3:* this said
@@ -155,7 +173,7 @@ Sequenced so the thing that could invalidate the rest happens first.
 | **P3.2** | **The protocol**: message types and Zod schemas both ways, `rulesVersion` and a protocol version on every message, with a refusal path proven by a control | Zod at every trust boundary is a standing rule; a relay is the largest trust boundary this project has ever had |
 | **P3.3** | **The measurement: frames or state?** One room, two clients, a real spread. What it costs to send 10 frames versus one state and a dice log | The Task E question. Decided by measurement, before the transport is written around either answer |
 | **P3.4** | **`RelaySession`** — the second implementation of `Session`, against a local relay on the development machine | No cloud involved yet |
-| **P3.5** | **The deployment**: the P3.4 relay on Google Cloud's free server in Oregon, encrypted, supervised and patched, the free-tier numbers measured. ⚠️ *Amended in v1.4:* v1.3 put it on Oracle in India, whose sign-up refused us; v1.0 to v1.2 had "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
+| **P3.5** | **The deployment**: the P3.4 relay on a Google Cloud server in Mumbai, encrypted, supervised and patched, its cost measured. ⚠️ *Amended in v1.4 and v1.5:* v1.4 put it on Google's free server in Oregon; v1.3 on Oracle in India, whose sign-up refused us; v1.0 to v1.2 had "the Cloudflare adapter: one Durable Object per room" | Small by design; §6 |
 | **P3.6** | **Two real devices, two networks**, a full game, and the 22 coverage arms | Gate A |
 | **P3.7** | The multiplayer screens: create, join, the lobby, seat assignment, the away state | They are the last thing, because until P3.6 nobody knows what they must show |
 
@@ -181,10 +199,11 @@ Given by Shantanu on 20 September 2026, in the conversation this brief was writt
    byte-identical corpus. **A rule that says "the table decides" needs no AI at all**, so the bot
    leaves Phase 3 entirely and the corpus is not re-baselined here.
    `COVERAGE_DEFERRED.md`'s 17 bot arms are relabelled accordingly, at the generator.
-5. **Google Cloud, Free Tier: one `e2-micro` server in Oregon** — with the right to move later, which
-   §6 makes a requirement rather than a hope. ⚠️ *Amended twice.* It read **"Cloudflare, free plan,
-   for now"** (20 September), then **"Oracle Cloud, Always Free tier"** (v1.3, 24 September), until
-   Oracle's sign-up refused us (v1.4, 25 September). What each change costs is in §6 and
+5. **Google Cloud: one `e2-micro` server in Mumbai, paid** — with the right to move later, which §6
+   makes a requirement rather than a hope. ⚠️ *Amended three times.* It read **"Cloudflare, free
+   plan, for now"** (20 September), then **"Oracle Cloud, Always Free tier"** (v1.3, 24 September),
+   then Google's free server in Oregon (v1.4, 25 September, when Oracle's sign-up refused us), then
+   Mumbai for its lag (v1.5, the same day). What each change costs is in §6 and
    [`for-P3.md`](for-P3.md) §5.
 
 ---
@@ -232,19 +251,19 @@ month free, incoming WebSocket messages billed 20 to 1 and outgoing free. v1.3 r
 Always Free server in India, 10 TB a month out, Arm allowance of 2 cores and 12 GB.
 [`for-P3.md`](for-P3.md) §5 has both comparisons.
 
-**One Node process on one Google Cloud free-tier server in Oregon** holds every room in memory: the
-relay P3.4 built (`packages/server`), behind a front that terminates TLS. Read on 25 September 2026:
-one `e2-micro` (a quarter of a processor sustained, 1 GB), only in three US regions, 30 GB of
-standard disk, and 1 GB a month out. Oracle's allowance was halved in June 2026, which is why **Gate B
-requires the limits to be re-read on the day**: a published number in a brief is a claim with an
-expiry date.
+**One Node process on one Google Cloud server in Mumbai** holds every room in memory: the relay
+P3.4 built (`packages/server`), behind a front that terminates TLS. ⚠️ *v1.5:* v1.4 had Google's
+free server in Oregon; Mumbai was ruled for its lag and is paid. Read on 25 September 2026: an
+`e2-micro` (a quarter of a processor sustained, 1 GB). Oracle's allowance was halved in June 2026,
+which is why **Gate B requires the prices and limits to be re-read on the day**: a published number
+in a brief is a claim with an expiry date.
 
 **What owning the server costs, carried here so it is not forgotten:**
 
-- **Lag.** Every action is a round trip to the US: 242 ms measured from the development PC, against
-  34 ms to Mumbai. Playable for a turn-based game; felt on every tap.
-- **Data beyond the free gigabyte is charged**, a few paise a game above about 125 four-player games
-  a month. A budget alert catches the bill.
+- **Money: about $12 a month, roughly ₹1,000**, from day 90, when the trial credit expires whether
+  or not the account is upgraded. About $8 for the server and disk, about $3.65 for the public
+  address, and every gigabyte of data. A budget alert catches anything beyond that.
+- **Lag: 34 ms** a round trip from the development PC to Mumbai, against 242 ms to Oregon.
 - **An operating system to patch.** Security updates install themselves; the setup is a script. By
   design nothing on the server needs keeping, so a lost server is a rebuild, not a restore.
 - **Rate limiting, a connection cap and TLS are ours**, where a managed platform would have provided
@@ -288,8 +307,8 @@ No engine rule changes.
 ## 8. Definition of done
 
 - [ ] Gate A — every item, verified, on two real devices on two networks
-- [ ] Gate B — inside a free plan with the numbers recorded, portable by a passing test, no personal
-      data
+- [ ] Gate B — the cost recorded at measured traffic, portable by a passing test, no personal data.
+      ⚠️ *Amended in v1.5:* this read "inside a free plan", until the ruling for a paid server
 - [ ] `RelaySession` is a second implementation of `Session`, and `LocalSession`'s behaviour is
       untouched by it: its query builder is shared, byte-identical output proven. ⚠️ *Amended in
       v1.2 (24 September 2026):* this read "`LocalSession` is untouched by it". The builder moved to
