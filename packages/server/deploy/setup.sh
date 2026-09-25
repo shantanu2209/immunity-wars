@@ -3,19 +3,19 @@
 #
 #   sudo bash setup.sh <hostname>
 #
-# Written for Ubuntu 24.04 on Google Cloud's free e2-micro server (brief v1.4), and nothing in it is
-# Google's: it runs on any Ubuntu 24.04 server. Safe to run twice: every step checks before it
+# Written for Ubuntu 24.04 or later, and first run on Ubuntu 26.04 on Google Cloud's e2-micro in
+# Mumbai (brief v1.5). Nothing in it is Google's. Safe to run twice: every step checks before it
 # changes anything. What it does, and why, is in deploy/README.md; the short form:
 #
 #   - India time, so the one restart security updates may need happens at 03:30 IST
-#   - a 1 GB swap file, because the free server has 1 GB of memory and a large update can need more
+#   - a 1 GB swap file, because the server has 1 GB of memory and a large update can need more
 #   - Node (long-term support) and Caddy, each from its own signed package repository
 #   - security updates installed automatically, Node's and Caddy's included
 #   - a `relay` user with no login and no home, and a service that runs the bundled relay as it,
 #     restarts it on failure and at boot, and fences it off from the rest of the machine
 #   - Caddy in front, which gets and renews the certificate, and keeps NO access log: an address is
 #     personal data under India's DPDP Act, and nothing here needs one
-#   - the machine's own firewall opened for web traffic, and nothing else
+#   - the machine's own firewall opened for web traffic where it blocks it, and nothing else
 #
 # It does not deploy the relay itself: deploy.sh does, from the development PC.
 set -euo pipefail
@@ -41,9 +41,7 @@ grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >>/etc/fst
 echo "== packages the steps below need"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -q
-# iptables-persistent brings netfilter-persistent AND the plugin that actually saves the rules:
-# Oracle's images ship it, Google's do not, and without it the save below would save nothing.
-apt-get install -y -q ca-certificates curl gnupg unattended-upgrades iptables-persistent \
+apt-get install -y -q ca-certificates curl gnupg unattended-upgrades \
   debian-keyring debian-archive-keyring apt-transport-https
 install -d -m 0755 /etc/apt/keyrings
 
@@ -146,18 +144,25 @@ EOF
 caddy validate --config /etc/caddy/Caddyfile
 systemctl reload caddy || systemctl restart caddy
 
-echo "== this machine's firewall: web traffic in, nothing else new"
-# Some clouds' Ubuntu images (Oracle's) reject everything but SSH in iptables; Google's accept by
-# default and filter in the cloud's own firewall instead, opened in the console (deploy/README.md).
-# Each rule goes in just before any reject, or first when there is none, and only if it is not
-# there already, so this is right on both.
-for port in 80 443; do
-  if ! iptables -C INPUT -p tcp -m state --state NEW --dport "$port" -j ACCEPT 2>/dev/null; then
-    at=$(iptables -L INPUT --line-numbers | awk '/REJECT/ {print $1; exit}')
-    iptables -I INPUT "${at:-1}" -p tcp -m state --state NEW --dport "$port" -j ACCEPT
-  fi
-done
-netfilter-persistent save
+echo "== this machine's own firewall: web traffic in, where it rejects by default"
+# Some clouds' Ubuntu images (Oracle's) reject everything but SSH in iptables. Google's Ubuntu 26.04
+# image has NO host firewall at all (no iptables, nft or ufw, checked on 25 September 2026): the
+# cloud's own firewall is the gate, opened in the console (deploy/README.md), and the relay itself
+# listens only on this machine. So rules are added only where the host rejects, each just before
+# the reject and only if it is not there already, and nothing is installed where nothing blocks.
+if command -v iptables >/dev/null 2>&1 && iptables -S INPUT | grep -q -- '-j REJECT'; then
+  # iptables-persistent brings the plugin that actually saves the rules across a restart.
+  apt-get install -y -q iptables-persistent
+  for port in 80 443; do
+    if ! iptables -C INPUT -p tcp -m state --state NEW --dport "$port" -j ACCEPT 2>/dev/null; then
+      at=$(iptables -L INPUT --line-numbers | awk '/REJECT/ {print $1; exit}')
+      iptables -I INPUT "$at" -p tcp -m state --state NEW --dport "$port" -j ACCEPT
+    fi
+  done
+  netfilter-persistent save
+else
+  echo "no host firewall rejecting traffic here; the cloud's firewall is the gate"
+fi
 
 echo "== checks"
 sshd -T | grep -E '^(passwordauthentication|permitrootlogin) '

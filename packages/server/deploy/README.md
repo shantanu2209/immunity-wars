@@ -8,7 +8,7 @@ sign-up refused us: [`docs/for-P3.md`](../../../docs/for-P3.md) §5 and
 
 **Nothing on the server needs keeping.** Rooms live in memory by design, so a server that is lost or
 broken is rebuilt from the steps below, not restored. Nothing in `setup.sh` is Google's: the same
-steps work on any Ubuntu 24.04 server, which is what keeps the right to move real.
+steps work on any Ubuntu server from 24.04 on, which is what keeps the right to move real.
 
 There are two kinds of step. **Shantanu's**, because they need his identity, his card, his domain or
 his passphrase, which nobody else may handle. **Claude's**, over SSH from the development PC, each
@@ -76,7 +76,7 @@ Engine API first; say yes.
 | Name | `immunity-wars-relay` |
 | Region | **`asia-south1` (Mumbai)**, any zone. Ruled for its lag (34 ms from here, against 242 ms to Oregon); it is not in the free tier |
 | Machine | Series E2, type **`e2-micro`** |
-| Boot disk | Change it: **Ubuntu 24.04 LTS** (x86/64), disk type **Standard persistent disk**, 30 GB or less |
+| Boot disk | Change it: **Ubuntu 26.04 LTS or 24.04 LTS** (x86/64), disk type **Standard persistent disk**, 30 GB or less. The relay's server runs 26.04 |
 | Data protection | **No backups and no snapshot schedule.** Snapshots are charged, and nothing on this server needs keeping |
 | Observability | **Do not install the Ops Agent** |
 | Firewall | Tick **Allow HTTP traffic** and **Allow HTTPS traffic** |
