@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: all four pieces BUILT; the 360-pixel audit to come
+## 6. P3.7, the multiplayer screens: BUILT and audited
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -1166,3 +1166,34 @@ for them, which is also said.
 your recommendation"*). The guard for #90 is built before P3.6 (FINDINGS #90, fixed). Another game
 in the same room is its own piece after P3.6, and changes the room's rules when it is built, so the
 brief's §5 is amended then, not before.
+
+### The 360-pixel audit, extended over every P3.7 screen: done, 25 September 2026
+
+The Gate 1 audit now walks the twenty screens a game played together has, from the captain's side
+and a guest's, in all four passes, against a build that talks to a relay on the development PC
+(`walkTogether` in `tools/perf/gate1-audit.ts`; how to run it is in its header). A helper page, in a
+context of its own, plays the other part.
+
+**The result:** 80 screens per pass (82 under the app's own text size), up from 60. All 20 new
+screens were reached in every pass, none NOT REACHED. Every check is 0, all 44 controls fire the
+right way, 37 nesting paths all land right (four new: the way in closes to the title, the lobby
+ignores the back gesture, and the AP sheet and the Table close to the game), and offline is met.
+Recorded in [`GATE1_AUDIT.md`](GATE1_AUDIT.md) as the new bar.
+
+**What its first run found, all fixed before the record:**
+
+1. **The walk's own defect:** the first screen after each page load it made was measured before
+   the 200% text size had applied. It now sets the size again after every load, as the main walk
+   always has.
+2. **Greyed borders too faint:** a seat another player holds, and the waiting button, used a border
+   at 1.93:1. They now use the greyed rows' own border, 3.60:1.
+3. **The lobby overflowed at 200%:** the room code overflowed by up to 86 pixels at 360 wide. It now
+   wraps rather than push the page sideways, and still doubles with the text.
+
+**Never against the live relay, proved both ways.** The walk refuses any relay not on this machine
+before a socket is made. Against a build naming the deployed relay, every screen after the first
+connection attempt is NOT REACHED in every pass, naming the address; against the local build, all
+twenty are reached.
+
+**P3.7 is therefore done**: all four pieces, the double-tap fix before P3.6 (FINDINGS #90), and the
+audit. P3.6 is next.

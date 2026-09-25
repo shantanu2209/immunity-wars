@@ -1,7 +1,19 @@
 /**
  * GATE 1 HYGIENE, THE HEADLESS HALF (P2.5, 6 September 2026; PHASE2_BRIEF §1).
  *
- *   npx tsx tools/perf/gate1-audit.ts [url] [outJson]
+ *   npx tsx tools/perf/gate1-audit.ts [url] [outJson] [--together]
+ *
+ * THE FULL RUN SINCE P3.7 includes PLAYING TOGETHER (`walkTogether`): the way in, the lobby, the
+ * allocation, the Table, the menu's two exits, a lost connection, a rejoin and the Result, from
+ * the captain's side and a guest's, in every pass. It needs `--together` and a build that talks to
+ * a relay on this machine, never the deployed one:
+ *
+ *   VITE_RELAY_URL=ws://127.0.0.1:8787 pnpm --filter @immunity-wars/app build:web
+ *   pnpm --filter @immunity-wars/server relay        (and `vite preview` of the build, port 4173)
+ *   npx tsx tools/perf/gate1-audit.ts http://localhost:4173 out.json --together
+ *
+ * The walk refuses any relay that is not on this machine before a connection is made, and says so
+ * as NOT REACHED; without `--together` it says, as one NOT REACHED line, that it did not run.
  *
  * Drives the APP SHELL (index.html — the thing a player installs, not the dev shell) through
  * every screen a game passes: Title, Difficulty, the goal dialog, the reveal, the planning
@@ -420,7 +432,10 @@ const WHERE = `
   if (q('[data-screen=library]')) return 'library index';
   if (q('[data-screen=about]')) return 'about';
   if (q('[data-inspect-sheet]')) return 'inspect sheet';
-  if (button('Quit to title')) return 'pause menu';
+  if (button('Quit to title') || button('Leave the game')) return 'pause menu';
+  // PLAYING TOGETHER (P3.7): the way in and the lobby.
+  if (q('[data-screen=lobby]')) return 'lobby';
+  if (q('[data-screen=together]')) return 'together';
   if (q('[data-screen=planning]')) return 'planning';
   if (q('[data-command-stage]')) return 'play';
   if (button('New game')) return 'title';
@@ -1774,6 +1789,397 @@ async function walkToResult(
     });
 }
 
+/* ------------------------------------------------------------------------------------------ *
+ * PLAYING TOGETHER (P3.7, docs/for-P3.md §6: "the 360-pixel audit extended to the new screens, run
+ * against a relay on the development PC"). The screens only a game played together has, walked in
+ * every pass like every other screen: the audited page plays one part, and a HELPER, in a context
+ * of its own at the default size, plays the other, because a room needs two.
+ *
+ * ONLY EVER AGAINST A RELAY ON THIS MACHINE. The build under audit names its relay
+ * (`VITE_RELAY_URL`); a build that names the deployed one would fill the live relay with rooms. So
+ * both pages are given a WebSocket that refuses any address but this machine's, and a refusal
+ * makes every screen below NOT REACHED with that reason, never a connection. And the walk runs only
+ * with `--together`: without it, one NOT REACHED line says these screens were not measured, since
+ * an omitted row and a clean row look the same.
+ *
+ * WHAT IT LEAVES BEHIND: nothing. The passes share one profile, so the room this device was in
+ * would put a Rejoin button on the next pass's title. Each part ends the room for this device (the
+ * Result, or Leave), and the key is removed at the end in any case.
+ * ------------------------------------------------------------------------------------------ */
+
+const TOGETHER_ONLY = process.argv.includes('--together-only');
+const TOGETHER = TOGETHER_ONLY || process.argv.includes('--together');
+
+/** Every WebSocket but one to this machine is refused, and the refusal is recorded. */
+const LOCAL_ONLY = `
+  window.__sockets = [];
+  window.__blocked = null;
+  const Real = window.WebSocket;
+  window.WebSocket = function (url, p) {
+    if (!/^wss?:\\/\\/(127\\.0\\.0\\.1|localhost)(:[0-9]+)?(\\/|$)/.test(String(url))) {
+      window.__blocked = String(url);
+      throw new Error('the Gate 1 audit refuses a relay that is not on this machine: ' + url);
+    }
+    const s = new Real(url, p);
+    window.__sockets.push(s);
+    return s;
+  };
+  window.WebSocket.prototype = Real.prototype;
+  Object.assign(window.WebSocket, { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 });
+`;
+
+const until = (page: Page, js: string, ms = 10000): Promise<boolean> =>
+  page
+    .waitForFunction(js, { timeout: ms })
+    .then(() => true)
+    .catch(() => false);
+
+/** The captain's steps through one turn: plan, begin, confirm, end, and the spread tapped through. */
+async function captainTurn(captain: Page, others: readonly Page[]): Promise<void> {
+  if (await waitFor(captain, 'Plan your turn', 4000)) await click(captain, 'Plan your turn');
+  if (await waitFor(captain, 'Command your cells', 3000))
+    await click(captain, 'Command your cells');
+  if (await waitFor(captain, 'Confirm the plan', 3000)) await click(captain, 'Confirm the plan');
+  if (await waitFor(captain, 'End turn', 3000)) await click(captain, 'End turn');
+  for (let i = 0; i < 60; i += 1) {
+    await sleep(120);
+    let more = false;
+    for (const p of [captain, ...others]) more = (await advance(p)) || more;
+    const next = await captain.evaluate(() =>
+      [...document.querySelectorAll('button')].some((b) =>
+        ['Plan your turn', 'Play together again'].includes(b.textContent?.trim() ?? ''),
+      ),
+    );
+    if (next && !more) break;
+  }
+}
+
+/** What stops a part of the walk: every screen it had not reached yet is NOT REACHED, with why. */
+class Stop extends Error {}
+
+async function walkTogether(
+  page: Page,
+  results: ScreenResult[],
+  step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  nesting: NestResult[] | null = null,
+  rootPct: string | null = null,
+): Promise<void> {
+  const CAPTAIN_SCREENS = [
+    'together',
+    'together, a refusal',
+    'lobby, captain',
+    'goal dialog, together',
+    'planning, allocation, captain',
+    'AP terms, together',
+    "command, another player's piece",
+    'table, captain',
+    'pause menu, together',
+    'pause menu, leave confirm',
+    'pause menu, back to the title confirm',
+    'play, connection lost',
+    'title, a room to rejoin',
+    'together, rejoin',
+    'result, together',
+  ];
+  const GUEST_SCREENS = [
+    'lobby, not captain',
+    'planning, waiting for the captain',
+    'planning, allocation, not captain',
+    'command, the captain ends the turn',
+    'table, not captain',
+  ];
+  if (!TOGETHER) {
+    results.push(
+      notReached(
+        'play together',
+        'not run: pass --together, with a build whose VITE_RELAY_URL is a relay on this machine',
+      ),
+    );
+    return;
+  }
+  const browserOf = page.browser();
+  const done = new Set<string>();
+  const at = async (p: Page, screen: string): Promise<void> => {
+    await sleep(250);
+    await step(p, screen, results);
+    done.add(screen);
+  };
+  const need = (ok: boolean, why: string): void => {
+    if (!ok) throw new Stop(why);
+  };
+  // THE ROOT SIZE AGAIN AFTER EVERY LOAD, as `walk` does and for its reason: the app can render
+  // before `rootFontSize` lands, and the first run of this walk measured its first screen after
+  // each load at 100% and called it unscaled (the instrument, not the screen).
+  const loaded = async (): Promise<void> => {
+    await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+    await page.evaluate((p: string | null) => {
+      if (p) document.documentElement.style.fontSize = p;
+    }, rootPct);
+    await sleep(100);
+  };
+  const blocked = async (p: Page): Promise<string | null> =>
+    (await p.evaluate('window.__blocked')) as string | null;
+
+  // ---- The audited page as CAPTAIN, a helper as the other player ------------------------------
+  await page.evaluateOnNewDocument(LOCAL_ONLY);
+  const helperCtx = await browserOf.createBrowserContext();
+  const helper = await helperCtx.newPage();
+  await helper.setViewport({ width: 360, height: 780 });
+  await helper.evaluateOnNewDocument(LOCAL_ONLY);
+  try {
+    await page.goto(URL, { waitUntil: 'load' });
+    await loaded();
+    need(await clickSel(page, '[data-title="together"]'), 'the Title offered no Play together');
+    need(
+      await until(page, `!!document.querySelector('[data-screen="together"]')`),
+      'Play together did not open',
+    );
+    await at(page, 'together');
+    await nest(page, nesting, 'Title → Play together → close', 'title');
+    need(await clickSel(page, '[data-title="together"]'), 'Play together did not open again');
+    await until(page, `!!document.querySelector('[data-screen="together"]')`);
+    await typeInto(page, '[data-together="name"]', 'Asha');
+    await typeInto(page, '[data-together="code"]', 'QQQQQQ');
+    await clickSel(page, '[data-together="join"]');
+    need(
+      await until(page, `!!document.querySelector('[data-together="refusal"]')`),
+      'a wrong code was not refused',
+    );
+    const blockedAt = await blocked(page);
+    need(
+      blockedAt === null,
+      `the build's relay is not on this machine (${blockedAt ?? ''}); rebuild with VITE_RELAY_URL`,
+    );
+    await at(page, 'together, a refusal');
+    await clickSel(page, '[data-together="create"]');
+    need(
+      await until(page, `!!document.querySelector('[data-screen="lobby"]')`),
+      'Create a room did not reach the lobby',
+    );
+    const code = (await page.evaluate(
+      `document.querySelector('[data-lobby="code"]').innerText.trim()`,
+    )) as string;
+    // The helper joins and takes four seats; the audited page takes three.
+    await helper.goto(URL, { waitUntil: 'load' });
+    await helper.waitForFunction(() => document.querySelector('button') !== null, {
+      timeout: 30000,
+    });
+    await clickSel(helper, '[data-title="together"]');
+    await until(helper, `!!document.querySelector('[data-screen="together"]')`);
+    await typeInto(helper, '[data-together="name"]', 'Ravi');
+    await typeInto(helper, '[data-together="code"]', code);
+    await clickSel(helper, '[data-together="join"]');
+    need(
+      await until(helper, `!!document.querySelector('[data-screen="lobby"]')`),
+      'the helper could not join',
+    );
+    for (const s of ['tcell', 'helper', 'nk', 'eosinophil'])
+      await clickSel(helper, `[data-seat="${s}"]`);
+    for (const s of ['macrophage', 'neutrophil', 'bcell'])
+      await clickSel(page, `[data-seat="${s}"]`);
+    need(
+      await until(
+        page,
+        `document.querySelector('[data-seat="eosinophil"]')?.dataset.seatState === 'taken'`,
+      ),
+      'the seats were not taken',
+    );
+    await at(page, 'lobby, captain');
+    await nest(page, nesting, 'Lobby → back gesture', 'lobby', 'gesture');
+    await clickSel(page, '[data-difficulty="hard"]');
+    await clickSel(page, '[data-lobby="start"]');
+    need(await waitFor(page, 'Begin', 15000), 'the game did not start');
+    await at(page, 'goal dialog, together');
+    await click(page, 'Begin');
+    if (await waitFor(helper, 'Begin', 10000)) await click(helper, 'Begin');
+    // The captain's device draws; plan, then begin: the allocation, with the captain's controls.
+    need(await waitFor(page, 'Plan your turn', 15000), 'the draw did not come');
+    await click(page, 'Plan your turn');
+    need(await waitFor(page, 'Command your cells', 5000), 'planning did not show');
+    await click(page, 'Command your cells');
+    need(
+      await until(page, `!!document.querySelector('[data-allocation-add="m2"]')`),
+      'the allocation did not show',
+    );
+    await clickSel(page, '[data-allocation-add="m2"]');
+    await clickSel(page, '[data-allocation-add="m2"]');
+    await at(page, 'planning, allocation, captain');
+    await click(page, 'Confirm the plan');
+    need(await waitFor(page, 'End turn', 8000), 'the command phase did not come');
+    await sleep(300);
+    need(await clickSel(page, '[data-bar-ap]'), 'the AP figure could not be opened');
+    await at(page, 'AP terms, together');
+    await nest(page, nesting, 'Command → AP terms, together → close', 'play');
+    need(await pick(page, 'cell:tcell'), "another player's piece could not be selected");
+    await at(page, "command, another player's piece");
+    await deselect(page);
+    need(await clickSel(page, '[data-table-open]'), 'the Table could not be opened');
+    need(await until(page, `!!document.querySelector('[data-give]')`), 'the Table had no handover');
+    await at(page, 'table, captain');
+    await nest(page, nesting, 'Command → the Table → close', 'play');
+    need(await clickSel(page, '[data-menu]'), 'the menu could not be opened');
+    need(
+      await until(page, `!!document.querySelector('[data-pause="leave"]')`),
+      'the menu had no Leave',
+    );
+    await at(page, 'pause menu, together');
+    await clickSel(page, '[data-pause="leave"]');
+    await until(page, `!!document.querySelector('[data-pause="leave-confirm"]')`);
+    await at(page, 'pause menu, leave confirm');
+    await click(page, 'Stay');
+    await clickSel(page, '[data-pause="quit"]');
+    await until(page, `!!document.querySelector('[data-pause="quit-confirm"]')`);
+    await at(page, 'pause menu, back to the title confirm');
+    await click(page, 'Stay');
+    await click(page, 'Resume');
+    // This device's connection drops: the sheet, at once. The captaincy passes to the helper.
+    await page.evaluate(`window.__sockets.at(-1).close()`);
+    need(
+      await until(page, `!!document.querySelector('[data-connection-lost]')`),
+      'the lost connection was not shown',
+    );
+    await at(page, 'play, connection lost');
+    // The app is gone and comes back: the Title offers the room, and the name is typed again.
+    await page.reload({ waitUntil: 'load' });
+    await loaded();
+    need(
+      await until(page, `!!document.querySelector('[data-title="rejoin"]')`, 20000),
+      'the Title did not offer the room',
+    );
+    await at(page, 'title, a room to rejoin');
+    await clickSel(page, '[data-title="rejoin"]');
+    need(
+      await until(page, `!!document.querySelector('[data-together="rejoin"]')`),
+      'the rejoin form did not open',
+    );
+    await at(page, 'together, rejoin');
+    await typeInto(page, '[data-together="name"]', 'Asha');
+    await clickSel(page, '[data-together="rejoin"]');
+    need(
+      await until(page, `!!document.querySelector('[data-play-frame]')`, 15000),
+      'the rejoin did not return to the game',
+    );
+    // To the end: the helper is captain now, and takes the turns; the body falls on Hard.
+    for (let turn = 0; turn < 20; turn += 1) {
+      if (await page.evaluate(() => !!document.querySelector('[data-result]'))) break;
+      await captainTurn(helper, [page]);
+    }
+    need(
+      await until(page, `!!document.querySelector('[data-result="together"]')`, 30000),
+      'the game did not reach its Result in 20 turns',
+    );
+    await at(page, 'result, together');
+  } catch (e) {
+    const why =
+      e instanceof Stop
+        ? e.message
+        : `the walk failed: ${(e as Error).message.split('\n')[0] ?? ''}`;
+    for (const s of CAPTAIN_SCREENS) if (!done.has(s)) results.push(notReached(s, why));
+  }
+  await helperCtx.close();
+
+  // ---- The audited page as a GUEST, the helper as captain -------------------------------------
+  const done2 = new Set<string>();
+  const at2 = async (screen: string): Promise<void> => {
+    await sleep(250);
+    await step(page, screen, results);
+    done2.add(screen);
+  };
+  const helperCtx2 = await browserOf.createBrowserContext();
+  const captain = await helperCtx2.newPage();
+  await captain.setViewport({ width: 360, height: 780 });
+  await captain.evaluateOnNewDocument(LOCAL_ONLY);
+  try {
+    await captain.goto(URL, { waitUntil: 'load' });
+    await captain.waitForFunction(() => document.querySelector('button') !== null, {
+      timeout: 30000,
+    });
+    await clickSel(captain, '[data-title="together"]');
+    await until(captain, `!!document.querySelector('[data-screen="together"]')`);
+    await typeInto(captain, '[data-together="name"]', 'Ravi');
+    await clickSel(captain, '[data-together="create"]');
+    need(
+      await until(captain, `!!document.querySelector('[data-screen="lobby"]')`),
+      'the helper could not create a room',
+    );
+    const blockedAt = await blocked(captain);
+    need(blockedAt === null, `the build's relay is not on this machine (${blockedAt ?? ''})`);
+    const code = (await captain.evaluate(
+      `document.querySelector('[data-lobby="code"]').innerText.trim()`,
+    )) as string;
+    await page.goto(URL, { waitUntil: 'load' });
+    await loaded();
+    await clickSel(page, '[data-title="together"]');
+    await until(page, `!!document.querySelector('[data-screen="together"]')`);
+    await typeInto(page, '[data-together="name"]', 'Asha');
+    await typeInto(page, '[data-together="code"]', code);
+    await clickSel(page, '[data-together="join"]');
+    need(
+      await until(page, `!!document.querySelector('[data-screen="lobby"]')`),
+      'the audited page could not join',
+    );
+    for (const s of ['macrophage', 'neutrophil', 'bcell'])
+      await clickSel(captain, `[data-seat="${s}"]`);
+    for (const s of ['tcell', 'nk']) await clickSel(page, `[data-seat="${s}"]`);
+    need(
+      await until(
+        page,
+        `document.querySelector('[data-seat="bcell"]')?.dataset.seatState === 'taken'`,
+      ),
+      'the seats were not taken',
+    );
+    await at2('lobby, not captain');
+    await clickSel(captain, '[data-lobby="start"]');
+    need(await waitFor(page, 'Begin', 15000), 'the game did not start');
+    await click(page, 'Begin');
+    if (await waitFor(captain, 'Begin', 10000)) await click(captain, 'Begin');
+    need(await waitFor(page, 'Plan your turn', 15000), "the captain's draw did not come");
+    await click(page, 'Plan your turn');
+    need(
+      await until(page, `!!document.querySelector('[data-dock-next][data-waiting]')`),
+      'the waiting button did not show',
+    );
+    await at2('planning, waiting for the captain');
+    if (await waitFor(captain, 'Plan your turn', 10000)) await click(captain, 'Plan your turn');
+    if (await waitFor(captain, 'Command your cells', 5000))
+      await click(captain, 'Command your cells');
+    need(
+      await until(page, `!!document.querySelector('[data-block="allocation"]')`),
+      'the allocation did not show',
+    );
+    await at2('planning, allocation, not captain');
+    if (await waitFor(captain, 'Confirm the plan', 5000)) await click(captain, 'Confirm the plan');
+    need(
+      await until(
+        page,
+        `document.querySelector('[data-play-area]')?.dataset.playArea === 'command'`,
+      ),
+      'the command phase did not come',
+    );
+    await at2('command, the captain ends the turn');
+    need(await clickSel(page, '[data-table-open]'), 'the Table could not be opened');
+    await until(page, `!!document.querySelector('[data-table-view]')`);
+    await at2('table, not captain');
+    await closeLevel(page);
+    // Leave, which forgets the room on this device.
+    await clickSel(page, '[data-menu]');
+    await until(page, `!!document.querySelector('[data-pause="leave"]')`);
+    await clickSel(page, '[data-pause="leave"]');
+    await until(page, `!!document.querySelector('[data-pause="leave-confirm"]')`);
+    await clickSel(page, '[data-pause="leave-confirm"]');
+    await until(page, `!!document.querySelector('[data-title="together"]')`);
+  } catch (e) {
+    const why =
+      e instanceof Stop
+        ? e.message
+        : `the walk failed: ${(e as Error).message.split('\n')[0] ?? ''}`;
+    for (const s of GUEST_SCREENS) if (!done2.has(s)) results.push(notReached(s, why));
+  }
+  await helperCtx2.close();
+  // Nothing left behind for the next pass (see the header).
+  await page.evaluate(() => localStorage.removeItem('immunity-wars.room'));
+}
+
 /** Sets the root font size on every document the page loads from now on (200%), or clears it. */
 async function rootFontSize(page: Page, pct: string | null): Promise<void> {
   await page.evaluateOnNewDocument((p: string | null) => {
@@ -2676,12 +3082,19 @@ try {
   const controlLines = await controls(page);
   for (const l of controlLines) console.error(l);
   const offlineOnly = process.argv.includes('--offline-only');
+  // --together-only: the playing-together walk in every pass and nothing else of the walks, for a
+  // quick run over the P3.7 screens (and for the check that the walk refuses a relay not on this
+  // machine). Never a Gate 1 run: the full run is `--together`.
+  const walkAlone = !offlineOnly && !TOGETHER_ONLY;
 
   const results: ScreenResult[] = [];
   const nesting: NestResult[] = [];
   if (!offlineOnly) {
-    await walk(page, results, audit, null, nesting);
-    await walkToResult(page, results, audit, nesting);
+    if (walkAlone) {
+      await walk(page, results, audit, null, nesting);
+      await walkToResult(page, results, audit, nesting);
+    }
+    await walkTogether(page, results, audit, nesting);
   }
 
   // FONT200: the same screens at 360px with the root font size at 200% — the browser
@@ -2691,8 +3104,11 @@ try {
   await rootFontSize(page2, '200%');
   const font200: ScreenResult[] = [];
   if (!offlineOnly) {
-    await walk(page2, font200, font200Audit, '200%');
-    await walkToResult(page2, font200, font200Audit);
+    if (walkAlone) {
+      await walk(page2, font200, font200Audit, '200%');
+      await walkToResult(page2, font200, font200Audit);
+    }
+    await walkTogether(page2, font200, font200Audit, null, '200%');
   }
   await page2.close();
 
@@ -2702,8 +3118,11 @@ try {
   await page4.setViewport({ width: 180, height: 390, deviceScaleFactor: 2 });
   const zoom200: ScreenResult[] = [];
   if (!offlineOnly) {
-    await walk(page4, zoom200, zoom200Audit);
-    await walkToResult(page4, zoom200, zoom200Audit);
+    if (walkAlone) {
+      await walk(page4, zoom200, zoom200Audit);
+      await walkToResult(page4, zoom200, zoom200Audit);
+    }
+    await walkTogether(page4, zoom200, zoom200Audit);
   }
   await page4.close();
 
@@ -2732,8 +3151,11 @@ try {
             },
           ],
     });
-    await walk(page5, size200, font200Audit);
-    await walkToResult(page5, size200, font200Audit);
+    if (walkAlone) {
+      await walk(page5, size200, font200Audit);
+      await walkToResult(page5, size200, font200Audit);
+    }
+    await walkTogether(page5, size200, font200Audit);
     const std = await chooseTextSize(page5, '100');
     const reset = await sizeCheck(page5, 'settings, Standard chosen again', '100');
     size200.push({
