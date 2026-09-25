@@ -88,6 +88,9 @@ async function openCommand(page: Page): Promise<void> {
       { timeout: 10000 },
     )
     .catch(() => undefined);
+  // THE STEP GUARD (FINDINGS #90): the advance button ignores a tap within 500 ms of its step
+  // changing (packages/ui/src/play/stepGuard.ts), and this one has only just appeared.
+  await new Promise((r) => setTimeout(r, 550));
   await page.evaluate(() => {
     const b = [...document.querySelectorAll('button')].find(
       (x) => x.textContent?.trim() === 'Plan your turn',

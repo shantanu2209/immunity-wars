@@ -4622,3 +4622,21 @@ draw, before the arrivals stage replaces it, measured in the page at 10 ms.
 
 **Proposed** (for a ruling): the advance button ignores a tap for about half a second after its step
 changes. The steps a double tap would skip into are the costly ones, *End turn* above all.
+
+### ✅ FIXED, 25 September 2026, by ruling (*"Agree with your recommendation"*)
+
+The advance button ignores a tap within half a second of its step changing, or of its becoming
+tappable (`packages/ui/src/play/stepGuard.ts`, applied in `AdvanceButton`). Timed from the change,
+not from the first tap, so the one-frame flash after a draw is covered too, and so is a step that
+changes because another player acted. **Measured both ways in single player**, the same double tap
+on *Command your cells*: at gaps of 80, 150, 250 and 400 ms the player is left in command with their
+points; at 800 ms the second tap still ends the turn, so a deliberate tap is not lost. Control:
+`step-guard`.
+
+**The instruments that press the button were changed with it**, because a driver that taps the moment
+the step appears is now ignored and then measures the wrong screen: the Gate 1 audit, `measure.ts`
+and `measure-full.ts` wait out the guard before tapping it. **The Gate 1 audit, re-run on the build
+with the guard:** 44 controls all firing the right way, 60 screens per pass (62 under SIZE200),
+none NOT REACHED, every check 0, nesting 33 checked and 0 wrong, offline met: the bar of P2.7's last
+run, held. It was not re-run without the wait, so that the audit would have failed without it is
+expected, not measured.

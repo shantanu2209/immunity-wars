@@ -161,7 +161,12 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 > **What is invariant, and is what a run must hold:** 44 screens per pass (46 under SIZE200), no
 > screen NOT REACHED, every check 0, 34 controls all firing the right way (27 until 13 September 2026; #69
 > added two, piece 1 five), no nesting landing wrong, offline met. A NOT REACHED is never a sample, but it can be the deal: reach the
-> screen or explain it (`FINDINGS.md` #68, added note). **What is a
+> screen or explain it (`FINDINGS.md` #68, added note).
+>
+> ⚠️ *Corrected 25 September 2026, at the FINDINGS #90 fix:* the counts in the invariant above are
+> P2.6's. P2.7 added screens and controls, recorded run by run in [`for-P2.7.md`](for-P2.7.md), and
+> its last run is the bar now: **60 screens per pass (62 under SIZE200) and 44 controls**, the rest as
+> above. The #90 run held it exactly. **What is a
 > sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
 > a drop of 5 is the deck.
 

@@ -1161,3 +1161,8 @@ for them, which is also said.
    changes the room's rules (`ended` would lead back to `lobby`), so it is a ruling, not a default.
    **Recommendation: yes, as its own small piece after P3.6**: P3.6 does not need it, and friends
    who have just finished a game will want the next one.
+
+**Ruled, 25 September 2026: both as recommended** (*"1. Agree with your recommendation 2.agree with
+your recommendation"*). The guard for #90 is built before P3.6 (FINDINGS #90, fixed). Another game
+in the same room is its own piece after P3.6, and changes the room's rules when it is built, so the
+brief's §5 is amended then, not before.
