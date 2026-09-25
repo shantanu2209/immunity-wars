@@ -584,7 +584,11 @@ function App({ onPlayingChange }: { onPlayingChange: (playing: boolean) => void 
             key={gameId}
             session={session}
             artMetrics={artMetrics}
-            coach={!played}
+            // THE COACH TEACHES A GAME PLAYED ALONE: its steps ("tap End turn") are the captain's in a
+            // game played together, so it is off there (P3.7 piece B).
+            coach={!played && roomRef.current === null}
+            // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
+            table={roomRef.current !== null && lobby !== null ? lobby : null}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}

@@ -16,6 +16,8 @@ export {
   PROTOCOL_VERSION,
   RULES_VERSION,
   SEATS,
+  pidOf,
+  residentSeat,
   type ErrorCode,
   type Seat,
 } from './vocabulary.js';

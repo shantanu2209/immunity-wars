@@ -18,8 +18,9 @@
  * ONCE A TURN. A draw the engine refuses is shown like any rejection and is not retried, which is
  * what keeps a refusal from becoming a loop.
  *
- * Phase 3 inherits one fact: in a multiplayer game the engine accepts a draw only from the
- * captain, so only the captain's client may send it. Nothing here decides that yet.
+ * ONLY THE CAPTAIN'S DEVICE, in a game played together (P3.7 piece B). The engine accepts a draw
+ * only from the captain, so every other player's device waits for it; before this, whichever
+ * device reached the moment first sent it, and on the wrong timing the draw was refused.
  *
  * Pure, so the rule is tested on the real engine before it is trusted in a game
  * (`tests/session/src/auto-draw.test.ts`, with its controls).
@@ -37,10 +38,12 @@ export interface DrawMoment {
   covered: boolean;
   /** The turn a draw was last sent for, or null when none has been. */
   sentForTurn: number | null;
+  /** This device may send the draw: always alone, and only the captain's in a game played together. */
+  mayDraw: boolean;
 }
 
 export function shouldDraw(m: DrawMoment): boolean {
-  if (m.playing || m.dialogPending || m.covered) return false;
+  if (!m.mayDraw || m.playing || m.dialogPending || m.covered) return false;
   const g = m.game;
   if (String(g['phase']) !== 'infection') return false;
   if (g['drawn'] !== null && g['drawn'] !== undefined) return false;

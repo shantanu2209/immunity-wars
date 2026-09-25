@@ -30,6 +30,7 @@ import { cellDisplayName, typeDisplayName } from '../names';
 import { CardIcon } from '../panels/CardIcon';
 import { organEffect, unavailableText } from '../panels/InspectSheet';
 import { AnatomyView } from './AnatomyView';
+import { planned, poolLeft, type Budgets, type Draft } from './table';
 import {
   DEPTH_LABEL,
   placeName,
@@ -248,21 +249,97 @@ function GroupRow({
 }
 
 /** BLOCK D — Phase 3's allocation, read from the view; no controls until Phase 3 builds them. */
-export function AllocationBlock({ slot }: { slot: AllocationSlot }): ReactElement {
+const STEP_BTN: CSSProperties = {
+  minWidth: 44,
+  minHeight: 44,
+  borderRadius: 8,
+  border: '1.5px solid #8E6E53',
+  background: '#FFFDF9',
+  color: '#2E2A28',
+  fontSize: '0.9375rem',
+  fontWeight: 700,
+  cursor: 'pointer',
+};
+
+/**
+ * THE ALLOCATION (P3.7 piece B; ruled 25 September 2026, ruling 3). Every player by the name they
+ * typed, never the engine's `m1`. The captain's device carries the draft and its buttons: every
+ * other player starts at nothing and the pool is the captain's, which is the engine's own state when
+ * the phase begins, and Confirm sends the draft (`table.ts` says why it is a draft). Everyone else
+ * sees the same block without buttons, as the engine holds it.
+ */
+export function AllocationBlock({
+  slot,
+  nameOf = (pid) => pid,
+  control = null,
+}: {
+  slot: AllocationSlot;
+  nameOf?: (pid: string) => string;
+  /** The captain's draft and its buttons; null for everyone else. */
+  control?: {
+    draft: Draft;
+    onAdd: (pid: string) => void;
+    onRemove: (pid: string) => void;
+    disabled: boolean;
+  } | null;
+}): ReactElement {
+  const budgets: Budgets = Object.fromEntries(slot.budgets.map((b) => [b.pid, b.ap]));
+  const draft: Draft = control?.draft ?? {};
+  const left = slot.captain === null ? 0 : poolLeft(draft, budgets, slot.captain);
   return (
     <section data-block="allocation" style={PANEL}>
       <div style={TITLE}>{t('planning.allocation')}</div>
-      <div>{t('planning.pool', { n: slot.pool })}</div>
+      <div data-allocation-left={String(left)}>
+        {control ? t('allocation.left', { n: left }) : t('planning.pool', { n: slot.pool })}
+      </div>
       <div style={{ color: '#78665D' }}>{t('planning.allocationNote')}</div>
-      {slot.budgets.map((b) => (
-        <div key={b.pid} style={{ minHeight: 28, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontWeight: b.pid === slot.captain ? 700 : 400 }}>{b.pid}</span>
-          <span>{t('inspect.sep')}</span>
-          <span>
-            {b.ap} {t('commandBar.ap')}
-          </span>
-        </div>
-      ))}
+      {slot.budgets.map((b) => {
+        const isCaptain = b.pid === slot.captain;
+        const shown = isCaptain ? left : planned(draft, budgets, b.pid);
+        const name = nameOf(b.pid);
+        return (
+          <div
+            key={b.pid}
+            data-allocation-row={b.pid}
+            style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <span style={{ fontWeight: isCaptain ? 700 : 400, flex: '1 1 auto' }}>
+              {name}
+              {isCaptain ? (
+                <span style={{ color: '#78665D', fontWeight: 400 }}>
+                  {' '}
+                  {t('inspect.sep')} {t('allocation.keeps')}
+                </span>
+              ) : null}
+            </span>
+            <span data-allocation-ap={b.pid} style={{ fontWeight: 700 }}>
+              {shown} {t('commandBar.ap')}
+            </span>
+            {control && !isCaptain ? (
+              <>
+                <button
+                  data-allocation-remove={b.pid}
+                  aria-label={t('allocation.removeLabel', { name })}
+                  style={STEP_BTN}
+                  disabled={control.disabled || shown <= b.ap}
+                  onClick={() => control.onRemove(b.pid)}
+                >
+                  {t('allocation.remove')}
+                </button>
+                <button
+                  data-allocation-add={b.pid}
+                  aria-label={t('allocation.addLabel', { name })}
+                  style={STEP_BTN}
+                  disabled={control.disabled || left <= 0}
+                  onClick={() => control.onAdd(b.pid)}
+                >
+                  {t('allocation.add')}
+                </button>
+              </>
+            ) : null}
+          </div>
+        );
+      })}
     </section>
   );
 }

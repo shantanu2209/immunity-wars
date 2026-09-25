@@ -40,6 +40,7 @@ const open = (game: DrawMoment['game'], sentForTurn: number | null): DrawMoment 
   dialogPending: false,
   covered: false,
   sentForTurn,
+  mayDraw: true,
 });
 
 async function exercise(rule: Rule, difficulty: string, maxTurns: number): Promise<Run> {

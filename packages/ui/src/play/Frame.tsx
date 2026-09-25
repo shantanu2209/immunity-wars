@@ -234,7 +234,7 @@ export function Toast({ text }: { text: string }): ReactElement {
 export interface ActionsUndo {
   available: boolean;
   moves: number;
-  /** `multiplayer` (P3.4) has no wording of its own yet: the multiplayer screens (P3.7) owe it. */
+  /** `multiplayer` (P3.4): the relay refuses undo in a room (FINDINGS #79), worded at P3.7. */
   reason?: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed' | 'multiplayer';
   committedBy?: string | null;
 }
@@ -289,6 +289,11 @@ const TONE: Record<'hint' | 'muted' | 'memory' | 'alert', string> = {
  */
 export function ActionsView(props: {
   selectedName: string | null;
+  /**
+   * Who plays the selected piece, when it is another player's (P3.7, ruling 5): said beside its
+   * name, because its rows are all greyed and would otherwise say why only when tapped.
+   */
+  owner?: string | null;
   onCard: (() => void) | null;
   cardLabel: string | null;
   /** Said on the name line when nothing is selected. */
@@ -315,7 +320,9 @@ export function ActionsView(props: {
       ? t('undo.committed', { action: actionDisplayName(undo.committedBy ?? '') })
       : undo.reason === 'resumed'
         ? t('undo.resumed')
-        : t('undo.noMoves');
+        : undo.reason === 'multiplayer'
+          ? t('undo.multiplayer')
+          : t('undo.noMoves');
   const slots = props.rows.length + props.moveButtons.length + (props.onWhatsHere ? 1 : 0);
   return (
     <div data-actions="" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -356,6 +363,14 @@ export function ActionsView(props: {
             style={{ fontSize: '0.8125rem', lineHeight: 1.35, color: TONE[props.promptTone] }}
           >
             {props.prompt}
+          </span>
+        ) : null}
+        {props.selectedName !== null && props.owner ? (
+          <span
+            data-owner=""
+            style={{ fontSize: '0.8125rem', lineHeight: 1.35, color: TONE.muted, flex: '1 1 auto' }}
+          >
+            {props.owner}
           </span>
         ) : null}
         {props.inCommand ? (
@@ -585,17 +600,25 @@ export function AdvanceButton({
   label,
   disabled,
   hidden,
+  waiting = false,
   onPress,
 }: {
   keyName: string;
   label: string;
   disabled: boolean;
   hidden: boolean;
+  /**
+   * THE NEXT STEP IS SOMEONE ELSE'S (P3.7): the captain's, in a game played together. The label says
+   * who, and the button is drawn as a status rather than a control, since it can stay that way for a
+   * whole turn and a child will otherwise tap it. Alone this never happens.
+   */
+  waiting?: boolean;
   onPress: () => void;
 }): ReactElement {
   return (
     <button
       data-dock-next={keyName}
+      data-waiting={waiting ? '1' : undefined}
       aria-hidden={hidden ? true : undefined}
       disabled={disabled}
       onClick={onPress}
@@ -605,11 +628,11 @@ export function AdvanceButton({
         minHeight: '3rem',
         width: '100%',
         fontSize: '1rem',
-        fontWeight: 700,
         borderRadius: 10,
-        border: '2px solid #B03A2E',
-        background: '#FFFDF9',
+        border: waiting ? '2px dashed #C9B8A8' : '2px solid #B03A2E',
+        background: waiting ? '#F3EDE6' : '#FFFDF9',
         color: '#2E2A28',
+        fontWeight: waiting ? 400 : 700,
         cursor: disabled ? 'default' : 'pointer',
         visibility: hidden ? 'hidden' : 'visible',
       }}

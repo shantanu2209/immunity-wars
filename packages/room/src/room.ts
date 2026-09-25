@@ -29,7 +29,14 @@
 import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
-import { SEATS, type ErrorCode, type RoomProjection, type Seat } from '@immunity-wars/protocol';
+import {
+  SEATS,
+  pidOf,
+  residentSeat,
+  type ErrorCode,
+  type RoomProjection,
+  type Seat,
+} from '@immunity-wars/protocol';
 import { advanceIdsPast, precompute, scopeAll } from '@immunity-wars/session-core';
 
 import {
@@ -217,7 +224,7 @@ const replace = (room: RoomState, ref: string, f: (m: Member) => Member): RoomSt
  * member's credential in every view; the wire suite found it on its first run against real views,
  * where the constructed view the protocol suite uses could not have.
  */
-const pidOf = (m: Member): string => `m${String(m.joinOrder)}`;
+const pidOfMember = (m: Member): string => pidOf(m.joinOrder);
 
 /**
  * The game's owner map, in the engine's vocabulary: seat key to the player id that holds it. The
@@ -225,7 +232,7 @@ const pidOf = (m: Member): string => `m${String(m.joinOrder)}`;
  */
 const ownerMap = (room: RoomState): Record<string, string> => {
   const owner: Record<string, string> = {};
-  for (const m of room.members) for (const s of m.seats) owner[s] = pidOf(m);
+  for (const m of room.members) for (const s of m.seats) owner[s] = pidOfMember(m);
   return owner;
 };
 
@@ -251,7 +258,7 @@ function syncCaptain(room: RoomState): Outbound[] {
   const captain = find(room, room.captain);
   if (!captain) return [];
   const g = room.game as GameState;
-  const to = pidOf(captain);
+  const to = pidOfMember(captain);
   if (g.captain === to) return [];
   const result = apply(g, { action: 'handOverCaptaincy', pid: g.captain, toPid: to });
   if (!result.ok) return [];
@@ -263,7 +270,7 @@ function seatOf(action: Record<string, unknown>): string | null {
   const cell = action['cell'];
   if (typeof cell === 'string') return cell;
   const organ = action['organ'];
-  if (typeof organ === 'string') return `res_${organ}`;
+  if (typeof organ === 'string') return residentSeat(organ);
   return null;
 }
 
@@ -382,9 +389,9 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       const game = newGame({
         difficulty: msg.difficulty,
         multiplayer: true,
-        captain: pidOf(captainMember),
+        captain: pidOfMember(captainMember),
         owner: ownerMap(room),
-        players: room.members.map(pidOf),
+        players: room.members.map(pidOfMember),
       });
       const next: RoomState = { ...room, phase: 'playing', game };
       return { room: next, out: [broadcast(next), viewFor(game)] };
@@ -410,7 +417,7 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         return refuse(room, msg.ref, msg.id, 'notYourPiece');
       const game = room.game as GameState;
       // The sender's PUBLIC id, stamped after the spread so an action cannot carry another's.
-      const result = apply(game, { ...msg.action, pid: pidOf(me) });
+      const result = apply(game, { ...msg.action, pid: pidOfMember(me) });
       // The ENGINE's refusal: its own text rides as the detail, and the client renders it through
       // the engine catalogue exactly as single player does.
       if (!result.ok) return refuse(room, msg.ref, msg.id, 'engine', result.error ?? '');

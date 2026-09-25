@@ -16,6 +16,8 @@
     "@immunity-wars/content": "workspace:*",
     "@immunity-wars/engine": "workspace:*",
     "@immunity-wars/equivalence": "workspace:*",
+    "@immunity-wars/protocol": "workspace:*",
+    "@immunity-wars/room": "workspace:*",
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/session-core": "workspace:*",
     "@immunity-wars/ui": "workspace:*"

@@ -41,6 +41,7 @@ import {
   ROUTE_KEYS,
   VACCINE_COST,
 } from '@immunity-wars/content';
+import { residentSeat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
@@ -143,6 +144,31 @@ interface Invaderish {
 }
 
 const EMPTY_CELL: Offered = { source: 'cell', board: [], buttons: [], reason: null };
+
+/**
+ * WHO MAY MOVE WHAT, in a game played together (P3.7 piece B). The room holds the seats and refuses
+ * an action on a piece its sender does not hold (`notYourPiece`), so a piece that is not this
+ * player's is offered nothing: it can be selected and read, not moved (ruled 25 September 2026,
+ * ruling 5). Actions with no piece, the body's, are open to every player with the Action Points.
+ *
+ * Single player passes nothing and holds every seat, so every call it makes is unchanged.
+ */
+export interface SeatRule {
+  /** Whether this player holds the seat. */
+  mine: (seat: string) => boolean;
+  /** The line that says who does, for a seat that is not this player's. */
+  theirs: (seat: string) => string;
+}
+
+export const EVERY_SEAT: SeatRule = { mine: () => true, theirs: () => '' };
+
+/** The seat the selection is, or null when nothing is selected. */
+const selectedSeat = (view: SessionView): string | null =>
+  view.selection.cell ??
+  (view.selection.resident !== null ? residentSeat(view.selection.resident) : null);
+
+/** Another player's piece, selected: nothing offered, and the line saying whose it is. */
+const theirPiece = (line: string): Offered => ({ ...EMPTY_CELL, note: line });
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
 interface Target {
@@ -357,9 +383,12 @@ export function producibleFamilies(view: SessionView): {
  * under the same conditions: the command phase, the B-Cell neither spent nor offline, and an Action
  * Point or a free B-Cell action to pay with.
  */
-export function produceOffers(view: SessionView): ButtonOffer[] {
+export function produceOffers(view: SessionView, seats: SeatRule = EVERY_SEAT): ButtonOffer[] {
   const g = view.game;
   if (String(g['phase']) !== 'command') return [];
+  // Producing is the B-Cell's action (the room's seat check reads its `cell`), so it is offered
+  // only to the player who holds the B-Cell.
+  if (!seats.mine('bcell')) return [];
   if (isSpent(g, 'bcell') || isSuppressed(g, 'bcell') || !canAct(g, 'bcell')) return [];
   const out: ButtonOffer[] = [];
   for (const f of producibleFamilies(view)) {
@@ -377,11 +406,13 @@ export function produceOffers(view: SessionView): ButtonOffer[] {
   return out;
 }
 
-export function offeredActions(view: SessionView): Offered {
+export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT): Offered {
   const g = view.game;
   const cell = view.selection.cell;
   const resident = view.selection.resident;
   if (!cell && !resident) return bodyOffers(view);
+  const seat = selectedSeat(view);
+  if (seat !== null && !seats.mine(seat)) return theirPiece(seats.theirs(seat));
   if (String(g['phase']) !== 'command') return { ...EMPTY_CELL, reason: t('selection.notCommand') };
   if (resident) return residentOffers(view, resident);
   if (!cell) return bodyOffers(view);
@@ -821,9 +852,11 @@ function actionReason(view: SessionView, piece: string, action: string, act: boo
  * catalogue action, available ones expanded per target from the offers, the rest greyed with
  * their reason. Movement is not here — it stays on the board, as ruled.
  */
-export function actionRows(view: SessionView): ActionRow[] {
+export function actionRows(view: SessionView, seats: SeatRule = EVERY_SEAT): ActionRow[] {
   const g = view.game;
-  const offered = offeredActions(view);
+  const offered = offeredActions(view, seats);
+  const seat = selectedSeat(view);
+  const theirs = seat !== null && !seats.mine(seat) ? seats.theirs(seat) : null;
   const cell = view.selection.cell;
   const resident = view.selection.resident;
   const piece = cell ?? (resident ? 'resident' : 'body');
@@ -857,7 +890,8 @@ export function actionRows(view: SessionView): ActionRow[] {
       continue;
     }
     let reason: string;
-    if (inPanel) reason = t('commandBar.producePanel');
+    if (theirs !== null) reason = theirs;
+    else if (inPanel) reason = t('commandBar.producePanel');
     else if (!inCommand) reason = t('selection.notCommand');
     else if (cell && isSpent(g, cell)) reason = t('selection.spent');
     else if (cell && isSuppressed(g, cell)) reason = t('selection.offline');
@@ -920,8 +954,8 @@ export interface DockRow {
   reason: string | null;
 }
 
-export function dockRows(view: SessionView): DockRow[] {
-  const rows = actionRows(view);
+export function dockRows(view: SessionView, seats: SeatRule = EVERY_SEAT): DockRow[] {
+  const rows = actionRows(view, seats);
   const order: string[] = [];
   for (const r of rows) {
     if (!DOCK_OMITS.has(r.action) && !order.includes(r.action)) order.push(r.action);

@@ -59,6 +59,17 @@ export const ORGAN_SEATS = [
 export const SEATS = [...CELL_SEATS, ...ORGAN_SEATS] as const;
 export type Seat = (typeof SEATS)[number];
 
+/** A resident's seat, from the organ the engine keys it by. */
+export const residentSeat = (organ: string): string => `res_${organ}`;
+
+/**
+ * THE ENGINE'S NAME FOR A MEMBER, from their public id (their join order). The room tells the
+ * engine who holds what and who acts in these names, and the engine's view carries them back in
+ * `players`, `captain`, `owner` and `apBudget`; a client reads its own budget with it (P3.7). Here,
+ * so the room and the screens do not each keep a copy of the convention.
+ */
+export const pidOf = (id: number): string => `m${String(id)}`;
+
 /**
  * WHY A ROOM SAID NO, as a code rather than a sentence.
  *
