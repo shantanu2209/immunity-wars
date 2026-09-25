@@ -740,3 +740,89 @@ the recommended default, and one new one:
 **Also settled:** the server key has a passphrase, held by the Windows key agent; and none of P3.4's
 build choices is to be revisited (six-character codes, the frame limits, when the selection clears,
 no automatic reconnect).
+
+---
+
+## 6. P3.7, the multiplayer screens: PROPOSED, nothing built
+
+Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
+together: getting into a room, playing their part of a shared game, and what happens when someone
+drops. P3.6 then plays full games on it, on two phones on two networks.
+
+### What already exists to build on
+
+- **The play screen takes any session of the right shape** (`PlaySessionLike`, `PlayScreen.tsx`), so a
+  `RelaySession` fits it as it is. Nothing below the screens needs changing to show a shared game.
+- **Phase 2 designed the allocation phase in**: `planning.ts` reads the pool and each player's budget,
+  and the planning screen has a slot for it (block d), read-only, *"no controls until Phase 3 builds
+  them"*.
+- **The automatic draw already records the rule it must learn**: *"in a multiplayer game the engine
+  accepts a draw only from the captain, so only the captain's client may send it. Nothing here
+  decides that yet"* (`autoDraw.ts`).
+- **The navigation stack, the catalogue and the title screen** take new screens the way Phase 2's did.
+- **`RelayRoom`** creates, joins, claims and releases seats, starts, leaves, and reports the room, its
+  refusals and a closed connection.
+
+### What would go wrong as it stands, measured on 25 September 2026
+
+1. **Every player would see the table's Action Points as their own.** In a multiplayer game the view's
+   `ap` stays at the table's total while each player spends from their own budget. Measured: after
+   the captain split 6 as 3 and 3, the view still said `ap: 6` to both. The screen reads `ap` in five
+   places, including the one that decides which actions to offer, so it would offer actions a player
+   cannot afford.
+2. **Every player would be offered every piece.** The screen assumes one player holds all fourteen
+   seats; the room refuses anyone else's (`notYourPiece`). Offers must come only from the player's own
+   seats, read from the room's projection, never the engine's `owner` (ruled, FINDINGS #81).
+3. **Every player's device would try the captain's actions**: the automatic draw, Begin command,
+   confirming the allocation, End turn. The engine refuses them from anyone but the captain.
+4. **The captain has no way to hand out Action Points**: the allocation slot has no controls.
+5. **Refusals the relay words as codes have no words**: `notYourPiece`, `lobbyClosed`, `noSuchRoom`,
+   `version` and the others arrive as codes, and the undo reason `multiplayer` has no line (#79).
+6. **Nothing shows a lost connection, or rejoins.**
+
+### The proposal, in four pieces
+
+**A. The way in.** From the title screen, *Play together*: type a name, then **Create a room** or
+**Join** with a code. A created room shows its code large, with the phone's share sheet and Copy. The
+lobby shows who is in and who is away, and the fourteen seats: tap a free one to take it, tap your own
+to give it back. The captain chooses the difficulty and starts; everyone else sees that the captain
+is choosing. Every refusal is worded: no such room, the game has already started, the app needs
+updating, too many attempts.
+
+**B. Playing your part.** Actions are offered only for your own seats, and your Action Points are
+your own budget. Other players' pieces show their player's name and can be inspected, not moved. The
+captain's device alone draws, begins command and ends the turn; everyone else sees whose move it is.
+The captain gets the allocation controls, and undo says it is single player only.
+
+**C. When someone drops.** Away players are marked on the seat list and on their pieces. The captain
+can hand an away player's seat to someone present, or free it, or the table waits (ruling 4). Your
+own lost connection shows as such, and the app rejoins by itself.
+
+**D. The end and leaving.** Everyone reaches the Result. *Leave* gives your seats back to the table,
+where closing the app does not.
+
+**Built as before:** each piece with tests that fail first, every string through the catalogue (the
+Hindi edition), no dashes in player text, and the 360-pixel audit extended to the new screens, run
+against a relay on the development PC. **First, a spike**: the existing play screen driven by a
+`RelaySession` in the development shell, to find what reading has missed before anything is designed
+around it.
+
+### Rulings needed before building
+
+1. **Where the way in lives.** A *Play together* button on the title screen, beside *New game*. Or
+   inside *New game*, as a second choice after the difficulty. **Recommendation: the title screen**:
+   the difficulty is the captain's choice in the lobby, not a first step for everyone.
+2. **The name a player types.** Remember it on the device, so it is filled in next time; it is never
+   sent anywhere except when joining a room, and Settings can clear it. Or ask for it every time.
+   **Recommendation: remember it on the device.**
+3. **How the captain hands out Action Points.** A row per player with minus and plus, starting from
+   an even split already filled in, and the pool's remainder shown. Or starting from nothing.
+   **Recommendation: the even split**, so the common case is one tap on Confirm.
+4. **A dropped connection.** The app rejoins by itself for about 30 seconds, quietly, then shows
+   *Reconnect*. Or it shows *Reconnect* at once. **Recommendation: rejoin by itself first**: a phone
+   that loses signal in a lift should not need a child to notice.
+5. **Other players' pieces.** Shown as normal, with the owner's name, inspectable but not movable. Or
+   dimmed. **Recommendation: shown as normal**: in a cooperative game, the whole table is everyone's
+   to read.
+6. **Sharing the code.** The phone's share sheet (to WhatsApp and the rest) and Copy. Or Copy only.
+   **Recommendation: both.**
