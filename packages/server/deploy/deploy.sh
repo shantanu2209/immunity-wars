@@ -57,9 +57,18 @@ echo "== keep the last three versions"
 echo "== answering through Caddy, from here"
 # A plain request to a WebSocket endpoint is answered 426 (Upgrade Required) by the relay itself,
 # so 426 means: DNS, the certificate, Caddy and the relay are all in place.
-STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://${HOST_NAME}/relay")"
+#
+# ASKED UNTIL IT ANSWERS, for up to 30 seconds. The first deploy (25 September 2026) checked once,
+# two seconds after the restart, and got 502: Caddy had asked before the relay was listening. The
+# relay was fine; the check was early. A 502 that lasts 30 seconds is not early.
+STATUS=000
+for _ in $(seq 1 30); do
+  STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://${HOST_NAME}/relay")"
+  [[ "$STATUS" == "426" ]] && break
+  sleep 1
+done
 if [[ "$STATUS" != "426" ]]; then
-  echo "expected 426 from https://${HOST_NAME}/relay, got ${STATUS}" >&2
+  echo "expected 426 from https://${HOST_NAME}/relay, got ${STATUS} for 30 seconds" >&2
   exit 1
 fi
 echo "deployed ${VERSION}: https://${HOST_NAME}/relay answers ${STATUS}"

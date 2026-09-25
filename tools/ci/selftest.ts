@@ -447,6 +447,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'is refused when it is an undo, before the engine sees it',
   },
   {
+    id: 'room-result-after-ending',
+    why: "Found by the first run against the live relay (25 September 2026): the room's end came after an action's result, so a client whose promise had resolved still thought the game was on and acted into an ended room. The result must be the last thing an action causes.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '      out.push(answer(msg.ref, msg.id));\n      return { room: next, out };',
+        '      out.splice(out.length - (over ? 1 : 0), 0, answer(msg.ref, msg.id));\n      return { room: next, out };',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'is answered last even when it ends the game',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',
