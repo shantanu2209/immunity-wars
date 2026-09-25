@@ -8,6 +8,7 @@
 # changes anything. What it does, and why, is in deploy/README.md; the short form:
 #
 #   - India time, so the one restart security updates may need happens at 03:30 IST
+#   - a system log that keeps 7 days and then deletes
 #   - a 1 GB swap file, because the server has 1 GB of memory and a large update can need more
 #   - Node (long-term support) and Caddy, each from its own signed package repository
 #   - security updates installed automatically, Node's and Caddy's included
@@ -83,6 +84,18 @@ Unattended-Upgrade::Automatic-Reboot "true";
 Unattended-Upgrade::Automatic-Reboot-Time "03:30";
 EOF
 systemctl enable --now unattended-upgrades
+
+echo "== the system log keeps 7 days, then deletes (ruled 25 September 2026)"
+# Caddy's logs are filtered of addresses (below), and a future Caddy field the filter does not know
+# would still age out within a week. MaxFileSec matters as much as MaxRetentionSec: the log is
+# trimmed by whole file, and by default one file spans a month.
+install -d -m 0755 /etc/systemd/journald.conf.d
+cat >/etc/systemd/journald.conf.d/immunity-wars.conf <<'EOF'
+[Journal]
+MaxRetentionSec=7day
+MaxFileSec=1day
+EOF
+systemctl restart systemd-journald
 
 echo "== the relay's user and its place on disk"
 if ! id relay >/dev/null 2>&1; then

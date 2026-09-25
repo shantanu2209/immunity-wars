@@ -401,8 +401,8 @@ would have provided is ours to provide. **Built on the development PC and tested
   per connection with bursts of 30, judged on arrival so a flood never enters the queue; 20 wrong room
   codes per address per 10 minutes, after which even a right code is refused, so a hit cannot be told
   from a miss; 30 seconds to join a room after connecting. **Generous on purpose:** Indian mobile
-  networks put many customers behind one address, and so does a family's Wi-Fi. The numbers are a
-  recommendation awaiting Shantanu's ruling (`docs/for-P3.md` §5).
+  networks put many customers behind one address, and so does a family's Wi-Fi. **Ruled as built,
+  25 September 2026.**
 - **The address** is the connection's own, unless it comes from the TLS front on the same machine, in
   which case it is the last `X-Forwarded-For` entry, the one the front wrote. Believed from anyone
   else, that header would let a sender choose the address it is counted by.
@@ -413,7 +413,11 @@ would have provided is ours to provide. **Built on the development PC and tested
 ### On the server, by `packages/server/deploy/setup.sh`: RUN, 25 September 2026
 
 - **Node and Caddy from their own signed package repositories**, and **automatic security updates for
-  both as well as Ubuntu**, restarting at 03:30 IST only when an update needs it (awaiting ruling).
+  both as well as Ubuntu**, restarting at 03:30 IST only when an update needs it (ruled 25
+  September 2026).
+- **The system log keeps 7 days**, then deletes (ruled 25 September 2026). The filter below strips
+  addresses from Caddy's logs; a future Caddy field it does not know would still age out within a
+  week. Files are closed daily, because the log is trimmed by whole file.
 - **The relay as its own user**, with no login and no home, fenced off by its service: no new
   privileges, a read-only system, no access to home folders or devices, network sockets only, 512 MB.
 - **Caddy in front for the certificate, with no access log, and no addresses in any other log.** The

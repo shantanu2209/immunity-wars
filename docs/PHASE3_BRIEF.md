@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.5 · 25 September 2026
+**Version:** 1.6 · 25 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code exists, deliberately. **Not yet reviewed.**
 
@@ -13,6 +13,18 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.6 records
+
+v1.6 rules three of §5's open questions, all as recommended (Shantanu, 25 September 2026: *"I will go with your recommendations on each"*),
+marked in place:
+
+- **The original captain does not get the captaincy back on return**, as P3.1 built it.
+- **An empty room is kept for 10 minutes**, as P3.1 built it.
+- **No multiplayer autosave in this version.** ⚠️ This reverses the brief's own recommendation,
+  because its premise was wrong: *"the machinery exists"* holds for single player only. A relay
+  client never holds a `GameState`, so a save would mean sending one device the whole game, hidden
+  deck included, and a restart would mean the relay trusting a game uploaded from a phone.
 
 ## What v1.5 records
 
@@ -229,17 +241,19 @@ disk anywhere, ever.
   advances when the captain ends the turn, which is already the engine's rule.
 - **Captain succession.** *Proposed default:* when the captain is away, the **next member in join
   order who is connected** becomes captain. Deterministic, so every client agrees without a vote.
-  *Open:* whether the original captain gets it back on return. **Recommendation: no** — a rule that
+  ~~*Open:*~~ **Ruled (v1.6): the original captain does not get it back on return** — a rule that
   swaps authority twice on a flaky connection is worse than one that swaps it once.
 - **Rejoining.** The same code plus the same `PlayerRef` restores the member and any seats still
   theirs. Seats reassigned while away are gone; they take what is free.
 - **The room's end.** When the last connected member leaves, the room is **held for a grace period
-  and then discarded.** *Proposed default: 10 minutes.* A family losing Wi-Fi for ninety seconds
+  and then discarded.** **Ruled (v1.6): 10 minutes.** A family losing Wi-Fi for ninety seconds
   should not destroy a forty-minute game; a room nobody returns to should not live forever.
 - **After the grace period** the game is gone. There is no server-side save, because there is no
-  server-side storage. *Open, and worth deciding deliberately:* whether the captain's device keeps
-  the autosave it already writes in single player, so a dead room can be restarted from the last
-  state. **Recommendation: yes, and say so in the UI** — the machinery exists.
+  server-side storage. **Ruled (v1.6): no multiplayer autosave in this version.** ⚠️ This read
+  *"Open … Recommendation: yes, and say so in the UI — the machinery exists."* The machinery exists
+  in single player only: a relay client holds no `GameState`, so saving would mean sending the
+  captain's device the whole game, hidden deck included, and restarting would mean the relay
+  trusting a game uploaded from a phone. Revisit if real play loses games.
 
 ---
 

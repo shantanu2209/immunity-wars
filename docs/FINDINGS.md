@@ -4345,6 +4345,8 @@ nothing that can happen.
 It can only ever advance the counter further, which is always safe, since ids need only be unique.
 Worth taking before either door opens.
 
+**Ruled 25 September 2026: take it** (*"I will go with your recommendations on each"*), as its own small PR after P3.5's.
+
 ---
 
 ## 81. A seat reassigned mid-game never reaches the engine's `owner` map, so every view names the old holder
@@ -4372,6 +4374,9 @@ work.
 `view.owner`, with no engine change; (2) an engine action for seat handover, like `handOverCaptaincy`
 (DEVIATIONS #7), which is an engine change. **Recommendation: (1), decided at P3.7**, when there is a
 screen that reads either.
+
+**Ruled 25 September 2026: (1)** (*"I will go with your recommendations on each"*), now rather than at P3.7: the multiplayer screens take
+ownership from the room's projection, never from the engine's `owner`. No engine change.
 
 ---
 

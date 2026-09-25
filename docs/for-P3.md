@@ -718,3 +718,25 @@ games through the internet, the TLS front and the relay in Mumbai, 42 turns and 
    turned into a Caddy that fails at the next restart. It now validates first.
 5. **The server runs Ubuntu 26.04, not 24.04**, and Google's image has no host firewall at all; the
    setup now opens host ports only where the host rejects traffic.
+
+### Ruled 25 September 2026: every open question, as recommended
+
+*"I will go with your recommendations on each. I had added the passphrase. Do not want to revisit
+anything."* The seven questions put to Shantanu on the 24th, two from brief §5 that P3.1 had built on
+the recommended default, and one new one:
+
+| # | Question | Ruled | Where it lands |
+|---|---|---|---|
+| 1 | Restarts for security updates | Automatic, 03:30 IST, only when an update needs one | As built (`setup.sh`) |
+| 2 | The relay's limits | As built | `LIMITS` in `packages/server/src/hub.ts` |
+| 3 | How long the server keeps its system log (new) | 7 days | `setup.sh`: retention 7 days, files closed daily, since the log is trimmed by whole file |
+| 4 | Does the original captain get the captaincy back? | No | As built; brief v1.6 §5 |
+| 5 | How long an empty room is kept | 10 minutes | As built; brief v1.6 §5 |
+| 6 | Multiplayer autosave | Not in this version | Brief v1.6 §5, which reverses its own earlier "yes" |
+| 7 | FINDINGS #80's one-word fix | Take it | Its own small PR, after this one |
+| 8 | FINDINGS #81, whose piece | Screens read the room's projection, never the engine's `owner` | Binds P3.7; no engine change |
+| 9 | The Phase 3 brief review | Before P3.6 | The next piece of work after #80 |
+
+**Also settled:** the server key has a passphrase, held by the Windows key agent; and none of P3.4's
+build choices is to be revisited (six-character codes, the frame limits, when the selection clears,
+no automatic reconnect).

@@ -107,7 +107,7 @@ export interface Limits {
 
 /**
  * The limits a relay runs with unless a test says otherwise. Recommended to Shantanu on 24
- * September 2026 and built on as the default while the ruling is open (docs/for-P3.md §5).
+ * September 2026, and ruled as built on the 25th (docs/for-P3.md §5).
  */
 export const LIMITS: Limits = {
   perAddress: 32,
