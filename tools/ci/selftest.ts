@@ -563,6 +563,38 @@ const CONTROLS: readonly Control[] = [
     expect: "the draw is the captain's device's alone",
   },
   {
+    id: 'rejoin-forgotten-after-a-day',
+    why: "P3.7 piece C, ruling (a): the room's code and the player's self are kept on the device only while they can still be used. Read back forever, a self would stay on a child's phone long after its room was gone.",
+    file: 'packages/app/src/rejoin.ts',
+    mutate: (t) =>
+      t.replace(
+        '  return age >= 0 && age < REJOIN_TTL_MS ? r.data : null;',
+        '  return age >= 0 ? r.data : null;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'is offered for a day, and not a moment longer',
+  },
+  {
+    id: 'table-away-pieces-waiting',
+    why: "P3.7 piece C, Gate A: an away player's pieces cannot be moved until the captain hands them on, so they must be listed as waiting, where the captain's buttons are. Counting only pieces nobody holds hides exactly the ones a drop leaves behind.",
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) =>
+      t.replace(
+        '      .filter((r) => r.holder === null || r.holder.away)',
+        '      .filter((r) => r.holder === null)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'lists every player with their pieces, and the pieces nobody can move',
+  },
+  {
+    id: 'table-changes-said',
+    why: 'P3.7 piece C, Gate A: who went away, who came back, who is captain now and who was handed which piece are said to everyone as they happen, so the table sees its own choices. Silenced, a drop is visible only to whoever goes looking.',
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) => t.replace('  if (prev === null) return [];', '  return [];'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'says who went away and who came back',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

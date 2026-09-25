@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: pieces A and B BUILT, C and D to come
+## 6. P3.7, the multiplayer screens: pieces A to C BUILT, D to come
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -1042,3 +1042,65 @@ both read, so the two cannot drift.
 - **Two of the three selftest controls failed for the right cause but without their diagnostic.**
   The games are played while the suite is collected, and the driver threw there, so the file failed
   without naming a test. The driver now records its problems and a named test reads them.
+
+### Piece C, when someone drops: BUILT, 25 September 2026
+
+**Your own lost connection** covers the game at once with *The connection to the game was lost. Your
+seats wait for you while you are away.*, **Reconnect**, and **Back to the title**. Nothing rejoins
+by itself (ruling 4). *Back to the title* closes the game without leaving it: the player stays a
+member, away, and the Title offers the room again.
+
+**Coming back after the phone closes the app** (ruling (a)). While a player is in a room, the room's
+code and their `self` are kept on the device (`packages/app/src/rejoin.ts`); the Title then offers
+**Rejoin room ABC123**, which asks only for the name, typed again (ruling 2). The record is forgotten
+when the player leaves or the game ends, and when a rejoin is told the room is gone or has no place
+for them, which is also said.
+
+**Everyone sees who is away, and what the captain does about it:**
+
+- **The Table**, a new button beside Messages, opens full height and lists every player: their
+  pieces, the captain, and who is away. Below them, **the pieces nobody can move now**: those held
+  by someone away, and those nobody took in the lobby. Its badge counts them, so the table can see
+  that something waits without opening it.
+- **The captain's handover** (ruling 4): on the captain's Table, each waiting piece has *Give to …*
+  for every player who is here. Everyone else reads that the captain can hand them on, or the table
+  can wait. Nothing forces the issue and no timer decides it.
+- **What changed is said as it happens**, to everyone: *Meera is away.*, *Meera is back.*, *Ravi is
+  the captain now.* (and *You are the captain now.* to Ravi), *Ravi now plays the NK Cell.* (and *You
+  now play the NK Cell.* to Ravi).
+- **A piece held by someone away** already says so when selected: *Meera plays this piece, and is
+  away.* (piece B).
+
+**Decided here, not ruled, and easy to change:**
+
+- **The record of the room is forgotten after a day** in any case. A room is discarded 10 minutes
+  after its last player goes, so a record older than that can only point at a room that no longer
+  exists, and nothing should stay on a child's phone for longer than it can be used.
+- **The captain can also hand out pieces nobody took in the lobby.** The room has always accepted it;
+  without it they stay unmoved all game.
+- **Away markers are not drawn on the board.** The Table's badge and page, the notices and the line
+  beside a selected piece carry them.
+
+### What proves it
+
+- **The record of the room** (`packages/app/src/rejoin.test.ts`, 5 tests): a write is read back and
+  holds only the code and `self`; it is offered for a day and not a moment longer, nor from a clock
+  set back; anything malformed, or a `self` the device could not have made, is nothing; forgetting
+  forgets; a store that throws never takes the app down. Control: `rejoin-forgotten-after-a-day`.
+- **The Table's rules** (`packages/ui/src/play/table.test.ts`, 5 more tests): who holds what, which
+  pieces wait, what is said and to whom. Controls: `table-away-pieces-waiting` (an away player's
+  pieces counted as held), `table-changes-said` (nothing said).
+- **Three players at 360 × 740**, headless Chrome against the local relay, 25 checks, in order:
+  1. Meera drops mid-turn: her screen says so at once and does not rejoin by itself, and the others
+     are told and see her two pieces counted.
+  2. The others read that the captain can hand them on, and only the captain has the buttons.
+  3. The captain gives her NK Cell to Ravi, and both are told.
+  4. Meera reconnects with her Eosinophil and without the NK Cell, and everyone is told.
+  5. The captain drops, and Ravi becomes captain on every screen.
+  6. The old captain goes back to the title and rejoins as a player, not captain, as ruled.
+  7. Meera's page is reloaded and she rejoins from the Title, as herself.
+  8. A record naming a room that is gone is refused, said, and forgotten.
+
+  The walkthrough's two reds on the way were both its own: it closed the Table by tapping the dimmed
+  game behind it, which left the page open and the turn button hidden; then it tapped the floating
+  Close in the render before the button existed.

@@ -16,10 +16,11 @@
  * - **What to call people.** The engine names players `m1`, `m2`; the room knows the names they
  *   typed.
  */
-import { pidOf, type RoomProjection } from '@immunity-wars/protocol';
+import { pidOf, type RoomProjection, type Seat } from '@immunity-wars/protocol';
 import type { SessionView } from '@immunity-wars/session';
 
 import { t } from '../i18n';
+import { seatRows } from '../together/model';
 import { EVERY_SEAT, type SeatRule } from './offered';
 
 /** The room as the relay last described it, and which member this device is. */
@@ -153,4 +154,104 @@ export function allocationActions(
     .map((pid) => ({ pid, amount: planned(draft, budgets, pid) - (budgets[pid] ?? 0) }))
     .filter((x) => x.amount > 0)
     .map((x) => ({ action: 'allocateAP' as const, toPid: x.pid, amount: x.amount }));
+}
+
+/* ------------------------------------------------------------------------------------------ *
+ * WHEN SOMEONE DROPS (P3.7 piece C). Dropping is the connection closing; the member stays a
+ * member and their seats stay theirs, marked away, visible to everyone (brief §5, Gate A). The
+ * captain may hand an away member's seats to anyone present, or the table may wait (ruling 4).
+ * ------------------------------------------------------------------------------------------ */
+
+export interface WaitingSeat {
+  readonly seat: Seat;
+  readonly name: string;
+  /** For a resident, the organ it lives in. */
+  readonly detail: string | null;
+  /** Who holds it and is away, or null when nobody holds it. */
+  readonly holder: { readonly id: number; readonly name: string } | null;
+}
+
+export interface TableSummary {
+  readonly members: readonly {
+    readonly id: number;
+    readonly name: string;
+    readonly you: boolean;
+    readonly captain: boolean;
+    readonly away: boolean;
+    /** The pieces they hold, by name, in the engine's order. */
+    readonly pieces: readonly string[];
+  }[];
+  /** The pieces nobody can move right now: held by someone away, or by nobody. */
+  readonly waiting: readonly WaitingSeat[];
+  /** Who the captain can hand a waiting piece to: everyone connected. */
+  readonly present: readonly { readonly id: number; readonly name: string }[];
+}
+
+export function tableSummary(table: Table): TableSummary {
+  const { room, me } = table;
+  const rows = seatRows(room, me);
+  const nameOf = new Map(rows.map((r) => [r.seat as string, r.name]));
+  return {
+    members: room.members.map((m) => ({
+      id: m.id,
+      name: m.name,
+      you: m.id === me,
+      captain: m.id === room.captain,
+      away: !m.connected,
+      pieces: rows.filter((r) => r.holder?.id === m.id).map((r) => nameOf.get(r.seat) ?? r.seat),
+    })),
+    waiting: rows
+      .filter((r) => r.holder === null || r.holder.away)
+      .map((r) => ({
+        seat: r.seat,
+        name: r.name,
+        detail: r.detail,
+        holder: r.holder ? { id: r.holder.id, name: r.holder.name } : null,
+      })),
+    present: room.members.filter((m) => m.connected).map((m) => ({ id: m.id, name: m.name })),
+  };
+}
+
+/**
+ * WHAT CHANGED AT THE TABLE, in words, between two descriptions of the room: who went away, who
+ * came back, who is captain now, and which pieces were handed to whom. The play screen says these
+ * as they happen, so the table's choices are visible to everyone (Gate A) without anyone having to
+ * go and look. Nothing about this player's own connection: their own device says that.
+ */
+export function tableChanges(prev: Table | null, next: Table): string[] {
+  if (prev === null) return [];
+  const lines: string[] = [];
+  const before = new Map(prev.room.members.map((m) => [m.id, m]));
+  for (const m of next.room.members) {
+    const was = before.get(m.id);
+    if (!was || m.id === next.me || was.connected === m.connected) continue;
+    lines.push(t(m.connected ? 'table.nowBack' : 'table.nowAway', { name: m.name }));
+  }
+  if (next.room.captain !== prev.room.captain && next.room.captain !== null) {
+    const captain = next.room.members.find((m) => m.id === next.room.captain);
+    if (captain)
+      lines.push(
+        captain.id === next.me
+          ? t('table.youCaptain')
+          : t('table.nowCaptain', { name: captain.name }),
+      );
+  }
+  const holderBefore = new Map<string, number>();
+  for (const m of prev.room.members) for (const s of m.seats) holderBefore.set(s, m.id);
+  const rows = seatRows(next.room, next.me);
+  for (const m of next.room.members) {
+    for (const s of m.seats) {
+      const was = holderBefore.get(s);
+      if (was === m.id) continue;
+      // A seat the holder took themselves before the game is the lobby's business, not news.
+      if (next.room.phase !== 'playing') continue;
+      const piece = rows.find((r) => r.seat === s)?.name ?? s;
+      lines.push(
+        m.id === next.me
+          ? t('table.handedYou', { piece })
+          : t('table.handedOn', { piece, name: m.name }),
+      );
+    }
+  }
+  return lines;
 }
