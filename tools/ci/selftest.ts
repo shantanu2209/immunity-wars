@@ -471,6 +471,30 @@ const CONTROLS: readonly Control[] = [
     expect: 'is answered last even when it ends the game',
   },
   {
+    id: 'room-newcomer-refused',
+    why: 'Ruled 25 September 2026 (brief review R2, FINDINGS #86): the engine fixes its players at the start, so a newcomer let in mid-game could be seated but never given Action Points or the captaincy, and could stall the table as #78 once did.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (room.phase === 'playing') return reject(room, msg.ref, 'lobbyClosed');\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'refuses a NEW member once the game has started',
+  },
+  {
+    id: 'hub-refused-join-unbound',
+    why: "FINDINGS #87: the hub bound a connection to its room before the room ruled on the join, and never unbound it on a refusal, so a refused joiner heard every broadcast of a room it was not in, its members' names included.",
+    file: 'packages/server/src/hub.ts',
+    mutate: (t) =>
+      t.replace(
+        '      if (this.rooms.get(code)?.members.some((m) => m.ref === msg.ref) !== true)\n        this.links.set(link, null);\n',
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'leaves the refused connection hearing nothing more from the room',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

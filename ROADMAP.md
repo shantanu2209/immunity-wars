@@ -111,8 +111,9 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 **Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.3 (21 September 2026: one ruled engine
 addition, `handOverCaptaincy`; 24 September: the query builder shared between `LocalSession` and the
 relay, and the relay's home moved from Cloudflare to Oracle; 25 September: to Google Cloud, when
-Oracle's sign-up refused us, then its Mumbai region, paid, for the lag). P3.1 to P3.4 built: the room, the protocol, the frames-or-state measurement, and
-`RelaySession` against a relay on the development machine.
+Oracle's sign-up refused us, then its Mumbai region, paid, for the lag). P3.1 to P3.5 built: the room, the protocol, the frames-or-state measurement,
+`RelaySession`, and the relay deployed and measured live. Brief v1.7 (the review, 25 September) puts
+P3.7, the multiplayer screens, before P3.6, two real phones.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25
