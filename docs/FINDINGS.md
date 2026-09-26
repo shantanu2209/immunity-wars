@@ -4722,3 +4722,61 @@ deploying, the start check was ruled.
 - **Still true:** CI does not start the built app. The start check guards what is deployed, not
   what is merged; `pnpm deps:check` is what stops a React split at its pull request. `pnpm peers
   check` in CI was not ruled and is not built.
+
+## 93. A phone with the app from before a deploy is refused by the relay, and the refusal asks for an update a web player cannot see how to make
+
+**Found 26 September 2026**, at the start of the P3.6 session. On the live app, not the version-check
+page, *Create room* was refused: *"This app and the game server are on different versions. Update the
+app, then try again."*
+
+**Why.** The relay moved to protocol version 3 the evening before (the play-test changes), and the
+phone was still running the copy of the app its service worker had saved, which speaks version 2. The
+worker updates itself (`registerType: 'autoUpdate'`), but only after the page has loaded: the new
+version downloads in the background, and the page already open stays the old one until it is loaded
+again. Nothing reloads it (`serviceWorker.ts` registers the worker and does nothing when a new one
+takes over).
+
+**What held.** The refusal itself, on a real phone: an old copy could not get into a newer room,
+which is the half of Gate A's version item that protects a game.
+
+**What did not.** The other half, *"a message a player can act on"*. On the web there is no update
+for a player to find. What worked was waiting on the title and reloading. How many reloads each phone
+needed, and how long the download took, was not measured.
+
+**Proposed** (for a ruling, not built): on the version refusal, an **Update now** button that asks
+the service worker for the new version and reloads the page. The installed apps of Phase 4 update
+through their stores instead, where the same words are the right ones.
+
+---
+
+## 94. The relay checks who holds a piece only for actions that name one, and the Body drawer was open to every player
+
+**Found 26 September 2026**, looking into an observation from the P3.6 session: that the Antibodies
+and Body drawers should be for particular players.
+
+**Why.** The engine never checks ownership; it stores `owner` and projects it, and the room enforces
+it (`PHASE3_BRIEF.md` §2, v1.7). The room finds an action's piece from the `cell` or `organ` it names
+(`seatOf` in `packages/room/src/room.ts`), and checks nothing when it names neither. The app sends
+**Produce** with a family, and the **Body** drawer's actions (clonal selection, the vaccine lab,
+ordering antivenom, antivenom, the memory response) with no cell at all, so the room accepts them from
+any member. The legacy relay, the reference for this one, did not: `seatNeededFor` in
+`tools/legacy/server.js` gives every antibody and B-Cell action to the B-Cell's seat, and `engulf`,
+`snipe`, `nkkill` and `net` to their cells.
+
+**How far it reaches, in the app as played.** Action Points are spent from the player who acts
+(`spend` charges `g._actingPid`), so nobody can spend another's points; what is open is who may act.
+
+- **Produce** was guarded by the app: it is offered only to the B-Cell's player, and anyone else is
+  told who holds the B-Cell (`produceFor`, from the play-test changes). Shantanu held it in the
+  session, and Kartik could not produce.
+- **The Body drawer** was not: `bodyOffers` takes no account of who holds what, so its buttons, and
+  the memory response and antivenom it also offers as rings on the board, were live on every
+  player's phone. Read in the code, not tried on the phones.
+- **The four attacks** (`engulf`, `snipe`, `nkkill`, `net`) are checked only because the app sends the
+  cell with them; the engine does not need it.
+
+**Ruled 26 September 2026:** the Antibodies drawer only for the B-Cell's player, and the Body drawer
+and its two rings only for the captain. That closes the Body drawer in the app. **Open, and not ruled
+on:** the relay itself still accepts these actions from any member, and the attacks without their
+cell, from a device the app did not build. Everyone at the table is someone a player gave the code
+to; it is recorded so that it is not found again as new.
