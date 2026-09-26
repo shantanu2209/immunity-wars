@@ -1,4 +1,4 @@
-# Deploying the relay (P3.5)
+# Deploying the relay (P3.5), and the app beside it (P3.6)
 
 The relay runs on a Google Cloud `e2-micro` in Mumbai (paid, about ₹1,000 a month once the trial
 credit expires), behind Caddy, at
@@ -142,13 +142,38 @@ key you have):
 3. **Measure, for Gate B**: the lag from a phone, the relay's time per action on the server itself,
    the data a game uses, and Google's free allowance re-read that day.
 
+4. **The app** (P3.6, ruled 25 September 2026: served from this server, beside the relay, at
+   `https://immunity-wars.kartikchaudhary.com/`). Needs `setup.sh` from P3.6 or later on the server
+   (step 1 again), which serves it; then:
+
+   ```bash
+   SERVER=deploy@<ip> HOST_NAME=immunity-wars.kartikchaudhary.com bash packages/server/deploy/deploy-app.sh
+   ```
+
+   It builds the app as players get it and **refuses a build that does not talk to this server's
+   relay** (one made for the Gate 1 audit talks to a relay on the development PC), installs it as a
+   new version, and checks the page served is this build's. Nothing restarts, and no game in
+   progress is touched.
+
+5. **The version check, for P3.6 only** (ruled the same day): a build that claims the protocol
+   version before the current one, at `https://immunity-wars.kartikchaudhary.com/old/`, to be
+   opened in a **private tab** and refused with the words *"Update the app"*. Put it for the check,
+   and take it away after:
+
+   ```bash
+   SERVER=deploy@<ip> HOST_NAME=immunity-wars.kartikchaudhary.com bash packages/server/deploy/old-build.sh put
+   SERVER=deploy@<ip> HOST_NAME=immunity-wars.kartikchaudhary.com bash packages/server/deploy/old-build.sh remove
+   ```
+
 ## Going back a version
 
-The last three versions are kept on the server. To return to the one before:
+The last three versions of each are kept on the server. To return to the one before:
 
 ```bash
 ssh deploy@<ip> "ls /opt/immunity-wars/relay"
 ssh deploy@<ip> "sudo ln -sfn /opt/immunity-wars/relay/<version> /opt/immunity-wars/relay/current && sudo systemctl restart immunity-wars-relay"
+ssh deploy@<ip> "ls /opt/immunity-wars/app"
+ssh deploy@<ip> "sudo ln -sfn /opt/immunity-wars/app/<version> /opt/immunity-wars/app/current"
 ```
 
 ## Rebuilding a lost server

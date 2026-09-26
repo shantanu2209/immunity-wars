@@ -97,6 +97,8 @@ export type RoomEvent =
   | { readonly kind: 'room'; readonly room: RoomProjection }
   /** The room refused something that was not an action: a seat, a start, an assignment. */
   | { readonly kind: 'refused'; readonly code: ErrorCode; readonly detail?: string }
+  /** A member said one of the table's fixed messages (protocol v3): who, by public id, and which. */
+  | { readonly kind: 'said'; readonly from: number; readonly message: string }
   /**
    * The connection ended. `code` is the WebSocket close code: 4001 `version`, 4004 `replaced`
    * (this member joined again elsewhere), 4005 `left`, or the transport's own.
@@ -221,6 +223,14 @@ export class RelayRoom {
     this.send({ kind: 'assignSeat', seat, to });
   }
 
+  /**
+   * One of the table's fixed messages, by id (`SAY_MESSAGES` in the protocol). Never words: the
+   * relay forwards only ids on its list, and every client words them from its own catalogue.
+   */
+  say(message: string): void {
+    this.send({ kind: 'say', message });
+  }
+
   start(difficulty: 'training' | 'normal' | 'hard'): void {
     this.send({ kind: 'start', difficulty });
   }
@@ -314,6 +324,9 @@ export class RelayRoom {
         break;
       case 'burst':
         this.relaySession?.receiveBurst(msg.frames as readonly BurstFrame[]);
+        break;
+      case 'said':
+        this.emit({ kind: 'said', from: msg.from, message: msg.message });
         break;
       case 'result':
         this.relaySession?.receiveResult(msg);

@@ -11,6 +11,8 @@ import {
   PACKAGE_NAME,
   PROTOCOL_VERSION,
   RULES_VERSION,
+  SAY_ID,
+  SAY_MESSAGES,
   decodeClient,
   decodeServer,
   encode,
@@ -28,6 +30,7 @@ const CLIENT: readonly ClientMessage[] = [
   { kind: 'assignSeat', seat: 'nk', to: null },
   { kind: 'start', difficulty: 'training' },
   { kind: 'action', id: 7, action: { action: 'move', cell: 'neutrophil', to: 3 } },
+  { kind: 'say', message: 'wait' },
 ];
 
 /** What a view carries beside itself since v2 (P3.4): the relay's answers, as LocalSession's. */
@@ -41,6 +44,7 @@ const BESIDE = {
 
 const SERVER: readonly ServerMessage[] = [
   { kind: 'joined', id: 1 },
+  { kind: 'said', from: 2, message: 'needAp' },
   {
     kind: 'room',
     room: {
@@ -159,6 +163,23 @@ describe('a malformed message is refused as malformed', () => {
   it('when a name is long enough to be a payload rather than a name', () => {
     const body = { kind: 'join', code: 'ABC123', ref: 'p', name: 'x'.repeat(25) };
     expect(decodeClient(withHeader(PROTOCOL_VERSION, RULES_VERSION, body)).ok).toBe(false);
+  });
+});
+
+describe("the table's fixed messages carry an id, never words (v3)", () => {
+  it('refuses a message that is not a short id: free text cannot travel', () => {
+    const body = (message: unknown): string =>
+      JSON.stringify({ v: PROTOCOL_VERSION, rules: RULES_VERSION, kind: 'say', message });
+    for (const bad of ['you are slow', 'Wait for me!', 'x'.repeat(25), '', 7, '<b>hi</b>'])
+      expect(decodeClient(body(bad)).ok, String(bad)).toBe(false);
+    expect(decodeClient(body('wait')).ok).toBe(true);
+    // The shape is the protocol's; which ids exist is the room's, so an id not yet on the list
+    // still travels, and a client that does not know it shows nothing.
+    expect(decodeClient(body('laterMessage')).ok).toBe(true);
+  });
+
+  it('names every message on the list with an id of that shape', () => {
+    for (const id of SAY_MESSAGES) expect(SAY_ID.test(id), id).toBe(true);
   });
 });
 

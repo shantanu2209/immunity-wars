@@ -29,6 +29,8 @@ export function TitleScreen({
   onContinue,
   onNewGame,
   onTogether,
+  rejoin = null,
+  onRejoin = () => undefined,
   onSettings,
   onHelp,
   onAbout,
@@ -39,6 +41,12 @@ export function TitleScreen({
   onNewGame: () => void;
   /** Play together (P3.7, ruled 25 September 2026): beside New game, on the Title. */
   onTogether: () => void;
+  /**
+   * THE ROOM THIS DEVICE WAS IN (P3.7 piece C, ruling (a)), offered so a player whose phone closed
+   * the app can go back to it, by choice (ruling 4). Null when there is none.
+   */
+  rejoin?: { code: string } | null;
+  onRejoin?: () => void;
   /** The four P2.6 Title slots (APP_FLOW §4), in the order they are shown. */
   onSettings: () => void;
   onHelp: () => void;
@@ -58,6 +66,11 @@ export function TitleScreen({
             {/* The difficulty is a key, not display text — render its catalogue name. */}
             {t(`difficulty.${save.difficulty}`)} {t('title.continueTurn')} {save.turn}
           </span>
+        </button>
+      ) : null}
+      {rejoin ? (
+        <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onRejoin} data-title="rejoin">
+          {t('title.rejoin', { code: rejoin.code })}
         </button>
       ) : null}
       <button style={BTN} onClick={onNewGame}>

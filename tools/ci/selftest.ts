@@ -563,6 +563,95 @@ const CONTROLS: readonly Control[] = [
     expect: "the draw is the captain's device's alone",
   },
   {
+    id: 'rejoin-forgotten-after-a-day',
+    why: "P3.7 piece C, ruling (a): the room's code and the player's self are kept on the device only while they can still be used. Read back forever, a self would stay on a child's phone long after its room was gone.",
+    file: 'packages/app/src/rejoin.ts',
+    mutate: (t) =>
+      t.replace(
+        '  return age >= 0 && age < REJOIN_TTL_MS ? r.data : null;',
+        '  return age >= 0 ? r.data : null;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'is offered for a day, and not a moment longer',
+  },
+  {
+    id: 'table-away-pieces-waiting',
+    why: "P3.7 piece C, Gate A: an away player's pieces cannot be moved until the captain hands them on, so they must be listed as waiting, where the captain's buttons are. Counting only pieces nobody holds hides exactly the ones a drop leaves behind.",
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) =>
+      t.replace(
+        '      .filter((r) => r.holder === null || r.holder.away)',
+        '      .filter((r) => r.holder === null)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'lists every player with their pieces, and the pieces nobody can move',
+  },
+  {
+    id: 'table-changes-said',
+    why: 'P3.7 piece C, Gate A: who went away, who came back, who is captain now and who was handed which piece are said to everyone as they happen, so the table sees its own choices. Silenced, a drop is visible only to whoever goes looking.',
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) => t.replace('  if (prev === null) return [];', '  return [];'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'says who went away and who came back',
+  },
+  {
+    id: 'say-only-the-list',
+    why: "The table's fixed messages (ruled 25 September 2026): no free-text chat in v1, so the room admits only the ids on its list. Without the check any id of the right shape would reach every screen in the room.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (!(SAY_MESSAGES as readonly string[]).includes(msg.message))\n        return reject(room, msg.ref, 'noSuchMessage');\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'are only the ones on the list',
+  },
+  {
+    id: 'say-id-shape',
+    why: "The table's fixed messages travel as a short id, never words (protocol v3). A message field that admitted any string would carry free text to the relay.",
+    file: 'packages/protocol/src/messages.ts',
+    mutate: (t) =>
+      t.replace('const SayId = z.string().regex(SAY_ID);', 'const SayId = z.string();'),
+    gate: 'pnpm --filter @immunity-wars/protocol test',
+    expect: 'refuses a message that is not a short id',
+  },
+  {
+    id: 'produce-for-offer',
+    why: "The one Produce button (ruled 25 September 2026): for the chosen class it sends produceOffers' own offer, or says why not. Without the offer it would say no to a class the B-Cell can produce.",
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) => t.replace('  if (offer) return { offer, reason: null };\n', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'always answers, and only ever with the offer produceOffers makes',
+  },
+  {
+    id: 'step-guard',
+    why: "FINDINGS #90: a double tap on the play screen's advance button did the next step too; alone, Command your cells tapped twice ended the turn with every point unspent, at gaps of 80 to 400 ms. The button ignores a tap within half a second of its step changing.",
+    file: 'packages/ui/src/play/stepGuard.ts',
+    mutate: (t) => t.replace('  now - changedAt >= STEP_GUARD_MS;', '  now - changedAt >= 0;'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'is ignored at every gap a double tap was measured to end the turn at',
+  },
+  {
+    id: 'view-queue-own-tail',
+    why: "FINDINGS #89: played together, the next turn's draw can arrive while this device still animates a spread. The renderer's burst-tail check compared the spread's last frame with whatever view came LAST, and failed on a correct game. Each spread must be checked against the view it ended in.",
+    file: 'packages/ui/src/play/viewQueue.ts',
+    mutate: (t) => t.replace('      this.closing = null;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: "the next turn's draw arriving mid-spread is not what the spread is checked against",
+  },
+  {
+    id: 'view-queue-every-view',
+    why: "FINDINGS #89: views that arrived during a spread were dropped but the latest, so the screen jumped from before the spread to the next draw and worked out that draw's arrivals against the state before the spread. Every view must be shown, in order.",
+    file: 'packages/ui/src/play/viewQueue.ts',
+    mutate: (t) =>
+      t.replace(
+        'return this.frames.length > 0 ? undefined : this.views.shift();',
+        'return this.frames.length > 0 ? undefined : this.views.splice(0).at(-1);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'a whole next turn and its spread before this one finishes',
+  },
+  {
     id: 'room-rejoin-view',
     why: 'Gate A: a player who drops and rejoins gets the game back. Without the board sent to them on arrival they see nothing until somebody acts, and a table waiting for them will not.',
     file: 'packages/room/src/room.ts',

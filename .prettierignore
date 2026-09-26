@@ -4,6 +4,7 @@ tools/legacy/
 # Generated / vendored
 node_modules/
 dist/
+dist-old/
 .turbo/
 coverage/
 pnpm-lock.yaml

@@ -39,3 +39,27 @@ export function ChatIcon(): ReactElement {
     </svg>
   );
 }
+
+/** The table (P3.7 piece C): two heads and shoulders, for the players and who holds what. */
+export function TableIcon(): ReactElement {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" focusable="false">
+      <circle cx="8" cy="7.5" r="3" stroke="currentColor" strokeWidth="1.8" fill="none" />
+      <path
+        d="M2.5 18.5c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <circle cx="15.5" cy="8.5" r="2.5" stroke="currentColor" strokeWidth="1.6" fill="none" />
+      <path
+        d="M15 13.2c2.6 0 4.5 1.9 4.5 4.8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  );
+}

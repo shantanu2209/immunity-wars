@@ -16,6 +16,8 @@
 #     restarts it on failure and at boot, and fences it off from the rest of the machine
 #   - Caddy in front, which gets and renews the certificate, and keeps NO access log: an address is
 #     personal data under India's DPDP Act, and nothing here needs one
+#   - the app itself served by Caddy beside the relay, from /opt/immunity-wars/app (P3.6, ruled
+#     25 September 2026, so two phones on two networks can open it); deploy-app.sh puts it there
 #   - the machine's own firewall opened for web traffic where it blocks it, and nothing else
 #
 # It does not deploy the relay itself: deploy.sh does, from the development PC.
@@ -102,6 +104,9 @@ if ! id relay >/dev/null 2>&1; then
   useradd --system --no-create-home --shell /usr/sbin/nologin relay
 fi
 install -d -o root -g root -m 0755 /opt/immunity-wars/relay
+# The app's builds (deploy-app.sh), and the version-check build's slot (old-build.sh). Read by Caddy,
+# written only by root.
+install -d -o root -g root -m 0755 /opt/immunity-wars/app
 
 echo "== the relay's service"
 cat >/etc/systemd/system/immunity-wars-relay.service <<'EOF'
@@ -144,7 +149,8 @@ echo "== Caddy in front: the certificate, no access log, and no addresses in its
 # Written beside the live file and validated BEFORE it replaces it: a file that failed validation
 # left in place would stop Caddy at the next restart, which the 03:30 update window makes certain.
 cat >/etc/caddy/Caddyfile.new <<EOF
-# The Immunity Wars relay. Caddy obtains and renews the certificate for this name by itself.
+# The Immunity Wars: the relay, and the app beside it. Caddy obtains and renews the certificate for
+# this name by itself.
 #
 # NO ADDRESS OF ANYONE CONNECTING IS WRITTEN DOWN: an address is personal data under the DPDP Act,
 # and the players are children. The site has no 'log' directive, so Caddy writes no access log.
@@ -170,8 +176,22 @@ ${HOST_NAME} {
 	handle /relay {
 		reverse_proxy 127.0.0.1:8787
 	}
+	# A BUILD ON AN OLDER PROTOCOL, present only for a device check of the relay's version refusal
+	# (P3.6, ruled 25 September 2026) and removed after it (old-build.sh). The folder does not exist
+	# the rest of the time, so the rest of the time this answers 404.
+	handle_path /old/* {
+		root * /opt/immunity-wars/app/old
+		file_server
+	}
+	# THE APP (P3.6, ruled 25 September 2026): the built web app, exactly as the Gate 1 audit measured
+	# it, served beside the relay. The page, the service worker and its manifest are always asked
+	# for again, so a new version reaches a phone that has the app; the rest are named by their
+	# contents and never change.
 	handle {
-		respond 404
+		root * /opt/immunity-wars/app/current
+		@fresh path / /index.html /sw.js /manifest.webmanifest
+		header @fresh Cache-Control "no-cache"
+		file_server
 	}
 }
 EOF

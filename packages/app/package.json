@@ -26,13 +26,13 @@
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/ui": "workspace:*",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.3.0",
     "zod": "^4.6.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.2.7",
+    "@types/react-dom": "^19.3.0",
     "vite": "^8.3.0",
     "vite-plugin-pwa": "^1.3.0"
   }

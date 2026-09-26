@@ -38,7 +38,7 @@
  */
 import { z } from 'zod';
 
-import { ERROR_CODES, PROTOCOL_VERSION, RULES_VERSION, SEATS } from './vocabulary.js';
+import { ERROR_CODES, PROTOCOL_VERSION, RULES_VERSION, SAY_ID, SEATS } from './vocabulary.js';
 
 /* --- the header every message carries --------------------------------------------------- */
 
@@ -49,6 +49,8 @@ const View = z.record(z.string(), z.unknown());
 
 const Seat = z.enum(SEATS);
 const MemberId = z.number().int().positive();
+/** A fixed message's id: its shape here, and which ids exist is the room's (vocabulary.ts). */
+const SayId = z.string().regex(SAY_ID);
 
 /* --- client to relay ---------------------------------------------------------------------- */
 
@@ -75,6 +77,8 @@ const ClientBody = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('releaseSeat'), seat: Seat }),
   z.object({ kind: z.literal('assignSeat'), seat: Seat, to: MemberId.nullable() }),
   z.object({ kind: z.literal('start'), difficulty: z.enum(['training', 'normal', 'hard']) }),
+  /** One of the table's fixed messages, by id (v3). */
+  z.object({ kind: z.literal('say'), message: SayId }),
   // The action is the engine's to judge; the room judges only whose piece it is.
   z.object({
     kind: z.literal('action'),
@@ -113,6 +117,8 @@ const Frame = z.object({ label: z.string(), dice: z.unknown(), view: View });
 const ServerBody = z.discriminatedUnion('kind', [
   /** Who you are in this room, sent to one connection after it joins. */
   z.object({ kind: z.literal('joined'), id: MemberId }),
+  /** A member said one of the table's fixed messages (v3): who, by public id, and which. */
+  z.object({ kind: z.literal('said'), from: MemberId, message: SayId }),
   z.object({ kind: z.literal('room'), room: RoomProjectionSchema }),
   z.object({
     kind: z.literal('view'),

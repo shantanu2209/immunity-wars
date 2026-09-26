@@ -4565,3 +4565,105 @@ free; with the old `leave()`, the test times out with the player still there. Co
 
 **Neither was reachable before P3.7**: nothing called either path except the tests, and no test
 asked what a refused caller was told or whether a Leave followed by a close arrived.
+
+---
+
+## 89. Played together, the play screen dropped the views that arrived during a spread, and its own tail check failed on a correct game
+
+**Found 25 September 2026**, walking P3.7 piece D to a Result with three players, by the play
+screen's own check: on the screens of the two players who were not captain, the renderer's half of
+`burst-tail-authoritative` reported *"tail !== authoritative view: FAIL — the burst is NOT safely
+skippable"* on several spreads of one game. The captain's screen never did. **Fixed in the same
+change**, because the check is an instrument that fired on a correct game (CLAUDE.md: fix inline
+if it is in the instrument), and the same cause was losing what the screen shows.
+
+**Why.** The screen holds back the views that arrive while a spread animates, so the panels do not
+change under it, and it kept only the latest. Alone, exactly one view arrives during a spread: the
+one it ended in. Played together, the captain taps through the spread and the captain's device
+draws the next card while the others are still animating, so a second view arrives before their
+spread ends. Keeping only the latest:
+
+- **the check compared the spread's last frame with the next turn's draw**, and failed;
+- **the views in between were never shown**: the screen went from before the spread straight to the
+  next draw, and worked out that draw's arrivals against the state from before the spread, so
+  anything the spread itself had made counted as having just arrived.
+
+**The fix** (`packages/ui/src/play/viewQueue.ts`): every view is kept, in order, and shown one at a
+time once the frames are done; each spread's last frame is checked against the view that spread
+ended in, the first to arrive after it. Tested on the orders a table produces (a draw mid-spread,
+and a whole next turn and its spread before this one finishes). Controls: `view-queue-own-tail`,
+`view-queue-every-view`.
+
+**Proved in the app, both ways:** the same three-player walk to a Result reported the failure on
+the old code and none on the new; and with the check made to fail on purpose, all three screens,
+the captain's included, reported it on every spread, so the check does run on every spread and is
+not silent for lack of running.
+
+**The standing invariant is untouched.** `burst-tail-authoritative` at the engine and the session
+held throughout; it was the screen's reading of it that assumed nobody else acts during a spread.
+
+---
+
+## 90. A double tap on the play screen's one advance button does the next step too: "Command your cells" twice ends the turn
+
+**Found 25 September 2026**, by a walkthrough script that tapped the advance button again while the
+relay's answer to its first tap was on its way, and ended a turn it did not mean to. **Measured in
+SINGLE PLAYER**, where it matters most, on the development PC in headless Chrome at 360 × 740: a
+real pointer double tap on *Command your cells* ended the turn at once, the spread playing with every
+Action Point unspent, **at every gap tried: 80, 150, 250 and 400 ms**. A child's double tap is well
+inside that. There is no undo past a spread. **Recorded, not fixed: it is a product defect, and
+predates Phase 3.**
+
+**Why.** The play screen's bottom button is one element whose step changes with the game: *Plan
+your turn*, *Command your cells*, *Confirm the plan*, *End turn*. The first tap's step completes
+before the second tap lands (at once alone; in about one round trip together), so the second tap
+lands on the next step. The same button also shows *Command your cells* for about one frame after a
+draw, before the arrivals stage replaces it, measured in the page at 10 ms.
+
+**Proposed** (for a ruling): the advance button ignores a tap for about half a second after its step
+changes. The steps a double tap would skip into are the costly ones, *End turn* above all.
+
+### ✅ FIXED, 25 September 2026, by ruling (*"Agree with your recommendation"*)
+
+The advance button ignores a tap within half a second of its step changing, or of its becoming
+tappable (`packages/ui/src/play/stepGuard.ts`, applied in `AdvanceButton`). Timed from the change,
+not from the first tap, so the one-frame flash after a draw is covered too, and so is a step that
+changes because another player acted. **Measured both ways in single player**, the same double tap
+on *Command your cells*: at gaps of 80, 150, 250 and 400 ms the player is left in command with their
+points; at 800 ms the second tap still ends the turn, so a deliberate tap is not lost. Control:
+`step-guard`.
+
+**The instruments that press the button were changed with it**, because a driver that taps the moment
+the step appears is now ignored and then measures the wrong screen: the Gate 1 audit, `measure.ts`
+and `measure-full.ts` wait out the guard before tapping it. **The Gate 1 audit, re-run on the build
+with the guard:** 44 controls all firing the right way, 60 screens per pass (62 under SIZE200),
+none NOT REACHED, every check 0, nesting 33 checked and 0 wrong, offline met: the bar of P2.7's last
+run, held. It was not re-run without the wait, so that the audit would have failed without it is
+expected, not measured.
+
+## 91. The app's own build test rebuilt the folder the Gate 1 audit measures, so a `pnpm verify` beside the audit swapped the build under it — FIXED 25 September 2026
+
+**Found 25 September 2026**, by the second audit run of the play-test changes (for-P3 §8), whose
+together walk failed in every pass: *the helper could not join*. The walk's other players are
+fresh browser pages, and they were loading a **production** build, pointed at the live relay, which
+the audit's guard refuses: its `LOCAL_ONLY` shim closes any relay that is not on this machine before
+it opens. Nobody had built one on purpose.
+
+**Why.** `packages/app/src/entries-build.test.ts`, the dev-entry rot check, deleted
+`packages/app/dist` and ran a real `vite build` into it on every test run that was not cached.
+`dist` is what `vite preview` serves, and the audit measures what `vite preview` serves. A
+`pnpm verify` run beside the audit rebuilt it halfway through, without `VITE_RELAY_URL`, and every
+page opened after that was another build. The captain's page went on working from its service
+worker's cache, which is why only the helpers failed, and why the failure said *join* and not
+*build*.
+
+**The guard held.** One diagnostic run with the shim taken off reached the live relay, which refused
+it by protocol version before any room existed. Nothing was created there.
+
+### ✅ FIXED inline, 25 September 2026: an instrument defect
+
+The test builds into a temporary folder of its own and removes it afterwards; `dist` is never
+touched. **Negative control, run by hand:** the dev entry's script pointed at a missing module, and
+the test went red; restored, green. `dist` kept its modification time across the run, and no
+temporary folder was left behind, the failing run's included. The audit was then run again with
+nothing beside it (for-P3 §8).

@@ -17,6 +17,8 @@ import {
   poolLeft,
   removePoint,
   seenBy,
+  tableChanges,
+  tableSummary,
   type Table,
 } from './table';
 
@@ -164,5 +166,94 @@ describe("the captain's draft of the allocation", () => {
       { action: 'allocateAP', toPid: 'm3', amount: 1 },
     ]);
     expect(poolLeft({ m3: 1, m2: 2 }, halfway, 'm1')).toBe(poolLeft({ m3: 1, m2: 2 }, start, 'm1'));
+  });
+});
+
+describe('when someone drops (piece C)', () => {
+  const loud = (s: string): boolean => s.includes('⟪');
+
+  it("lists every player with their pieces, and the pieces nobody can move: an away player's, and nobody's", () => {
+    const s = tableSummary(table(1));
+    expect(s.members.map((m) => [m.name, m.you, m.captain, m.away, m.pieces.length])).toEqual([
+      ['Asha', true, true, false, 2],
+      ['Ravi', false, false, false, 1],
+      ['Meera', false, false, true, 1],
+    ]);
+    // Meera is away with the B-Cell; eleven seats are held by nobody.
+    expect(s.waiting.filter((w) => w.holder !== null).map((w) => [w.seat, w.holder?.name])).toEqual(
+      [['bcell', 'Meera']],
+    );
+    expect(s.waiting.filter((w) => w.holder === null)).toHaveLength(14 - 4);
+    expect(s.present.map((p) => p.name)).toEqual(['Asha', 'Ravi']);
+    for (const w of s.waiting) expect(loud(w.name) || loud(w.detail ?? ''), w.seat).toBe(false);
+  });
+
+  it('says who went away and who came back, and never the player their own', () => {
+    const before = table(1);
+    const ravisGone = table(1, {
+      members: before.room.members.map((m) => (m.id === 2 ? { ...m, connected: false } : m)),
+    });
+    const [away] = tableChanges(before, ravisGone);
+    expect(away).toContain('Ravi');
+    const [back] = tableChanges(ravisGone, before);
+    expect(back).toContain('Ravi');
+    expect(back).not.toBe(away);
+    // Asha is this device: her own dropping is the connection sheet's to say, not a toast's.
+    const ashasGone = table(1, {
+      members: before.room.members.map((m) => (m.id === 1 ? { ...m, connected: false } : m)),
+    });
+    expect(tableChanges(before, ashasGone)).toEqual([]);
+  });
+
+  it('says who is captain now, and says "you" to the new captain', () => {
+    const before = table(2);
+    const after = table(2, { captain: 2 });
+    const forRavi = tableChanges(before, after);
+    const forMeera = tableChanges(table(3), table(3, { captain: 2 }));
+    expect(forRavi).toHaveLength(1);
+    expect(forRavi[0]).not.toContain('Ravi');
+    expect(forMeera[0]).toContain('Ravi');
+  });
+
+  it('says which piece went to whom when the captain hands one on, in play and not in the lobby', () => {
+    const before = table(2);
+    const handed = table(2, {
+      members: before.room.members.map((m) =>
+        m.id === 3
+          ? { ...m, seats: [] }
+          : m.id === 1
+            ? { ...m, seats: [...m.seats, 'bcell' as const] }
+            : m,
+      ),
+    });
+    const [line] = tableChanges(before, handed);
+    expect(line).toContain('Asha');
+    expect(line).toContain('B');
+    expect(loud(line ?? '')).toBe(false);
+    expect(
+      tableChanges(table(2, { phase: 'lobby' }), {
+        ...handed,
+        room: { ...handed.room, phase: 'lobby' },
+      }),
+    ).toEqual([]);
+  });
+
+  it('says nothing the first time it looks, or when nothing changed', () => {
+    expect(tableChanges(null, table(1))).toEqual([]);
+    expect(tableChanges(table(1), table(1))).toEqual([]);
+  });
+});
+
+describe('when someone leaves (piece D)', () => {
+  it('says who has left, which is not the same as away, and their pieces wait for the table', () => {
+    const before = table(1);
+    const gone = table(1, { members: before.room.members.filter((m) => m.id !== 2) });
+    const [line] = tableChanges(before, gone);
+    expect(line).toContain('Ravi');
+    const away = table(1, {
+      members: before.room.members.map((m) => (m.id === 2 ? { ...m, connected: false } : m)),
+    });
+    expect(line).not.toBe(tableChanges(before, away)[0]);
+    expect(tableSummary(gone).waiting.map((w) => w.seat)).toContain('nk');
   });
 });

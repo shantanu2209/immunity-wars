@@ -9,10 +9,11 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { ERROR_CODES, SEATS } from '@immunity-wars/protocol';
+import { ERROR_CODES, SAY_MESSAGES, SEATS } from '@immunity-wars/protocol';
 import { describe, expect, it } from 'vitest';
 
 import { t } from '../i18n';
+import { sayText } from '../panels/TableMessages';
 import {
   REFUSAL_KEYS,
   canStart,
@@ -115,11 +116,25 @@ describe('a refusal', () => {
   });
 });
 
+describe("the table's fixed messages", () => {
+  it('every one has words, and an id this app has no words for shows nothing', () => {
+    for (const id of SAY_MESSAGES) expect(sayText(id), id).not.toBeNull();
+    expect(sayText('laterMessage')).toBeNull();
+  });
+});
+
 describe('every key the new screens name', () => {
   const screens = [
     '../screens/TogetherScreen.tsx',
     '../screens/LobbyScreen.tsx',
     '../screens/TitleScreen.tsx',
+    '../panels/TableView.tsx',
+    '../panels/ConnectionLost.tsx',
+    '../panels/PauseSheet.tsx',
+    '../screens/ResultScreen.tsx',
+    '../screens/CrashScreen.tsx',
+    '../panels/TableMessages.tsx',
+    '../panels/AntibodyPanel.tsx',
   ];
   const keys = screens.flatMap((f) => {
     const src = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');
