@@ -1473,3 +1473,36 @@ Ruled the same evening (Shantanu: *"yes the rings should also be visible only to
   right way, 81 screens per pass (83 under SIZE200), every check 0 under all four mechanisms, 38
   nesting landings and 0 wrong, offline met, and both drawer checks passed in every pass. One NOT
   REACHED, under SIZE200: a row with several targets, which the deal decides (FINDINGS #68).
+
+### 1, ruled again and built: no label under any piece
+
+- **Measured before building.** The ruling asked for real short names at a size that can be read.
+  On 63 recorded command states at 360 × 641 (three seeds, all three difficulties, each loaded into
+  the app as its own save), today's labels were 8 px tall, and 67 of the 294 under invaders already
+  overlapped another label. Real names at about 11 px overlapped another label under 9 of 30 cells
+  and 107 of 285 invaders, and another piece under 11 of 30 and 143 of 285.
+- **Ruled again** (*"I will go with your recommendation (a)"*): no label under any piece. The
+  bloodstream at the centre never had them; every cell and every pathogen type has its own art; the
+  command bar names what is selected, and the sheet names everything at a place.
+- **Built:** the text under the tokens is gone. On the same 63 states, 754 tokens, and the only text
+  inside them is numbers, 112 of them (a spent cell's countdown and a group's count), and no words.
+  The same count on the build before found 324 words, the 30 cell labels and 294 invader labels, so
+  it is known to see them.
+- The Gate 1 audit does not read the board's text ([`GATE1_AUDIT.md`](GATE1_AUDIT.md): the SVG is
+  not its instrument), so it was not the measure here.
+
+### Also ruled that evening, for the next protocol version
+
+After the session, a player could join, hold no piece, and still be in the game: nothing to command,
+and Action Points the captain could hand them that they could not spend. **Ruled** (Shantanu, 26
+September 2026):
+
+- **The game starts only when every connected player but the captain holds at least one piece**, a
+  resident counting as one. The captain may hold none. A player away and holding nothing when it
+  starts is left out of it, and told it has started if they come back: counting them would let one
+  closed app keep a room from ever starting, since there is no removing anyone.
+- **A room holds at most 15**: one piece each for fourteen, and a captain who holds none. Until now
+  there was no limit at all. The title's line becomes *"for two to fifteen players"*.
+- **Leave the room**, which the lobby already had at its foot, moves up where it can be seen.
+
+To be built with undo (ruling 2), under protocol version 4, so that phones reload once for both.

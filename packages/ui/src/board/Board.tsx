@@ -381,6 +381,8 @@ export interface NodeModel {
 
 export interface DisplayToken {
   key: string;
+  /** Not drawn (no label under any token, ruled 26 September 2026): the invader's is the
+   *  `data-invader` hook the instruments find tokens by, and is never shown to a player. */
   label: string;
   kind: 'invader' | 'cell';
   pos: Pt;
@@ -1010,19 +1012,12 @@ export function Board({
                   </text>
                 </>
               ) : null}
-              {/* No label under hub tokens (Variant B): the ring and cluster are dense, and the strip,
-                  the bar and the sheet name every piece there. */}
-              {SZ === TOKEN_ART_U ? (
-                <text
-                  x={p.x}
-                  y={p.y + SZ / 2 + 10}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fill={t.kind === 'invader' ? '#711' : '#236'}
-                >
-                  {t.label}
-                </text>
-              ) : null}
+              {/* NO LABEL UNDER ANY TOKEN (ruled 26 September 2026, after the P3.6 session). The hub
+                  never had them (Variant B); the rest of the board had the first letters of the
+                  code's own keys, "eosi", "macr", six of a disease's, at about 6 px on a phone, and
+                  none of it from the catalogue. Real names at a size that can be read collided on
+                  the measured states, half the invaders' with another piece, so every token is
+                  known by its art, as the hub's always were, and named by the bar and the sheet. */}
             </g>
           );
         }),
