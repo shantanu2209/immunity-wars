@@ -67,7 +67,11 @@ describe('the one Produce button', () => {
   });
 
   it("says whose the B-Cell is when it is another player's, and offers nothing", () => {
-    const theirs: SeatRule = { mine: (s) => s !== 'bcell', theirs: () => 'Ravi plays this piece.' };
+    const theirs: SeatRule = {
+      mine: (s) => s !== 'bcell',
+      theirs: () => 'Ravi plays this piece.',
+      body: true,
+    };
     const withOffer = states.find((st) => produceFor(viewOf(st, 'ENV'), 'ENV').offer !== null);
     expect(withOffer, 'a state where ENV could be produced').toBeDefined();
     const r = produceFor(viewOf(withOffer, 'ENV'), 'ENV', theirs);

@@ -4780,3 +4780,10 @@ and its two rings only for the captain. That closes the Body drawer in the app. 
 on:** the relay itself still accepts these actions from any member, and the attacks without their
 cell, from a device the app did not build. Everyone at the table is someone a player gave the code
 to; it is recorded so that it is not found again as new.
+
+### ✅ The app's half FIXED, 26 September 2026, by ruling
+
+The Antibodies drawer is offered only to the B-Cell's player, and the Body drawer and its two board
+rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and the seat rule's
+`body` in `offered.ts`). Controls: `body-drawer-captain-only`, `antibodies-drawer-bcell-only`,
+`body-rings-captain-only`. Record: `for-P3.md` §9. **The relay's half is unchanged and still open.**

@@ -955,6 +955,35 @@ const CONTROLS: readonly Control[] = [
     expect: '(unused — mustPass control)',
     mustPass: true,
   },
+  {
+    id: 'body-drawer-captain-only',
+    why: "Ruled 26 September 2026, after the P3.6 session: played together, the Body drawer is the captain's alone. A perspective that gave the body to every player would show it to a player who is neither captain nor B-Cell, as it did in the session.",
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) => t.replace('body: room.captain === me,', 'body: true,'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'are Cells alone for a player who is neither',
+  },
+  {
+    id: 'antibodies-drawer-bcell-only',
+    why: "Ruled the same day: the Antibodies drawer, where antibodies are produced, is the B-Cell's player's alone. Offered to every player, the captain without the B-Cell would have it.",
+    file: 'packages/ui/src/play/table.ts',
+    mutate: (t) =>
+      t.replace("if (seats.mine('bcell')) tabs.push('antibodies');", "tabs.push('antibodies');"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'are Cells and the Body for the captain',
+  },
+  {
+    id: 'body-rings-captain-only',
+    why: "The memory response and antivenom are offered as rings on the board as well as in the Body drawer, so hiding the drawer alone would have left them to every player (FINDINGS #94). With nothing selected, anyone but the captain is offered none of the body's actions.",
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (!cell && !resident) return seats.body ? bodyOffers(view) : NO_BODY;',
+        '  if (!cell && !resident) return bodyOffers(view);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests test',
+    expect: 'none of them to anyone else',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

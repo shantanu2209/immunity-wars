@@ -21,6 +21,7 @@ import type { SessionView } from '@immunity-wars/session';
 
 import { t } from '../i18n';
 import { seatRows } from '../together/model';
+import type { MiddleTab } from './Frame';
 import { EVERY_SEAT, type SeatRule } from './offered';
 
 /** The room as the relay last described it, and which member this device is. */
@@ -72,9 +73,24 @@ export function perspectiveOf(table: Table | null): Perspective {
         if (!h) return t('table.nobody');
         return t(h.connected ? 'table.theirs' : 'table.theirsAway', { name: h.name });
       },
+      body: room.captain === me,
     },
     nameOf: (pid) => byPid.get(pid)?.name ?? t('table.someone'),
   };
+}
+
+/**
+ * WHICH OF COMMAND'S DRAWERS THIS PLAYER HAS (ruled 26 September 2026, after the P3.6 session:
+ * "Kartik should not have been able to see antibodies or body drawer since he was neither the
+ * captain nor was he controlling the b cell"). Cells always; the Antibodies drawer, where
+ * antibodies are produced, only for the B-Cell's player; the Body drawer only for the captain.
+ * Alone, all three.
+ */
+export function drawersFor(seats: SeatRule): readonly MiddleTab[] {
+  const tabs: MiddleTab[] = ['pieces'];
+  if (seats.mine('bcell')) tabs.push('antibodies');
+  if (seats.body) tabs.push('body');
+  return tabs;
 }
 
 /**
