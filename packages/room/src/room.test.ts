@@ -354,6 +354,94 @@ describe('starting the game', () => {
   });
 });
 
+describe('every player but the captain holds a piece (v4, ruled 26 September 2026)', () => {
+  const start: Inbound = { kind: 'start', ref: 'a', difficulty: 'training' };
+
+  it('refuses the start while a connected player other than the captain holds none, and names them', () => {
+    const room = run([
+      join('a', 'K'),
+      join('b', 'S'),
+      join('c', 'R'),
+      seat('a', 'bcell'),
+      seat('b', 'nk'),
+    ]).room;
+    const s = step(room, start, T0);
+    expect(errorsOf(s.out)).toEqual(['someoneUnseated']);
+    expect(detailsOf(s.out)).toEqual(['R']);
+    expect(s.room.phase).toBe('lobby');
+  });
+
+  // THE PERMITTING HALVES: the rule must let through what it was ruled to let through.
+  it('lets the captain hold none', () => {
+    const room = run([join('a', 'K'), join('b', 'S'), seat('b', 'nk')]).room;
+    const s = step(room, start, T0);
+    expect(s.room.phase).toBe('playing');
+    const g = s.room.game as Record<string, unknown>;
+    expect(g['captain']).toBe('m1');
+    expect(g['players']).toEqual(['m1', 'm2']);
+  });
+
+  it('counts a resident as a piece', () => {
+    const room = run([
+      join('a', 'K'),
+      join('b', 'S'),
+      seat('a', 'bcell'),
+      seat('b', 'res_liver'),
+    ]).room;
+    expect(step(room, start, T0).room.phase).toBe('playing');
+  });
+
+  it('leaves out a player who is away and holds nothing, who is then a newcomer to a game under way', () => {
+    const lobby = run([
+      join('a', 'K'),
+      join('b', 'S'),
+      join('c', 'R'),
+      seat('a', 'bcell'),
+      seat('b', 'nk'),
+      { kind: 'disconnect', ref: 'c' },
+    ]).room;
+    const s = step(lobby, start, T0);
+    expect(s.room.phase).toBe('playing');
+    expect(s.room.members.map((m) => m.ref)).toEqual(['a', 'b']);
+    expect((s.room.game as Record<string, unknown>)['players']).toEqual(['m1', 'm2']);
+    const back = step(s.room, join('c', 'R'), T0);
+    expect(errorsOf(back.out)).toEqual(['lobbyClosed']);
+  });
+
+  it('keeps a player who is away and holds a piece: their seats are theirs, as in any drop', () => {
+    const lobby = run([
+      join('a', 'K'),
+      join('b', 'S'),
+      seat('a', 'bcell'),
+      seat('b', 'nk'),
+      { kind: 'disconnect', ref: 'b' },
+    ]).room;
+    const s = step(lobby, start, T0);
+    expect(s.room.phase).toBe('playing');
+    expect((s.room.game as Record<string, unknown>)['owner']).toEqual({ bcell: 'm1', nk: 'm2' });
+  });
+});
+
+describe('a room holds at most fifteen (v4, ruled 26 September 2026)', () => {
+  const fifteen = (): RoomState =>
+    run(Array.from({ length: 15 }, (_, i) => join(`r${String(i)}`, `P${String(i)}`))).room;
+
+  it('admits the fifteenth and refuses the sixteenth, to them alone', () => {
+    expect(fifteen().members).toHaveLength(15);
+    const s = step(fifteen(), join('late', 'L'), T0);
+    expect(s.out).toEqual([{ to: 'late', message: { kind: 'error', code: 'roomFull' } }]);
+    expect(s.room.members).toHaveLength(15);
+  });
+
+  // THE PERMITTING HALF: a member of a full room who dropped is not a newcomer.
+  it('still lets a member of a full room back in', () => {
+    const away = step(fifteen(), { kind: 'disconnect', ref: 'r7' }, T0).room;
+    const back = step(away, join('r7', 'P7'), T0);
+    expect(errorsOf(back.out)).toEqual([]);
+    expect(back.room.members.find((m) => m.ref === 'r7')?.connected).toBe(true);
+  });
+});
+
 describe('arriving after the game has started (P3.4)', () => {
   const started = (): RoomState =>
     step(

@@ -984,6 +984,42 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/session-tests test',
     expect: 'none of them to anyone else',
   },
+  {
+    id: 'start-needs-pieces',
+    why: 'Ruled 26 September 2026, after the P3.6 session: the game starts only when every connected player but the captain holds a piece. Without the rule a player with none is in the game with nothing to command, and Action Points they cannot spend.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (unseated) return reject(room, msg.ref, 'someoneUnseated', unseated.name);\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'refuses the start while a connected player other than the captain holds none',
+  },
+  {
+    id: 'room-cap-15',
+    why: 'Ruled the same day: a room holds at most fifteen. Until then there was no limit, so a code shared widely could fill a room without end.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (room.members.length >= MAX_MEMBERS) return reject(room, msg.ref, 'roomFull');\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'admits the fifteenth and refuses the sixteenth',
+  },
+  {
+    id: 'away-pieceless-left-out',
+    why: 'A player away and holding nothing when the game starts is left out of it. Kept in, they would be a player with nothing, and counting them before the start would let one closed app keep a room from ever starting.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        '      const players = room.members.filter((m) => m.connected || m.seats.length > 0);',
+        '      const players = room.members;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'leaves out a player who is away and holds nothing',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

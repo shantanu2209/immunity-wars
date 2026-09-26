@@ -30,6 +30,7 @@ import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
 import {
+  MAX_MEMBERS,
   SAY_MESSAGES,
   SEATS,
   pidOf,
@@ -301,6 +302,9 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       // The engine fixes its players at `newGame`, so someone arriving later could be seated but
       // never given Action Points, nor the captaincy. Rejoining, above, is not affected.
       if (room.phase === 'playing') return reject(room, msg.ref, 'lobbyClosed');
+      // A ROOM HOLDS AT MOST FIFTEEN (ruled 26 September 2026). A newcomer only: a member rejoining,
+      // above, is never counted out of their own room.
+      if (room.members.length >= MAX_MEMBERS) return reject(room, msg.ref, 'roomFull');
       const member: Member = {
         ref: msg.ref,
         name: msg.name,
@@ -399,17 +403,30 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       if (room.phase !== 'lobby') return reject(room, msg.ref, 'alreadyStarted');
       const seated = room.members.filter((m) => m.seats.length > 0);
       if (seated.length === 0) return reject(room, msg.ref, 'nobodySeated');
+      // EVERY PLAYER BUT THE CAPTAIN HOLDS A PIECE (ruled 26 September 2026, after the P3.6
+      // session). A player with none would be in the game with nothing to command, and Action Points
+      // the captain could hand them that they could not spend. The captain may hold none: the
+      // allocation, the body and the end of each turn are theirs. A resident counts as a piece.
+      const unseated = room.members.find(
+        (m) => m.connected && m.ref !== room.captain && m.seats.length === 0,
+      );
+      if (unseated) return reject(room, msg.ref, 'someoneUnseated', unseated.name);
       const captainMember = find(room, msg.ref);
       if (!captainMember) return reject(room, msg.ref, 'notInRoom');
+      // AWAY AND HOLDING NOTHING: LEFT OUT. Counting them would let one closed app keep a room from
+      // ever starting, since nobody can be removed from a room. If they come back they are a
+      // newcomer to a game under way, and told it has started (R2).
+      const players = room.members.filter((m) => m.connected || m.seats.length > 0);
+      const table: RoomState = { ...room, members: players };
       // The engine is told who owns what and who is captain. Nothing about the rules changes.
       const game = newGame({
         difficulty: msg.difficulty,
         multiplayer: true,
         captain: pidOfMember(captainMember),
-        owner: ownerMap(room),
-        players: room.members.map(pidOfMember),
+        owner: ownerMap(table),
+        players: players.map(pidOfMember),
       });
-      const next: RoomState = { ...room, phase: 'playing', game };
+      const next: RoomState = { ...table, phase: 'playing', game };
       return { room: next, out: [broadcast(next), viewFor(game)] };
     }
 
