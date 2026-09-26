@@ -16,7 +16,7 @@
     "build": "echo \"no build output\""
   },
   "dependencies": {
-    "zod": "^4.6.2"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "vitest": "^4.1.11"
