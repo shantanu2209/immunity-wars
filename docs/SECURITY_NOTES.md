@@ -356,6 +356,10 @@ an operating system that is ours to patch — gets the same re-read when it land
 - **`ws` 8.21.3**, pinned exactly, with **no dependencies of its own**: the only third-party code in
   the relay besides `zod`, which the protocol already used for every trust boundary.
 - **`pnpm audit`, 24 September 2026: "No known vulnerabilities found."**
+- **Re-read 26 September 2026, when `zod` moved from 4.6.2 to 4.6.5** (Dependabot, with `react-dom`
+  19.3.0, `puppeteer-core` 25.11.0 and `fast-check` 4.10.2, and `react` 19.3.0 after them,
+  [`FINDINGS.md`](FINDINGS.md) #92; none but `zod` is in the relay): `pnpm audit` again "No known
+  vulnerabilities found", and the relay's set is still `ws`, `zod` and our own code.
 
 > ### The property, restated for a relay: no open advisory is in a process that listens, and the relay's dependency set is `ws`, `zod` and our own code. Re-read whenever any of those moves, and whenever P3.5's deployment adds one.
 

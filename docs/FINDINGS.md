@@ -4667,3 +4667,44 @@ touched. **Negative control, run by hand:** the dev entry's script pointed at a 
 the test went red; restored, green. `dist` kept its modification time across the run, and no
 temporary folder was left behind, the failing run's included. The audit was then run again with
 nothing beside it (for-P3 §8).
+
+## 92. Dependabot split React in two, and the app built from `main` was a blank page while every check stayed green — FIXED 26 September 2026
+
+**Found 26 September 2026**, by the Gate 1 audit, run to check that morning's Dependabot merges
+before deploying them. It stopped at its first wait: no button on the page in 30 seconds. The
+page's console said why, in React's error #527: *react 19.2.8, react-dom 19.3.0*.
+
+**Why.** React refuses to start unless `react` and `react-dom` are exactly the same version.
+Dependabot's PR moved `react-dom` and `@types/react-dom` to 19.3.0 and left `react` at 19.2.8,
+inside its `^19.0.0` range. `react-dom` 19.3.0 declares that it needs `react` ^19.3.0, and pnpm
+said so, as a warning, which nothing reads. Typecheck, lint, every suite and CI were green,
+because **nothing in `pnpm verify` or CI starts the built app.** The UI's tests test its logic; none
+renders a component.
+
+**What it reached.** Not the live app, deployed the evening before the merges. It did reach
+`/old/`, the version-check page for the P3.6 session, built from `main` that morning, which would
+have been a blank page at step 10 instead of the refusal. It was rebuilt from the deployed commit
+(`7f3b9cf`) before the session got there, and seen to start.
+
+### ✅ FIXED, 26 September 2026
+
+- **`react` and `@types/react` moved to 19.3.0**, to match their partners.
+- **An instrument fix, inline: `pnpm deps:check`**, in `pnpm verify` and in CI's static job, so a
+  Dependabot PR that splits the pair is red before it can be merged. It reads the lockfile and
+  requires every `react-dom` to be paired with the same `react`. That is React's rule, which is
+  exact; the declared range is not, since a `react` 19.4.0 would satisfy `react-dom` 19.3.0's range
+  and still be refused. **Controls:** `react-pair-split`, the very lockfile `main` had, refused;
+  `react-pair-unread`, a lockfile it finds no `react-dom` in, refused; `react-pair-moved-together`,
+  both moved to one new version, permitted.
+- **The Gate 1 audit on the fixed build**, `--together` against a local relay, with the
+  `puppeteer-core` 25.11.0 the same merges brought: 44 controls all firing the right way, 81 screens
+  per pass (83 under SIZE200), every check 0 under all four mechanisms, 38 nesting landings and 0
+  wrong, offline met. One NOT REACHED, under ZOOM200: a row with several targets, which the deal
+  decides (#68). The bar of `for-P3.md` §8, held.
+
+**Still true, and proposed rather than built:** nothing in CI starts the built app. This check
+closes one way for it not to start; it is not a check that it does. Two candidates, for a ruling:
+`pnpm peers check` in CI, which would have caught this split and the `@types/react` one beside it,
+though not a `react` that moves ahead alone, and whose exit status on a failure is not yet
+measured; or a start check in `deploy-app.sh`, which loads the build in headless Chrome before
+copying it, so that a build that does not start is never deployed.

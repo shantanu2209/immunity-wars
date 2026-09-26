@@ -78,6 +78,9 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm boundaries
+      # React refuses to start unless react and react-dom are the same version; a Dependabot PR
+      # that moved one and not the other passed everything else (docs/FINDINGS.md #92).
+      - run: pnpm deps:check
 
   suites:
     needs: plan

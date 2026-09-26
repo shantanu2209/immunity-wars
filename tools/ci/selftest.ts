@@ -911,6 +911,33 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm coverage:positions',
     expect: 'NO INSTRUMENTED FILE IS NAMED',
   },
+  {
+    id: 'react-pair-split',
+    why: 'FINDINGS #92: Dependabot moved react-dom to 19.3.0 and left react at 19.2.8. React refuses to start unless the two are the same version (its error #527), and typecheck, lint, every suite and CI stayed green over a blank app. The lockfile carrying exactly that split must be refused.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) =>
+      t.replace(/react-dom@([^\s()':]+)\(react@[^\s()':]+\)/, 'react-dom@$1(react@19.2.8)'),
+    gate: 'pnpm deps:check',
+    expect: 'REACT PAIR SPLIT',
+  },
+  {
+    id: 'react-pair-unread',
+    why: 'A lockfile in which the check finds no react-dom must fail, not pass: a check that read nothing has checked nothing, and a pattern that stopped matching after a lockfile format change would otherwise stay green for ever.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) => t.replace(/react-dom@/g, 'react-dom-renamed@'),
+    gate: 'pnpm deps:check',
+    expect: 'REACT PAIR UNREAD',
+  },
+  {
+    id: 'react-pair-moved-together',
+    why: 'The check must permit what React permits: react and react-dom moving together, to any version. A check that pinned one version instead of comparing the two would pass every control above and refuse the next correct upgrade.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) =>
+      t.replace(/react-dom@[^\s()':]+\(react@[^\s()':]+\)/, 'react-dom@19.9.9(react@19.9.9)'),
+    gate: 'pnpm deps:check',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
