@@ -150,18 +150,29 @@ const EMPTY_CELL: Offered = { source: 'cell', board: [], buttons: [], reason: nu
  * WHO MAY MOVE WHAT, in a game played together (P3.7 piece B). The room holds the seats and refuses
  * an action on a piece its sender does not hold (`notYourPiece`), so a piece that is not this
  * player's is offered nothing: it can be selected and read, not moved (ruled 25 September 2026,
- * ruling 5). Actions with no piece, the body's, are open to every player with the Action Points.
+ * ruling 5).
  *
- * Single player passes nothing and holds every seat, so every call it makes is unchanged.
+ * THE BODY'S ACTIONS ARE THE CAPTAIN'S (ruled 26 September 2026, after the P3.6 session): the
+ * actions with no piece, in the Body drawer and as the memory response's and antivenom's rings on
+ * the board, are offered only to the captain, and the Antibodies drawer only to the B-Cell's
+ * player. Until then they were offered to every player (FINDINGS #94).
+ *
+ * Single player passes nothing and holds every seat and the body, so every call it makes is
+ * unchanged.
  */
 export interface SeatRule {
   /** Whether this player holds the seat. */
   mine: (seat: string) => boolean;
   /** The line that says who does, for a seat that is not this player's. */
   theirs: (seat: string) => string;
+  /** Whether this player is offered the body's actions: always alone, the captain together. */
+  body: boolean;
 }
 
-export const EVERY_SEAT: SeatRule = { mine: () => true, theirs: () => '' };
+export const EVERY_SEAT: SeatRule = { mine: () => true, theirs: () => '', body: true };
+
+/** Nothing the body offers, for a player who is not offered the body's actions. */
+const NO_BODY: Offered = { source: 'body', board: [], buttons: [], reason: null };
 
 /** The seat the selection is, or null when nothing is selected. */
 const selectedSeat = (view: SessionView): string | null =>
@@ -451,12 +462,12 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
   const g = view.game;
   const cell = view.selection.cell;
   const resident = view.selection.resident;
-  if (!cell && !resident) return bodyOffers(view);
+  if (!cell && !resident) return seats.body ? bodyOffers(view) : NO_BODY;
   const seat = selectedSeat(view);
   if (seat !== null && !seats.mine(seat)) return theirPiece(seats.theirs(seat));
   if (String(g['phase']) !== 'command') return { ...EMPTY_CELL, reason: t('selection.notCommand') };
   if (resident) return residentOffers(view, resident);
-  if (!cell) return bodyOffers(view);
+  if (!cell) return seats.body ? bodyOffers(view) : NO_BODY;
   if (isSpent(g, cell)) return { ...EMPTY_CELL, reason: t('selection.spent') };
   if (isSuppressed(g, cell)) return { ...EMPTY_CELL, reason: t('selection.offline') };
 

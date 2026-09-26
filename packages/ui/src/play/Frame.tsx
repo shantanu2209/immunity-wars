@@ -593,26 +593,30 @@ const TABS: readonly { kind: MiddleTab; label: string }[] = [
   { kind: 'body', label: 'body.title' },
 ];
 
-/** COMMAND'S THREE BUTTONS: each opens its view in the middle, and a second tap closes it. */
+/** COMMAND'S THREE BUTTONS: each opens its view in the middle, and a second tap closes it. Played
+ *  together a player has only the drawers that are theirs (`drawersFor`), and the row shows those. */
 export function TabRow({
   active,
   disabled,
+  shown,
   onTab,
 }: {
   active: MiddleTab | null;
   disabled: boolean;
+  shown: readonly MiddleTab[];
   onTab: (kind: MiddleTab) => void;
 }): ReactElement {
+  const tabs = TABS.filter((tab) => shown.includes(tab.kind));
   return (
     <div
       data-tab-row=""
       style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(${String(TABS.length)}, minmax(0, 1fr))`,
+        gridTemplateColumns: `repeat(${String(tabs.length)}, minmax(0, 1fr))`,
         gap: 4,
       }}
     >
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <button
           key={tab.kind}
           data-tab={tab.kind}

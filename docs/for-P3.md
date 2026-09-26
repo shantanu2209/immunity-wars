@@ -1436,3 +1436,40 @@ logged but its start. It logs only errors, so that is the whole of what it says.
   and all on single player's command screens, which this does not touch: a row with several targets
   in the base and FONT200 passes, with the one nesting path that needs it, and the inspect sheet
   under FONT200. Earlier runs the same day missed the same screens in other passes.
+
+### 4, built: each player has only the drawers that are theirs
+
+Ruled the same evening (Shantanu: *"yes the rings should also be visible only to captain"*).
+
+- **The Antibodies drawer** is offered only to the player who holds the B-Cell, and **the Body drawer**
+  only to the captain. A player who is neither has Cells alone; a captain who holds the B-Cell has all
+  three. Alone, all three, as before.
+- **The memory response's and antivenom's rings** on the board, the Body drawer's other half, are the
+  captain's too: with nothing selected, anyone else is offered none of the body's actions.
+- **A drawer that stops being a player's is closed** by the screen, when the captaincy passes on or
+  the B-Cell is handed to someone else. That is in the code, and no test or walk has exercised it.
+- **Nothing on the relay changed.** Which drawer a player sees is the screen's; the relay still
+  accepts the body's actions from any member (#94), which was not ruled on.
+
+**What proves it:**
+
+- **Who has which drawer** (`packages/ui/src/play/table.test.ts`): the captain without the B-Cell has
+  Cells and the Body; the B-Cell's player has Cells and the Antibodies, even while away; a player who
+  is neither has Cells; both drawers follow the captaincy and the B-Cell; alone, all three. Controls:
+  `body-drawer-captain-only` and `antibodies-drawer-bcell-only`.
+- **The board's rings** (`tests/session/src/body-by-role.test.ts`), on 624 recorded command states
+  with nothing selected: alone and for the captain, exactly the body's own offers, 20 rings and 3,275
+  buttons among them; for anyone else, none. Control: `body-rings-captain-only`.
+- **The Gate 1 audit's together walk** now requires it on the screens: the captain, who holds the
+  B-Cell there, has the Antibodies and Body drawers, and the other player has Cells alone. Both checks
+  were seen to fire before they were trusted: a build that gave every player every drawer stopped the
+  walk at the other player's check, and one that gave nobody a drawer stopped it at the captain's.
+- **The table's own test held the old rule** (`tests/session/src/table-offers.test.ts`, which plays
+  two players through the room): it required both players to be offered the body's actions, and it
+  failed on this change, as it should. It now requires the captain to be offered and use them, and
+  the other player to be offered none; given the body back to everyone, it failed with 277 of them
+  offered to the other player.
+- **The Gate 1 audit, `--together` against a local relay, on the change:** 44 controls all firing the
+  right way, 81 screens per pass (83 under SIZE200), every check 0 under all four mechanisms, 38
+  nesting landings and 0 wrong, offline met, and both drawer checks passed in every pass. One NOT
+  REACHED, under SIZE200: a row with several targets, which the deal decides (FINDINGS #68).

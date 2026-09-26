@@ -17,8 +17,10 @@
  *
  * BOTH HALVES (CLAUDE.md). Two controls must FIRE: offers made as if every seat were this player's
  * are refused as `notYourPiece`, and offers made from the table's total are refused by the engine.
- * And the rule must PERMIT: each player is offered and has accepted moves, attacks and the body's
- * actions, and another player's piece is offered nothing at all.
+ * And the rule must PERMIT: each player is offered and has accepted moves and attacks, the captain
+ * the body's actions too, and another player's piece is offered nothing at all. The body's actions
+ * are the captain's alone since 26 September 2026 (ruled after the P3.6 session): the other player
+ * is offered none of them, where until then both were.
  *
  * The draw is the captain's too: the rule that sends it is held here to the engine's refusal of
  * anyone else's.
@@ -366,7 +368,7 @@ describe('offered ⊆ accepted, at a table of two', () => {
     expect(table.theirs).toBe(0);
   });
 
-  it('PERMITS: each player was offered, and had accepted, moves, attacks and the body', () => {
+  it('PERMITS: each player was offered, and had accepted, moves and attacks; the captain the body', () => {
     for (const m of MEMBERS) {
       const got = table.accepted[m.name] ?? {};
       expect(got['move'] ?? 0, `${m.name} moves: ${JSON.stringify(got)}`).toBeGreaterThan(0);
@@ -374,10 +376,14 @@ describe('offered ⊆ accepted, at a table of two', () => {
         got[ON_A_PATHOGEN] ?? 0,
         `${m.name} acted on a pathogen: ${JSON.stringify(got)}`,
       ).toBeGreaterThan(0);
-      expect(
-        (got['orderAntivenom'] ?? 0) + (got['vaccinate'] ?? 0),
-        `${m.name} used the body's actions: ${JSON.stringify(got)}`,
-      ).toBeGreaterThan(0);
+      // The captain (Asha, who started the game) is offered the body's actions and uses them; the
+      // other player is offered none, so accepts none: every offer is sent to the room.
+      const body = (got['orderAntivenom'] ?? 0) + (got['vaccinate'] ?? 0);
+      if (m === ASHA)
+        expect(body, `${m.name} used the body's actions: ${JSON.stringify(got)}`).toBeGreaterThan(
+          0,
+        );
+      else expect(body, `${m.name} was offered the body's actions: ${JSON.stringify(got)}`).toBe(0);
     }
   });
 

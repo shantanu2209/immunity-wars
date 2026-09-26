@@ -13,6 +13,7 @@ import {
   addPoint,
   allocationActions,
   budgetsOf,
+  drawersFor,
   perspectiveOf,
   poolLeft,
   removePoint,
@@ -110,6 +111,37 @@ describe('the captain', () => {
 
   it('is whoever plays alone', () => {
     expect(ALONE.captain).toBe(true);
+  });
+});
+
+describe('the drawers, by role (ruled 26 September 2026, after the P3.6 session)', () => {
+  it('are Cells and the Body for the captain, who holds no B-Cell here', () => {
+    expect(drawersFor(perspectiveOf(table(1)).seats)).toEqual(['pieces', 'body']);
+    expect(perspectiveOf(table(1)).seats.body).toBe(true);
+  });
+
+  it("are Cells and the Antibodies for the B-Cell's player, even while they are away", () => {
+    expect(drawersFor(perspectiveOf(table(3)).seats)).toEqual(['pieces', 'antibodies']);
+    expect(perspectiveOf(table(3)).seats.body).toBe(false);
+  });
+
+  it('are Cells alone for a player who is neither', () => {
+    expect(drawersFor(perspectiveOf(table(2)).seats)).toEqual(['pieces']);
+  });
+
+  it('move with the captaincy and the B-Cell', () => {
+    const passed = table(2, {
+      captain: 2,
+      members: [
+        { id: 1, name: 'Asha', connected: true, seats: ['macrophage', 'res_liver'] },
+        { id: 2, name: 'Ravi', connected: true, seats: ['nk', 'bcell'] },
+      ],
+    });
+    expect(drawersFor(perspectiveOf(passed).seats)).toEqual(['pieces', 'antibodies', 'body']);
+  });
+
+  it('are all three alone', () => {
+    expect(drawersFor(ALONE.seats)).toEqual(['pieces', 'antibodies', 'body']);
   });
 });
 

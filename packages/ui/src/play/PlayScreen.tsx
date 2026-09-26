@@ -113,6 +113,7 @@ import {
   addPoint,
   allocationActions,
   budgetsOf,
+  drawersFor,
   perspectiveOf,
   removePoint,
   seenBy,
@@ -680,9 +681,12 @@ export function PlayScreen({
   // regardless of selection, because the panel is always visible and ordering a vial should
   // not need a cell deselected first. The body's BOARD rings come through `offered` (the
   // second source) only while nothing is selected.
-  const body: Offered = playing
-    ? { source: 'body', board: [], buttons: [], reason: null }
-    : bodyOffers(view);
+  // Played together the body's actions are the captain's alone (ruled 26 September 2026), so no
+  // one else is offered its buttons, as `offeredActions` offers them none of its rings.
+  const body: Offered =
+    playing || !p.seats.body
+      ? { source: 'body', board: [], buttons: [], reason: null }
+      : bodyOffers(view);
   const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
   const seen = (game['seen'] as Record<string, unknown> | undefined) ?? {};
   const vaccine = (game['vaccine'] as Record<string, unknown> | undefined) ?? {};
@@ -1109,6 +1113,15 @@ export function PlayScreen({
   };
   const tabOpen: MiddleTab | null =
     drawer === 'pieces' || drawer === 'antibodies' || drawer === 'body' ? drawer : null;
+  // THIS PLAYER'S DRAWERS (`drawersFor`, ruled 26 September 2026): the Antibodies drawer only for
+  // the B-Cell's player and the Body drawer only for the captain, played together. One that stops
+  // being theirs, when the captaincy or the B-Cell passes to someone else, closes.
+  const mayAntibodies = p.seats.mine('bcell');
+  const mayBody = p.seats.body;
+  useEffect(() => {
+    if ((drawer === 'antibodies' && !mayAntibodies) || (drawer === 'body' && !mayBody))
+      setDrawer(null);
+  }, [drawer, mayAntibodies, mayBody]);
 
   /**
    * THE COACH'S LINE (piece 8, §20), or null. Everything it reads is already on this render: the
@@ -1309,7 +1322,7 @@ export function PlayScreen({
           />
         </div>
       );
-    if (drawer === 'antibodies')
+    if (drawer === 'antibodies' && mayAntibodies)
       return (
         <div data-middle-view="antibodies">
           <AntibodyPanel
@@ -1329,7 +1342,7 @@ export function PlayScreen({
           {hintFor('antibodies')}
         </div>
       );
-    if (drawer === 'body')
+    if (drawer === 'body' && mayBody)
       return (
         <div data-middle-view="body">
           <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
@@ -1529,7 +1542,7 @@ export function PlayScreen({
         style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 6 }}
       >
         {plan === null && arrivalsNow === null ? (
-          <TabRow active={tabOpen} disabled={playing} onTab={openTab} />
+          <TabRow active={tabOpen} disabled={playing} shown={drawersFor(p.seats)} onTab={openTab} />
         ) : null}
         {/* THE CAPTAIN'S STEPS (P3.7 piece B): beginning command, the allocation and ending the turn
             are the captain's alone, as the draw is (above); the engine refuses them from anyone else.

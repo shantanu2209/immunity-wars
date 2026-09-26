@@ -37,6 +37,7 @@ export {
   addPoint,
   allocationActions,
   budgetsOf,
+  drawersFor,
   perspectiveOf,
   poolLeft,
   removePoint,

@@ -2007,6 +2007,14 @@ async function walkTogether(
     await click(page, 'Command your cells');
     need(await waitFor(page, 'End turn', 8000), 'the command phase did not come');
     await sleep(300);
+    // THE DRAWERS BY ROLE (ruled 26 September 2026): this captain holds the B-Cell, so has all three.
+    need(
+      await until(
+        page,
+        `!!document.querySelector('[data-tab="antibodies"]') && !!document.querySelector('[data-tab="body"]')`,
+      ),
+      'the captain, who holds the B-Cell, did not have the Antibodies and Body drawers',
+    );
     need(await clickSel(page, '[data-bar-ap]'), 'the AP figure could not be opened');
     await at(page, 'AP terms, together');
     await nest(page, nesting, 'Command → AP terms, together → close', 'play');
@@ -2186,6 +2194,16 @@ async function walkTogether(
         `document.querySelector('[data-play-area]')?.dataset.playArea === 'command'`,
       ),
       'the command phase did not come',
+    );
+    // The guest is neither captain nor the B-Cell's player: Cells, and no drawer that is not theirs.
+    need(
+      await page.evaluate(
+        () =>
+          !!document.querySelector('[data-tab="pieces"]') &&
+          !document.querySelector('[data-tab="antibodies"]') &&
+          !document.querySelector('[data-tab="body"]'),
+      ),
+      'the guest, neither captain nor B-Cell, had a drawer that is not theirs',
     );
     await at2('command, the captain ends the turn');
     need(await clickSel(page, '[data-table-open]'), 'the Table could not be opened');
