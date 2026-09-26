@@ -1266,3 +1266,85 @@ naming an address is its admin interface recording the configuration reload, fro
 itself (`127.0.0.1`). The relay logged nothing.
 
 **Left for the session, as ruled:** `old-build.sh put` on the day, and `remove` after it.
+
+## 8. After the first game on the live server: four changes, ruled 25 September 2026
+
+Shantanu, Kartik and a third player played a whole game together on the deployed app, each on their own
+phone: *"The game actually works near perfectly."* Their four suggestions, each ruled with its
+recommendation or a change to it, and built.
+
+1. **The Cells tab lists only your own pieces** in a game played together. A player holding none
+   is told the captain can give them some from the Table. Another's piece is still read by tapping
+   it on the board, and the Table says who plays what. Alone, unchanged.
+2. **The table's fixed messages** (*"we need to figure out a set of fixed messages because all
+   players will not be in the same room and we need coordination. We need to at least build the
+   structure. More messages can be added later"*). There is still no free-text chat (brief §4,
+   ruling 3).
+   - **What travels is a message's id**, never words, and every screen words it from its own
+     catalogue, the Hindi edition's included.
+   - **The protocol admits any id of a short, word-like shape; the room admits only the ids on its
+     list** (`SAY_MESSAGES`), so nothing a player types can travel. A screen shows nothing for an id
+     it has no words for, so **adding a message later bumps no version**: an older app simply does
+     not show it.
+   - **The first nine:** *I'm done for this turn.* · *Wait for me, please.* · *I need more Action
+     Points.* · *I have Action Points to spare.* · *I'll deal with it.* · *Careful: an organ is in
+     danger.* · *Captain, we can end the turn.* · *Good move!* · *Thank you!*
+   - **Where:** Messages opens on a new **Table** tab in a game played together: the messages to
+     send, and what has happened at the table, newest first. That includes the passing notices
+     (who is away, who is captain, who was handed which piece), which vanish after a few seconds.
+     A message from someone else is also said as a notice. The record is kept for the game in
+     memory only, and a reconnect does not lose it.
+   - **Protocol version 3.** A v2 relay would have closed a `say` as malformed, so the relay and the
+     app are deployed together, and a phone with the old page open is told to update: for a web app,
+     to reload.
+3. **Only the captain moves the table on** (Shantanu was captain, and another player could start
+   the planning phase). The engine's phases were already the captain's. What a player who was not
+   captain could do was move their OWN screen from the new cards to planning, which looked the
+   same. Now everyone else's button on the cards waits too (*Waiting for … to begin*). Their
+   screens move on when the captain begins, where before one left on the cards stayed there, the
+   allocation and the command phase going on unseen.
+4. **The Antibodies tab** (the layout ruled, *"Consider it approved by Kartik"*). The classes sit on
+   one row, each chip its code and its store. One **Produce**, of a fixed size, is centred on its
+   own line for the class chosen, and *Targets: Intracellular bacterium (ICB)* is on the line below.
+   The breakdown is what the middle scrolls for. **The label was also wrong on the science:** it read
+   *"Produce Intracellular bacterium (ICB)"*, which says the body makes the bacterium.
+   - **Measured before**, at 360 × 641, the middle is 126 px. The chips took two rows under a hint;
+     ICB's Produce sat at 132 to 176 px, below the fold, and ENV's at 108 to 152 px, 116 px further
+     right and a different width.
+   - **Measured after:** one row, and Produce at 56 to 100 px, 144 px wide, in the same place for
+     every class.
+   - **Produce always answers:** for the chosen class, the offer `produceOffers` makes, or why there
+     is none (`produceFor`), in the order a player meets the reasons. On another player's B-Cell it
+     says whose it is.
+
+### What proves it
+
+- **The room:** a fixed message goes to everyone, the sender included, with who said it by public
+  id; an id not on the list is refused and reaches nobody; so is one from outside the room.
+  Control: `say-only-the-list`.
+- **The protocol:** a round trip of `say` and `said`; anything that is not a short id is refused,
+  free text among it. Control: `say-id-shape`.
+- **Over real sockets:** a message reaches both players, and an unknown one is refused to its sender
+  alone.
+- **The Produce button** (`tests/session/src/produce-for.test.ts`), on recorded games, every class
+  at every command state: it always answers, only with the offer `produceOffers` makes, and it met
+  both offers and several kinds of reason. Control: `produce-for-offer`.
+- **Every message has words**, and an id without words shows nothing.
+- **Three players at 360 × 641 against a local relay, 18 checks.** It covered the four changes as
+  ruled:
+  - the Cells tab lists exactly the player's three pieces;
+  - the cards wait for the captain, and everyone follows the captain's Begin;
+  - the Antibodies layout was measured, and Produce produced;
+  - on another player's B-Cell, Produce says whose it is;
+  - a message reached the other two and was in every record.
+- **The Gate 1 audit, `--together` against a local-relay build.** The bar is raised by one screen,
+  *messages, the table*, and one nesting path, *Command → Messages → close*: **81 screens per pass
+  (83 under SIZE200), 44 controls, 38 nesting paths.** The guest's first waiting screen is now the
+  cards, *arrivals, waiting for the captain*, where it was planning. The run recorded: every check 0
+  under all four mechanisms, 44 controls all firing the right way, 38 nesting landings and 0 wrong,
+  offline met, and the whole together walk measured in every pass. One screen NOT REACHED, under
+  ZOOM200 and SIZE200: a row with several targets, which the deal decides (FINDINGS #68). An earlier
+  run on the same changes reached it, and missed the inspect sheet under FONT200, the deal again.
+- **A run between those two is not counted.** Its together walk failed in every pass, because a
+  `pnpm verify` beside it rebuilt the build it was measuring ([FINDINGS](FINDINGS.md) #91, fixed
+  inline).

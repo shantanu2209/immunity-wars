@@ -18,6 +18,9 @@ export {
   SEATS,
   pidOf,
   residentSeat,
+  SAY_ID,
+  SAY_MESSAGES,
+  type SayMessage,
   type ErrorCode,
   type Seat,
 } from './vocabulary.js';

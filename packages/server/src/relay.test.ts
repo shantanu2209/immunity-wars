@@ -270,6 +270,34 @@ describe('dropping and coming back (Gate A)', () => {
   });
 });
 
+describe("the table's fixed messages, over real sockets (protocol v3)", () => {
+  it('reach every player, the sender included, with who said them; an unknown one is refused to its sender', async () => {
+    const a = await RelayRoom.create({ url, name: 'Kartik' });
+    const b = await RelayRoom.join({ url, code: a.code, name: 'Shantanu' });
+    const heardA: { from: number; message: string }[] = [];
+    const heardB: { from: number; message: string }[] = [];
+    const refusedB: string[] = [];
+    a.subscribe((e) => {
+      if (e.kind === 'said') heardA.push({ from: e.from, message: e.message });
+    });
+    b.subscribe((e) => {
+      if (e.kind === 'said') heardB.push({ from: e.from, message: e.message });
+      if (e.kind === 'refused') refusedB.push(e.code);
+    });
+    b.say('wait');
+    await until('both heard it', () => heardA.length === 1 && heardB.length === 1);
+    expect(heardA).toEqual([{ from: b.id, message: 'wait' }]);
+    expect(heardB).toEqual(heardA);
+    b.say('laterMessage');
+    await until('refused', () => refusedB.length === 1);
+    expect(refusedB).toEqual(['noSuchMessage']);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(heardA).toHaveLength(1);
+    a.close();
+    b.close();
+  });
+});
+
 describe('who may come in', () => {
   it('refuses a code nobody holds', async () => {
     await expect(RelayRoom.join({ url, code: 'QQQQQQ', name: 'X' })).rejects.toMatchObject({

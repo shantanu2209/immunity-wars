@@ -112,6 +112,8 @@ export type Inbound =
       readonly to: number | null;
     }
   | { readonly kind: 'start'; readonly ref: string; readonly difficulty: string }
+  /** One of the table's fixed messages, by id (protocol v3). */
+  | { readonly kind: 'say'; readonly ref: string; readonly message: string }
   | {
       readonly kind: 'action';
       readonly ref: string;
@@ -124,6 +126,8 @@ export type Inbound =
 export type Message =
   /** Who you are in this room: your public id, sent to one connection after it joins. */
   | { readonly kind: 'joined'; readonly id: number }
+  /** A member said one of the table's fixed messages: who, by public id, and which. */
+  | { readonly kind: 'said'; readonly from: number; readonly message: string }
   | { readonly kind: 'room'; readonly room: RoomProjection }
   | {
       readonly kind: 'view';

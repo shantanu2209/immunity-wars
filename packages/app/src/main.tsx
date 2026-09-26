@@ -217,6 +217,12 @@ function App({
   const [lobby, setLobby] = useState<{ room: LobbyRoom; me: number } | null>(null);
   const [lobbyRefusal, setLobbyRefusal] = useState<Refusal | null>(null);
   const [connectionLost, setConnectionLost] = useState(false);
+  /**
+   * THE TABLE'S FIXED MESSAGES said in this room so far (protocol v3), kept here and not by the play
+   * screen so a reconnect, which gives the game a new screen, does not lose them. In memory only,
+   * and gone with the room.
+   */
+  const [tableSaid, setTableSaid] = useState<{ at: number; from: number; message: string }[]>([]);
   const reconnectingRef = useRef(false);
   const [reconnecting, setReconnecting] = useState(false);
   /** THE ROOM THIS DEVICE WAS IN (piece C, ruling (a)): offered on the Title after the app closed. */
@@ -302,10 +308,13 @@ function App({
     setLobby(null);
     setLobbyRefusal(null);
     setConnectionLost(false);
+    setTableSaid([]);
   };
 
   /** In a room: its lobby now, and its game the moment the captain starts it. */
   const attach = (room: RelayRoom, name: string): void => {
+    // Back in the same room (a reconnect or a rejoin) keeps what was said; another room starts afresh.
+    if (entryRef.current?.code !== room.code) setTableSaid([]);
     roomRef.current = room;
     entryRef.current = { name, code: room.code, self: room.self };
     // Kept on the device while the player is in the room, so a phone that closes the app does not
@@ -319,6 +328,8 @@ function App({
     room.subscribe((e) => {
       if (roomRef.current !== room) return;
       if (e.kind === 'room') setLobby({ room: e.room, me: room.id });
+      else if (e.kind === 'said')
+        setTableSaid((l) => [...l, { at: Date.now(), from: e.from, message: e.message }]);
       else if (e.kind === 'refused')
         setLobbyRefusal(
           e.detail === undefined ? { code: e.code } : { code: e.code, detail: e.detail },
@@ -663,6 +674,9 @@ function App({
             // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.
             onAssignSeat={(seat, to) => inRoom((r) => r.assignSeat(seat, to))}
             tableRefusal={connectionLost ? null : lobbyRefusal}
+            // THE TABLE'S FIXED MESSAGES (protocol v3): what has been said, and saying one.
+            tableSaid={tableSaid}
+            onSay={roomRef.current !== null ? (m) => roomRef.current?.say(m) : null}
             hintsSeen={hintsSeen}
             onHintsSeen={rememberHints}
             onGameEnd={onGameEnd}
