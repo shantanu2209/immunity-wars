@@ -191,6 +191,9 @@ describe('item 12: the planning screen model', () => {
     expect(m.active).toBe(true);
     expect(m.mode).toBe('allocate');
     expect(m.button.params).toEqual({ action: 'confirmAllocation' });
+    // Command your cells starts play in both modes (ruled 26 September 2026): under the allocation
+    // it confirms the points and begins command, where it read "Confirm the plan", one step more.
+    expect(m.button.label).toBe(planningModel(base.v).button.label);
     expect(m.allocation).toEqual({
       pool: 5,
       captain: 'p1',

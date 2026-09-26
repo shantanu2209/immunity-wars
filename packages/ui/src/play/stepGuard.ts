@@ -3,7 +3,8 @@
  * "Agree with your recommendation").
  *
  * The play screen's bottom button is one element whose step changes with the game: *Plan your
- * turn*, *Command your cells*, *Confirm the plan*, *End turn*. A double tap's second tap landed on
+ * turn*, *Command your cells*, *End turn* (and *Confirm the plan*, played together, until 26
+ * September 2026, when *Plan your turn* came to begin the allocation). A double tap's second tap landed on
  * the NEXT step. Measured alone, *Command your cells* tapped twice ended the turn with every Action
  * Point unspent, at every gap tried from 80 to 400 ms, with no undo past the spread.
  *

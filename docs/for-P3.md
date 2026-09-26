@@ -1348,3 +1348,91 @@ recommendation or a change to it, and built.
 - **A run between those two is not counted.** Its together walk failed in every pass, because a
   `pnpm verify` beside it rebuilt the build it was measuring ([FINDINGS](FINDINGS.md) #91, fixed
   inline).
+## 9. P3.6, the session: played on 26 September 2026, and four changes ruled after it
+
+**Who and what.** Player A, Shantanu, on a Samsung Galaxy S25 with Android 16, on home Wi-Fi; player
+B, Kartik, on an iPhone 16 with iOS 26.6.2, on mobile data; both in Chrome. Chrome on an iPhone draws
+pages with Apple's own browser engine, as every browser on an iPhone sold in India must, so the
+session met two browser engines rather than one, where the plan ([`P3_6_SESSION.md`](P3_6_SESSION.md))
+had assumed two Android phones. **Steps 1 to 11 were played, and every one matched its expectation,
+as the players reported it. Step 12, the optional eleven-minute wait, was not played.**
+
+- **Step 5, the drop:** A saw B marked away *"almost immediately, say 2 to 3 seconds at most"*. The
+  plan's *about 40 seconds* is the relay's bound for a phone that goes silent without closing; this
+  one was noticed as a close, far sooner.
+- **Step 10, the old version:** refused with the words as written, *"This app and the game server are
+  on different versions. Update the app, then try again."*
+- **Step 11, single player with no network:** on the S25. It was not tried on the iPhone.
+
+**What that verifies of Gate A** ([`PHASE3_BRIEF.md`](PHASE3_BRIEF.md) §1), on two real devices on
+two networks: two devices joining one room by code and playing a full game to a Result; a player who
+drops and rejoins getting their seats back, from aeroplane mode and from the browser closed; a player
+who does not come back not blocking the table, with the captain's choice visible to both; the captain
+dropping and a new captain agreed by both; an old version refused before it could reach the room;
+single player with no network. **Not verified here:** that every action is applied once in one order
+is asserted by the relay's tests over real sockets, and the session only watched it; the last player
+leaving and the room discarded after its grace period (step 12, not played) rests on the room's tests;
+*"a message a player can act on"* held for the words and not for the action, on the web (#93); and the
+20 deferred coverage arms are still to be covered.
+
+**Before it began.** The live app refused to create a room: the phone was still running the copy
+from before the evening's deploy, which speaks the protocol version before the relay's
+([`FINDINGS.md`](FINDINGS.md) #93). A reload after the new version had downloaded cleared it. The
+version-check page for step 10 had to be put twice: the first, built from a `main` whose React the
+morning's Dependabot merges had split, would have been a blank page (#92), and was replaced from the
+deployed commit before the session reached it. It was taken away afterwards and answers 404.
+
+**The relay's side.** It ran from its deploy through the whole session with no restart and nothing
+logged but its start. It logs only errors, so that is the whole of what it says.
+
+### Four observations, and the rulings on them (Shantanu, 26 September 2026)
+
+1. **The labels under the pieces on the board** were the first letters of the code's own keys, cut
+   short: _eosi_, _nk_, _macr_ for the Monocyte, _neut_, _bcel_, _tcel_, _help_, and six letters of
+   a disease's key under an invader. About 5.5 px tall on a 360 px phone, and none of it from the
+   catalogue, so the Hindi edition would have shown English fragments. **Ruled:** real short names
+   from the catalogue at a size that can be read (_"Yes but no need for Kartik's approval, just go
+   ahead"_). **To build.**
+2. **Undo in a game played together** (an accidental tap cost Kartik points). It is off because the
+   engine keeps one undo stack for the whole table, so an undo could take back another player's move
+   (#79). **Ruled** (_"Agree"_): a player may take back their own moves as long as nobody else has
+   acted since, which the room can do without changing the engine because it sees every action in
+   order. **To build**, with protocol version 4.
+3. **Planning.** _Command your cells_ opened the handing out of Action Points, and _Confirm the
+   plan_ then started play. **Ruled** (_"Agree"_): played together, the captain's _Plan your turn_
+   begins the handing out, so planning and the points are one screen, and _Command your cells_
+   confirms them and starts play. **Built:** below. The engine's order is unchanged; only which
+   button sends which step moved.
+4. **The drawers.** **Ruled:** the Antibodies drawer only for the player holding the B-Cell, and the
+   Body drawer only for the captain, with the memory response and antivenom that it also offers as
+   rings on the board (*"Kartik should not have been able to see antibodies or body drawer since he was
+   neither the captain nor was he controlling the b cell"*). **To build.** In the game as played,
+   Produce already answered a player without the B-Cell with who holds it, so Kartik could not
+   produce; by the code, the Body drawer's buttons and its two rings were live on his phone, which the ruling closes (#94).
+
+### 3, built: _Plan your turn_ begins the handing out of points
+
+- **Played together, the captain's _Plan your turn_** on the new cards sends `beginCommand`. The
+  cards give way on every screen when the phase moves, as they did, and everyone lands on planning
+  with the handing out of points on it. **Its button reads _Command your cells_** and confirms the
+  points, then starts command. There is one tap fewer, and no _Confirm the plan_.
+- **A captain back after the draw**, who lands on planning without the cards, has _Plan your turn_
+  there, which does the same.
+- **Alone, nothing changes:** there are no points to hand out, so _Plan your turn_ puts the cards
+  away and _Command your cells_ starts play, as before.
+- **The half-second guard** (#90) still covers the button as its step changes, so a double tap on
+  _Plan your turn_ cannot confirm the points as well.
+
+### What proves 3
+
+- **The planning model** (`tests/session/src/planning.test.ts`): under the allocation the button sends
+  `confirmAllocation` and reads as it does before it, *Command your cells*. Seen red first: labelled
+  *Plan your turn* instead, the test failed.
+- **The Gate 1 audit, `--together` against a local relay.** Its together walk now requires the
+  handing out of points to appear straight after the captain's *Plan your turn*, measures the other
+  player's screen there, and only then has the captain's *Command your cells* confirm it; it did, in
+  every pass. 44 controls all firing the right way, 81 screens per pass (83 under SIZE200), every
+  check 0 under all four mechanisms, offline met. NOT REACHED, all of them the deal (FINDINGS #68)
+  and all on single player's command screens, which this does not touch: a row with several targets
+  in the base and FONT200 passes, with the one nesting path that needs it, and the inspect sheet
+  under FONT200. Earlier runs the same day missed the same screens in other passes.

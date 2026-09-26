@@ -1554,7 +1554,11 @@ export function PlayScreen({
                 : arrivalsNow !== null
                   ? t('reveal.plan')
                   : plan !== null
-                    ? plan.button.label
+                    ? // Together, planning before the allocation is only reached without the cards
+                      // (a captain back after the draw), and its step is still Plan your turn.
+                      plan.mode === 'plan' && p.together
+                      ? t('reveal.plan')
+                      : plan.button.label
                     : t('play.endCommand')
           }
           disabled={
@@ -1566,7 +1570,15 @@ export function PlayScreen({
           hidden={navState.floating}
           waiting={waitingFor !== null}
           onPress={() => {
-            if (arrivalsNow !== null) setArrivals(null);
+            // PLAYED TOGETHER, PLAN YOUR TURN BEGINS THE ALLOCATION (ruled 26 September 2026): the
+            // captain's tap on the cards sends `beginCommand`, and the cards give way on every screen
+            // when the phase moves (the effect above), so planning and the handing out of points are
+            // one screen. Alone there is no allocation, and the tap only puts the cards away.
+            if (arrivalsNow !== null) {
+              if (p.together) send({ action: 'beginCommand' });
+              else setArrivals(null);
+            } else if (plan !== null && plan.mode === 'plan' && p.together)
+              send({ action: 'beginCommand' });
             else if (plan !== null && plan.mode === 'allocate')
               void confirmDraft(plan.button.params);
             else if (plan !== null) commandFromPlanning(plan.button.params);

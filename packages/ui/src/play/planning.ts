@@ -240,9 +240,13 @@ export function planningModel(view: SessionView): PlanningModel {
     })),
     { place: HUB_PLACE, kind: 'hub', depth: 'blood', count: countAt(HUB_PLACE), hp: null },
   ];
+  // COMMAND YOUR CELLS STARTS PLAY, in both modes (ruled 26 September 2026, after the P3.6
+  // session). Played together, the captain's Plan your turn begins the allocation, so planning and
+  // the handing out of points are one screen, and its button confirms them and starts command.
+  // It read "Confirm the plan", one more step, while Command your cells only opened the allocation.
   const button =
     mode === 'allocate'
-      ? { label: t('planning.confirm'), params: { action: 'confirmAllocation' } }
+      ? { label: t('play.beginCommand'), params: { action: 'confirmAllocation' } }
       : { label: t('play.beginCommand'), params: { action: 'beginCommand' } };
 
   let allocation: AllocationSlot | null = null;

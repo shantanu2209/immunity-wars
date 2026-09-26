@@ -1834,12 +1834,12 @@ const until = (page: Page, js: string, ms = 10000): Promise<boolean> =>
     .then(() => true)
     .catch(() => false);
 
-/** The captain's steps through one turn: plan, begin, confirm, end, and the spread tapped through. */
+/** The captain's steps through one turn: plan (which begins the allocation, ruled 26 September
+ *  2026), command (which confirms it), end, and the spread tapped through. */
 async function captainTurn(captain: Page, others: readonly Page[]): Promise<void> {
   if (await waitFor(captain, 'Plan your turn', 4000)) await click(captain, 'Plan your turn');
   if (await waitFor(captain, 'Command your cells', 3000))
     await click(captain, 'Command your cells');
-  if (await waitFor(captain, 'Confirm the plan', 3000)) await click(captain, 'Confirm the plan');
   if (await waitFor(captain, 'End turn', 3000)) await click(captain, 'End turn');
   for (let i = 0; i < 60; i += 1) {
     await sleep(120);
@@ -1993,11 +1993,10 @@ async function walkTogether(
     await at(page, 'goal dialog, together');
     await click(page, 'Begin');
     if (await waitFor(helper, 'Begin', 10000)) await click(helper, 'Begin');
-    // The captain's device draws; plan, then begin: the allocation, with the captain's controls.
+    // The captain's device draws; Plan your turn begins the allocation at once (ruled 26 September
+    // 2026), so planning and the captain's controls for the points are one screen.
     need(await waitFor(page, 'Plan your turn', 15000), 'the draw did not come');
     await click(page, 'Plan your turn');
-    need(await waitFor(page, 'Command your cells', 5000), 'planning did not show');
-    await click(page, 'Command your cells');
     need(
       await until(page, `!!document.querySelector('[data-allocation-add="m2"]')`),
       'the allocation did not show',
@@ -2005,7 +2004,7 @@ async function walkTogether(
     await clickSel(page, '[data-allocation-add="m2"]');
     await clickSel(page, '[data-allocation-add="m2"]');
     await at(page, 'planning, allocation, captain');
-    await click(page, 'Confirm the plan');
+    await click(page, 'Command your cells');
     need(await waitFor(page, 'End turn', 8000), 'the command phase did not come');
     await sleep(300);
     need(await clickSel(page, '[data-bar-ap]'), 'the AP figure could not be opened');
@@ -2171,15 +2170,16 @@ async function walkTogether(
       'the waiting button did not show',
     );
     await at2('arrivals, waiting for the captain');
+    // The captain's Plan your turn begins the allocation (ruled 26 September 2026); the guest's
+    // screen is measured there, BEFORE the captain's Command your cells confirms it and moves on.
     if (await waitFor(captain, 'Plan your turn', 10000)) await click(captain, 'Plan your turn');
-    if (await waitFor(captain, 'Command your cells', 5000))
-      await click(captain, 'Command your cells');
     need(
       await until(page, `!!document.querySelector('[data-block="allocation"]')`),
       'the allocation did not show',
     );
     await at2('planning, allocation, not captain');
-    if (await waitFor(captain, 'Confirm the plan', 5000)) await click(captain, 'Confirm the plan');
+    if (await waitFor(captain, 'Command your cells', 5000))
+      await click(captain, 'Command your cells');
     need(
       await until(
         page,
