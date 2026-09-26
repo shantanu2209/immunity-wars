@@ -18,7 +18,7 @@
  *   `onCheck` — cheap, and the invariant matters everywhere.
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
-import { residentSeat } from '@immunity-wars/protocol';
+import { residentSeat, type Seat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
   useEffect,
@@ -45,6 +45,7 @@ import {
   diseaseLabel,
   dockRows,
   offeredActions,
+  produceFor,
   produceOffers,
   type BoardOffer,
   type DockRow,
@@ -103,7 +104,11 @@ import { AllocationBlock, PathogenList, PlanningScreen, spentCellsLine } from '.
 import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, residentDisplayName } from '../names';
+import { TableView } from '../panels/TableView';
+import { TableMessages, sayText, type TableLine } from '../panels/TableMessages';
+import { refusalText } from '../together/model';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
+import { ViewQueue, type QueuedFrame } from './viewQueue';
 import {
   addPoint,
   allocationActions,
@@ -111,6 +116,8 @@ import {
   perspectiveOf,
   removePoint,
   seenBy,
+  tableChanges,
+  tableSummary,
   type Budgets,
   type Draft,
   type Table,
@@ -188,8 +195,22 @@ export function PlayScreen({
   hintsSeen = [],
   onHintsSeen,
   table = null,
+  onAssignSeat = null,
+  tableRefusal = null,
+  tableSaid = [],
+  onSay = null,
 }: {
   session: PlaySessionLike;
+  /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
+  onAssignSeat?: ((seat: Seat, to: number) => void) | null;
+  /** The room's last refusal of something done at the table (a handover), said in the toast. */
+  tableRefusal?: { code: string; detail?: string } | null;
+  /**
+   * THE TABLE'S FIXED MESSAGES said so far this game, oldest first (protocol v3), kept by the shell
+   * so a reconnect does not lose them, and sending one. Empty and null alone.
+   */
+  tableSaid?: readonly { at: number; from: number; message: string }[];
+  onSay?: ((message: string) => void) | null;
   /**
    * A GAME PLAYED TOGETHER (P3.7 piece B): the room as the relay last described it, and which member
    * this device is. Null alone. The screen reads from it whose Action Points, whose pieces, who is
@@ -264,7 +285,7 @@ export function PlayScreen({
   const [planFocus, setPlanFocus] = useState<string | null>(null);
   /** Closes whatever view the middle shows, before another opens or the board is tapped. */
   const closeMiddle = (): void => {
-    setDrawer((d) => (d === 'log' ? d : null));
+    setDrawer((d) => (d === 'log' || d === 'table' ? d : null));
     setApSheet(false);
     setTargetsFor(null);
     setEffectsOpen(false);
@@ -292,11 +313,12 @@ export function PlayScreen({
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
-  const queueRef = useRef<{ view: ViewState; label: string; dice?: unknown }[]>([]);
+  // THE FRAMES AND THE VIEWS THAT ARRIVE WHILE THEY PLAY, in order (`viewQueue.ts`, FINDINGS #89):
+  // played together, other players go on acting while this device animates a spread.
+  const queue = useRef(new ViewQueue()).current;
   const burstSizeRef = useRef(0);
   const playingRef = useRef(false);
-  const lastFrameRef = useRef<{ view: ViewState } | null>(null);
-  const pendingViewRef = useRef<SessionView | null>(null);
+  const lastFrameRef = useRef<QueuedFrame | null>(null);
   const endedRef = useRef(false);
   const timerRef = useRef<number | null>(null);
   const playNextRef = useRef<(() => void) | null>(null);
@@ -314,25 +336,30 @@ export function PlayScreen({
   const flightRef = useRef<{ from: Map<string, DOMRect>; start: number } | null>(null);
 
   useEffect(() => {
+    // THE TAIL ASSERTION — burst-tail-authoritative, checked by every real consumer. Each spread's
+    // last frame against the view THAT spread ended in, checked once the frame has had its time on
+    // screen, by which point its view has arrived (the two are sent together).
+    const checkTail = (last: QueuedFrame | null): void => {
+      if (!last?.tail) return;
+      const ok = JSON.stringify(last.view) === JSON.stringify(last.tail.view);
+      const line = ok
+        ? `tail === authoritative view: PASS (${String(last.tail.size)} frames)`
+        : 'tail !== authoritative view: FAIL — the burst is NOT safely skippable';
+      onCheckRef.current?.(line);
+      if (!ok) console.error(`[burst] ${line}`);
+    };
     const playNext = (): void => {
-      const f = queueRef.current.shift();
+      checkTail(lastFrameRef.current);
+      const f = queue.nextFrame();
       if (!f) {
         playingRef.current = false;
         timerRef.current = null;
-        const pv = pendingViewRef.current;
-        pendingViewRef.current = null;
-        const last = lastFrameRef.current;
-        if (pv && last) {
-          // THE TAIL ASSERTION — burst-tail-authoritative, checked by every real consumer.
-          const ok = JSON.stringify(last.view) === JSON.stringify(pv.game);
-          const line = ok
-            ? `tail === authoritative view: PASS (${burstSizeRef.current} frames)`
-            : 'tail !== authoritative view: FAIL — the burst is NOT safely skippable';
-          onCheckRef.current?.(line);
-          if (!ok) console.error(`[burst] ${line}`);
-        }
+        lastFrameRef.current = null;
         frameStore.set(null);
-        if (pv) setAuthView(pv);
+        // The first view waiting is shown with the frames' end, so the board never steps back to
+        // before the spread; any after it follow one at a time (the effect below).
+        const next = queue.nextView();
+        if (next) setAuthView(next);
         setPlaying(false);
         // THE LAST FRAME IS THE NEW TURN ARRIVING, not something that happened in the spread
         // (§21 E): "Next turn" is the animation's own word and it is dropped from the summary.
@@ -341,7 +368,7 @@ export function PlayScreen({
         return;
       }
       lastFrameRef.current = f;
-      const n = burstSizeRef.current - queueRef.current.length;
+      const n = burstSizeRef.current - queue.framesLeft;
       // Per-redraw main-thread work (§4 row 2). flushSync is instrumentation — FINDINGS #48.
       const frameStart = performance.now();
       flushSync(() => {
@@ -362,16 +389,15 @@ export function PlayScreen({
           return;
         }
         spreadLinesRef.current.push(...ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
-        queueRef.current.push(...ev.frames);
-        burstSizeRef.current = queueRef.current.length;
+        queue.burst(ev.frames);
+        burstSizeRef.current = queue.framesLeft;
         if (!playingRef.current) {
           playingRef.current = true;
           setPlaying(true);
           playNext();
         }
       } else if (ev.kind === 'view') {
-        if (playingRef.current) pendingViewRef.current = ev.view;
-        else setAuthView(ev.view);
+        if (queue.view(ev.view, playingRef.current)) setAuthView(ev.view);
       }
       // `notice` falls through deliberately: it is the shell's, not this screen's.
     });
@@ -380,6 +406,14 @@ export function PlayScreen({
       if (timerRef.current !== null) clearTimeout(timerRef.current);
     };
   }, [session]);
+
+  // EVERY VIEW IS SHOWN, one at a time and in order, once the frames are done, so each moment the
+  // screen watches for (a card drawn, a turn begun) is seen as it happened (FINDINGS #89).
+  useEffect(() => {
+    if (playingRef.current) return;
+    const next = queue.nextView();
+    if (next) setAuthView(next);
+  }, [authView, playing]);
 
   /** Tap-anywhere during a burst: advance one frame now instead of waiting out the timer. */
   const advanceFrame = (): void => {
@@ -842,6 +876,12 @@ export function PlayScreen({
   const [draft, setDraft] = useState<Draft>({});
   const [confirming, setConfirming] = useState(false);
   useEffect(() => setDraft({}), [turnNow, phase]);
+  // THE CARDS GIVE WAY WHEN THE PHASE MOVES ON: on a screen whose player is not captain, the new
+  // cards stay until the captain begins, and then the table's next step is what shows. Alone the
+  // phase cannot move on while the cards show, so this never fires there.
+  useEffect(() => {
+    if (phase !== 'infection') setArrivals(null);
+  }, [phase]);
   const budgets: Budgets = Object.fromEntries(
     (planning?.allocation?.budgets ?? []).map((b) => [b.pid, b.ap]),
   );
@@ -952,6 +992,55 @@ export function PlayScreen({
     };
   }, [planningActive]);
 
+  // WHAT CHANGED AT THE TABLE (P3.7 piece C), said as it happens: who went away, who came back, who
+  // is captain now, who was handed which piece. Visible to everyone without anyone going to look.
+  const prevTableRef = useRef<Table | null>(null);
+  // And kept, so they can be read again in the Messages drawer's Table tab.
+  const [tableEvents, setTableEvents] = useState<{ at: number; text: string }[]>([]);
+  useEffect(() => {
+    if (table === null) return;
+    const lines = tableChanges(prevTableRef.current, table);
+    prevTableRef.current = table;
+    if (lines.length === 0) return;
+    setSaid(lines.join(' '));
+    const at = Date.now();
+    setTableEvents((es) => [...es, ...lines.map((text) => ({ at, text }))]);
+  }, [table]);
+
+  // A FIXED MESSAGE FROM SOMEONE ELSE is said as it arrives, like the table's changes. Those already
+  // said when this screen appeared (after a reconnect) are there to read, not announced again.
+  const nameOfId = (id: number): string =>
+    table?.room.members.find((m) => m.id === id)?.name ?? t('table.someone');
+  const heardRef = useRef(tableSaid.length);
+  useEffect(() => {
+    const fresh = tableSaid.slice(heardRef.current);
+    heardRef.current = tableSaid.length;
+    const theirs = fresh.filter((m) => m.from !== table?.me);
+    const last = theirs.at(-1);
+    const text = last ? sayText(last.message) : null;
+    if (last && text !== null) setSaid(t('chat.saidBy', { name: nameOfId(last.from), text }));
+  }, [tableSaid]);
+  const tableLines: TableLine[] = [
+    ...tableEvents.map((e) => ({ at: e.at, text: e.text, mine: false })),
+    ...tableSaid.flatMap((m) => {
+      const text = sayText(m.message);
+      return text === null
+        ? []
+        : [
+            {
+              at: m.at,
+              text: t('chat.saidBy', { name: nameOfId(m.from), text }),
+              mine: m.from === table?.me,
+            },
+          ];
+    }),
+  ];
+  // Messages opens on the table's tab in a game played together: coordinating is what it is for.
+  const [chatTab, setChatTab] = useState<'system' | 'table'>(table !== null ? 'table' : 'system');
+  useEffect(() => {
+    if (tableRefusal !== null) setSaid(refusalText(tableRefusal.code, tableRefusal.detail));
+  }, [tableRefusal]);
+
   // THE TOAST CLEARS ITSELF, and a change in what it answered clears it sooner.
   useEffect(() => {
     if (said === null) return undefined;
@@ -995,18 +1084,23 @@ export function PlayScreen({
   const apShown = plan !== null ? plan.apNext : Number(game['ap'] ?? 0);
   // WHO THIS PLAYER IS WAITING FOR, when the next step is the captain's and this is not the
   // captain's device; null otherwise, and always alone.
+  //
+  // ONLY THE CAPTAIN MOVES THE TABLE ON, from the new cards as from every step after them (ruled 25
+  // September 2026, after the first game on the live server: a player who was not captain went from
+  // the cards to planning on their own screen, and it looked as if the phase had started). The cards
+  // give way on everyone else's screen when the captain begins (the effect above).
   const waitingFor =
-    p.together && !p.captain && !playing && arrivalsNow === null
-      ? (p.captainName ?? t('table.theCaptain'))
-      : null;
+    p.together && !p.captain && !playing ? (p.captainName ?? t('table.theCaptain')) : null;
   const waitKey =
-    plan !== null
-      ? plan.mode === 'allocate'
-        ? 'table.waitAllocate'
-        : 'table.waitBegin'
-      : phase === 'command'
-        ? 'table.waitEnd'
-        : 'table.waitDraw';
+    arrivalsNow !== null
+      ? 'table.waitBegin'
+      : plan !== null
+        ? plan.mode === 'allocate'
+          ? 'table.waitAllocate'
+          : 'table.waitBegin'
+        : phase === 'command'
+          ? 'table.waitEnd'
+          : 'table.waitDraw';
   /** One of command's three views, or none: a second tap on its button closes it. */
   const openTab = (kind: MiddleTab): void => {
     const again = drawer === kind;
@@ -1183,7 +1277,18 @@ export function PlayScreen({
       return (
         <div data-middle-view="cells">
           <PieceStrip
-            pieces={pieces}
+            // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
+            // the live server): the Cells view is where a player picks what to move, and another's
+            // piece cannot be moved. Another's piece is still read by tapping it on the board, and
+            // the Table says who plays what.
+            pieces={
+              p.together
+                ? pieces.filter((pc) =>
+                    p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
+                  )
+                : pieces
+            }
+            emptyText={p.together ? t('pieces.noneYours') : null}
             selectedCell={selectedCell}
             selectedResident={selectedResident}
             why={why}
@@ -1211,12 +1316,15 @@ export function PlayScreen({
             rows={familyRows}
             selectedFamily={selectedFamily}
             detail={familyDetail}
-            produce={produceByFamily}
+            produce={
+              playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
+            }
             disabled={playing}
             onSelectFamily={(family) =>
               session.setSelection({ cell: selectedCell, family, resident: selectedResident })
             }
             onProduce={sendOffer}
+            onSay={setSaid}
           />
           {hintFor('antibodies')}
         </div>
@@ -1322,6 +1430,17 @@ export function PlayScreen({
         }}
         onChat={() => setDrawer('log')}
         chatLabel={t('chat.open')}
+        table={
+          table !== null
+            ? {
+                onOpen: () => {
+                  closeMiddle();
+                  setDrawer('table');
+                },
+                waiting: tableSummary(table).waiting.length,
+              }
+            : null
+        }
         menu={
           <LiveControls
             store={frameStore}
@@ -1460,22 +1579,51 @@ export function PlayScreen({
         // "What happened", are the first; the players' own chat is Phase 3's.
         <Drawer kind="log" onClose={() => setDrawer(null)}>
           <div role="tablist" style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-            <span
-              role="tab"
-              aria-selected="true"
-              data-chat-tab="system"
-              style={{
-                padding: '6px 4px',
-                fontSize: '0.8125rem',
-                fontWeight: 700,
-                color: '#2E2A28',
-                borderBottom: '2px solid #B03A2E',
-              }}
-            >
-              {t('chat.system')}
-            </span>
+            {(table !== null && onSay !== null
+              ? (['table', 'system'] as const)
+              : (['system'] as const)
+            ).map((tab) => {
+              const on = (table === null || onSay === null ? 'system' : chatTab) === tab;
+              return (
+                <button
+                  key={tab}
+                  role="tab"
+                  aria-selected={on}
+                  data-chat-tab={tab}
+                  onClick={() => setChatTab(tab)}
+                  style={{
+                    minHeight: 44,
+                    padding: '6px 8px',
+                    fontSize: '0.8125rem',
+                    fontWeight: 700,
+                    color: '#2E2A28',
+                    background: 'transparent',
+                    border: 'none',
+                    borderBottom: on ? '2px solid #B03A2E' : '2px solid transparent',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {t(tab === 'table' ? 'chat.table' : 'chat.system')}
+                </button>
+              );
+            })}
           </div>
-          <LiveLog store={frameStore} game={game} />
+          {table !== null && onSay !== null && chatTab === 'table' ? (
+            <TableMessages lines={tableLines} onSay={onSay} />
+          ) : (
+            <LiveLog store={frameStore} game={game} />
+          )}
+        </Drawer>
+      ) : null}
+      {drawer === 'table' && table !== null ? (
+        // THE TABLE (P3.7 piece C): full height over the game, like the messages.
+        <Drawer kind="table" onClose={() => setDrawer(null)}>
+          <TableView
+            summary={tableSummary(table)}
+            captain={p.captain}
+            captainName={p.captainName}
+            onGive={(seat, to) => onAssignSeat?.(seat, to)}
+          />
         </Drawer>
       ) : null}
       {playing ? (

@@ -47,6 +47,7 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
 import { residentDisplayName } from '../names';
+import { productionText } from '../productionText';
 
 /**
  * THE ONE MIRRORED RULE (FINDINGS #52): neutralising a toxin costs 2 AP, and the 2 is a
@@ -404,6 +405,46 @@ export function produceOffers(view: SessionView, seats: SeatRule = EVERY_SEAT): 
     });
   }
   return out;
+}
+
+/**
+ * THE ONE PRODUCE BUTTON (ruled 25 September 2026, after the first game on the live server): the
+ * Antibodies view has one Produce, of a fixed size in a fixed place, for the class the player has
+ * chosen. Its label was "Produce Intracellular bacterium (ICB)", which says the body makes the
+ * bacterium; the class is named on its own line below instead.
+ *
+ * This answers, for the chosen class, either the offer to send (the same offer `produceOffers`
+ * makes, never a second decision) or why there is none, in the order a player meets the reasons.
+ * Exactly one of the two is ever set, so the button always answers.
+ */
+export function produceFor(
+  view: SessionView,
+  family: string | null,
+  seats: SeatRule = EVERY_SEAT,
+): { offer: ButtonOffer | null; reason: string | null } {
+  const none = (reason: string): { offer: null; reason: string } => ({ offer: null, reason });
+  if (family === null) return none(t('antibody.chooseFirst'));
+  const offer = produceOffers(view, seats).find((o) => o.family === family);
+  if (offer) return { offer, reason: null };
+  const g = view.game;
+  if (String(g['phase']) !== 'command') return none(t('selection.notCommand'));
+  if (!seats.mine('bcell')) return none(`${t('antibody.onlyBcell')} ${seats.theirs('bcell')}`);
+  if (isSpent(g, 'bcell')) return none(t('selection.spent'));
+  if (isSuppressed(g, 'bcell')) return none(t('selection.offline'));
+  if (!canAct(g, 'bcell')) return none(t('selection.noAp'));
+  const why = producibleFamilies(view).find((f) => f.family === family)?.why ?? null;
+  if (why === 'blocked') {
+    // The chosen class's own reason when the view carries it (it is the selection's breakdown).
+    const d = view.scoped.productionDetail as { blocked?: unknown } | null;
+    return none(
+      view.selection.family === family && typeof d?.blocked === 'string'
+        ? productionText(d.blocked)
+        : t('selection.productionBlocked'),
+    );
+  }
+  if (why === 'full') return none(t('antibody.classFull'));
+  if (why === 'clone') return none(t('antibody.needsClone'));
+  return none(t('selection.nothing'));
 }
 
 export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT): Offered {

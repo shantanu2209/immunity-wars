@@ -743,7 +743,7 @@ no automatic reconnect).
 
 ---
 
-## 6. P3.7, the multiplayer screens: pieces A and B BUILT, C and D to come
+## 6. P3.7, the multiplayer screens: BUILT and audited
 
 Ruled to come before P3.6 (brief v1.7, review R1). P3.7 is the whole of what a player sees to play
 together: getting into a room, playing their part of a shared game, and what happens when someone
@@ -1042,3 +1042,309 @@ both read, so the two cannot drift.
 - **Two of the three selftest controls failed for the right cause but without their diagnostic.**
   The games are played while the suite is collected, and the driver threw there, so the file failed
   without naming a test. The driver now records its problems and a named test reads them.
+
+### Piece C, when someone drops: BUILT, 25 September 2026
+
+**Your own lost connection** covers the game at once with *The connection to the game was lost. Your
+seats wait for you while you are away.*, **Reconnect**, and **Back to the title**. Nothing rejoins
+by itself (ruling 4). *Back to the title* closes the game without leaving it: the player stays a
+member, away, and the Title offers the room again.
+
+**Coming back after the phone closes the app** (ruling (a)). While a player is in a room, the room's
+code and their `self` are kept on the device (`packages/app/src/rejoin.ts`); the Title then offers
+**Rejoin room ABC123**, which asks only for the name, typed again (ruling 2). The record is forgotten
+when the player leaves or the game ends, and when a rejoin is told the room is gone or has no place
+for them, which is also said.
+
+**Everyone sees who is away, and what the captain does about it:**
+
+- **The Table**, a new button beside Messages, opens full height and lists every player: their
+  pieces, the captain, and who is away. Below them, **the pieces nobody can move now**: those held
+  by someone away, and those nobody took in the lobby. Its badge counts them, so the table can see
+  that something waits without opening it.
+- **The captain's handover** (ruling 4): on the captain's Table, each waiting piece has *Give to …*
+  for every player who is here. Everyone else reads that the captain can hand them on, or the table
+  can wait. Nothing forces the issue and no timer decides it.
+- **What changed is said as it happens**, to everyone: *Meera is away.*, *Meera is back.*, *Ravi is
+  the captain now.* (and *You are the captain now.* to Ravi), *Ravi now plays the NK Cell.* (and *You
+  now play the NK Cell.* to Ravi).
+- **A piece held by someone away** already says so when selected: *Meera plays this piece, and is
+  away.* (piece B).
+
+**Decided here, not ruled, and easy to change:**
+
+- **The record of the room is forgotten after a day** in any case. A room is discarded 10 minutes
+  after its last player goes, so a record older than that can only point at a room that no longer
+  exists, and nothing should stay on a child's phone for longer than it can be used.
+- **The captain can also hand out pieces nobody took in the lobby.** The room has always accepted it;
+  without it they stay unmoved all game.
+- **Away markers are not drawn on the board.** The Table's badge and page, the notices and the line
+  beside a selected piece carry them.
+
+### What proves it
+
+- **The record of the room** (`packages/app/src/rejoin.test.ts`, 5 tests): a write is read back and
+  holds only the code and `self`; it is offered for a day and not a moment longer, nor from a clock
+  set back; anything malformed, or a `self` the device could not have made, is nothing; forgetting
+  forgets; a store that throws never takes the app down. Control: `rejoin-forgotten-after-a-day`.
+- **The Table's rules** (`packages/ui/src/play/table.test.ts`, 5 more tests): who holds what, which
+  pieces wait, what is said and to whom. Controls: `table-away-pieces-waiting` (an away player's
+  pieces counted as held), `table-changes-said` (nothing said).
+- **Three players at 360 × 740**, headless Chrome against the local relay, 25 checks, in order:
+  1. Meera drops mid-turn: her screen says so at once and does not rejoin by itself, and the others
+     are told and see her two pieces counted.
+  2. The others read that the captain can hand them on, and only the captain has the buttons.
+  3. The captain gives her NK Cell to Ravi, and both are told.
+  4. Meera reconnects with her Eosinophil and without the NK Cell, and everyone is told.
+  5. The captain drops, and Ravi becomes captain on every screen.
+  6. The old captain goes back to the title and rejoins as a player, not captain, as ruled.
+  7. Meera's page is reloaded and she rejoins from the Title, as herself.
+  8. A record naming a room that is gone is refused, said, and forgotten.
+
+  The walkthrough's two reds on the way were both its own: it closed the Table by tapping the dimmed
+  game behind it, which left the page open and the turn button hidden; then it tapped the floating
+  Close in the render before the button existed.
+
+### Piece D, the end and leaving: BUILT, 25 September 2026
+
+- **Everyone still in the game reaches the Result**, measured: a three-player game on Hard, played
+  to its end.
+- **The Result after a game played together** offers *Play together again*, which goes to the way
+  in, and *Back to the title*. *Play again* and *Change difficulty* both start a game alone, so they
+  are not offered there. The room has ended with its game, so another game together is a new room
+  and a new code (see the ruling asked below).
+- **Two exits from the menu, each confirmed with what it does:**
+  - *Back to the title* closes the game. *Your seats wait for you while you are away. You can rejoin
+    from the title.* It no longer says *Your game is saved*, which was never true of a game played
+    together.
+  - *Leave the game* gives the seats back. *Leaving gives your seats back to the table, and you
+    cannot come back into this game.* Everyone is told *Meera has left the game.*, and her pieces
+    join the Table's waiting list for the captain to hand on. Alone, the menu is unchanged.
+- **A crash during a game played together** says the game goes on and the player's seats wait,
+  and to rejoin from the title. It does not read or mention the single-player save.
+- **The single-player save survives a game played together**, measured: a game alone saved before a
+  game together is still offered by *Continue* after that game's Result.
+
+### What proves it
+
+- **The walk to a real Result**, three players at 360 × 740, 20 checks, in order:
+  1. Asha saves a game alone first, and the menu alone has no Leave and still says the game is
+     saved.
+  2. Together, Meera leaves from the menu: the confirmation says what leaving does, her title does
+     not offer the room, and everyone is told.
+  3. Ravi goes back to the title from the menu, is told his seats wait, and rejoins.
+  4. The captain ends turns until the body falls, at turn 9 or 10 on Hard.
+  5. Both players still in the game reach the Result, which offers only another game together.
+  6. Asha's game alone is still there, and the ended room is not offered.
+  7. No page errors anywhere.
+- **Two controls on the change the walk forced** (FINDINGS #89): `view-queue-own-tail` and
+  `view-queue-every-view`, each run and each red with its own diagnostic.
+- **Pieces B and C's walks, re-run on the changed spread player:** 20 of 20 and 25 of 25.
+
+### What the walk found
+
+- **FINDINGS #89, fixed:** played together, the play screen dropped the views that arrived while a
+  spread animated, and its own tail check failed on a correct game on the other players' screens.
+  It is fixed, and the fix was proved both ways in the app.
+- **FINDINGS #90, recorded, for a ruling:** a double tap on the play screen's one advance button does
+  the next step too. Measured in single player: *Command your cells* tapped twice ends the turn with
+  every point unspent, at every gap tried from 80 to 400 ms.
+
+### Rulings asked, 25 September 2026
+
+1. **#90, the double tap.** The bottom button ignores a tap for about half a second after its step
+   changes. **Recommendation: yes, and before P3.6**: it costs a player a whole turn with no undo, in
+   single player as much as together, and the P3.6 games are exactly where it would be hit.
+2. **Another game in the same room.** Today a room ends with its game, so a rematch means a new room
+   and a new code for everyone to type. The alternative: after the Result, the captain can start
+   another game in the same room, with the same people and their seats, back through the lobby. It
+   changes the room's rules (`ended` would lead back to `lobby`), so it is a ruling, not a default.
+   **Recommendation: yes, as its own small piece after P3.6**: P3.6 does not need it, and friends
+   who have just finished a game will want the next one.
+
+**Ruled, 25 September 2026: both as recommended** (*"1. Agree with your recommendation 2.agree with
+your recommendation"*). The guard for #90 is built before P3.6 (FINDINGS #90, fixed). Another game
+in the same room is its own piece after P3.6, and changes the room's rules when it is built, so the
+brief's §5 is amended then, not before.
+
+### The 360-pixel audit, extended over every P3.7 screen: done, 25 September 2026
+
+The Gate 1 audit now walks the twenty screens a game played together has, from the captain's side
+and a guest's, in all four passes, against a build that talks to a relay on the development PC
+(`walkTogether` in `tools/perf/gate1-audit.ts`; how to run it is in its header). A helper page, in a
+context of its own, plays the other part.
+
+**The result:** 80 screens per pass (82 under the app's own text size), up from 60. All 20 new
+screens were reached in every pass, none NOT REACHED. Every check is 0, all 44 controls fire the
+right way, 37 nesting paths all land right (four new: the way in closes to the title, the lobby
+ignores the back gesture, and the AP sheet and the Table close to the game), and offline is met.
+Recorded in [`GATE1_AUDIT.md`](GATE1_AUDIT.md) as the new bar.
+
+**What its first run found, all fixed before the record:**
+
+1. **The walk's own defect:** the first screen after each page load it made was measured before
+   the 200% text size had applied. It now sets the size again after every load, as the main walk
+   always has.
+2. **Greyed borders too faint:** a seat another player holds, and the waiting button, used a border
+   at 1.93:1. They now use the greyed rows' own border, 3.60:1.
+3. **The lobby overflowed at 200%:** the room code overflowed by up to 86 pixels at 360 wide. It now
+   wraps rather than push the page sideways, and still doubles with the text.
+
+**Never against the live relay, proved both ways.** The walk refuses any relay not on this machine
+before a socket is made. Against a build naming the deployed relay, every screen after the first
+connection attempt is NOT REACHED in every pass, naming the address; against the local build, all
+twenty are reached.
+
+**P3.7 is therefore done**: all four pieces, the double-tap fix before P3.6 (FINDINGS #90), and the
+audit. P3.6 is next.
+
+## 7. P3.6, two phones on two networks: the app DEPLOYED, the session to come
+
+### Ruled, 25 September 2026
+
+- **R1 (a): the app is served from the relay's own server,** beside the relay, at
+  `https://immunity-wars.kartikchaudhary.com/`. The alternative was GitHub Pages. The same server,
+  certificate and deploy scripts, and nothing new to trust. The game is publicly reachable at that
+  address, linked from nowhere, with no personal data in it.
+- **R2 (a): Gate A's version refusal is checked on a real phone,** with a build that claims the
+  protocol version before the current one, served at a temporary address for the session and taken
+  away after it.
+
+### What is prepared (packages/server/deploy)
+
+- **`setup.sh`**: Caddy serves the app from `/opt/immunity-wars/app/current` beside the relay. The
+  page, the service worker and its manifest are always asked for again, so a new version reaches a
+  phone that has the app. `/old/` is a slot that answers 404 unless the version-check build is in it.
+- **`deploy-app.sh`**: builds the app as players get it and **refuses a build that does not talk to
+  this server's relay**. It installs a new version beside the last three, with no restart and no game
+  touched, and checks the page served is that build's. The build is deployed exactly as the Gate 1
+  audit measures it, the development page with it, because the service worker precaches that page.
+- **`old-build.sh`**: `put` builds from HEAD in a temporary worktree, so the working copy is never
+  patched. The build claims the previous protocol version, registers no service worker, and lives
+  under `/old/`. `remove` takes it away.
+
+**Proved on the development PC before any of it goes near the server:**
+
+- The old build stamps `{v:1, …}` on every message where the current one stamps `{v:2, …}`, and
+  loads from `/old/`. Its first build loaded from `/Git/old/`, because Git Bash rewrote the path
+  argument; the script now prevents that and checks for it.
+- Served under `/old/` against a relay on the PC, creating a room is refused with *"This app and
+  the game server are on different versions. Update the app, then try again."* No lobby is
+  reached, no service worker is registered, and the page has no errors.
+- Git on Windows failed to delete one temporary worktree, whose paths were too long, and left 231 MB
+  behind. The script's clean-up now removes the folder itself and prunes the record.
+
+### What waits
+
+1. **Shantanu's go-ahead to deploy:** `setup.sh` again (the Caddy change), `deploy-app.sh`, and on the
+   day `old-build.sh put`.
+2. **The session** ([`P3_6_SESSION.md`](P3_6_SESSION.md)): about an hour on two phones, one on home
+   Wi-Fi and one on mobile data. It is one game on Training, with each Gate A item where it falls.
+3. **The 20 deferred coverage arms**: automated tests, Claude's, after this is merged.
+4. **Gate B's cost**, read from Google's billing report by SKU after the session.
+
+### Deployed, 25 September 2026 (Shantanu: *"Please do 1 and 2. We can do 3 tomorrow."*)
+
+1. **`setup.sh` again**, with nobody connected (checked first, because a reload of Caddy can end
+   live connections). The new configuration was validated before it replaced the old one. Caddy and
+   the relay are both active; the relay still answers 426 at `/relay`; `/old/` answers 404.
+2. **`deploy-app.sh`**: version `20260925-211931-47fe0f5`, built from the merged `main` with a clean
+   working copy. The build's relay was checked to be `wss://immunity-wars.kartikchaudhary.com/relay`;
+   the page served is that build's, and the service worker is served with `Cache-Control: no-cache`.
+
+**The app is at https://immunity-wars.kartikchaudhary.com/.** Checked from the development PC,
+in headless Chrome at 360 × 740:
+
+- the title renders and the service worker installs;
+- one browser created a room through the live relay and a second joined it by its code, and each saw
+  the other;
+- both left, and neither title offered the room again;
+- the one failed request is `/favicon.ico`, the app's missing icon since before P3.7 (§6, piece A).
+
+**No visitor's address was written down.** Since the change, Caddy's log has 18 lines; the only one
+naming an address is its admin interface recording the configuration reload, from the server to
+itself (`127.0.0.1`). The relay logged nothing.
+
+**Left for the session, as ruled:** `old-build.sh put` on the day, and `remove` after it.
+
+## 8. After the first game on the live server: four changes, ruled 25 September 2026
+
+Shantanu, Kartik and a third player played a whole game together on the deployed app, each on their own
+phone: *"The game actually works near perfectly."* Their four suggestions, each ruled with its
+recommendation or a change to it, and built.
+
+1. **The Cells tab lists only your own pieces** in a game played together. A player holding none
+   is told the captain can give them some from the Table. Another's piece is still read by tapping
+   it on the board, and the Table says who plays what. Alone, unchanged.
+2. **The table's fixed messages** (*"we need to figure out a set of fixed messages because all
+   players will not be in the same room and we need coordination. We need to at least build the
+   structure. More messages can be added later"*). There is still no free-text chat (brief §4,
+   ruling 3).
+   - **What travels is a message's id**, never words, and every screen words it from its own
+     catalogue, the Hindi edition's included.
+   - **The protocol admits any id of a short, word-like shape; the room admits only the ids on its
+     list** (`SAY_MESSAGES`), so nothing a player types can travel. A screen shows nothing for an id
+     it has no words for, so **adding a message later bumps no version**: an older app simply does
+     not show it.
+   - **The first nine:** *I'm done for this turn.* · *Wait for me, please.* · *I need more Action
+     Points.* · *I have Action Points to spare.* · *I'll deal with it.* · *Careful: an organ is in
+     danger.* · *Captain, we can end the turn.* · *Good move!* · *Thank you!*
+   - **Where:** Messages opens on a new **Table** tab in a game played together: the messages to
+     send, and what has happened at the table, newest first. That includes the passing notices
+     (who is away, who is captain, who was handed which piece), which vanish after a few seconds.
+     A message from someone else is also said as a notice. The record is kept for the game in
+     memory only, and a reconnect does not lose it.
+   - **Protocol version 3.** A v2 relay would have closed a `say` as malformed, so the relay and the
+     app are deployed together, and a phone with the old page open is told to update: for a web app,
+     to reload.
+3. **Only the captain moves the table on** (Shantanu was captain, and another player could start
+   the planning phase). The engine's phases were already the captain's. What a player who was not
+   captain could do was move their OWN screen from the new cards to planning, which looked the
+   same. Now everyone else's button on the cards waits too (*Waiting for … to begin*). Their
+   screens move on when the captain begins, where before one left on the cards stayed there, the
+   allocation and the command phase going on unseen.
+4. **The Antibodies tab** (the layout ruled, *"Consider it approved by Kartik"*). The classes sit on
+   one row, each chip its code and its store. One **Produce**, of a fixed size, is centred on its
+   own line for the class chosen, and *Targets: Intracellular bacterium (ICB)* is on the line below.
+   The breakdown is what the middle scrolls for. **The label was also wrong on the science:** it read
+   *"Produce Intracellular bacterium (ICB)"*, which says the body makes the bacterium.
+   - **Measured before**, at 360 × 641, the middle is 126 px. The chips took two rows under a hint;
+     ICB's Produce sat at 132 to 176 px, below the fold, and ENV's at 108 to 152 px, 116 px further
+     right and a different width.
+   - **Measured after:** one row, and Produce at 56 to 100 px, 144 px wide, in the same place for
+     every class.
+   - **Produce always answers:** for the chosen class, the offer `produceOffers` makes, or why there
+     is none (`produceFor`), in the order a player meets the reasons. On another player's B-Cell it
+     says whose it is.
+
+### What proves it
+
+- **The room:** a fixed message goes to everyone, the sender included, with who said it by public
+  id; an id not on the list is refused and reaches nobody; so is one from outside the room.
+  Control: `say-only-the-list`.
+- **The protocol:** a round trip of `say` and `said`; anything that is not a short id is refused,
+  free text among it. Control: `say-id-shape`.
+- **Over real sockets:** a message reaches both players, and an unknown one is refused to its sender
+  alone.
+- **The Produce button** (`tests/session/src/produce-for.test.ts`), on recorded games, every class
+  at every command state: it always answers, only with the offer `produceOffers` makes, and it met
+  both offers and several kinds of reason. Control: `produce-for-offer`.
+- **Every message has words**, and an id without words shows nothing.
+- **Three players at 360 × 641 against a local relay, 18 checks.** It covered the four changes as
+  ruled:
+  - the Cells tab lists exactly the player's three pieces;
+  - the cards wait for the captain, and everyone follows the captain's Begin;
+  - the Antibodies layout was measured, and Produce produced;
+  - on another player's B-Cell, Produce says whose it is;
+  - a message reached the other two and was in every record.
+- **The Gate 1 audit, `--together` against a local-relay build.** The bar is raised by one screen,
+  *messages, the table*, and one nesting path, *Command → Messages → close*: **81 screens per pass
+  (83 under SIZE200), 44 controls, 38 nesting paths.** The guest's first waiting screen is now the
+  cards, *arrivals, waiting for the captain*, where it was planning. The run recorded: every check 0
+  under all four mechanisms, 44 controls all firing the right way, 38 nesting landings and 0 wrong,
+  offline met, and the whole together walk measured in every pass. One screen NOT REACHED, under
+  ZOOM200 and SIZE200: a row with several targets, which the deal decides (FINDINGS #68). An earlier
+  run on the same changes reached it, and missed the inspect sheet under FONT200, the deal again.
+- **A run between those two is not counted.** Its together walk failed in every pass, because a
+  `pnpm verify` beside it rebuilt the build it was measuring ([FINDINGS](FINDINGS.md) #91, fixed
+  inline).

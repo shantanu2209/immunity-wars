@@ -30,6 +30,7 @@ import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
 import {
+  SAY_MESSAGES,
   SEATS,
   pidOf,
   residentSeat,
@@ -376,6 +377,21 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
           ? cleared
           : replace(cleared, to.ref, (m) => ({ ...m, seats: [...m.seats, msg.seat] }));
       return { room: next, out: [broadcast(next)] };
+    }
+
+    case 'say': {
+      // THE TABLE'S FIXED MESSAGES ONLY (ruled 25 September 2026). The protocol admits any id of the
+      // right shape; the room admits only the ids on the list, so nothing a player types can travel,
+      // and the words are each client's own catalogue's. To everyone, the sender included, so every
+      // screen's record of the table is the same.
+      const me = find(room, msg.ref);
+      if (!me) return reject(room, msg.ref, 'notInRoom');
+      if (!(SAY_MESSAGES as readonly string[]).includes(msg.message))
+        return reject(room, msg.ref, 'noSuchMessage');
+      return {
+        room,
+        out: [{ to: 'all', message: { kind: 'said', from: me.joinOrder, message: msg.message } }],
+      };
     }
 
     case 'start': {

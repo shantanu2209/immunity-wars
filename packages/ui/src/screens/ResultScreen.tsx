@@ -34,6 +34,7 @@ export function ResultScreen({
   onPlayAgain,
   onChangeDifficulty,
   onTitle,
+  onTogether = null,
 }: {
   won: boolean;
   /** Display name of the organ that fell; null on a win or a non-organ loss. */
@@ -47,6 +48,12 @@ export function ResultScreen({
   onPlayAgain: () => void;
   onChangeDifficulty: () => void;
   onTitle: () => void;
+  /**
+   * AFTER A GAME PLAYED TOGETHER (P3.7 piece D): another game together, from the way in. Play again
+   * and Change difficulty both start a game alone, so they are not offered; the room has ended with
+   * its game, so a new one is made and its code shared. Null alone.
+   */
+  onTogether?: (() => void) | null;
 }): ReactElement {
   const [showLog, setShowLog] = useState(false);
   return (
@@ -87,12 +94,20 @@ export function ResultScreen({
           ) : null}
         </>
       ) : null}
-      <button style={BTN} onClick={onPlayAgain}>
-        {t('result.playAgain')}
-      </button>
-      <button style={BTN} onClick={onChangeDifficulty}>
-        {t('result.changeDifficulty')}
-      </button>
+      {onTogether !== null ? (
+        <button style={BTN} onClick={onTogether} data-result="together">
+          {t('result.playTogether')}
+        </button>
+      ) : (
+        <>
+          <button style={BTN} onClick={onPlayAgain} data-result="again">
+            {t('result.playAgain')}
+          </button>
+          <button style={BTN} onClick={onChangeDifficulty}>
+            {t('result.changeDifficulty')}
+          </button>
+        </>
+      )}
       <button style={BTN} onClick={onTitle}>
         {t('result.title')}
       </button>

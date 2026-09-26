@@ -131,6 +131,22 @@ recognition. Found by the instrument, not by looking: a scripted read of the ren
 had passed it minutes earlier, because a read checks that the words are there and the audit
 checks that they can be read.
 
+**Playing together, the first run over its screens (P3.7, 25 September 2026): 157 findings,
+three things, all fixed before the record.** The walk (`walkTogether`) plays the twenty screens a
+game played together has, from the captain's side and a guest's, in every pass, against a build
+talking to a relay on the development PC:
+
+| Finding | Where | Was | Now |
+|---|---|---|---|
+| **the instrument's own**: text "not scaled" at 200% | the first screen after each page load the walk made: the way in, the title offering a room, a guest's lobby | measured at 100% | the walk sets the 200% root again after every load, as `walk` does and for the same reason (#60's second defect, met again) |
+| greyed controls, border | a seat another player holds, and the play screen's button while it waits for the captain, `#C9B8A8` on white | 1.93:1 | `#94847A`, the greyed rows' own: 3.60:1, 3.09:1 on the waiting ground |
+| the lobby at 200% | the room's code, six characters in `0.35em` spacing at `2rem` | overflow of 54 to 86 px at 360, 29 to 39 px at 180 | `overflow-wrap: anywhere`: it wraps at 200% and still doubles |
+
+**The walk refuses any relay not on this machine, proved both ways.** Against a build talking to
+the deployed relay, every screen after the first attempt to connect is NOT REACHED in every pass,
+naming the address, and no socket is made (the walk's WebSocket throws first). Against the
+local-relay build, all twenty are reached in every pass.
+
 ## The numbers (the shipped build, the P2.6 piece 4 run, 8 September 2026)
 
 Windows PC, headless Chrome, `vite preview` of `build:web` on port 4173; 36 screens, and 38
@@ -161,9 +177,25 @@ from the per-screen list rather than the totals; no NOT REACHED line.
 > **What is invariant, and is what a run must hold:** 44 screens per pass (46 under SIZE200), no
 > screen NOT REACHED, every check 0, 34 controls all firing the right way (27 until 13 September 2026; #69
 > added two, piece 1 five), no nesting landing wrong, offline met. A NOT REACHED is never a sample, but it can be the deal: reach the
-> screen or explain it (`FINDINGS.md` #68, added note). **What is a
+> screen or explain it (`FINDINGS.md` #68, added note).
+>
+> ⚠️ *Corrected 25 September 2026, at the FINDINGS #90 fix:* the counts in the invariant above are
+> P2.6's. P2.7 added screens and controls, recorded run by run in [`for-P2.7.md`](for-P2.7.md), and
+> its last run is the bar now: **60 screens per pass (62 under SIZE200) and 44 controls**, the rest as
+> above. The #90 run held it exactly.
+>
+> ⚠️ *And raised the same day, at P3.7's audit:* the full run is now `--together` against a
+> local-relay build (the header of `tools/perf/gate1-audit.ts` says how), and its bar is **80 screens
+> per pass (82 under SIZE200), 44 controls, 37 nesting paths**, none NOT REACHED, every check 0,
+> offline met. A run without `--together` says so as one NOT REACHED line. **What is a
 > sample:** every control and text-run count below. A drop from 843 to 400 is still worth chasing;
 > a drop of 5 is the deck.
+>
+> ⚠️ *And raised again the same day, at the play-test changes* ([`for-P3.md`](for-P3.md) §8):
+> **81 screens per pass (83 under SIZE200), 44 controls, 38 nesting paths**, the table's messages
+> and its Messages close added. The run recorded there had one NOT REACHED, a row with several
+> targets under ZOOM200 and SIZE200, which the deal decides and is explained as #68 says; the rest
+> as above.
 
 *Updated 13 September 2026, at [`FINDINGS.md`](FINDINGS.md) #69's fix: **29 controls** rather than
 27. The two added enter the state this audit could never reach before, a refused service worker

@@ -16,17 +16,24 @@
  * Replaces the dock of pieces 2 to 4, whose zones are the middle's actions and the advance button
  * here. Dumb by design: the play screen decides what each part shows.
  */
-import type { CSSProperties, ReactElement, ReactNode } from 'react';
+import {
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 import { BOARD_ASPECT } from '../board/geometry';
 import { engineText } from '../engineText';
 import { t } from '../i18n';
 import { actionDisplayName } from '../names';
-import { ChatIcon } from '../panels/BarIcons';
+import { ChatIcon, TableIcon } from '../panels/BarIcons';
 import { CardIcon } from '../panels/CardIcon';
 import { diceOf } from './SpreadNarration';
 import type { DockRow } from './offered';
 import { useFrame, type FrameStore } from './frameStore';
+import { tapCounts } from './stepGuard';
 
 const ICON_BUTTON: CSSProperties = {
   minHeight: 44,
@@ -65,6 +72,7 @@ export function TopBar({
   onChat,
   chatLabel,
   menu,
+  table = null,
 }: {
   turnText: string;
   apText: string;
@@ -78,6 +86,12 @@ export function TopBar({
   chatLabel: string;
   /** The shell's menu button (the app's) or its instrumented controls (the dev shell's). */
   menu: ReactNode;
+  /**
+   * THE TABLE, in a game played together (P3.7 piece C): who is here and who holds what. Its badge
+   * counts the pieces nobody can move right now, held by someone away or by nobody, so the table
+   * can see without opening it that something waits. Null alone.
+   */
+  table?: { onOpen: () => void; waiting: number } | null;
 }): ReactElement {
   const colour = banner ? BANNER_COLOUR[banner.kind] : null;
   return (
@@ -154,6 +168,44 @@ export function TopBar({
           marginLeft: 'auto',
         }}
       >
+        {table ? (
+          <button
+            data-table-open=""
+            data-waiting={String(table.waiting)}
+            aria-label={
+              table.waiting > 0
+                ? `${t('table.title')}, ${t('table.badge', { n: table.waiting })}`
+                : t('table.title')
+            }
+            onClick={table.onOpen}
+            style={{ ...ICON_BUTTON, position: 'relative' }}
+          >
+            <TableIcon />
+            {table.waiting > 0 ? (
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  top: -6,
+                  right: -6,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 9,
+                  background: '#B03A2E',
+                  color: '#FFFFFF',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                  padding: '0 4px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {table.waiting}
+              </span>
+            ) : null}
+          </button>
+        ) : null}
         <button data-chat="" aria-label={chatLabel} onClick={onChat} style={ICON_BUTTON}>
           <ChatIcon />
         </button>
@@ -615,13 +667,23 @@ export function AdvanceButton({
   waiting?: boolean;
   onPress: () => void;
 }): ReactElement {
+  // THE STEP GUARD (FINDINGS #90, `stepGuard.ts`): a tap within half a second of the step changing,
+  // or of the button becoming tappable, is not for the new step. Timed in a layout effect, which
+  // runs before the new step is painted, so no tap can reach it first.
+  const step = `${keyName}|${String(disabled)}`;
+  const changedAt = useRef(0);
+  useLayoutEffect(() => {
+    changedAt.current = performance.now();
+  }, [step]);
   return (
     <button
       data-dock-next={keyName}
       data-waiting={waiting ? '1' : undefined}
       aria-hidden={hidden ? true : undefined}
       disabled={disabled}
-      onClick={onPress}
+      onClick={() => {
+        if (tapCounts(changedAt.current, performance.now())) onPress();
+      }}
       style={{
         // 3rem, not 2.75: the floating close takes this slot's place, and at 2.75 it overlapped the
         // tab row above by 2px at 360 x 680 (measured, §19).
@@ -629,7 +691,9 @@ export function AdvanceButton({
         width: '100%',
         fontSize: '1rem',
         borderRadius: 10,
-        border: waiting ? '2px dashed #C9B8A8' : '2px solid #B03A2E',
+        // The waiting border is the greyed controls' own (#94847A, 3.6:1 on the page, 3.1:1 on the
+        // waiting ground): Gate 1's 3:1 for a control's boundary holds for a greyed one here too.
+        border: waiting ? '2px dashed #94847A' : '2px solid #B03A2E',
         background: waiting ? '#F3EDE6' : '#FFFDF9',
         color: '#2E2A28',
         fontWeight: waiting ? 400 : 700,

@@ -108,12 +108,15 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 ## Phase 3 — Playing together
 
 **Goal:** two people in different cities play the same game.
-**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.3 (21 September 2026: one ruled engine
+**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.7 (21 September 2026: one ruled engine
 addition, `handOverCaptaincy`; 24 September: the query builder shared between `LocalSession` and the
 relay, and the relay's home moved from Cloudflare to Oracle; 25 September: to Google Cloud, when
 Oracle's sign-up refused us, then its Mumbai region, paid, for the lag). P3.1 to P3.5 built: the room, the protocol, the frames-or-state measurement,
 `RelaySession`, and the relay deployed and measured live. Brief v1.7 (the review, 25 September) puts
-P3.7, the multiplayer screens, before P3.6, two real phones.
+P3.7, the multiplayer screens, before P3.6, two real phones. **P3.7 built and audited, 25 September:**
+the way in and the lobby, playing your part, when someone drops, the end and leaving, the double-tap
+guard (FINDINGS #90), and the Gate 1 audit over every new screen ([`docs/for-P3.md`](docs/for-P3.md) §6).
+**P3.6 is next.**
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25

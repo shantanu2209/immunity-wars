@@ -10,6 +10,8 @@ export default tseslint.config(
     ignores: [
       '**/node_modules/**',
       '**/dist/**',
+      // The version-check build (packages/server/deploy/old-build.sh), made in the working copy.
+      '**/dist-old/**',
       '**/.turbo/**',
       '**/coverage/**',
       'tools/legacy/**',
