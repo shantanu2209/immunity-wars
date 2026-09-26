@@ -64,7 +64,9 @@
     "comment:turbo:check": "The turbo hash guard. pnpm verify replayed a cached green over a red suite for thirteen days because the test task hashed only its own package (docs/FINDINGS.md #51). Asserts, from turbo's dry run, that every workspace test edge is in the hash graph. Control: pnpm ci:selftest turbo-test-hash.",
     "turbo:check": "tsx tools/ci/turbo-check.ts",
     "comment:deps:check": "The React pair. Dependabot moved react-dom to 19.3.0 and left react at 19.2.8; React refuses to start unless the two are the same version, and typecheck, lint, every suite and CI stayed green over a blank app (docs/FINDINGS.md #92). Reads pnpm-lock.yaml and requires every react-dom to be paired with the same react. In pnpm verify and in CI. Controls: pnpm ci:selftest react-pair-split, react-pair-unread, react-pair-moved-together.",
-    "deps:check": "tsx tools/ci/deps-check.ts"
+    "deps:check": "tsx tools/ci/deps-check.ts",
+    "comment:start:check": "The start check (ruled 26 September 2026): a build that does not start is never deployed. Serves a built folder on 127.0.0.1, opens it in headless Chrome, and requires the title with no uncaught error; --build builds the app into a temporary folder first. Run by deploy-app.sh and old-build.sh before anything is copied (docs/FINDINGS.md #92). Controls: pnpm ci:selftest start-check-refuses, start-check-words-free.",
+    "start:check": "tsx tools/perf/start-check.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

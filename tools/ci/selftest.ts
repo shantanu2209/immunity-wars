@@ -938,6 +938,23 @@ const CONTROLS: readonly Control[] = [
     expect: '(unused — mustPass control)',
     mustPass: true,
   },
+  {
+    id: 'start-check-refuses',
+    why: 'FINDINGS #92, ruled 26 September 2026: a build that does not start is never deployed. The React split made the app throw as it loaded, and every other check passed it; a build that throws as it loads must be refused. (Also measured by hand against the real split build, which it refused with React error #527.)',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) => `throw new Error('start-check control: this build does not start');\n${t}`,
+    gate: 'pnpm start:check --build',
+    expect: 'DID NOT START',
+  },
+  {
+    id: 'start-check-words-free',
+    why: 'The check waits for the title itself, not for its words. A check that looked for "New game" would refuse the Hindi edition, a committed grant deliverable, and every rewording after it.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) => t.replace('"title.newGame": "New game"', '"title.newGame": "नया खेल"'),
+    gate: 'pnpm start:check --build',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

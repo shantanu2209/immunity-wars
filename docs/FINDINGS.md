@@ -4702,9 +4702,23 @@ have been a blank page at step 10 instead of the refusal. It was rebuilt from th
   wrong, offline met. One NOT REACHED, under ZOOM200: a row with several targets, which the deal
   decides (#68). The bar of `for-P3.md` §8, held.
 
-**Still true, and proposed rather than built:** nothing in CI starts the built app. This check
-closes one way for it not to start; it is not a check that it does. Two candidates, for a ruling:
-`pnpm peers check` in CI, which would have caught this split and the `@types/react` one beside it,
-though not a `react` that moves ahead alone, and whose exit status on a failure is not yet
-measured; or a start check in `deploy-app.sh`, which loads the build in headless Chrome before
-copying it, so that a build that does not start is never deployed.
+**Proposed, then ruled the same day** (*"I agree with your recommendation"*): nothing in CI starts
+the built app, and the lockfile check closes one way for it not to start without being a check that
+it does. Of two candidates, `pnpm peers check` in CI, which would have caught this split and the
+`@types/react` one beside it though not a `react` that moves ahead alone, and a start check before
+deploying, the start check was ruled.
+
+- **Built: `pnpm start:check`** (`tools/perf/start-check.ts`). `deploy-app.sh` and `old-build.sh`
+  refuse a build that does not start: served on 127.0.0.1 and opened in headless Chrome, the title
+  must appear with no uncaught error within 20 seconds.
+- **Measured before it was trusted:**
+  - it refused the real split build, `main` as the merges left it, naming React's error #527;
+  - it started the app's build, and the `/old/` build at `/old/`;
+  - it refused the `/old/` build served at `/`, where its files are not;
+  - it refused a base that Git Bash had rewritten, and said so: `/old/` arrived as `D:/Git/old/`.
+- **Controls:** `start-check-refuses`, a build that throws as it loads, refused;
+  `start-check-words-free`, the title's New game in Hindi, permitted, since a check that looked
+  for the English words would refuse the Hindi edition.
+- **Still true:** CI does not start the built app. The start check guards what is deployed, not
+  what is merged; `pnpm deps:check` is what stops a React split at its pull request. `pnpm peers
+  check` in CI was not ruled and is not built.
