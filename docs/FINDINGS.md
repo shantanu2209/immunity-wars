@@ -4667,3 +4667,58 @@ touched. **Negative control, run by hand:** the dev entry's script pointed at a 
 the test went red; restored, green. `dist` kept its modification time across the run, and no
 temporary folder was left behind, the failing run's included. The audit was then run again with
 nothing beside it (for-P3 §8).
+
+## 92. Dependabot split React in two, and the app built from `main` was a blank page while every check stayed green — FIXED 26 September 2026
+
+**Found 26 September 2026**, by the Gate 1 audit, run to check that morning's Dependabot merges
+before deploying them. It stopped at its first wait: no button on the page in 30 seconds. The
+page's console said why, in React's error #527: *react 19.2.8, react-dom 19.3.0*.
+
+**Why.** React refuses to start unless `react` and `react-dom` are exactly the same version.
+Dependabot's PR moved `react-dom` and `@types/react-dom` to 19.3.0 and left `react` at 19.2.8,
+inside its `^19.0.0` range. `react-dom` 19.3.0 declares that it needs `react` ^19.3.0, and pnpm
+said so, as a warning, which nothing reads. Typecheck, lint, every suite and CI were green,
+because **nothing in `pnpm verify` or CI starts the built app.** The UI's tests test its logic; none
+renders a component.
+
+**What it reached.** Not the live app, deployed the evening before the merges. It did reach
+`/old/`, the version-check page for the P3.6 session, built from `main` that morning, which would
+have been a blank page at step 10 instead of the refusal. It was rebuilt from the deployed commit
+(`7f3b9cf`) before the session got there, and seen to start.
+
+### ✅ FIXED, 26 September 2026
+
+- **`react` and `@types/react` moved to 19.3.0**, to match their partners.
+- **An instrument fix, inline: `pnpm deps:check`**, in `pnpm verify` and in CI's static job, so a
+  Dependabot PR that splits the pair is red before it can be merged. It reads the lockfile and
+  requires every `react-dom` to be paired with the same `react`. That is React's rule, which is
+  exact; the declared range is not, since a `react` 19.4.0 would satisfy `react-dom` 19.3.0's range
+  and still be refused. **Controls:** `react-pair-split`, the very lockfile `main` had, refused;
+  `react-pair-unread`, a lockfile it finds no `react-dom` in, refused; `react-pair-moved-together`,
+  both moved to one new version, permitted.
+- **The Gate 1 audit on the fixed build**, `--together` against a local relay, with the
+  `puppeteer-core` 25.11.0 the same merges brought: 44 controls all firing the right way, 81 screens
+  per pass (83 under SIZE200), every check 0 under all four mechanisms, 38 nesting landings and 0
+  wrong, offline met. One NOT REACHED, under ZOOM200: a row with several targets, which the deal
+  decides (#68). The bar of `for-P3.md` §8, held.
+
+**Proposed, then ruled the same day** (*"I agree with your recommendation"*): nothing in CI starts
+the built app, and the lockfile check closes one way for it not to start without being a check that
+it does. Of two candidates, `pnpm peers check` in CI, which would have caught this split and the
+`@types/react` one beside it though not a `react` that moves ahead alone, and a start check before
+deploying, the start check was ruled.
+
+- **Built: `pnpm start:check`** (`tools/perf/start-check.ts`). `deploy-app.sh` and `old-build.sh`
+  refuse a build that does not start: served on 127.0.0.1 and opened in headless Chrome, the title
+  must appear with no uncaught error within 20 seconds.
+- **Measured before it was trusted:**
+  - it refused the real split build, `main` as the merges left it, naming React's error #527;
+  - it started the app's build, and the `/old/` build at `/old/`;
+  - it refused the `/old/` build served at `/`, where its files are not;
+  - it refused a base that Git Bash had rewritten, and said so: `/old/` arrived as `D:/Git/old/`.
+- **Controls:** `start-check-refuses`, a build that throws as it loads, refused;
+  `start-check-words-free`, the title's New game in Hindi, permitted, since a check that looked
+  for the English words would refuse the Hindi edition.
+- **Still true:** CI does not start the built app. The start check guards what is deployed, not
+  what is merged; `pnpm deps:check` is what stops a React split at its pull request. `pnpm peers
+  check` in CI was not ruled and is not built.

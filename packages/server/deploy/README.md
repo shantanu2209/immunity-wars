@@ -151,14 +151,18 @@ key you have):
    ```
 
    It builds the app as players get it and **refuses a build that does not talk to this server's
-   relay** (one made for the Gate 1 audit talks to a relay on the development PC), installs it as a
-   new version, and checks the page served is this build's. Nothing restarts, and no game in
-   progress is touched.
+   relay** (one made for the Gate 1 audit talks to a relay on the development PC), **and a build
+   that does not start** (opened in headless Chrome, the title must appear with no uncaught error;
+   `docs/FINDINGS.md` #92, where every other check passed a blank app). It installs it as a new
+   version, and checks the page served is this build's. Nothing restarts, and no game in progress
+   is touched. The start check needs Chrome on the development PC (`CHROME_PATH` if it is not in
+   the usual place).
 
 5. **The version check, for P3.6 only** (ruled the same day): a build that claims the protocol
    version before the current one, at `https://immunity-wars.kartikchaudhary.com/old/`, to be
-   opened in a **private tab** and refused with the words *"Update the app"*. Put it for the check,
-   and take it away after:
+   opened in a **private tab** and refused with the words *"Update the app"*. It is built from HEAD
+   and must start, served at `/old/`, before it is copied. Put it for the check, and take it away
+   after:
 
    ```bash
    SERVER=deploy@<ip> HOST_NAME=immunity-wars.kartikchaudhary.com bash packages/server/deploy/old-build.sh put

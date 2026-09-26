@@ -911,6 +911,50 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm coverage:positions',
     expect: 'NO INSTRUMENTED FILE IS NAMED',
   },
+  {
+    id: 'react-pair-split',
+    why: 'FINDINGS #92: Dependabot moved react-dom to 19.3.0 and left react at 19.2.8. React refuses to start unless the two are the same version (its error #527), and typecheck, lint, every suite and CI stayed green over a blank app. The lockfile carrying exactly that split must be refused.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) =>
+      t.replace(/react-dom@([^\s()':]+)\(react@[^\s()':]+\)/, 'react-dom@$1(react@19.2.8)'),
+    gate: 'pnpm deps:check',
+    expect: 'REACT PAIR SPLIT',
+  },
+  {
+    id: 'react-pair-unread',
+    why: 'A lockfile in which the check finds no react-dom must fail, not pass: a check that read nothing has checked nothing, and a pattern that stopped matching after a lockfile format change would otherwise stay green for ever.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) => t.replace(/react-dom@/g, 'react-dom-renamed@'),
+    gate: 'pnpm deps:check',
+    expect: 'REACT PAIR UNREAD',
+  },
+  {
+    id: 'react-pair-moved-together',
+    why: 'The check must permit what React permits: react and react-dom moving together, to any version. A check that pinned one version instead of comparing the two would pass every control above and refuse the next correct upgrade.',
+    file: 'pnpm-lock.yaml',
+    mutate: (t) =>
+      t.replace(/react-dom@[^\s()':]+\(react@[^\s()':]+\)/, 'react-dom@19.9.9(react@19.9.9)'),
+    gate: 'pnpm deps:check',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
+  {
+    id: 'start-check-refuses',
+    why: 'FINDINGS #92, ruled 26 September 2026: a build that does not start is never deployed. The React split made the app throw as it loaded, and every other check passed it; a build that throws as it loads must be refused. (Also measured by hand against the real split build, which it refused with React error #527.)',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) => `throw new Error('start-check control: this build does not start');\n${t}`,
+    gate: 'pnpm start:check --build',
+    expect: 'DID NOT START',
+  },
+  {
+    id: 'start-check-words-free',
+    why: 'The check waits for the title itself, not for its words. A check that looked for "New game" would refuse the Hindi edition, a committed grant deliverable, and every rewording after it.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) => t.replace('"title.newGame": "New game"', '"title.newGame": "नया खेल"'),
+    gate: 'pnpm start:check --build',
+    expect: '(unused — mustPass control)',
+    mustPass: true,
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

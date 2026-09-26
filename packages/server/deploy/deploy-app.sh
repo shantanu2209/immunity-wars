@@ -7,7 +7,9 @@
 #
 # 1. Builds the app as players get it, and REFUSES a build that does not talk to this server's own
 #    relay. A build made for the Gate 1 audit talks to a relay on the development PC; shipped, it
-#    would reach no relay at all, and nothing else would notice until a player did.
+#    would reach no relay at all, and nothing else would notice until a player did. It also REFUSES
+#    a build that does not start (FINDINGS #92): opened in headless Chrome, the title must appear
+#    with no uncaught error. Every other check here passed a blank app.
 # 2. Copies it to the server into a new version folder and points `current` at it. The last three
 #    versions are kept; going back is pointing `current` at the one before. Nothing restarts: Caddy
 #    serves the files as they are, and no game in progress is touched.
@@ -40,6 +42,10 @@ if ! grep -q "wss://${HOST_NAME}/relay" "$MAIN"; then
 fi
 if grep -qE "wss?://(127\.0\.0\.1|localhost)" "$MAIN"; then
   echo "REFUSED: the build names a relay on a development machine" >&2
+  exit 1
+fi
+if ! pnpm -s start:check "$DIST"; then
+  echo "REFUSED: the build does not start" >&2
   exit 1
 fi
 

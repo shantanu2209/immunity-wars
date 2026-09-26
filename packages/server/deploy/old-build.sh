@@ -79,6 +79,9 @@ echo "== build it for /old/, talking to the deployed relay (the build's default)
 rm -rf "$ROOT/packages/app/dist-old"
 cp -r "$WT/packages/app/dist-old" "$ROOT/packages/app/dist-old"
 grep -q 'src="/old/assets/' "$ROOT/packages/app/dist-old/index.html" || { echo 'the build does not load from /old/' >&2; exit 1; }
+# It must START, served at /old/ (FINDINGS #92: the first /old/ of the P3.6 session was built from a
+# main whose React was split, and would have been a blank page where the refusal should be).
+MSYS_NO_PATHCONV=1 pnpm -s start:check packages/app/dist-old /old/ || { echo 'the build does not start' >&2; exit 1; }
 echo "built: protocol version ${OLD} (the relay speaks ${CURRENT}), in packages/app/dist-old"
 [[ "$ACTION" == "build" ]] && exit 0
 
