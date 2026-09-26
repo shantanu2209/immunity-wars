@@ -378,6 +378,8 @@ so it is written for that:
   to decompress. Under Node that ends the process by default, so **one malformed frame would have
   closed every room on the relay.** The framing's own refusal tests reported it as unhandled errors,
   and it was fixed before anything listened.
+- **A room holds at most 15 members** (protocol v4, ruled 26 September 2026): a newcomer to a full
+  room is refused. Until then a room had no limit, so one code shared widely could fill it without end.
 - **Room codes** are six characters from a 25-character alphabet, about 244 million codes, drawn
   from the platform's cryptographic randomness, with rejection sampling so that no character is
   favoured.

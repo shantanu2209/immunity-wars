@@ -11,7 +11,7 @@ import { RULES_VERSION } from '@immunity-wars/content';
  * desynchronise a newer room", and the only way a peer that cannot read a message can be kept from
  * acting on a misreading is not to let it in.
  */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /*
  * VERSION HISTORY, because a bump with no record teaches nobody what changed.
@@ -28,7 +28,18 @@ export const PROTOCOL_VERSION = 3;
  *      A v2 relay would have closed a `say` as malformed, and a v2 client a `said`. Adding a
  *      message later does NOT bump the version: the id's shape is the protocol's, the list of ids
  *      is the room's, and a client that does not know an id shows nothing for it.
+ *   4  (26 September 2026, after the P3.6 session): the lobby's rules. Two refusals are new, so
+ *      the list a client checks a refusal against has changed: `roomFull` (a room holds at most
+ *      `MAX_MEMBERS`) and `someoneUnseated` (every connected player but the captain holds a piece
+ *      before the game starts). A v3 client would read either as malformed.
  */
+
+/**
+ * HOW MANY A ROOM HOLDS (ruled 26 September 2026): one piece each for the fourteen, and a captain
+ * who holds none. Until then there was no limit at all, so a code shared widely could fill a room
+ * without end. A rejoin by a member is never refused by it: only a newcomer is counted in.
+ */
+export const MAX_MEMBERS = 15;
 
 /**
  * THE RULES' VERSION, from the content pack (`packages/content/src/rules/pack.json`). Carried on
@@ -146,5 +157,12 @@ export const ERROR_CODES = [
   'engine',
   /** A `say` naming a message the room does not know: only the table's fixed messages travel. */
   'noSuchMessage',
+  /** A newcomer to a room that already holds `MAX_MEMBERS` (v4). */
+  'roomFull',
+  /**
+   * `start` while a connected player other than the captain holds no piece (v4, ruled 26 September
+   * 2026). The detail names the first of them.
+   */
+  'someoneUnseated',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
