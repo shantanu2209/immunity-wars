@@ -39,7 +39,7 @@ import {
   type RoomProjection,
   type Seat,
 } from '@immunity-wars/protocol';
-import { advanceIdsPast, precompute, scopeAll } from '@immunity-wars/session-core';
+import { MOVE_CLASS, advanceIdsPast, precompute, scopeAll } from '@immunity-wars/session-core';
 
 import {
   GRACE_MS,
@@ -48,6 +48,7 @@ import {
   type Outbound,
   type RoomState,
   type Step,
+  type UndoRun,
 } from './types.js';
 
 /** A room with nobody in it yet. The code is the caller's to mint; the room never invents one. */
@@ -60,6 +61,7 @@ export function createRoom(code: string, now: number): RoomState {
     game: null,
     nextJoinOrder: 1,
     emptySince: now,
+    undoRun: null,
   };
 }
 
@@ -149,13 +151,51 @@ const refuse = (
  * reads, and serves its own selection without asking. Nothing here depends on who is looking: the
  * engine's queries take the game, not a player, which is what lets one message go to everyone.
  */
-function viewFor(game: GameState, to: 'all' | string = 'all'): Outbound {
+function viewFor(
+  game: GameState,
+  to: 'all' | string = 'all',
+  undo: { member: number; moves: number } | null = null,
+): Outbound {
   const view = viewState(game) as Readonly<Record<string, unknown>>;
   const g = game as unknown as Record<string, unknown>;
   return {
     to,
-    message: { kind: 'view', view, queries: precompute(g, view), scoped: scopeAll(g) },
+    message: { kind: 'view', view, queries: precompute(g, view), scoped: scopeAll(g), undo },
   };
+}
+
+/** The view's `undo`: whose moves an undo would take back, by public id, and how many. */
+function undoOf(room: RoomState): { member: number; moves: number } | null {
+  const run = room.undoRun;
+  if (!run) return null;
+  const m = room.members.find((x) => x.ref === run.ref);
+  return m ? { member: m.joinOrder, moves: run.moves } : null;
+}
+
+/** The engine's undo stack, read, never written: only the engine's own `undo` pops it. */
+const stackOf = (game: GameState): readonly unknown[] =>
+  (game as unknown as { undo?: unknown[] }).undo ?? [];
+
+/**
+ * UNDO, PLAYED TOGETHER (v4, ruled 27 September 2026, reversing FINDINGS #79's refusal). A member
+ * takes back their own moves while they are the last things done at the table, and only then:
+ * the room holds that run (`undoRun`), and undoes through the engine's own `undo`, one snapshot at
+ * a time, back to the one from just before the first of them. A refused action pushes a snapshot
+ * too, and popping one changes nothing, since nothing changed. The Action Points come back with
+ * the moves (DEVIATIONS #8).
+ */
+function undoFor(room: RoomState, me: Member, id: number): Step {
+  const run = room.undoRun;
+  const game = room.game as GameState;
+  if (!run || run.ref !== me.ref || !stackOf(game).includes(run.first))
+    return refuse(room, me.ref, id, 'nothingToUndo');
+  for (;;) {
+    const top = stackOf(game).at(-1);
+    if (top === undefined || !apply(game, { action: 'undo', pid: pidOfMember(me) }).ok) break;
+    if (top === run.first) break;
+  }
+  const next: RoomState = { ...room, undoRun: null };
+  return { room: next, out: [viewFor(game), answer(me.ref, id)] };
 }
 
 /**
@@ -186,7 +226,7 @@ function apply(
  * the captain into an away member's seat needs the board they are being handed.
  */
 const current = (room: RoomState, ref: string): Outbound[] =>
-  room.game === null ? [] : [viewFor(room.game as GameState, ref)];
+  room.game === null ? [] : [viewFor(room.game as GameState, ref, undoOf(room))];
 
 const isSeat = (s: string): s is Seat => (SEATS as readonly string[]).includes(s);
 
@@ -264,7 +304,7 @@ function syncCaptain(room: RoomState): Outbound[] {
   if (g.captain === to) return [];
   const result = apply(g, { action: 'handOverCaptaincy', pid: g.captain, toPid: to });
   if (!result.ok) return [];
-  return [viewFor(g)];
+  return [viewFor(g, 'all', undoOf(room))];
 }
 
 /** The seat an action is for, or null when the action is nobody's seat in particular. */
@@ -426,7 +466,7 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
         owner: ownerMap(table),
         players: players.map(pidOfMember),
       });
-      const next: RoomState = { ...table, phase: 'playing', game };
+      const next: RoomState = { ...table, phase: 'playing', game, undoRun: null };
       return { room: next, out: [broadcast(next), viewFor(game)] };
     }
 
@@ -440,9 +480,8 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       const name = msg.action['action'];
       if (typeof name === 'string' && ROOM_ONLY.has(name))
         return refuse(room, msg.ref, msg.id, 'roomOnly');
-      // UNDO IS SINGLE-PLAYER IN v1 (FINDINGS #79). The engine keeps one undo stack per game, so
-      // in a room an undo would unwind whichever move came last, possibly another player's.
-      if (name === 'undo') return refuse(room, msg.ref, msg.id, 'undoIsSinglePlayer');
+      // UNDO, the member's own moves while nobody has acted since (`undoFor`, v4).
+      if (name === 'undo') return undoFor(room, me, msg.id);
       // OWNERSHIP IS THE ROOM'S; LEGALITY IS THE ENGINE'S. The seat check is here because the
       // room knows who holds what; everything else goes to `applyAction` unaltered.
       const seat = seatOf(msg.action);
@@ -454,15 +493,29 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       // The ENGINE's refusal: its own text rides as the detail, and the client renders it through
       // the engine catalogue exactly as single player does.
       if (!result.ok) return refuse(room, msg.ref, msg.id, 'engine', result.error ?? '');
+      // THE UNDO RUN: a move extends the mover's run, or starts theirs from the snapshot the engine
+      // has just pushed for it; any other accepted action ends every run. A refusal, above, changed
+      // nothing, so it leaves the run alone.
+      const run = room.undoRun;
+      const first = stackOf(game).at(-1);
+      const undoRun: UndoRun | null =
+        typeof name === 'string' && MOVE_CLASS.has(name)
+          ? run !== null && run.ref === me.ref
+            ? { ...run, moves: run.moves + 1 }
+            : first === undefined
+              ? null
+              : { ref: me.ref, first, moves: 1 }
+          : null;
+      const acted: RoomState = { ...room, undoRun };
       const out: Outbound[] = [];
       // BURST FIRST, THEN THE VIEW, for the reason `LocalSession` states: a subscriber that skips
       // the animation must still land on the right state, and the burst's tail equals the view.
       if (result.frames && result.frames.length > 0)
         out.push({ to: 'all', message: { kind: 'burst', frames: result.frames } });
-      out.push(viewFor(game));
+      out.push(viewFor(game, 'all', undoOf(acted)));
       const g = game as unknown as Record<string, unknown>;
       const over = g['won'] === true || Boolean(g['lost']);
-      const next: RoomState = over ? { ...room, phase: 'ended' } : room;
+      const next: RoomState = over ? { ...acted, phase: 'ended', undoRun: null } : acted;
       if (over) out.push(broadcast(next));
       // THE RESULT LAST, so a sender whose `sendAction` resolves on it already holds EVERYTHING the
       // action caused, as a `LocalSession` caller does when its promise resolves: the new view, and

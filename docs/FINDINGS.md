@@ -4322,6 +4322,15 @@ stack underneath it is shared.
 No multiplayer screen exists yet, so no player can reach it; **P3.7 owes the wording**. A per-player
 undo stack would be an engine change and is not proposed.
 
+### Superseded 27 September 2026 (protocol v4): undo, played together, by ruling
+
+Undo was ruled for games played together after the P3.6 session. The room still refuses an undo
+that could take back another player's move, which is what this entry found: it allows one only for
+a player's own moves while nobody has acted since (`nothingToUndo` otherwise), and the refusal code
+`undoIsSinglePlayer` is gone. The points come back with the moves, which needed the engine change
+this entry did not propose (#95, [`DEVIATIONS.md`](DEVIATIONS.md) #8). The `room-undo-refused`
+control became `room-undo-own-moves-only` and `room-undo-ends-when-others-act`.
+
 ---
 
 ## 80. `advanceIdsPast` reads the undo snapshots under a key the engine never writes — FIXED 25 September 2026
@@ -4787,3 +4796,26 @@ The Antibodies drawer is offered only to the B-Cell's player, and the Body drawe
 rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and the seat rule's
 `body` in `offered.ts`). Controls: `body-drawer-captain-only`, `antibodies-drawer-bcell-only`,
 `body-rings-captain-only`. Record: `for-P3.md` §9. **The relay's half is unchanged and still open.**
+
+## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
+
+**Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).
+The proposal put to Shantanu said the room could do it without touching the engine, and that the
+points would come back with the moves. **Reading the engine before building showed the second half
+false**, and a run confirmed it: in a two-player game a player's budget was 2, 1 after a move, and
+still 1 after the undo, the piece back in the bloodstream.
+
+**Why.** Legacy's undo snapshot holds single player's points (`g.ap`) and not the table's budgets
+(`g.apBudget`), which is where a player's points are spent from when played together. Legacy's relay
+let an undo through from any player, so the defect was reachable there; this relay refused undo in a
+room until v4 (#79), so it was not reachable here until undo was ruled.
+
+**Put to Shantanu with three ways,** before anything was built: (A) the engine saves the budgets in
+the snapshot, together only; (B) the room refunds the points itself, which would be a rule outside
+the engine; (C) undo without a refund, which misses what it was asked for. **Ruled: *"Go with A"*.**
+
+### ✅ FIXED, 27 September 2026, by ruling
+
+[`DEVIATIONS.md`](DEVIATIONS.md) #8: the budgets are in the snapshot in a game played together, and
+never alone. The corpus stays green; `tests/equivalence/src/undo-budget.test.ts` holds the change and
+its confinement. Undo together is built on it, in the room (protocol v4).

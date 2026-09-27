@@ -371,6 +371,60 @@ found: the drift test failed until it was added.
 in the room, `packages/room/src/wire.test.ts`, *"captain succession reaches the engine"*. Mutation
 controls `engine-captaincy-holder-only`, `room-captain-reaches-engine` and `room-only-action`.
 
+## 8. Undo gives a player's Action Points back in a game played together
+
+**Legacy behaviour.** `pushUndo` (`v2_engine.js`) snapshots the undoable slice of the state, and the
+Action Points it holds are `g.ap`, single player's. Played together a player spends from their own
+budget (`spendAP` charges `g.apBudget[pid]`), which the snapshot does not hold, so an undo returned
+the piece and **kept its point spent**. Measured on 27 September 2026 in a two-player game: a budget
+of 2, 1 after a move, and still 1 after the undo, with the piece back in the bloodstream. Legacy's
+relay (`tools/legacy/server.js`) let an undo through from any player, since its seat check names no
+seat for one, and its table display had a "director undo" as well: either took back whatever was
+last on the table's one stack, whoever had done it, and kept the point spent. This relay refused undo
+in a room until v4 ([`FINDINGS.md`](FINDINGS.md) #79).
+
+**Port behaviour.** The snapshot also holds the budgets, **in a game played together only**, and an
+undo restores them with everything else it restores:
+
+```ts
+...(g.multiplayer ? { apBudget: clone(g.apBudget) } : {}),   // pushUndo
+if (u.apBudget !== undefined) g.apBudget = u.apBudget;       // undo
+```
+
+Alone the key is never written, so a single-player snapshot is legacy's to the byte.
+
+**Why an engine change.** Undo together was ruled on 27 September 2026, after the P3.6 session, where
+an accidental tap cost a player points (*"an accidental touch wastes precious APs"*). The room allows
+an undo only for a player's own moves while nobody else has acted since, which it can decide without
+the engine; but refunding the points is a rule about the state, and a rule re-implemented in the room
+is what the architecture exists to prevent (the argument #7 makes). Of three ways offered, this one
+was ruled: *"Go with A"*. [`PHASE3_BRIEF.md`](PHASE3_BRIEF.md) v1.9 amends "the engine unchanged" to
+name it beside #7.
+
+**Evidence that the change is confined.** The corpus is single-player, so its silence is not
+evidence, the argument #4 makes; it stays green (400 of 400, run uncached on the change).
+`tests/equivalence/src/undo-budget.test.ts` supplies both halves:
+
+- **What changed:** after a move and an undo, legacy's budget is one short and the port's is back,
+  the piece back in both, on three seeds.
+- **What did not:** alone, a snapshot never holds the budgets, and a move and its undo are
+  byte-identical to legacy on five seeds. Together, with the snapshots' budgets set aside, every path
+  without an undo (moves, repeated moves, the end of the turn) is byte-identical to legacy on five
+  seeds. The snapshots themselves are the one other place the change shows, and they are where it
+  was made.
+
+| | legacy | port |
+|---|---|---|
+| a snapshot, alone | no budgets | no budgets |
+| a snapshot, together | no budgets | the budgets |
+| an undo, together | the piece back, the point spent | the piece back, the point back |
+
+**Decided by:** Shantanu, 27 September 2026 — *"Go with A"*.
+**Test:** `tests/equivalence/src/undo-budget.test.ts`, four cases including the confinement checks;
+in the room, `packages/room/src/room.test.ts`, *"undo, played together"*; over real sockets,
+`packages/server/src/relay.test.ts`. Mutation controls `engine-undo-refunds-budget`,
+`engine-undo-budget-together-only`, `room-undo-own-moves-only` and `room-undo-ends-when-others-act`.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

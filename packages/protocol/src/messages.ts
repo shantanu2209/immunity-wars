@@ -134,6 +134,12 @@ const ServerBody = z.discriminatedUnion('kind', [
       moveDestinations: z.record(z.string(), z.unknown()),
       productionDetail: z.record(z.string(), z.unknown()),
     }),
+    /**
+     * WHOSE MOVES AN UNDO WOULD TAKE BACK (v4, ruled 27 September 2026): the member whose moves
+     * are the last things done at the table, and how many, or null when an undo would take back
+     * nobody's. Only that member may undo, and only while nobody else has acted since.
+     */
+    undo: z.object({ member: MemberId, moves: z.number().int().positive() }).nullable().optional(),
   }),
   /** The answer to one action, to the player who sent it and nobody else. */
   z.object({
