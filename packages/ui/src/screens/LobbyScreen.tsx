@@ -15,7 +15,7 @@ import { useState, type CSSProperties, type ReactElement } from 'react';
 import type { Seat } from '@immunity-wars/protocol';
 
 import { t } from '../i18n';
-import { canStart, refusalText, seatRows, type LobbyRoom } from '../together/model';
+import { refusalText, seatRows, startBlock, type LobbyRoom } from '../together/model';
 import { BODY, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
 
 const DIFFS = ['training', 'normal', 'hard'] as const;
@@ -72,6 +72,8 @@ export function LobbyScreen({
   const iAmCaptain = room.captain === me;
   const rows = seatRows(room, me);
   const live = !connectionLost;
+  const block = startBlock(room);
+  const mine = room.members.find((m) => m.id === me)?.seats ?? [];
 
   return (
     <div style={PAGE} data-screen="lobby">
@@ -116,8 +118,25 @@ export function LobbyScreen({
         ))}
       </ul>
 
+      {/* LEAVE, WHERE IT CAN BE SEEN (ruled 26 September 2026): it was at the foot of the page,
+          under fourteen seats, and a player who could not find it closed the app instead, which
+          leaves them in the room as away. */}
+      <button
+        data-lobby="leave"
+        style={{ ...BTN, borderColor: '#C48377', marginTop: 12 }}
+        onClick={onLeave}
+      >
+        {t('lobby.leave')}
+      </button>
+      <p style={LEAD}>{t('lobby.leaveNote')}</p>
+
       <h2 style={{ ...GROUP, marginTop: 22 }}>{t('lobby.seats')}</h2>
       <p style={LEAD}>{t('lobby.seatsLead')}</p>
+      {!iAmCaptain && mine.length === 0 ? (
+        <p style={{ ...BODY, color: '#B03A2E' }} data-lobby="need-piece">
+          {t('lobby.needPiece')}
+        </p>
+      ) : null}
       {rows.map((r) => {
         const taken = r.holder !== null && !r.mine;
         const state = r.mine
@@ -175,12 +194,18 @@ export function LobbyScreen({
           <button
             data-lobby="start"
             style={{ ...BTN, borderColor: '#B03A2E', marginTop: 16 }}
-            disabled={!live || !canStart(room)}
+            disabled={!live || block !== null}
             onClick={() => onStart(difficulty)}
           >
             {t('lobby.start')}
           </button>
-          {!canStart(room) ? <p style={LEAD}>{t('lobby.startNeedsSeat')}</p> : null}
+          {block?.kind === 'nobodySeated' ? (
+            <p style={LEAD}>{t('lobby.startNeedsSeat')}</p>
+          ) : block?.kind === 'unseated' ? (
+            <p style={LEAD} data-lobby="start-waits">
+              {t('lobby.startNeedsPiece', { names: block.names.join(', ') })}
+            </p>
+          ) : null}
         </section>
       ) : (
         <p style={{ ...BODY, marginTop: 22 }} data-lobby="waiting">
@@ -193,15 +218,6 @@ export function LobbyScreen({
           {refusalText(refusal.code, refusal.detail)}
         </p>
       ) : null}
-
-      <button
-        data-lobby="leave"
-        style={{ ...BTN, borderColor: '#C48377', marginTop: 24 }}
-        onClick={onLeave}
-      >
-        {t('lobby.leave')}
-      </button>
-      <p style={LEAD}>{t('lobby.leaveNote')}</p>
     </div>
   );
 }

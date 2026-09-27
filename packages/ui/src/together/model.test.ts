@@ -17,6 +17,7 @@ import { sayText } from '../panels/TableMessages';
 import {
   REFUSAL_KEYS,
   canStart,
+  startBlock,
   codeComplete,
   nameReady,
   entryRefusal,
@@ -85,6 +86,33 @@ describe('the seats', () => {
     expect(canStart(room({ members: [{ id: 1, name: 'A', connected: true, seats: [] }] }))).toBe(
       false,
     );
+  });
+
+  // The room's rule of 26 September 2026, offered before the room has to refuse it.
+  it('wait for every connected player but the captain to hold a piece, and name who has none', () => {
+    const waiting = room({
+      members: [
+        { id: 1, name: 'Asha', connected: true, seats: ['bcell'] },
+        { id: 2, name: 'Ravi', connected: true, seats: [] },
+        { id: 3, name: 'Meera', connected: true, seats: [] },
+      ],
+    });
+    expect(startBlock(waiting)).toEqual({ kind: 'unseated', names: ['Ravi', 'Meera'] });
+    expect(canStart(waiting)).toBe(false);
+  });
+
+  it('let a captain with no piece start, and do not wait for a player who is away', () => {
+    expect(
+      startBlock(
+        room({
+          members: [
+            { id: 1, name: 'Asha', connected: true, seats: [] },
+            { id: 2, name: 'Ravi', connected: true, seats: ['nk'] },
+            { id: 3, name: 'Meera', connected: false, seats: [] },
+          ],
+        }),
+      ),
+    ).toBeNull();
   });
 });
 

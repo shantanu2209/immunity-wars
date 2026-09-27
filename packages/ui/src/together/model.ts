@@ -70,8 +70,23 @@ export function seatRows(room: LobbyRoom, me: number): SeatRow[] {
   ];
 }
 
-/** The captain can start once someone holds a seat; the room refuses a game with nobody seated. */
-export const canStart = (room: LobbyRoom): boolean => room.members.some((m) => m.seats.length > 0);
+/**
+ * WHY THE CAPTAIN CANNOT START YET, or null when they can: the room's own two rules, so the screen
+ * offers Start only when the room would accept it. Nobody holds a piece; or a connected player other
+ * than the captain holds none (ruled 26 September 2026), named. A player away is not waited for: the
+ * room leaves them out if they hold nothing.
+ */
+export type StartBlock = { kind: 'nobodySeated' } | { kind: 'unseated'; names: readonly string[] };
+
+export function startBlock(room: LobbyRoom): StartBlock | null {
+  if (!room.members.some((m) => m.seats.length > 0)) return { kind: 'nobodySeated' };
+  const names = room.members
+    .filter((m) => m.connected && m.id !== room.captain && m.seats.length === 0)
+    .map((m) => m.name);
+  return names.length > 0 ? { kind: 'unseated', names } : null;
+}
+
+export const canStart = (room: LobbyRoom): boolean => startBlock(room) === null;
 
 /**
  * WHY SOMETHING WAS REFUSED, in the player's words. The relay sends codes, never English (P3.2), and
@@ -86,6 +101,8 @@ const REFUSALS: readonly string[] = [
   'seatTaken',
   'notCaptain',
   'nobodySeated',
+  'someoneUnseated',
+  'roomFull',
   'alreadyStarted',
   'notInRoom',
   'seatHeldByPresent',

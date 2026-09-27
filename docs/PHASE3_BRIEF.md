@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.7 · 25 September 2026
+**Version:** 1.8 · 26 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code existed, deliberately. **Reviewed 25 September 2026**,
 after P3.1 to P3.5 ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md)); every item ruled the same day.
@@ -14,6 +14,21 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.8 records
+
+v1.8 changes §5's room rules, by ruling (Shantanu, 26 September 2026, after the P3.6 session, where a
+player could join, hold no piece, and still be in the game), each marked in place:
+
+- **The game starts only when every connected player but the captain holds at least one piece**, a
+  resident counting as one (*"I think a captain without a playable piece still works"*). A player away
+  and holding nothing at the start is left out of the game; counting them would let one closed app
+  keep a room from ever starting, since nobody can be removed from a room.
+- **A room holds at most 15** (*"one piece for every player and a captain without a playable
+  piece"*). There was no limit before. The title's line reads *"for two to fifteen players"*.
+- **Undo, played together** (ruled the same evening, *"Agree"*): a player may take back their own
+  moves while nobody else has acted since. It reverses #79's refusal, and is built under the same
+  protocol version, 4.
 
 ## What v1.7 records
 
@@ -254,7 +269,12 @@ disk anywhere, ever.
   room. *Proposed:* the name lives in the room and dies with it. Nothing is stored on the server and
   nothing identifies a child.
 - **Seats.** 14, the engine's own. A member holds zero or more. *Proposed:* the captain assigns at
-  the start; a member may pick a free seat themselves before the game begins.
+  the start; a member may pick a free seat themselves before the game begins. **Ruled (v1.8): the
+  game starts only when every connected member but the captain holds at least one seat**, a
+  resident's included; the captain may hold none. A member away and holding none at the start is
+  left out of the game, and is a newcomer if they come back.
+- **Size.** **Ruled (v1.8): at most 15 members**, one seat each for fourteen and a captain who holds
+  none. A newcomer to a full room is refused (`roomFull`); a member rejoining never is.
 - **The captain** is the first member to join. The engine already gives the captain the allocation
   and End turn powers, so this is the engine's notion, not a new one.
 - **Dropping** is the connection closing, or failing to answer the relay's ping for about 40
@@ -343,6 +363,7 @@ No spectators. The legacy server had them; nobody has asked for them.
 No engine rule changes, but for the one ruled addition, `handOverCaptaincy` (§8). ⚠️ *Corrected in
 v1.7* (review C1): this said "No engine rule changes" without it.
 **No one joins a game already under way** (v1.7, review R2): a newcomer waits for the next one.
+**No room of more than 15** (v1.8).
 **Versioned saved games** are Phase 4's, where app updates begin (review R3), and so is **the update
 policy**: the relay refuses any other protocol version exactly, which strands a phone mid-update once
 the app is in the Play Store (review R4).

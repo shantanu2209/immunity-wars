@@ -1506,3 +1506,38 @@ September 2026):
 - **Leave the room**, which the lobby already had at its foot, moves up where it can be seen.
 
 To be built with undo (ruling 2), under protocol version 4, so that phones reload once for both.
+
+### The lobby's rules, built (protocol version 4)
+
+As ruled above, and recorded in the brief as v1.8 (§5):
+
+- **The room refuses Start while a connected player other than the captain holds no piece**
+  (`someoneUnseated`, naming the first of them). The captain may hold none, and a resident counts.
+- **A player away and holding nothing at the start is left out of the game**; one away and holding a
+  piece keeps it, as in any drop. If the one left out comes back, they are a newcomer to a game
+  under way and are told it has started.
+- **A room holds at most 15** (`MAX_MEMBERS`); the sixteenth newcomer is refused (`roomFull`), and a
+  member of a full room who dropped still gets back in.
+- **The lobby says so before the room has to.** Start waits, and names who is still without a piece.
+  A player who is not captain and holds none is told to take one. **Leave the room** is under the
+  list of players now, where it was at the foot of the page. The title's line reads *"for two to
+  fifteen players"*.
+- **Protocol version 4**, because the two refusals are new to the list a client checks a refusal
+  against; a v3 client would read either as malformed. Undo joins it before anything is deployed.
+
+**What proves it:**
+
+- **The room** (`packages/room/src/room.test.ts`), both halves of each rule: Start refused, naming
+  who, while a connected player other than the captain holds nothing; permitted with a captain who
+  holds none, and with a resident as a player's only piece; an away player holding nothing left out,
+  and refused as a newcomer on return; an away player holding a piece kept; the fifteenth admitted
+  and the sixteenth refused, to them alone; a member of a full room let back in. Controls:
+  `start-needs-pieces`, `room-cap-15`, `away-pieceless-left-out`.
+- **The lobby** (`packages/ui/src/together/model.test.ts`): Start waits and names every connected
+  player but the captain without a piece, and does not wait for a captain with none or a player who
+  is away; every refusal code the relay can send, the two new ones included, has words.
+- **The Gate 1 audit, `--together` against a local relay:** 44 controls all firing the right way, 81
+  screens per pass (83 under SIZE200), every check 0 under all four mechanisms, offline met, and the
+  lobby's screens, the captain's and the other player's, measured in every pass with no finding.
+  NOT REACHED, the deal (FINDINGS #68): a row with several targets in the base and ZOOM200 passes,
+  with the one nesting path that needs it.
