@@ -20,8 +20,10 @@
  * WHAT IS NOT THE SAME AS `LocalSession`, ON PURPOSE
  * ============================================================================================
  *
- * - **Undo is unavailable** (`reason: 'multiplayer'`): the engine's undo stack is the game's, not
- *   a player's, and the relay refuses it (FINDINGS #79).
+ * - **Undo is the room's to allow** (v4, ruled 27 September 2026). The engine's undo stack is the
+ *   whole table's, so the room allows an undo only for a player's own moves while nobody has acted
+ *   since, and says in each view whose moves those are (`undo`). Available when they are this
+ *   player's; otherwise `reason: 'multiplayer'`. Until v4 the relay refused every undo (#79).
  * - **`save()` does nothing**: the relay holds the game. Whether the captain's device should keep
  *   an autosave is brief §5's open question, not decided here.
  * - **The selection clears when the TURN or the DRAWN CARD changes**, where `LocalSession` clears
@@ -114,6 +116,20 @@ const MULTIPLAYER_UNDO: UndoAvailability = {
   reason: 'multiplayer',
   committedBy: null,
 };
+
+/**
+ * WHAT UNDO IS, ON THIS PLAYER'S SCREEN: available when the room says the moves an undo would take
+ * back are theirs; outside command, `not-command`, as alone; otherwise `multiplayer`, which the
+ * screen words as the rule itself: your own moves, until anyone else acts.
+ */
+function undoFrom(msg: ViewMessage, me: number): UndoAvailability {
+  if (msg.view['phase'] !== 'command')
+    return { available: false, moves: 0, reason: 'not-command', committedBy: null };
+  const u = msg.undo ?? null;
+  return u !== null && u.member === me
+    ? { available: true, moves: u.moves, reason: 'available', committedBy: null }
+    : MULTIPLAYER_UNDO;
+}
 
 /** What changes exactly when `LocalSession` would clear the selection: see the header. */
 const boundaryOf = (view: ViewState): string =>
@@ -465,7 +481,7 @@ export class RelaySession implements Session {
       selection: this.selection,
       queries: this.latest.queries as unknown as PrecomputedQueries,
       scoped: scopeFrom(this.latest.scoped as unknown as AllScoped, this.selection),
-      undo: MULTIPLAYER_UNDO,
+      undo: undoFrom(this.latest, this.relay.id),
     };
   }
 

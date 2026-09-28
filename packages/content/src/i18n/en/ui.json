@@ -83,7 +83,7 @@
   "undo.noMoves": "Undo: nothing to undo yet. Only moves can be undone",
   "undo.committed": "Undo ended for this turn: {action} committed",
   "undo.resumed": "Undo unavailable this turn: the game was resumed mid-turn",
-  "undo.multiplayer": "Undo is only in games played alone",
+  "undo.multiplayer": "Undo takes back your own moves, until anyone else acts",
   "action.orderAntivenom": "Order antivenom",
   "action.vaccinate": "Vaccinate",
   "action.resmove": "Patrol",

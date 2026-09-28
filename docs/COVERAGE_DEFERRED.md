@@ -10,7 +10,7 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (20 arms)
+## Phase 3 — multiplayer (12 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
@@ -25,16 +25,8 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 - `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
 - `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
 - `ap.ts:20` `if (!g.multiplayer) return g.ap;`
-- `ap.ts:20` `if (!g.multiplayer) return g.ap;`
 - `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:26` `if (!g.multiplayer) {`
 - `ap.ts:30` `if (pid == null) return;`
-- `ap.ts:30` `if (pid == null) return;`
-- `ap.ts:53` `return g.multiplayer ? apAvail(g, g._actingPid) : g.ap;`
 
 ## Deferred until a competent bot exists (17 arms)
 

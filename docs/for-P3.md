@@ -1541,3 +1541,52 @@ As ruled above, and recorded in the brief as v1.8 (§5):
   lobby's screens, the captain's and the other player's, measured in every pass with no finding.
   NOT REACHED, the deal (FINDINGS #68): a row with several targets in the base and ZOOM200 passes,
   with the one nesting path that needs it.
+
+### 2, built: undo, played together (protocol version 4)
+
+As ruled (*"Agree"*), with the engine change it turned out to need (*"Go with A"*):
+
+- **A player takes back their own moves, while nobody else has acted since**, and their Action Points
+  come back with them. The room holds that run of moves, and undoes through the engine's own `undo`,
+  back to the snapshot from just before the first of them. Any other accepted action ends it,
+  another player's or a committing one of their own; a refused action changes nothing and does not.
+- **Every view says whose moves an undo would take back, and how many** (`undo`, new in v4), so the
+  mover's Undo is live and everyone else's is not. Theirs says why: *"Undo takes back your own moves,
+  until anyone else acts."* An undo from anyone else is refused (`nothingToUndo`, which replaces
+  `undoIsSinglePlayer`).
+- **The points needed the engine.** Legacy's undo snapshot held single player's points and not the
+  table's budgets, so an undo together kept the point spent: measured, a budget of 2, 1 after a move,
+  1 after the undo ([`FINDINGS.md`](FINDINGS.md) #95). The proposal had said otherwise, and was put
+  right before anything was built. **[`DEVIATIONS.md`](DEVIATIONS.md) #8:** the snapshot holds the
+  budgets, in a game played together only. The brief moves to v1.9 to name it beside
+  `handOverCaptaincy`.
+- **The list of moves** undo may take back is shared now (`MOVE_CLASS`, in
+  `@immunity-wars/session-core`): `LocalSession` and the room read one list.
+
+**What proves it:**
+
+- **The engine** (`tests/equivalence/src/undo-budget.test.ts`): legacy's undo together keeps the point
+  spent and the port's gives it back, the piece back in both; alone, a snapshot never holds the
+  budgets, and a move and its undo are legacy's to the byte; together, with the snapshots' budgets
+  set aside, every path without an undo is byte-identical to legacy. **The corpus stays green, 400 of
+  400, run uncached.** Controls: `engine-undo-refunds-budget`, `engine-undo-budget-together-only`.
+- **The room** (`packages/room/src/room.test.ts`): a player's own two moves taken back, points and
+  all; the view names whose moves and how many; another player's undo refused and the moves left; an
+  undo refused once someone else has acted; a refused action in between survived; nothing to take back
+  before anyone moves. Controls: `room-undo-own-moves-only`, `room-undo-ends-when-others-act`, which
+  replace `room-undo-refused`.
+- **Over real sockets** (`packages/server/src/relay.test.ts`): a move taken back on one device, the
+  point with it; the other device told it is not theirs, and refused.
+- **On the screens, two players at 360 × 641 against a local relay, 6 checks:** before a move Undo has
+  nothing to take back; the move spent a point (AP 2 to 1); the mover's Undo is live and the other
+  player's is not; Undo put the Neutrophil back and gave the point back (AP 2).
+- **Coverage.** The generated documents were regenerated, as the engine's lines moved. Eight of the
+  twenty multiplayer arms deferred to Phase 3 are covered now, all in `ap.ts`, by the undo tests,
+  which play moves together through the engine: **12 remain.** The gate also reports an excluded arm
+  as covered, `ap.ts:31`'s `(g.apBudget[pid] || 0)`. A probe that threw on that arm never fired in the
+  four suites this change touched, so the `|| 0` path is not what they reach; which of the line's
+  arms the coverage provider counts as newly hit was not traced, and the exclusion is left as it is,
+  as the gate leaves it, for a judgement.
+- **The Gate 1 audit, `--together` against a local relay:** 44 controls all firing the right way, 81
+  screens per pass (83 under SIZE200), every check 0 under all four mechanisms, 38 nesting landings
+  and 0 wrong, offline met, and nothing NOT REACHED in any pass.

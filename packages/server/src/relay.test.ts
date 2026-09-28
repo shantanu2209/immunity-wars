@@ -190,11 +190,54 @@ describe('two clients play one game through the relay', () => {
     t.b.close();
   });
 
-  it('refuses undo in a room, and says so in the view', async () => {
+  // UNDO, PLAYED TOGETHER (v4, ruled 27 September 2026): a player's own moves, while nobody has
+  // acted since, and the Action Points with them (DEVIATIONS #8). Until v4 the relay refused it.
+  it("takes back a player's own move over the wire, points and all, and tells the other player it is not theirs", async () => {
     const t = await table();
-    expect(t.sa.getView().undo.reason).toBe('multiplayer');
-    const r = await t.sa.sendAction({ action: 'undo' });
-    expect(r).toMatchObject({ ok: false, code: 'undoIsSinglePlayer' });
+    for (const action of [
+      { action: 'draw' },
+      { action: 'beginCommand' },
+      { action: 'allocateAP', toPid: 'm2', amount: 2 },
+      { action: 'confirmAllocation' },
+    ])
+      expect((await t.sa.sendAction(action)).ok).toBe(true);
+    await until('command on the other device', () => t.sb.getView().game['phase'] === 'command');
+    const game = (v: SessionView) => v.game as Record<string, Record<string, unknown>>;
+    const at = JSON.stringify(game(t.sb.getView())['cells']?.['neutrophil']);
+    const points = game(t.sb.getView())['apBudget']?.['m2'];
+    expect(points).toBe(2);
+    t.sb.setSelection({ cell: 'neutrophil', family: null, resident: null });
+    const d = ((t.sb.getView().scoped.moveDestinations ?? []) as Record<string, unknown>[]).find(
+      (x) => x['zone'] !== 'hub',
+    );
+    if (!d) throw new Error('the neutrophil has nowhere to go');
+    const moved = await t.sb.sendAction({
+      action: 'move',
+      cell: 'neutrophil',
+      zone: d['zone'],
+      lane: d['lane'],
+      organ: d['organ'],
+      step: d['step'],
+    });
+    expect(moved.ok).toBe(true);
+    expect(t.sb.getView().undo).toMatchObject({ available: true, moves: 1 });
+    await until(
+      'the other device hears of the move',
+      () => JSON.stringify(game(t.sa.getView())['cells']?.['neutrophil']) !== at,
+    );
+    expect(t.sa.getView().undo).toMatchObject({ available: false, reason: 'multiplayer' });
+    expect(await t.sa.sendAction({ action: 'undo' })).toMatchObject({
+      ok: false,
+      code: 'nothingToUndo',
+    });
+    expect((await t.sb.sendAction({ action: 'undo' })).ok).toBe(true);
+    expect(JSON.stringify(game(t.sb.getView())['cells']?.['neutrophil'])).toBe(at);
+    expect(game(t.sb.getView())['apBudget']?.['m2']).toBe(points);
+    expect(t.sb.getView().undo.available).toBe(false);
+    await until(
+      'the other device sees it back',
+      () => JSON.stringify(game(t.sa.getView())['cells']?.['neutrophil']) === at,
+    );
     t.a.close();
     t.b.close();
   });

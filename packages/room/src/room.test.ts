@@ -9,6 +9,8 @@
  * **What this suite does NOT test:** whether an action is legal. That is `applyAction`'s, and the
  * corpus is its oracle. The room decides ownership only, and these tests hold exactly that line.
  */
+import { moveDestinations } from '@immunity-wars/engine';
+import type { GameState } from '@immunity-wars/engine';
 import { CELL_KEYS, FAMILIES } from '@immunity-wars/session-core';
 import { describe, expect, it } from 'vitest';
 
@@ -602,19 +604,114 @@ describe('an action', () => {
     expect(Object.keys(view.scoped.productionDetail)).toEqual([...FAMILIES]);
     expect(Object.keys(view.queries).length).toBeGreaterThan(0);
   });
+});
 
-  // UNDO IS SINGLE-PLAYER IN v1 (FINDINGS #79): the engine's undo stack is the game's, not a
-  // player's, so in a room it would unwind whoever moved last.
-  it('is refused when it is an undo, before the engine sees it', () => {
-    const drawn = step(
-      playing(),
-      { kind: 'action', id: 1, ref: 'a', action: { action: 'draw' } },
-      T0,
-    ).room;
-    const snapshot = JSON.stringify(drawn.game);
-    const s = step(drawn, { kind: 'action', id: 2, ref: 'a', action: { action: 'undo' } }, T0);
-    expect(errorsOf(s.out)).toEqual(['undoIsSinglePlayer']);
-    expect(JSON.stringify(drawn.game)).toBe(snapshot);
+describe('undo, played together (v4, ruled 27 September 2026)', () => {
+  type Act = Record<string, unknown>;
+  const act = (room: RoomState, ref: string, action: Act, id = 1) =>
+    step(room, { kind: 'action', id, ref, action }, T0);
+  const game = (room: RoomState): GameState => room.game as GameState;
+  const budget = (room: RoomState, pid: string): number =>
+    (game(room).apBudget as Record<string, number>)[pid] ?? 0;
+  const where = (room: RoomState, cell: string): string =>
+    JSON.stringify((game(room).cells as unknown as Record<string, unknown>)[cell]);
+  /** A legal move off the bloodstream for `cell`, read from the room's own game. */
+  const moveOf = (room: RoomState, cell: string): Act => {
+    const d = (
+      moveDestinations(game(room), cell as never) as unknown as Record<string, unknown>[]
+    ).find((x) => x['zone'] !== 'hub');
+    if (!d) throw new Error(`no move for ${cell}`);
+    return {
+      action: 'move',
+      cell,
+      zone: d['zone'],
+      lane: d['lane'],
+      organ: d['organ'],
+      step: d['step'],
+    };
+  };
+  const viewUndo = (out: ReturnType<typeof step>['out']) => {
+    const v = out.find((o) => o.message.kind === 'view')?.message;
+    return v?.kind === 'view' ? v.undo : 'no view';
+  };
+  // THE ROOM CHANGES ITS GAME IN PLACE: every RoomState here shares one game object, so a value is
+  // read the moment it is wanted, and never later from a room held earlier.
+  /** Command, with 2 of the captain's points handed to b, who holds the NK cell. */
+  const commanding = (): RoomState => {
+    let room = run([join('a', 'K'), join('b', 'S'), seat('a', 'macrophage'), seat('b', 'nk')]).room;
+    room = step(room, { kind: 'start', ref: 'a', difficulty: 'training' }, T0).room;
+    for (const a of [
+      { action: 'draw' },
+      { action: 'beginCommand' },
+      { action: 'allocateAP', toPid: 'm2', amount: 2 },
+      { action: 'confirmAllocation' },
+    ])
+      room = act(room, 'a', a).room;
+    return room;
+  };
+
+  it("takes back a player's own moves, and their Action Points with them", () => {
+    const before = commanding();
+    const at = where(before, 'nk');
+    const points = budget(before, 'm2');
+    expect(points).toBe(2);
+    let room = act(before, 'b', moveOf(before, 'nk')).room;
+    room = act(room, 'b', moveOf(room, 'nk'), 2).room;
+    expect(budget(room, 'm2')).toBe(points - 2);
+    expect(where(room, 'nk')).not.toBe(at);
+    const s = act(room, 'b', { action: 'undo' }, 3);
+    expect(errorsOf(s.out)).toEqual([]);
+    expect(where(s.room, 'nk')).toBe(at);
+    expect(budget(s.room, 'm2')).toBe(points);
+    expect(viewUndo(s.out)).toBeNull();
+  });
+
+  it('tells everyone whose moves an undo would take back, and how many', () => {
+    const before = commanding();
+    const one = act(before, 'b', moveOf(before, 'nk'));
+    expect(viewUndo(one.out)).toEqual({ member: 2, moves: 1 });
+    const two = act(one.room, 'b', moveOf(one.room, 'nk'), 2);
+    expect(viewUndo(two.out)).toEqual({ member: 2, moves: 2 });
+  });
+
+  it("refuses another player's undo, and leaves the moves where they are", () => {
+    const before = commanding();
+    const moved = act(before, 'b', moveOf(before, 'nk')).room;
+    const there = where(moved, 'nk');
+    const s = act(moved, 'a', { action: 'undo' }, 2);
+    expect(errorsOf(s.out)).toEqual(['nothingToUndo']);
+    expect(where(s.room, 'nk')).toBe(there);
+  });
+
+  it('refuses an undo once someone else has acted since', () => {
+    const before = commanding();
+    let room = act(before, 'b', moveOf(before, 'nk')).room;
+    const other = act(room, 'a', moveOf(room, 'macrophage'), 2);
+    expect(errorsOf(other.out)).toEqual([]);
+    room = other.room;
+    const there = where(room, 'nk');
+    const s = act(room, 'b', { action: 'undo' }, 3);
+    expect(errorsOf(s.out)).toEqual(['nothingToUndo']);
+    expect(where(s.room, 'nk')).toBe(there);
+  });
+
+  it('survives a refused action in between: nothing changed, so there is nothing to lose', () => {
+    const before = commanding();
+    const at = where(before, 'nk');
+    const points = budget(before, 'm2');
+    let room = act(before, 'b', moveOf(before, 'nk')).room;
+    const refused = act(room, 'b', { action: 'move', cell: 'nk', zone: 'nowhere' }, 2);
+    expect(errorsOf(refused.out)).not.toEqual([]);
+    room = refused.room;
+    const s = act(room, 'b', { action: 'undo' }, 3);
+    expect(errorsOf(s.out)).toEqual([]);
+    expect(where(s.room, 'nk')).toBe(at);
+    expect(budget(s.room, 'm2')).toBe(points);
+  });
+
+  it('has nothing to take back before anyone moves', () => {
+    const s = act(commanding(), 'b', { action: 'undo' });
+    expect(errorsOf(s.out)).toEqual(['nothingToUndo']);
   });
 });
 

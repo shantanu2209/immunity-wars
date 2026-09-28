@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.8 · 26 September 2026
+**Version:** 1.9 · 27 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code existed, deliberately. **Reviewed 25 September 2026**,
 after P3.1 to P3.5 ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md)); every item ruled the same day.
@@ -14,6 +14,18 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.9 records
+
+v1.9 names a second ruled engine change beside `handOverCaptaincy`, each place "the engine unchanged"
+is said marked in place (Shantanu, 27 September 2026: *"Go with A"*):
+
+- **Undo gives the Action Points back in a game played together** ([`DEVIATIONS.md`](DEVIATIONS.md)
+  #8, from [`FINDINGS.md`](FINDINGS.md) #95). Legacy's undo snapshot held single player's points and
+  not the table's budgets, so an undo together took the piece back and kept its point spent. The
+  snapshot holds the budgets together only; alone it is legacy's to the byte, the corpus stays green,
+  and every together path without an undo stays byte-identical to legacy with the snapshots' budgets
+  set aside. **The alternative was the room refunding the points itself**, a rule outside the engine.
 
 ## What v1.8 records
 
@@ -153,8 +165,9 @@ with your recommendation"*):
 > sharing a code. Nobody signs up for anything.
 
 Phase 2 changed everything a player can see. **Phase 3 changes who is in the room, and nothing about
-the rules.** The engine is fixed, but for one ruled addition, `handOverCaptaincy` (v1.1, DEVIATIONS
-#7); the equivalence corpus remains the oracle. ⚠️ *Corrected in v1.7* (review C1): this said "the
+the rules.** The engine is fixed, but for two ruled changes, `handOverCaptaincy` (v1.1, DEVIATIONS
+#7) and undo's Action Points together (v1.9, DEVIATIONS #8); the equivalence corpus remains the
+oracle. ⚠️ *Corrected in v1.7* (review C1): this said "the
 engine is fixed" without the exception §8 has named since v1.1.
 
 ---
@@ -202,7 +215,7 @@ Phase 3 starts further along than it looks.
 
 | | |
 |---|---|
-| **The engine is already multiplayer** | `g.multiplayer`, `g.captain`, `owner: Record<seat, pid>`, per-player `apBudget` and the allocation phase are in `packages/engine/src/actions.ts`. **Phase 3 builds transport and seats for rules that already exist**, and changes none of them but one (`handOverCaptaincy`, §8). ⚠️ *Corrected in v1.7* (review C1, C2): this also said the engine's "ownership checks" were there; **the engine never checks ownership**, only stores and projects `owner`, and the room enforces it. It also said "changes none of them" without the exception |
+| **The engine is already multiplayer** | `g.multiplayer`, `g.captain`, `owner: Record<seat, pid>`, per-player `apBudget` and the allocation phase are in `packages/engine/src/actions.ts`. **Phase 3 builds transport and seats for rules that already exist**, and changes none of them but two (`handOverCaptaincy`, and undo's Action Points together from v1.9; §8). ⚠️ *Corrected in v1.7* (review C1, C2): this also said the engine's "ownership checks" were there; **the engine never checks ownership**, only stores and projects `owner`, and the room enforces it. It also said "changes none of them" without the exception |
 | **The seat model is the engine's** | 7 cells + 7 organ residents = 14 seats, keyed as the engine keys them (`res_<organ>` for a resident) |
 | **There is a working reference** | `tools/legacy/server.js`, 346 lines: one room, 14 seats, a captain, ownership enforcement, reconnect by persistent id. READ-ONLY, like all of `tools/legacy` — the same role legacy played for the Phase 1 port |
 | **`Session` was built for this** | `sendAction` is async even locally **so that `RelaySession` is a second implementation and not a rewrite**; `Session` never hands out `GameState`; the `view`/`burst` union already expresses what a spread is |
@@ -360,8 +373,9 @@ deliberately re-baselines the corpus and it is its own piece of work, whenever i
 No Capacitor packaging — Phase 4, and it must not start until [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)'s
 handset measurement exists.
 No spectators. The legacy server had them; nobody has asked for them.
-No engine rule changes, but for the one ruled addition, `handOverCaptaincy` (§8). ⚠️ *Corrected in
-v1.7* (review C1): this said "No engine rule changes" without it.
+No engine rule changes, but for the two ruled ones, `handOverCaptaincy` and undo's Action Points
+together (§8). ⚠️ *Corrected in v1.7* (review C1): this said "No engine rule changes" without the
+first; *v1.9* added the second.
 **No one joins a game already under way** (v1.7, review R2): a newcomer waits for the next one.
 **No room of more than 15** (v1.8).
 **Versioned saved games** are Phase 4's, where app updates begin (review R3), and so is **the update
@@ -386,9 +400,11 @@ the app is in the Play Store (review R4).
       them is Phase 4's
 - [ ] The 20 multiplayer coverage arms covered; `COVERAGE_DEFERRED.md` regenerated and honest (22
       until v1.7, review C3)
-- [ ] Corpus still green; the engine unchanged **but for `handOverCaptaincy`**. ⚠️ *Amended in
-      v1.1 (21 September 2026):* this read "the engine unchanged". The one addition is ruled,
-      recorded as DEVIATIONS #7, and held to legacy on every other multiplayer path
+- [ ] Corpus still green; the engine unchanged **but for `handOverCaptaincy` and undo's Action
+      Points together**. ⚠️ *Amended in v1.1 (21 September 2026):* this read "the engine
+      unchanged". The first addition is ruled, recorded as DEVIATIONS #7, and held to legacy on
+      every other multiplayer path. *Amended in v1.9 (27 September 2026):* the second is ruled,
+      recorded as DEVIATIONS #8, and held to legacy alone and, its snapshots aside, together
 - [ ] A Phase 3 closeout: what is proven, what is not, what Phase 4 inherits
 
 ---

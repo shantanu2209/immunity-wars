@@ -38,6 +38,11 @@ export function pushUndo(g: GameState): void {
     free: clone(g.free || {}),
     organs: clone(g.organs),
     log: clone(g.log),
+    // DEVIATION — docs/DEVIATIONS.md #8. Played together, a player spends from their own budget
+    // (`spendAP`), which legacy's snapshot does not hold, so its undo returned the piece and kept the
+    // point spent. The budgets are saved in a game played together, and ONLY there: alone the key is
+    // never written, so a single-player snapshot is legacy's to the byte.
+    ...(g.multiplayer ? { apBudget: clone(g.apBudget) } : {}),
   };
   g.undo = g.undo || [];
   g.undo.push(snap);
@@ -63,6 +68,8 @@ export function undo(g: GameState): { ok: boolean; error?: string } {
   g.free = u.free;
   g.organs = u.organs;
   g.log = u.log;
+  // DEVIATION #8: the budgets come back with the moves, where they were saved.
+  if (u.apBudget !== undefined) g.apBudget = u.apBudget;
   return ok();
 }
 

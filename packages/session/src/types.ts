@@ -89,8 +89,10 @@ export interface UndoAvailability {
    * `not-command` (no command phase in progress), `no-moves` (nothing accepted this phase that
    * undo could unwind), `committed` (a committing action ended it — `committedBy` names it),
    * `resumed` (the game was resumed mid-command and the session has no history of the phase).
-   * `multiplayer` (P3.4): a `RelaySession`, where the engine's one undo stack is the whole
-   * table's and the relay refuses undo (FINDINGS #79).
+   * `multiplayer` (P3.4; v4 from 27 September 2026): a `RelaySession` whose player has no moves
+   * of their own to take back: none yet this phase, a committing action since, or another player
+   * has acted since. The engine's one undo stack is the whole table's, so the room allows an undo
+   * only while a player's own moves are the last things done (until v4 it refused every undo, #79).
    * `available` when it is.
    */
   readonly reason:

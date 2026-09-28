@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1932 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1936 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -39,7 +39,6 @@ weaker than a demonstration and is labelled so deliberately.
 ### ap.ts
 
 - `25` `const amount = n || 1;`
-- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
 - `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
 - `39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 
@@ -135,19 +134,19 @@ weaker than a demonstration and is labelled so deliberately.
 ### view.ts
 
 - `38` `free: clone(g.free || {}),`
-- `42` `g.undo = g.undo || [];`
-- `94` `free: clone(g.free || {}),`
-- `97` `players: (g.players || []).slice(),`
-- `99` `owner: clone(g.owner || {}),`
-- `100` `apBudget: clone(g.apBudget || {}),`
-- `104` `suppress: clone(g.suppress || {}),`
-- `107` `rare: clone(g.rare || {}),`
-- `109` `ab: clone(g.ab || {}),`
-- `110` `made: clone(g.made || {}),`
-- `111` `memory: clone(g.memory || {}),`
-- `112` `vaccine: clone(g.vaccine || {}),`
-- `113` `seen: clone(g.seen || {}),`
-- `117` `undoDepth: (g.undo || []).length,`
+- `47` `g.undo = g.undo || [];`
+- `101` `free: clone(g.free || {}),`
+- `104` `players: (g.players || []).slice(),`
+- `106` `owner: clone(g.owner || {}),`
+- `107` `apBudget: clone(g.apBudget || {}),`
+- `111` `suppress: clone(g.suppress || {}),`
+- `114` `rare: clone(g.rare || {}),`
+- `116` `ab: clone(g.ab || {}),`
+- `117` `made: clone(g.made || {}),`
+- `118` `memory: clone(g.memory || {}),`
+- `119` `vaccine: clone(g.vaccine || {}),`
+- `120` `seen: clone(g.seen || {}),`
+- `124` `undoDepth: (g.undo || []).length,`
 
 ## Rule C — mechanical shapes from the v4-provider reconciliation
 
@@ -580,7 +579,7 @@ if (!org) return;
 
 arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
 
-### view.ts:50
+### view.ts:55
 
 ```
 if (!u) return err('Nothing to undo.');

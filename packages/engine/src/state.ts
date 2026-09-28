@@ -200,6 +200,11 @@ export interface UndoSnapshot {
   free: Record<string, number>;
   organs: Record<string, Organ>;
   log: LogEntry[];
+  /**
+   * Each player's Action Points, in a game played together only (DEVIATIONS #8, ruled 27 September
+   * 2026). Legacy's snapshot has no such field, so an undo put a piece back and kept its point spent.
+   */
+  apBudget?: Record<string, number>;
 }
 
 export interface GameState {

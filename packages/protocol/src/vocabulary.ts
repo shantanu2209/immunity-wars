@@ -32,6 +32,8 @@ export const PROTOCOL_VERSION = 4;
  *      the list a client checks a refusal against has changed: `roomFull` (a room holds at most
  *      `MAX_MEMBERS`) and `someoneUnseated` (every connected player but the captain holds a piece
  *      before the game starts). A v3 client would read either as malformed.
+ *      And undo, played together (ruled 27 September 2026): a view carries `undo`, whose moves an
+ *      undo would take back and how many, and `undoIsSinglePlayer` gives way to `nothingToUndo`.
  */
 
 /**
@@ -139,10 +141,12 @@ export const ERROR_CODES = [
   /** An action that is the ROOM's to send, never a player's: `handOverCaptaincy` (FINDINGS #78). */
   'roomOnly',
   /**
-   * UNDO IS SINGLE-PLAYER IN v1 (P3.4, FINDINGS #79): the engine keeps one undo stack for the whole
-   * game, so in a room it would unwind whichever move came last — possibly another player's.
+   * An undo from a player with no moves to take back (v4, ruled 27 September 2026): none since the
+   * command phase began, a committing action since, or another player has acted since. Until v4 it
+   * was `undoIsSinglePlayer`, refused in every room (FINDINGS #79): the engine's one undo stack is
+   * the table's, so an undo could have unwound another player's move.
    */
-  'undoIsSinglePlayer',
+  'nothingToUndo',
   /**
    * `join` named a code the relay does not hold: mistyped, or a room discarded after its grace
    * period, which Gate A requires cannot be rejoined (P3.4).
