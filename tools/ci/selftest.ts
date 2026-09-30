@@ -1315,6 +1315,18 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
     expect: 'at step 1, leaves the organ whole',
   },
+  {
+    id: 'queue-q1-antigenic-variation-reachable',
+    why: 'Queue Q1 (Kartik, 5 September 2026, option (a); FINDINGS #4): antibodies may attempt a trypanosome, so the coat change that teaches why sleeping sickness has no vaccine can happen. An engine that turned it away again must fail against the original as ruled.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "(iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite')) ||\n        (iv.type === 'parasite' && !!iv.variant);\n      if (!ok2)",
+        "(iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite'));\n      if (!ok2)",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'is offered and accepted in the port',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

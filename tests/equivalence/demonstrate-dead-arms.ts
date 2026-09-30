@@ -64,7 +64,7 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
   say(
     'actions.ts:373 neutralise inMac guard',
     true,
-    `only hidesInMac cards can set inMac, and they are: ${kinds.join(', ')} — neutralise rejects parasites at ok2 first`,
+    `only hidesInMac cards can set inMac, and they are: ${kinds.join(', ')} — neutralise rejects every parasite at ok2 but a variant one (queue Q1), and the only variant card, Sleeping sickness, does not hide in a macrophage`,
   );
 }
 

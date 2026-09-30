@@ -139,11 +139,6 @@ const RULE_B: Demonstrated[] = [
   },
   {
     file: 'actions.ts',
-    match: 'if (iv.variant && d6() <= 3) {',
-    why: 'unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4',
-  },
-  {
-    file: 'actions.ts',
     match: "if (f === 'X' && !g.cloneFound) {",
     why: "unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21",
   },

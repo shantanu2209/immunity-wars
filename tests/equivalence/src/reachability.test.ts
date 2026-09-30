@@ -14,11 +14,15 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { loadLegacy } from './engine.js';
+import * as port from '@immunity-wars/engine';
+
+import { loadLegacy, loadOriginalLegacy } from './engine.js';
 import { installRng, restoreRng } from './rng.js';
 import type { GameState, Invader } from './types.js';
 
 const legacy = loadLegacy();
+/** The original, untouched: the past, before queue Q1 made antigenic variation reachable. */
+const original = loadOriginalLegacy();
 
 /* ================================================================== *
  * Q1 — two worms lodged at the Brain on Hard, with branch:3
@@ -300,9 +304,12 @@ describe('Q2: a worm on a route — constructible at all?', () => {
  * Q3 — does antigenic variation stay unreachable?
  * ================================================================== */
 
-describe('Q3: the antigenic-variation branch — confirm it stays unreachable', () => {
-  it('ANSWER: still unreachable. The only variant card is a parasite, and neutralise rejects parasites first', () => {
-    const variants = legacy.DECK_MASTER.filter(
+// ⚠️ Queue Q1 (Kartik, 5 September 2026, option (a)) made the branch REACHABLE: antibodies may attempt a
+// trypanosome. The two tests that pinned it unreachable now hold the ORIGINAL, untouched, where it still
+// is, as the record and the control; the third shows it firing in real play since Q1.
+describe('Q3: the antigenic-variation branch — unreachable in the original, reachable since queue Q1', () => {
+  it('ANSWER, in the original: unreachable. The only variant card is a parasite, and neutralise rejects parasites first', () => {
+    const variants = original.DECK_MASTER.filter(
       (c) => (c as unknown as { variant?: boolean }).variant,
     );
     expect(variants.map((c) => c.dz)).toEqual(['Sleeping sickness']);
@@ -310,18 +317,18 @@ describe('Q3: the antigenic-variation branch — confirm it stays unreachable', 
 
     installRng(5);
     try {
-      const g = legacy.newGame({ difficulty: 'training', science: false }) as GameState;
+      const g = original.newGame({ difficulty: 'training', science: false }) as GameState;
       g.phase = 'command';
       g.ap = 9;
       for (const f of ['ENV', 'NAK', 'EXB', 'ICB', 'TOX', 'EUK', 'X']) g.ab[f] = 9;
       const card = variants[0];
       if (!card) return;
-      const iv = legacy.makeInvader(g, card);
+      const iv = original.makeInvader(g, card);
       iv.zone = 'hub';
       iv.step = 0;
       g.invaders = [iv];
 
-      const r = legacy.applyAction(g, { action: 'neutralise', invaderId: iv.id }) as {
+      const r = original.applyAction(g, { action: 'neutralise', invaderId: iv.id }) as {
         ok: boolean;
         error?: string;
       };
@@ -333,22 +340,22 @@ describe('Q3: the antigenic-variation branch — confirm it stays unreachable', 
     }
   });
 
-  it('and it stays unreachable across real play — no variant roll ever fires', () => {
+  it('and in the original it stays unreachable across real play — no variant roll ever fires', () => {
     // The branch decrements an antibody and logs a coat-change message. If it ever fired, that
     // log line would appear. It never does.
     let sawCoatChange = false;
     for (let i = 0; i < 150 && !sawCoatChange; i += 1) {
       installRng(41000 + i);
       try {
-        const g = legacy.newGame({ difficulty: 'training', science: false }) as GameState;
+        const g = original.newGame({ difficulty: 'training', science: false }) as GameState;
         for (let t = 0; t < 25; t += 1) {
-          legacy.applyAction(g, { action: 'draw' });
-          legacy.applyAction(g, { action: 'beginCommand' });
+          original.applyAction(g, { action: 'draw' });
+          original.applyAction(g, { action: 'beginCommand' });
           for (const iv of [...g.invaders]) {
-            legacy.applyAction(g, { action: 'neutralise', invaderId: iv.id });
-            legacy.applyAction(g, { action: 'tag', invaderId: iv.id });
+            original.applyAction(g, { action: 'neutralise', invaderId: iv.id });
+            original.applyAction(g, { action: 'tag', invaderId: iv.id });
           }
-          legacy.applyAction(g, { action: 'endCommand' });
+          original.applyAction(g, { action: 'endCommand' });
           if (g.log.some((l) => /changed its coat/.test(l.msg))) sawCoatChange = true;
           if (g.won || g.lost) break;
         }
@@ -360,5 +367,33 @@ describe('Q3: the antigenic-variation branch — confirm it stays unreachable', 
       sawCoatChange,
       'the antigenic-variation branch fired — FINDINGS.md #4 is out of date',
     ).toBe(false);
+  });
+  it('SINCE QUEUE Q1, the same real play makes the coat change, in the original as ruled and the port', () => {
+    for (const [name, E] of [
+      ['the original as ruled', legacy],
+      ['the port', port as unknown as typeof legacy],
+    ] as const) {
+      let sawCoatChange = false;
+      for (let i = 0; i < 150 && !sawCoatChange; i += 1) {
+        installRng(41000 + i);
+        try {
+          const g = E.newGame({ difficulty: 'training' }) as GameState;
+          for (let t = 0; t < 25; t += 1) {
+            E.applyAction(g, { action: 'draw' });
+            E.applyAction(g, { action: 'beginCommand' });
+            for (const iv of [...g.invaders]) {
+              E.applyAction(g, { action: 'neutralise', invaderId: iv.id });
+              E.applyAction(g, { action: 'tag', invaderId: iv.id });
+            }
+            E.applyAction(g, { action: 'endCommand' });
+            if (g.log.some((l) => /changed its coat/.test(l.msg))) sawCoatChange = true;
+            if (g.won || g.lost) break;
+          }
+        } finally {
+          restoreRng();
+        }
+      }
+      expect(sawCoatChange, `${name}: the coat never changed in 150 games`).toBe(true);
+    }
   });
 });

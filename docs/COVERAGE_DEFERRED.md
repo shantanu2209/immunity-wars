@@ -66,11 +66,11 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
 - `actions.ts:367` `if (g.memory[dz]) return err('You are already immune to that.');`
 - `actions.ts:369` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:480` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:510` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:634` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:639` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:642` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
+- `actions.ts:483` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:513` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:637` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:642` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:645` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
 - `construct.ts:163` `default:`
 - `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
@@ -79,7 +79,7 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `queries.ts:282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `queries.ts:329` `if (!g.flags.dendritic) {`
 - `queries.ts:420` `if (!attackable(iv)) return false;`
-- `queries.ts:434` `if (!attackable(iv)) return false;`
+- `queries.ts:435` `if (!attackable(iv)) return false;`
 - `spread.ts:66` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
 - `spread.ts:69` `if (!e) return false;`
 - `spread.ts:166` `default:`

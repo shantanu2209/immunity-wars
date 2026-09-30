@@ -396,10 +396,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           'Your antibodies do not neutralise this dengue serotype — they HELP it into your cells (ADE). Use the Monocyte, Neutrophil or NK Cell.',
         );
       }
+      // A trypanosome may be attempted too (queue Q1, Kartik, 5 September 2026, option (a); FINDINGS
+      // #4): antibodies do clear it from the blood, until it changes its coat, which is the roll below.
       const ok2 =
         iv.type === 'virus' ||
         iv.type === 'toxin' ||
-        (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite'));
+        (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite')) ||
+        (iv.type === 'parasite' && !!iv.variant);
       if (!ok2) return err('Antibodies cannot neutralise that.');
       if (iv.type === 'malaria' && iv.stage === 'liver') {
         return err('It is hiding inside liver cells — antibodies cannot reach it.');

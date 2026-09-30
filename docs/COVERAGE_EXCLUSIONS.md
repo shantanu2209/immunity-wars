@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 180 entries (9.4% of the 1915 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 180 entries (9.4% of the 1919 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -31,10 +31,10 @@ weaker than a demonstration and is labelled so deliberately.
 - `325` `g.ab[f] = (g.ab[f] ?? 0) + made;`
 - `326` `g.made[f] = (g.made[f] ?? 0) + 1;`
 - `368` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `418` `const held = g.ab[f] ?? 0;`
-- `479` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `590` `const heldForTag = g.ab[f] ?? 0;`
-- `830` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
+- `421` `const held = g.ab[f] ?? 0;`
+- `482` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `593` `const heldForTag = g.ab[f] ?? 0;`
+- `833` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
 
 ### ap.ts
 
@@ -87,14 +87,14 @@ weaker than a demonstration and is labelled so deliberately.
 - `367` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
 - `374` `const have = g.ab[f] ?? 0;`
 - `376` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `439` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
-- `443` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `475` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
-- `690` `readyTurn: e.regenAt ?? null,`
-- `713` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
-- `714` `return t[d6() - 1] ?? 1;`
-- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
-- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `440` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
+- `444` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
+- `476` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
+- `691` `readyTurn: e.regenAt ?? null,`
+- `714` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
+- `715` `return t[d6() - 1] ?? 1;`
+- `733` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `733` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
 
 ### simulate.ts
 
@@ -158,12 +158,12 @@ report as rule A: every arm that leaves this list is named.
 
 ### queries.ts
 
-- `452` `if (!m) return [];`
-- `474` `if (!t) return [];`
-- `486` `if (iv.zone === 'branch') return iv.step <= R;`
-- `514` `if (!n) return [];`
-- `521` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
-- `613` `} else if (c.zone === 'branch' && c.organ) {`
+- `453` `if (!m) return [];`
+- `475` `if (!t) return [];`
+- `487` `if (iv.zone === 'branch') return iv.step <= R;`
+- `515` `if (!n) return [];`
+- `522` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
+- `614` `} else if (c.zone === 'branch' && c.organ) {`
 
 ### simulate.ts
 
@@ -202,7 +202,7 @@ if (!to) return err('No lymphatic link from this route.');
 
 unreachable: a route with no lymph link was rejected two guards earlier (the LYMPH_GROUP check), so lymphPartners is never empty here
 
-### actions.ts:404
+### actions.ts:407
 
 ```
 if (iv.type === 'malaria' && iv.stage === 'liver') {
@@ -210,7 +210,7 @@ if (iv.type === 'malaria' && iv.stage === 'liver') {
 
 unreachable: the ok2 type gate three lines earlier rejects malaria unless stage is blood or sporozoite, so a liver-stage malaria never arrives here. Demonstrated: applyAction returns 'Antibodies cannot neutralise that.'
 
-### actions.ts:407
+### actions.ts:410
 
 ```
 if (iv.inMac) {
@@ -218,23 +218,7 @@ if (iv.inMac) {
 
 unreachable in neutralise: inMac is only ever set on a hidesInMac card, and the sole such card (Kala-azar) is a parasite, which ok2 rejects first
 
-### actions.ts:430
-
-```
-if (iv.variant && d6() <= 3) {
-```
-
-unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
-
-### actions.ts:430
-
-```
-if (iv.variant && d6() <= 3) {
-```
-
-unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
-
-### actions.ts:550
+### actions.ts:553
 
 ```
 if (org) {
@@ -242,7 +226,7 @@ if (org) {
 
 repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; this re-reads the same key two lines later for the compiler's sake
 
-### actions.ts:569
+### actions.ts:572
 
 ```
 `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
@@ -250,7 +234,7 @@ repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; 
 
 the survives-arm of the ternary is dead by data: degranulate deals DEGRANULATE_DAMAGE (3, content's since queue Q7) and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan
 
-### actions.ts:587
+### actions.ts:590
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -258,7 +242,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:587
+### actions.ts:590
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -266,7 +250,7 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:731
+### actions.ts:734
 
 ```
 `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
@@ -274,7 +258,7 @@ unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/w
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:746
+### actions.ts:749
 
 ```
 `The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,
@@ -282,7 +266,7 @@ the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstra
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:800
+### actions.ts:803
 
 ```
 if (c) {
@@ -290,7 +274,7 @@ if (c) {
 
 the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan
 
-### actions.ts:820
+### actions.ts:823
 
 ```
 if (pool.length) {
@@ -298,7 +282,7 @@ if (pool.length) {
 
 pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games
 
-### actions.ts:822
+### actions.ts:825
 
 ```
 c = DECK_MASTER.find((x) => x.dz === dz) || null;
@@ -306,7 +290,7 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
-### actions.ts:828
+### actions.ts:831
 
 ```
 if (c) g.discard.push(c as never);
@@ -314,7 +298,7 @@ if (c) g.discard.push(c as never);
 
 conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games
 
-### actions.ts:844
+### actions.ts:847
 
 ```
 if (c.novel) {
@@ -410,7 +394,7 @@ if (!helper || !target) return false;
 
 helper is roster-total (constructed at newGame, never deleted), and target is read with keys callers draw from CELL_KEYS. Demonstrated over 300 games
 
-### queries.ts:537
+### queries.ts:538
 
 ```
 if (!c) return [];
@@ -418,7 +402,7 @@ if (!c) return [];
 
 roster-total lookup: wormStrikeable is called with keys from CELL_KEYS and g.cells is total over them. Demonstrated over 300 games
 
-### queries.ts:602
+### queries.ts:603
 
 ```
 if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
@@ -426,7 +410,7 @@ if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
 
 dead by data: every branch is at least 2 steps (schema-enforced against the drawn board) and speed tops out at 3, so st = L - k >= 0 always. Demonstrated by data scan
 
-### queries.ts:632
+### queries.ts:633
 
 ```
 if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });
@@ -434,7 +418,7 @@ if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: tru
 
 dead by data: every route is 5 steps, the lymph crossing is step 3, and extra <= 2, so ns is always within [1, 5]. Demonstrated by data scan
 
-### queries.ts:633
+### queries.ts:634
 
 ```
 if (ns === 0) out.push({ zone: 'hub', lymph: true });

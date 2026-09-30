@@ -421,7 +421,8 @@ export function canNeutralise(g: GameState, iv: Invader): boolean {
   const kind =
     iv.type === 'virus' ||
     iv.type === 'toxin' ||
-    (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite'));
+    (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite')) ||
+    (iv.type === 'parasite' && !!iv.variant); // a trypanosome, queue Q1
   return kind && abMatch(g, iv) >= 1;
 }
 

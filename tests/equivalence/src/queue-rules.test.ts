@@ -151,3 +151,68 @@ describe('Q9 (FINDINGS #57): degranulate burns the organ only when the fight is 
     }
   });
 });
+
+describe('Q1 (Kartik, FINDINGS #4): antibodies may attempt a trypanosome, so its coat can change', () => {
+  const DZ = 'Sleeping sickness';
+  const setup = (E: Engine, g: Game): void => {
+    const iv = E.forceInjectCard(g, DZ) as unknown as Raw;
+    Object.assign(iv, { zone: 'hub', step: 0, lane: null, organ: null });
+    (g['ab'] as Record<string, number>)['EUK'] = 5;
+    g['phase'] = 'command';
+    g['ap'] = 5;
+  };
+  const target = (g: Game): Raw | undefined =>
+    (g['invaders'] as unknown as Raw[]).find((x) => x['disease'] === DZ);
+  const moves = (g: Game): Raw[] => [{ action: 'neutralise', invaderId: target(g)?.['id'] }];
+  const offered = (E: Engine, g: Game): boolean =>
+    (E as unknown as { canNeutralise: (g: Game, iv: Raw) => boolean }).canNeutralise(
+      g,
+      target(g) as Raw,
+    );
+
+  it('is offered and accepted in the port and the original as ruled, which agree on every seed', () => {
+    let changed = 0;
+    let cleared = 0;
+    for (let seed = 1; seed <= 20; seed += 1) {
+      const games: Game[] = [];
+      for (const [name, E] of ENGINES) {
+        const { g, results } = run(
+          E,
+          seed,
+          'normal',
+          (E2, g2) => {
+            setup(E2, g2);
+            expect(offered(E2, g2), `${name} did not offer it`).toBe(true);
+          },
+          moves,
+        );
+        expect(results[0], `${name}, seed ${String(seed)}`).toEqual({ ok: true });
+        games.push(g);
+      }
+      const [p, l] = games as [Game, Game];
+      expect(JSON.stringify(target(p) ?? null)).toBe(JSON.stringify(target(l) ?? null));
+      expect((p['ab'] as Record<string, number>)['EUK']).toBe(4);
+      if (target(p)) changed += 1;
+      else cleared += 1;
+    }
+    // Both halves of the roll were seen, so the coat change is real play now, not a dead branch.
+    expect(changed, 'the coat never changed').toBeGreaterThan(0);
+    expect(cleared, 'the antibodies never cleared it').toBeGreaterThan(0);
+  });
+
+  it('CONTROL: the original, untouched, neither offered it nor accepted it', () => {
+    for (const seed of SEEDS) {
+      const { results } = run(
+        ORIGINAL,
+        seed,
+        'normal',
+        (E2, g2) => {
+          setup(E2, g2);
+          expect(offered(E2, g2)).toBe(false);
+        },
+        moves,
+      );
+      expect(results[0]).toEqual({ ok: false, error: 'Antibodies cannot neutralise that.' });
+    }
+  });
+});

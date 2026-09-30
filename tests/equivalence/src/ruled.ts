@@ -218,4 +218,21 @@ export const RULED: readonly RuledChange[] = [
     find: 'if(iv.zone==="branch" && g.organs[iv.organ]){',
     replace: 'if(iv.zone==="branch" && iv.step===0 && g.organs[iv.organ]){',
   },
+  // Q1 (Kartik, 5 September 2026, option (a); FINDINGS #4): antibodies may attempt a trypanosome, so
+  // the antigenic-variation roll the original carried, unreachable, can fire. Its only `variant` card
+  // is Sleeping sickness, a parasite, which both of the original's antibody checks turned away.
+  {
+    queue: 'Q1',
+    name: 'canNeutralise accepts a variant parasite',
+    find: 'const kind = iv.type==="virus"||iv.type==="toxin"||(iv.type==="malaria"&&(iv.stage==="blood"||iv.stage==="sporozoite"));',
+    replace:
+      'const kind = iv.type==="virus"||iv.type==="toxin"||(iv.type==="malaria"&&(iv.stage==="blood"||iv.stage==="sporozoite"))||(iv.type==="parasite"&&!!iv.variant);',
+  },
+  {
+    queue: 'Q1',
+    name: 'neutralise accepts a variant parasite',
+    find: 'const ok2 = iv.type==="virus" || iv.type==="toxin" || (iv.type==="malaria"&&(iv.stage==="blood"||iv.stage==="sporozoite"));',
+    replace:
+      'const ok2 = iv.type==="virus" || iv.type==="toxin" || (iv.type==="malaria"&&(iv.stage==="blood"||iv.stage==="sporozoite")) || (iv.type==="parasite"&&!!iv.variant);',
+  },
 ];
