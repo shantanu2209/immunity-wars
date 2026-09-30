@@ -5292,7 +5292,7 @@ the whole report, and nothing ran it.
 rewrite what the test reads, which is the C5b shape its own header guards against. **An instrument
 defect, fixed inline.**
 
-## 105. Queue Q1 lets antibodies attempt a trypanosome, and the printed rules' Neutralise does not: the table and the app disagree until Kartik's text changes — OPEN
+## 105. Queue Q1 lets antibodies attempt a trypanosome, and the printed rules' Neutralise does not: the table and the app disagree until Kartik's text changes — CLOSED 1 October 2026
 
 **Found 30 September 2026**, checking each queue change against the printed rules
 (`Immunity_Wars_Rulebook_v3_1.docx`, `Immunity_Wars_Quick_Reference_v3.docx` and
@@ -5334,6 +5334,10 @@ Shantanu to apply:
 
 None of these is a "WHY IT WORKS THIS WAY" box, which the library pins word for word to the
 rulebook (`why-boxes.test.ts`). **OPEN until the printed texts change.**
+
+**CLOSED 1 October 2026:** the seven wordings above are in the three documents, as proposed, edited
+paragraph by paragraph with every other part of each file byte for byte unchanged. The why boxes
+still match the rulebook word for word. The table and the app agree again on Q1 and Q11.
 
 ## 106. The self-test died restoring a file it had mutated, on a brief Windows lock, and left the engine mutated in the tree — FIXED inline 30 September 2026
 
@@ -5402,3 +5406,23 @@ check's own arm of 20 × 100 games, both mutants on the original as ruled):
 So at the scale that ships, the cut fails the panel on both difficulties by a wide margin and the
 blind spot is where #17 and #34 put it. The fast control's Normal verdict was the marginal thing,
 not the panel.
+
+## 108. The equivalence suite's cache could not see three things it reads from outside its package — FIXED inline 1 October 2026
+
+**Found 1 October 2026**, when a change to the rulebook document passed `pnpm verify` with every
+test replayed from turbo's cache. Turbo hashes a test task over its own package's files, and the
+equivalence suite reads three things outside `tests/equivalence`:
+
+- `tools/legacy/`, the original engine, which is the corpus's oracle;
+- `docs/Immunity_Wars_Rulebook_v3_1.docx`, which `why-boxes.test.ts` pins the library's why boxes to,
+  word for word;
+- `docs/CONTENT_REACHABILITY.md`, which `content-reachability.test.ts` compares with its generator.
+
+**Measured:** the suite's task hash was identical with the rulebook changed and unchanged. A changed
+rulebook, or a stale report, would have passed on a cached green: the #51 shape again, one level
+out. Nothing was lost to it: the why-box test was run directly on each change to the documents.
+
+**Fixed:** `tests/equivalence/turbo.json` names the three as inputs (`$TURBO_ROOT$`), and the hash
+now moves with each of them, measured. `pnpm turbo:check`, inside `verify`, asserts they are in the
+hash, and control `turbo-outside-reads-hashed` removes one and sees the check fail. **An instrument
+defect, fixed inline.**

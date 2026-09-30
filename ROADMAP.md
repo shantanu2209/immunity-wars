@@ -119,12 +119,12 @@ the way in and the lobby, playing your part, when someone drops, the end and lea
 guard (FINDINGS #90), and the Gate 1 audit over every new screen ([`docs/for-P3.md`](docs/for-P3.md) §6).
 P3.6 was played on 26 September on two phones on two networks, and the rulings after it built:
 the lobby's rules, undo together, Update now, and another game in the same room (protocol v5).
-**CLOSED 30 September 2026**, with one definition-of-done item not fully met, since two Gate A items
-still owe a phone ([`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)).
+**CLOSED 30 September 2026, with nothing owing from 1 October**, when Shantanu waived the two Gate A
+phone checks still owed; they are waived, not met ([`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)).
 
 **Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, which ran the
 same day, all ten changes, rules version 4.0.0 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
-FINDINGS #101), and the relay's half of #94 before Phase 4 ships.
+FINDINGS #101), then Q11, rules 4.1.0; and the relay's half of #94 before Phase 4 ships.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25

@@ -1483,6 +1483,14 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
     expect: 'the panel barely moved for a whole Action Point',
   },
+  {
+    id: 'turbo-outside-reads-hashed',
+    why: "FINDINGS #108: the equivalence suite reads the rulebook document, the reachability report and the original engine from outside its package, and turbo's hash did not see them, so a changed rulebook replayed a cached green for the test that pins the why boxes to it.",
+    file: 'tests/equivalence/turbo.json',
+    mutate: (t) => t.replace('        "$TURBO_ROOT$/docs/Immunity_Wars_Rulebook_v3_1.docx",\n', ''),
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

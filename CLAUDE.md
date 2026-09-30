@@ -18,16 +18,16 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 Spec: @docs/PHASE3_BRIEF.md (v1.10).
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
-[`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), with two Gate A items still owing a phone. The
-marker above stays on Phase 3 because its brief still governs the room and the relay. **The engine
+[`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), **with nothing owing since 1 October**, when he
+waived the two Gate A phone checks (waived, not met). The marker above stays on Phase 3 because its
+brief still governs the room and the relay, and Phase 4 cannot start before Phase 2's handset pass. **The engine
 change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
 changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
 same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). **Next, before
 Phase 4, is the relay's half of #94**, ruled to be built before Phase 4 ships. **One thing the queue
-left open touches a hard rule:** the printed rules do not yet say what queues Q1 and Q11 do, so the
-table and the app disagree until the printed texts change; the wording is proposed in
-`docs/FINDINGS.md` #105.
+left open touched a hard rule,** the printed rules' wording for queues Q1 and Q11, and is closed:
+the rulebook, quick reference and study packet now say what the app does (`docs/FINDINGS.md` #105).
 
 **Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
 acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,

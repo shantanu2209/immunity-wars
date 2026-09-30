@@ -250,3 +250,8 @@ Normal (antibodies made −15.0σ) and on Hard (−34.0σ), and the brain lane s
 now asserts the strength that holds at its scale, with a control of its own.
 
 **Controls:** 135, the three new ones seen firing.
+
+**Deployed 1 October 2026 at 00:26 IST**, on Shantanu's word, from `main` at the merge of #132: the relay
+`20261001-002607-5994603`, its 41 tests passed, restarted with nobody connected, rules 4.1.0 and
+protocol 5 read back from the server; and the app `20261001-003357-5994603`, its start check passed,
+the live build carrying rules 4.1.0 and the new help for venom.
