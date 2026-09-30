@@ -18,17 +18,45 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { RULED, type RuledChange } from './ruled.js';
 import type { Engine } from './types.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(HERE, '..', '..', '..');
 export const LEGACY_PATH = join(REPO_ROOT, 'tools', 'legacy', 'v2_engine.js');
 
-let cachedSource: string | null = null;
+let cachedOriginal: string | null = null;
+let cachedRuled: string | null = null;
 
+/** The original engine's source exactly as it is on disk: for what must see it as it was. */
+export function originalLegacySource(): string {
+  cachedOriginal ??= readFileSync(LEGACY_PATH, 'utf8');
+  return cachedOriginal;
+}
+
+/**
+ * THE ORACLE: the original engine AS RULED (`ruled.ts`), every ruled change applied in memory. Every
+ * comparison, and every negative control, runs against this; `originalLegacySource` is the past.
+ */
 export function legacySource(): string {
-  cachedSource ??= readFileSync(LEGACY_PATH, 'utf8');
-  return cachedSource;
+  cachedRuled ??= applyRuled(originalLegacySource(), RULED);
+  return cachedRuled;
+}
+
+/** Applies ruled edits in order, each required to match exactly once. */
+export function applyRuled(source: string, ruled: readonly RuledChange[]): string {
+  let s = source;
+  for (const r of ruled) {
+    const n = s.split(r.find).length - 1;
+    if (n !== 1) {
+      throw new Error(
+        `ruled change ${r.queue} ${JSON.stringify(r.name)} matched ${String(n)} times, expected ` +
+          'exactly 1: it is stale, and the oracle would silently not be the original as ruled',
+      );
+    }
+    s = s.replace(r.find, () => r.replace);
+  }
+  return s;
 }
 
 /** Evaluate CommonJS source into a module object. */
@@ -46,9 +74,14 @@ function evaluateCommonJs(source: string, label: string): Engine {
   return module.exports as unknown as Engine;
 }
 
-/** A fresh, independent instance of the legacy engine. */
+/** A fresh, independent instance of the legacy engine, AS RULED: the oracle. */
 export function loadLegacy(): Engine {
   return evaluateCommonJs(legacySource(), 'legacy');
+}
+
+/** A fresh instance of the original engine as it is on disk, before any ruled change. */
+export function loadOriginalLegacy(): Engine {
+  return evaluateCommonJs(originalLegacySource(), 'original');
 }
 
 export interface Mutation {
