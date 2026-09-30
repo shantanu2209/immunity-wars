@@ -251,11 +251,7 @@ const RULE_B: Demonstrated[] = [
     match: 'if (c) g.discard.push(c as never);',
     why: 'conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games',
   },
-  {
-    file: 'ap.ts',
-    match: 'if (ck && g.free && free > 0) {',
-    why: 'docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0',
-  },
+
   {
     file: 'view.ts',
     match: "if (!u) return err('Nothing to undo.');",

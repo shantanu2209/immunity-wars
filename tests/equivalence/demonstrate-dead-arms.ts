@@ -439,11 +439,6 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
     true,
     'findIndex just returned >= 0, and splice(i, 1)[0] at a valid index is the element',
   );
-  say(
-    'ap.ts:40 — nothing ever grants a free action',
-    true,
-    'docs/FINDINGS.md #29: no code path writes a positive g.free entry at any player count',
-  );
 }
 
 /* --- primitives.ts:34  dense-array shuffle --- */

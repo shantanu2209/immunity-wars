@@ -19,7 +19,7 @@ import { describe, expect, it } from 'vitest';
 import * as port from '@immunity-wars/engine';
 import { apAvail, apOwnerOf, spendAP } from '@immunity-wars/engine/internal';
 
-import { loadLegacy, loadMutatedLegacy } from './engine.js';
+import { loadLegacy, loadMutatedLegacy, loadOriginalLegacy } from './engine.js';
 import { canonical } from './hash.js';
 import { installRng, restoreRng } from './rng.js';
 import type { Action, Engine, GameState } from './types.js';
@@ -218,45 +218,48 @@ describe("the arms only a direct call reaches, held to legacy's own functions", 
   });
 });
 
-describe('a hand-built action, in a hand-built state, reaches spendAP for no player (FINDINGS #99)', () => {
-  // Found on 30 September 2026, checking this file's claim that no action could. An action with no
-  // player that names a cell holding a free action passes the points check on that free action,
-  // while the action charges a different cell, so it reaches `spendAP` for no player, and the free
-  // action is not used up. No game can: nothing grants a free action (FINDINGS #29), so the state is
-  // given one by hand, and the room gives every action its sender. Pinned as found, the ruled
-  // difference (DEVIATIONS #9) included. Granting free actions would NOT make this fail, since it
-  // hands the state its own; #29 carries the warning instead.
-  it("an action with no player reaches it, let through by another cell's free action", () => {
-    const family = 'ENV';
-    const noPointsNkFree = (g: GameState): void => {
-      const s = g as unknown as { free: Record<string, number>; apBudget: Record<string, number> };
-      s.free = { nk: 1 };
-      s.apBudget = { P1: 0, P2: 0, P3: 0 };
-    };
+describe('queue Q2 closes FINDINGS #99: with no free-action slot, nothing reaches spendAP for no player', () => {
+  // #99, found 30 September 2026: an action with no player that named a cell holding a free action
+  // passed the points check on it, while charging a different cell, and so reached `spendAP` for no
+  // player. Queue Q2 (Kartik, 5 September 2026) removed the slot, so that path is gone: the same
+  // hand-built action, in the same hand-built state, is now refused before anything is spent, in the
+  // port and in the original as ruled. The ORIGINAL, untouched, still lets it through, which is what
+  // shows the closing is Q2's and not an accident of the test.
+  const family = 'ENV';
+  const noPointsNkFree = (g: GameState): void => {
+    const s = g as unknown as { free: Record<string, number>; apBudget: Record<string, number> };
+    s.free = { nk: 1 };
+    s.apBudget = { P1: 0, P2: 0, P3: 0 };
+  };
+  const steps: Step[] = [
+    ...OPEN,
+    { action: 'confirmAllocation', pid: 'P1' },
+    noPointsNkFree,
+    { action: 'produce', cell: 'nk', family },
+  ];
+
+  it('is refused before anything is spent, in the port and the original as ruled', () => {
     for (const seed of SEEDS) {
-      const steps: Step[] = [
-        ...OPEN,
-        { action: 'confirmAllocation', pid: 'P1' },
-        noPointsNkFree,
-        { action: 'produce', cell: 'nk', family },
-      ];
       const l = play(legacy, seed, steps);
       const p = play(portEngine, seed, steps);
-      expect(p.results.map((r) => canonical(r))).toEqual(l.results.map((r) => canonical(r)));
-      expect(lastError(p)).toBeUndefined();
-      const lg = l.g as unknown as { apBudget: Record<string, number> };
-      const pg = p.g as unknown as {
-        apBudget: Record<string, number>;
-        free: Record<string, number>;
-        made: Record<string, number>;
-      };
-      expect(lg.apBudget).toEqual({ P1: 0, P2: 0, P3: 0, null: 0 });
-      expect(pg.apBudget).toEqual({ P1: 0, P2: 0, P3: 0 });
-      expect(pg.made[family]).toBe(1);
-      expect(pg.free).toEqual({ nk: 1 });
-      // Past the budget named "null", the two states are the same to the byte.
-      delete lg.apBudget['null'];
-      expect(canonical(withoutSnapshotBudgets(p.g)), `seed ${String(seed)}`).toBe(canonical(l.g));
+      expect(lastError(p), `seed ${String(seed)}`).toBe('No Action Points.');
+      expect(lastError(l)).toBe('No Action Points.');
+      expect((p.g as unknown as { apBudget: object }).apBudget).toEqual({ P1: 0, P2: 0, P3: 0 });
+      expect((l.g as unknown as { apBudget: object }).apBudget).toEqual({ P1: 0, P2: 0, P3: 0 });
+    }
+  });
+
+  it('CONTROL: the original, untouched, still lets it through and writes a budget named "null"', () => {
+    const original = loadOriginalLegacy();
+    for (const seed of SEEDS) {
+      const o = play(original, seed, steps);
+      expect(lastError(o), `seed ${String(seed)}`).toBeUndefined();
+      expect((o.g as unknown as { apBudget: object }).apBudget).toEqual({
+        P1: 0,
+        P2: 0,
+        P3: 0,
+        null: 0,
+      });
     }
   });
 });

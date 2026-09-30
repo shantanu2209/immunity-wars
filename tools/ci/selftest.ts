@@ -1270,6 +1270,18 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/construct.test.ts',
     expect: 'projects identically across the whole B2 state corpus',
   },
+  {
+    id: 'queue-q2-no-free-actions',
+    why: "Queue Q2 (Kartik, 5 September 2026) removed the Helper T-Cell's free-action slot, which also closed FINDINGS #99. A no-points gate that still let a free action through must let the hand-built action of #99 past it again.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (apNow(g) <= 0 && !freeNow && !resFree) return err('No Action Points.');",
+        "if (apNow(g) <= 0 && !freeNow && !resFree && !((g as unknown as { free?: Record<string, number> }).free?.[ck as string] ?? 0)) return err('No Action Points.');",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
+    expect: 'is refused before anything is spent',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

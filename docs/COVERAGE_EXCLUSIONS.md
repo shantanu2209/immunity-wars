@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1936 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 179 entries (9.4% of the 1913 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -126,20 +126,18 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### view.ts
 
-- `38` `free: clone(g.free || {}),`
-- `47` `g.undo = g.undo || [];`
-- `101` `free: clone(g.free || {}),`
-- `104` `players: (g.players || []).slice(),`
-- `106` `owner: clone(g.owner || {}),`
-- `107` `apBudget: clone(g.apBudget || {}),`
-- `111` `suppress: clone(g.suppress || {}),`
-- `114` `rare: clone(g.rare || {}),`
-- `116` `ab: clone(g.ab || {}),`
-- `117` `made: clone(g.made || {}),`
-- `118` `memory: clone(g.memory || {}),`
-- `119` `vaccine: clone(g.vaccine || {}),`
-- `120` `seen: clone(g.seen || {}),`
-- `124` `undoDepth: (g.undo || []).length,`
+- `46` `g.undo = g.undo || [];`
+- `102` `players: (g.players || []).slice(),`
+- `104` `owner: clone(g.owner || {}),`
+- `105` `apBudget: clone(g.apBudget || {}),`
+- `109` `suppress: clone(g.suppress || {}),`
+- `112` `rare: clone(g.rare || {}),`
+- `114` `ab: clone(g.ab || {}),`
+- `115` `made: clone(g.made || {}),`
+- `116` `memory: clone(g.memory || {}),`
+- `117` `vaccine: clone(g.vaccine || {}),`
+- `118` `seen: clone(g.seen || {}),`
+- `122` `undoDepth: (g.undo || []).length,`
 
 ## Rule C — mechanical shapes from the v4-provider reconciliation
 
@@ -323,14 +321,6 @@ if (c.novel) {
 ```
 
 unreachable inside the spawn loop: newGame filters novel cards out of the deck entirely (measured: 0 in deck); the novel pathogen is injected on novelTurn instead
-
-### ap.ts:40
-
-```
-if (ck && g.free && free > 0) {
-```
-
-docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
 
 ### construct.ts:83
 
@@ -564,7 +554,7 @@ if (!org) return;
 
 arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
 
-### view.ts:55
+### view.ts:54
 
 ```
 if (!u) return err('Nothing to undo.');

@@ -54,4 +54,55 @@ export const RULED: readonly RuledChange[] = [
     find: 'won:g.won, lost:g.lost, science:g.science };',
     replace: 'won:g.won, lost:g.lost };',
   },
+  // Q2 (Kartik, 5 September 2026; FINDINGS #29): the Helper T-Cell's free-action slot removed. Nothing
+  // ever granted one, and every one of the Helper's effects was enumerated and none reads it
+  // (ENGINE_CHANGE_QUEUE.md, Q2). Eight places in the original, as in the port.
+  {
+    queue: 'Q2',
+    name: 'the free-action slot removed from the new game',
+    find: '    free:{},               // free actions granted by the Helper T-Cell this turn\n',
+    replace: '',
+  },
+  {
+    queue: 'Q2',
+    name: 'spend takes no free action, and hasFree is gone',
+    find: 'function spend(g,ck){ if(ck && g.free && g.free[ck]>0){ g.free[ck]--; return; } spendAP(g, g._actingPid, 1); }\nfunction hasFree(g,ck){ return !!(g.free && g.free[ck]>0); }',
+    replace: 'function spend(g,ck){ spendAP(g, g._actingPid, 1); }',
+  },
+  {
+    queue: 'Q2',
+    name: 'canAct asks about Action Points alone',
+    find: 'function canAct(g,ck){ return apNow(g)>0 || hasFree(g,ck); }',
+    replace: 'function canAct(g,ck){ return apNow(g)>0; }',
+  },
+  {
+    queue: 'Q2',
+    name: 'the undo snapshot holds no free actions',
+    find: 'presentations:g.presentations, free:clone(g.free||{})',
+    replace: 'presentations:g.presentations',
+  },
+  {
+    queue: 'Q2',
+    name: 'undo restores no free actions',
+    find: ' g.presentations=u.presentations; g.free=u.free;',
+    replace: ' g.presentations=u.presentations;',
+  },
+  {
+    queue: 'Q2',
+    name: 'the no-points gate asks about Action Points alone',
+    find: 'if(apNow(g)<=0 && !freeNow && !resFree && !hasFree(g,ck)) return err("No Action Points.");',
+    replace: 'if(apNow(g)<=0 && !freeNow && !resFree) return err("No Action Points.");',
+  },
+  {
+    queue: 'Q2',
+    name: 'the turn resets no free actions',
+    find: 'g.cells.helper.usedThisTurn=false; g.free={}; g.wormsThisTurn=0;',
+    replace: 'g.cells.helper.usedThisTurn=false; g.wormsThisTurn=0;',
+  },
+  {
+    queue: 'Q2',
+    name: 'the view carries no free actions',
+    find: '    free:clone(g.free||{}), flags:clone(g.flags),',
+    replace: '    flags:clone(g.flags),',
+  },
 ];

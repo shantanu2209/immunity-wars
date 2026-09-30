@@ -214,10 +214,9 @@ export function familyLabel(family: string): string {
   return typeof name === 'string' ? `${name} (${family})` : family;
 }
 
-/** The engine's generic gate before any board action: AP left, or a free action for this cell. */
-function canAct(g: ViewState, cell: string): boolean {
-  const free = g['free'] as Record<string, unknown> | undefined;
-  return num(g['ap']) > 0 || num(free?.[cell]) > 0;
+/** The engine's generic gate before any board action: AP left (the free-action slot went, Q2). */
+function canAct(g: ViewState, _cell: string): boolean {
+  return num(g['ap']) > 0;
 }
 
 function isSuppressed(g: ViewState, cell: string): boolean {

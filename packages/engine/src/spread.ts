@@ -809,7 +809,7 @@ export function resolveSpread(g: GameState): Frame[] {
     g.rareBanner = null;
   }
   if (g.cells.helper) g.cells.helper.usedThisTurn = false;
-  g.free = {};
+
   g.wormsThisTurn = 0;
   for (const o in g.residents) {
     const r = g.residents[o];

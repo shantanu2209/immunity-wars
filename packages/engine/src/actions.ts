@@ -36,7 +36,7 @@ import {
   STRIKE_DAMAGE,
   VACCINE_COST,
 } from '@immunity-wars/content';
-import { apNow, hasFree, spend, spendAP } from './ap.js';
+import { apNow, spend, spendAP } from './ap.js';
 import { makeInvader, noteWorm, pushLog, respectWormCap } from './construct.js';
 import { cname, killInvader, hurtInvader, placeName, present } from './effects.js';
 import { d6, famOf, shuffle } from './primitives.js';
@@ -223,7 +223,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
     a.action === 'resengulf' &&
     g.residents[a.organ as string] &&
     !g.residents[a.organ as string]?.ate;
-  if (apNow(g) <= 0 && !freeNow && !resFree && !hasFree(g, ck)) return err('No Action Points.');
+  if (apNow(g) <= 0 && !freeNow && !resFree) return err('No Action Points.');
 
   switch (a.action) {
     /* ---------------- B4b: movement and the B-cell ---------------- */

@@ -197,7 +197,6 @@ export interface UndoSnapshot {
   clone: number;
   cloneFound: boolean;
   presentations: number;
-  free: Record<string, number>;
   organs: Record<string, Organ>;
   log: LogEntry[];
   /**
@@ -240,7 +239,6 @@ export interface GameState {
   cloneFound: boolean;
   novelSeen: boolean;
   rare: RareState;
-  free: Record<string, number>;
   antibodies: number;
   invaders: Invader[];
   deck: { dz: string; type: InvaderType; lane: RouteKey }[];

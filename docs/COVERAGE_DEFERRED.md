@@ -52,7 +52,7 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (28 arms)
+## Uncategorised — still open (27 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
@@ -71,7 +71,6 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:631` `if (!iv) return err('No such pathogen.');`
 - `actions.ts:636` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
 - `actions.ts:639` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
-- `ap.ts:39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 - `construct.ts:163` `default:`
 - `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`

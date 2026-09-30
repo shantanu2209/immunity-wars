@@ -390,7 +390,7 @@ export function newGame(cfg: NewGameConfig): GameState {
       malariaLiver: false,
       killedThisTurn: 0,
     } as RareState,
-    free: {},
+
     antibodies: 0,
     invaders: [],
     // SECOND draw, and the next 95: the novel pathogen is injected, never drawn.
