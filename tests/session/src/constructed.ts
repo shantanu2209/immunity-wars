@@ -181,7 +181,37 @@ export function constructedStates(): { label: string; state: GameState }[] {
   if (meal) out.push({ label: 'resident meal', state: meal.fed });
   const net = findNetStand();
   if (net) out.push({ label: 'net stand', state: net });
+  const away = findResidentOut();
+  if (away) out.push({ label: 'resident out on its branch', state: away });
   return out;
+}
+
+/**
+ * A RESIDENT OUT ON ITS BRANCH, for queue Q6's Recall. DRIVEN, not hand-set: a command phase in a
+ * real game, and the liver's resident walked two steps out by the engine's own `resmove`, with Action
+ * Points left over. The bots never move a resident, so no recorded game holds one.
+ */
+export function findResidentOut(): GameState | null {
+  for (const seed of SEARCH_SEEDS) {
+    installRng(seed);
+    try {
+      const g = PORT.newGame({ difficulty: 'normal' }) as GameState;
+      PORT.applyAction(g, { action: 'draw' } as never);
+      PORT.applyAction(g, { action: 'beginCommand' } as never);
+      const walked = [1, 2].every(
+        (step) =>
+          (
+            PORT.applyAction(g, { action: 'resmove', organ: 'liver', step } as never) as {
+              ok: boolean;
+            }
+          ).ok,
+      );
+      if (walked && Number((g as unknown as Raw)['ap']) > 0) return clone(g);
+    } finally {
+      restoreRng();
+    }
+  }
+  return null;
 }
 
 /**

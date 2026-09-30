@@ -763,6 +763,20 @@ function residentOffers(view: SessionView, organ: string): Offered {
     }
   }
 
+  // RECALL (queue Q6, Kartik, 5 September 2026): back to the organ box in one move, for 1 AP. Not
+  // while a parasite lives inside it, and not from the box itself, where the engine refuses it.
+  const buttons: ButtonOffer[] = [];
+  if (canPatrol && ap > 0 && step > 0 && !infected) {
+    buttons.push({
+      id: `resrecall:${organ}`,
+      action: 'resrecall',
+      cell: null,
+      organ,
+      label: t('action.resrecall'),
+      params: { action: 'resrecall', organ },
+    });
+  }
+
   // THE REASON, in the engine's own gate order, then what stops the patrol. The step-0 line
   // is the one that earns its place: FINDINGS #5 measured that a resident at its organ can
   // never eat anything, and the bot never worked that out — so the interface says it.
@@ -775,7 +789,7 @@ function residentOffers(view: SessionView, organ: string): Offered {
     else if (step === 0) reason = t('selection.residentAtOrgan', { name });
     else reason = t('selection.residentNothingHere', { name });
   }
-  return { source: 'cell', board, buttons: [], reason };
+  return { source: 'cell', board, buttons, reason };
 }
 
 /** Why no attack is offered — per-cell first, after the generic gates. */

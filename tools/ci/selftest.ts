@@ -1327,6 +1327,34 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
     expect: 'is offered and accepted in the port',
   },
+  {
+    id: 'queue-q6-recall-undoable',
+    why: "Queue Q6 (Kartik, 5 September 2026; FINDINGS #5): a resident's Recall is a move, so undo takes it back, point and all. An engine that took no snapshot before it could not undo it.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) => t.replace("  'resrecall',\n  'resengulf',\n]);", "  'resengulf',\n]);"),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'undo takes it back',
+  },
+  {
+    id: 'queue-q6-recall-in-the-move-class',
+    why: "Queue Q6: the session's move class decides what a player may take back, alone and together. A Recall left out of it would end undo like an attack.",
+    file: 'packages/session-core/src/moves.ts',
+    mutate: (t) => t.replace("  'resrecall',\n", ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resident-reasons.test.ts',
+    expect: 'can be undone, like any move',
+  },
+  {
+    id: 'queue-q6-recall-offered-where-accepted',
+    why: 'Queue Q6: the screens offer Recall exactly where the engine accepts it. Offered from the organ box itself, it would be a button the engine refuses.',
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (canPatrol && ap > 0 && step > 0 && !infected) {',
+        'if (canPatrol && ap > 0 && step >= 0 && !infected) {',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resident-reasons.test.ts',
+    expect: 'is NOT offered from the organ box',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

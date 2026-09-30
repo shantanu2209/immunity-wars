@@ -228,6 +228,12 @@ const RULE_B: Demonstrated[] = [
   {
     file: 'actions.ts',
     match:
+      "`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> returned to the ${ORGANS[a.organ as OrganKey].name}.`,",
+    why: "the || fallback is dead by data: RESIDENT_NAME is total over OrganKey (Recall's log line, queue Q6, as resmove's). Demonstrated by data scan",
+  },
+  {
+    file: 'actions.ts',
+    match:
       "`The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,",
     why: 'the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan',
   },

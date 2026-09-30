@@ -80,6 +80,7 @@ const UNDOABLE = new Set([
   'net',
   'nkkill',
   'resmove',
+  'resrecall',
   'resengulf',
 ]);
 
@@ -732,6 +733,27 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       pushLog(
         g,
         `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
+      );
+      return ok();
+    }
+    case 'resrecall': {
+      // A RESIDENT RETURNS TO ITS ORGAN (queue Q6, Kartik, 5 September 2026; FINDINGS #5). It steps
+      // forward onto its branch to intercept, and Recall brings it back to its organ box, step 0, in
+      // one move for one Action Point, where `resmove` would take a point a step. A move, so undoable.
+      if (!g.flags.residentMove) return err('Residents cannot move.');
+      const r = g.residents[a.organ as string];
+      if (!r) return err('No such organ.');
+      if (r.infectedBy) {
+        return err(
+          'This resident has a parasite living inside it, so it cannot move until you kill the parasite.',
+        );
+      }
+      if (r.step === 0) return err('The resident is already in its organ.');
+      r.step = 0;
+      spend(g, `res_${a.organ as string}`);
+      pushLog(
+        g,
+        `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> returned to the ${ORGANS[a.organ as OrganKey].name}.`,
       );
       return ok();
     }

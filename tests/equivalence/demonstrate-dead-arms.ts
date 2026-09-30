@@ -208,7 +208,7 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
   say(
     'actions.ts:687 RESIDENT_NAME fallback',
     named.length === organs.length,
-    `all ${organs.length} organs have a resident name, and resmove rejects an unknown organ before this line`,
+    `all ${organs.length} organs have a resident name, and resmove and Recall (queue Q6) reject an unknown organ before their log lines`,
   );
 }
 

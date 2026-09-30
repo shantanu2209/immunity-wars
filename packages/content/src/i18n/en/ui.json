@@ -88,6 +88,7 @@
   "action.vaccinate": "Vaccinate",
   "action.resmove": "Patrol",
   "action.resengulf": "Engulf",
+  "action.resrecall": "Recall to the organ",
   "selection.noAp": "No action points left this turn",
   "selection.spent": "This cell is spent and regenerating",
   "selection.offline": "This cell is offline this turn",

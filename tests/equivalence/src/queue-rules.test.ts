@@ -216,3 +216,65 @@ describe('Q1 (Kartik, FINDINGS #4): antibodies may attempt a trypanosome, so its
     }
   });
 });
+
+describe("Q6 (Kartik, FINDINGS #5): a resident's Recall, back to its organ box in one move", () => {
+  const ORGAN = 'liver';
+  const resident = (g: Game): Raw =>
+    (g['residents'] as unknown as Record<string, Raw>)[ORGAN] as Raw;
+  const standing =
+    (step: number, infected = false) =>
+    (_E: Engine, g: Game): void => {
+      Object.assign(resident(g), { step, infectedBy: infected ? 'i99' : null });
+      g['phase'] = 'command';
+      g['ap'] = 5;
+    };
+  const recall: Raw = { action: 'resrecall', organ: ORGAN };
+
+  it('returns it for one point, logs it, and undo takes it back, in the port and the original as ruled', () => {
+    for (const seed of SEEDS) {
+      const logs: string[] = [];
+      for (const [name, E] of ENGINES) {
+        const { g, results } = run(E, seed, 'normal', standing(2), () => [recall]);
+        expect(results[0], `${name}, seed ${String(seed)}`).toEqual({ ok: true });
+        expect(resident(g)['step'], name).toBe(0);
+        expect(g['ap'], name).toBe(4);
+        const log = g['log'] as { msg: string }[];
+        logs.push(log[0]?.msg ?? '');
+        // A move, so undoable: the resident goes back out and the point comes back.
+        expect(E.applyAction(g, { action: 'undo' } as never), name).toMatchObject({ ok: true });
+        expect(resident(g)['step'], `${name} after undo`).toBe(2);
+        expect(g['ap'], `${name} after undo`).toBe(5);
+      }
+      expect(logs[0]).toMatch(/returned to the /);
+      expect(logs[1]).toBe(logs[0]);
+    }
+  });
+
+  it('is refused where it cannot be done, alike in both, and changes nothing', () => {
+    const immobile = (E: Engine, g: Game): void => {
+      standing(2)(E, g);
+      (g['flags'] as Raw)['residentMove'] = false;
+    };
+    for (const [setup, move, error] of [
+      [standing(0), recall, 'The resident is already in its organ.'],
+      [
+        standing(2, true),
+        recall,
+        'This resident has a parasite living inside it, so it cannot move until you kill the parasite.',
+      ],
+      [immobile, recall, 'Residents cannot move.'],
+      [standing(2), { action: 'resrecall', organ: 'nope' }, 'No such organ.'],
+    ] as const)
+      for (const [name, E] of ENGINES) {
+        const { g, results } = run(E, 1, 'normal', setup, () => [move]);
+        expect(results[0], `${name}: ${error}`).toEqual({ ok: false, error });
+        expect(g['ap'], `${name}: ${error}`).toBe(5);
+      }
+  });
+
+  it('CONTROL: the original, untouched, has no such action', () => {
+    const { g, results } = run(ORIGINAL, 1, 'normal', standing(2), () => [recall]);
+    expect((results[0] as { ok: boolean }).ok).toBe(false);
+    expect(resident(g)['step']).toBe(2);
+  });
+});

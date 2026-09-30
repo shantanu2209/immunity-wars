@@ -60,17 +60,17 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `schema.ts:608` `if (!cells.includes(c)) {`
 - `schema.ts:624` `if (!placed.includes(o)) {`
 - `schema.ts:656` `if (!placedRoutes.includes(r)) {`
-- `actions.ts:199` `if (g.phase !== 'command') return err('Not in command.');`
-- `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:300` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:367` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:369` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:483` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:513` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:637` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:642` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:645` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
+- `actions.ts:200` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:271` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:301` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:340` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:368` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:370` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:484` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:514` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:638` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:643` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:646` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
 - `construct.ts:163` `default:`
 - `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`

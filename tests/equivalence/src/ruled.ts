@@ -235,4 +235,20 @@ export const RULED: readonly RuledChange[] = [
     replace:
       'const ok2 = iv.type==="virus" || iv.type==="toxin" || (iv.type==="malaria"&&(iv.stage==="blood"||iv.stage==="sporozoite")) || (iv.type==="parasite"&&!!iv.variant);',
   },
+  // Q6 (Kartik, 5 September 2026; FINDINGS #5): a resident's Recall, a new action, returning it to its
+  // organ box in one move for one Action Point, undoable like a move. Written into the original as
+  // its own case, in its own style, beside the resident's other two.
+  {
+    queue: 'Q6',
+    name: 'resrecall is undoable, like resmove',
+    find: '"nkkill","resmove","resengulf"]);',
+    replace: '"nkkill","resmove","resrecall","resengulf"]);',
+  },
+  {
+    queue: 'Q6',
+    name: 'resrecall: a resident back to its organ box',
+    find: '    case "resengulf": {  // the resident engulfs one germ where it stands — FREE, once per turn\n',
+    replace:
+      '    case "resrecall": {  // a resident returns to its organ box in one move (queue Q6)\n      if(!g.flags.residentMove) return err("Residents cannot move.");\n      const r=g.residents[a.organ]; if(!r) return err("No such organ.");\n      if(r.infectedBy) return err("This resident has a parasite living inside it, so it cannot move until you kill the parasite.");\n      if(r.step===0) return err("The resident is already in its organ.");\n      r.step=0; spend(g,"res_"+a.organ);\n      pushLog(g,`The <b>${RESIDENT_NAME[a.organ]||"resident macrophage"}</b> returned to the ${ORGANS[a.organ].name}.`); return ok(); }\n    case "resengulf": {  // the resident engulfs one germ where it stands — FREE, once per turn\n',
+  },
 ];

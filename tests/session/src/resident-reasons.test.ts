@@ -182,3 +182,36 @@ describe('CP3: a selected resident always answers, in the engine’s order', () 
     expect(engineRefuses(fed, meal.organ)).toBe(true);
   });
 });
+
+// QUEUE Q6 (Kartik, 5 September 2026): a resident's Recall, back to its organ box in one move. Offered
+// exactly where the engine accepts it: out on the branch, with a point to spend, and no parasite
+// inside. The offered-subset-of-accepted harness (`offered.test.ts`) holds what it sends to the engine.
+describe("the resident's Recall (queue Q6)", () => {
+  const ORGAN = 'liver';
+  const at = (step: number, infected = false): GameState => {
+    const g = clone(freshCommandState());
+    const r = ((g as unknown as Raw)['residents'] as Record<string, Raw>)[ORGAN] as Raw;
+    r['step'] = step;
+    r['infectedBy'] = infected ? 'i99' : null;
+    return g;
+  };
+  const recall = (o: Offered) => o.buttons.find((b) => b.action === 'resrecall');
+
+  it('is offered out on the branch, and sends the one action the engine takes', () => {
+    const b = recall(offersFor(at(2), ORGAN));
+    expect(b?.params).toEqual({ action: 'resrecall', organ: ORGAN });
+    expect(b?.label).toBe(t('action.resrecall'));
+  });
+
+  it('is NOT offered from the organ box, nor with a parasite inside it', () => {
+    expect(recall(offersFor(at(0), ORGAN))).toBeUndefined();
+    expect(recall(offersFor(at(2, true), ORGAN))).toBeUndefined();
+  });
+
+  it('can be undone, like any move', async () => {
+    const s = LocalSession.resume(clone(at(2)), { storage: new MemoryStorage(), now: () => 0 });
+    expect(await s.sendAction({ action: 'resrecall', organ: ORGAN })).toEqual({ ok: true });
+    expect(s.getView().undo).toMatchObject({ available: true, moves: 1 });
+    s.dispose();
+  });
+});
