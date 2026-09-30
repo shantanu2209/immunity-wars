@@ -131,6 +131,8 @@ export type Inbound =
       readonly to: number | null;
     }
   | { readonly kind: 'start'; readonly ref: string; readonly difficulty: string }
+  /** Another game in the same room, once a game has ended: the captain's (protocol v5). */
+  | { readonly kind: 'rematch'; readonly ref: string }
   /** One of the table's fixed messages, by id (protocol v3). */
   | { readonly kind: 'say'; readonly ref: string; readonly message: string }
   | {

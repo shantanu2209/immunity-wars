@@ -75,9 +75,9 @@ interface Table {
   code: string;
 }
 
-async function table(): Promise<Table> {
-  const a = await RelayRoom.create({ url, name: 'Kartik' });
-  const b = await RelayRoom.join({ url, code: a.code, name: 'Shantanu' });
+async function table(at: string = url): Promise<Table> {
+  const a = await RelayRoom.create({ url: at, name: 'Kartik' });
+  const b = await RelayRoom.join({ url: at, code: a.code, name: 'Shantanu' });
   a.claimSeat('bcell');
   b.claimSeat('neutrophil');
   await until('both seated', () => a.room?.members.every((m) => m.seats.length > 0) === true);
@@ -436,4 +436,64 @@ describe('who may come in', () => {
     t.a.close();
     t.b.close();
   });
+});
+
+describe('another game in the same room, over real sockets (protocol v5)', () => {
+  it('takes both players back to the lobby in their seats, and the next game is a new session', async () => {
+    // A whole game at machine speed is far more than ten messages a second, which the relay's own
+    // limit would close (LIMITS): a relay of this test's own, whose limit a person could not reach
+    // either way.
+    const quick = await listen({
+      port: 0,
+      limits: { ...LIMITS, messagesPerSecond: 10_000, burst: 10_000 },
+    });
+    try {
+      await rematchOn(`ws://127.0.0.1:${String(quick.port)}`);
+    } finally {
+      await quick.close();
+    }
+  });
+
+  async function rematchOn(at: string): Promise<void> {
+    const t = await table(at);
+    const refusals: string[] = [];
+    t.b.subscribe((e) => {
+      if (e.kind === 'refused') refusals.push(e.code);
+    });
+    for (let turn = 0; turn < 80 && t.a.room?.phase === 'playing'; turn += 1)
+      for (const action of TURN) {
+        await t.sa.sendAction({ action });
+        if (t.a.room.phase !== 'playing') break;
+      }
+    await until(
+      'the game ended for both',
+      () => t.a.room?.phase === 'ended' && t.b.room?.phase === 'ended',
+      10_000,
+    );
+    const seats = (r: RelayRoom) => r.room?.members.map((m) => [m.id, m.seats]);
+    const before = seats(t.a);
+
+    // Not the captain's to call.
+    t.b.rematch();
+    await until('the guest refused', () => refusals.includes('notCaptain'));
+    expect(t.b.room?.phase).toBe('ended');
+
+    t.a.rematch();
+    await until(
+      'both back in the lobby',
+      () => t.a.room?.phase === 'lobby' && t.b.room?.phase === 'lobby',
+    );
+    expect(seats(t.a)).toEqual(before);
+    expect(seats(t.b)).toEqual(before);
+
+    t.a.start('training');
+    const [na, nb] = await Promise.all([t.a.session(), t.b.session()]);
+    expect(na).not.toBe(t.sa);
+    expect(nb).not.toBe(t.sb);
+    expect(await na.sendAction({ action: 'draw' })).toEqual({ ok: true });
+    await until('the guest saw the new game move', () => nb.getView().game['phase'] !== 'draw');
+    same(na.getView(), nb.getView());
+    t.a.close();
+    t.b.close();
+  }
 });

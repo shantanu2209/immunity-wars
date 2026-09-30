@@ -764,3 +764,78 @@ describe('the reducer itself', () => {
     expect(step(room, { kind: 'disconnect', ref: 'nobody' }, T0).out).toEqual([]);
   });
 });
+
+describe('another game in the same room (v5, ruled 25 and 30 September 2026)', () => {
+  /** Two members, a piece each, and a game that nobody defends played to its end. */
+  const ended = (): RoomState => {
+    let room = run([
+      join('a', 'K'),
+      join('b', 'S'),
+      seat('a', 'bcell'),
+      seat('b', 'neutrophil'),
+    ]).room;
+    room = step(room, { kind: 'start', ref: 'a', difficulty: 'training' }, T0).room;
+    for (let turn = 0; turn < 80 && room.phase !== 'ended'; turn += 1)
+      for (const action of ['draw', 'beginCommand', 'confirmAllocation', 'endCommand']) {
+        room = step(room, { kind: 'action', id: turn, ref: 'a', action: { action } }, T0).room;
+        if (room.phase === 'ended') break;
+      }
+    // Not vacuous: a game that nobody defends does end.
+    if (room.phase !== 'ended') throw new Error('no game ended in 80 turns');
+    return room;
+  };
+  const rematch = (ref: string): Inbound => ({ kind: 'rematch', ref });
+
+  it('FIRES: the captain takes an ended room back to its lobby, the same people in the same seats', () => {
+    const before = ended();
+    const s = step(before, rematch('a'), T0);
+    expect(s.room.phase).toBe('lobby');
+    expect(s.room.game).toBeNull();
+    expect(s.room.undoRun).toBeNull();
+    expect(s.room.members.map((m) => [m.ref, m.seats])).toEqual(
+      before.members.map((m) => [m.ref, m.seats]),
+    );
+    expect(s.room.captain).toBe('a');
+    const told = s.out.find((o) => o.message.kind === 'room');
+    expect(told?.to).toBe('all');
+    expect(told?.message.kind === 'room' && told.message.room.phase).toBe('lobby');
+  });
+
+  it('PASSES: only the captain may, as only the captain starts a game', () => {
+    const s = step(ended(), rematch('b'), T0);
+    expect(errorsOf(s.out)).toEqual(['notCaptain']);
+    expect(s.room.phase).toBe('ended');
+  });
+
+  it('PASSES: not in a game under way, and a second tap in the lobby does nothing', () => {
+    const lobby = step(ended(), rematch('a'), T0).room;
+    const again = step(lobby, rematch('a'), T0);
+    expect(again.out).toEqual([]);
+    expect(again.room).toBe(lobby);
+    const playing = step(lobby, { kind: 'start', ref: 'a', difficulty: 'training' }, T0).room;
+    const mid = step(playing, rematch('a'), T0);
+    expect(errorsOf(mid.out)).toEqual(['alreadyStarted']);
+    expect(mid.room.phase).toBe('playing');
+  });
+
+  it('opens the room to a newcomer again, who was refused while it stood ended', () => {
+    const room = ended();
+    expect(errorsOf(step(room, join('c', 'R'), T0).out)).toEqual(['gameEnded']);
+    const back = step(step(room, rematch('a'), T0).room, join('c', 'R'), T0);
+    expect(errorsOf(back.out)).toEqual([]);
+    expect(member(back.room, 'c')).toBeDefined();
+  });
+
+  it('starts another game from it, a new one, with the seats as they stand', () => {
+    const first = ended();
+    const lobby = step(first, rematch('a'), T0).room;
+    const s = step(lobby, { kind: 'start', ref: 'a', difficulty: 'normal' }, T0);
+    expect(s.room.phase).toBe('playing');
+    expect(s.room.game).not.toBe(first.game);
+    const g = s.room.game as Record<string, unknown>;
+    expect(g['won']).not.toBe(true);
+    expect(g['lost']).toBeFalsy();
+    expect(g['owner']).toEqual({ bcell: 'm1', neutrophil: 'm2' });
+    expect(g['difficulty']).toBe('normal');
+  });
+});

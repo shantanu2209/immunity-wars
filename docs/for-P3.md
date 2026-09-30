@@ -1726,3 +1726,52 @@ the P3.6 morning would not have happened: the phone sat on the title while the n
 downloaded. Four more controls, nine in all.
 
 **Not yet measured on a real phone.**
+
+### Deployed, 30 September 2026
+
+With Shantanu's go, after #128: the app as `20260930-134349-33c4871`, the start check passing before
+it was copied. The relay was not redeployed, since nothing it is built from had changed but two words
+of the app's catalogue, which it never shows. Read back from the live site: the new words (*"Update
+now"*, *"Updating…"*), and a service worker that takes over when told to. Phones on the build before
+it need one close and reopen to reach it; from it on, a deploy is taken on the title.
+
+## 12. Another game in the same room (protocol version 5, 30 September 2026)
+
+Ruled on 25 September as its own piece after P3.6, and its design on 30 September (*"Yes please"*),
+as recommended: the captain starts it, everyone's pieces carry over, and after a game played together
+*Back to the title* leaves the room. The brief's §5 is amended to match (v1.10).
+
+**What it is.** After a game played together, the captain's Result offers *Another game in this
+room*; everyone else's says they are waiting for the captain to start one. Pressed, the room goes back
+to its lobby with the same members in the seats they held, everyone still on the Result goes there,
+and from then on it is a lobby like any other: seats may change, a newcomer may join, and the captain
+starts the game. *Play together again*, a new room, is still offered, and like *Back to the title* it
+now leaves this one first.
+
+**What changed to make it.**
+
+- **The room** (`packages/room`): a `rematch` from the captain takes an ended room back to its lobby.
+  Refused to anyone else (`notCaptain`) and during a game (`alreadyStarted`); a second tap in the
+  lobby does nothing.
+- **The protocol** (`packages/protocol`): the `rematch` message, and version 5, since a v4 relay would
+  close it as malformed. So the relay and the app are deployed together, and a phone on an older build
+  meets the version refusal, whose Update now (§11) takes it forward.
+- **The phone** (`RelayRoom`): a room back in its lobby ends the last game's session, so the next
+  game's first view begins a new one. And the app keeps the room connected on the Result, where until
+  now it closed it, since the game was over.
+
+**What proves it.**
+
+- The room's own tests, both ways: back to the lobby with the same people in the same seats; only the
+  captain; not mid-game, and nothing on a second tap; a newcomer refused while it stood ended and let
+  in after; and a new game started from it.
+- Over real sockets, two players play a whole game to its end, the guest is refused the rematch, the
+  captain's takes both back to the lobby in their seats, and the next game is a new session on each
+  phone, whose first move both see.
+- The Gate 1 audit's walk goes on from the Result: the guest's Result waiting for the captain, and the
+  lobby it lands in.
+- Four controls: `room-rematch-captain-only`, `room-rematch-after-the-end-only`,
+  `room-rematch-keeps-seats`, `session-rematch-new-session`.
+
+**Not exercised by a test:** *Back to the title* leaving the room from the Result. It calls the same
+`leaveRoom` the pause menu's Leave does, whose leaving is tested over real sockets.

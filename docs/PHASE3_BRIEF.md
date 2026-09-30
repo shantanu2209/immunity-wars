@@ -1,6 +1,6 @@
 # The Immunity Wars — Phase 3 Brief
 
-**Version:** 1.9 · 27 September 2026
+**Version:** 1.10 · 30 September 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** Written before any Phase 3 code existed, deliberately. **Reviewed 25 September 2026**,
 after P3.1 to P3.5 ([`PHASE3_BRIEF_REVIEW.md`](PHASE3_BRIEF_REVIEW.md)); every item ruled the same day.
@@ -14,6 +14,20 @@ Read alongside [`PHASE2_PAUSE.md`](PHASE2_PAUSE.md) (what Phase 2 leaves owed),
 > including two sentences that contradicted each other. The same review is owed here, and the place
 > to look hardest is §5, where the room's rules are written as prose and nothing has yet forced them
 > to be consistent.
+
+## What v1.10 records
+
+v1.10 changes §5's room rules, by ruling (Shantanu: *"agree with your recommendation"*, 25 September
+2026, that it be its own piece after P3.6; and *"Yes please"*, 30 September 2026, to the design),
+marked in place:
+
+- **Another game in the same room.** A game's end no longer ends its room: once a game has ended, the
+  captain may take the room back to its lobby, with the same members in the seats they held, and the
+  lobby's rules apply from there. Everyone still on the Result goes to the lobby with it; a newcomer
+  may join again. Built under protocol version 5.
+- **After a game played together, _Back to the title_ leaves the room**, and gives the player's seats
+  back, so that someone who has gone is not carried into the next game holding pieces. Closing the app
+  is still only being away.
 
 ## What v1.9 records
 
@@ -303,6 +317,12 @@ disk anywhere, ever.
   swaps authority twice on a flaky connection is worse than one that swaps it once.
 - **Rejoining.** The same code plus the same `PlayerRef` restores the member and any seats still
   theirs. Seats reassigned while away are gone; they take what is free.
+- **Another game in the same room.** **Ruled (v1.10):** once a game has ended, the captain may take
+  the room back to its lobby, with the same members in the seats they held; everyone still on the
+  Result goes there with it, a newcomer may join again, and the game starts as any game does. Only the
+  captain, as only the captain starts a game. After a game played together, *Back to the title*
+  leaves the room, seats and all. ⚠️ Until v1.10 a room ended with its game, and another game
+  together meant a new room and a new code.
 - **The room's end.** When the last connected member leaves, the room is **held for a grace period
   and then discarded.** **Ruled (v1.6): 10 minutes.** A family losing Wi-Fi for ninety seconds
   should not destroy a forty-minute game; a room nobody returns to should not live forever.

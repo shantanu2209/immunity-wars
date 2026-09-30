@@ -241,6 +241,8 @@
   "result.playAgain": "Play again",
   "result.changeDifficulty": "Change difficulty",
   "result.playTogether": "Play together again",
+  "result.rematch": "Another game in this room",
+  "result.rematchWaiting": "Waiting for the captain to start another game in this room.",
   "result.title": "Title",
   "reveal.novel": "A pathogen nobody has ever seen. No antibody fits it",
   "reveal.remembered": "Memory response: your body already knows this one",
