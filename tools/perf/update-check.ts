@@ -20,11 +20,11 @@
  */
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
+import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import puppeteer, { type Page } from 'puppeteer-core';
@@ -71,6 +71,20 @@ function build(relayUrl: string, into: string): void {
   });
 }
 
+/**
+ * Every file of a build, by the path it is served at. The site answers these and nothing else, so
+ * no part of a request is ever joined into a path on disk (CodeQL's js/path-injection, which a
+ * containment check over a folder that changes mid-run did not satisfy).
+ */
+function filesOf(dir: string): Map<string, string> {
+  const files = new Map<string, string>();
+  for (const rel of readdirSync(dir, { recursive: true, encoding: 'utf8' })) {
+    const file = join(dir, rel);
+    if (statSync(file).isFile()) files.set(`/${rel.split(sep).join('/')}`, file);
+  }
+  return files;
+}
+
 /** The name of a build's main script, which is how the check tells the two builds apart. */
 function mainOf(dir: string): string {
   const html = readFileSync(join(dir, 'index.html'), 'utf8');
@@ -109,16 +123,13 @@ try {
   if (olderMain === newerMain) refuse('the two builds came out the same: there is nothing newer');
 
   // ONE SITE, serving the older build and then the newer, as the real one does across a deploy.
-  let root = older;
+  const olderFiles = filesOf(older);
+  const newerFiles = filesOf(newer);
+  let served = olderFiles;
   const site = createServer((req, res) => {
-    const path = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/');
-    let file = normalize(join(root, path));
-    if (file !== root && !file.startsWith(root + sep)) {
-      res.writeHead(404).end();
-      return;
-    }
-    if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
-    if (!existsSync(file)) {
+    const path = (req.url ?? '/').split('?')[0] ?? '/';
+    const file = served.get(path === '/' ? '/index.html' : path);
+    if (file === undefined) {
       res.writeHead(404).end();
       return;
     }
@@ -135,7 +146,7 @@ try {
   try {
     /** A fresh phone with the older build installed, its worker answering the page, on the title. */
     const phone = async (): Promise<Page> => {
-      root = older;
+      served = olderFiles;
       const page = await (await browser.createBrowserContext()).newPage();
       await page.setViewport({ width: 360, height: 780 });
       await page.goto(url, { waitUntil: 'load' });
@@ -169,7 +180,7 @@ try {
     };
     /** The deploy: the server has the newer build, and the page's worker looks for it. */
     const deploy = async (page: Page): Promise<void> => {
-      root = newer;
+      served = newerFiles;
       await page
         .evaluate('navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => 1)')
         .catch(() => undefined);
