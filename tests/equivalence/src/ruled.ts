@@ -210,4 +210,12 @@ export const RULED: readonly RuledChange[] = [
     replace:
       'if(g.difficulty==="training" && by!=="antivenom" && g.memory && !g.memory[iv.disease] && !g.invaders.some(x=>x.disease===iv.disease)){',
   },
+  {
+    // Shantanu, 5 September 2026, at the S25 pass (FINDINGS #57): the granule burn is where the fight
+    // is. The original keyed it to the target being anywhere on a branch.
+    queue: 'Q9',
+    name: 'degranulate burns the organ only at branch step 0',
+    find: 'if(iv.zone==="branch" && g.organs[iv.organ]){',
+    replace: 'if(iv.zone==="branch" && iv.step===0 && g.organs[iv.organ]){',
+  },
 ];

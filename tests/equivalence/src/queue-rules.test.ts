@@ -85,3 +85,69 @@ describe('Q4 (Kartik, FINDINGS #55): an antivenom kill teaches the body no memor
     }
   });
 });
+
+describe('Q9 (FINDINGS #57): degranulate burns the organ only when the fight is in it', () => {
+  const WORM = 'Hookworm';
+  /** A coated worm and the Eosinophil together on the worm's branch, at `step`. */
+  const at =
+    (step: number) =>
+    (E: Engine, g: Game): void => {
+      const iv = E.forceInjectCard(g, WORM) as unknown as Raw;
+      Object.assign(iv, { zone: 'branch', step, tagged: true, lodged: step === 0 });
+      const e = (g['cells'] as unknown as Record<string, Raw>)['eosinophil'] as Raw;
+      Object.assign(e, { alive: true, zone: 'branch', organ: iv['organ'], lane: null, step });
+      g['phase'] = 'command';
+      g['ap'] = 5;
+    };
+  const moves = (g: Game): Raw[] => {
+    const iv = (g['invaders'] as { id: string; disease: string }[]).find((x) => x.disease === WORM);
+    return [{ action: 'degranulate', cell: 'eosinophil', invaderId: iv?.id }];
+  };
+  /** The worm's organ's integrity, before and after the strike. */
+  const burn = (E: Engine, seed: number, step: number): { before: number; after: number } => {
+    let organ = '';
+    let before = 0;
+    const { g, results } = run(
+      E,
+      seed,
+      'normal',
+      (E2, g2) => {
+        at(step)(E2, g2);
+        const iv = (g2['invaders'] as unknown as Raw[]).find((x) => x['disease'] === WORM) as Raw;
+        organ = String(iv['organ']);
+        before = Number((g2['organs'] as unknown as Record<string, Raw>)[organ]?.['hp']);
+      },
+      moves,
+    );
+    expect(results[0], `the strike was refused: ${JSON.stringify(results[0])}`).toEqual({
+      ok: true,
+    });
+    return {
+      before,
+      after: Number((g['organs'] as unknown as Record<string, Raw>)[organ]?.['hp']),
+    };
+  };
+
+  it('a fight on the branch, at step 1, leaves the organ whole, in the port and the original as ruled', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of ENGINES) {
+        const { before, after } = burn(E, seed, 1);
+        expect(after, `${name}, seed ${String(seed)}`).toBe(before);
+      }
+  });
+
+  it('a fight in the organ, at step 0, still burns it, in all three', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of [...ENGINES, ['the original, untouched', ORIGINAL] as const]) {
+        const { before, after } = burn(E, seed, 0);
+        expect(after, `${name}, seed ${String(seed)}`).toBe(before - 1);
+      }
+  });
+
+  it('CONTROL: the original, untouched, burned the organ from step 1', () => {
+    for (const seed of SEEDS) {
+      const { before, after } = burn(ORIGINAL, seed, 1);
+      expect(after, `seed ${String(seed)}`).toBe(before - 1);
+    }
+  });
+});

@@ -68,9 +68,9 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:369` `if (apNow(g) < 1) return err('No Action Points.');`
 - `actions.ts:480` `if (apNow(g) < 1) return err('No Action Points.');`
 - `actions.ts:510` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:631` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:636` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:639` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
+- `actions.ts:634` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:639` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:642` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
 - `construct.ts:163` `default:`
 - `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`

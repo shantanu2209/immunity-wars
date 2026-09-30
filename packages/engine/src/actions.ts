@@ -542,7 +542,10 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         );
       // 3, the content's number, kills even a 3-HP worm in one turn
       const died = hurtInvader(g, iv, DEGRANULATE_DAMAGE, 'eosinophil');
-      if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {
+      // THE BURN IS WHERE THE FIGHT IS (queue Q9, ruled by Shantanu on 5 September 2026; FINDINGS
+      // #57): an eosinophil's granules damage the tissue they are released in, so the organ burns
+      // only when the fight is in it, at branch step 0. Until Q9 it burned from anywhere on the branch.
+      if (iv.zone === 'branch' && iv.step === 0 && iv.organ && g.organs[iv.organ]) {
         const org = g.organs[iv.organ];
         if (org) {
           org.hp = Math.max(0, org.hp - 1);

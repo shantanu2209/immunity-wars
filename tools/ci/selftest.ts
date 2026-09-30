@@ -1303,6 +1303,18 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
     expect: 'no memory of it is left',
   },
+  {
+    id: 'queue-q9-burn-where-the-fight-is',
+    why: 'Queue Q9 (FINDINGS #57): an eosinophil degranulating burns the tissue it is in, so the organ burns only when the fight is at branch step 0. An engine that burned it from anywhere on the branch again must fail against the original as ruled.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (iv.zone === 'branch' && iv.step === 0 && iv.organ && g.organs[iv.organ]) {",
+        "if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'at step 1, leaves the organ whole',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
