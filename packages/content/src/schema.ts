@@ -268,6 +268,14 @@ export const TuningS = z.strictObject({
   FLAGS: FlagsS,
   NK_RANGE: nonNegInt,
   NK_HITS: posInt,
+  // THE ACTIONS' OWN NUMBERS (queue Q7): literals in the engine until 30 September 2026, mirrored
+  // in the UI with a spanning test (FINDINGS #52). One source now, read by both.
+  NEUTRALISE_TOXIN_AP: posInt,
+  ANTIVENOM_AP: posInt,
+  DEGRANULATE_AP: posInt,
+  DEGRANULATE_DAMAGE: posInt,
+  STRIKE_DAMAGE: z.strictObject({ eosinophil: posInt, macrophage: posInt }),
+  MEMORY_RESPONSE_AP_HARD: posInt,
   ANTIBODY_RATE: posInt,
   ANTIBODY_CAP: posInt,
   AB_CAP_FAM_BY_DIFF: byDifficulty(posInt),

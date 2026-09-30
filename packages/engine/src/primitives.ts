@@ -52,17 +52,15 @@ export function clone<T>(o: T): T {
   return JSON.parse(JSON.stringify(o)) as T;
 }
 
-let uidCounter = 0;
-
-/** Invader ids. newGame resets the counter, which is why ids are stable per game and per seed. */
-export function uid(): string {
-  uidCounter += 1;
-  return `i${uidCounter}`;
-}
-
-/** Reset the id counter. Called by newGame; exported so tests can reproduce a state exactly. */
-export function resetUid(): void {
-  uidCounter = 0;
+/**
+ * Invader ids, from the game's OWN counter (queue Q5, 30 September 2026; FINDINGS #56). Until then
+ * the counter lived in this module and newGame reset it, so a saved game carried every id and not the
+ * counter, and on a relay a game starting at one table reset it under another. Now it is state: a
+ * save carries it, and every table counts for itself. It starts at 0, so ids are stable per seed.
+ */
+export function uid(g: { idCounter: number }): string {
+  g.idCounter += 1;
+  return `i${g.idCounter}`;
 }
 
 export function d6(): number {

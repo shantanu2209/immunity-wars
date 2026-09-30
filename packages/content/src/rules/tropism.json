@@ -105,6 +105,7 @@
     "Dengue (ADE)": ["liver", "marrow"],
     "Malaria (relapse)": ["liver"],
     "Tuberculosis (reactivated)": ["lungs"],
-    "Pneumococcal pneumonia": ["lungs"]
+    "Pneumococcal pneumonia": ["lungs"],
+    "Pathogen X": "any"
   }
 }

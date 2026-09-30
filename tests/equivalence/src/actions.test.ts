@@ -305,7 +305,7 @@ describe('B4 — error strings are byte-identical', () => {
 
         installRng(810000 + s);
         try {
-          const gp = port.newGame({ difficulty: 'normal', science: false });
+          const gp = port.newGame({ difficulty: 'normal' });
           if (split !== 'phase') {
             port.applyAction(gp as never, { action: 'draw' } as never);
             port.applyAction(gp as never, { action: 'beginCommand' } as never);
@@ -347,7 +347,7 @@ describe('B4 — endCommand, once B5 landed', () => {
     restoreRng();
 
     installRng(123456);
-    const gp = port.newGame({ difficulty: 'normal', science: false });
+    const gp = port.newGame({ difficulty: 'normal' });
     port.applyAction(gp as never, { action: 'draw' } as never);
     port.applyAction(gp as never, { action: 'beginCommand' } as never);
     const rp = port.applyAction(gp as never, { action: 'endCommand' } as never) as {

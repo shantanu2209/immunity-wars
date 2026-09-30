@@ -39,7 +39,7 @@ import {
   type RoomProjection,
   type Seat,
 } from '@immunity-wars/protocol';
-import { MOVE_CLASS, advanceIdsPast, precompute, scopeAll } from '@immunity-wars/session-core';
+import { MOVE_CLASS, precompute, scopeAll } from '@immunity-wars/session-core';
 
 import {
   GRACE_MS,
@@ -199,10 +199,10 @@ function undoFor(room: RoomState, me: Member, id: number): Step {
 }
 
 /**
- * EVERY ENGINE CALL GOES THROUGH HERE (FINDINGS #56, on a relay). The engine's invader-id counter
- * lives in its module, not in the game, and `newGame` in ANY room resets it — so before touching a
- * game, the counter is advanced past the highest id that game holds. `ids.test.ts` is the proof
- * this is needed: without it, two rooms in one process hand out one id to two pathogens.
+ * EVERY ENGINE CALL GOES THROUGH HERE. Until queue Q5 (30 September 2026) it first advanced the
+ * engine's invader-id counter past the game's highest id, because the counter lived in the engine's
+ * module and `newGame` in ANY room reset it (FINDINGS #56). The counter is the game's own now, so
+ * every table counts for itself; `ids.test.ts` still holds two rooms interleaved in one process.
  */
 function apply(
   game: GameState,
@@ -212,7 +212,6 @@ function apply(
   error?: string;
   frames?: readonly unknown[];
 } {
-  advanceIdsPast(game as unknown as Record<string, unknown>);
   return applyAction(game, action as unknown as Action) as {
     ok: boolean;
     error?: string;

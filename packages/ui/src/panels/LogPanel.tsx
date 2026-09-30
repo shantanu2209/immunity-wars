@@ -6,11 +6,10 @@
  * engine's messages are interpolated prose ("<b>Monocyte</b> moved to Lungs 2"), so an
  * exact-string lookup — what rejections use — cannot find them; the catalogue's entries
  * carry placeholders, and each is compiled to a pattern that recovers the values, so the
- * Hindi edition re-renders the translated template with the same values. The FIVE composed
- * sites FINDINGS #53 lists (produce, strike, tag, engulf, the draw's entry line) have no
- * template and render PLAINLY, not loudly — they are known, listed and pinned, and a
- * ⟪marker⟫ on every strike would teach a newcomer nothing. `log-text.test.ts` asserts that
- * those five are the ONLY misses, so a new one fails a test rather than hiding in the panel.
+ * Hindi edition re-renders the translated template with the same values. A line with no
+ * template would render PLAINLY, not loudly; since queue Q8 there is none, and
+ * `log-text.test.ts` asserts that no recorded line misses, so a new one fails a test rather
+ * than hiding in the panel.
  *
  * The engine's `<b>` and `<i>` are rendered as emphasis; nothing else in a message is
  * treated as markup — no HTML is injected.
@@ -25,12 +24,6 @@ export interface LogLine {
   t: number;
   msg: string;
   kind: string;
-  /**
-   * A UI-AUTHORED line (6 September 2026): already localised, rendered as it is, never put
-   * through the engine catalogue. One client today — the rare event, which the engine banners
-   * but never logs (`rareLogLine`). `msg` is empty for such a line.
-   */
-  text?: string;
 }
 
 const SHOWN = 8;
@@ -139,7 +132,7 @@ export function LogPanel({
         <div style={{ color: '#78665D' }}>{t('log.empty')}</div>
       ) : (
         shown.map((l, i) => {
-          const r = l.text !== undefined ? { text: l.text, matched: true } : engineLogText(l.msg);
+          const r = engineLogText(l.msg);
           return (
             <div
               key={[String(l.t), String(i)].join('-')}

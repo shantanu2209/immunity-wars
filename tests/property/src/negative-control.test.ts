@@ -364,7 +364,7 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
     // A REAL burst, from a real transition, with its last frame swapped for a stale one. That is
     // the failure being guarded against: the animation ends on a state the game is not in, so a
     // client which drops mid-burst resyncs to something the player never saw agree.
-    const g = portNs.newGame({ difficulty: 'normal', science: true }) as unknown as GameState;
+    const g = portNs.newGame({ difficulty: 'normal' }) as unknown as GameState;
     portNs.applyAction(g as never, { action: 'draw' } as never);
     portNs.applyAction(g as never, { action: 'beginCommand' } as never);
     const real = portNs.applyAction(g as never, { action: 'endCommand' } as never) as {
@@ -662,8 +662,10 @@ describe('L3: an invariant fires against a genuinely wrong engine, not only a sa
      */
     const mutant = loadMutatedLegacy({
       name: 'memory-on-kill granted at every difficulty',
-      find: 'if(g.difficulty==="training" && g.memory && !g.memory[iv.disease]',
-      replace: 'if(g.memory && !g.memory[iv.disease]',
+      // The oracle is the original AS RULED (tests/equivalence/src/ruled.ts), where queue Q4 added
+      // the antivenom clause beside this one: only the Training clause is removed.
+      find: 'if(g.difficulty==="training" && by!=="antivenom" && g.memory && !g.memory[iv.disease]',
+      replace: 'if(by!=="antivenom" && g.memory && !g.memory[iv.disease]',
     }) as unknown as Engine;
 
     let violations: readonly Violation[] = [];

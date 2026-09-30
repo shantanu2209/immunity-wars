@@ -30,15 +30,21 @@
  * this module makes, with a deliberate over-offer as its negative control.
  */
 import {
+  ANTIVENOM_AP,
   ANTIVENOM_ORDER,
   CLONE_COST,
+  DEGRANULATE_AP,
+  DEGRANULATE_DAMAGE,
   FAMILIES,
   LYMPH_GROUP,
   LYMPH_STEP,
+  MEMORY_RESPONSE_AP_HARD,
+  NEUTRALISE_TOXIN_AP,
   NK_HITS,
   NOVEL_ANTIGENS,
   ROUTES,
   ROUTE_KEYS,
+  STRIKE_DAMAGE,
   VACCINE_COST,
 } from '@immunity-wars/content';
 import { residentSeat } from '@immunity-wars/protocol';
@@ -46,17 +52,8 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
+import { engineText } from '../engineText';
 import { residentDisplayName } from '../names';
-import { productionText } from '../productionText';
-
-/**
- * THE ONE MIRRORED RULE (FINDINGS #52): neutralising a toxin costs 2 AP, and the 2 is a
- * literal in `packages/engine/src/actions.ts`, not a content constant. Mirrored here so the
- * offer is withheld at 1 AP, and pinned by `tests/session/src/neutralise-cost.test.ts`, which
- * drives the engine directly: reject at NEUTRALISE_TOXIN_AP - 1, accept at NEUTRALISE_TOXIN_AP.
- * A WORKAROUND, not a design — Phase 3 moves the number to content and deletes this.
- */
-export const NEUTRALISE_TOXIN_AP = 2;
 
 export type OfferSource = 'cell' | 'body';
 
@@ -217,10 +214,9 @@ export function familyLabel(family: string): string {
   return typeof name === 'string' ? `${name} (${family})` : family;
 }
 
-/** The engine's generic gate before any board action: AP left, or a free action for this cell. */
-function canAct(g: ViewState, cell: string): boolean {
-  const free = g['free'] as Record<string, unknown> | undefined;
-  return num(g['ap']) > 0 || num(free?.[cell]) > 0;
+/** The engine's generic gate before any board action: AP left (the free-action slot went, Q2). */
+function canAct(g: ViewState, _cell: string): boolean {
+  return num(g['ap']) > 0;
 }
 
 function isSuppressed(g: ViewState, cell: string): boolean {
@@ -260,9 +256,9 @@ export function bodyOffers(view: SessionView): Offered {
   const invaders = (g['invaders'] as Invaderish[] | undefined) ?? [];
   const apLabel = (n: number): string => `${String(n)} ${t('commandBar.ap')}`;
 
-  // THE MEMORY RESPONSE — free on Training and Normal; 1 AP on Hard (the engine's own rule).
+  // THE MEMORY RESPONSE: free on Training and Normal, and on Hard the content's cost (queue Q7).
   const attackable = (view.queries.perInvader['attackable'] ?? []) as unknown[];
-  if (!hard || ap >= 1) {
+  if (!hard || ap >= MEMORY_RESPONSE_AP_HARD) {
     invaders.forEach((iv, i) => {
       if (iv.remembered !== true || attackable[i] !== true) return;
       const id = String(iv.id ?? '');
@@ -275,15 +271,15 @@ export function bodyOffers(view: SessionView): Offered {
         label: `${t('action.memoryKill')} ${String(iv.disease ?? '')}`,
         verb: t('action.memoryKill'),
         target: String(iv.disease ?? ''),
-        cost: hard ? apLabel(1) : null,
+        cost: hard ? apLabel(MEMORY_RESPONSE_AP_HARD) : null,
         params: { action: 'memoryKill', invaderId: id },
       });
     });
   }
 
-  // ANTIVENOM — a dose in stock, 3 AP, on a venom.
+  // ANTIVENOM: a dose in stock, the content's cost, on a venom.
   const stock = num(g['antivenom']);
-  if (stock > 0 && ap >= 3) {
+  if (stock > 0 && ap >= ANTIVENOM_AP) {
     for (const iv of ids(view.queries.state['antivenomTargets'])) {
       board.push({
         id: `antivenom:${iv.id}`,
@@ -294,7 +290,7 @@ export function bodyOffers(view: SessionView): Offered {
         label: `${t('action.antivenom')} ${iv.disease}`,
         verb: t('action.antivenom'),
         target: String(iv.disease),
-        cost: apLabel(3),
+        cost: apLabel(ANTIVENOM_AP),
         params: { action: 'antivenom', invaderId: iv.id },
       });
     }
@@ -449,7 +445,7 @@ export function produceFor(
     const d = view.scoped.productionDetail as { blocked?: unknown } | null;
     return none(
       view.selection.family === family && typeof d?.blocked === 'string'
-        ? productionText(d.blocked)
+        ? engineText(d.blocked)
         : t('selection.productionBlocked'),
     );
   }
@@ -562,7 +558,13 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
     switch (cell) {
       case 'macrophage':
         attack('engulf', ids(state['macrophageEatable']), null);
-        attack('strike', ids(perCell['wormStrikeable']?.[cell]), null);
+        // The damage on the row (ruled 6 September 2026), content's now, so no copy (queue Q7).
+        attack(
+          'strike',
+          ids(perCell['wormStrikeable']?.[cell]),
+          null,
+          t('actions.damage', { n: STRIKE_DAMAGE.macrophage }),
+        );
         break;
       case 'neutrophil':
         if (ids(state['netTargets']).length > 0) {
@@ -587,9 +589,15 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
       }
       case 'eosinophil': {
         const targets = ids(perCell['wormStrikeable']?.[cell]);
-        attack('strike', targets, null);
-        // Degranulate is gated on AP alone — the engine checks apNow < 2 before free actions.
-        if (ap >= 2) attack('degranulate', targets, `2 ${t('commandBar.ap')}`);
+        attack('strike', targets, null, t('actions.damage', { n: STRIKE_DAMAGE.eosinophil }));
+        // Degranulate is gated on AP alone: the engine checks its cost before free actions.
+        if (ap >= DEGRANULATE_AP)
+          attack(
+            'degranulate',
+            targets,
+            `${String(DEGRANULATE_AP)} ${t('commandBar.ap')}`,
+            t('actions.damage', { n: DEGRANULATE_DAMAGE }),
+          );
         break;
       }
       case 'bcell': {
@@ -755,6 +763,20 @@ function residentOffers(view: SessionView, organ: string): Offered {
     }
   }
 
+  // RECALL (queue Q6, Kartik, 5 September 2026): back to the organ box in one move, for 1 AP. Not
+  // while a parasite lives inside it, and not from the box itself, where the engine refuses it.
+  const buttons: ButtonOffer[] = [];
+  if (canPatrol && ap > 0 && step > 0 && !infected) {
+    buttons.push({
+      id: `resrecall:${organ}`,
+      action: 'resrecall',
+      cell: null,
+      organ,
+      label: t('action.resrecall'),
+      params: { action: 'resrecall', organ },
+    });
+  }
+
   // THE REASON, in the engine's own gate order, then what stops the patrol. The step-0 line
   // is the one that earns its place: FINDINGS #5 measured that a resident at its organ can
   // never eat anything, and the bot never worked that out — so the interface says it.
@@ -767,7 +789,7 @@ function residentOffers(view: SessionView, organ: string): Offered {
     else if (step === 0) reason = t('selection.residentAtOrgan', { name });
     else reason = t('selection.residentNothingHere', { name });
   }
-  return { source: 'cell', board, buttons: [], reason };
+  return { source: 'cell', board, buttons, reason };
 }
 
 /** Why no attack is offered — per-cell first, after the generic gates. */

@@ -39,9 +39,11 @@
  */
 
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { writeRetrying } from './write-retry.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -443,9 +445,13 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'room-ids-across-rooms',
-    why: 'FINDINGS #56 on a relay: the engine hands out invader ids from one counter per process, and newGame in ANY room resets it. Without advancing it before every engine call, a game starting at one table makes another table hand one id to two pathogens, and every id-keyed action can then hit the wrong one.',
-    file: 'packages/room/src/room.ts',
-    mutate: (t) => t.replace('  advanceIdsPast(game as unknown as Record<string, unknown>);\n', ''),
+    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test.",
+    file: 'packages/engine/src/primitives.ts',
+    mutate: (t) =>
+      t.replace(
+        'export function uid(g: { idCounter: number }): string {\n  g.idCounter += 1;\n  return `i${g.idCounter}`;\n}',
+        'let shared = 0;\nexport function uid(g: { idCounter: number }): string {\n  if (g.idCounter === 0) shared = 0;\n  g.idCounter += 1;\n  shared += 1;\n  return `i${shared}`;\n}',
+      ),
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'holds across two rooms interleaved in one process',
   },
@@ -1245,6 +1251,205 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/server exec vitest run src/relay.test.ts',
     expect: 'the next game is a new session',
   },
+  {
+    id: 'queue-q3-no-play-change',
+    why: "Queue Q3 (Kartik, 5 September 2026) declares Pathogen X's tropism as any, a generalist on purpose, where it had been a lookup miss. It must change no play: an engine that no longer read any as a missing entry would roll it for a different organ than the original, untouched.",
+    file: 'packages/engine/src/construct.ts',
+    mutate: (t) => t.replace("if (declared === 'any' || !declared) {", 'if (!declared) {'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/pathogen-x.test.ts',
+    expect: 'rolls the same organ in the original',
+  },
+  {
+    id: 'queue-q7-engine-reads-content',
+    why: "Queue Q7 moved the actions' own numbers into content, one source for the engine and the screens. An engine still holding its own literal would ignore content; changing content's antivenom cost must make the engine disagree with the original.",
+    file: 'packages/content/src/rules/tuning.json',
+    mutate: (t) => t.replace('"ANTIVENOM_AP": 3,', '"ANTIVENOM_AP": 4,'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/coverage-scenarios.test.ts',
+    expect: 'antivenom in stock but not enough AP',
+  },
+  {
+    id: 'queue-q10-science-gone',
+    why: 'Queue Q10 (Shantanu, 6 September 2026) removed the inert science field from the state and the view, in the port and in the original as ruled. A view that still carried it must disagree with the oracle.',
+    file: 'packages/engine/src/view.ts',
+    mutate: (t) =>
+      t.replace('    lost: g.lost,\n  };', '    lost: g.lost,\n    science: false,\n  };'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/construct.test.ts',
+    expect: 'projects identically across the whole B2 state corpus',
+  },
+  {
+    id: 'queue-q2-no-free-actions',
+    why: "Queue Q2 (Kartik, 5 September 2026) removed the Helper T-Cell's free-action slot, which also closed FINDINGS #99. A no-points gate that still let a free action through must let the hand-built action of #99 past it again.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (apNow(g) <= 0 && !freeNow && !resFree) return err('No Action Points.');",
+        "if (apNow(g) <= 0 && !freeNow && !resFree && !((g as unknown as { free?: Record<string, number> }).free?.[ck as string] ?? 0)) return err('No Action Points.');",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
+    expect: 'is refused before anything is spent',
+  },
+  {
+    id: 'queue-q5-old-save-carried-forward',
+    why: 'Ruled 30 September 2026: a game saved before the engine change queue is carried forward. Its save has no id counter (queue Q5 put it in the state), so the session works one out from the ids the game holds. Without that, the next arrival after a resume gets no proper id.',
+    file: 'packages/session-core/src/ids.ts',
+    mutate: (t) =>
+      t.replace("  if (typeof g['idCounter'] !== 'number') g['idCounter'] = highestId(g);\n", ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resume-ids.test.ts',
+    expect: 'plays on with every id unique',
+  },
+  {
+    id: 'queue-q4-antivenom-no-memory',
+    why: 'Queue Q4 (Kartik, 5 September 2026; FINDINGS #55): antivenom is passive immunity, so a kill by it teaches the body nothing. An engine that granted memory for it again must fail against the original as ruled.',
+    file: 'packages/engine/src/effects.ts',
+    mutate: (t) => t.replace("      by !== 'antivenom' &&\n", ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'no memory of it is left',
+  },
+  {
+    id: 'queue-q9-burn-where-the-fight-is',
+    why: 'Queue Q9 (FINDINGS #57): an eosinophil degranulating burns the tissue it is in, so the organ burns only when the fight is at branch step 0. An engine that burned it from anywhere on the branch again must fail against the original as ruled.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (iv.zone === 'branch' && iv.step === 0 && iv.organ && g.organs[iv.organ]) {",
+        "if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'at step 1, leaves the organ whole',
+  },
+  {
+    id: 'queue-q1-antigenic-variation-reachable',
+    why: 'Queue Q1 (Kartik, 5 September 2026, option (a); FINDINGS #4): antibodies may attempt a trypanosome, so the coat change that teaches why sleeping sickness has no vaccine can happen. An engine that turned it away again must fail against the original as ruled.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "(iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite')) ||\n        (iv.type === 'parasite' && !!iv.variant);\n      if (!ok2)",
+        "(iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite'));\n      if (!ok2)",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'is offered and accepted in the port',
+  },
+  {
+    id: 'queue-q6-recall-undoable',
+    why: "Queue Q6 (Kartik, 5 September 2026; FINDINGS #5): a resident's Recall is a move, so undo takes it back, point and all. An engine that took no snapshot before it could not undo it.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) => t.replace("  'resrecall',\n  'resengulf',\n]);", "  'resengulf',\n]);"),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'undo takes it back',
+  },
+  {
+    id: 'queue-q6-recall-in-the-move-class',
+    why: "Queue Q6: the session's move class decides what a player may take back, alone and together. A Recall left out of it would end undo like an attack.",
+    file: 'packages/session-core/src/moves.ts',
+    mutate: (t) => t.replace("  'resrecall',\n", ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resident-reasons.test.ts',
+    expect: 'can be undone, like any move',
+  },
+  {
+    id: 'queue-q6-recall-offered-where-accepted',
+    why: 'Queue Q6: the screens offer Recall exactly where the engine accepts it. Offered from the organ box itself, it would be a button the engine refuses.',
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (canPatrol && ap > 0 && step > 0 && !infected) {',
+        'if (canPatrol && ap > 0 && step >= 0 && !infected) {',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resident-reasons.test.ts',
+    expect: 'is NOT offered from the organ box',
+  },
+  {
+    id: 'queue-q8-toast-by-template',
+    why: 'Queue Q8 (FINDINGS #102): a rejection that carries a value renders through the catalogue. The toast looked strings up exactly, so "Antivenom costs 3 AP." rendered as a loud marker whatever the catalogue held.',
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        '  const r = engineLogText(message);\n  return r.matched ? r.text : `⟪engine: ${message}⟫`;',
+        '  const key = KEY_OF_TEXT.get(message);\n  return key === undefined ? `⟪engine: ${message}⟫` : (ENGINE_I18N_EN[key] ?? message);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'two refusals the engine writes with a value in them render as themselves',
+  },
+  {
+    id: 'queue-q8-own-entry-in-the-catalogue',
+    why: "Queue Q8 (FINDINGS #102): every catalogue message comes back by its own entry, the one a translator translates. Ordered by template length with the placeholder names counted, the crisis event's entry claimed the rare event's line: the same English, the wrong sentence in Hindi.",
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
+        'out.sort((a, b) => b.template.length - a.template.length);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'comes back as itself, by its own entry',
+  },
+  {
+    id: 'queue-q8-no-ambiguous-log-line',
+    why: 'Queue Q8 (FINDINGS #102): on recorded play, where two catalogue entries match one log line, the one fixing the most text is chosen, strictly. English renders a wrong choice as the same words, so only this can see it.',
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
+        'out.sort((a, b) => b.template.length - a.template.length);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
+    expect: 'no line is ambiguous',
+  },
+  {
+    id: 'queue-q8-rare-event-once',
+    why: "Queue Q8 (FINDINGS #58, corrected): the engine logs a rare event itself, at the end of fireRare, and always has. The screens added a second line on the premise that it did not, so each rare event was in the log twice until the engine's line scrolled out.",
+    file: 'packages/ui/src/play/effects.ts',
+    mutate: (t) =>
+      t.replace(
+        "    (l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }),\n  );\n}",
+        "    (l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }),\n  ).concat(g['rareBanner'] ? [{ t: 0, msg: `Rare event: ${String((g['rareBanner'] as { name?: unknown }).name)}`, kind: 'bad' }] : []);\n}",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'a rare event is in the log once',
+  },
+  {
+    id: 'queue-q8-no-composed-log-site',
+    why: 'Queue Q8 (FINDINGS #53): every log line and rejection is a literal the catalogue can hold. A message composed into a variable first reaches the player in English whatever the catalogue says, as five did until Q8.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');",
+        "else {\n        const tagged = `Antibody <b>tagged</b> ${iv.disease}.`;\n        pushLog(g, tagged, 'good');\n      }",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/i18n-engine.test.ts',
+    expect: 'a log line or rejection composed where the catalogue cannot see it',
+  },
+  {
+    id: 'queue-q8-no-log-line-misses',
+    why: 'Queue Q8: no recorded log line misses the catalogue. A line the catalogue lost would render plainly, in English, in the Hindi edition, and nothing on the screen would say so.',
+    file: 'packages/content/src/i18n/en/engine.json',
+    mutate: (t) =>
+      t.replace('  "actions.monocyteEngulfed": "<b>Monocyte</b> engulfed {disease}.",\n', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
+    expect: 'no log line misses the catalogue',
+  },
+  {
+    id: 'balance-bands-24-arms',
+    why: "FINDINGS #103: the documented recalibration command ran 8 arms and said 24. Bands on 8 arms sat at 0.72x their analytic floor and inflated every σ by ~28% (#35), so a bands file below the rule's 24 must not ship.",
+    file: 'tests/balance/bands.json',
+    mutate: (t) => t.replace('"arms": 24,', '"arms": 8,'),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/bands.test.ts',
+    expect: 'was calibrated on the 24 independent arms the rule requires',
+  },
+  {
+    id: 'balance-bands-current-rules',
+    why: 'FINDINGS #103: bands measured on other rules name a game nobody plays. A rules version that moves without a recalibration must fail in the fast tier, not wait for someone to read the provenance.',
+    file: 'packages/content/src/rules/pack.json',
+    mutate: (t) => t.replace(/"rulesVersion": "[^"]+"/, '"rulesVersion": "9.9.9"'),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/bands.test.ts',
+    expect: 'was measured on the rules and content version the engine carries',
+  },
+  {
+    id: 'reachability-report-whole',
+    why: "FINDINGS #104: the reachability report's currency check sampled two numbers, so when queue Q3 declared Pathogen X's tropism the report went on saying it had none, and the check passed. It compares the whole report now.",
+    file: 'docs/CONTENT_REACHABILITY.md',
+    mutate: (t) => t.replace('TROPISM: **107 entries**', 'TROPISM: **106 entries**'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
+    expect: 'is up to date with the content it describes',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
@@ -1329,10 +1534,18 @@ for (const control of selected) {
   ran += 1;
   let verdict: { failed: boolean; output: string };
   try {
-    writeFileSync(path, mutated, 'utf8');
+    writeRetrying(path, mutated);
     verdict = runGate(control.gate);
   } finally {
-    writeFileSync(path, original, 'utf8');
+    // Through a lock, and loudly if it never lifts (FINDINGS #106): dying here left the engine
+    // mutated in the tree once, with nothing on the screen to say so.
+    try {
+      writeRetrying(path, original);
+    } catch (e) {
+      console.log(`✗ COULD NOT RESTORE ${control.file}: ${String(e)}`);
+      console.log(`    It is still MUTATED. Before anything else: git checkout -- ${control.file}`);
+      process.exit(3);
+    }
   }
 
   if (control.mustPass) {

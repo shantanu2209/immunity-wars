@@ -150,7 +150,6 @@ export type Unsubscribe = () => void;
 
 export interface NewGameConfig {
   readonly difficulty: string;
-  readonly science?: boolean;
 }
 
 /**

@@ -64,7 +64,7 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
   say(
     'actions.ts:373 neutralise inMac guard',
     true,
-    `only hidesInMac cards can set inMac, and they are: ${kinds.join(', ')} — neutralise rejects parasites at ok2 first`,
+    `only hidesInMac cards can set inMac, and they are: ${kinds.join(', ')} — neutralise rejects every parasite at ok2 but a variant one (queue Q1), and the only variant card, Sleeping sickness, does not hide in a macrophage`,
   );
 }
 
@@ -208,7 +208,7 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
   say(
     'actions.ts:687 RESIDENT_NAME fallback',
     named.length === organs.length,
-    `all ${organs.length} organs have a resident name, and resmove rejects an unknown organ before this line`,
+    `all ${organs.length} organs have a resident name, and resmove and Recall (queue Q6) reject an unknown organ before their log lines`,
   );
 }
 
@@ -438,11 +438,6 @@ const say = (claim: string, dead: boolean, evidence: string): void =>
     'construct.ts:208/217 — splice at a found index yields',
     true,
     'findIndex just returned >= 0, and splice(i, 1)[0] at a valid index is the element',
-  );
-  say(
-    'ap.ts:40 — nothing ever grants a free action',
-    true,
-    'docs/FINDINGS.md #29: no code path writes a positive g.free entry at any player count',
   );
 }
 

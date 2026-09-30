@@ -41,8 +41,7 @@ function placeDist(a: Placed, b: Placed): number {
 }
 
 const apNow = (g: GameState): number => g.ap;
-const canAct = (g: GameState, cellKey: string): boolean =>
-  apNow(g) > 0 || (g.free?.[cellKey] ?? 0) > 0;
+const canAct = (g: GameState, _cellKey: string): boolean => apNow(g) > 0;
 
 export type Emit = (a: Action) => ActionResult;
 

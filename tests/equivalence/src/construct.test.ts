@@ -75,7 +75,9 @@ describe('B3: newGame is byte-identical and consumes identical randomness', () =
     });
   }
 
-  it('honours cfg: multiplayer seats, flags overrides, and science', () => {
+  // `science` is passed and ignored by both since queue Q10 removed the field, so the old key
+  // in a caller's config is shown to change nothing.
+  it('honours cfg: multiplayer seats and flags overrides, and ignores a science flag alike', () => {
     const cfgs: Record<string, unknown>[] = [
       {
         difficulty: 'normal',
@@ -127,7 +129,7 @@ describe('B3: makeInvader', () => {
           restoreRng();
 
           installRng(seed);
-          const gp = port.newGame({ difficulty, science: false });
+          const gp = port.newGame({ difficulty });
           const drawsBeforeP = drawCount();
           const ivp = port.makeInvader(gp as never, card as never);
           const drawsP = drawCount() - drawsBeforeP;
@@ -142,7 +144,7 @@ describe('B3: makeInvader', () => {
 
   it('places worms on a branch and non-worms on a route, as the invariant depends on', () => {
     // The mechanism behind worm safeguard #3 — see src/invariants.test.ts.
-    const g = port.newGame({ difficulty: 'hard', science: false });
+    const g = port.newGame({ difficulty: 'hard' });
     for (const card of port.DECK_MASTER) {
       const iv = port.makeInvader(g as never, card);
       expect(iv.zone, card.dz).toBe(card.type === 'worm' ? 'branch' : 'route');
@@ -164,7 +166,7 @@ describe('B3: respectWormCap and the Force tool', () => {
       restoreRng();
 
       installRng(seed);
-      const gp = port.newGame({ difficulty: 'hard', science: false });
+      const gp = port.newGame({ difficulty: 'hard' });
       (gp as unknown as { wormsSpawned: number }).wormsSpawned = 2;
       const cp = port.respectWormCap(gp as never, worm as never);
       const stateP = canonical(gp);
@@ -176,7 +178,7 @@ describe('B3: respectWormCap and the Force tool', () => {
   });
 
   it('returns null when no non-worm card exists anywhere, rather than breaking the cap', () => {
-    const g = port.newGame({ difficulty: 'hard', science: false }) as unknown as {
+    const g = port.newGame({ difficulty: 'hard' }) as unknown as {
       wormsSpawned: number;
       deck: unknown[];
       discard: unknown[];
@@ -201,7 +203,7 @@ describe('B3: respectWormCap and the Force tool', () => {
       restoreRng();
 
       installRng(seed);
-      const gp = port.newGame({ difficulty: 'hard', science: false });
+      const gp = port.newGame({ difficulty: 'hard' });
       (gp as unknown as { wormsSpawned: number }).wormsSpawned = 2;
       port.forceInjectCard(gp as never, 'Hookworm');
       const p = canonical(gp);
@@ -232,7 +234,7 @@ describe('B3: respectWormCap and the Force tool', () => {
       restoreRng();
 
       installRng(77);
-      const gp = port.newGame({ difficulty: 'normal', science: false });
+      const gp = port.newGame({ difficulty: 'normal' });
       port.forceInjectType(gp as never, type);
       const p = canonical(gp);
       restoreRng();
@@ -270,7 +272,7 @@ describe('B3: applyEvent — all nine crisis events', () => {
         restoreRng();
 
         installRng(seed);
-        const gp = port.newGame({ difficulty, science: false });
+        const gp = port.newGame({ difficulty });
         const beforeP = drawCount();
         port.applyEvent(gp as never, key);
         const drawsP = drawCount() - beforeP;
@@ -304,7 +306,7 @@ describe('B3: viewState', () => {
 
   it('does NOT expose stats — which is why the NaN counters are invisible in play', () => {
     // docs/FINDINGS.md #3. If stats ever appears here, that finding's blast radius changes.
-    const g = port.newGame({ difficulty: 'hard', science: false });
+    const g = port.newGame({ difficulty: 'hard' });
     expect(Object.keys(port.viewState(g as never))).not.toContain('stats');
   });
 
@@ -346,13 +348,13 @@ describe('B3: pushUndo and undo', () => {
   });
 
   it('refuses to undo an empty stack, with the same message', () => {
-    const gp = port.newGame({ difficulty: 'normal', science: false });
+    const gp = port.newGame({ difficulty: 'normal' });
     const gl = legacy.newGame({ difficulty: 'normal', science: false });
     expect(canonical(port.undo(gp as never))).toBe(canonical(legacy.undo(gl)));
   });
 
   it('caps the stack at 60 entries', () => {
-    const g = port.newGame({ difficulty: 'normal', science: false });
+    const g = port.newGame({ difficulty: 'normal' });
     for (let i = 0; i < 70; i += 1) port.pushUndo(g as never);
     expect((g as unknown as { undo: unknown[] }).undo.length).toBe(60);
   });
@@ -363,7 +365,7 @@ describe('B3: pushLog', () => {
   // crisisEvents ON already proves it — the events map is part of the byte-identical state and
   // its shuffles are inside the compared draw count.
   it('prepends and caps at 60', () => {
-    const g = port.newGame({ difficulty: 'normal', science: false }) as unknown as {
+    const g = port.newGame({ difficulty: 'normal' }) as unknown as {
       log: { msg: string }[];
     };
     for (let i = 0; i < 70; i += 1) internal.pushLog(g as never, `entry ${i}`, 'bad');

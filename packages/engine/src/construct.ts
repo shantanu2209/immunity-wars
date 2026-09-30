@@ -35,7 +35,7 @@ import {
   WORM_DAMAGE_EVERY,
 } from '@immunity-wars/content';
 import { knobs } from './knobs.js';
-import { branchLen, organsFor, resetUid, shuffle, uid } from './primitives.js';
+import { branchLen, organsFor, shuffle, uid } from './primitives.js';
 import { capFam, wormAllowed } from './queries.js';
 import type { Fx, GameState, Invader, LogEntry, RareState, Stats, Suppress } from './state.js';
 import type { Card, Difficulty, InvaderType, OrganKey, RouteKey } from './types.js';
@@ -43,7 +43,6 @@ import type { Card, Difficulty, InvaderType, OrganKey, RouteKey } from './types.
 export interface NewGameConfig {
   difficulty?: string;
   flags?: Partial<GameState['flags']>;
-  science?: boolean;
   multiplayer?: boolean;
   players?: string[];
   captain?: string | null;
@@ -177,7 +176,9 @@ export function rollOrgan(g: GameState, iv: Invader): OrganKey {
   const declared = TROPISM[iv.disease];
   let list: OrganKey[];
   if (declared === 'any' || !declared) {
-    // Pathogen X reaches this branch by having no TROPISM entry at all — docs/FINDINGS.md #13.
+    // Pathogen X is declared 'any', a generalist ON PURPOSE (queue Q3, ruled by Kartik; FINDINGS
+    // #13): a novel pathogen, and nobody should know where it will go. A disease with no entry falls
+    // through here the same way, as in the original.
     list = g.organList.slice();
   } else {
     list = declared.filter((o) => g.organList.includes(o));
@@ -233,7 +234,7 @@ export function respectWormCap(g: GameState, c: Card | undefined): Card | null {
  */
 export function makeInvader(g: GameState, c: Card): Invader {
   const iv = {
-    id: uid(),
+    id: uid(g),
     type: c.type,
     lane: c.lane,
     organ: null as OrganKey | null,
@@ -322,7 +323,6 @@ export function forceInjectCard(g: GameState, dz: string): Invader | null {
  * ------------------------------------------------------------------ */
 
 export function newGame(cfg: NewGameConfig): GameState {
-  resetUid();
   const diff: Difficulty = (
     DIFF[cfg.difficulty as Difficulty] ? cfg.difficulty : 'normal'
   ) as Difficulty;
@@ -389,7 +389,7 @@ export function newGame(cfg: NewGameConfig): GameState {
       malariaLiver: false,
       killedThisTurn: 0,
     } as RareState,
-    free: {},
+
     antibodies: 0,
     invaders: [],
     // SECOND draw, and the next 95: the novel pathogen is injected, never drawn.
@@ -399,7 +399,7 @@ export function newGame(cfg: NewGameConfig): GameState {
     log: [],
     won: false,
     lost: null,
-    science: cfg.science !== false,
+    idCounter: 0,
     stats: {
       killedTrunk: 0,
       killedBranch: 0,

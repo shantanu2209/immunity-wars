@@ -674,6 +674,72 @@ const NEW_REACH_V4: Case[] = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * covered by chance until queue Q9 changed the course of the seeded games
+ *
+ * Q9 (degranulate burns an organ only at branch step 0) keeps organs whole that the seeded games
+ * used to lose, so those games now run differently, and three arms they reached by chance they no
+ * longer reach. Reached here on purpose instead (30 September 2026), held to the original as ruled.
+ * ------------------------------------------------------------------ */
+
+const AFTER_Q9: Case[] = [
+  {
+    name: 'neutralise a dengue serotype that ADE turned against the antibodies',
+    setup: (g) => {
+      command(g);
+      for (const f of ['ENV', 'NAK', 'EXB', 'ICB', 'TOX', 'EUK']) g.ab[f] = 5;
+      g.invaders = [inv({ id: 'd1', type: 'virus', disease: 'Dengue (ADE)', ade: true })];
+    },
+    actions: [{ action: 'neutralise', invaderId: 'd1' }],
+  },
+  {
+    name: "snipe at a pathogen on another organ's branch",
+    setup: (g) => {
+      command(g);
+      g.invaders = [
+        inv({
+          id: 's1',
+          type: 'hidden',
+          disease: 'Hepatitis B',
+          zone: 'branch',
+          organ: 'liver',
+          step: 1,
+        }),
+      ];
+      const t = g.cells.tcell;
+      if (t) {
+        t.zone = 'branch';
+        t.organ = 'lungs';
+        t.step = 1;
+      }
+    },
+    actions: [{ action: 'snipe', cell: 'tcell', invaderId: 's1' }],
+  },
+  {
+    name: "an NK kill at a pathogen on another organ's branch",
+    setup: (g) => {
+      command(g);
+      g.invaders = [
+        inv({
+          id: 'n1',
+          type: 'hidden',
+          disease: 'Hepatitis B',
+          zone: 'branch',
+          organ: 'liver',
+          step: 1,
+        }),
+      ];
+      const n = g.cells.nk;
+      if (n) {
+        n.zone = 'branch';
+        n.organ = 'lungs';
+        n.step = 1;
+      }
+    },
+    actions: [{ action: 'nkkill', cell: 'nk', invaderId: 'n1' }],
+  },
+];
+
+/* ------------------------------------------------------------------ *
  * run them
  * ------------------------------------------------------------------ */
 
@@ -685,6 +751,7 @@ const GROUPS: [string, Case[]][] = [
   ['residents', RESIDENTS],
   ['kill bookkeeping', KILLS],
   ['new reach under coverage-v8 4', NEW_REACH_V4],
+  ['covered by chance until queue Q9', AFTER_Q9],
 ];
 
 for (const [group, cases] of GROUPS) {

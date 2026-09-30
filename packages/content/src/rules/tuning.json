@@ -62,6 +62,12 @@
   },
   "NK_RANGE": 1,
   "NK_HITS": 3,
+  "NEUTRALISE_TOXIN_AP": 2,
+  "ANTIVENOM_AP": 3,
+  "DEGRANULATE_AP": 2,
+  "DEGRANULATE_DAMAGE": 3,
+  "STRIKE_DAMAGE": { "eosinophil": 2, "macrophage": 1 },
+  "MEMORY_RESPONSE_AP_HARD": 1,
   "ANTIBODY_RATE": 2,
   "ANTIBODY_CAP": 4,
   "AB_CAP_FAM_BY_DIFF": {

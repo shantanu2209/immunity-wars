@@ -19,10 +19,13 @@ Spec: @docs/PHASE3_BRIEF.md (v1.10).
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
 [`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), with two Gate A items still owing a phone. The
-marker above stays on Phase 3 because its brief still governs the room and the relay. **The work now,
-before Phase 4, is the engine change queue** ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
-ruled 30 September 2026: *"Now"*; `docs/FINDINGS.md` #101), and then the relay's half of #94, ruled to
-be built before Phase 4 ships.
+marker above stays on Phase 3 because its brief still governs the room and the relay. **The engine
+change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
+changes, the rules version moved to 4.0.0
+([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). **Next, before Phase 4,
+is the relay's half of #94**, ruled to be built before Phase 4 ships. **One thing the queue left open
+touches a hard rule:** the printed rules' Neutralise does not allow what queue Q1 does, a trypanosome,
+so the table and the app disagree until Kartik words the change (`docs/FINDINGS.md` #105).
 
 **Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
 acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,
@@ -246,7 +249,8 @@ contract Task B was measured against.
 - **The game is NOT broken — but the reference bot is far behind it.** Shantanu and Kartik win
   essentially every game on Normal and roughly 7 in 10 on Hard. `simulate()`'s bot wins 0.2%
   on Normal and 0.0% on Hard. That gap is a **bot-capability signal, not a difficulty signal**:
-  the bot never emits 8 of the engine's 27 actions, never moves the Neutrophil (so it can never
+  the bot never emits 9 of the engine's 29 actions (8 of 27 at the audit; since then
+  `handOverCaptaincy`, multiplayer only, and a resident's Recall, which it never uses either), never moves the Neutrophil (so it can never
   NET), and never repositions a resident macrophage (so all seven are inert). It plays about
   six of the game's fourteen seats. Full audit in `docs/FINDINGS.md` §1. Building a competent
   bot is a **Phase 3** decision, taken there alongside seat-filling AI — the two are the same

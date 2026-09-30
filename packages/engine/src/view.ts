@@ -35,7 +35,6 @@ export function pushUndo(g: GameState): void {
     clone: g.clone,
     cloneFound: g.cloneFound,
     presentations: g.presentations,
-    free: clone(g.free || {}),
     organs: clone(g.organs),
     log: clone(g.log),
     // DEVIATION — docs/DEVIATIONS.md #8. Played together, a player spends from their own budget
@@ -65,7 +64,7 @@ export function undo(g: GameState): { ok: boolean; error?: string } {
   g.clone = u.clone;
   g.cloneFound = u.cloneFound;
   g.presentations = u.presentations;
-  g.free = u.free;
+
   g.organs = u.organs;
   g.log = u.log;
   // DEVIATION #8: the budgets come back with the moves, where they were saved.
@@ -98,7 +97,6 @@ export function viewState(g: GameState): Record<string, unknown> {
     residents: clone(g.residents),
     presentations: g.presentations,
     antibodyRate: rateFor(g),
-    free: clone(g.free || {}),
     flags: clone(g.flags),
     multiplayer: g.multiplayer,
     players: (g.players || []).slice(),
@@ -126,6 +124,5 @@ export function viewState(g: GameState): Record<string, unknown> {
     difficulty: g.difficulty,
     won: g.won,
     lost: g.lost,
-    science: g.science,
   };
 }

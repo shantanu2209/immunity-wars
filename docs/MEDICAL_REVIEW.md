@@ -6,9 +6,9 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-09-13 from `packages/content/src` — pack `immunity-wars-core`, content `1.0.0`, rules `3.1.0`.
+Generated 2026-09-30 from `packages/content/src` — pack `immunity-wars-core`, content `1.1.0`, rules `4.0.0`.
 
-**802 claims.** Game mechanics are deliberately excluded: how a disease behaves on
+**803 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
 design decisions rather than medical claims, and are not here to be reviewed. **One exception:**
 each card's "Can infect" line is included, labelled as a game simplification, so that a case
@@ -1733,10 +1733,11 @@ Sentences from How to play that explain immunology in general rather than descri
 
 | Claim id | Field | What the app says |
 |---|---|---|
+| `TEXT/help.libraryLead` | libraryLead | Reference, for when you meet a pathogen you do not know: |
 | `TEXT/help.s1.p2` | s1.p2 | Each of you commands one immune cell. Alone, every cell is nearly useless: the Monocyte cannot swallow a worm, the Killer T-Cell cannot touch a toxin, and the B-Cell's antibodies cannot reach anything hiding inside your own cells. Together, you can hold. |
 | `TEXT/help.s7.p1` | s7.p1 | An antibody only fits its own antigen class. Making the wrong one is wasted work. |
 | `TEXT/help.s9.rare` | s9.rare | A few cards carry rarer events that fire at the end of a spread, such as a malaria relapse or shingles. The log names each one and says why. |
 
 ---
 
-*802 claims: 666 diseases, 24 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 3 elsewhere.*
+*803 claims: 666 diseases, 24 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 4 elsewhere.*

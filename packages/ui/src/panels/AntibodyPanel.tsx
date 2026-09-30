@@ -23,8 +23,8 @@ import { FAMILIES } from '@immunity-wars/content';
 
 import type { CSSProperties, ReactElement } from 'react';
 
+import { engineText } from '../engineText';
 import { t } from '../i18n';
-import { productionText } from '../productionText';
 
 const CHIP: CSSProperties = {
   minHeight: 44,
@@ -178,16 +178,16 @@ export function AntibodyPanel({
             ].join(' · ')}
           </div>
           {detail.blocked !== null ? (
-            <div style={{ color: '#B03A2E' }}>{productionText(detail.blocked)}</div>
+            <div style={{ color: '#B03A2E' }}>{engineText(detail.blocked)}</div>
           ) : null}
           {detail.effects.map((e, i) => (
             <div key={`fx-${String(i)}`} style={{ color: e.delta >= 0 ? '#2F6B4A' : '#B03A2E' }}>
-              {e.delta >= 0 ? `+${String(e.delta)}` : String(e.delta)} {productionText(e.label)}
+              {e.delta >= 0 ? `+${String(e.delta)}` : String(e.delta)} {engineText(e.label)}
             </div>
           ))}
           {detail.capReasons.map((c, i) => (
             <div key={`cap-${String(i)}`} style={{ color: '#78665D' }}>
-              {[t('antibody.storage'), productionText(c)].join(': ')}
+              {[t('antibody.storage'), engineText(c)].join(': ')}
             </div>
           ))}
         </div>

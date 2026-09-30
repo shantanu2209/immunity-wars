@@ -5,6 +5,7 @@
 > there and nothing said so. When it runs is a ruling, set out in
 > [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4. The title and the paragraph below are kept as written.
 > **Ruled 30 September 2026: it runs now**, as its own piece between Phase 3 and Phase 4 (*"Now"*).
+> **It ran the same day, all ten changes, in one PR with a commit each**: "How it ran", at the end.
 
 **Opened 5 September 2026, at Kartik's rulings on his open design questions.** The engine is
 frozen for Phase 2 ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §0, §7): every change here is a
@@ -83,14 +84,14 @@ rules source. Until then the rulebook states the rule for the table game and the
 
 ## Workarounds that expire with this queue
 
-| Workaround | Where | Deleted with |
-|---|---|---|
-| `NEUTRALISE_TOXIN_AP` mirror + its spanning test | `packages/ui/src/play/offered.ts`, `tests/session/src/neutralise-cost.test.ts` | Q7 |
-| `productionText.ts` mapper; `engineLogText` templates for the five composed sites; `log-text.test.ts`'s "only misses" pin; `$meta.unextractedSites` | `packages/ui`, `tests/session`, `engine.json` | Q8 |
-| `advanceIdsPast` at `LocalSession.resume` + `resume-ids.test.ts` | `packages/session/src/local.ts`, `tests/session` | Q5 |
-| The UI's `canAct` reading `free` | `packages/ui/src/play/offered.ts` | Q2 |
-| The AP-cost literals in the offers (antivenom 3, degranulate 2, memory response 1 on Hard) | `packages/ui/src/play/offered.ts` | Q7 |
-| `rareLogLine`, the UI-authored log entry for a rare event the engine banners and never logs (#58) | `packages/ui/src/play/effects.ts`, `LogLine.text` | Q8 |
+| Workaround | Where | Deleted with | 30 September 2026 |
+|---|---|---|---|
+| `NEUTRALISE_TOXIN_AP` mirror + its spanning test | `packages/ui/src/play/offered.ts`, `tests/session/src/neutralise-cost.test.ts` | Q7 | **Deleted.** The test stays, reading content's value |
+| `productionText.ts` mapper; `engineLogText` templates for the five composed sites; `log-text.test.ts`'s "only misses" pin; `$meta.unextractedSites` | `packages/ui`, `tests/session`, `engine.json` | Q8 | **Deleted**, but for the list, kept empty and pinned empty as the instrument that catches a new composed site. The pin is now "no misses" |
+| `advanceIdsPast` at `LocalSession.resume` + `resume-ids.test.ts` | `packages/session/src/local.ts`, `tests/session` | Q5 | **Deleted.** The test stays, resuming real saves from before |
+| The UI's `canAct` reading `free` | `packages/ui/src/play/offered.ts` | Q2 | **Deleted** |
+| The AP-cost literals in the offers (antivenom 3, degranulate 2, memory response 1 on Hard) | `packages/ui/src/play/offered.ts` | Q7 | **Deleted** |
+| `rareLogLine`, the UI-authored log entry for a rare event the engine banners and never logs (#58) | `packages/ui/src/play/effects.ts`, `LogLine.text` | Q8 | **Deleted, with no engine change:** the engine had logged the event all along, and #58 is corrected |
 
 ## Not queued: the two breakdown queries, added on the `./internal` entry point (6 September 2026)
 
@@ -121,3 +122,93 @@ engine is unchanged", with the corpus as the proof.
   deck's Diphtheria card is itself of type toxin, and only bacteria emit, so giving the toxin a
   producer means either a new bacterium card or a change to what Diphtheria is. Engine-adjacent
   either way; it lands here as a queued change only if Kartik says yes.
+
+## How it ran — 30 September 2026
+
+**Open, first.**
+
+- **The printed rules and Q1 disagree** ([`FINDINGS.md`](FINDINGS.md) #105): the rulebook's Neutralise
+  allows no trypanosome, and the app now does. A ruling before the deploy: ship ahead of the printed
+  text, or wait for Kartik's wording.
+- **The engine still writes English** (#53). Q8 brought every line it writes into the catalogue
+  without ids; whether and when it emits them is a ruling.
+- **Whether a memory response should ever apply to a venom** (#55) was not part of Kartik's ruling,
+  and stays his.
+- **Not deployed yet.** The relay and the app go out together, on Shantanu's word; a phone still on
+  the old rules is refused and told to update.
+
+**The method: "the original, as ruled"** ([`DEVIATIONS.md`](DEVIATIONS.md) #10). Every change was
+made twice, independently: in the port, and as an edit to the original's source applied in memory.
+The corpus compares the two over every recorded game, and the untouched original is each rule
+test's control. Every commit below passed `pnpm verify` before it was made, and each one that
+changed the engine regenerated the catalogue and the coverage record with it.
+
+| Commit | What |
+|---|---|
+| `3bf4fe6` | the harness: the original as ruled, with no change yet |
+| `b27a923` | Q3, Pathogen X's tropism declared |
+| `f7512de` | Q7, the actions' numbers into content |
+| `e375386` | Q10, the `science` field removed |
+| `74db81d` | Q2, the free-action slot removed |
+| `95ab184` | Q5, the id counter into the game, old saves carried forward |
+| `c4a3a6e` | Q4, antivenom teaches no memory |
+| `d289dbf` | Q9, degranulate burns only where the fight is |
+| `ebc1525` | Q1, antibodies may attempt a trypanosome |
+| `e2871e7` | Q6, a resident's Recall |
+| `4654a55` | Q8, every line the engine writes reaches the catalogue |
+| `6f797e7` | the versions: rules 3.1.0 → 4.0.0, content 1.0.0 → 1.1.0 |
+| `232e0ef` | the bands recalibrated; the findings closed; three more found on the way |
+| `f295bd0` | the self-test's writes outlast a brief lock (#106) |
+
+**The balance panel, under the reference bot v1**, on the check's fixed arm of 20 × 100 games per
+difficulty, before (the engine at `1c89a8f`) and after (`6f797e7`):
+
+| | before | after | moved |
+|---|---|---|---|
+| Training, turns survived | 15.6020 | 15.6765 | +0.0745 |
+| Training, trunk kill share | 0.8953 | 0.8960 | +0.0007 |
+| Training, antibodies made | 20.2335 | 20.3090 | +0.0755 |
+| Training, organs damaged | 1.0415 | 1.0125 | −0.0290 |
+| Normal, all four | 10.9935 · 0.9771 · 19.2915 · 2.1215 | the same, to four decimals | nothing |
+| Hard, all four | 8.7655 · 0.9706 · 14.9265 · 2.2645 | the same, to four decimals | nothing |
+
+Both passed the old bands, the largest move about 1σ. **All of Training's movement is Q9's,
+measured:** with Q9 alone reverted in the port, Training returns to the before figures exactly.
+The bot degranulates worms out on their branches, and that no longer burns the organ, so fewer are
+damaged. Q4 cannot show, because the bot never uses antivenom ([`FINDINGS.md`](FINDINGS.md) §1).
+Nor can Q1 or Q6: the bot attempts neutralise only on viruses, toxins, venom and blood-stage
+malaria, and never moves a resident. **So the panel says the rules changed where the bot plays, and
+nothing about the rest**, and most of the queue is in play the bot never makes.
+
+**Recalibrated** at `6f797e7` on 24 arms of 2,000 games per difficulty (150,000 games, 12
+minutes), the held-out arm passing on all three. Normal's and Hard's bands came out identical to
+the old ones, as they must for an engine that plays those identically on the same seeds; Training's
+moved, and every band names rules 4.0.0. The first attempt ran 8 arms, by the documented command,
+and was stopped before it wrote (#103). The false-positive probe then judged 24
+unseen arms of the same engine, 48,000 games, against the new bands: **0 failures and 0
+single-metric breaches**, the worst excursion 2.66σ against the 3σ line, where the last
+recalibration left it at 2.65σ.
+
+**Coverage:** 97.46% of coverable branch arms against a target of 95%, 45 uncovered. The queue's
+own changes are covered, Recall's refusals included.
+
+**Controls:** 112 before the queue, 132 after. Each of the 20 new ones was seen firing for its own
+reason, `pnpm ci:selftest:inert` finds none inert, and the full self-test run afterwards exercised
+all 132: every one red where it must be and green where it must be, the tree left clean.
+
+**Found on the way**, each recorded where it belongs:
+
+- **#102:** the toast rendered 10 of the engine's 107 refusals loudly, four of them made by Q7, and
+  the log's matcher chose between templates by a length that counted placeholder names. Fixed in Q8.
+- **#58, corrected:** the engine had always logged a rare event, and the screens' own copy of the
+  line doubled it. Deleted in Q8, with no engine change.
+- **#103:** the documented recalibration command ran 8 arms and said 24. Fixed before any bands
+  were written.
+- **#104:** the reachability report had been stale since Q3, its currency check sampling two
+  numbers. Fixed.
+- **#105:** Q1 and the printed rules disagree. Open.
+- **#106:** the first full self-test run died restoring a file on a brief Windows lock, and left
+  `primitives.ts` mutated. Restored from git at once; the runner now retries and stops loudly.
+- Four texts still described the rules before the queue: the engine's comment and a test's title
+  saying the coat change can never fire, the reachability report saying the same, and a test title
+  saying the engine honours `science`. Corrected.

@@ -42,7 +42,11 @@ import {
   type BandFile,
 } from './src/panel.js';
 
-const ARMS = Number(process.argv[2] ?? 8);
+// 24 by default, the arm count the rule requires (docs/FINDINGS.md #35, #103). It defaulted to 8,
+// the E2 shape, and the shipped bands were made by passing 24; the README's recalibration line said
+// "24 arms" and passed nothing, so following it made bands on a third of the arms. `bands.test.ts`
+// refuses a bands file calibrated on fewer.
+const ARMS = Number(process.argv[2] ?? 24);
 const BATCHES = Number(process.argv[3] ?? 20);
 const GAMES = Number(process.argv[4] ?? 100);
 const PER_ARM = BATCHES * GAMES;

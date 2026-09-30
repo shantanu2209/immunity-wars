@@ -15,22 +15,28 @@
 
 import {
   AFFINITY_AT,
+  ANTIVENOM_AP,
   ANTIVENOM_ORDER,
   CLONE_COST,
   DECK_MASTER,
+  DEGRANULATE_AP,
+  DEGRANULATE_DAMAGE,
   EOSINOPHIL_REGEN,
   FAM_KEYS,
   LYMPH_GROUP,
   LYMPH_STEP,
+  MEMORY_RESPONSE_AP_HARD,
+  NEUTRALISE_TOXIN_AP,
   NEUTROPHIL_REGEN,
   NK_HITS,
   ORGANS,
   REINFECT_PC,
   RESIDENT_NAME,
   ROUTES,
+  STRIKE_DAMAGE,
   VACCINE_COST,
 } from '@immunity-wars/content';
-import { apNow, hasFree, spend, spendAP } from './ap.js';
+import { apNow, spend, spendAP } from './ap.js';
 import { makeInvader, noteWorm, pushLog, respectWormCap } from './construct.js';
 import { cname, killInvader, hurtInvader, placeName, present } from './effects.js';
 import { d6, famOf, shuffle } from './primitives.js';
@@ -74,6 +80,7 @@ const UNDOABLE = new Set([
   'net',
   'nkkill',
   'resmove',
+  'resrecall',
   'resengulf',
 ]);
 
@@ -217,7 +224,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
     a.action === 'resengulf' &&
     g.residents[a.organ as string] &&
     !g.residents[a.organ as string]?.ate;
-  if (apNow(g) <= 0 && !freeNow && !resFree && !hasFree(g, ck)) return err('No Action Points.');
+  if (apNow(g) <= 0 && !freeNow && !resFree) return err('No Action Points.');
 
   switch (a.action) {
     /* ---------------- B4b: movement and the B-cell ---------------- */
@@ -319,11 +326,21 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       g.ab[f] = (g.ab[f] ?? 0) + made;
       g.made[f] = (g.made[f] ?? 0) + 1;
       spend(g, 'bcell');
-      let msg = `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}).`;
+      // One literal per sentence, so the catalogue holds each (queue Q8; FINDINGS #53): a message
+      // composed into a variable first is one the extractor cannot follow.
       if (g.made[f] === AFFINITY_AT) {
-        msg += ` <b>AFFINITY MATURATION</b> — repeated practice against ${f} has improved your antibodies. You now make one extra per action.`;
+        pushLog(
+          g,
+          `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}). <b>AFFINITY MATURATION</b> — repeated practice against ${f} has improved your antibodies. You now make one extra per action.`,
+          'good',
+        );
+      } else {
+        pushLog(
+          g,
+          `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}).`,
+          'good',
+        );
       }
-      pushLog(g, msg, 'good');
       return ok();
     }
     case 'clonalSelection': {
@@ -390,10 +407,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           'Your antibodies do not neutralise this dengue serotype — they HELP it into your cells (ADE). Use the Monocyte, Neutrophil or NK Cell.',
         );
       }
+      // A trypanosome may be attempted too (queue Q1, Kartik, 5 September 2026, option (a); FINDINGS
+      // #4): antibodies do clear it from the blood, until it changes its coat, which is the roll below.
       const ok2 =
         iv.type === 'virus' ||
         iv.type === 'toxin' ||
-        (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite'));
+        (iv.type === 'malaria' && (iv.stage === 'blood' || iv.stage === 'sporozoite')) ||
+        (iv.type === 'parasite' && !!iv.variant);
       if (!ok2) return err('Antibodies cannot neutralise that.');
       if (iv.type === 'malaria' && iv.stage === 'liver') {
         return err('It is hiding inside liver cells — antibodies cannot reach it.');
@@ -415,15 +435,15 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           `You have no ${f} antibodies. Antibodies are SPECIFIC — an antibody for another class will not fit ${iv.disease}.`,
         );
       }
-      const apCost = iv.type === 'toxin' ? 2 : 1; // antitoxin is harder work
+      const apCost = iv.type === 'toxin' ? NEUTRALISE_TOXIN_AP : 1; // antitoxin is harder work
       // Captured BEFORE killInvader plants a fresh memory cell.
       const wasRemembered = memoryHit(g, iv.disease);
       if (!wasRemembered && apNow(g) < apCost) {
         return err(`Neutralising a toxin takes ${apCost} Action Points.`);
       }
       if (iv.variant && d6() <= 3) {
-        // NOTE: unreachable in play — the only variant card is a parasite, which `ok2` already
-        // rejected above. docs/FINDINGS.md #4. Ported exactly, including that this branch
+        // Reachable since queue Q1 (Kartik, 5 September 2026; FINDINGS #4): a trypanosome may be
+        // attempted, and on a 1 to 3 its coat changes. Ported exactly, including that this branch
         // spends AP even for a remembered pathogen, where the success path below would not.
         g.ab[f] = held - 1;
         spendAP(g, g._actingPid, apCost);
@@ -457,9 +477,9 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const iv = antivenomTargets(g).find((x) => x.id === a.invaderId);
       if (!iv) return err('No venom in the body.');
       if (g.antivenom <= 0) return err('No antivenom left.');
-      if (apNow(g) < 3) return err('Antivenom costs 3 AP.');
+      if (apNow(g) < ANTIVENOM_AP) return err(`Antivenom costs ${ANTIVENOM_AP} AP.`);
       g.antivenom -= 1;
-      spendAP(g, g._actingPid, 3);
+      spendAP(g, g._actingPid, ANTIVENOM_AP);
       killInvader(g, iv, 'antivenom');
       pushLog(
         g,
@@ -503,21 +523,22 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!c || !samePlace(iv, c)) return err('Move onto the target first.');
       if (!['macrophage', 'eosinophil'].includes(ck as string)) {
         return err(
-          'Only the Eosinophil (2 damage) and the Monocyte (1 damage) can strike a worm or parasite from the outside — the Neutrophil and NK Cell cannot.',
+          `Only the Eosinophil (${STRIKE_DAMAGE.eosinophil} damage) and the Monocyte (${STRIKE_DAMAGE.macrophage} damage) can strike a worm or parasite from the outside — the Neutrophil and NK Cell cannot.`,
         );
       }
-      const dmg = ck === 'eosinophil' ? 2 : 1; // the eosinophil is the specialist
+      // the eosinophil is the specialist
+      const dmg = ck === 'eosinophil' ? STRIKE_DAMAGE.eosinophil : STRIKE_DAMAGE.macrophage;
       const died = hurtInvader(g, iv, dmg, ck as string);
       // A targeted strike releases only a few granules — it does NOT wound the organ. Only a
       // full DEGRANULATION dumps enough toxic payload to scorch the surrounding tissue.
       spend(g, ck);
-      pushLog(
-        g,
-        died
-          ? `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`
-          : `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`,
-        died ? 'good' : '',
-      );
+      if (died) pushLog(g, `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`, 'good');
+      else
+        pushLog(
+          g,
+          `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`,
+          '',
+        );
       return ok();
     }
     case 'degranulate': {
@@ -529,10 +550,16 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!e || !e.alive) return err('The Eosinophil already degranulated — it is regenerating.');
       if (!iv.tagged) return err('Coat it with an antibody first.');
       if (!samePlace(iv, e)) return err('Move the Eosinophil onto the target first.');
-      if (apNow(g) < 2)
-        return err("Degranulate takes 2 Action Points — it's the eosinophil's whole payload.");
-      const died = hurtInvader(g, iv, 3, 'eosinophil'); // 3 kills even a 3-HP worm in one turn
-      if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {
+      if (apNow(g) < DEGRANULATE_AP)
+        return err(
+          `Degranulate takes ${DEGRANULATE_AP} Action Points — it's the eosinophil's whole payload.`,
+        );
+      // 3, the content's number, kills even a 3-HP worm in one turn
+      const died = hurtInvader(g, iv, DEGRANULATE_DAMAGE, 'eosinophil');
+      // THE BURN IS WHERE THE FIGHT IS (queue Q9, ruled by Shantanu on 5 September 2026; FINDINGS
+      // #57): an eosinophil's granules damage the tissue they are released in, so the organ burns
+      // only when the fight is in it, at branch step 0. Until Q9 it burned from anywhere on the branch.
+      if (iv.zone === 'branch' && iv.step === 0 && iv.organ && g.organs[iv.organ]) {
         const org = g.organs[iv.organ];
         if (org) {
           org.hp = Math.max(0, org.hp - 1);
@@ -550,10 +577,10 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       e.lane = null;
       e.organ = null;
       e.step = 0;
-      spendAP(g, g._actingPid, 2);
+      spendAP(g, g._actingPid, DEGRANULATE_AP);
       pushLog(
         g,
-        `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
+        `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
         'good',
       );
       return ok();
@@ -587,13 +614,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       } else {
         spend(g, 'bcell');
       }
-      pushLog(
-        g,
-        iv.type === 'worm'
-          ? `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`
-          : `Antibody <b>tagged</b> ${iv.disease}.`,
-        'good',
-      );
+      if (iv.type === 'worm')
+        pushLog(
+          g,
+          `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`,
+          'good',
+        );
+      else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');
       return ok();
     }
     case 'engulf': {
@@ -607,13 +634,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const m = g.cells.macrophage;
       if (m && m.freeEngulf) m.freeEngulf = false;
       else spend(g, 'macrophage');
-      pushLog(
-        g,
-        died
-          ? `<b>Monocyte</b> engulfed ${iv.disease}.`
-          : `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`,
-        'good',
-      );
+      if (died) pushLog(g, `<b>Monocyte</b> engulfed ${iv.disease}.`, 'good');
+      else
+        pushLog(
+          g,
+          `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`,
+          'good',
+        );
       return ok();
     }
     case 'memoryKill': {
@@ -626,8 +653,11 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');
       // Hard: the secondary response is fast but still costs 1 AP. Training/Normal: free.
       if (g.difficulty === 'hard') {
-        if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');
-        spendAP(g, g._actingPid, 1);
+        if (apNow(g) < MEMORY_RESPONSE_AP_HARD)
+          return err(
+            `Need ${MEMORY_RESPONSE_AP_HARD} Action Point for the memory response on Hard.`,
+          );
+        spendAP(g, g._actingPid, MEMORY_RESPONSE_AP_HARD);
       }
       killInvader(g, iv, 'memory');
       pushLog(
@@ -713,6 +743,27 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       pushLog(
         g,
         `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
+      );
+      return ok();
+    }
+    case 'resrecall': {
+      // A RESIDENT RETURNS TO ITS ORGAN (queue Q6, Kartik, 5 September 2026; FINDINGS #5). It steps
+      // forward onto its branch to intercept, and Recall brings it back to its organ box, step 0, in
+      // one move for one Action Point, where `resmove` would take a point a step. A move, so undoable.
+      if (!g.flags.residentMove) return err('Residents cannot move.');
+      const r = g.residents[a.organ as string];
+      if (!r) return err('No such organ.');
+      if (r.infectedBy) {
+        return err(
+          'This resident has a parasite living inside it, so it cannot move until you kill the parasite.',
+        );
+      }
+      if (r.step === 0) return err('The resident is already in its organ.');
+      r.step = 0;
+      spend(g, `res_${a.organ as string}`);
+      pushLog(
+        g,
+        `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> returned to the ${ORGANS[a.organ as OrganKey].name}.`,
       );
       return ok();
     }
@@ -816,10 +867,6 @@ function actionDraw(g: GameState, a: Action): ActionResult {
 
     const iv = makeInvader(g, c);
     if (iv.type === 'worm') noteWorm(g);
-    const entryMsg =
-      c.type === 'worm'
-        ? `<b>${c.dz}</b> entered via the ${ROUTES[c.lane].name} and is burrowing into the ${ORGANS[iv.organ as OrganKey].name}. Coat it, then the Eosinophil strikes.`
-        : `Infection: <b>${c.dz}</b> entered via the ${ROUTES[c.lane].name}.`;
     g.invaders.push(iv);
     g.everInfected = true;
     if (k === 0) g.drawn = c;
@@ -829,7 +876,15 @@ function actionDraw(g: GameState, a: Action): ActionResult {
       g.novelSeen = true;
       iv.novel = true;
     }
-    pushLog(g, entryMsg, 'big');
+    // The entry line, one literal per sentence (queue Q8). Nothing between here and the draw
+    // changes the card's name, its route or the invader's organ, so it reads what it always read.
+    if (c.type === 'worm')
+      pushLog(
+        g,
+        `<b>${c.dz}</b> entered via the ${ROUTES[c.lane].name} and is burrowing into the ${ORGANS[iv.organ as OrganKey].name}. Coat it, then the Eosinophil strikes.`,
+        'big',
+      );
+    else pushLog(g, `Infection: <b>${c.dz}</b> entered via the ${ROUTES[c.lane].name}.`, 'big');
 
     // SECONDARY RESPONSE — memory is DISEASE-SPECIFIC. It does not fill the shared class pool
     // (that would let you spend it on any pathogen of the class). Instead it marks THIS

@@ -1,21 +1,21 @@
 /**
- * FINDINGS #80: THE ID WORKAROUND READS THE UNDO SNAPSHOTS UNDER THE KEY THE ENGINE WRITES.
+ * A SAVED GAME FROM BEFORE THE ENGINE CHANGE QUEUE, CARRIED FORWARD (`ids.ts`; ruled 30 September
+ * 2026). An old save has no id counter (queue Q5 put it in the state): it is worked out from every id
+ * the game still holds, so the next pathogen never reuses one. And the fields Q10 and Q2 removed are
+ * dropped. A save made since is left exactly as it is.
  *
- * `advanceIdsPast` must advance the engine's invader-id counter past every id a game still holds,
- * including one that survives only in an undo snapshot: an invader killed this phase, which an undo
- * would bring back. It read the snapshots as `snap.invaders` while the engine writes `snap.inv`, so
- * that half never read anything.
- *
- * The snapshot here is the ENGINE's, taken by its own `pushUndo` on a real game, not one written by
- * hand: a hand-written snapshot would only test the key its author believed in, which is exactly the
- * belief that was wrong.
+ * FINDINGS #80 still applies to the working-out: an invader killed this phase, which an undo would
+ * bring back, survives only in an undo snapshot, under the key the engine writes (`inv`). The snapshot
+ * here is the ENGINE's, taken by its own `pushUndo` on a real game, not one written by hand: a
+ * hand-written snapshot would only test the key its author believed in, which is exactly the belief
+ * that was wrong.
  */
 import { applyAction, newGame, pushUndo } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
-import { resetUid, uid } from '@immunity-wars/engine/internal';
+import { uid } from '@immunity-wars/engine/internal';
 import { describe, expect, it } from 'vitest';
 
-import { advanceIdsPast } from './ids.js';
+import { highestId, migrateSavedGame } from './ids.js';
 
 type Raw = Record<string, unknown>;
 const num = (id: unknown): number => Number(/^i(\d+)$/.exec(String(id))?.[1] ?? 0);
@@ -39,7 +39,17 @@ function withInvaders(): GameState {
   throw new Error('no game reached three invaders');
 }
 
-describe('advanceIdsPast', () => {
+/** The same game in the shape a save had before the queue: no counter, and the removed fields. */
+function asOldSave(g: GameState): Raw {
+  const raw = JSON.parse(JSON.stringify(g)) as Raw;
+  delete raw['idCounter'];
+  raw['science'] = false;
+  raw['free'] = {};
+  for (const snap of (raw['undo'] as Raw[] | undefined) ?? []) snap['free'] = {};
+  return raw;
+}
+
+describe('a saved game from before the queue', () => {
   it("advances past an id that only the engine's own undo snapshot still holds", () => {
     const g = withInvaders();
     const raw = g as unknown as Raw;
@@ -49,31 +59,43 @@ describe('advanceIdsPast', () => {
     const top = body[body.length - 1];
     raw['invaders'] = body.slice(0, -2);
     const bodyMax = Math.max(0, ...(raw['invaders'] as { id: string }[]).map((iv) => num(iv.id)));
-    // NOT VACUOUS, and why two: `advanceIdsPast` spends one id reading the counter, so an id just one
-    // above the body's highest is passed by accident. The first version of this test killed one
-    // invader of a game that had only one, and passed on the unfixed code for exactly that reason.
-    expect(num(top?.id)).toBeGreaterThan(bodyMax + 1);
+    // NOT VACUOUS: the highest id is above everything still in the body.
+    expect(num(top?.id)).toBeGreaterThan(bodyMax);
 
-    resetUid(); // a fresh process: the counter starts again at zero
-    advanceIdsPast(raw);
-    expect(num(uid())).toBeGreaterThan(num(top?.id));
+    const old = asOldSave(g);
+    migrateSavedGame(old);
+    expect(num(uid(old as { idCounter: number }))).toBeGreaterThan(num(top?.id));
   });
 
-  // The half that always worked, held too: the body's own ids and a resident's infection.
-  it("advances past the body's ids and a resident's infection", () => {
-    resetUid();
-    advanceIdsPast({
-      invaders: [{ id: 'i5' }],
-      undo: [],
-      residents: { liver: { infectedBy: 'i12' } },
-    });
-    expect(num(uid())).toBeGreaterThan(12);
+  it("works out the counter from the body's ids and a resident's infection", () => {
+    expect(
+      highestId({
+        invaders: [{ id: 'i5' }],
+        undo: [],
+        residents: { liver: { infectedBy: 'i12' } },
+      }),
+    ).toBe(12);
+    const old: Raw = { invaders: [{ id: 'i5' }], undo: [], residents: {} };
+    migrateSavedGame(old);
+    expect(old['idCounter']).toBe(5);
   });
 
-  it('never lowers the counter, which every game in the process shares', () => {
-    resetUid();
-    for (let i = 0; i < 40; i += 1) uid();
-    advanceIdsPast({ invaders: [{ id: 'i3' }], undo: [], residents: {} });
-    expect(num(uid())).toBeGreaterThan(40);
+  it('drops the fields the queue removed, from the game and from every undo snapshot', () => {
+    const g = withInvaders();
+    pushUndo(g);
+    const old = asOldSave(g);
+    migrateSavedGame(old);
+    expect('science' in old).toBe(false);
+    expect('free' in old).toBe(false);
+    for (const snap of old['undo'] as Raw[]) expect('free' in snap).toBe(false);
+  });
+
+  it('leaves a save made since exactly as it is, its own counter included', () => {
+    const g = withInvaders();
+    pushUndo(g);
+    const now = JSON.parse(JSON.stringify(g)) as Raw;
+    const before = JSON.stringify(now);
+    migrateSavedGame(now);
+    expect(JSON.stringify(now)).toBe(before);
   });
 });

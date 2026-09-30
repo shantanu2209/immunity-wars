@@ -8,7 +8,7 @@ guarding against states the content cannot produce, and the content declaring pa
 engine cannot produce — and because neither side ever wrote its assumptions down.
 
 Deck: **97 cards**. FAMILY: **106 entries**.
-TROPISM: **106 entries**.
+TROPISM: **107 entries**.
 
 ---
 
@@ -48,8 +48,10 @@ unreachable with the current content.
 
 **The three named in FINDINGS #22 fall out of this table.** `novel` appears only on a
 `virus`, so `tag`'s brand-new-antigen refusal (which accepts only bacteria/worm/parasite)
-can never fire — #21. `variant` appears only on a `parasite`, and `neutralise` rejects
-parasites, so the antigenic-variation roll can never fire — #4. `hidesInMac` likewise.
+can never fire — #21. `variant` appears only on a `parasite`, which the original
+`neutralise` rejected, so the antigenic-variation roll never fired there — #4; since queue
+Q1 antibodies may attempt a trypanosome, and it can. `hidesInMac` appears only on a
+`parasite` that is no trypanosome, so `neutralise`'s in-a-macrophage guard still cannot fire.
 
 ## 3. Content the engine cannot produce
 
@@ -76,7 +78,7 @@ passing — [`FINDINGS.md`](FINDINGS.md) #13. It is now declared and schema-enfo
 [`DEVIATIONS.md`](DEVIATIONS.md) #5.
 
 - no FAMILY entry: **Pathogen X**
-- no TROPISM entry: **Pathogen X**
+- no TROPISM entry: _none_
 
 A card may have no `FAMILY` entry only if it is DECLARED in `NOVEL_ANTIGENS`, which the
 schema enforces — [`DEVIATIONS.md`](DEVIATIONS.md) #5. Current exemptions, and why:

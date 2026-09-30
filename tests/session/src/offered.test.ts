@@ -58,6 +58,7 @@ const OFFERABLE = [
   'recall',
   'hop',
   'resmove',
+  'resrecall',
   'resengulf',
   'memoryKill',
   'antivenom',
@@ -153,8 +154,12 @@ describe('offered ⊆ accepted — the standing rule as a check', () => {
   const corpus = judgeCorpus(offeredActions);
   const constructed = constructedStates();
 
-  it('the constructed states exist — a resident meal and a NET stand were reachable (vacuity guard)', () => {
-    expect(constructed.map((c) => c.label).sort()).toEqual(['net stand', 'resident meal']);
+  it('the constructed states exist — a resident meal, a NET stand and a resident out on its branch were reachable (vacuity guard)', () => {
+    expect(constructed.map((c) => c.label).sort()).toEqual([
+      'net stand',
+      'resident meal',
+      'resident out on its branch',
+    ]);
   });
 
   it('every offer the UI makes, the engine accepts — recorded games on every difficulty, plus the constructed states', () => {

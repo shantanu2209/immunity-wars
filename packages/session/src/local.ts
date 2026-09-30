@@ -8,7 +8,7 @@
  */
 
 import * as engine from '@immunity-wars/engine';
-import { MOVE_CLASS, advanceIdsPast, precompute, scope } from '@immunity-wars/session-core';
+import { MOVE_CLASS, migrateSavedGame, precompute, scope } from '@immunity-wars/session-core';
 
 import { newPlayerRef } from './player-ref.js';
 import { MemoryStorage, type Storage } from './storage.js';
@@ -100,7 +100,7 @@ export class LocalSession implements Session {
    * absence.
    */
   static createGame(config: NewGameConfig, opts: LocalSessionOptions = {}): LocalSession {
-    const g = call('newGame', { difficulty: config.difficulty, science: config.science ?? false });
+    const g = call('newGame', { difficulty: config.difficulty });
     return new LocalSession(g as Record<string, unknown>, opts);
   }
 
@@ -111,7 +111,8 @@ export class LocalSession implements Session {
         'resume() needs a GameState. A ViewState cannot resume a game: it has no deck.',
       );
     }
-    advanceIdsPast(state as Record<string, unknown>);
+    // A game saved before the engine change queue is carried forward (ruled 30 September 2026).
+    migrateSavedGame(state as Record<string, unknown>);
     return new LocalSession(state as Record<string, unknown>, opts);
   }
 

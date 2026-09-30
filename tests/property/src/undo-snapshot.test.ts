@@ -5,10 +5,11 @@
  * `TASK_D_HANDOFF.md` notes that "`undo` is the interesting case". It is not, and the reason is
  * worth pinning rather than discovering twice.
  *
- * `pushUndo` (view.ts:24) snapshots FIFTEEN fields, and `turn` is not one of them. Its own header
+ * `pushUndo` (view.ts:24) snapshots FOURTEEN fields (fifteen until queue Q2 removed the free-action
+ * slot, 30 September 2026), and `turn` is not one of them. Its own header
  * says so: *"Note what is NOT captured: turn, phase, deck, discard, stats, seen, events. Undo
  * rewinds a player's actions within a turn, not the turn itself."* `undo` writes back exactly
- * those fifteen. Nothing else in the engine ever decreases `g.turn`.
+ * those fourteen. Nothing else in the engine ever decreases `g.turn`.
  *
  * So a generative assertion that `g.turn` never decreases CANNOT FAIL. It would run tens of
  * thousands of times, pass every time, and mean nothing — which is the exact thing this project
@@ -45,7 +46,6 @@ const SNAPSHOT_FIELDS = [
   'clone',
   'cloneFound',
   'presentations',
-  'free',
   'organs',
   'log',
 ] as const;
@@ -70,7 +70,7 @@ function snapshotOf(difficulty = 'normal'): Record<string, unknown> {
 }
 
 describe('the undo snapshot captures a turn-safe subset of the state', () => {
-  it('captures exactly the fifteen documented fields', () => {
+  it('captures exactly the fourteen documented fields', () => {
     const keys = Object.keys(snapshotOf()).sort();
     expect(keys).toEqual([...SNAPSHOT_FIELDS].sort());
   });

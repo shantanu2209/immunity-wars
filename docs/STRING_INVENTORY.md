@@ -55,8 +55,11 @@ formats wrongly. Leg 3 of the drift test exists for exactly that failure.
 
 ### The ICU-hard cases — the only ones, enumerated
 
-**8 sites**, of which **1 needs `plural`** and the rest need
+**10 sites**, of which **3 need `plural`** and the rest need
 `select` (a ternary inside an interpolation). Everything else is a straight substitution.
+*Updated 30 September 2026, at queue Q8:* this read 8 sites and 1 plural. The produce line was
+composed into a variable, where the extractor could not see it or its plural; Q8 made it two
+literal sites, rows 9 and 10.
 
 Counted as SITES, not as rules. The plural case also contains a ternary, so adding "selects"
 and "plurals" would report 9 for what is 8 sites — an earlier draft of this line did exactly
@@ -74,6 +77,8 @@ Each of these gets **its own named test** rather than riding in the bulk compari
 | 6 | `construct.ts:146` | select | ``Co-infection: an extra <b>${c.dz}</b> broke in${iv.zone === 'branch' && iv.organ ? ` and is burrowing into the ${ORGANS` |
 | 7 | `construct.ts:167` | select | ``<b>${e.bad ? '⚠ ' : '✚ '}${e.name}</b> — ${e.why}`` |
 | 8 | `spread.ts:348` | select | ``${burst.size} cell(s) <b>burst</b> — ${nv.length} new ${anyEuk ? 'organism(s) spilled out' : 'viruses'}!`` |
+| 9 | `actions.ts`, produce | plural | ``<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}).`` |
+| 10 | `actions.ts`, produce | plural | the same, followed by `` <b>AFFINITY MATURATION</b> — repeated practice against ${f} …`` |
 
 ## 2. UI tables
 

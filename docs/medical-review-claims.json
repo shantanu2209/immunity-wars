@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-13",
+  "generated": "2026-09-30",
   "pack": {
     "packId": "immunity-wars-core",
-    "packVersion": "1.0.0",
-    "rulesVersion": "3.1.0"
+    "packVersion": "1.1.0",
+    "rulesVersion": "4.0.0"
   },
-  "total": 802,
+  "total": 803,
   "parts": [
     {
       "key": "diseases",
@@ -4855,6 +4855,12 @@
       "title": "Part 8 — General statements about how the body works",
       "blurb": "Sentences from How to play that explain immunology in general rather than describing one disease, cell or pathogen. Rules text is filtered out aggressively, so this part is short by design: most of what How to play says about a particular cell or invader has already appeared under that subject in Parts 2 and 3.",
       "claims": [
+        {
+          "id": "TEXT/help.libraryLead",
+          "subject": "How to play",
+          "label": "libraryLead",
+          "text": "Reference, for when you meet a pathogen you do not know:"
+        },
         {
           "id": "TEXT/help.s1.p2",
           "subject": "How to play",

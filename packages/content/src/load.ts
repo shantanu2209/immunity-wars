@@ -123,6 +123,14 @@ const pack = { ...parseRules(), ...parseBoard() };
  * protocol's `encode`, refused on mismatch). **Saved game state does not** — that is seam 7's
  * deferred pack check. This comment read "every state and network message carries rulesVersion"
  * from Phase 1, when neither did (docs/FINDINGS.md #26); it is now half true, and says which half.
+ *
+ * THE HISTORY, since `pack.json` cannot carry one. Rules 3.1.0 and content 1.0.0 from Task C2
+ * until the engine change queue (30 September 2026, docs/ENGINE_CHANGE_QUEUE.md), which moved
+ * them to 4.0.0 and 1.1.0. The rules play differently: a new action, a resident's Recall;
+ * antivenom teaches no memory; antibodies may attempt a trypanosome; degranulate burns only the
+ * organ the fight is in. The content gained Pathogen X's declared tropism, six of the actions'
+ * numbers and new sentences. The relay refuses any other rules version exactly, so a phone still
+ * on 3.1.0 is told to update.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;
@@ -186,6 +194,12 @@ export const SPAWN_TABLE = pack['SPAWN_TABLE'] as Record<Difficulty, readonly nu
 export const FLAGS = pack['FLAGS'] as Flags;
 export const NK_RANGE = pack['NK_RANGE'] as number;
 export const NK_HITS = pack['NK_HITS'] as number;
+export const NEUTRALISE_TOXIN_AP = pack['NEUTRALISE_TOXIN_AP'] as number;
+export const ANTIVENOM_AP = pack['ANTIVENOM_AP'] as number;
+export const DEGRANULATE_AP = pack['DEGRANULATE_AP'] as number;
+export const DEGRANULATE_DAMAGE = pack['DEGRANULATE_DAMAGE'] as number;
+export const STRIKE_DAMAGE = pack['STRIKE_DAMAGE'] as { eosinophil: number; macrophage: number };
+export const MEMORY_RESPONSE_AP_HARD = pack['MEMORY_RESPONSE_AP_HARD'] as number;
 export const ANTIBODY_RATE = pack['ANTIBODY_RATE'] as number;
 export const ANTIBODY_CAP = pack['ANTIBODY_CAP'] as number;
 export const AB_CAP_FAM_BY_DIFF = pack['AB_CAP_FAM_BY_DIFF'] as Record<Difficulty, number>;

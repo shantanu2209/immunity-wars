@@ -139,11 +139,6 @@ const RULE_B: Demonstrated[] = [
   },
   {
     file: 'actions.ts',
-    match: 'if (iv.variant && d6() <= 3) {',
-    why: 'unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4',
-  },
-  {
-    file: 'actions.ts',
     match: "if (f === 'X' && !g.cloneFound) {",
     why: "unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21",
   },
@@ -221,14 +216,20 @@ const RULE_B: Demonstrated[] = [
   {
     file: 'actions.ts',
     match:
-      '`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,',
-    why: 'the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan',
+      '`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,',
+    why: "the survives-arm of the ternary is dead by data: degranulate deals DEGRANULATE_DAMAGE (3, content's since queue Q7) and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan",
   },
   {
     file: 'actions.ts',
     match:
       "`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,",
     why: 'the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan',
+  },
+  {
+    file: 'actions.ts',
+    match:
+      "`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> returned to the ${ORGANS[a.organ as OrganKey].name}.`,",
+    why: "the || fallback is dead by data: RESIDENT_NAME is total over OrganKey (Recall's log line, queue Q6, as resmove's). Demonstrated by data scan",
   },
   {
     file: 'actions.ts',
@@ -251,11 +252,7 @@ const RULE_B: Demonstrated[] = [
     match: 'if (c) g.discard.push(c as never);',
     why: 'conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games',
   },
-  {
-    file: 'ap.ts',
-    match: 'if (ck && g.free && free > 0) {',
-    why: 'docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0',
-  },
+
   {
     file: 'view.ts',
     match: "if (!u) return err('Nothing to undo.');",
@@ -1067,7 +1064,8 @@ const dl: string[] = [
   '## Deferred until a competent bot exists (' + deferredBot.length + ' arms)',
   '',
   "Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never",
-  'emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot',
+  'emits 9 of 29 actions (docs/FINDINGS.md §1; 8 of 27 at the audit), so these heuristics are',
+  'never entered. A bot',
   'good enough to measure difficulty would reach them.',
   '',
   '**These were listed against Phase 2 until 18 August 2026.** The bot is inlined in the engine',

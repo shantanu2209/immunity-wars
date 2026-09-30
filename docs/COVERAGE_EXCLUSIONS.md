@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1936 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1930 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -22,19 +22,19 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### actions.ts
 
-- `93` `const pool = g.apBudget[g.captain as string] || 0; // unallocated AP sits with the captain`
-- `114` `const fromBudget = g.apBudget[from] ?? 0;`
-- `118` `g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;`
-- `139` `g.apBudget[to] = (g.apBudget[to] || 0) + (g.apBudget[from] || 0);`
-- `317` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
-- `318` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
-- `319` `g.ab[f] = (g.ab[f] ?? 0) + made;`
-- `320` `g.made[f] = (g.made[f] ?? 0) + 1;`
-- `362` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `412` `const held = g.ab[f] ?? 0;`
-- `473` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
-- `577` `const heldForTag = g.ab[f] ?? 0;`
-- `814` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
+- `100` `const pool = g.apBudget[g.captain as string] || 0; // unallocated AP sits with the captain`
+- `121` `const fromBudget = g.apBudget[from] ?? 0;`
+- `125` `g.apBudget[g.captain as string] = (g.apBudget[g.captain as string] || 0) + amt;`
+- `146` `g.apBudget[to] = (g.apBudget[to] || 0) + (g.apBudget[from] || 0);`
+- `324` `if ((g.ab[f] ?? 0) >= cap) return err(`Your ${f} antibody store is full (${cap}).`);`
+- `325` `const made = Math.min(rateForFam(g, f), cap - (g.ab[f] ?? 0));`
+- `326` `g.ab[f] = (g.ab[f] ?? 0) + made;`
+- `327` `g.made[f] = (g.made[f] ?? 0) + 1;`
+- `379` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `432` `const held = g.ab[f] ?? 0;`
+- `493` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
+- `604` `const heldForTag = g.ab[f] ?? 0;`
+- `865` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
 
 ### ap.ts
 
@@ -42,16 +42,16 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### construct.ts
 
-- `110` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `114` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
-- `204` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
-- `209` `return (alt ?? null) as Card | null;`
-- `218` `return (alt ?? null) as Card | null;`
-- `242` `hp: INV_HP[c.type] || 1,`
-- `243` `maxhp: INV_HP[c.type] || 1,`
-- `291` `DECK_MASTER.find((c) => c.type === type) ??`
-- `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `109` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `113` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `118` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
+- `205` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
+- `210` `return (alt ?? null) as Card | null;`
+- `219` `return (alt ?? null) as Card | null;`
+- `243` `hp: INV_HP[c.type] || 1,`
+- `244` `maxhp: INV_HP[c.type] || 1,`
+- `292` `DECK_MASTER.find((c) => c.type === type) ??`
+- `307` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
@@ -61,7 +61,7 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### primitives.ts
 
-- `116` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
+- `114` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
 
 ### queries.ts
 
@@ -87,14 +87,14 @@ weaker than a demonstration and is labelled so deliberately.
 - `367` `if (g.difficulty === 'training' && (g.made[f] ?? 0) >= AFFINITY_AT) {`
 - `374` `const have = g.ab[f] ?? 0;`
 - `376` `const baseCap = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
-- `439` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
-- `443` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
-- `475` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
-- `690` `readyTurn: e.regenAt ?? null,`
-- `713` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
-- `714` `return t[d6() - 1] ?? 1;`
-- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
-- `732` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `440` `return (g.invaders ?? []).some((iv) => canNeutralise(g, iv));`
+- `444` `return (g.invaders ?? []).some((iv) => canTag(g, iv));`
+- `476` `const R = (SNIPE_RANGE_BY_DIFF[g.difficulty] ?? SNIPE_RANGE) + (helperWith(g, 'tcell') ? 1 : 0);`
+- `691` `readyTurn: e.regenAt ?? null,`
+- `714` `const t = SPAWN_TABLE[g.difficulty] ?? SPAWN_TABLE.normal;`
+- `715` `return t[d6() - 1] ?? 1;`
+- `733` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
+- `733` `return (g.wormsSpawned ?? 0) < WORM_MAX_PER_GAME && (g.wormsThisTurn ?? 0) < WORM_MAX_PER_TURN;`
 
 ### simulate.ts
 
@@ -126,20 +126,18 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### view.ts
 
-- `38` `free: clone(g.free || {}),`
-- `47` `g.undo = g.undo || [];`
-- `101` `free: clone(g.free || {}),`
-- `104` `players: (g.players || []).slice(),`
-- `106` `owner: clone(g.owner || {}),`
-- `107` `apBudget: clone(g.apBudget || {}),`
-- `111` `suppress: clone(g.suppress || {}),`
-- `114` `rare: clone(g.rare || {}),`
-- `116` `ab: clone(g.ab || {}),`
-- `117` `made: clone(g.made || {}),`
-- `118` `memory: clone(g.memory || {}),`
-- `119` `vaccine: clone(g.vaccine || {}),`
-- `120` `seen: clone(g.seen || {}),`
-- `124` `undoDepth: (g.undo || []).length,`
+- `46` `g.undo = g.undo || [];`
+- `102` `players: (g.players || []).slice(),`
+- `104` `owner: clone(g.owner || {}),`
+- `105` `apBudget: clone(g.apBudget || {}),`
+- `109` `suppress: clone(g.suppress || {}),`
+- `112` `rare: clone(g.rare || {}),`
+- `114` `ab: clone(g.ab || {}),`
+- `115` `made: clone(g.made || {}),`
+- `116` `memory: clone(g.memory || {}),`
+- `117` `vaccine: clone(g.vaccine || {}),`
+- `118` `seen: clone(g.seen || {}),`
+- `122` `undoDepth: (g.undo || []).length,`
 
 ## Rule C — mechanical shapes from the v4-provider reconciliation
 
@@ -152,7 +150,7 @@ report as rule A: every arm that leaves this list is named.
 
 ### actions.ts
 
-- `203` `if (g.suppress) {`
+- `210` `if (g.suppress) {`
 
 ### effects.ts
 
@@ -160,12 +158,12 @@ report as rule A: every arm that leaves this list is named.
 
 ### queries.ts
 
-- `452` `if (!m) return [];`
-- `474` `if (!t) return [];`
-- `486` `if (iv.zone === 'branch') return iv.step <= R;`
-- `514` `if (!n) return [];`
-- `521` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
-- `613` `} else if (c.zone === 'branch' && c.organ) {`
+- `453` `if (!m) return [];`
+- `475` `if (!t) return [];`
+- `487` `if (iv.zone === 'branch') return iv.step <= R;`
+- `515` `if (!n) return [];`
+- `522` `if (iv.zone === 'route' || iv.zone === 'branch') return iv.step <= NK_RANGE;`
+- `614` `} else if (c.zone === 'branch' && c.organ) {`
 
 ### simulate.ts
 
@@ -188,7 +186,7 @@ report as rule A: every arm that leaves this list is named.
 
 Each carries the demonstration that established it.
 
-### actions.ts:245
+### actions.ts:252
 
 ```
 if (!c) return err('Illegal move.');
@@ -196,7 +194,7 @@ if (!c) return err('Illegal move.');
 
 unreachable in move: the `!d` guard two lines up already rejected any cell key that moveDestinations returns [] for — and moveDestinations opens with the same g.cells lookup — so by the time c is read, the key is known to resolve
 
-### actions.ts:275
+### actions.ts:282
 
 ```
 if (!to) return err('No lymphatic link from this route.');
@@ -204,7 +202,7 @@ if (!to) return err('No lymphatic link from this route.');
 
 unreachable: a route with no lymph link was rejected two guards earlier (the LYMPH_GROUP check), so lymphPartners is never empty here
 
-### actions.ts:398
+### actions.ts:418
 
 ```
 if (iv.type === 'malaria' && iv.stage === 'liver') {
@@ -212,7 +210,7 @@ if (iv.type === 'malaria' && iv.stage === 'liver') {
 
 unreachable: the ok2 type gate three lines earlier rejects malaria unless stage is blood or sporozoite, so a liver-stage malaria never arrives here. Demonstrated: applyAction returns 'Antibodies cannot neutralise that.'
 
-### actions.ts:401
+### actions.ts:421
 
 ```
 if (iv.inMac) {
@@ -220,23 +218,7 @@ if (iv.inMac) {
 
 unreachable in neutralise: inMac is only ever set on a hidesInMac card, and the sole such card (Kala-azar) is a parasite, which ok2 rejects first
 
-### actions.ts:424
-
-```
-if (iv.variant && d6() <= 3) {
-```
-
-unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
-
-### actions.ts:424
-
-```
-if (iv.variant && d6() <= 3) {
-```
-
-unreachable: the only variant card is Sleeping sickness, a parasite, and neutralise rejects parasites at ok2. docs/FINDINGS.md #4
-
-### actions.ts:537
+### actions.ts:564
 
 ```
 if (org) {
@@ -244,23 +226,15 @@ if (org) {
 
 repeat lookup: line 511's condition already required g.organs[iv.organ] truthy; this re-reads the same key two lines later for the compiler's sake
 
-### actions.ts:556
+### actions.ts:583
 
 ```
-`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
+`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
 ```
 
-the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan
+the survives-arm of the ternary is dead by data: degranulate deals DEGRANULATE_DAMAGE (3, content's since queue Q7) and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan
 
-### actions.ts:574
-
-```
-if (f === 'X' && !g.cloneFound) {
-```
-
-unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
-
-### actions.ts:574
+### actions.ts:601
 
 ```
 if (f === 'X' && !g.cloneFound) {
@@ -268,7 +242,15 @@ if (f === 'X' && !g.cloneFound) {
 
 unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
 
-### actions.ts:715
+### actions.ts:601
+
+```
+if (f === 'X' && !g.cloneFound) {
+```
+
+unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/worm/parasite and the only novel card is a virus. docs/FINDINGS.md #21
+
+### actions.ts:745
 
 ```
 `The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> moved to ${ORGANS[a.organ as OrganKey].name} ${ns === 0 ? 'tissue' : `branch ${ns}`}.`,
@@ -276,7 +258,15 @@ unreachable in tag: f === 'X' requires iv.novel, but tag only accepts bacteria/w
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:730
+### actions.ts:766
+
+```
+`The <b>${RESIDENT_NAME[a.organ as OrganKey] || 'resident macrophage'}</b> returned to the ${ORGANS[a.organ as OrganKey].name}.`,
+```
+
+the || fallback is dead by data: RESIDENT_NAME is total over OrganKey (Recall's log line, queue Q6, as resmove's). Demonstrated by data scan
+
+### actions.ts:781
 
 ```
 `The ${RESIDENT_NAME[a.organ as OrganKey] || 'resident'} has already engulfed this turn.`,
@@ -284,7 +274,7 @@ the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstra
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:784
+### actions.ts:835
 
 ```
 if (c) {
@@ -292,7 +282,7 @@ if (c) {
 
 the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan
 
-### actions.ts:804
+### actions.ts:855
 
 ```
 if (pool.length) {
@@ -300,7 +290,7 @@ if (pool.length) {
 
 pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games
 
-### actions.ts:806
+### actions.ts:857
 
 ```
 c = DECK_MASTER.find((x) => x.dz === dz) || null;
@@ -308,7 +298,7 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
-### actions.ts:812
+### actions.ts:863
 
 ```
 if (c) g.discard.push(c as never);
@@ -316,7 +306,7 @@ if (c) g.discard.push(c as never);
 
 conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games
 
-### actions.ts:828
+### actions.ts:875
 
 ```
 if (c.novel) {
@@ -324,15 +314,7 @@ if (c.novel) {
 
 unreachable inside the spawn loop: newGame filters novel cards out of the deck entirely (measured: 0 in deck); the novel pathogen is injected on novelTurn instead
 
-### ap.ts:40
-
-```
-if (ck && g.free && free > 0) {
-```
-
-docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
-
-### construct.ts:84
+### construct.ts:83
 
 ```
 if (pick !== undefined) g.events[t] = pick;
@@ -340,7 +322,7 @@ if (pick !== undefined) g.events[t] = pick;
 
 picks and slots both have length 3 by construction — two slices of 2 and 1 concatenated, indexed by a forEach over 3 slots
 
-### construct.ts:102
+### construct.ts:101
 
 ```
 if (!e) return;
@@ -348,7 +330,7 @@ if (!e) return;
 
 every caller passes keys drawn from the pools that built g.events, and both pools are subsets of EVENTS. Demonstrated by data scan
 
-### construct.ts:128
+### construct.ts:127
 
 ```
 if (c) g.discard.push(c);
@@ -356,7 +338,7 @@ if (c) g.discard.push(c);
 
 same conservation as the spawn path: deck and discard cannot both be empty at a coInfection. Demonstrated over 300 games
 
-### construct.ts:140
+### construct.ts:139
 
 ```
 if ((c as unknown as Card).novel) {
@@ -364,7 +346,7 @@ if ((c as unknown as Card).novel) {
 
 the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games
 
-### construct.ts:208
+### construct.ts:209
 
 ```
 if (alt) g.discard.push(alt);
@@ -372,7 +354,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:217
+### construct.ts:218
 
 ```
 if (alt) g.discard.push(alt);
@@ -380,7 +362,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:292
+### construct.ts:293
 
 ```
 ({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
@@ -388,7 +370,7 @@ both sites: splice at an index findIndex just returned as >= 0 always yields an 
 
 testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan
 
-### construct.ts:297
+### construct.ts:298
 
 ```
 if ((card as Card).novel) {
@@ -396,7 +378,7 @@ if ((card as Card).novel) {
 
 testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck
 
-### construct.ts:307
+### construct.ts:308
 
 ```
 if (!card) return null;
@@ -420,7 +402,7 @@ if (!helper || !target) return false;
 
 helper is roster-total (constructed at newGame, never deleted), and target is read with keys callers draw from CELL_KEYS. Demonstrated over 300 games
 
-### queries.ts:537
+### queries.ts:538
 
 ```
 if (!c) return [];
@@ -428,7 +410,7 @@ if (!c) return [];
 
 roster-total lookup: wormStrikeable is called with keys from CELL_KEYS and g.cells is total over them. Demonstrated over 300 games
 
-### queries.ts:602
+### queries.ts:603
 
 ```
 if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
@@ -436,7 +418,7 @@ if (st >= 0) out.push({ zone: 'branch', organ: o, step: st });
 
 dead by data: every branch is at least 2 steps (schema-enforced against the drawn board) and speed tops out at 3, so st = L - k >= 0 always. Demonstrated by data scan
 
-### queries.ts:632
+### queries.ts:633
 
 ```
 if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: true });
@@ -444,7 +426,7 @@ if (ns >= 1 && ns <= L) out.push({ zone: 'route', lane: to, step: ns, lymph: tru
 
 dead by data: every route is 5 steps, the lymph crossing is step 3, and extra <= 2, so ns is always within [1, 5]. Demonstrated by data scan
 
-### queries.ts:633
+### queries.ts:634
 
 ```
 if (ns === 0) out.push({ zone: 'hub', lymph: true });
@@ -564,7 +546,7 @@ if (!org) return;
 
 arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
 
-### view.ts:55
+### view.ts:54
 
 ```
 if (!u) return err('Nothing to undo.');

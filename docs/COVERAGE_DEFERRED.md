@@ -19,7 +19,8 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 ## Deferred until a competent bot exists (18 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
-emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot
+emits 9 of 29 actions (docs/FINDINGS.md §1; 8 of 27 at the audit), so these heuristics are
+never entered. A bot
 good enough to measure difficulty would reach them.
 
 **These were listed against Phase 2 until 18 August 2026.** The bot is inlined in the engine
@@ -52,35 +53,34 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (28 arms)
+## Uncategorised — still open (27 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `schema.ts:591` `if (!carded.includes(c)) {`
-- `schema.ts:600` `if (!cells.includes(c)) {`
-- `schema.ts:616` `if (!placed.includes(o)) {`
-- `schema.ts:648` `if (!placedRoutes.includes(r)) {`
-- `actions.ts:193` `if (g.phase !== 'command') return err('Not in command.');`
-- `actions.ts:264` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:294` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:333` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:361` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:363` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:474` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:504` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:621` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:626` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:629` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
-- `ap.ts:39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
-- `construct.ts:164` `default:`
-- `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
+- `schema.ts:599` `if (!carded.includes(c)) {`
+- `schema.ts:608` `if (!cells.includes(c)) {`
+- `schema.ts:624` `if (!placed.includes(o)) {`
+- `schema.ts:656` `if (!placedRoutes.includes(r)) {`
+- `actions.ts:200` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:271` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:301` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:350` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:378` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:380` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:494` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:524` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:648` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:653` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:656` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
+- `construct.ts:163` `default:`
+- `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
 - `queries.ts:250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
 - `queries.ts:278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
 - `queries.ts:282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `queries.ts:329` `if (!g.flags.dendritic) {`
 - `queries.ts:420` `if (!attackable(iv)) return false;`
-- `queries.ts:434` `if (!attackable(iv)) return false;`
+- `queries.ts:435` `if (!attackable(iv)) return false;`
 - `spread.ts:66` `if (!g.flags.rareEvents || !g.rare.armed || g.rare.fired) return false;`
 - `spread.ts:69` `if (!e) return false;`
 - `spread.ts:166` `default:`

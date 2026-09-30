@@ -197,7 +197,6 @@ export interface UndoSnapshot {
   clone: number;
   cloneFound: boolean;
   presentations: number;
-  free: Record<string, number>;
   organs: Record<string, Organ>;
   log: LogEntry[];
   /**
@@ -240,7 +239,6 @@ export interface GameState {
   cloneFound: boolean;
   novelSeen: boolean;
   rare: RareState;
-  free: Record<string, number>;
   antibodies: number;
   invaders: Invader[];
   deck: { dz: string; type: InvaderType; lane: RouteKey }[];
@@ -249,7 +247,8 @@ export interface GameState {
   log: LogEntry[];
   won: boolean;
   lost: LossRecord | null;
-  science: boolean;
+  /** The last invader id handed out (queue Q5): the game's own, so a save carries it. */
+  idCounter: number;
   stats: Stats;
   multiplayer: boolean;
   players: string[];
