@@ -354,8 +354,15 @@ function App({
     if (room.room) setLobby({ room: room.room, me: room.id });
     room.subscribe((e) => {
       if (roomRef.current !== room) return;
-      if (e.kind === 'room') setLobby({ room: e.room, me: room.id });
-      else if (e.kind === 'said')
+      if (e.kind === 'room') {
+        setLobby({ room: e.room, me: room.id });
+        // ANOTHER GAME IN THE SAME ROOM (v5): the captain has taken the room back to its lobby, so
+        // everyone still on the Result goes there, and the next game will follow as the first did.
+        if (e.room.phase === 'lobby' && screenRef.current.name === 'result') {
+          awaitGame(room);
+          nav.reset({ name: 'lobby' });
+        }
+      } else if (e.kind === 'said')
         setTableSaid((l) => [...l, { at: Date.now(), from: e.from, message: e.message }]);
       else if (e.kind === 'refused')
         setLobbyRefusal(
@@ -369,6 +376,14 @@ function App({
         setLobbyRefusal(why === 'closed' ? null : { code: why });
       }
     });
+    awaitGame(room);
+    // A game under way is the play screen's, which follows as soon as the board arrives; showing
+    // the lobby first would flash a room that has already started.
+    if (room.room?.phase !== 'playing') nav.reset({ name: 'lobby' });
+  };
+
+  /** The room's game, the moment its first view arrives; after a rematch (v5), the next one's. */
+  const awaitGame = (room: RelayRoom): void => {
     void room.session().then((s) => {
       if (roomRef.current !== room) return;
       difficultyRef.current = String(s.getView().game['difficulty'] ?? 'training');
@@ -377,9 +392,6 @@ function App({
       setPaused(false);
       nav.reset({ name: 'play' });
     });
-    // A game under way is the play screen's, which follows as soon as the board arrives; showing
-    // the lobby first would flash a room that has already started.
-    if (room.room?.phase !== 'playing') nav.reset({ name: 'lobby' });
   };
 
   /** Refusals that mean the room is gone, or has no place for this player: forget it. */
@@ -439,6 +451,16 @@ function App({
     nav.reset({ name: 'title' });
   };
 
+  /** From the Result of a game played together: leaves the room, then goes to Play together. */
+  const leaveThenTogether = (): void => {
+    const room = roomRef.current;
+    roomRef.current = null;
+    entryRef.current = null;
+    if (room) void room.leave().then(() => room.close());
+    dropRoom();
+    openTogether();
+  };
+
   /** Does something to the room, clearing the last refusal, which was about something else. */
   const inRoom = (f: (room: RelayRoom) => void): void => {
     setLobbyRefusal(null);
@@ -468,10 +490,12 @@ function App({
       void storage.delete(SAVE_ID).catch(() => undefined);
       setSave(null);
     } else {
-      // The game is over, so there is nothing to come back to.
+      // The game is over, so there is nothing to come back to after the app closes. The room itself
+      // stays open while the player is on the Result, so the captain can start another game in it
+      // (v5); Back to the title or Play together again leaves it.
       forgetRoom();
     }
-    dropRoom();
+    if (!together) dropRoom();
     sessionRef.current = null;
     nav.reset({ name: 'result', finalView, difficulty: difficultyRef.current, together });
   };
@@ -654,8 +678,18 @@ function App({
           log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}
-          onTogether={screen.together ? openTogether : null}
-          onTitle={quitToTitle}
+          onTogether={screen.together ? leaveThenTogether : null}
+          // After a game together, the title LEAVES the room, seats and all (ruled 30 September
+          // 2026), so a player who has gone is not carried into another game holding pieces.
+          onTitle={screen.together ? leaveRoom : quitToTitle}
+          rematch={
+            screen.together && lobby !== null && !connectionLost && lobby.room.phase === 'ended'
+              ? {
+                  mine: lobby.room.captain === lobby.me,
+                  onRematch: () => inRoom((room) => room.rematch()),
+                }
+              : null
+          }
         />
       );
     }

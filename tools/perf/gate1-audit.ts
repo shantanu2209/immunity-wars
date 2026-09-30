@@ -1881,6 +1881,7 @@ async function walkTogether(
     'together, rejoin',
     'messages, the table',
     'result, together',
+    'lobby, after a game',
   ];
   const GUEST_SCREENS = [
     'lobby, not captain',
@@ -2100,7 +2101,24 @@ async function walkTogether(
       await until(page, `!!document.querySelector('[data-result="together"]')`, 30000),
       'the game did not reach its Result in 20 turns',
     );
+    // The page is a guest by now, so its Result says it is waiting for the captain (protocol v5).
+    need(
+      await until(page, `!!document.querySelector('[data-result="rematch-waiting"]')`),
+      'the Result did not say it was waiting for the captain to start another game',
+    );
     await at(page, 'result, together');
+    // ANOTHER GAME IN THE SAME ROOM (v5): the helper, captain now, takes the room back to its lobby,
+    // and the page, waiting on its Result, follows it there, in the seats it held.
+    need(
+      await until(helper, `!!document.querySelector('[data-result="rematch"]')`),
+      "the captain's Result offered no other game in the room",
+    );
+    await clickSel(helper, '[data-result="rematch"]');
+    need(
+      await until(page, `!!document.querySelector('[data-screen="lobby"]')`, 15000),
+      'another game in the room did not bring its lobby back',
+    );
+    await at(page, 'lobby, after a game');
   } catch (e) {
     const why =
       e instanceof Stop

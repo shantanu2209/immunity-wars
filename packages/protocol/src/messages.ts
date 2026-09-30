@@ -77,6 +77,8 @@ const ClientBody = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('releaseSeat'), seat: Seat }),
   z.object({ kind: z.literal('assignSeat'), seat: Seat, to: MemberId.nullable() }),
   z.object({ kind: z.literal('start'), difficulty: z.enum(['training', 'normal', 'hard']) }),
+  /** Another game in the same room, once a game has ended: the captain's (v5). */
+  z.object({ kind: z.literal('rematch') }),
   /** One of the table's fixed messages, by id (v3). */
   z.object({ kind: z.literal('say'), message: SayId }),
   // The action is the engine's to judge; the room judges only whose piece it is.

@@ -35,6 +35,7 @@ export function ResultScreen({
   onChangeDifficulty,
   onTitle,
   onTogether = null,
+  rematch = null,
 }: {
   won: boolean;
   /** Display name of the organ that fell; null on a win or a non-organ loss. */
@@ -54,6 +55,12 @@ export function ResultScreen({
    * its game, so a new one is made and its code shared. Null alone.
    */
   onTogether?: (() => void) | null;
+  /**
+   * ANOTHER GAME IN THE SAME ROOM (protocol v5, ruled 25 and 30 September 2026), while the room is
+   * still here: the captain's to start (`mine`), and everyone else is told they are waiting for it.
+   * Null alone, and once the room is out of reach.
+   */
+  rematch?: { mine: boolean; onRematch: () => void } | null;
 }): ReactElement {
   const [showLog, setShowLog] = useState(false);
   return (
@@ -93,6 +100,21 @@ export function ResultScreen({
             </div>
           ) : null}
         </>
+      ) : null}
+      {rematch !== null ? (
+        rematch.mine ? (
+          <button
+            style={{ ...BTN, borderColor: '#B03A2E' }}
+            onClick={rematch.onRematch}
+            data-result="rematch"
+          >
+            {t('result.rematch')}
+          </button>
+        ) : (
+          <p style={{ fontSize: '0.9375rem', color: '#2E2A28' }} data-result="rematch-waiting">
+            {t('result.rematchWaiting')}
+          </p>
+        )
       ) : null}
       {onTogether !== null ? (
         <button style={BTN} onClick={onTogether} data-result="together">

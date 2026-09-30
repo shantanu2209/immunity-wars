@@ -11,7 +11,7 @@ import { RULES_VERSION } from '@immunity-wars/content';
  * desynchronise a newer room", and the only way a peer that cannot read a message can be kept from
  * acting on a misreading is not to let it in.
  */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 /*
  * VERSION HISTORY, because a bump with no record teaches nobody what changed.
@@ -34,6 +34,10 @@ export const PROTOCOL_VERSION = 4;
  *      before the game starts). A v3 client would read either as malformed.
  *      And undo, played together (ruled 27 September 2026): a view carries `undo`, whose moves an
  *      undo would take back and how many, and `undoIsSinglePlayer` gives way to `nothingToUndo`.
+ *   5  (30 September 2026): another game in the same room (ruled 25 September, confirmed 30
+ *      September). The captain sends `rematch` once a game has ended, and the room goes back to its
+ *      lobby with the same members and their seats. A v4 relay would close a `rematch` as malformed,
+ *      and a v4 client would never see its room come back.
  */
 
 /**

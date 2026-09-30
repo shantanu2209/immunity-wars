@@ -1200,6 +1200,51 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm update:check',
     expect: 'the page reloaded during a game',
   },
+  {
+    id: 'room-rematch-captain-only',
+    why: "Another game in the same room (protocol v5, ruled 30 September 2026) is the captain's to start, as a game is. A room that let anyone call it would let any guest end the Result for everyone.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "starts it.\n      if (room.captain !== msg.ref) return reject(room, msg.ref, 'notCaptain');\n",
+        'starts it.\n',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room exec vitest run src/room.test.ts',
+    expect: 'only the captain may, as only the captain starts a game',
+  },
+  {
+    id: 'room-rematch-after-the-end-only',
+    why: 'Another game in the same room follows a game that has ENDED. Called mid-game, it would throw away a game in progress for everyone at the table.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "      if (room.phase === 'playing') return reject(room, msg.ref, 'alreadyStarted');\n",
+        '',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room exec vitest run src/room.test.ts',
+    expect: 'not in a game under way',
+  },
+  {
+    id: 'room-rematch-keeps-seats',
+    why: "Ruled 30 September 2026: everyone's pieces carry over from the last game into the lobby. A rematch that emptied the seats would have every player claim theirs again.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "const next: RoomState = { ...room, phase: 'lobby', game: null, undoRun: null };",
+        "const next: RoomState = { ...room, members: room.members.map((m) => ({ ...m, seats: [] })), phase: 'lobby', game: null, undoRun: null };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/room exec vitest run src/room.test.ts',
+    expect: 'the same people in the same seats',
+  },
+  {
+    id: 'session-rematch-new-session',
+    why: "Protocol v5: after a rematch the phone must begin a NEW session with the next game's first view. One that kept the last would hand the new game's views to a finished game's session, and the play screen would open on the old game.",
+    file: 'packages/session/src/relay.ts',
+    mutate: (t) =>
+      t.replace("        if (msg.room.phase === 'lobby') this.relaySession = null;\n", ''),
+    gate: 'pnpm --filter @immunity-wars/server exec vitest run src/relay.test.ts',
+    expect: 'the next game is a new session',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

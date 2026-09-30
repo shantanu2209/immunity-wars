@@ -470,6 +470,19 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       return { room: next, out: [broadcast(next), viewFor(game)] };
     }
 
+    case 'rematch': {
+      // ANOTHER GAME IN THE SAME ROOM (ruled 25 September 2026, confirmed 30 September; protocol
+      // v5). The captain takes a room whose game has ended back to its lobby, with the same members
+      // and the seats they held. From there the lobby's rules apply as they always do: a newcomer
+      // may join, seats may change, and the game starts when the captain starts it.
+      if (room.captain !== msg.ref) return reject(room, msg.ref, 'notCaptain');
+      if (room.phase === 'playing') return reject(room, msg.ref, 'alreadyStarted');
+      // Already back in the lobby, by a second tap: nothing to do, and nothing to refuse.
+      if (room.phase === 'lobby') return { room, out: [] };
+      const next: RoomState = { ...room, phase: 'lobby', game: null, undoRun: null };
+      return { room: next, out: [broadcast(next)] };
+    }
+
     case 'action': {
       // Every refusal here is a `result` for this action's id, to the sender alone, so a client
       // can tell its own answer apart from views that other players' actions cause.

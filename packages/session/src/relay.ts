@@ -252,6 +252,14 @@ export class RelayRoom {
   }
 
   /**
+   * ANOTHER GAME IN THE SAME ROOM (protocol v5): the captain's, once a game has ended. The room goes
+   * back to its lobby, with the same members and their seats, and the next game begins a new session.
+   */
+  rematch(): void {
+    this.send({ kind: 'rematch' });
+  }
+
+  /**
    * Leaving is a decision: the seats go back to the table. Closing the app is not leaving.
    *
    * Settles once the message has gone, because sending is asynchronous (every frame is gzipped
@@ -263,7 +271,10 @@ export class RelayRoom {
     return this.outbound;
   }
 
-  /** The game, once it has started. Resolves on the first view, which is the game's start. */
+  /**
+   * The game, once it has started. Resolves on the first view, which is the game's start. After a
+   * rematch (v5) it is the NEXT game's: the room coming back to its lobby ends the last session.
+   */
   session(): Promise<RelaySession> {
     if (this.relaySession) return Promise.resolve(this.relaySession);
     return new Promise((resolve) => this.waiting.push(resolve));
@@ -314,6 +325,10 @@ export class RelayRoom {
         this.me = msg.id;
         break;
       case 'room':
+        // BACK IN THE LOBBY AFTER A GAME (v5): that game's session is over, so the next game's first
+        // view begins a new one. A session exists only once a game has started, so a lobby after it
+        // is only ever a rematch.
+        if (msg.room.phase === 'lobby') this.relaySession = null;
         this.projection = msg.room;
         if (this.me !== null && this.entered) {
           this.entered.resolve();
