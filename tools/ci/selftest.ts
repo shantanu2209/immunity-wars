@@ -3,6 +3,7 @@
  *
  *   npx tsx tools/ci/selftest.ts          # all controls
  *   npx tsx tools/ci/selftest.ts lint     # one, by id
+ *   npx tsx tools/ci/selftest.ts --inert  # only that every mutation still changes its file
  *
  * ============================================================================================
  * A CI PIPELINE THAT HAS NEVER GONE RED IS NOT KNOWN TO WORK.
@@ -24,7 +25,9 @@
  * WHY NOT `git apply` PATCH FILES: a patch carries line context and rots the moment the
  * surrounding code moves, so the control quietly stops applying and the suite reports a
  * `did not apply` that everyone learns to ignore. A string replacement that must match exactly —
- * and is checked to have changed the file — cannot rot silently.
+ * and is checked to have changed the file — cannot rot silently, PROVIDED the check runs: it rotted
+ * for five days when only the full run made it (FINDINGS #100), so `--inert` now runs on every
+ * `pnpm verify` and in CI.
  *
  * NOT EVERY CONTROL IS A FAILURE CONTROL. A rule expressed only as "forbid X" is half-specified:
  * a rule that forbade everything would satisfy every fail-control ever aimed at it. Controls
@@ -384,12 +387,12 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'room-no-ref-in-view',
-    why: "FINDINGS #77: the engine projects captain, owner and apBudget keyed by player id into EVERY view. Given refs, as P3.1 gave it, every view broadcast every member's credential. The wire suite found it against real views on its first run.",
+    why: "FINDINGS #77: the engine projects captain, owner and apBudget keyed by player id into EVERY view. Given refs, as P3.1 gave it, every view broadcast every member's credential. The wire suite found it against real views on its first run. Re-aimed 30 September 2026 (FINDINGS #100): P3.7 moved the id into an imported pidOf and wrapped it in pidOfMember, and the old mutation had matched nothing since.",
     file: 'packages/room/src/room.ts',
     mutate: (t) =>
       t.replace(
-        'const pidOf = (m: Member): string => `m${String(m.joinOrder)}`;',
-        'const pidOf = (m: Member): string => m.ref;',
+        'const pidOfMember = (m: Member): string => pidOf(m.joinOrder);',
+        'const pidOfMember = (m: Member): string => m.ref;',
       ),
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'never carries a ref, in any message, across a whole game',
@@ -1081,11 +1084,48 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
     expect: 'the port writes nothing',
   },
+  {
+    id: 'selftest-inert-on-every-verify',
+    why: 'FINDINGS #100: a control whose mutation matches nothing checks nothing, and room-no-ref-in-view was that for five days, because only a full run noticed. --inert runs on every verify; a line reworded under a control, the same meaning in other words, must turn it red.',
+    file: 'packages/engine/src/ap.ts',
+    mutate: (t) =>
+      t.replace(
+        '  if (pid == null) return;\n',
+        '  if (pid === null || pid === undefined) return;\n',
+      ),
+    gate: 'pnpm -s ci:selftest:inert',
+    expect: 'engine-spendap-no-player THE MUTATION DID NOTHING',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
 function gitStatus(): string {
   return execSync('git status --porcelain', { cwd: REPO, encoding: 'utf8' }).trim();
+}
+
+/**
+ * `--inert`: THE CHEAP HALF, on every `pnpm verify` and in CI's static job (FINDINGS #100). Every
+ * control's mutation is applied in memory, never written, and none may leave its file unchanged. No
+ * gate runs, so it takes a second. The full run below catches an inert control too, but only when
+ * someone runs all of it: `room-no-ref-in-view` matched nothing from 25 to 30 September 2026, when
+ * P3.7 renamed the line it mutates, and nothing said so until the next full run.
+ */
+if (process.argv[2] === '--inert') {
+  const inert = CONTROLS.filter((c) => {
+    const path = join(REPO, c.file);
+    if (!existsSync(path)) return true;
+    const text = readFileSync(path, 'utf8');
+    return c.mutate(text) === text;
+  });
+  for (const c of inert) {
+    console.log(`✗ ${c.id} THE MUTATION DID NOTHING — this control is inert (${c.file})`);
+  }
+  if (inert.length > 0) {
+    console.log(`${String(inert.length)} of ${String(CONTROLS.length)} controls are inert.`);
+    process.exit(1);
+  }
+  console.log(`${String(CONTROLS.length)} controls, and every mutation changes its file.`);
+  process.exit(0);
 }
 
 const before = gitStatus();

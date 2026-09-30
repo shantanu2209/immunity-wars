@@ -4824,6 +4824,8 @@ the engine; (C) undo without a refund, which misses what it was asked for. **Rul
 never alone. The corpus stays green; `tests/equivalence/src/undo-budget.test.ts` holds the change and
 its confinement. Undo together is built on it, in the room (protocol v4).
 
+---
+
 ## 96. A lint control went red for timing, not for its rule — FIXED inline 28 September 2026
 
 **Found 28 September 2026**, running every suite at once (`pnpm turbo run test --force --continue`)
@@ -4914,6 +4916,8 @@ budget for nobody out of the game's state), or remove it so that the port matche
 **Ruled 30 September 2026: kept** (*"I will go with your suggestion"*), and recorded as
 [`DEVIATIONS.md`](DEVIATIONS.md) #9. No code changed: the guard is the one the port already had.
 
+---
+
 ## 99. The points check asks about the cell an action names, not the one it charges: latent, and live the day a free action is granted (#29) — found 30 September 2026
 
 **Found 30 September 2026**, checking #98's claim, written two days earlier, that no action reaches
@@ -4946,3 +4950,34 @@ for free together, since `spendAP` floors at 0, and alone single player's points
 **No action now.** Nothing reaches it. The test pins today's behaviour, but it hands the state its
 free action itself, so granting free actions would not make it fail; what makes the work on #29 meet
 this is a line added to #29 itself.
+
+---
+
+## 100. A negative control was inert for five days, because only a full self-test run could say so — FIXED inline 30 September 2026
+
+**Found 30 September 2026**, running every control as the toolchain battery requires, after four
+Dependabot bumps and two security pins. `room-no-ref-in-view` reported *"THE MUTATION DID NOTHING"*:
+its mutation looked for `const pidOf = (m: Member) ...` in `packages/room/src/room.ts`, and P3.7 piece
+B (25 September) had moved the player id into an imported `pidOf`, wrapped by `pidOfMember`. From then
+on the control changed nothing, so it proved nothing.
+
+**What it guards.** #77: a view must never carry a member's ref, the device's credential. The rule
+held throughout: the room's own test, *"never carries a ref, in any message, across a whole game"*,
+ran and passed on every commit. What was lost for five days was the proof that the test can fail.
+
+**Why five days.** The self-test does report an inert control, but only when it runs, and CI does not
+run it: each of its 98 controls runs a gate. Every run between 25 and 30 September named single
+controls. So `selftest.ts`'s own header, that a mutation checked to change its file *"cannot rot
+silently"*, was true only while someone ran the whole suite.
+
+**Fixed inline, as an instrument:**
+
+- **The control is re-aimed** at `pidOfMember`, and fires with its diagnostic.
+- **`pnpm ci:selftest:inert`** applies every control's mutation in memory, writes nothing, and fails
+  if any leaves its file unchanged. No gate runs, so it takes about a second; it is in `pnpm verify`
+  and in CI's static job.
+- **Its control, `selftest-inert-on-every-verify`**, rewords the guard in `ap.ts` to the same meaning
+  in other words, which leaves `engine-spendap-no-player` matching nothing, and requires the check to
+  name it. And by hand: with the old mutation put back, the check names `room-no-ref-in-view` at once.
+
+The full run still matters: `--inert` proves a mutation lands, not that its gate fires on it.
