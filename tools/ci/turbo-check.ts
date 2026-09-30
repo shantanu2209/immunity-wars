@@ -37,6 +37,7 @@ interface PkgJson {
 interface DryTask {
   readonly taskId: string;
   readonly dependencies?: readonly string[];
+  readonly inputs?: Readonly<Record<string, string>>;
 }
 
 const run = (cmd: string): string =>
@@ -79,6 +80,28 @@ for (const [name, m] of manifests) {
   }
 }
 
+/**
+ * FILES A TEST READS FROM OUTSIDE ITS OWN PACKAGE (docs/FINDINGS.md #108). Turbo hashes a test task
+ * over its package's files, so the equivalence suite's reads of the original engine, the rulebook
+ * document and the reachability report were invisible to its cache: a changed rulebook replayed a
+ * cached green for the test that pins the library's why boxes to it word for word. They are declared
+ * in `tests/equivalence/turbo.json`, and each must be in the task's hash.
+ */
+const OUTSIDE_READS: readonly [string, string][] = [
+  ['@immunity-wars/equivalence', '../../tools/legacy/v2_engine.js'],
+  ['@immunity-wars/equivalence', '../../docs/Immunity_Wars_Rulebook_v3_1.docx'],
+  ['@immunity-wars/equivalence', '../../docs/CONTENT_REACHABILITY.md'],
+];
+const inputsOf = new Map(dry.tasks.map((t) => [t.taskId, t.inputs ?? {}]));
+for (const [name, file] of OUTSIDE_READS) {
+  if (!(file in (inputsOf.get(`${name}#test`) ?? {}))) {
+    problems.push(
+      `TURBO TEST HASH BLIND TO A FILE IT READS: ${name}#test reads ${file}, which is not in its ` +
+        'hash, so a change to it would replay a cached result',
+    );
+  }
+}
+
 if (checked === 0) {
   // Vacuity guard: a run that checked no edge proves nothing.
   console.error('turbo:check examined no workspace edges — the package list or dry run is empty');
@@ -91,5 +114,6 @@ if (problems.length > 0) {
 }
 console.log(
   `turbo:check: ${checked} workspace test edges present in the task hash graph — a change in ` +
-    'any dependency invalidates its dependents’ cached tests.',
+    'any dependency invalidates its dependents’ cached tests — and the ' +
+    `${String(OUTSIDE_READS.length)} files tests read from outside their packages are in their hashes.`,
 );

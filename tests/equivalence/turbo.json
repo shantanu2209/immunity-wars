@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/legacy/**",
+        "$TURBO_ROOT$/docs/Immunity_Wars_Rulebook_v3_1.docx",
+        "$TURBO_ROOT$/docs/CONTENT_REACHABILITY.md"
+      ]
+    }
+  }
+}
