@@ -130,7 +130,8 @@ const pack = { ...parseRules(), ...parseBoard() };
  * antivenom teaches no memory; antibodies may attempt a trypanosome; degranulate burns only the
  * organ the fight is in. The content gained Pathogen X's declared tropism, six of the actions'
  * numbers and new sentences. The relay refuses any other rules version exactly, so a phone still
- * on 3.1.0 is told to update.
+ * on 3.1.0 is told to update. Then rules 4.1.0 and content 1.2.0 (queue Q11, 30 September 2026):
+ * a venom is never remembered, and the help text states the queue's rules.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;

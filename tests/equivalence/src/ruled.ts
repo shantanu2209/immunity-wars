@@ -251,4 +251,20 @@ export const RULED: readonly RuledChange[] = [
     replace:
       '    case "resrecall": {  // a resident returns to its organ box in one move (queue Q6)\n      if(!g.flags.residentMove) return err("Residents cannot move.");\n      const r=g.residents[a.organ]; if(!r) return err("No such organ.");\n      if(r.infectedBy) return err("This resident has a parasite living inside it, so it cannot move until you kill the parasite.");\n      if(r.step===0) return err("The resident is already in its organ.");\n      r.step=0; spend(g,"res_"+a.organ);\n      pushLog(g,`The <b>${RESIDENT_NAME[a.organ]||"resident macrophage"}</b> returned to the ${ORGANS[a.organ].name}.`); return ok(); }\n    case "resengulf": {  // the resident engulfs one germ where it stands — FREE, once per turn\n',
   },
+  // Q11 (Shantanu, 30 September 2026, on FINDINGS #55's second question: "do whatever is
+  // scientifically accurate"): a venom is never remembered. No vaccine against one, and no memory
+  // response to one, whatever memory an older game carries.
+  {
+    queue: 'Q11',
+    name: 'vaccinate refuses a venom',
+    find: 'if(!g.seen[dz]) return err("You cannot vaccinate against something your body has never seen.");',
+    replace:
+      'if(!g.seen[dz]) return err("You cannot vaccinate against something your body has never seen.");\n      if((DECK_MASTER.find(x=>x.dz===dz)||{}).type==="venom") return err("There is no vaccine against venom: it acts in minutes, and even a remembered response takes days. Only antivenom works.");',
+  },
+  {
+    queue: 'Q11',
+    name: 'no memory response to a venom',
+    find: 'if(memoryHit(g,c.dz)){',
+    replace: 'if(memoryHit(g,c.dz) && c.type!=="venom"){',
+  },
 ];

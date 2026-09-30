@@ -278,3 +278,70 @@ describe("Q6 (Kartik, FINDINGS #5): a resident's Recall, back to its organ box i
     expect(resident(g)['step']).toBe(2);
   });
 });
+
+describe('Q11 (Shantanu, FINDINGS #55): a venom is never remembered', () => {
+  const VENOM = "Russell's viper venom";
+  const TOXIN = 'Diphtheria';
+  const NO_VACCINE =
+    'There is no vaccine against venom: it acts in minutes, and even a remembered response takes days. Only antivenom works.';
+  const venomCard = (): Raw => ({
+    ...((port.DECK_MASTER as unknown as Raw[]).find((c) => c['dz'] === VENOM) ?? {}),
+  });
+  const lab =
+    (dz: string) =>
+    (_E: Engine, g: Game): void => {
+      (g['seen'] as Raw)[dz] = true;
+      g['phase'] = 'command';
+      g['ap'] = 5;
+    };
+  const vaccinate = (dz: string) => (): Raw[] => [{ action: 'vaccinate', disease: dz, ap: 2 }];
+  // A venom arriving in a game that already remembers it, as a game from before Q4 (an antivenom
+  // kill) or Q11 (a vaccine) can: the deck and the reinfection pool hold only the venom.
+  const arriving = (_E: Engine, g: Game): void => {
+    g['seen'] = { [VENOM]: true };
+    (g['memory'] as Raw)[VENOM] = true;
+    g['deck'] = [venomCard(), venomCard(), venomCard()];
+  };
+  const venoms = (g: Game): Raw[] =>
+    (g['invaders'] as unknown as Raw[]).filter((x) => x['disease'] === VENOM);
+
+  it('a venom cannot be vaccinated against, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'normal', lab(VENOM), vaccinate(VENOM));
+      expect(results[0], name).toEqual({ ok: false, error: NO_VACCINE });
+      expect((g['vaccine'] as Raw)[VENOM], name).toBeUndefined();
+      expect(g['ap'], name).toBe(5);
+    }
+  });
+
+  it('a toxin still can, because toxoid vaccines are real: diphtheria, in all three', () => {
+    for (const [name, E] of [...ENGINES, ['the original', ORIGINAL] as [string, Engine]]) {
+      const { g, results } = run(E, 1, 'normal', lab(TOXIN), vaccinate(TOXIN));
+      expect(results[0], name).toEqual({ ok: true });
+      expect((g['vaccine'] as Raw)[TOXIN], name).toBe(2);
+    }
+  });
+
+  it('a venom a game already remembers meets no memory response on arrival, in the port and the original as ruled', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of ENGINES) {
+        const { g, results } = run(E, seed, 'normal', arriving, () => [{ action: 'draw' }]);
+        expect(results[0], `${name}, seed ${String(seed)}`).toMatchObject({ ok: true });
+        expect(venoms(g).length, `${name}, seed ${String(seed)}: no venom arrived`).toBeGreaterThan(
+          0,
+        );
+        for (const v of venoms(g)) expect(v['remembered'], name).toBeFalsy();
+      }
+  });
+
+  it('CONTROL: the original, untouched, vaccinated against the venom and remembered it on arrival', () => {
+    expect(run(ORIGINAL, 1, 'normal', lab(VENOM), vaccinate(VENOM)).results[0]).toEqual({
+      ok: true,
+    });
+    for (const seed of SEEDS) {
+      const { g } = run(ORIGINAL, seed, 'normal', arriving, () => [{ action: 'draw' }]);
+      expect(venoms(g).length).toBeGreaterThan(0);
+      expect(venoms(g).every((v) => v['remembered'] === true)).toBe(true);
+    }
+  });
+});

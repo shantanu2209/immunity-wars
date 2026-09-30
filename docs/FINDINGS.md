@@ -3040,6 +3040,9 @@ text into content, and the extractor's job changing with it, a change to argue b
 **It needs a ruling on whether and when.** Until then the matcher is exact enough to pin: every
 entry reaches itself, and no recorded line is ambiguous (#102).
 
+**Ruled 30 September 2026 (Shantanu, *"Ok"*):** it is decided when the Hindi translation work
+starts, which is when the values inside a line first need to be something other than English.
+
 ## 54. A generator's capability gap propagates to every instrument built on it: the harness was green over `net` without ever offering it
 
 **Found 4 September 2026, while planning CP3.** Before residents were added to the offered ⊆
@@ -3152,6 +3155,12 @@ five seeds in the port and the original as ruled, with the untouched original, w
 as the control; control `queue-q4-antivenom-no-memory`. **Still open, and Kartik's:** the second
 question above, whether a memory response should ever apply to a venom at all. The ruling of 5
 September did not take it up.
+
+**Ruled 30 September 2026 by Shantanu: never** (*"No I don't think it should right? Do whatever is
+scientifically accurate."*). Built as queue Q11 ([`DEVIATIONS.md`](DEVIATIONS.md) #11): there is
+no vaccine against a venom, and a venom meets no memory response, whatever memory a game carries.
+Toxins keep their vaccines; whether every toxin in the deck has one licensed for people is worth
+Kartik's check, and is not changed here.
 
 ## 56. The engine's invader id counter is not in `GameState` — a resumed game reuses ids, and every id-keyed path can then act on the wrong pathogen
 
@@ -5305,6 +5314,27 @@ here.
 **For a ruling, before the deploy:** ship Q1 ahead of the printed rules, as the app ran behind
 them on Recall from 5 September until now, or hold the deploy until the text changes.
 
+**Ruled 30 September 2026:** ship (the queue deployed that evening), and the printed texts are
+Shantanu's to have fixed as seems best, Kartik not reviewing at this stage. **The app's own help now
+states Q1, Q6 and Q11** (queue Q11's commit): the B-Cell's and the parasite's entries name Sleeping
+sickness, the resident's names Recall, and memory and venom say a venom is never remembered.
+
+**The printed documents are not edited in this change.** The wording proposed for each, for
+Shantanu to apply:
+
+| Document | Where | Proposed wording |
+|---|---|---|
+| Rulebook | Neutralise, the action table | after *"anywhere on the board."*: "Against Sleeping sickness, roll the die: on 1 to 3 it changes its coat, the cube is lost and it lives; on 4 to 6 it is destroyed." |
+| Rulebook | Vaccinate, the action table | after *"permanent memory of it."*: "Never against a venom: it acts in minutes, and even a remembered response takes days, so only antivenom works." |
+| Rulebook | How you gain memory, Training | "Beat a pathogen and your body remembers it, but never a venom: antivenom teaches it nothing." |
+| Quick reference | The B-Cell | "Neutralise a virus (1 AP) or a toxin (2 AP), or try Sleeping sickness (on 1 to 3 its coat changes); Vaccinate (5 AP total, never a venom);" |
+| Study packet | Antigenic variation | after *"hundreds of coat variants."*: "In your game this is Sleeping sickness: antibodies may try to neutralise it, and on a roll of 1 to 3 it changes its coat and the antibody is wasted. It is why there is no vaccine against it." |
+| Study packet | IN YOUR GAME, antibodies | "neutralise a virus or toxin (and try it on Sleeping sickness, whose coat may change), or coat…" |
+| Study packet | IN YOUR GAME, venom | at the end: "Nor can you vaccinate against it, and an antivenom kill leaves no memory: a second bite needs a second dose." |
+
+None of these is a "WHY IT WORKS THIS WAY" box, which the library pins word for word to the
+rulebook (`why-boxes.test.ts`). **OPEN until the printed texts change.**
+
 ## 106. The self-test died restoring a file it had mutated, on a brief Windows lock, and left the engine mutated in the tree — FIXED inline 30 September 2026
 
 **Found 30 September 2026, in the full self-test run after the engine change queue.** After 36
@@ -5325,3 +5355,50 @@ fails prints the file and the command that restores it, and stops the run.
 `tools/ci/write-retry.test.ts` holds both, with a writer refused three times and one refused
 always. **An instrument defect, fixed inline**, because every control run after it measures a tree
 nobody chose.
+
+## 107. Under queue Q11's rules, the fast panel control's verdict on a one-AP cut on Normal became a coin flip — the control now asserts its strength, 30 September 2026
+
+**Found building queue Q11**, when `metrics-control.test.ts`'s *"one fewer AP per turn fails the
+panel"* went red. The control calibrates a small panel of its own on the original as ruled (4 arms
+of 8 × 50 games) and judges a mutant that takes one Action Point from every turn. Before Q11 it
+failed that panel on Normal by about 3.8σ at its worst metric. With Q11 in the rules, on Normal:
+turns survived −2.6σ, trunk kill share +0.2σ, antibodies made −3.5σ, organs damaged −2.7σ. One
+metric past 3σ, where the rule needs two.
+
+**Measured before changing anything**, the verdict of each control at five fast-scale sizes, under
+Q11's rules (the four shifts in σ, in the panel's order):
+
+| Arms × batches × games | One AP fewer, Normal | One AP fewer, Hard | Brain lane 3 → 4 | Brain at 1, Normal |
+|---|---|---|---|---|
+| 4 × 8 × 50 (the control's) | pass: −2.6 0.2 −3.5 −2.7 | FAIL | pass | FAIL |
+| 4 × 8 × 60 | FAIL: −3.3 1.7 −5.1 −2.2 | FAIL | pass | FAIL |
+| 4 × 8 × 70 | pass: −2.7 1.2 −4.7 −2.1 | FAIL | pass | FAIL |
+| 8 × 8 × 50 | pass: −1.4 0.2 −4.1 2.2 | FAIL | pass | FAIL |
+| 8 × 8 × 70 | pass: −2.9 1.4 −4.8 −2.7 | FAIL | pass | FAIL |
+
+Doubling the games instead (4 × 8 × 100) failed the panel on the Normal cut and **also on the brain
+lane**, the change the panel is pinned as blind to (#17, #34), so no larger size keeps both claims.
+**On Normal the cut's verdict at this scale is a coin flip** (1 of 5 sizes), and the one size where
+it happened to fail would have been chosen for being green. What holds at every size: antibodies
+made falls 3.5σ to 5.1σ; the cut fails the panel on Hard; the Brain at integrity 1 fails it on
+Normal; the brain lane does not.
+
+**So the control asserts what holds.** On Normal, the cut must move the panel past 3σ, with
+antibodies made falling past 3σ; the verdict is asserted on Hard at the same scale, as it was
+already. A control makes it fail on purpose (`balance-normal-ap-strength`: the mutant keeps
+Normal's five Action Points, and the test goes red). **An instrument's claim re-measured and
+narrowed to the measurement, fixed inline.** The shipped panel's own verdict on the same cut is
+measured against the recalibrated bands below.
+
+**The shipped panel, measured after the recalibration** (the 24-arm bands of queue Q11, at the
+check's own arm of 20 × 100 games, both mutants on the original as ruled):
+
+| | Normal | Hard |
+|---|---|---|
+| Unmutated | pass: −0.8 −0.6 −1.6 1.4, the port's own figures | pass |
+| One AP fewer | **FAIL**: −4.9 1.3 **−15.0** −0.3 | **FAIL**: −4.8 −2.5 **−34.0** −2.3 |
+| Brain lane 3 → 4 | pass: 1.6 −0.7 −0.5 0.5 | pass: 0.4 0.7 −1.0 −1.7 |
+
+So at the scale that ships, the cut fails the panel on both difficulties by a wide margin and the
+blind spot is where #17 and #34 put it. The fast control's Normal verdict was the marginal thing,
+not the panel.

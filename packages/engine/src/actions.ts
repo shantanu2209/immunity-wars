@@ -375,6 +375,14 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!dz) return err('Pick a disease to develop a vaccine against.');
       if (!g.seen[dz])
         return err('You cannot vaccinate against something your body has never seen.');
+      // NO VACCINE AGAINST A VENOM (queue Q11; Shantanu, 30 September 2026, on FINDINGS #55's second
+      // question, "do whatever is scientifically accurate"): venom acts in minutes, even a remembered
+      // response takes days to make antibodies, and no vaccine against one is licensed for people.
+      if (DECK_MASTER.find((x) => x.dz === dz)?.type === 'venom') {
+        return err(
+          'There is no vaccine against venom: it acts in minutes, and even a remembered response takes days. Only antivenom works.',
+        );
+      }
       if (g.memory[dz]) return err('You are already immune to that.');
       const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));
       if (apNow(g) < 1) return err('No Action Points.');
@@ -889,7 +897,9 @@ function actionDraw(g: GameState, a: Action): ActionResult {
     // SECONDARY RESPONSE — memory is DISEASE-SPECIFIC. It does not fill the shared class pool
     // (that would let you spend it on any pathogen of the class). Instead it marks THIS
     // pathogen as one your body already knows how to destroy.
-    if (memoryHit(g, c.dz)) {
+    // Never for a venom (queue Q11), whatever memory an older game carries: an antivenom kill granted
+    // it before queue Q4, and a vaccine before Q11.
+    if (memoryHit(g, c.dz) && c.type !== 'venom') {
       iv.remembered = true;
       const costTxt =
         g.difficulty === 'hard'

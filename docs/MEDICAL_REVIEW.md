@@ -6,9 +6,9 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-09-30 from `packages/content/src` — pack `immunity-wars-core`, content `1.1.0`, rules `4.0.0`.
+Generated 2026-09-30 from `packages/content/src` — pack `immunity-wars-core`, content `1.2.0`, rules `4.1.0`.
 
-**803 claims.** Game mechanics are deliberately excluded: how a disease behaves on
+**804 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
 design decisions rather than medical claims, and are not here to be reviewed. **One exception:**
 each card's "Can infect" line is included, labelled as a game simplification, so that a case
@@ -1263,6 +1263,7 @@ What the app tells a player about each kind of invader, and how it is beaten. Th
 |---|---|---|
 | `TYPE/venom/beat` | How it is beaten | It is NOT alive and acts far too fast for your B-cells. Only an ANTIVENOM dose works. You cannot make antibodies in time. |
 | `TYPE/venom/hint` | In How to play | Not alive, and far too fast for your B-cells. Only a ready-made antivenom dose works. |
+| `TYPE/venom/rest` | In How to play | There is no vaccine against it, and beating it teaches the body nothing: a second bite needs a second dose. |
 
 ### Fungus
 
@@ -1293,7 +1294,7 @@ What the app tells a player about each kind of invader, and how it is beaten. Th
 |---|---|---|
 | `TYPE/parasite/beat` | How it is beaten | Coat it, then STRIKE it down with the Eosinophil (2 dmg) or Monocyte (1 dmg). Once it is on its last HP the Monocyte can finally engulf it. NETs do not hold it. |
 | `TYPE/parasite/hint` | In How to play | Coat it, then strike it down: Eosinophil 2 damage, Monocyte 1. |
-| `TYPE/parasite/rest` | In How to play | Once it is on its last hit point the Monocyte can finally swallow it. |
+| `TYPE/parasite/rest` | In How to play | Once it is on its last hit point the Monocyte can finally swallow it. Antibodies may try to neutralise Sleeping sickness, but on a roll of 1 to 3 it changes its coat and the antibody no longer fits. |
 
 ## Part 3 — The cells
 
@@ -1337,7 +1338,7 @@ Seven cells a player commands, each with a card, and seven resident macrophages 
 | `CELL/bcell/deficiency` | What happens without it | No B-cells means no antibodies: bacteria and toxins outside cells run unchecked, and there is nothing for a vaccine to build on. The human version is X-linked agammaglobulinaemia. |
 | `CELL/bcell/fact` | Card fact | Your body already carries B-cells for antigens it has never met. Finding the one that fits a new pathogen, clonal selection, is why a first response takes days, and why the second time is fast. |
 | `CELL/bcell/hint` | In How to play | Never moves. Produce antibodies of one antigen class. |
-| `CELL/bcell/rest` | In How to play | Coat a bacterium, worm or parasite. Neutralise a virus, or a toxin for 2 AP. Vaccinate, 5 AP in total. Search for the clone, 3 AP, for Pathogen X. |
+| `CELL/bcell/rest` | In How to play | Coat a bacterium, worm or parasite. Neutralise a virus, or a toxin for 2 AP, or try it on Sleeping sickness: on a roll of 1 to 3 its coat changes and the antibody is lost. Vaccinate, 5 AP in total, against anything but a venom. Search for the clone, 3 AP, for Pathogen X. |
 
 ### Killer T-Cell
 
@@ -1396,7 +1397,7 @@ Seven cells a player commands, each with a card, and seven resident macrophages 
 | Claim id | Field | What the app says |
 |---|---|---|
 | `CELL/resident/hint` | In How to play | One lives in each organ. Patrol: 1 AP per step along its own organ branch. |
-| `CELL/resident/rest` | In How to play | It may never leave that branch, and it must be out on the branch to meet anything: nothing can be engulfed in the organ box itself. Engulf, free once per turn: destroy one virus or coated bacterium on its space. |
+| `CELL/resident/rest` | In How to play | It may never leave that branch, and it must be out on the branch to meet anything: nothing can be engulfed in the organ box itself. Engulf, free once per turn: destroy one virus or coated bacterium on its space. Recall, 1 AP: straight back to its organ box from any step. |
 
 ### Cardiac macrophage
 
@@ -1740,4 +1741,4 @@ Sentences from How to play that explain immunology in general rather than descri
 
 ---
 
-*803 claims: 666 diseases, 24 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 4 elsewhere.*
+*804 claims: 666 diseases, 25 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 4 elsewhere.*
