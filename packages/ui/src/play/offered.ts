@@ -33,6 +33,7 @@ import {
   ANTIVENOM_AP,
   ANTIVENOM_ORDER,
   CLONE_COST,
+  DECK_MASTER,
   DEGRANULATE_AP,
   DEGRANULATE_DAMAGE,
   FAMILIES,
@@ -56,6 +57,11 @@ import { engineText } from '../engineText';
 import { residentDisplayName } from '../names';
 
 export type OfferSource = 'cell' | 'body';
+
+/** The deck's venoms, by name: data, read from content. The rule that they take no vaccine is the engine's. */
+const VENOMS: ReadonlySet<string> = new Set(
+  DECK_MASTER.filter((c) => c.type === 'venom').map((c) => c.dz),
+);
 
 /**
  * The repositioning actions — the session's undo MOVE_CLASS, seen from the offer side. The
@@ -324,13 +330,14 @@ export function bodyOffers(view: SessionView): Offered {
     });
   }
 
-  // VACCINATE — not on Training (immunity comes from surviving); any seen, unremembered disease.
+  // VACCINATE — not on Training (immunity comes from surviving); any seen, unremembered disease
+  // but a venom, which has no vaccine (queue Q11: the engine refuses it, so the lab never offers it).
   if (difficulty !== 'training') {
     const seen = (g['seen'] as Record<string, unknown> | undefined) ?? {};
     const memory = (g['memory'] as Record<string, unknown> | undefined) ?? {};
     const vaccine = (g['vaccine'] as Record<string, unknown> | undefined) ?? {};
     for (const dz of Object.keys(seen)) {
-      if (seen[dz] !== true || memory[dz] === true) continue;
+      if (seen[dz] !== true || memory[dz] === true || VENOMS.has(dz)) continue;
       const need = VACCINE_COST - num(vaccine[dz]);
       for (const amount of [1, 2]) {
         if (ap >= amount && need >= amount) {

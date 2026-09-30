@@ -5325,3 +5325,37 @@ fails prints the file and the command that restores it, and stops the run.
 `tools/ci/write-retry.test.ts` holds both, with a writer refused three times and one refused
 always. **An instrument defect, fixed inline**, because every control run after it measures a tree
 nobody chose.
+
+## 107. Under queue Q11's rules, the fast panel control's verdict on a one-AP cut on Normal became a coin flip — the control now asserts its strength, 30 September 2026
+
+**Found building queue Q11**, when `metrics-control.test.ts`'s *"one fewer AP per turn fails the
+panel"* went red. The control calibrates a small panel of its own on the original as ruled (4 arms
+of 8 × 50 games) and judges a mutant that takes one Action Point from every turn. Before Q11 it
+failed that panel on Normal by about 3.8σ at its worst metric. With Q11 in the rules, on Normal:
+turns survived −2.6σ, trunk kill share +0.2σ, antibodies made −3.5σ, organs damaged −2.7σ. One
+metric past 3σ, where the rule needs two.
+
+**Measured before changing anything**, the verdict of each control at five fast-scale sizes, under
+Q11's rules (the four shifts in σ, in the panel's order):
+
+| Arms × batches × games | One AP fewer, Normal | One AP fewer, Hard | Brain lane 3 → 4 | Brain at 1, Normal |
+|---|---|---|---|---|
+| 4 × 8 × 50 (the control's) | pass: −2.6 0.2 −3.5 −2.7 | FAIL | pass | FAIL |
+| 4 × 8 × 60 | FAIL: −3.3 1.7 −5.1 −2.2 | FAIL | pass | FAIL |
+| 4 × 8 × 70 | pass: −2.7 1.2 −4.7 −2.1 | FAIL | pass | FAIL |
+| 8 × 8 × 50 | pass: −1.4 0.2 −4.1 2.2 | FAIL | pass | FAIL |
+| 8 × 8 × 70 | pass: −2.9 1.4 −4.8 −2.7 | FAIL | pass | FAIL |
+
+Doubling the games instead (4 × 8 × 100) failed the panel on the Normal cut and **also on the brain
+lane**, the change the panel is pinned as blind to (#17, #34), so no larger size keeps both claims.
+**On Normal the cut's verdict at this scale is a coin flip** (1 of 5 sizes), and the one size where
+it happened to fail would have been chosen for being green. What holds at every size: antibodies
+made falls 3.5σ to 5.1σ; the cut fails the panel on Hard; the Brain at integrity 1 fails it on
+Normal; the brain lane does not.
+
+**So the control asserts what holds.** On Normal, the cut must move the panel past 3σ, with
+antibodies made falling past 3σ; the verdict is asserted on Hard at the same scale, as it was
+already. A control makes it fail on purpose (`balance-normal-ap-strength`: the mutant keeps
+Normal's five Action Points, and the test goes red). **An instrument's claim re-measured and
+narrowed to the measurement, fixed inline.** The shipped panel's own verdict on the same cut is
+measured against the recalibrated bands below.

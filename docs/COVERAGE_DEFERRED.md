@@ -65,13 +65,13 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:271` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:301` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:350` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:378` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:380` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:494` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:524` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:648` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:653` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:656` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
+- `actions.ts:386` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:388` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:502` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:532` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:656` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:661` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:664` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
 - `construct.ts:163` `default:`
 - `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
