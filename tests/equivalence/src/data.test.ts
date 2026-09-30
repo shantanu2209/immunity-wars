@@ -95,13 +95,16 @@ describe('B1: data tables match legacy exactly', () => {
 });
 
 describe('B1: the tables cover exactly the keys the types promise', () => {
-  // Pathogen X is the one card deliberately absent from both TROPISM and FAMILY. It works by
-  // falling through two separate lookup misses rather than by being declared — see
-  // docs/FINDINGS.md #13. These tests pin the exception so B7 cannot quietly close it.
+  // Pathogen X is the one card deliberately absent from FAMILY: its pool is declared elsewhere
+  // (NOVEL_ANTIGENS, DEVIATIONS #5). It WAS absent from TROPISM too, working by a lookup miss
+  // (docs/FINDINGS.md #13), until queue Q3 declared it "any", a generalist on purpose, as Kartik
+  // ruled on 5 September 2026. Pinned both ways, so neither the declaration nor the gap it closed can
+  // come back unnoticed.
 
-  it('every DECK_MASTER disease except Pathogen X has a TROPISM entry', () => {
+  it('every DECK_MASTER disease has a TROPISM entry, and Pathogen X declares "any" (Q3)', () => {
     const missing = port.DECK_MASTER.filter((c) => !(c.dz in port.TROPISM)).map((c) => c.dz);
-    expect(missing).toEqual(['Pathogen X']);
+    expect(missing).toEqual([]);
+    expect(port.TROPISM['Pathogen X']).toBe('any');
   });
 
   it('every DECK_MASTER disease except Pathogen X has a FAMILY entry', () => {

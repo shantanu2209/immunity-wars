@@ -98,8 +98,12 @@ export interface Mutation {
  * applied by exact string replacement and asserted to have matched exactly once, so a
  * silently-inert mutation cannot masquerade as "the rig found nothing".
  */
-export function loadMutatedLegacy(mutation: Mutation): Engine {
-  const source = legacySource();
+export function loadMutatedLegacy(
+  mutation: Mutation,
+  options: { readonly original?: boolean } = {},
+): Engine {
+  // The original as ruled, unless a test needs the original as it is on disk.
+  const source = options.original === true ? originalLegacySource() : legacySource();
   const occurrences = source.split(mutation.find).length - 1;
   if (occurrences !== 1) {
     throw new Error(

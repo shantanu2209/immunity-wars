@@ -177,7 +177,9 @@ export function rollOrgan(g: GameState, iv: Invader): OrganKey {
   const declared = TROPISM[iv.disease];
   let list: OrganKey[];
   if (declared === 'any' || !declared) {
-    // Pathogen X reaches this branch by having no TROPISM entry at all — docs/FINDINGS.md #13.
+    // Pathogen X is declared 'any', a generalist ON PURPOSE (queue Q3, ruled by Kartik; FINDINGS
+    // #13): a novel pathogen, and nobody should know where it will go. A disease with no entry falls
+    // through here the same way, as in the original.
     list = g.organList.slice();
   } else {
     list = declared.filter((o) => g.organList.includes(o));

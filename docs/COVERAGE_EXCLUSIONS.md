@@ -45,13 +45,13 @@ weaker than a demonstration and is labelled so deliberately.
 - `110` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
 - `114` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
 - `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
-- `204` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
-- `209` `return (alt ?? null) as Card | null;`
-- `218` `return (alt ?? null) as Card | null;`
-- `242` `hp: INV_HP[c.type] || 1,`
-- `243` `maxhp: INV_HP[c.type] || 1,`
-- `291` `DECK_MASTER.find((c) => c.type === type) ??`
-- `306` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `206` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
+- `211` `return (alt ?? null) as Card | null;`
+- `220` `return (alt ?? null) as Card | null;`
+- `244` `hp: INV_HP[c.type] || 1,`
+- `245` `maxhp: INV_HP[c.type] || 1,`
+- `293` `DECK_MASTER.find((c) => c.type === type) ??`
+- `308` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
@@ -364,7 +364,7 @@ if ((c as unknown as Card).novel) {
 
 the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games
 
-### construct.ts:208
+### construct.ts:210
 
 ```
 if (alt) g.discard.push(alt);
@@ -372,7 +372,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:217
+### construct.ts:219
 
 ```
 if (alt) g.discard.push(alt);
@@ -380,7 +380,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:292
+### construct.ts:294
 
 ```
 ({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
@@ -388,7 +388,7 @@ both sites: splice at an index findIndex just returned as >= 0 always yields an 
 
 testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan
 
-### construct.ts:297
+### construct.ts:299
 
 ```
 if ((card as Card).novel) {
@@ -396,7 +396,7 @@ if ((card as Card).novel) {
 
 testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck
 
-### construct.ts:307
+### construct.ts:309
 
 ```
 if (!card) return null;

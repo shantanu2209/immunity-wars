@@ -33,8 +33,9 @@ import { describe, expect, it } from 'vitest';
 
 import * as content from '@immunity-wars/content';
 import * as port from '@immunity-wars/engine';
+import { rollOrgan } from '@immunity-wars/engine/internal';
 
-import { loadLegacy } from './engine.js';
+import { loadLegacy, loadMutatedLegacy } from './engine.js';
 import { installRng, restoreRng } from './rng.js';
 import type { GameState, Invader } from './types.js';
 
@@ -158,5 +159,42 @@ describe('#13 FIXED: the clonal-selection lesson survives losing the flag', () =
     } finally {
       restoreRng();
     }
+  });
+});
+
+// QUEUE Q3 (Kartik, 5 September 2026): Pathogen X's tropism DECLARED as "any", where it had been a
+// lookup miss. A declaration, not a rule: it must change no play. Shown against the ORIGINAL engine,
+// untouched, rather than argued from the code: on every seed, the organ it rolls for is the same in
+// the original, in the original as ruled, and in the port. `rollOrgan` is internal to the original,
+// so the rig adds it to the export line and changes nothing else.
+describe('Q3: declaring Pathogen X a generalist changes no play', () => {
+  const EXPOSE = {
+    name: 'expose rollOrgan',
+    find: 'module.exports={ setKnobs,',
+    replace: 'module.exports={ rollOrgan, setKnobs,',
+  };
+  type Rolls = { newGame: (c: object) => unknown; rollOrgan: (g: unknown, iv: object) => unknown };
+  const original = loadMutatedLegacy(EXPOSE, { original: true }) as unknown as Rolls;
+  const ruled = loadMutatedLegacy(EXPOSE) as unknown as Rolls;
+  const ported: Rolls = { newGame: port.newGame as never, rollOrgan: rollOrgan as never };
+
+  it('rolls the same organ in the original, the original as ruled, and the port, on every seed', () => {
+    for (const difficulty of ['training', 'normal', 'hard'])
+      for (let seed = 1; seed <= 40; seed += 1) {
+        const organ = (E: Rolls): unknown => {
+          installRng(seed);
+          try {
+            const g = E.newGame({ difficulty, science: false });
+            return E.rollOrgan(g, { disease: 'Pathogen X', lane: 'nose', forced: null });
+          } finally {
+            restoreRng();
+          }
+        };
+        const was = organ(original);
+        expect(typeof was, 'the original rolled no organ').toBe('string');
+        const where = `${difficulty}, seed ${String(seed)}`;
+        expect(organ(ruled), where).toBe(was);
+        expect(organ(ported), where).toBe(was);
+      }
   });
 });

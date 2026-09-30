@@ -15,9 +15,10 @@
  * no longer matches would leave the oracle silently the original, and every ruled change would then
  * show as a port defect, or worse, a missing one would pass.
  *
- * A change that is not a rule change (the queue's Q3 and Q7, which move a declaration and some
- * numbers without changing play) has NO entry here on purpose: the port must still agree with the
- * original as it is.
+ * Q7 has NO entry here, on purpose: it moves numbers into content without changing play or any
+ * table the original publishes, so the port must still agree with the original as it is. Q3 has one
+ * although it changes no play either, because it adds a row to `TROPISM`, a table the original
+ * publishes and the rig pins byte for byte.
  */
 export interface RuledChange {
   /** The queue's number for it, `Q1` to `Q10`. */
@@ -28,4 +29,15 @@ export interface RuledChange {
   readonly replace: string;
 }
 
-export const RULED: readonly RuledChange[] = [];
+export const RULED: readonly RuledChange[] = [
+  {
+    // Kartik, 5 September 2026: generalist on purpose, declared rather than a lookup miss. It changes
+    // no play: both engines already treat "any" exactly as a missing entry (v2_engine.js rollOrgan,
+    // `if(list==="any" || !list)`; construct.ts the same).
+    queue: 'Q3',
+    name: "Pathogen X's tropism declared as any",
+    find: '"Tuberculosis (reactivated)":["lungs"],"Pneumococcal pneumonia":["lungs"],\n};',
+    replace:
+      '"Tuberculosis (reactivated)":["lungs"],"Pneumococcal pneumonia":["lungs"],\n"Pathogen X":"any",\n};',
+  },
+];

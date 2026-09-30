@@ -1245,6 +1245,14 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/server exec vitest run src/relay.test.ts',
     expect: 'the next game is a new session',
   },
+  {
+    id: 'queue-q3-no-play-change',
+    why: "Queue Q3 (Kartik, 5 September 2026) declares Pathogen X's tropism as any, a generalist on purpose, where it had been a lookup miss. It must change no play: an engine that no longer read any as a missing entry would roll it for a different organ than the original, untouched.",
+    file: 'packages/engine/src/construct.ts',
+    mutate: (t) => t.replace("if (declared === 'any' || !declared) {", 'if (!declared) {'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/pathogen-x.test.ts',
+    expect: 'rolls the same organ in the original',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
