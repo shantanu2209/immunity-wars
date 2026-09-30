@@ -1775,3 +1775,12 @@ now leaves this one first.
 
 **Not exercised by a test:** *Back to the title* leaving the room from the Result. It calls the same
 `leaveRoom` the pause menu's Leave does, whose leaving is tested over real sockets.
+
+### Deployed, 30 September 2026: protocol version 5
+
+With Shantanu's go (*"Deploy now"*), after #129, when nobody was playing: the relay as
+`20260930-161550-e19729f`, its 41 tests passing first and restarted with nobody connected, then the
+app as `20260930-161653-e19729f`, the start check passing before it was copied. Read back from the
+server: `PROTOCOL_VERSION = 5`, the relay active and answering through Caddy. From the live site: the
+new words (*"Another game in this room"*, and the line for everyone waiting). A phone on version 4 is
+refused until it updates; on the build of the first deploy that day, Update now takes it forward.
