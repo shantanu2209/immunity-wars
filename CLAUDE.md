@@ -276,7 +276,9 @@ contract Task B was measured against.
   (`docs/SECURITY_NOTES.md`, "Rulings"). `extract-zip` left the lockfile with puppeteer-core
   25 (#67). Four `fast-uri` advisories were cleared by a `pnpm` override on 4 September. The
   clean state is a fact about today's lockfile, not a property; the re-check rule below
-  stands. **The old acceptance sentence — "this
+  stands. *It lapsed on 30 September 2026*, when seven alerts on build tools arrived overnight
+  (`brace-expansion`, `fast-uri`), and was restored the same day by two pins and a Dependabot
+  bump, none of it in a process that listens (`docs/SECURITY_NOTES.md`). **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on

@@ -81,6 +81,9 @@ jobs:
       # React refuses to start unless react and react-dom are the same version; a Dependabot PR
       # that moved one and not the other passed everything else (docs/FINDINGS.md #92).
       - run: pnpm deps:check
+      # Every negative control's mutation must still change its file. The full self-test notices an
+      # inert control too, but only when someone runs all of it (docs/FINDINGS.md #100).
+      - run: pnpm ci:selftest:inert
 
   suites:
     needs: plan

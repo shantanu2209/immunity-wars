@@ -454,3 +454,46 @@ Caddy in front of it, on Ubuntu. **`pnpm audit` covers only the bundle's part.**
 operating system are covered by their automatic security updates, which is a different kind of
 cover: it depends on the updates arriving and installing, which the setup script's dry run shows and
 nothing yet monitors.
+
+---
+
+## Added 30 September 2026 — seven alerts on the build's tools, cleared by two pins and a Dependabot bump
+
+**What arrived.** Four advisories published overnight (29 September 2026, 23:44 to 23:54 UTC), which
+GitHub raised as seven alerts on the lockfile, since each `brace-expansion` advisory named both of the
+versions the lock then held:
+
+| Advisory | Package | Severity | What it is |
+|---|---|---|---|
+| GHSA-6j4f-fj2g-mc7p | `brace-expansion` 2.x and 5.x | high | stack exhaustion on nested brace groups |
+| GHSA-qhr7-859c-m2p7 | `brace-expansion` 2.x and 5.x | high | stack exhaustion in comma parsing |
+| GHSA-q2hr-2g5m-vwhr | `brace-expansion` 2.x and 5.x | moderate | quadratic time on one rewrite |
+| GHSA-hrr3-gc8f-f4qj | `fast-uri` 3.x | moderate | inconsistent host case normalisation |
+
+**Where they sit: only in the build's and the linter's tools, on inputs the maintainer chose.**
+
+- `brace-expansion` 5.0.9, through `eslint` > `minimatch` 10. Dependabot's dev-tooling bump took it
+  to 5.0.12 the same morning (#121), which closed three of the alerts.
+- `brace-expansion` 2.1.4, through `vite-plugin-pwa` > `workbox-build` > ... > `minimatch` 5,
+  globbing the build's own output when the build writes the service worker.
+- `fast-uri` 3.1.7, through `vite-plugin-pwa` > `workbox-build` > `ajv`, validating the plugin's own
+  options at build time. The chain the 4 September pin was for, through dependency-cruiser, is gone.
+
+**Not in a process that listens.** The relay's dependencies are still `protocol`, `room` and `ws`
+(`pnpm --filter @immunity-wars/server ls --prod`). The dev and preview servers load `vite.config`,
+which imports the PWA plugin, but the plugin imports `workbox-build` only when a build writes the
+service worker (`loadWorkboxBuild`, a lazy `import()`), and our config turns the dev worker off
+(`devOptions: { enabled: false }`). Nothing a player downloads contains either package.
+
+**Taken anyway, on the 4 September ruling's terms: one line each, no behaviour change.**
+`pnpm-workspace.yaml` pins `'brace-expansion@>=2.0.0 <2.1.7': '^2.1.7'`, inside `minimatch` 5's
+range, and raises the `fast-uri` pin to `'fast-uri@<3.1.8': '^3.1.8'`, inside `ajv`'s 3.x. The lock
+moved exactly two packages. `pnpm audit`: *"No known vulnerabilities found."* Ruled by Shantanu,
+30 September 2026 (*"Yes please do the security fix first"*).
+
+**No behaviour change, measured.** The one place either package runs is a build writing the service
+worker, so the app was built on the old versions and on the new. Every file is byte-identical but
+`sw.js`, whose precache list names the same 192 files with the same revisions, in a different order;
+and the order is not the bump, since two builds on the same versions differ the same way.
+
+> ### The property, re-read 30 September 2026: no open advisory is in a process that listens, because no advisory is open; the relay's dependency set is `ws`, `zod` and our own code.

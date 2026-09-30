@@ -52,7 +52,16 @@ overrides:
   # dev-only: dependency-cruiser > ajv > fast-uri, validating our own config). Not reachable
   # (docs/SECURITY_NOTES.md, 4 Sep 2026); taken anyway by ruling because it is one line with no
   # behaviour change and clears four alerts. Drop when the lockfile resolves past it.
-  'fast-uri@<3.1.6': '^3.1.6'
+  # Raised 30 Sep 2026 for GHSA-hrr3-gc8f-f4qj (moderate), by then reached through
+  # vite-plugin-pwa > workbox-build > ajv at build time only. Still inside ajv's 3.x range.
+  'fast-uri@<3.1.8': '^3.1.8'
+  # brace-expansion: GHSA-6j4f-fj2g-mc7p, -qhr7-859c-m2p7 (high), -q2hr-2g5m-vwhr (moderate), all
+  # denial of service on crafted brace patterns. Dev-only: vite-plugin-pwa > workbox-build > ... >
+  # minimatch 5 > brace-expansion 2, globbing our own build output at build time. The 5.x line was
+  # already past its fix (5.0.12, Dependabot); 2.x is pinned inside minimatch 5's ^2 range, since
+  # pnpm keeps the locked 2.1.4 otherwise. Taken on the 4 Sep ruling's terms (one line, no
+  # behaviour change). docs/SECURITY_NOTES.md, 30 Sep 2026. Drop when the lock resolves past it.
+  'brace-expansion@>=2.0.0 <2.1.7': '^2.1.7'
 
 minimumReleaseAgeExclude:
   - '@vitest/coverage-v8@4.1.11'
