@@ -43,6 +43,7 @@ describe('the original, as ruled', () => {
   });
 
   it('names every edit by its place in the queue', () => {
-    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|10)$/);
+    // Q1 to Q10, the queue as ruled on 5 and 6 September 2026, and Q11, venom, ruled after it ran.
+    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|1[01])$/);
   });
 });

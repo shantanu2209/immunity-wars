@@ -1450,6 +1450,39 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
     expect: 'is up to date with the content it describes',
   },
+  {
+    id: 'queue-q11-no-venom-vaccine',
+    why: 'Queue Q11 (Shantanu, 30 September 2026, "do whatever is scientifically accurate"): there is no vaccine against a venom. Venom acts in minutes and even a remembered response takes days; no vaccine against one is licensed for people. An engine that took one must fail against the original as ruled.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (DECK_MASTER.find((x) => x.dz === dz)?.type === 'venom') {",
+        "if (DECK_MASTER.find((x) => x.dz === dz)?.type === 'no such type') {",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'a venom cannot be vaccinated against',
+  },
+  {
+    id: 'queue-q11-no-memory-response-to-venom',
+    why: 'Queue Q11: a venom meets no memory response, whatever memory a game carries. Games from before queue Q4 remember venoms killed by antivenom, and games from before Q11 venoms vaccinated against.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace("if (memoryHit(g, c.dz) && c.type !== 'venom') {", 'if (memoryHit(g, c.dz)) {'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'meets no memory response on arrival',
+  },
+  {
+    id: 'balance-normal-ap-strength',
+    why: "FINDINGS #107: on Normal the fast panel control asserts the STRENGTH of a one-AP cut, since queue Q11 left its verdict a coin flip at that scale. A strength assertion must still fail when the cut is not there: here the mutant keeps Normal's five Action Points.",
+    file: 'tests/balance/src/metrics-control.test.ts',
+    mutate: (t) =>
+      t.replace(
+        'training:{ap:5,turns:15,spawn:"dice"}, normal:{ap:4,turns:20,spawn:"dice"}',
+        'training:{ap:5,turns:15,spawn:"dice"}, normal:{ap:5,turns:20,spawn:"dice"}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
+    expect: 'the panel barely moved for a whole Action Point',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

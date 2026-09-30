@@ -4,7 +4,8 @@
  * The panel's whole claim is that it detects engine change. A band that has never gone red is a
  * band nobody has falsified, so both directions are pinned:
  *
- *   1. changes that SHOULD move it, which must trip ≥2 metrics;
+ *   1. changes that SHOULD move it, which must fail it (≥2 metrics past 3σ, or one past 6σ), but
+ *      for one fewer AP on Normal, which must move it past 3σ the right way (docs/FINDINGS.md #107);
  *   2. brain `branch:3 -> 4`, which `docs/FINDINGS.md` #17 says it CANNOT see, asserted as a
  *      demonstrated blind spot rather than left in prose.
  *
@@ -147,19 +148,31 @@ describe('E2 control: the panel detects changes it should', () => {
   /**
    * One fewer AP per turn: a 20% cut to the game's central resource. If the panel cannot see this
    * it cannot see anything, and under the originally proposed band design it could not.
+   *
+   * ON NORMAL, AT THIS SCALE, THE STRENGTH IS ASSERTED AND NOT THE VERDICT (docs/FINDINGS.md #107).
+   * This asserted that the cut FAILS this small panel on Normal, which it did by a margin of about
+   * 3.8σ. Under the rules since queue Q11 (30 September 2026) its second metric sits at 2.1σ to
+   * 3.3σ in five fast-scale calibrations measured, so a failure here is a coin flip, while
+   * antibodies made moved 3.5σ to 5.1σ, the right way, in every one. The verdict is asserted where
+   * it is robust: on Hard, below, at this same scale, and on Normal against the shipped bands (#107).
+   * Choosing the one size where Normal happened to fail would have been tuning until green.
    */
-  it('one fewer AP per turn fails the panel', () => {
+  it('one fewer AP per turn moves the panel on Normal, past 3σ and the right way', () => {
     const v = judge(MUT_AP, 'normal');
     const detail = v.shifts.map((s) => `${s.metric} ${s.sigmas.toFixed(1)}σ`).join(', ');
-    expect(v.failed, `the panel missed a whole Action Point per turn. shifts: ${detail}`).toBe(
-      true,
-    );
     // Strength, not only direction. The threshold is 3 and not 6 because THIS calibration is the
-    // small one: 4 arms x 400 games gives a wider band than the shipped 8 x 2,000, so the same
-    // change reads ~3.8σ here where it reads 14σ against the shipped bands. Asserting 6 here
-    // would be importing a number measured somewhere else — the σ scale is a property of the
-    // calibration, not of the change.
-    expect(worst(v)).toBeGreaterThan(3);
+    // small one: 4 arms x 400 games gives a wider band than the shipped 24 x 2,000, so the same
+    // change reads far fewer σ here than against the shipped bands. Asserting 6 here would be
+    // importing a number measured somewhere else: the σ scale is a property of the calibration,
+    // not of the change.
+    expect(worst(v), `the panel barely moved for a whole Action Point: ${detail}`).toBeGreaterThan(
+      3,
+    );
+    const made = v.shifts.find((s) => s.metric === 'avgAntibodiesMade');
+    expect(
+      made?.sigmas ?? 0,
+      `fewer Action Points and more antibodies made? ${detail}`,
+    ).toBeLessThan(-3);
   });
 
   /** A content change rather than a tuning one — the panel should not only notice DIFF. */

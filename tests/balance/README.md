@@ -204,7 +204,8 @@ an unlucky arm and not an 8-arm estimate being noisy: the bands sat at **0.72× 
 sampling floor**, so every σ was inflated by ~28%. Bands are now calibrated from **24 arms** and
 floored. Measured on the shipped bands across **24 unseen arms** (48,000 games) of the unchanged
 engine: **0 failures, and 0 single-metric breaches** — worst excursion 2.66σ against a 3σ line, on
-the bands recalibrated 30 September 2026 after the engine change queue (2.65σ on those of 18 August).
+the bands recalibrated 30 September 2026 for queue Q11, as on the queue's the same day (2.65σ on
+those of 18 August).
 Before flooring, the same probe produced three 3σ breaches across 204 metric draws. See the
 calibration sanity check above, [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.5 and
 [`FINDINGS.md`](../../docs/FINDINGS.md) #35.
