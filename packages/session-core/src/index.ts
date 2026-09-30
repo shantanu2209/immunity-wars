@@ -5,7 +5,7 @@
  * The query builder and FINDINGS #56's id workaround, moved out of `LocalSession` unchanged so
  * that the relay computes exactly what a single-player session computes, by construction.
  */
-export { advanceIdsPast } from './ids.js';
+export { highestId, migrateSavedGame } from './ids.js';
 export { MOVE_CLASS } from './moves.js';
 export { precompute, scope, scopeAll, scopeFrom, type AllScoped } from './build.js';
 export {

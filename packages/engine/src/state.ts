@@ -247,6 +247,8 @@ export interface GameState {
   log: LogEntry[];
   won: boolean;
   lost: LossRecord | null;
+  /** The last invader id handed out (queue Q5): the game's own, so a save carries it. */
+  idCounter: number;
   stats: Stats;
   multiplayer: boolean;
   players: string[];

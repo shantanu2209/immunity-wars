@@ -105,4 +105,99 @@ export const RULED: readonly RuledChange[] = [
     find: '    free:clone(g.free||{}), flags:clone(g.flags),',
     replace: '    flags:clone(g.flags),',
   },
+  // Q5 (FINDINGS #56): the invader id counter into the game's state. The original kept it in its
+  // module and reset it in newGame; each of its twelve uses now takes the game. Order matters where
+  // one find is a prefix of another: the longer ones go first.
+  {
+    queue: 'Q5',
+    name: 'the id counter is the game’s',
+    find: 'let _uid=0; const uid=()=>"i"+(++_uid);',
+    replace: 'const uid=(g)=>"i"+(++g.idCounter);',
+  },
+  {
+    queue: 'Q5',
+    name: 'newGame no longer resets a module counter',
+    find: 'function newGame(cfg){\n  _uid=0;\n',
+    replace: 'function newGame(cfg){\n',
+  },
+  {
+    queue: 'Q5',
+    name: 'a new game starts its counter at 0',
+    find: 'log:[], won:false, lost:null,',
+    replace: 'log:[], won:false, lost:null, idCounter:0,',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the liver-stage malaria',
+    find: 'g.invaders.push({id:uid(),type:"malaria",stage:"liver",',
+    replace: 'g.invaders.push({id:uid(g),type:"malaria",stage:"liver",',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the lung bacteria on its branch',
+    find: 'g.invaders.push({id:uid(),type:"bacteria",zone:"branch",organ:"lungs",lane:"nose",step:branchLen("lungs"),',
+    replace:
+      'g.invaders.push({id:uid(g),type:"bacteria",zone:"branch",organ:"lungs",lane:"nose",step:branchLen("lungs"),',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the hidden route',
+    find: 'g.invaders.push({id:uid(),type:"hidden",',
+    replace: 'g.invaders.push({id:uid(g),type:"hidden",',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the lung bacteria at step 1',
+    find: 'g.invaders.push({id:uid(),type:"bacteria",zone:"branch",organ:"lungs",lane:"nose",step:1,',
+    replace:
+      'g.invaders.push({id:uid(g),type:"bacteria",zone:"branch",organ:"lungs",lane:"nose",step:1,',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): makeInvader',
+    find: 'const iv={id:uid(),type:c.type,',
+    replace: 'const iv={id:uid(g),type:c.type,',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): a tripled copy',
+    find: 'if(triple && room()){ born.push({...clone(iv),id:uid()});',
+    replace: 'if(triple && room()){ born.push({...clone(iv),id:uid(g)});',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): a hit copy',
+    find: 'if(hit){ born.push({...clone(iv),id:uid()});',
+    replace: 'if(hit){ born.push({...clone(iv),id:uid(g)});',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the guaranteed copy',
+    find: 'born.push({...clone(iv),id:uid()});',
+    replace: 'born.push({...clone(iv),id:uid(g)});',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): a burst copy',
+    find: 'const copy={...clone(iv), id:uid(),',
+    replace: 'const copy={...clone(iv), id:uid(g),',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): a released toxin',
+    find: 'g.invaders.push({id:uid(),type:"toxin",',
+    replace: 'g.invaders.push({id:uid(g),type:"toxin",',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): the blood-stage malaria',
+    find: 'g.invaders.push({id:uid(),type:"malaria",stage:"blood",',
+    replace: 'g.invaders.push({id:uid(g),type:"malaria",stage:"blood",',
+  },
+  {
+    queue: 'Q5',
+    name: 'uid(g): a lymphatic seed',
+    find: 'seeded.push({...clone(iv),id:uid(),',
+    replace: 'seeded.push({...clone(iv),id:uid(g),',
+  },
 ];

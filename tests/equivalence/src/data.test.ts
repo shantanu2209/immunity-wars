@@ -208,11 +208,14 @@ describe('B1: primitives match legacy', () => {
     expect(internal.clone({ a: undefined })).toEqual({});
   });
 
-  it('uid counts up and resetUid restarts it, so ids are stable per game', () => {
-    internal.resetUid();
-    expect([internal.uid(), internal.uid(), internal.uid()]).toEqual(['i1', 'i2', 'i3']);
-    internal.resetUid();
-    expect(internal.uid()).toBe('i1');
+  it("uid counts up from the game's own counter, so ids are stable per game (queue Q5)", () => {
+    const a = { idCounter: 0 };
+    expect([internal.uid(a), internal.uid(a), internal.uid(a)]).toEqual(['i1', 'i2', 'i3']);
+    // Another game counts for itself: nothing it does moves the first game's counter.
+    const b = { idCounter: 0 };
+    expect(internal.uid(b)).toBe('i1');
+    expect(internal.uid(a)).toBe('i4');
+    expect(a.idCounter).toBe(4);
   });
 });
 

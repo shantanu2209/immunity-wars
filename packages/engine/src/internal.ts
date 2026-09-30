@@ -45,7 +45,7 @@ export {
 // because the root is exactly legacy's 67 names. Their types travel with them.
 export type { ApBreakdown, ApTerm, RegenBreakdown } from './state.js';
 
-export { cap1, clone, d6, lymphPartners, organsFor, resetUid, shuffle, uid } from './primitives.js';
+export { cap1, clone, d6, lymphPartners, organsFor, shuffle, uid } from './primitives.js';
 
 export { knobs, resetKnobs } from './knobs.js';
 

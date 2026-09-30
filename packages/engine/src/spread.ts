@@ -71,7 +71,7 @@ export function fireRare(g: GameState, key: string, _extra?: unknown): boolean {
   switch (key) {
     case 'malariaRelapse':
       g.invaders.push({
-        id: uid(),
+        id: uid(g),
         type: 'malaria',
         stage: 'liver',
         zone: 'branch',
@@ -96,7 +96,7 @@ export function fireRare(g: GameState, key: string, _extra?: unknown): boolean {
     }
     case 'tbReactivation':
       g.invaders.push({
-        id: uid(),
+        id: uid(g),
         type: 'bacteria',
         zone: 'branch',
         organ: 'lungs',
@@ -112,7 +112,7 @@ export function fireRare(g: GameState, key: string, _extra?: unknown): boolean {
       break;
     case 'shingles':
       g.invaders.push({
-        id: uid(),
+        id: uid(g),
         type: 'hidden',
         zone: 'route',
         lane: 'nose',
@@ -128,7 +128,7 @@ export function fireRare(g: GameState, key: string, _extra?: unknown): boolean {
       break;
     case 'postFluPneumonia':
       g.invaders.push({
-        id: uid(),
+        id: uid(g),
         type: 'bacteria',
         zone: 'branch',
         organ: 'lungs',
@@ -272,13 +272,13 @@ export function resolveSpread(g: GameState): Frame[] {
       }
       if (g.difficulty === 'hard') {
         // Guaranteed copy FIRST, then the roll for a second. That order is the RNG contract.
-        born.push({ ...clone(iv), id: uid() });
+        born.push({ ...clone(iv), id: uid(g) });
         count[k] = (count[k] || 0) + 1;
         const r = d6();
         const triple = r <= 3;
         dice.push({ label: iv.disease, face: r, hit: true });
         if (triple && room()) {
-          born.push({ ...clone(iv), id: uid() });
+          born.push({ ...clone(iv), id: uid(g) });
           count[k] = (count[k] || 0) + 1;
         }
       } else {
@@ -286,7 +286,7 @@ export function resolveSpread(g: GameState): Frame[] {
         const hit = r <= dOn;
         dice.push({ label: iv.disease, face: r, hit });
         if (hit) {
-          born.push({ ...clone(iv), id: uid() });
+          born.push({ ...clone(iv), id: uid(g) });
           count[k] = (count[k] || 0) + 1;
         }
       }
@@ -331,7 +331,7 @@ export function resolveSpread(g: GameState): Frame[] {
         const euk = famOf(iv) === 'EUK';
         if (euk) anyEuk = true;
         for (let k = 0; k < 2; k += 1) {
-          const copy = { ...clone(iv), id: uid(), type: euk ? 'parasite' : 'virus' } as Invader;
+          const copy = { ...clone(iv), id: uid(g), type: euk ? 'parasite' : 'virus' } as Invader;
           if (euk) {
             copy.hp = 1;
             copy.maxhp = 2;
@@ -392,7 +392,7 @@ export function resolveSpread(g: GameState): Frame[] {
           // The filter above is `TOXIN_MAKERS[iv.disease]` truthy, so this cannot miss.
           const tname = TOXIN_MAKERS[iv.disease] ?? '';
           g.invaders.push({
-            id: uid(),
+            id: uid(g),
             type: 'toxin',
             zone: iv.zone,
             lane: iv.lane,
@@ -428,7 +428,7 @@ export function resolveSpread(g: GameState): Frame[] {
       g.invaders = g.invaders.filter((x) => x.id !== iv.id);
       for (let k = 0; k < 3; k += 1) {
         g.invaders.push({
-          id: uid(),
+          id: uid(g),
           type: 'malaria',
           stage: 'blood',
           zone: 'hub',
@@ -504,7 +504,7 @@ export function resolveSpread(g: GameState): Frame[] {
       if (d6() <= 2) {
         const partners = lymphPartners(iv.lane as RouteKey);
         const to = partners[Math.floor(Math.random() * partners.length)];
-        seeded.push({ ...clone(iv), id: uid(), lane: to, step: LYMPH_STEP } as Invader);
+        seeded.push({ ...clone(iv), id: uid(g), lane: to, step: LYMPH_STEP } as Invader);
       }
     });
     if (seeded.length) {

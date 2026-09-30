@@ -443,9 +443,13 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'room-ids-across-rooms',
-    why: 'FINDINGS #56 on a relay: the engine hands out invader ids from one counter per process, and newGame in ANY room resets it. Without advancing it before every engine call, a game starting at one table makes another table hand one id to two pathogens, and every id-keyed action can then hit the wrong one.',
-    file: 'packages/room/src/room.ts',
-    mutate: (t) => t.replace('  advanceIdsPast(game as unknown as Record<string, unknown>);\n', ''),
+    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test.",
+    file: 'packages/engine/src/primitives.ts',
+    mutate: (t) =>
+      t.replace(
+        'export function uid(g: { idCounter: number }): string {\n  g.idCounter += 1;\n  return `i${g.idCounter}`;\n}',
+        'let shared = 0;\nexport function uid(g: { idCounter: number }): string {\n  if (g.idCounter === 0) shared = 0;\n  g.idCounter += 1;\n  shared += 1;\n  return `i${shared}`;\n}',
+      ),
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'holds across two rooms interleaved in one process',
   },
@@ -1281,6 +1285,15 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
     expect: 'is refused before anything is spent',
+  },
+  {
+    id: 'queue-q5-old-save-carried-forward',
+    why: 'Ruled 30 September 2026: a game saved before the engine change queue is carried forward. Its save has no id counter (queue Q5 put it in the state), so the session works one out from the ids the game holds. Without that, the next arrival after a resume gets no proper id.',
+    file: 'packages/session-core/src/ids.ts',
+    mutate: (t) =>
+      t.replace("  if (typeof g['idCounter'] !== 'number') g['idCounter'] = highestId(g);\n", ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resume-ids.test.ts',
+    expect: 'plays on with every id unique',
   },
 ];
 

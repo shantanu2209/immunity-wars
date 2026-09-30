@@ -61,7 +61,7 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### primitives.ts
 
-- `116` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
+- `114` `return override ?? ORGAN_SETS[diff] ?? ORGAN_SETS.normal;`
 
 ### queries.ts
 
