@@ -39,9 +39,11 @@
  */
 
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { writeRetrying } from './write-retry.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
@@ -1532,10 +1534,18 @@ for (const control of selected) {
   ran += 1;
   let verdict: { failed: boolean; output: string };
   try {
-    writeFileSync(path, mutated, 'utf8');
+    writeRetrying(path, mutated);
     verdict = runGate(control.gate);
   } finally {
-    writeFileSync(path, original, 'utf8');
+    // Through a lock, and loudly if it never lifts (FINDINGS #106): dying here left the engine
+    // mutated in the tree once, with nothing on the screen to say so.
+    try {
+      writeRetrying(path, original);
+    } catch (e) {
+      console.log(`✗ COULD NOT RESTORE ${control.file}: ${String(e)}`);
+      console.log(`    It is still MUTATED. Before anything else: git checkout -- ${control.file}`);
+      process.exit(3);
+    }
   }
 
   if (control.mustPass) {

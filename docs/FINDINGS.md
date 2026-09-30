@@ -5304,3 +5304,24 @@ here.
 
 **For a ruling, before the deploy:** ship Q1 ahead of the printed rules, as the app ran behind
 them on Recall from 5 September until now, or hold the deploy until the text changes.
+
+## 106. The self-test died restoring a file it had mutated, on a brief Windows lock, and left the engine mutated in the tree — FIXED inline 30 September 2026
+
+**Found 30 September 2026, in the full self-test run after the engine change queue.** After 36
+controls the runner wrote the next control's mutation into `packages/engine/src/primitives.ts`, ran
+its gate, and then could not write the original back: Windows refused the open, "UNKNOWN: unknown
+error, open", which is what a file still held by another process looks like there. The write was in
+a `finally`, it threw, and the runner died. **The mutation stayed in the tree**: `uid` counting on a
+shared counter, which the `room-ids-across-rooms` control exists to catch. The runner's own guard, a
+`git status` compared at the end, never ran.
+
+It was seen in the run's last lines and the file restored from git before anything else ran; nothing
+was committed with it. It would not always be seen. A mutation that passes most tests sits quietly
+in the tree until someone commits it.
+
+**Fixed:** every write the runner makes goes through `tools/ci/write-retry.ts`, which retries
+through a lock that lifts and throws, naming the file, on one that does not. A restore that still
+fails prints the file and the command that restores it, and stops the run.
+`tools/ci/write-retry.test.ts` holds both, with a writer refused three times and one refused
+always. **An instrument defect, fixed inline**, because every control run after it measures a tree
+nobody chose.
