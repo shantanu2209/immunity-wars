@@ -427,5 +427,59 @@ in the room, `packages/room/src/room.test.ts`, *"undo, played together"*; over r
 
 ---
 
+## 9. `spendAP` for no player writes nothing, where legacy writes a budget named "null"
+
+**Legacy behaviour.** `spendAP` (`v2_engine.js:852`), played together, charges whichever player it is
+given and does not check that it was given one:
+
+```js
+g.apBudget[pid] = Math.max(0, (g.apBudget[pid]||0) - n);
+```
+
+Given no player, JavaScript makes `null` the key `"null"`, and a budget of 0 for nobody appears in the
+state.
+
+**Port behaviour.** Played together, it returns first:
+
+```ts
+if (pid == null) return;
+```
+
+Alone, both charge single player's points before either reaches this line, so nothing changes there.
+
+**Why an entry only now.** The guard has been in the port since Task B4 (5 August 2026) with no entry
+here, so by this file's own rule it was a bug in the port until it was ruled on. It was found on 28
+September 2026, holding the multiplayer arms Phase 3 owed to legacy's own functions
+([`FINDINGS.md`](FINDINGS.md) #98). It is kept because it keeps a budget for nobody out of the game's
+state, and keeping it changes no code.
+
+**This is not an engine change.** No line of the engine moved for it. The Phase 3 brief's "the engine
+unchanged but for `handOverCaptaincy` and undo's Action Points together" (#7, #8) still holds: this
+records a difference the port has had since Task B4, not a new one.
+
+**Evidence that it is confined.** No game reaches it. `spendAP` is internal to legacy and on the port's
+`./internal` entry only, and its callers pass the acting player, which played together is never
+missing: the room gives every action the player who sent it (`packages/room/src/room.ts`,
+`pid: pidOfMember(me)`). A hand-built action with no player does reach it, in a state given a free
+action by hand, which no game has, since nothing grants one ([`FINDINGS.md`](FINDINGS.md) #99, #29).
+`tests/equivalence/src/multiplayer-arms.test.ts` holds everything around it to legacy: `spendAP` for
+real players, never below 0; five paths through `applyAction` on five seeds, byte-identical; and that
+hand-built action on five seeds, byte-identical but for the budget named "null".
+
+| | legacy | port |
+|---|---|---|
+| `spendAP`, alone | single player's points charged | the same |
+| `spendAP` for a player, together | their budget charged, never below 0 | the same |
+| `spendAP` for no player, together | `apBudget.null = 0` | nothing written |
+
+**Decided by:** Shantanu, 30 September 2026 — *"I will go with your suggestion"*, which was to keep
+the guard.
+**Test:** `tests/equivalence/src/multiplayer-arms.test.ts`, two cases: *"spendAP for no player: legacy
+writes a budget named "null", the port writes nothing"*, and *"an action with no player reaches it, let
+through by another cell's free action"*. Mutation control `engine-spendap-no-player`, which removes
+the guard and sees both fail.
+
+---
+
 *Entries are appended as they are decided, never retroactively edited — if a decision is
 reversed, add a new entry saying so.*
