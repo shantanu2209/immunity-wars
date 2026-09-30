@@ -1295,6 +1295,14 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resume-ids.test.ts',
     expect: 'plays on with every id unique',
   },
+  {
+    id: 'queue-q4-antivenom-no-memory',
+    why: 'Queue Q4 (Kartik, 5 September 2026; FINDINGS #55): antivenom is passive immunity, so a kill by it teaches the body nothing. An engine that granted memory for it again must fail against the original as ruled.',
+    file: 'packages/engine/src/effects.ts',
+    mutate: (t) => t.replace("      by !== 'antivenom' &&\n", ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'no memory of it is left',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

@@ -66,8 +66,11 @@ export function killInvader(g: GameState, iv: Invader, by: string): void {
 
     // BEATING a pathogen leaves memory cells behind — but only on TRAINING. On Normal/Hard,
     // surviving one infection does NOT pre-arm you; immunity must be EARNED with a vaccine.
+    // And never by ANTIVENOM (queue Q4, Kartik, 5 September 2026; FINDINGS #55): it is passive
+    // immunity, antibodies made in horses, so the body learns nothing, as its own log line says.
     if (
       g.difficulty === 'training' &&
+      by !== 'antivenom' &&
       g.memory &&
       !g.memory[iv.disease] &&
       !g.invaders.some((x) => x.disease === iv.disease)

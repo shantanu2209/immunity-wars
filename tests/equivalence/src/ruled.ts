@@ -200,4 +200,14 @@ export const RULED: readonly RuledChange[] = [
     find: 'seeded.push({...clone(iv),id:uid(),',
     replace: 'seeded.push({...clone(iv),id:uid(g),',
   },
+  {
+    // Kartik, 5 September 2026 (FINDINGS #55): antivenom is passive immunity, so a kill by it grants
+    // no memory. The original granted memory for any kill on Training, and its own antivenom log
+    // line said the body learns nothing.
+    queue: 'Q4',
+    name: 'an antivenom kill grants no memory',
+    find: 'if(g.difficulty==="training" && g.memory && !g.memory[iv.disease] && !g.invaders.some(x=>x.disease===iv.disease)){',
+    replace:
+      'if(g.difficulty==="training" && by!=="antivenom" && g.memory && !g.memory[iv.disease] && !g.invaders.some(x=>x.disease===iv.disease)){',
+  },
 ];

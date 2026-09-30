@@ -662,8 +662,10 @@ describe('L3: an invariant fires against a genuinely wrong engine, not only a sa
      */
     const mutant = loadMutatedLegacy({
       name: 'memory-on-kill granted at every difficulty',
-      find: 'if(g.difficulty==="training" && g.memory && !g.memory[iv.disease]',
-      replace: 'if(g.memory && !g.memory[iv.disease]',
+      // The oracle is the original AS RULED (tests/equivalence/src/ruled.ts), where queue Q4 added
+      // the antivenom clause beside this one: only the Training clause is removed.
+      find: 'if(g.difficulty==="training" && by!=="antivenom" && g.memory && !g.memory[iv.disease]',
+      replace: 'if(by!=="antivenom" && g.memory && !g.memory[iv.disease]',
     }) as unknown as Engine;
 
     let violations: readonly Violation[] = [];
