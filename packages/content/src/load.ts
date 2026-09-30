@@ -123,6 +123,14 @@ const pack = { ...parseRules(), ...parseBoard() };
  * protocol's `encode`, refused on mismatch). **Saved game state does not** — that is seam 7's
  * deferred pack check. This comment read "every state and network message carries rulesVersion"
  * from Phase 1, when neither did (docs/FINDINGS.md #26); it is now half true, and says which half.
+ *
+ * THE HISTORY, since `pack.json` cannot carry one. Rules 3.1.0 and content 1.0.0 from Task C2
+ * until the engine change queue (30 September 2026, docs/ENGINE_CHANGE_QUEUE.md), which moved
+ * them to 4.0.0 and 1.1.0. The rules play differently: a new action, a resident's Recall;
+ * antivenom teaches no memory; antibodies may attempt a trypanosome; degranulate burns only the
+ * organ the fight is in. The content gained Pathogen X's declared tropism, six of the actions'
+ * numbers and new sentences. The relay refuses any other rules version exactly, so a phone still
+ * on 3.1.0 is told to update.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;
