@@ -15,7 +15,8 @@ import { useState, type CSSProperties, type ReactElement } from 'react';
 import type { Seat } from '@immunity-wars/protocol';
 
 import { t } from '../i18n';
-import { refusalText, seatRows, startBlock, type LobbyRoom } from '../together/model';
+import { UpdateNow } from '../panels/UpdateNow';
+import { offersUpdate, refusalText, seatRows, startBlock, type LobbyRoom } from '../together/model';
 import { BODY, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
 
 const DIFFS = ['training', 'normal', 'hard'] as const;
@@ -49,6 +50,7 @@ export function LobbyScreen({
   onStart,
   onLeave,
   onReconnect,
+  onUpdate,
 }: {
   room: LobbyRoom;
   /** This player's public id in the room. */
@@ -65,6 +67,8 @@ export function LobbyScreen({
   onStart: (difficulty: Difficulty) => void;
   onLeave: () => void;
   onReconnect: () => void;
+  /** Takes the newer version and reloads (FINDINGS #93), offered under a version refusal only. */
+  onUpdate?: () => void;
 }): ReactElement {
   const [difficulty, setDifficulty] = useState<Difficulty>('training');
   const [copied, setCopied] = useState(false);
@@ -218,6 +222,7 @@ export function LobbyScreen({
           {refusalText(refusal.code, refusal.detail)}
         </p>
       ) : null}
+      {refusal && onUpdate && offersUpdate(refusal.code) ? <UpdateNow onUpdate={onUpdate} /> : null}
     </div>
   );
 }

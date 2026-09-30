@@ -111,6 +111,7 @@ export function DialogHost({
             marginTop: 12,
           }}
           onClick={onDismiss}
+          data-dialog-dismiss=""
         >
           {dialog.dismissLabel}
         </button>

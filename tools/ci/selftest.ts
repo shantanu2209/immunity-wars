@@ -1096,6 +1096,110 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm -s ci:selftest:inert',
     expect: 'engine-spendap-no-player THE MUTATION DID NOTHING',
   },
+  {
+    id: 'update-reload-after-switch',
+    why: 'FINDINGS #93, Update now ruled 28 September 2026: the page must reload AFTER the newer version has taken over. A reload first brings the older version back, which is the failure of the P3.6 morning.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) =>
+      t.replace(
+        '  const outcome = await takeNewerWorker(container, timeoutMs);\n  reload();\n',
+        '  reload();\n  const outcome = await takeNewerWorker(container, timeoutMs);\n',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'and the reload comes after it has',
+  },
+  {
+    id: 'update-only-for-version',
+    why: 'FINDINGS #93: Update now answers one refusal, the versions differing. Offered under any other, it would reload a phone for nothing and take it out of its room.',
+    file: 'packages/ui/src/together/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "export const offersUpdate = (code: string): boolean => code === 'version';",
+        "export const offersUpdate = (code: string): boolean => code !== '';",
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/together/model.test.ts',
+    expect: 'no other refusal offers it',
+  },
+  {
+    id: 'update-worker-contract',
+    why: "FINDINGS #93: the message that tells the newer worker to take over is the plugin's, not ours. The build test holds our message to the worker the build emits, so a message that no longer matches it must turn the build test red.",
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) =>
+      t.replace(
+        "export const SKIP_WAITING = { type: 'SKIP_WAITING' } as const;",
+        "export const SKIP_WAITING = { type: 'SKIP_WAITING_NOW' } as const;",
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'which Update now depends on',
+  },
+  {
+    id: 'update-check-reload-alone',
+    why: 'FINDINGS #93: the P3.6 morning itself. A button that only reloads the page brings back the older version, because the newer one waits until it is told to take over; the update check must refuse it.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        '  void updateNow(browserUpdates(), () => window.location.reload());',
+        '  void browserUpdates;\n  void updateNow;\n  window.location.reload();',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'still ran the older build',
+  },
+  {
+    id: 'update-check-no-button',
+    why: 'FINDINGS #93: the version refusal must offer Update now on the screen where the P3.6 session met it, Create a room; the update check must refuse a build where it does not.',
+    file: 'packages/ui/src/screens/TogetherScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        '{refusal && onUpdate && offersUpdate(refusal.code) ? <UpdateNow onUpdate={onUpdate} /> : null}',
+        '{refusal && onUpdate && offersUpdate(refusal.code) ? null : null}',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'offered no Update now',
+  },
+  {
+    id: 'update-title-no-loop',
+    why: 'FINDINGS #93, ruled 30 September 2026: the title takes a newer version by itself, and reloads only once it has taken over. A reload that brought the same version back would find the same waiting worker and reload again, for ever.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) => t.replace("    if (outcome === 'switched') reload();", '    reload();'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'so it cannot reload for ever',
+  },
+  {
+    id: 'update-watch-first-install',
+    why: 'FINDINGS #93: a first install is not a newer version. A page nothing answers yet has no older version to replace, and telling its new worker to take over would wait for a switch that never comes.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) =>
+      t.replace(
+        "worker.state === 'installed' && container.controller !== null) listener();",
+        "worker.state === 'installed') listener();",
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'a first install is not a newer version',
+  },
+  {
+    id: 'update-check-title-takes-it',
+    why: 'FINDINGS #93, ruled 30 September 2026: on the title, a newer version is taken by itself. Without it every deploy reaches a returning player only once every copy of the app is closed; the update check must refuse a build that never takes it.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        '    if (!onTitle) return undefined;',
+        '    if (onTitle || !onTitle) return undefined;',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the title did not take the newer build by itself',
+  },
+  {
+    id: 'update-check-title-only',
+    why: 'FINDINGS #93, ruled 30 September 2026: the title ONLY. A reload in a game would drop a game played together; the update check must refuse a build that takes a newer version anywhere.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        "  const onTitle = screen.name === 'title';",
+        "  const onTitle = screen.name !== 'nowhere';",
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the page reloaded during a game',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

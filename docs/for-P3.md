@@ -1691,3 +1691,38 @@ with nobody playing; memory in use was 293 of 952 MB, 18 MB of it the relay's.
 **Gate B, the cost item:** *"The relay's cost at the measured traffic of a real game is recorded, with
 the provider's prices re-read on the day"*: recorded here. The server's fixed cost is the whole of it;
 a game's own traffic is under ₹0.10.
+
+## 11. Update now: the version refusal a player can act on (30 September 2026)
+
+Gate A asks that a client on an old protocol version be *"refused with a message a player can act
+on"*. The P3.6 session showed the refusal holding and the message not being actionable on the web
+([`FINDINGS.md`](FINDINGS.md) #93): there is no update for a player to go and find. Ruled on 28
+September (*"Yes I think we should have this"*), built on 30 September.
+
+**What was wrong, measured first.** In headless Chrome, on two real builds, the newer version
+downloaded and then waited, and three reloads in a row brought back the older one. The generated
+worker takes over only when told to, and nothing had told it since #69 replaced the plugin's injected
+script on 13 September. So a reload was never going to be the answer, and the button tells the worker.
+
+**What was built.** Under the version refusal, wherever it can appear (Play together, the lobby, and a
+game's connection-lost sheet), an **Update now** button: it looks for the newer version, lets it
+finish downloading, tells it to take over, and reloads once it has.
+
+**What proves it.** `pnpm update:check` replays the morning of the session: an older build installed,
+a newer one on the server, a stand-in relay refusing on version, and the real button pressed. It
+passes on the newer build only, in about one to two seconds. Its control
+`update-check-reload-alone` makes the button only reload, and the check refuses it; that is the P3.6
+failure, reproduced on purpose. Three more controls hold the unit tests, the rule that no other
+refusal offers the button, and the build test that ties our message to the one the built worker
+listens for.
+
+**The title takes a newer version too, by ruling** (30 September 2026, *"Will go with your
+recommendation"*), since every deploy otherwise reaches a returning player only once every copy of the
+app is closed. On the title only, whenever one has finished downloading, and only once it has taken
+over, so it cannot reload in a loop; never in a game, where a reload would drop a game played
+together. The update check holds it on two more phones: the title takes the newer build by itself,
+and a game keeps the older one with the newer waiting until the player is back on the title. With it,
+the P3.6 morning would not have happened: the phone sat on the title while the newer version
+downloaded. Four more controls, nine in all.
+
+**Not yet measured on a real phone.**

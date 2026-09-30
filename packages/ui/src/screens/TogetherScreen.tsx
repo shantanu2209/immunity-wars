@@ -8,7 +8,14 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { codeComplete, nameReady, normaliseCode, refusalText } from '../together/model';
+import { UpdateNow } from '../panels/UpdateNow';
+import {
+  codeComplete,
+  nameReady,
+  normaliseCode,
+  offersUpdate,
+  refusalText,
+} from '../together/model';
 import { BODY, BTN, GROUP, LEAD, PAGE, TITLE } from './chrome';
 
 const FIELD: CSSProperties = {
@@ -30,6 +37,7 @@ export function TogetherScreen({
   onCreate,
   onJoin,
   rejoinCode = null,
+  onUpdate,
 }: {
   /** A room is being created or joined; the buttons wait. */
   busy: boolean;
@@ -42,6 +50,8 @@ export function TogetherScreen({
    * for the name, typed again (ruling 2), and goes back to that room; nothing else is offered.
    */
   rejoinCode?: string | null;
+  /** Takes the newer version and reloads (FINDINGS #93), offered under a version refusal only. */
+  onUpdate?: () => void;
 }): ReactElement {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -119,6 +129,7 @@ export function TogetherScreen({
           {refusalText(refusal.code, refusal.detail)}
         </p>
       ) : null}
+      {refusal && onUpdate && offersUpdate(refusal.code) ? <UpdateNow onUpdate={onUpdate} /> : null}
     </div>
   );
 }

@@ -69,3 +69,185 @@ export function startServiceWorker(isProduction: boolean): void {
     });
   });
 }
+
+/**
+ * UPDATE NOW (FINDINGS #93, ruled by Shantanu on 28 September 2026), beside the refusal that says this
+ * app and the game server are on different versions.
+ *
+ * WHY A RELOAD IS NOT ENOUGH, measured on 30 September 2026 in headless Chrome on two real builds: a
+ * newer worker downloads by itself, then WAITS, and the old one keeps answering every reload, three in
+ * a row, for as long as any copy of the app is open. The generated worker takes over only when told
+ * to (`SKIP_WAITING`), and nothing told it: the plugin's injected script did, and was replaced by
+ * `startServiceWorker` above for FINDINGS #69. Asked, then told, the newer build answered the next
+ * reload; the switch took 11 ms.
+ *
+ * So: look for a newer version, let it finish downloading, tell it to take over, and reload once it
+ * has. Every path ends in the reload, because a reload is still the best thing left when there is no
+ * worker, nothing newer, or no answer in time.
+ *
+ * On the web only. The installed apps of Phase 4 update through their stores.
+ */
+
+/** What `updateNow` found. Every outcome ends in a reload; this says what that reload brings. */
+export type UpdateOutcome = 'switched' | 'nothing newer' | 'timed out' | 'no worker';
+
+/** The parts of a service worker an update needs, so a test can hand in one that waits. */
+export interface WorkerLike {
+  readonly state: string;
+  postMessage(message: unknown): void;
+  addEventListener(type: 'statechange', listener: () => void): void;
+}
+
+export interface RegistrationLike {
+  readonly waiting: WorkerLike | null;
+  readonly installing: WorkerLike | null;
+  update(): Promise<unknown>;
+  addEventListener(type: 'updatefound', listener: () => void): void;
+  removeEventListener(type: 'updatefound', listener: () => void): void;
+}
+
+export interface UpdateContainerLike {
+  /** The worker answering this page, or null on a first visit, before any has. */
+  readonly controller: unknown;
+  getRegistration(): Promise<RegistrationLike | undefined>;
+  addEventListener(type: 'controllerchange', listener: () => void): void;
+}
+
+/** What the generated worker listens for (`vite-plugin-pwa`'s `generateSW`), held by the build test. */
+export const SKIP_WAITING = { type: 'SKIP_WAITING' } as const;
+
+export async function updateNow(
+  container: UpdateContainerLike | undefined,
+  reload: () => void,
+  timeoutMs = 30_000,
+): Promise<UpdateOutcome> {
+  const outcome = await takeNewerWorker(container, timeoutMs);
+  reload();
+  return outcome;
+}
+
+async function takeNewerWorker(
+  container: UpdateContainerLike | undefined,
+  timeoutMs: number,
+): Promise<UpdateOutcome> {
+  if (container === undefined) return 'no worker';
+  try {
+    const registration = await container.getRegistration();
+    if (registration === undefined) return 'no worker';
+    // Offline, the check fails; a version downloaded earlier may still be waiting, so carry on.
+    await registration.update().catch(() => undefined);
+    const waiting = registration.waiting ?? (await installed(registration.installing, timeoutMs));
+    if (waiting === null) return 'nothing newer';
+    return await tellToTakeOver(container, waiting, timeoutMs);
+  } catch {
+    return 'no worker';
+  }
+}
+
+/** Tells a waiting worker to take over, and says whether it has within the time. */
+async function tellToTakeOver(
+  container: UpdateContainerLike,
+  waiting: WorkerLike,
+  timeoutMs: number,
+): Promise<'switched' | 'timed out'> {
+  const switched = within<boolean>(timeoutMs, (done) => {
+    container.addEventListener('controllerchange', () => done(true));
+  });
+  waiting.postMessage(SKIP_WAITING);
+  return (await switched) === true ? 'switched' : 'timed out';
+}
+
+/**
+ * THE SAME STEP ON THE TITLE (FINDINGS #93, ruled by Shantanu on 30 September 2026: *"Will go with
+ * your recommendation"*). Without it every deploy, not only one that changes the version, reaches a
+ * returning player only once every copy of the app is closed. So on the title screen, whenever a
+ * newer version has finished downloading, it is told to take over and the page reloads into it. Never
+ * in a game, where a reload would drop a game played together: `main.tsx` calls this on the title
+ * only.
+ *
+ * UNLIKE UPDATE NOW, IT RELOADS ONLY ONCE THE NEWER VERSION HAS TAKEN OVER. Update now is a player's
+ * request, and when nothing newer comes a reload is still the best thing left. Here nobody asked, and
+ * a reload that brought the same version back would find the same waiting worker and reload again,
+ * for ever.
+ */
+export async function takeWaitingVersion(
+  container: UpdateContainerLike | undefined,
+  reload: () => void,
+  timeoutMs = 30_000,
+): Promise<UpdateOutcome> {
+  if (container === undefined) return 'no worker';
+  try {
+    const registration = await container.getRegistration();
+    const waiting = registration?.waiting ?? null;
+    if (waiting === null) return 'nothing newer';
+    const outcome = await tellToTakeOver(container, waiting, timeoutMs);
+    if (outcome === 'switched') reload();
+    return outcome;
+  } catch {
+    return 'no worker';
+  }
+}
+
+/**
+ * Calls `listener` whenever a newer version finishes downloading while this page is open, so the
+ * title can take it at once rather than at the next launch. A first install is not a newer version:
+ * a page nothing answers yet has no older one to replace, so it is left alone. Returns the way to stop.
+ */
+export function whenNewerWaits(
+  container: UpdateContainerLike | undefined,
+  listener: () => void,
+): () => void {
+  if (container === undefined) return () => undefined;
+  let stopped = false;
+  let registration: RegistrationLike | undefined;
+  const found = (): void => {
+    const worker = registration?.installing ?? null;
+    if (worker === null) return;
+    worker.addEventListener('statechange', () => {
+      if (!stopped && worker.state === 'installed' && container.controller !== null) listener();
+    });
+  };
+  container
+    .getRegistration()
+    .then((r) => {
+      if (stopped || r === undefined) return;
+      registration = r;
+      r.addEventListener('updatefound', found);
+    })
+    .catch(() => undefined);
+  return () => {
+    stopped = true;
+    registration?.removeEventListener('updatefound', found);
+  };
+}
+
+/** The worker once it has finished downloading, or null if it fails or takes too long. */
+function installed(worker: WorkerLike | null, timeoutMs: number): Promise<WorkerLike | null> {
+  if (worker === null) return Promise.resolve(null);
+  return within<WorkerLike | null>(timeoutMs, (done) => {
+    const look = (): void => {
+      if (worker.state === 'installed') done(worker);
+      else if (worker.state === 'redundant') done(null);
+    };
+    worker.addEventListener('statechange', look);
+    look();
+  }).then((w) => w ?? null);
+}
+
+/** Whatever `start` settles on, or undefined when `ms` passes first. */
+function within<T>(ms: number, start: (done: (value: T) => void) => void): Promise<T | undefined> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(undefined), ms);
+    start((value) => {
+      clearTimeout(timer);
+      resolve(value);
+    });
+  });
+}
+
+/** The browser's container, for an update, or undefined where there is none. */
+export function browserUpdates(): UpdateContainerLike | undefined {
+  return typeof navigator !== 'undefined' && 'serviceWorker' in navigator
+    ? navigator.serviceWorker
+    : undefined;
+}

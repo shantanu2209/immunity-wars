@@ -42,7 +42,6 @@ import {
   TogetherScreen,
   entryRefusal,
   refusalFromClose,
-  refusalText,
   t,
   MenuIcon,
   useNav,
@@ -71,7 +70,13 @@ import {
 import { clearHints, readHints, writeHints } from './hints';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { clearPlayed, readPlayed, writePlayed } from './played';
-import { startServiceWorker } from './serviceWorker';
+import {
+  browserUpdates,
+  startServiceWorker,
+  takeWaitingVersion,
+  updateNow,
+  whenNewerWaits,
+} from './serviceWorker';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -86,6 +91,14 @@ interface Refusal {
   code: string;
   detail?: string;
 }
+
+/**
+ * UPDATE NOW (FINDINGS #93): take the newer version this phone has downloaded, or is downloading, and
+ * reload into it. Offered by the screens under a version refusal only.
+ */
+const update = (): void => {
+  void updateNow(browserUpdates(), () => window.location.reload());
+};
 
 const refusalOfEntry = (e: unknown): Refusal => ({
   code: e instanceof RelayError ? entryRefusal(e.code, e.closeCode) : 'unreachable',
@@ -252,6 +265,20 @@ function App({
   };
 
   useEffect(refreshSave, []);
+
+  // THE TITLE TAKES A NEWER VERSION (FINDINGS #93, ruled 30 September 2026): whenever one has finished
+  // downloading, whether before the title appeared or while it shows. On the title ONLY: a reload in a
+  // game would drop a game played together, so a newer version waits for the player to come back here.
+  const onTitle = screen.name === 'title';
+  useEffect(() => {
+    if (!onTitle) return undefined;
+    const container = browserUpdates();
+    const take = (): void => {
+      void takeWaitingVersion(container, () => window.location.reload());
+    };
+    take();
+    return whenNewerWaits(container, take);
+  }, [onTitle]);
   useEffect(() => {
     void fetch('/art/manifest.json')
       .then((r) => (r.ok ? r.json() : null))
@@ -568,6 +595,7 @@ function App({
           refusal={entering.refusal}
           onCreate={(name) => enter(name, () => RelayRoom.create({ url: RELAY_URL, name }))}
           rejoinCode={screen.rejoin && rejoin !== null ? rejoin.code : null}
+          onUpdate={update}
           onJoin={(name, code) => {
             if (screen.rejoin && rejoin !== null) {
               const self = asPlayerRef(rejoin.self);
@@ -586,6 +614,7 @@ function App({
           me={lobby.me}
           refusal={lobbyRefusal}
           connectionLost={connectionLost}
+          onUpdate={update}
           canShare={typeof navigator.share === 'function'}
           onShare={() => {
             navigator.share({ text: t('lobby.shareText', { code }) }).catch(() => undefined);
@@ -723,9 +752,10 @@ function App({
           // (ruling 4). Back to the title closes the game without leaving it; the title offers it again.
           <ConnectionLost
             reconnecting={reconnecting}
-            refusal={lobbyRefusal ? refusalText(lobbyRefusal.code, lobbyRefusal.detail) : null}
+            refusal={lobbyRefusal}
             onReconnect={reconnect}
             onTitle={quitToTitle}
+            onUpdate={update}
           />
         ) : null}
       </div>

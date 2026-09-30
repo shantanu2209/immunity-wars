@@ -12,29 +12,51 @@
  * `dist` on every test run, and `dist` is what `vite preview` serves and the Gate 1 audit measures:
  * a `pnpm verify` run beside the audit swapped the audit's local-relay build for a production one
  * halfway through, and every page opened after that measured the wrong build.
+ *
+ * AND THE WORKER'S HALF OF *UPDATE NOW* (FINDINGS #93, 30 September 2026), from the same build: the
+ * generated `sw.js` must still take over when told `SKIP_WAITING`, the one thing `updateNow` asks of
+ * it. The message is the plugin's, not ours, so a plugin bump that renamed it would leave the button
+ * reloading into the old version, which is the failure it exists to end.
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { SKIP_WAITING } from './serviceWorker.js';
 
 const APP = dirname(dirname(fileURLToPath(import.meta.url)));
 
-describe('both entries build', () => {
-  it('vite build produces the app AND the instrumented dev shell', { timeout: 180_000 }, () => {
-    const out = mkdtempSync(join(tmpdir(), 'iw-entries-'));
-    try {
-      execSync(`pnpm exec vite build --logLevel error --emptyOutDir --outDir "${out}"`, {
-        cwd: APP,
-        stdio: 'pipe',
-      });
-      expect(existsSync(join(out, 'index.html'))).toBe(true);
-      expect(existsSync(join(out, 'dev.html'))).toBe(true);
-    } finally {
-      rmSync(out, { recursive: true, force: true });
-    }
+describe('both entries build', { timeout: 180_000 }, () => {
+  let out = '';
+  beforeAll(() => {
+    out = mkdtempSync(join(tmpdir(), 'iw-entries-'));
+    execSync(`pnpm exec vite build --logLevel error --emptyOutDir --outDir "${out}"`, {
+      cwd: APP,
+      stdio: 'pipe',
+    });
+  }, 180_000);
+  afterAll(() => {
+    if (out !== '') rmSync(out, { recursive: true, force: true });
+  });
+
+  it('vite build produces the app AND the instrumented dev shell', () => {
+    expect(existsSync(join(out, 'index.html'))).toBe(true);
+    expect(existsSync(join(out, 'dev.html'))).toBe(true);
+  });
+
+  it('the worker it builds takes over when told SKIP_WAITING, which Update now depends on', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    // Either way round: a production build writes `"SKIP_WAITING"===e.data.type&&self.skipWaiting()`,
+    // and this test's build (NODE_ENV=test) the readable `event.data.type === 'SKIP_WAITING') {`
+    // followed by `self.skipWaiting();`. Both measured, 30 September 2026.
+    const named = String.raw`["']${SKIP_WAITING.type}["']`;
+    const listens = new RegExp(
+      String.raw`(${named}\s*===\s*\w+\.data\.type|\w+\.data\.type\s*===\s*${named})[\s\S]{0,40}?self\.skipWaiting\(\)`,
+    );
+    expect(worker).toMatch(listens);
   });
 });

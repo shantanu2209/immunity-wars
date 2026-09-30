@@ -13,18 +13,23 @@ import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { BTN } from '../screens/chrome';
+import { offersUpdate, refusalText } from '../together/model';
+import { UpdateNow } from './UpdateNow';
 
 export function ConnectionLost({
   reconnecting,
   refusal,
   onReconnect,
   onTitle,
+  onUpdate,
 }: {
   reconnecting: boolean;
-  /** Why the last attempt to reconnect failed, in words, or null. */
-  refusal: string | null;
+  /** Why the last attempt to reconnect failed, as the relay's code, or null. */
+  refusal: { code: string; detail?: string } | null;
   onReconnect: () => void;
   onTitle: () => void;
+  /** Takes the newer version and reloads (FINDINGS #93), offered under a version refusal only. */
+  onUpdate?: () => void;
 }): ReactElement {
   return (
     <>
@@ -62,8 +67,11 @@ export function ConnectionLost({
             role="alert"
             style={{ fontSize: '0.875rem', color: '#B03A2E', margin: '8px 0 0' }}
           >
-            {refusal}
+            {refusalText(refusal.code, refusal.detail)}
           </p>
+        ) : null}
+        {refusal !== null && onUpdate && offersUpdate(refusal.code) ? (
+          <UpdateNow onUpdate={onUpdate} />
         ) : null}
         <button
           data-reconnect=""
