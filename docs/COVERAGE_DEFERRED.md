@@ -56,21 +56,21 @@ because it is an engine change that deliberately re-baselines the corpus.
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `schema.ts:591` `if (!carded.includes(c)) {`
-- `schema.ts:600` `if (!cells.includes(c)) {`
-- `schema.ts:616` `if (!placed.includes(o)) {`
-- `schema.ts:648` `if (!placedRoutes.includes(r)) {`
-- `actions.ts:193` `if (g.phase !== 'command') return err('Not in command.');`
-- `actions.ts:264` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:294` `if (!c) return err('B-Cell is stationary.');`
-- `actions.ts:333` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:361` `if (g.memory[dz]) return err('You are already immune to that.');`
-- `actions.ts:363` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:474` `if (apNow(g) < 1) return err('No Action Points.');`
-- `actions.ts:504` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
-- `actions.ts:621` `if (!iv) return err('No such pathogen.');`
-- `actions.ts:626` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
-- `actions.ts:629` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
+- `schema.ts:599` `if (!carded.includes(c)) {`
+- `schema.ts:608` `if (!cells.includes(c)) {`
+- `schema.ts:624` `if (!placed.includes(o)) {`
+- `schema.ts:656` `if (!placedRoutes.includes(r)) {`
+- `actions.ts:199` `if (g.phase !== 'command') return err('Not in command.');`
+- `actions.ts:270` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:300` `if (!c) return err('B-Cell is stationary.');`
+- `actions.ts:339` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:367` `if (g.memory[dz]) return err('You are already immune to that.');`
+- `actions.ts:369` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:480` `if (apNow(g) < 1) return err('No Action Points.');`
+- `actions.ts:510` `if (!['macrophage', 'eosinophil'].includes(ck as string)) {`
+- `actions.ts:631` `if (!iv) return err('No such pathogen.');`
+- `actions.ts:636` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
+- `actions.ts:639` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
 - `ap.ts:39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 - `construct.ts:164` `default:`
 - `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`

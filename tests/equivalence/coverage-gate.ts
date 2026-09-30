@@ -221,8 +221,8 @@ const RULE_B: Demonstrated[] = [
   {
     file: 'actions.ts',
     match:
-      '`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,',
-    why: 'the survives-arm of the ternary is dead by data: degranulate deals 3 and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan',
+      '`<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,',
+    why: "the survives-arm of the ternary is dead by data: degranulate deals DEGRANULATE_DAMAGE (3, content's since queue Q7) and INV_HP tops out at 3 (worm), so every strikeable target dies. Demonstrated by data scan",
   },
   {
     file: 'actions.ts',

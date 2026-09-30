@@ -15,7 +15,7 @@ import * as engine from '@immunity-wars/engine';
 import { botGame } from '@immunity-wars/equivalence/bot';
 import { installRng, restoreRng } from '@immunity-wars/equivalence/rng';
 import type { Engine, GameState } from '@immunity-wars/equivalence/types';
-import { NEUTRALISE_TOXIN_AP } from '@immunity-wars/ui';
+import { NEUTRALISE_TOXIN_AP } from '@immunity-wars/content';
 
 const PORT = engine as unknown as Engine;
 const ns = engine as unknown as Record<string, (...a: unknown[]) => unknown>;

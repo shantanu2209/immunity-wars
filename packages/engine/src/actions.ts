@@ -15,19 +15,25 @@
 
 import {
   AFFINITY_AT,
+  ANTIVENOM_AP,
   ANTIVENOM_ORDER,
   CLONE_COST,
   DECK_MASTER,
+  DEGRANULATE_AP,
+  DEGRANULATE_DAMAGE,
   EOSINOPHIL_REGEN,
   FAM_KEYS,
   LYMPH_GROUP,
   LYMPH_STEP,
+  MEMORY_RESPONSE_AP_HARD,
+  NEUTRALISE_TOXIN_AP,
   NEUTROPHIL_REGEN,
   NK_HITS,
   ORGANS,
   REINFECT_PC,
   RESIDENT_NAME,
   ROUTES,
+  STRIKE_DAMAGE,
   VACCINE_COST,
 } from '@immunity-wars/content';
 import { apNow, hasFree, spend, spendAP } from './ap.js';
@@ -415,7 +421,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           `You have no ${f} antibodies. Antibodies are SPECIFIC — an antibody for another class will not fit ${iv.disease}.`,
         );
       }
-      const apCost = iv.type === 'toxin' ? 2 : 1; // antitoxin is harder work
+      const apCost = iv.type === 'toxin' ? NEUTRALISE_TOXIN_AP : 1; // antitoxin is harder work
       // Captured BEFORE killInvader plants a fresh memory cell.
       const wasRemembered = memoryHit(g, iv.disease);
       if (!wasRemembered && apNow(g) < apCost) {
@@ -457,9 +463,9 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const iv = antivenomTargets(g).find((x) => x.id === a.invaderId);
       if (!iv) return err('No venom in the body.');
       if (g.antivenom <= 0) return err('No antivenom left.');
-      if (apNow(g) < 3) return err('Antivenom costs 3 AP.');
+      if (apNow(g) < ANTIVENOM_AP) return err(`Antivenom costs ${ANTIVENOM_AP} AP.`);
       g.antivenom -= 1;
-      spendAP(g, g._actingPid, 3);
+      spendAP(g, g._actingPid, ANTIVENOM_AP);
       killInvader(g, iv, 'antivenom');
       pushLog(
         g,
@@ -503,10 +509,11 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!c || !samePlace(iv, c)) return err('Move onto the target first.');
       if (!['macrophage', 'eosinophil'].includes(ck as string)) {
         return err(
-          'Only the Eosinophil (2 damage) and the Monocyte (1 damage) can strike a worm or parasite from the outside — the Neutrophil and NK Cell cannot.',
+          `Only the Eosinophil (${STRIKE_DAMAGE.eosinophil} damage) and the Monocyte (${STRIKE_DAMAGE.macrophage} damage) can strike a worm or parasite from the outside — the Neutrophil and NK Cell cannot.`,
         );
       }
-      const dmg = ck === 'eosinophil' ? 2 : 1; // the eosinophil is the specialist
+      // the eosinophil is the specialist
+      const dmg = ck === 'eosinophil' ? STRIKE_DAMAGE.eosinophil : STRIKE_DAMAGE.macrophage;
       const died = hurtInvader(g, iv, dmg, ck as string);
       // A targeted strike releases only a few granules — it does NOT wound the organ. Only a
       // full DEGRANULATION dumps enough toxic payload to scorch the surrounding tissue.
@@ -529,9 +536,12 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!e || !e.alive) return err('The Eosinophil already degranulated — it is regenerating.');
       if (!iv.tagged) return err('Coat it with an antibody first.');
       if (!samePlace(iv, e)) return err('Move the Eosinophil onto the target first.');
-      if (apNow(g) < 2)
-        return err("Degranulate takes 2 Action Points — it's the eosinophil's whole payload.");
-      const died = hurtInvader(g, iv, 3, 'eosinophil'); // 3 kills even a 3-HP worm in one turn
+      if (apNow(g) < DEGRANULATE_AP)
+        return err(
+          `Degranulate takes ${DEGRANULATE_AP} Action Points — it's the eosinophil's whole payload.`,
+        );
+      // 3, the content's number, kills even a 3-HP worm in one turn
+      const died = hurtInvader(g, iv, DEGRANULATE_DAMAGE, 'eosinophil');
       if (iv.zone === 'branch' && iv.organ && g.organs[iv.organ]) {
         const org = g.organs[iv.organ];
         if (org) {
@@ -550,10 +560,10 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       e.lane = null;
       e.organ = null;
       e.step = 0;
-      spendAP(g, g._actingPid, 2);
+      spendAP(g, g._actingPid, DEGRANULATE_AP);
       pushLog(
         g,
-        `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for 3 damage (2 AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
+        `<b>Eosinophil DEGRANULATED</b> — a full toxic payload for ${DEGRANULATE_DAMAGE} damage (${DEGRANULATE_AP} AP). ${died ? `The ${iv.disease} is destroyed.` : `${iv.disease} at ${iv.hp}/${iv.maxhp}.`} The cell is spent and regenerates on turn ${e.regenAt}. <i>This is how eosinophils really kill worms — and why parasites cause tissue damage.</i>`,
         'good',
       );
       return ok();
@@ -626,8 +636,11 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');
       // Hard: the secondary response is fast but still costs 1 AP. Training/Normal: free.
       if (g.difficulty === 'hard') {
-        if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');
-        spendAP(g, g._actingPid, 1);
+        if (apNow(g) < MEMORY_RESPONSE_AP_HARD)
+          return err(
+            `Need ${MEMORY_RESPONSE_AP_HARD} Action Point for the memory response on Hard.`,
+          );
+        spendAP(g, g._actingPid, MEMORY_RESPONSE_AP_HARD);
       }
       killInvader(g, iv, 'memory');
       pushLog(

@@ -1253,6 +1253,14 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/pathogen-x.test.ts',
     expect: 'rolls the same organ in the original',
   },
+  {
+    id: 'queue-q7-engine-reads-content',
+    why: "Queue Q7 moved the actions' own numbers into content, one source for the engine and the screens. An engine still holding its own literal would ignore content; changing content's antivenom cost must make the engine disagree with the original.",
+    file: 'packages/content/src/rules/tuning.json',
+    mutate: (t) => t.replace('"ANTIVENOM_AP": 3,', '"ANTIVENOM_AP": 4,'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/coverage-scenarios.test.ts',
+    expect: 'antivenom in stock but not enough AP',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
