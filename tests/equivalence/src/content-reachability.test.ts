@@ -11,7 +11,8 @@
  *   #23  `Diphtheria toxin` has a FAMILY and a TROPISM entry and NOTHING can produce it.
  *        Found by grepping legacy: it appears exactly twice, both table entries.
  *   #21  the only `novel` card is a VIRUS, which is why `tag`'s refusal can never fire
- *   #4   the only `variant` card is a PARASITE, which is why the coat-change roll can never fire
+ *   #4   the only `variant` card is a PARASITE, which is why the coat-change roll never fired in
+ *        the original, whose `neutralise` refused parasites (reachable since queue Q1)
  *   #13  Pathogen X is the only card with no FAMILY entry
  *
  * If the generator disagrees with any of these, THE GENERATOR IS WRONG and the rest of its
@@ -25,6 +26,8 @@ import { dirname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import * as content from '@immunity-wars/content';
+
+import { report } from '../reachability-report.js';
 
 // Resolved from THIS file, not from the working directory — vitest's cwd differs depending on
 // whether the suite runs from the package root or the repo root.
@@ -57,9 +60,12 @@ describe('the reachability report finds what was found by hand', () => {
   it('is up to date with the content it describes', () => {
     // The report is committed, so it can rot. This fails if the content moved under it.
     // `npx tsx tests/equivalence/reachability-report.ts` regenerates it.
-    const deck = content.DECK_MASTER.length;
-    expect(REPORT).toContain(`Deck: **${deck} cards**`);
-    expect(REPORT).toContain(`FAMILY: **${Object.keys(content.FAMILY).length} entries**`);
+    //
+    // The WHOLE report, as the generator makes it today (FINDINGS #104). This sampled two numbers,
+    // the deck's and FAMILY's, so when queue Q3 gave Pathogen X a TROPISM entry the report went on
+    // saying it had none, and this passed. The generator writes only when run directly, so
+    // importing it here cannot rewrite the file this reads.
+    expect(REPORT).toBe(report());
   });
 });
 
@@ -80,7 +86,7 @@ describe('the underlying facts, checked against the content directly', () => {
     expect(flagged('novel')).toEqual([{ dz: 'Pathogen X', type: 'virus' }]);
   });
 
-  it('the only variant card is a parasite — why the coat-change roll cannot fire (#4)', () => {
+  it('the only variant card is a parasite — why the coat-change roll never fired in the original (#4)', () => {
     expect(flagged('variant')).toEqual([{ dz: 'Sleeping sickness', type: 'parasite' }]);
   });
 

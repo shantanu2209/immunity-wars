@@ -77,7 +77,8 @@ const ENGINE_MINTED: Record<string, string> = {
   'Pneumococcal pneumonia': 'the postFluPneumonia rare event',
 };
 
-function report(): string {
+/** The report as the content makes it today. Exported for the test that compares it (#104). */
+export function report(): string {
   const deck = new Set(content.DECK_MASTER.map((c) => c.dz));
   const emittedToxins = new Map(Object.entries(content.TOXIN_MAKERS).map(([b, t]) => [t, b]));
 
@@ -137,8 +138,10 @@ function report(): string {
     '',
     '**The three named in FINDINGS #22 fall out of this table.** `novel` appears only on a',
     "`virus`, so `tag`'s brand-new-antigen refusal (which accepts only bacteria/worm/parasite)",
-    'can never fire — #21. `variant` appears only on a `parasite`, and `neutralise` rejects',
-    'parasites, so the antigenic-variation roll can never fire — #4. `hidesInMac` likewise.',
+    'can never fire — #21. `variant` appears only on a `parasite`, which the original',
+    '`neutralise` rejected, so the antigenic-variation roll never fired there — #4; since queue',
+    'Q1 antibodies may attempt a trypanosome, and it can. `hidesInMac` appears only on a',
+    "`parasite` that is no trypanosome, so `neutralise`'s in-a-macrophage guard still cannot fire.",
     '',
     '## 3. Content the engine cannot produce',
     '',

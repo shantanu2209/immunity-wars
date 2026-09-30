@@ -75,7 +75,9 @@ describe('B3: newGame is byte-identical and consumes identical randomness', () =
     });
   }
 
-  it('honours cfg: multiplayer seats, flags overrides, and science', () => {
+  // `science` is passed and ignored by both since queue Q10 removed the field, so the old key
+  // in a caller's config is shown to change nothing.
+  it('honours cfg: multiplayer seats and flags overrides, and ignores a science flag alike', () => {
     const cfgs: Record<string, unknown>[] = [
       {
         difficulty: 'normal',

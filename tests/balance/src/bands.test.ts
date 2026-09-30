@@ -18,6 +18,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { PACK_VERSION, RULES_VERSION } from '@immunity-wars/content';
+
 import { GATED_METRICS, GENERATOR, GENERATOR_VERSION } from './metrics.js';
 import { LOUD_SIGMA, SIGMA, mismatchedShape, type Band, type BandFile } from './panel.js';
 import { DIFFICULTIES } from './play.js';
@@ -35,10 +37,28 @@ describe('bands.json', () => {
     }
   });
 
-  /** A band measured on fewer than three arms is not a measurement of spread. */
-  it('was calibrated on enough independent arms to be a null distribution', () => {
+  /**
+   * The rule's arm count, not a bare minimum. This asked for three, which is the least that measures
+   * a spread at all; the rule is 24 (CLAUDE.md, "Balance targets"), because 8 arms sat at 0.72x
+   * their analytic floor and inflated every σ by ~28% (docs/FINDINGS.md #35). Tightened when the
+   * documented recalibration command turned out to run 8 (#103).
+   */
+  it('was calibrated on the 24 independent arms the rule requires', () => {
     for (const d of DIFFICULTIES) {
-      expect(file.difficulties[d]?.arms ?? 0).toBeGreaterThanOrEqual(3);
+      expect(file.difficulties[d]?.arms ?? 0, `${d}`).toBeGreaterThanOrEqual(24);
+    }
+  });
+
+  /**
+   * CURRENT, in the sense that matters: measured on the rules the engine now carries. A rules
+   * version that moves means the engine changed on purpose, and bands left behind would name rules
+   * nobody plays (#103, found when the engine change queue moved it from 3.1.0 to 4.0.0).
+   */
+  it('was measured on the rules and content version the engine carries', () => {
+    for (const d of DIFFICULTIES) {
+      const p = file.difficulties[d]?.provenance;
+      expect(p?.rulesVersion, `${d}: recalibrate after a rules version change`).toBe(RULES_VERSION);
+      expect(p?.packVersion, `${d}`).toBe(PACK_VERSION);
     }
   });
 

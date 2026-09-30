@@ -19,7 +19,8 @@ AP plumbing are barely exercised. Phase 3 builds the new relay and must cover th
 ## Deferred until a competent bot exists (18 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
-emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot
+emits 9 of 29 actions (docs/FINDINGS.md §1; 8 of 27 at the audit), so these heuristics are
+never entered. A bot
 good enough to measure difficulty would reach them.
 
 **These were listed against Phase 2 until 18 August 2026.** The bot is inlined in the engine

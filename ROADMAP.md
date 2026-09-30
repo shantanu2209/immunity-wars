@@ -14,7 +14,7 @@ affordable. Each phase ends with something you can hold, open, or install.
 Phase 1  Foundations ─────────── CLOSED (docs/PHASE1_CLOSEOUT.md)
 Phase 2  The app people see ──── PAUSED, not closed (docs/PHASE2_PAUSE.md)
 Phase 3  Playing together ─────── CLOSED (docs/PHASE3_CLOSEOUT.md)
-         ↓ the engine change queue, now (docs/ENGINE_CHANGE_QUEUE.md)
+         ↓ the engine change queue, RAN 30 September 2026 (docs/ENGINE_CHANGE_QUEUE.md)
 Phase 4  Android
 Phase 5  iOS
 Phase 6  The classroom layer
@@ -122,9 +122,9 @@ the lobby's rules, undo together, Update now, and another game in the same room 
 **CLOSED 30 September 2026**, with one definition-of-done item not fully met, since two Gate A items
 still owe a phone ([`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)).
 
-**Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, now
-([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), FINDINGS #101), and the relay's half
-of #94 before Phase 4 ships.
+**Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, which ran the
+same day, all ten changes, rules version 4.0.0 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
+FINDINGS #101), and the relay's half of #94 before Phase 4 ships.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25

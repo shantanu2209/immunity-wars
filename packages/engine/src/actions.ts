@@ -442,8 +442,8 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         return err(`Neutralising a toxin takes ${apCost} Action Points.`);
       }
       if (iv.variant && d6() <= 3) {
-        // NOTE: unreachable in play — the only variant card is a parasite, which `ok2` already
-        // rejected above. docs/FINDINGS.md #4. Ported exactly, including that this branch
+        // Reachable since queue Q1 (Kartik, 5 September 2026; FINDINGS #4): a trypanosome may be
+        // attempted, and on a 1 to 3 its coat changes. Ported exactly, including that this branch
         // spends AP even for a remembered pathogen, where the success path below would not.
         g.ab[f] = held - 1;
         spendAP(g, g._actingPid, apCost);

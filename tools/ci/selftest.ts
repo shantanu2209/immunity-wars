@@ -1424,6 +1424,30 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
     expect: 'no log line misses the catalogue',
   },
+  {
+    id: 'balance-bands-24-arms',
+    why: "FINDINGS #103: the documented recalibration command ran 8 arms and said 24. Bands on 8 arms sat at 0.72x their analytic floor and inflated every σ by ~28% (#35), so a bands file below the rule's 24 must not ship.",
+    file: 'tests/balance/bands.json',
+    mutate: (t) => t.replace('"arms": 24,', '"arms": 8,'),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/bands.test.ts',
+    expect: 'was calibrated on the 24 independent arms the rule requires',
+  },
+  {
+    id: 'balance-bands-current-rules',
+    why: 'FINDINGS #103: bands measured on other rules name a game nobody plays. A rules version that moves without a recalibration must fail in the fast tier, not wait for someone to read the provenance.',
+    file: 'packages/content/src/rules/pack.json',
+    mutate: (t) => t.replace(/"rulesVersion": "[^"]+"/, '"rulesVersion": "9.9.9"'),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/bands.test.ts',
+    expect: 'was measured on the rules and content version the engine carries',
+  },
+  {
+    id: 'reachability-report-whole',
+    why: "FINDINGS #104: the reachability report's currency check sampled two numbers, so when queue Q3 declared Pathogen X's tropism the report went on saying it had none, and the check passed. It compares the whole report now.",
+    file: 'docs/CONTENT_REACHABILITY.md',
+    mutate: (t) => t.replace('TROPISM: **107 entries**', 'TROPISM: **106 entries**'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
+    expect: 'is up to date with the content it describes',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

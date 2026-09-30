@@ -481,5 +481,47 @@ the guard and sees both fail.
 
 ---
 
+## 10. The engine change queue: nine ruled changes, and the oracle becomes "the original, as ruled"
+
+**What changed, and why an entry.** The queue ([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md))
+ran on 30 September 2026, as its own piece between Phase 3 and Phase 4 ([`FINDINGS.md`](FINDINGS.md)
+#101). Nine of its ten changes make the port differ from `tools/legacy/v2_engine.js` as it stands,
+so by this file's own rule each is listed here, below. The tenth, Q8, changed how five log lines are
+written in the source and not a byte of what the engine writes, so it is not a deviation.
+
+**The oracle.** A deliberate rule change breaks the corpus by design, and the obvious repair,
+comparing the port with a snapshot of itself, is a test that cannot fail. Each change was instead
+made twice, independently: in the port, and as an edit to the original's source applied in memory by
+the harness (`tests/equivalence/src/ruled.ts`; the file in `tools/legacy/` is never touched). **The
+corpus now compares the port with the original as ruled**, over every recorded game. Each edit must
+match exactly once or the harness refuses it, so an edit made stale by any later change is caught
+rather than silently skipped (`ruled.test.ts`). The untouched original stays loadable
+(`loadOriginalLegacy`), and every rule change below is also run against it as a CONTROL, which must
+show the OLD rule: that is what shows each test looks where its rule changed.
+
+**Decided by:** the method, Shantanu, 30 September 2026 (*"1. Yes"*, to the oracle; *"Do it one
+shot please"*, one PR with a commit per change). Each change's own ruling is in its row.
+
+### 10.1 to 10.9, one per change
+
+| # | Change | Legacy | Port | Decided by | Test, and control |
+|---|---|---|---|---|---|
+| 10.1 | **Q1** antibodies may attempt a trypanosome | `neutralise` and `canNeutralise` refuse every parasite, so the coat-change roll on its only `variant` card never fires | a parasite carrying a `variant` may be neutralised, and the roll can fire | Kartik, 5 September 2026, option (a); [`FINDINGS.md`](FINDINGS.md) #4 | `queue-rules.test.ts`, Q1; `reachability.test.ts`, *"SINCE QUEUE Q1, the same real play makes the coat change"*. Control `queue-q1-antigenic-variation-reachable` |
+| 10.2 | **Q2** the Helper T-Cell's free-action slot removed | `g.free`, `hasFree`, `spend`'s free branch and the `free` view key, which nothing ever grants | none of them | Kartik, 5 September 2026; #29, #99 | `multiplayer-arms.test.ts`, *"queue Q2 closes FINDINGS #99"*. Control `queue-q2-no-free-actions` |
+| 10.3 | **Q3** Pathogen X's tropism declared | no `TROPISM` entry; `rollOrgan` falls through its `!declared` branch | `"Pathogen X": "any"` | Kartik, 5 September 2026; #13, whose other lookup miss is #5 above | `pathogen-x.test.ts`, *"Q3: declaring Pathogen X a generalist changes no play"*: the same organ in the original, the original as ruled and the port, on 120 seeds. Control `queue-q3-no-play-change` |
+| 10.4 | **Q4** an antivenom kill teaches no memory | on Training, a kill by antivenom grants memory of the venom, which its own log line denies | it does not | Kartik, option (a); #55 | `queue-rules.test.ts`, Q4. Control `queue-q4-antivenom-no-memory` |
+| 10.5 | **Q5** the invader id counter kept in the game | a module counter, reset at `newGame`, absent from the state, so a resumed game reuses ids | `g.idCounter`; a save from before carries forward, its counter worked out from its own ids | queued at P2.5; the carrying forward, Shantanu, 30 September 2026 (*"3. Ok"*); #56 | `resume-ids.test.ts`, on real saves from the original. Control `queue-q5-old-save-carried-forward` |
+| 10.6 | **Q6** a resident's Recall, a new action | no such action: a resident walks back one step at a time | `resrecall` returns it to its organ box in one move for one Action Point, undoable | Kartik, ruling 1, 5 September 2026; its words approved by Shantanu, 30 September 2026; #5 | `queue-rules.test.ts`, Q6; `resident-reasons.test.ts`; `offered.test.ts`. Controls `queue-q6-recall-undoable`, `queue-q6-recall-in-the-move-class`, `queue-q6-recall-offered-where-accepted` |
+| 10.7 | **Q7** the actions' numbers moved into content | six literals in the engine: neutralise's toxin cost, the antivenom dose, degranulate's cost and damage, strike's damage, the memory response on Hard | the same six values, read from `tuning.json` | Shantanu, at CP2, widened 6 September 2026; #52 | no change in play: the corpus holds it to the original with no edit made for it. Control `queue-q7-engine-reads-content` |
+| 10.8 | **Q9** degranulate burns the organ only where the fight is | the organ burns when the target is anywhere on its branch | only at step 0, in the organ | Shantanu, S25 pass, 5 September 2026; #57 | `queue-rules.test.ts`, Q9. Control `queue-q9-burn-where-the-fight-is` |
+| 10.9 | **Q10** the inert `science` field removed | set from a config flag, copied into the view, read nowhere | gone from the state, the view, `newGame`'s config and the session's | Shantanu, 6 September 2026 | `construct.test.ts`, *"projects identically across the whole B2 state corpus"*. Control `queue-q10-science-gone` |
+
+**What the reference bot sees.** Under the balance panel, Normal and Hard play identically before
+and after, to the fourth decimal of every metric, and only Training moved, by about 1σ
+([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), "How it ran"). That is a statement about the
+bot as much as the rules: it plays about six of the fourteen seats (`CLAUDE.md`, Known issues).
+
+---
+
 *Entries are appended as they are decided, never retroactively edited — if a decision is
 reversed, add a new entry saying so.*

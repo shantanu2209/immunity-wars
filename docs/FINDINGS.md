@@ -344,6 +344,13 @@ reachable — and if so, how, without breaking the "worms and parasites must be 
 struck" rule that gives EUK pathogens their identity — is a design conversation with Kartik,
 not a port decision.
 
+**CLOSED 30 September 2026 by queue Q1** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.1), Kartik's option (a):
+antibodies may attempt a trypanosome. The coat change now happens in real play, in the port and the
+original as ruled alike, and still never in the untouched original (`reachability.test.ts`);
+`queue-rules.test.ts` holds the two together on 20 seeds and both halves of the roll. Control
+`queue-q1-antigenic-variation-reachable`. **The printed rules have not followed** (#105): their
+Neutralise names a virus, a toxin and malaria, and no trypanosome.
+
 ---
 
 ## 5. A resident macrophage can never act from its starting position
@@ -398,6 +405,16 @@ organ box before its free engulf can ever do anything.**
 could take — the resident could start on branch step 1; Patrol could be free for the first step;
 or the rulebook could simply say it. That is Kartik's call. The port reproduces the current
 behaviour exactly.
+
+**CLOSED 30 September 2026 by queue Q6** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.6), Kartik's ruling 1
+(below, with the rulings of 5 September): the resident still starts in its organ box and must step
+forward to meet anything, and a new action, **Recall** (`resrecall`), brings it straight back from
+any step of its branch for one Action Point, undoable like a move. The screens offer it as "Recall
+to the organ" wherever the engine accepts it. It is the rule the printed game already had: the
+rulebook and the quick reference both state Recall at 1 AP, so the app now agrees with the table
+rather than lagging it (#105). Nothing can be eaten from the organ box still, which is the
+intended miss, and the measurement above remains true of the reference bot, which never moves a
+resident.
 
 ---
 
@@ -595,6 +612,12 @@ mechanism.
 decision about what a novel antigen's class even means. It is Task C's problem, where the
 tables move behind a Zod loader and the schema can require every `DECK_MASTER.dz` to have a
 `FAMILY` entry or an explicit, documented exemption.
+
+**CLOSED 30 September 2026 by queue Q3** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.3), Kartik's ruling of
+5 September: Pathogen X is a generalist ON PURPOSE, declared as `"Pathogen X": "any"` in `TROPISM`
+rather than reached through a lookup miss. It changes no play: `rollOrgan` picks the same organ in
+the original, the original as ruled and the port on 120 seeds (`pathogen-x.test.ts`; control
+`queue-q3-no-play-change`). The other lookup miss, `FAMILY`'s, was DEVIATIONS #5.
 
 ---
 
@@ -1475,6 +1498,13 @@ and free actions are not being added (*"the rebalancing is not worth it"*), queu
 and none using it. *Corrected 30 September 2026, writing the Phase 3 closeout:* the note above treated
 this as an open question, because this entry never said it had been answered. It stands only if that
 ruling is ever reversed; #99 ends when Q2 lands, with the slot.
+
+**CLOSED 30 September 2026 by queue Q2** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.2): the slot, `hasFree`,
+`spend`'s free branch and the `free` view key are gone, and the undo snapshots lost the field with
+them. The check Kartik made it conditional on held: none of the Helper's effects used it (the
+enumeration in [`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), Q2), and the corpus holds every
+one to the original. A save from before the queue carries forward, the field dropped on load.
+Control `queue-q2-no-free-actions`. #99 closed with it.
 
 ---
 
@@ -2893,6 +2923,15 @@ pinned by a spanning test in the session suite that drives the engine directly: 
 entry is what keeps it from being mistaken for the intended shape. When the constant moves to
 content, delete the mirror and its test in the same commit.
 
+**CLOSED 30 September 2026 by queue Q7** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.7), widened as ruled
+on 6 September to the whole family: neutralise's toxin cost, the antivenom dose, degranulate's cost
+and damage, strike's damage and the memory response on Hard are content (`tuning.json`), read by
+the engine and by the screens. The mirror and its spanning test are deleted, and the action rows
+gained the strike and degranulate damage a retyped copy had been ruled too risky to show. No play
+changed: the corpus holds it to the original with no edit made for it. Control
+`queue-q7-engine-reads-content`. One cost, found at Q8: four refusals that had been literals
+became templates, which the toast could not find until #102 fixed it.
+
 ---
 
 ## 53. The engine's QUERIES return prose, and the Phase 1 catalogue never reached them
@@ -3106,6 +3145,14 @@ any Training game with an antivenom kill followed by the same venom). The probab
 condition in `killInvader`'s memory grant, `by !== 'antivenom'`; whether a memory response
 should ever apply to a venom at all is Kartik's call at the same time.
 
+**CLOSED 30 September 2026 by queue Q4** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.4), Kartik's option
+(a): an antivenom kill teaches no memory, so the engine now does what its own log line says. The
+fix is the one condition this entry named, `by !== 'antivenom'`. `queue-rules.test.ts` holds it on
+five seeds in the port and the original as ruled, with the untouched original, which remembered,
+as the control; control `queue-q4-antivenom-no-memory`. **Still open, and Kartik's:** the second
+question above, whether a memory response should ever apply to a venom at all. The ruling of 5
+September did not take it up.
+
 ## 56. The engine's invader id counter is not in `GameState` — a resumed game reuses ids, and every id-keyed path can then act on the wrong pathogen
 
 **Found 5 September 2026, by the planning screen's headless walkthrough** (P2.5 item 12, block
@@ -3153,6 +3200,15 @@ changes, and the workaround and its test are deleted with it — the same expiry
 BEFORE today's workaround by a game that had already been resumed once may carry duplicate
 ids; no such save exists outside the developers' own devices.
 
+**CLOSED 30 September 2026 by queue Q5** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.5): the counter is
+`g.idCounter`, in the state, so it resumes with the game and travels in the relay's; `resetUid` and
+the session's `advanceIdsPast` are gone, and so is the relay's call to it. A save from before the
+queue is carried forward on load (`migrateSavedGame`, ruled 30 September), its counter worked out
+from the largest id it carries, in the same three places the workaround read. `resume-ids.test.ts`
+now resumes REAL old saves, made by the untouched original. Control
+`queue-q5-old-save-carried-forward`. The caveat above stands: a save already carrying duplicate
+ids keeps them.
+
 ## Kartik's rulings on his open design questions — 5 September 2026, relayed by Shantanu
 
 Recorded here beside the findings they close, and queued together in
@@ -3171,6 +3227,10 @@ they will be measured against the corpus in one Phase 3 pass.
 
 Two more rulings the same day, Shantanu's: the **mirroring convention is medical** (the liver on
 the patient's right, the viewer's left — already built), and the **gut icon stays a stomach**.
+
+*Landed 30 September 2026:* every engine change in the table, in the engine change queue
+([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), "How it ran"; [`DEVIATIONS.md`](DEVIATIONS.md)
+#10). Each finding above carries its own closing note.
 
 ## 57. Degranulate burns the organ from anywhere on its branch — the damage is keyed to the target's lane, not to where the fight is
 
@@ -3200,6 +3260,13 @@ degranulating burns "the organ it stands in". That is Kartik's ruling and the ru
 it is NOT what the engine does today, which burns the target's organ from anywhere on its
 branch. The card is left as written on purpose. Until Q9 lands, the card and the engine
 disagree, and the card is the one that is right. Do not edit the card to match the engine.
+
+**CLOSED 30 September 2026 by queue Q9** ([`DEVIATIONS.md`](DEVIATIONS.md) #10.8): degranulate burns
+the organ only when the fight is in it, at branch step 0. The card and the library's why box, left
+as written on purpose, are true with no edit, and so are the printed quick reference and study
+packet, which say the same. `queue-rules.test.ts` holds a fight at step 1 to leaving the organ whole
+and one at step 0 to burning it, in the port and the original as ruled, with the untouched original
+as the control; control `queue-q9-burn-where-the-fight-is`.
 
 ## 58. A rare event is bannered and never logged, so once its chip retires it leaves no trace — ⚠️ the premise was false: the engine logs it (corrected and CLOSED 30 September 2026, queue Q8)
 
@@ -5070,6 +5137,11 @@ described: reachable only in a state given a free action by hand. The queue has 
 free action itself, so granting free actions would not make it fail; what makes the work on #29 meet
 this is a line added to #29 itself.
 
+**CLOSED 30 September 2026 with #29, by queue Q2:** there is no free-action slot, so nothing lets an
+action through on another cell's free action, and nothing reaches `spendAP` for no player.
+`multiplayer-arms.test.ts` holds the closure, with a control on the original, where the quirk
+still lives.
+
 ---
 
 ## 100. A negative control was inert for five days, because only a full self-test run could say so — FIXED inline 30 September 2026
@@ -5138,6 +5210,10 @@ queue's own header is marked with this finding.
 
 **Ruled 30 September 2026: now** (*"Now"*), as its own piece between Phase 3 and Phase 4.
 
+**CLOSED 30 September 2026: the queue ran**, all ten changes, in one PR with a commit each, measured
+once ([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), "How it ran"; [`DEVIATIONS.md`](DEVIATIONS.md)
+#10). The relay and the app go out together, on Shantanu's word, and the deploy is recorded there.
+
 ## 102. The toast looked engine text up exactly, so a refusal carrying a value rendered as ⟪engine: …⟫, and the log's matcher chose between templates by a length that counted placeholder names — FIXED in queue Q8, 30 September 2026
 
 **Found 30 September 2026, building queue Q8, by a probe over the whole catalogue.**
@@ -5173,3 +5249,58 @@ writes; and by `log-text.test.ts` over 565 recorded lines (none matched ambiguou
 
 **A product defect, fixed in the change that found it rather than filed**, because it is Q8's own
 subject: what the engine writes, reaching the catalogue.
+
+## 103. The documented recalibration command ran 8 arms and said 24 — FIXED inline 30 September 2026
+
+**Found 30 September 2026, recalibrating after the engine change queue**, by reading the run's first
+line of output: "8 calibration arms". The README's command, `npx tsx tests/balance/metrics-run.ts`,
+is annotated "24 arms"; the script took its arm count from its first argument and defaulted to 8,
+the E2 shape, and the shipped bands had been made by passing 24. Following the documentation made
+bands on a third of the arms the rule requires, which is the under-sampling #35 found: 8-arm bands
+sat at 0.72× their analytic floor and inflated every σ by ~28%. `bands.test.ts` could not see it,
+because it asked for 3 arms, the least that measures a spread at all.
+
+The run was stopped before it wrote anything (it writes at the end), and the processes it left
+behind were ended; `bands.json` was unchanged.
+
+**Fixed:** the default is 24, and `bands.test.ts` requires 24 (control `balance-bands-24-arms`). It
+also requires the bands to name the rules and content versions the engine carries, since bands left
+behind a rules change describe rules nobody plays: the queue moved the rules to 4.0.0, and the bands
+said 3.1.0 until they were recalibrated (control `balance-bands-current-rules`). **An instrument
+defect, so fixed in the change that found it.**
+
+## 104. The reachability report's currency check sampled two numbers, and the report had been stale since queue Q3 — FIXED inline 30 September 2026
+
+**Found 30 September 2026**, regenerating `docs/CONTENT_REACHABILITY.md` for a sentence Q1 had made
+false (that antigenic variation can never fire). The regeneration changed two more lines, which Q3
+had made false three commits earlier: TROPISM **106 → 107** entries, and "no TROPISM entry:
+**Pathogen X**" → none. The report's test, *"is up to date with the content it describes"*, compared
+the deck's count and `FAMILY`'s, and nothing else. The generator has a `--check` mode that compares
+the whole report, and nothing ran it.
+
+**Fixed:** the test compares the whole report with what the generator makes today (control
+`reachability-report-whole`). The generator writes only when run directly, so importing it cannot
+rewrite what the test reads, which is the C5b shape its own header guards against. **An instrument
+defect, fixed inline.**
+
+## 105. Queue Q1 lets antibodies attempt a trypanosome, and the printed rules' Neutralise does not: the table and the app disagree until Kartik's text changes — OPEN
+
+**Found 30 September 2026**, checking each queue change against the printed rules
+(`Immunity_Wars_Rulebook_v3_1.docx`, `Immunity_Wars_Quick_Reference_v3.docx` and
+`Immunity_Wars_Study_Packet_v3_1.docx`, in `docs/`), because the printed board and the app must
+agree (`CLAUDE.md`, hard rules).
+
+| Change | The printed rules | Since the queue |
+|---|---|---|
+| Q6, Recall | Rulebook and quick reference: Recall, 1 AP, "brings it straight back to its organ box from any step of its branch" | **Agree.** The app lagged the table until now |
+| Q9, degranulate | Quick reference and study packet: it "burns the organ it stands in" | **Agree.** The app disagreed until now |
+| Q4, antivenom | Study packet: passive immunity leaves "no memory". The rulebook's Training rule, "beat a pathogen and your body remembers it", does not mention antivenom | **Agree**, the rulebook silent |
+| Q2, free actions | The Helper T-Cell grants none | **Agree** |
+| **Q1, a trypanosome** | Rulebook, Neutralise: "destroy a virus, a toxin, or travelling/blood-stage malaria". Quick reference, the B-Cell: "Neutralise a virus (1 AP) or a toxin (2 AP)". Study packet: "neutralise a virus or toxin, or coat a bacterium, worm or parasite". The rulebook's table of special properties says a pathogen may change its coat, and nowhere says when | **Disagree.** The app lets antibodies attempt Sleeping sickness, and on a roll of 1 to 3 its coat changes and the antibody is lost |
+
+**What would close it, for Kartik to word:** the Neutralise row naming the trypanosome and its
+roll, and the quick reference's B-Cell line with it. The printed text is his, so it is not edited
+here.
+
+**For a ruling, before the deploy:** ship Q1 ahead of the printed rules, as the app ran behind
+them on Recall from 5 September until now, or hold the deploy until the text changes.

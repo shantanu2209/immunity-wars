@@ -190,7 +190,7 @@ pnpm test                                   # the fast tier, inside pnpm verify
 pnpm test:balance                           # CHECK this engine vs bands.json      (~50s)
 npx tsx tests/balance/fidelity.ts           # E0a — bot fidelity, 1000 seeds x 3   (~25s)
 npx tsx tests/balance/size-run.ts           # E1  — state size, 200 seeds x 3      (~30s)
-npx tsx tests/balance/metrics-run.ts        # E2  — RECALIBRATE bands, 24 arms          (~12min)
+npx tsx tests/balance/metrics-run.ts        # E2  — RECALIBRATE bands, 24 arms by default (~12min)
 npx tsx tests/balance/false-positive-run.ts # F0  — 8 unseen arms vs the bands         (~4min)
 ```
 
@@ -203,7 +203,8 @@ unchanged engine put two Normal metrics at 2.6σ and 2.7σ against a two-past-3�
 an unlucky arm and not an 8-arm estimate being noisy: the bands sat at **0.72× their analytic
 sampling floor**, so every σ was inflated by ~28%. Bands are now calibrated from **24 arms** and
 floored. Measured on the shipped bands across **24 unseen arms** (48,000 games) of the unchanged
-engine: **0 failures, and 0 single-metric breaches** — worst excursion 2.65σ against a 3σ line.
+engine: **0 failures, and 0 single-metric breaches** — worst excursion 2.66σ against a 3σ line, on
+the bands recalibrated 30 September 2026 after the engine change queue (2.65σ on those of 18 August).
 Before flooring, the same probe produced three 3σ breaches across 204 metric draws. See the
 calibration sanity check above, [`TASK_E_CLOSEOUT.md`](../../docs/TASK_E_CLOSEOUT.md) §10.5 and
 [`FINDINGS.md`](../../docs/FINDINGS.md) #35.
