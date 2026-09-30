@@ -7,10 +7,12 @@
  *   handing out points, the captain handing out more than the pool, a pool of exactly one point, a
  *   player who is not captain ending the turn, and a player with no points trying to act. Played
  *   through both engines on five seeds, byte-identical.
- * - **Seven no action reaches**, only a direct call: `apOwnerOf`, which nothing in either engine
- *   calls; `apAvail` alone, which is only ever called together; and `spendAP` for no player, which
- *   no action can produce. They are held to legacy's own functions, exposed for this test by the
- *   harness's source mutation, which adds three names to legacy's exports and changes nothing else.
+ * - **Seven no game reaches**, held to legacy's own functions by direct calls: `apOwnerOf`, which
+ *   nothing in either engine calls; `apAvail` alone, which is only ever called together; and
+ *   `spendAP` for no player, which the room never sends, since it gives every action its sender. A
+ *   hand-built action in a hand-built state does reach that one (docs/FINDINGS.md #99, the last
+ *   block). Legacy's functions are exposed for this test by the harness's source mutation, which adds
+ *   three names to legacy's exports and changes nothing else.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -200,10 +202,10 @@ describe("the arms only a direct call reaches, held to legacy's own functions", 
     expect(p.apBudget).toEqual({ P1: 3, P2: 0, P3: 0 });
   });
 
-  // THE ONE DIFFERENCE, pinned as found (docs/FINDINGS.md #98): for no player, legacy writes a budget
-  // under the key "null", and the port, which has guarded it since Task B4, writes nothing. No action
-  // reaches it (`spendAP` is called with the acting player, and a player with no budget is refused
-  // before it), and neither touches a real player's points. Held here so it cannot change unseen.
+  // THE ONE DIFFERENCE, kept by ruling (docs/DEVIATIONS.md #9, from FINDINGS #98): for no player,
+  // legacy writes a budget under the key "null", and the port, which has guarded it since Task B4,
+  // writes nothing. No game reaches it, since the room gives every action its sender (the last block
+  // shows a hand-built action in a hand-built state can), and neither touches a real player's points.
   it('spendAP for no player: legacy writes a budget named "null", the port writes nothing', () => {
     const { together } = games();
     const [l, p] = together;
@@ -213,5 +215,48 @@ describe("the arms only a direct call reaches, held to legacy's own functions", 
     spendAP(p as never, null, 1);
     expect(l.apBudget).toEqual({ P1: 3, P2: 0, null: 0 });
     expect(p.apBudget).toEqual({ P1: 3, P2: 0 });
+  });
+});
+
+describe('a hand-built action, in a hand-built state, reaches spendAP for no player (FINDINGS #99)', () => {
+  // Found on 30 September 2026, checking this file's claim that no action could. An action with no
+  // player that names a cell holding a free action passes the points check on that free action,
+  // while the action charges a different cell, so it reaches `spendAP` for no player, and the free
+  // action is not used up. No game can: nothing grants a free action (FINDINGS #29), so the state is
+  // given one by hand, and the room gives every action its sender. Pinned as found, the ruled
+  // difference (DEVIATIONS #9) included. Granting free actions would NOT make this fail, since it
+  // hands the state its own; #29 carries the warning instead.
+  it("an action with no player reaches it, let through by another cell's free action", () => {
+    const family = 'ENV';
+    const noPointsNkFree = (g: GameState): void => {
+      const s = g as unknown as { free: Record<string, number>; apBudget: Record<string, number> };
+      s.free = { nk: 1 };
+      s.apBudget = { P1: 0, P2: 0, P3: 0 };
+    };
+    for (const seed of SEEDS) {
+      const steps: Step[] = [
+        ...OPEN,
+        { action: 'confirmAllocation', pid: 'P1' },
+        noPointsNkFree,
+        { action: 'produce', cell: 'nk', family },
+      ];
+      const l = play(legacy, seed, steps);
+      const p = play(portEngine, seed, steps);
+      expect(p.results.map((r) => canonical(r))).toEqual(l.results.map((r) => canonical(r)));
+      expect(lastError(p)).toBeUndefined();
+      const lg = l.g as unknown as { apBudget: Record<string, number> };
+      const pg = p.g as unknown as {
+        apBudget: Record<string, number>;
+        free: Record<string, number>;
+        made: Record<string, number>;
+      };
+      expect(lg.apBudget).toEqual({ P1: 0, P2: 0, P3: 0, null: 0 });
+      expect(pg.apBudget).toEqual({ P1: 0, P2: 0, P3: 0 });
+      expect(pg.made[family]).toBe(1);
+      expect(pg.free).toEqual({ nk: 1 });
+      // Past the budget named "null", the two states are the same to the byte.
+      delete lg.apBudget['null'];
+      expect(canonical(withoutSnapshotBudgets(p.g)), `seed ${String(seed)}`).toBe(canonical(l.g));
+    }
   });
 });

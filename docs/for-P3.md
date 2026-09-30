@@ -1607,9 +1607,10 @@ tests covered eight (§9, "2, built"). **The other twelve, read caller by caller
   out points, the captain handing out more than the pool, a pool of exactly one point (*"1 Action
   Point"*, singular), a player who is not captain ending the turn, and a player with no points of
   their own trying to act.
-- **Seven no action reaches**, only a direct call: all five arms of `apOwnerOf`, which nothing in
+- **Seven no game reaches**, only a direct call: all five arms of `apOwnerOf`, which nothing in
   either engine calls; `apAvail` alone, which is only ever called together; and `spendAP` for no
-  player, which no action can produce.
+  player, which the room never sends, since it gives every action its sender. (This said "no action
+  can produce" it, until a hand-built action in a hand-built state did, FINDINGS #99.)
 
 **Covered** by `tests/equivalence/src/multiplayer-arms.test.ts`, held to legacy: the five through
 both engines on five seeds, byte-identical (with the undo snapshots' budgets set aside, DEVIATIONS #8,
@@ -1619,7 +1620,11 @@ else. Control: `engine-mp-arms-held-to-legacy`.
 
 **One difference was found doing it** ([`FINDINGS.md`](FINDINGS.md) #98): given no player, legacy's
 `spendAP` writes a budget named `"null"`, and the port writes nothing. No game reaches it. It is
-pinned by the test, and awaits a ruling.
+pinned by the test, and was **ruled on 30 September 2026: kept**, recorded as
+[`DEVIATIONS.md`](DEVIATIONS.md) #9, with the control `engine-spendap-no-player`. Checking the
+claim above that no action could reach it found one that does, in a state given a free action by
+hand: a latent quirk inherited from legacy, which no game can reach because nothing grants a free
+action, and which matters only if one is ever granted (#99, #29).
 
 **And the instrument that counts the arms was wrong twice** (#97), found by tracing why it had called
 an excluded arm covered: rule A excluded by the line, so a live left operand, two ternaries' elses and
