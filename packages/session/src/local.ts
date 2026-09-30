@@ -100,7 +100,7 @@ export class LocalSession implements Session {
    * absence.
    */
   static createGame(config: NewGameConfig, opts: LocalSessionOptions = {}): LocalSession {
-    const g = call('newGame', { difficulty: config.difficulty, science: config.science ?? false });
+    const g = call('newGame', { difficulty: config.difficulty });
     return new LocalSession(g as Record<string, unknown>, opts);
   }
 

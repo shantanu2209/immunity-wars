@@ -40,4 +40,18 @@ export const RULED: readonly RuledChange[] = [
     replace:
       '"Tuberculosis (reactivated)":["lungs"],"Pneumococcal pneumonia":["lungs"],\n"Pathogen X":"any",\n};',
   },
+  {
+    // Shantanu, 6 September 2026: set from a config flag, copied into the view, read nowhere, in
+    // either engine. Removed from the game's state and its view.
+    queue: 'Q10',
+    name: 'the inert science field removed from the state',
+    find: 'log:[], won:false, lost:null, science:cfg.science!==false,',
+    replace: 'log:[], won:false, lost:null,',
+  },
+  {
+    queue: 'Q10',
+    name: 'the inert science field removed from the view',
+    find: 'won:g.won, lost:g.lost, science:g.science };',
+    replace: 'won:g.won, lost:g.lost };',
+  },
 ];

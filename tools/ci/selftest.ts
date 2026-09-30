@@ -1261,6 +1261,15 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/coverage-scenarios.test.ts',
     expect: 'antivenom in stock but not enough AP',
   },
+  {
+    id: 'queue-q10-science-gone',
+    why: 'Queue Q10 (Shantanu, 6 September 2026) removed the inert science field from the state and the view, in the port and in the original as ruled. A view that still carried it must disagree with the oracle.',
+    file: 'packages/engine/src/view.ts',
+    mutate: (t) =>
+      t.replace('    lost: g.lost,\n  };', '    lost: g.lost,\n    science: false,\n  };'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/construct.test.ts',
+    expect: 'projects identically across the whole B2 state corpus',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

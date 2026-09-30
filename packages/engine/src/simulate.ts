@@ -57,7 +57,7 @@ export function simulate(difficulty: string, N: number, flags?: Partial<Flags>):
   let cascade = 0;
 
   for (let i = 0; i < N; i += 1) {
-    const g = newGame({ difficulty, science: false, flags });
+    const g = newGame({ difficulty, flags });
     let guard = 0;
     while (!g.won && !g.lost && guard < 200) {
       guard += 1;

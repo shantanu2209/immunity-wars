@@ -43,7 +43,6 @@ import type { Card, Difficulty, InvaderType, OrganKey, RouteKey } from './types.
 export interface NewGameConfig {
   difficulty?: string;
   flags?: Partial<GameState['flags']>;
-  science?: boolean;
   multiplayer?: boolean;
   players?: string[];
   captain?: string | null;
@@ -401,7 +400,6 @@ export function newGame(cfg: NewGameConfig): GameState {
     log: [],
     won: false,
     lost: null,
-    science: cfg.science !== false,
     stats: {
       killedTrunk: 0,
       killedBranch: 0,

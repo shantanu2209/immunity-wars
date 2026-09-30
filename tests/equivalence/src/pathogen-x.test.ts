@@ -107,7 +107,7 @@ describe('#13 FIXED: the clonal-selection lesson survives losing the flag', () =
   const withNovelPathogen = (mutate: (iv: Invader) => void): GameState => {
     installRng(4242);
     try {
-      const g = port.newGame({ difficulty: 'normal', science: false }) as unknown as GameState;
+      const g = port.newGame({ difficulty: 'normal' }) as unknown as GameState;
       // Into the command phase, or applyAction refuses with 'Wait for command phase.' before it
       // ever reaches the guard under test.
       port.applyAction(g as never, { action: 'draw' } as never);

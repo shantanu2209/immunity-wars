@@ -42,16 +42,16 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### construct.ts
 
-- `110` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `114` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `119` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
-- `206` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
-- `211` `return (alt ?? null) as Card | null;`
-- `220` `return (alt ?? null) as Card | null;`
-- `244` `hp: INV_HP[c.type] || 1,`
-- `245` `maxhp: INV_HP[c.type] || 1,`
-- `293` `DECK_MASTER.find((c) => c.type === type) ??`
-- `308` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `109` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `113` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `118` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
+- `205` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
+- `210` `return (alt ?? null) as Card | null;`
+- `219` `return (alt ?? null) as Card | null;`
+- `243` `hp: INV_HP[c.type] || 1,`
+- `244` `maxhp: INV_HP[c.type] || 1,`
+- `292` `DECK_MASTER.find((c) => c.type === type) ??`
+- `307` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
@@ -332,7 +332,7 @@ if (ck && g.free && free > 0) {
 
 docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
 
-### construct.ts:84
+### construct.ts:83
 
 ```
 if (pick !== undefined) g.events[t] = pick;
@@ -340,7 +340,7 @@ if (pick !== undefined) g.events[t] = pick;
 
 picks and slots both have length 3 by construction — two slices of 2 and 1 concatenated, indexed by a forEach over 3 slots
 
-### construct.ts:102
+### construct.ts:101
 
 ```
 if (!e) return;
@@ -348,7 +348,7 @@ if (!e) return;
 
 every caller passes keys drawn from the pools that built g.events, and both pools are subsets of EVENTS. Demonstrated by data scan
 
-### construct.ts:128
+### construct.ts:127
 
 ```
 if (c) g.discard.push(c);
@@ -356,7 +356,7 @@ if (c) g.discard.push(c);
 
 same conservation as the spawn path: deck and discard cannot both be empty at a coInfection. Demonstrated over 300 games
 
-### construct.ts:140
+### construct.ts:139
 
 ```
 if ((c as unknown as Card).novel) {
@@ -364,7 +364,7 @@ if ((c as unknown as Card).novel) {
 
 the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games
 
-### construct.ts:210
+### construct.ts:209
 
 ```
 if (alt) g.discard.push(alt);
@@ -372,7 +372,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:219
+### construct.ts:218
 
 ```
 if (alt) g.discard.push(alt);
@@ -380,7 +380,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:294
+### construct.ts:293
 
 ```
 ({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
@@ -388,7 +388,7 @@ both sites: splice at an index findIndex just returned as >= 0 always yields an 
 
 testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan
 
-### construct.ts:299
+### construct.ts:298
 
 ```
 if ((card as Card).novel) {
@@ -396,7 +396,7 @@ if ((card as Card).novel) {
 
 testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck
 
-### construct.ts:309
+### construct.ts:308
 
 ```
 if (!card) return null;

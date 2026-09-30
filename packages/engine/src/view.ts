@@ -126,6 +126,5 @@ export function viewState(g: GameState): Record<string, unknown> {
     difficulty: g.difficulty,
     won: g.won,
     lost: g.lost,
-    science: g.science,
   };
 }

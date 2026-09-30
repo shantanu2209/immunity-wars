@@ -249,7 +249,6 @@ export interface GameState {
   log: LogEntry[];
   won: boolean;
   lost: LossRecord | null;
-  science: boolean;
   stats: Stats;
   multiplayer: boolean;
   players: string[];

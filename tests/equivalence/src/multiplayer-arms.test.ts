@@ -165,7 +165,7 @@ describe("the arms only a direct call reaches, held to legacy's own functions", 
   const games = (): { alone: [GameState, GameState]; together: [GameState, GameState] } => ({
     alone: [
       exposed.newGame({ difficulty: 'normal', science: false }),
-      port.newGame({ difficulty: 'normal', science: false }) as unknown as GameState,
+      port.newGame({ difficulty: 'normal' }) as unknown as GameState,
     ],
     together: [exposed.newGame(TOGETHER), port.newGame(TOGETHER) as unknown as GameState],
   });
