@@ -157,7 +157,8 @@ changed the engine regenerated the catalogue and the coverage record with it.
 | `e2871e7` | Q6, a resident's Recall |
 | `4654a55` | Q8, every line the engine writes reaches the catalogue |
 | `6f797e7` | the versions: rules 3.1.0 → 4.0.0, content 1.0.0 → 1.1.0 |
-| the next | the bands recalibrated; the findings closed; three more found on the way |
+| `232e0ef` | the bands recalibrated; the findings closed; three more found on the way |
+| `f295bd0` | the self-test's writes outlast a brief lock (#106) |
 
 **The balance panel, under the reference bot v1**, on the check's fixed arm of 20 × 100 games per
 difficulty, before (the engine at `1c89a8f`) and after (`6f797e7`):
@@ -192,7 +193,8 @@ recalibration left it at 2.65σ.
 own changes are covered, Recall's refusals included.
 
 **Controls:** 112 before the queue, 132 after. Each of the 20 new ones was seen firing for its own
-reason, and `pnpm ci:selftest:inert` finds none inert.
+reason, `pnpm ci:selftest:inert` finds none inert, and the full self-test run afterwards exercised
+all 132: every one red where it must be and green where it must be, the tree left clean.
 
 **Found on the way**, each recorded where it belongs:
 
@@ -205,6 +207,8 @@ reason, and `pnpm ci:selftest:inert` finds none inert.
 - **#104:** the reachability report had been stale since Q3, its currency check sampling two
   numbers. Fixed.
 - **#105:** Q1 and the printed rules disagree. Open.
+- **#106:** the first full self-test run died restoring a file on a brief Windows lock, and left
+  `primitives.ts` mutated. Restored from git at once; the runner now retries and stops loudly.
 - Four texts still described the rules before the queue: the engine's comment and a test's title
   saying the coat change can never fire, the reachability report saying the same, and a test title
   saying the engine honours `science`. Corrected.
