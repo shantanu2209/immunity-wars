@@ -52,8 +52,8 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
+import { engineText } from '../engineText';
 import { residentDisplayName } from '../names';
-import { productionText } from '../productionText';
 
 export type OfferSource = 'cell' | 'body';
 
@@ -445,7 +445,7 @@ export function produceFor(
     const d = view.scoped.productionDetail as { blocked?: unknown } | null;
     return none(
       view.selection.family === family && typeof d?.blocked === 'string'
-        ? productionText(d.blocked)
+        ? engineText(d.blocked)
         : t('selection.productionBlocked'),
     );
   }

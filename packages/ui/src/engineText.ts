@@ -2,12 +2,13 @@
  * Engine strings through the catalogue (ruling of 4 September 2026: rejection text is
  * rendered through the catalogue, beside the command bar).
  *
- * The engine returns its rejections as English text — `'No Action Points.'` — and the Phase 1
- * extraction put every one of those strings into the `engine` catalogue keyed by an id. The
- * engine itself is frozen, so it will keep returning English; this maps the text back to its
- * catalogue entry, which is where the Hindi edition will put the translation. An engine string
- * the catalogue does not know renders loudly, like a missing UI key — a rejection a player
- * cannot read is a finding, not something to paper over with the raw English.
+ * The engine writes English: a rejection (`'No Action Points.'`), a log line, a frame's
+ * headline, a query's label. The Phase 1 extraction put every one of those strings into the
+ * `engine` catalogue keyed by an id, a message that carries a value holding a placeholder in
+ * its place. This maps the text back to its catalogue entry, which is where the Hindi edition
+ * will put the translation. Since queue Q8 (30 September 2026) every string the engine writes
+ * is in the catalogue: nothing is composed where the extractor cannot follow it
+ * (`$meta.unextractedSites` is pinned empty).
  */
 import { ENGINE_I18N_EN } from '@immunity-wars/content';
 
@@ -16,10 +17,19 @@ const KEY_OF_TEXT: ReadonlyMap<string, string> = new Map(
   Object.entries(ENGINE_I18N_EN).map(([k, v]) => [v, k]),
 );
 
+/**
+ * For a string a player must read now: a rejection, a frame's headline, a query's label. One
+ * the catalogue does not hold renders LOUDLY, like a missing UI key: a rejection a player cannot
+ * read is a finding, not something to paper over with the raw English.
+ *
+ * By template as well as exactly (queue Q8; FINDINGS #102). This looked up exactly, so a
+ * rejection carrying a value, "Antivenom costs 3 AP.", rendered loudly whatever the catalogue
+ * held, and the production breakdown's rate ceiling needed a mapper of its own to put its
+ * number back (`productionText.ts`, deleted with this).
+ */
 export function engineText(message: string): string {
-  const key = KEY_OF_TEXT.get(message);
-  if (key === undefined) return `⟪engine: ${message}⟫`;
-  return ENGINE_I18N_EN[key] ?? message;
+  const r = engineLogText(message);
+  return r.matched ? r.text : `⟪engine: ${message}⟫`;
 }
 
 /**
@@ -30,10 +40,10 @@ export function engineText(message: string): string {
  * matches is re-rendered from the catalogue's template with those values, which is how the
  * Hindi edition will render the same line translated. The exact map is tried first.
  *
- * `matched: false` is returned rather than a loud marker: the log's known misses are the five
- * composed sites FINDINGS #53 lists, rendered plainly by the panel and pinned as the ONLY
- * misses by `log-text.test.ts`. A rejection is one line a player must read now; a log line is
- * one of forty, and a marker on every strike would teach nothing.
+ * `matched: false` is returned rather than a loud marker, and the log panel renders such a line
+ * plainly: a rejection is one line a player must read now, a log line one of forty. There is no
+ * known miss since queue Q8, when the five composed sites FINDINGS #53 listed became one literal
+ * per sentence, and `log-text.test.ts` pins that no recorded line misses.
  */
 interface Template {
   key: string;
@@ -63,9 +73,18 @@ function compile(): Template[] {
       .join('');
     out.push({ key, pattern: new RegExp(`^${source}$`), names, template });
   }
-  // Longer templates first: the most specific literal text wins over a sparser one.
-  out.sort((a, b) => b.template.length - a.template.length);
+  // The MOST LITERAL template first: the one fixing the most text of a message wins over a
+  // sparser one that also matches it (queue Q8; FINDINGS #102). This sorted by the template's
+  // length with its placeholder NAMES counted, so the crisis event's `<b>{bad}{name}</b> — {why}`
+  // outranked the rare event's `<b>★ {name}</b> — {why}` and claimed its line: the same English,
+  // and the wrong sentence for a translator.
+  out.sort((a, b) => literalLength(b.template) - literalLength(a.template));
   return out;
+}
+
+/** The characters a template fixes: its text with every `{placeholder}` taken out. */
+function literalLength(template: string): number {
+  return template.replace(/\{\w+\}/g, '').length;
 }
 
 export interface LogText {

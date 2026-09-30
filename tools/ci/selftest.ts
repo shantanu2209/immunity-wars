@@ -1355,6 +1355,75 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/resident-reasons.test.ts',
     expect: 'is NOT offered from the organ box',
   },
+  {
+    id: 'queue-q8-toast-by-template',
+    why: 'Queue Q8 (FINDINGS #102): a rejection that carries a value renders through the catalogue. The toast looked strings up exactly, so "Antivenom costs 3 AP." rendered as a loud marker whatever the catalogue held.',
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        '  const r = engineLogText(message);\n  return r.matched ? r.text : `⟪engine: ${message}⟫`;',
+        '  const key = KEY_OF_TEXT.get(message);\n  return key === undefined ? `⟪engine: ${message}⟫` : (ENGINE_I18N_EN[key] ?? message);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'two refusals the engine writes with a value in them render as themselves',
+  },
+  {
+    id: 'queue-q8-own-entry-in-the-catalogue',
+    why: "Queue Q8 (FINDINGS #102): every catalogue message comes back by its own entry, the one a translator translates. Ordered by template length with the placeholder names counted, the crisis event's entry claimed the rare event's line: the same English, the wrong sentence in Hindi.",
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
+        'out.sort((a, b) => b.template.length - a.template.length);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'comes back as itself, by its own entry',
+  },
+  {
+    id: 'queue-q8-no-ambiguous-log-line',
+    why: 'Queue Q8 (FINDINGS #102): on recorded play, where two catalogue entries match one log line, the one fixing the most text is chosen, strictly. English renders a wrong choice as the same words, so only this can see it.',
+    file: 'packages/ui/src/engineText.ts',
+    mutate: (t) =>
+      t.replace(
+        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
+        'out.sort((a, b) => b.template.length - a.template.length);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
+    expect: 'no line is ambiguous',
+  },
+  {
+    id: 'queue-q8-rare-event-once',
+    why: "Queue Q8 (FINDINGS #58, corrected): the engine logs a rare event itself, at the end of fireRare, and always has. The screens added a second line on the premise that it did not, so each rare event was in the log twice until the engine's line scrolled out.",
+    file: 'packages/ui/src/play/effects.ts',
+    mutate: (t) =>
+      t.replace(
+        "    (l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }),\n  );\n}",
+        "    (l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }),\n  ).concat(g['rareBanner'] ? [{ t: 0, msg: `Rare event: ${String((g['rareBanner'] as { name?: unknown }).name)}`, kind: 'bad' }] : []);\n}",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
+    expect: 'a rare event is in the log once',
+  },
+  {
+    id: 'queue-q8-no-composed-log-site',
+    why: 'Queue Q8 (FINDINGS #53): every log line and rejection is a literal the catalogue can hold. A message composed into a variable first reaches the player in English whatever the catalogue says, as five did until Q8.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');",
+        "else {\n        const tagged = `Antibody <b>tagged</b> ${iv.disease}.`;\n        pushLog(g, tagged, 'good');\n      }",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/i18n-engine.test.ts',
+    expect: 'a log line or rejection composed where the catalogue cannot see it',
+  },
+  {
+    id: 'queue-q8-no-log-line-misses',
+    why: 'Queue Q8: no recorded log line misses the catalogue. A line the catalogue lost would render plainly, in English, in the Hindi edition, and nothing on the screen would say so.',
+    file: 'packages/content/src/i18n/en/engine.json',
+    mutate: (t) =>
+      t.replace('  "actions.monocyteEngulfed": "<b>Monocyte</b> engulfed {disease}.",\n', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
+    expect: 'no log line misses the catalogue',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

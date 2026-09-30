@@ -80,14 +80,18 @@ describe('LEG 1 — completeness: sites and catalogue entries agree', () => {
     expect(meta['queryProseSites']).toBe(sites.filter((s) => s.fn === 'query').length);
   });
 
-  it('the UNEXTRACTED sites — messages composed elsewhere — are listed, and the list is current', () => {
+  it('the UNEXTRACTED sites — messages composed elsewhere — are listed, and there are none', () => {
     // P2.5 CP2 (docs/FINDINGS.md #53): Phase 1's walker skipped a call whose argument was not a
-    // literal, silently. They are now listed in $meta so a new one is a visible diff, and each
-    // is a player-visible string that lives outside this catalogue until the engine emits ids.
+    // literal, silently. They are listed in $meta so a new one is a visible diff: a
+    // player-visible string outside this catalogue. There were five until queue Q8 (30 September
+    // 2026) made each one literal per sentence; a new one fails here, and is written as literals.
+    // The property first, so a new composed site fails by name rather than as a stale list.
     const listed = meta['unextractedSites'] as string[];
     const actual = engineUnextracted().map((u) => `${u.file}:${String(u.line)} ${u.fn}(${u.expr})`);
+    expect(actual, 'a log line or rejection composed where the catalogue cannot see it').toEqual(
+      [],
+    );
     expect(listed).toEqual(actual);
-    expect(actual.length, 'the known-unextracted count moved; update FINDINGS #53').toBe(5);
   });
 
   it('identical text at several sites is ONE entry, not several', () => {
@@ -154,10 +158,12 @@ describe('LEG 2 — byte fidelity: each entry equals its source', () => {
 });
 
 /**
- * THE 8 ICU-HARD SITES, ONE NAMED TEST EACH.
+ * THE 10 ICU-HARD SITES, ONE NAMED TEST EACH.
  *
- * docs/STRING_INVENTORY.md enumerates them: 8 sites carrying a ternary inside an interpolation,
- * one of which is a plural. They ride separately rather than in the bulk comparison above
+ * docs/STRING_INVENTORY.md enumerates them: 10 sites carrying a ternary inside an interpolation,
+ * three of which are plurals. Eight until queue Q8 (30 September 2026), when the produce line,
+ * composed into a variable where the extractor could not see its plural, became two literal
+ * sites, with and without affinity maturation. They ride separately rather than in the bulk comparison above
  * because they are where the format decision actually bites, and because Phase 2 has to find
  * them again. A named failing test is a better handover than a line in a document.
  *
@@ -165,18 +171,31 @@ describe('LEG 2 — byte fidelity: each entry equals its source', () => {
  * still carries it, and it is still flagged as needing ICU authoring. Whether the eventual ICU
  * renders correctly is leg 3, in Phase 2.
  */
-describe('the 8 sites needing ICU select/plural in Phase 2', () => {
+describe('the 10 sites needing ICU select/plural in Phase 2', () => {
   const icu = sites.filter((s) => s.icuTodo);
   const keyOf = (s: Site): string => built.keyOf.get(s.message) ?? '(no key)';
 
-  it('there are exactly 8, and no more have appeared', () => {
+  it('there are exactly 10, and no more have appeared', () => {
     // If this rises, a new interpolated ternary was written and Phase 2 inherits more work than
     // the handoff says. If it falls, one was simplified and the list below is stale.
-    expect(new Set(icu.map((s) => `${s.file}:${s.line}`)).size).toBe(8);
+    expect(new Set(icu.map((s) => `${s.file}:${s.line}`)).size).toBe(10);
   });
 
-  const expected: [string, string, string][] = [
+  // [name, file, fragment, exact]: the site whose message contains the fragment, or IS it when
+  // `exact`, for the produce line without affinity, which the other one contains.
+  const expected: [string, string, string, boolean?][] = [
     ['plural — Action Point/Points', 'actions.ts', 'Action Point{pool2} to distribute'],
+    [
+      'plural — antibody/antibodies, produce',
+      'actions.ts',
+      '<b>B-Cell</b> produced {made} <b>{f}</b> antibod{made2} ({ab}/{cap}).',
+      true,
+    ],
+    [
+      'plural — antibody/antibodies, produce with affinity maturation',
+      'actions.ts',
+      'repeated practice against',
+    ],
     ['select — optional AP cost suffix', 'actions.ts', 'antibody <b>neutralised</b>'],
     ['select — degranulate, died or damaged', 'actions.ts', 'Eosinophil DEGRANULATED'],
     ['select — memory response AP on hard', 'actions.ts', 'Memory response</b> destroyed'],
@@ -186,9 +205,11 @@ describe('the 8 sites needing ICU select/plural in Phase 2', () => {
     ['select — burst, EUK or virus wording', 'spread.ts', 'cell(s) <b>burst</b>'],
   ];
 
-  for (const [name, file, fragment] of expected) {
+  for (const [name, file, fragment, exact] of expected) {
     it(`${name} (${file}) is present, catalogued, and flagged for Phase 2`, () => {
-      const site = icu.find((s) => s.file === file && s.message.includes(fragment));
+      const site = icu.find(
+        (s) => s.file === file && (exact ? s.message === fragment : s.message.includes(fragment)),
+      );
       expect(site, `no ICU site in ${file} containing ${JSON.stringify(fragment)}`).toBeDefined();
 
       const key = keyOf(site!);

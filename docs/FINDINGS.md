@@ -2911,7 +2911,7 @@ had nothing to map them to and did what it is built to do: rendered them loudly.
 **Why it is the same finding as #52 in a different place.** A query that returns prose is a
 rule module deciding presentation. The correct shape is an id (`'effect.helperUnprimed'`) the
 UI renders through its catalogue; the engine is frozen in Phase 2, so the UI maps the fixed
-set the query can produce (`packages/ui/src/productionText.ts` — six static labels and one
+set the query can produce (`productionText.ts` in the ui package, deleted at queue Q8 — six static labels and one
 templated by its number), loud on anything new so a label added to the query announces
 itself. **The mapper is a workaround.** Phase 3 makes the engine emit ids and deletes it.
 
@@ -2978,6 +2978,28 @@ Everything else in the log — the spread's frame headlines, the crisis and rare
 every rejection — translates through `engine.json`. The translator should be told the five
 above are out of reach, and why, before starting; when Phase 3 lands the ids, this list, the
 `$meta` list and `log-text.test.ts` go together.
+
+### CLOSED by queue Q8, 30 September 2026: every line the engine writes reaches the catalogue. The engine does not emit ids
+
+- **The five composed sites are one literal per sentence**: ten sentences, now catalogued
+  (`actions.bCellProducedAntibod` and nine more). What the engine writes is unchanged, so the
+  corpus did not move. `$meta.unextractedSites` is empty and pinned empty, and a new composed site
+  fails by name (control `queue-q8-no-composed-log-site`).
+- **`log-text.test.ts` pins NO misses**, over 565 distinct lines from 12 recorded games, where it
+  pinned the five as the only ones. The five shapes stay as occurrence guards, each matched by its
+  own entries.
+- **`productionText.ts` is deleted** (#102).
+- **The Hindi consequence table above is empty.** Every log line, refusal, frame headline and
+  query label renders through the catalogue.
+
+**What Q8 did not do, though the queue named it: the engine still writes English.** The UI
+recovers each line's entry by matching, and the values inside a line come back as English text: a
+cell's name, a place ("Lungs branch 2"), an invader's name. A Hindi sentence around them needs
+each value translated in its turn, which is the problem ids would solve where it starts. Recorded,
+not built: it is about 215 call sites, the catalogue's source of truth moving from the engine's
+text into content, and the extractor's job changing with it, a change to argue before making.
+**It needs a ruling on whether and when.** Until then the matcher is exact enough to pin: every
+entry reaches itself, and no recorded line is ambiguous (#102).
 
 ## 54. A generator's capability gap propagates to every instrument built on it: the harness was green over `net` without ever offering it
 
@@ -3179,7 +3201,7 @@ it is NOT what the engine does today, which burns the target's organ from anywhe
 branch. The card is left as written on purpose. Until Q9 lands, the card and the engine
 disagree, and the card is the one that is right. Do not edit the card to match the engine.
 
-## 58. A rare event is bannered and never logged, so once its chip retires it leaves no trace
+## 58. A rare event is bannered and never logged, so once its chip retires it leaves no trace — ⚠️ the premise was false: the engine logs it (corrected and CLOSED 30 September 2026, queue Q8)
 
 **Found by the strip sweep, 6 September 2026.** `packages/engine/src/spread.ts`, `fireRare`:
 it sets `g.rareBanner = { key, name, why, firedTurn }` and applies the event's effect (a new
@@ -3196,6 +3218,19 @@ one turn after the event fired (the sweep's rule: happening now). `rareLogLine`
 survives the chip. The engine should log the event itself, in the same shape as a crisis event;
 that lands with Q8, when the log emits ids rather than prose, and the UI-authored line is
 deleted with it (queued in `ENGINE_CHANGE_QUEUE.md`'s workarounds table).
+
+**⚠️ Corrected 30 September 2026, at queue Q8: the premise is false.** `fireRare` ends with
+``pushLog(g, `<b>★ ${e.name}</b> — ${e.why}`, 'bad')``, the original's line 334, ported with it at
+Task B5. **Measured:** in 600 driven Normal games 3 rare events fired, and all 3 were in the
+engine's log and in the view. What is true is weaker: the engine keeps 60 lines and the view shows
+40, so the line scrolls out in time, like any other. The UI's authored line therefore put **each
+rare event in the log twice** until the engine's scrolled out. The claim was read from the code and
+never measured, and no test compared the authored line with the engine's log.
+
+**CLOSED by Q8, with no engine change**, since the change the queue waited for already existed:
+`rareLogLine`, `LogLine.text` and the `log.rareEvent` string are deleted, and
+`tests/session/src/engine-text.test.ts` pins one line per rare event, matched by its own entry
+(control `queue-q8-rare-event-once`). The chip still lives for the one turn after the event.
 
 
 ## 59. The web build is not offline: nothing is cached on purpose, and a reload with no network does not render the app
@@ -5102,3 +5137,39 @@ they were to land together, re-baselined once.
 queue's own header is marked with this finding.
 
 **Ruled 30 September 2026: now** (*"Now"*), as its own piece between Phase 3 and Phase 4.
+
+## 102. The toast looked engine text up exactly, so a refusal carrying a value rendered as ⟪engine: …⟫, and the log's matcher chose between templates by a length that counted placeholder names — FIXED in queue Q8, 30 September 2026
+
+**Found 30 September 2026, building queue Q8, by a probe over the whole catalogue.**
+
+**The toast.** `engineText` (`packages/ui/src/engineText.ts`) renders what a player must read now:
+a refusal in the toast, a frame's headline, a query's label. It looked the string up exactly.
+**10 of the engine's 107 refusals carry a value**, such as "Your ENV antibody store is full (5)."
+and "Antivenom costs 3 AP.", and the catalogue holds each with a placeholder, so all ten rendered
+loudly whatever it held. **Six predate the queue. Four are the queue's own:** Q7 moved the points
+for antivenom, degranulate and the memory response on Hard, and the strike's damage, into content,
+which turned four literals the toast could find into templates it could not. Nothing noticed.
+
+Nothing could, from recorded play: the screens offer only what the engine accepts (the offered ⊆
+accepted harness), so a recorded game never produces a refusal. One reaches the toast when the
+state moves under a tap, as when another player in a game together spends the points first.
+
+**The ordering.** The log's matcher tried templates longest first, so that the most specific would
+win, and measured the template string with its placeholder names in it: `{placeName}` counted as
+eleven characters of text. The crisis event's `<b>{bad}{name}</b> — {why}` therefore outranked the
+rare event's `<b>★ {name}</b> — {why}` and claimed its line. **1 of 195 catalogue entries, and one
+line in the recorded walk.** English cannot see it, because any template that matches renders the
+same words. The Hindi edition renders the chosen entry's translation, so it would be the wrong
+sentence.
+
+**Fixed:** `engineText` falls back to the log's template matcher before rendering loudly, and
+templates are ordered by the text they fix, placeholders taken out. `productionText.ts` is deleted:
+putting the rate ceiling's number back was all it still did. Pinned by
+`tests/session/src/engine-text.test.ts`, over the whole catalogue (every entry, with a value in
+each placeholder, comes back as itself by its own entry) and over two refusals the engine really
+writes; and by `log-text.test.ts` over 565 recorded lines (none matched ambiguously). Controls:
+`queue-q8-toast-by-template`, `queue-q8-own-entry-in-the-catalogue`,
+`queue-q8-no-ambiguous-log-line`.
+
+**A product defect, fixed in the change that found it rather than filed**, because it is Q8's own
+subject: what the engine writes, reaching the catalogue.

@@ -1859,7 +1859,9 @@ sheet's new organ row at a branch's step-0 node (integrity, and the column when 
 planning figure's focus line when a damaged organ is tapped. **The body panel's memory line is
 dropped**; the chip and the board's ring say it. **A rare event now has a log line**: the engine
 banners it and writes no log line at all, so `rareLogLine` authors one from the content's why,
-dated to the turn it fired and filed among the engine's lines (FINDINGS #58).
+dated to the turn it fired and filed among the engine's lines (FINDINGS #58). ⚠️ *False, found 30
+September 2026 at queue Q8:* the engine does log it, so this put each rare event in the log twice;
+`rareLogLine` is deleted (FINDINGS #58's correction).
 
 **4. The strings.**
 - *The fourteen (FAM_LONG).* Not in the antibody panel, as ruled. The pathogen card's class line

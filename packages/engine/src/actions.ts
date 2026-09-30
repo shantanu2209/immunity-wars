@@ -326,11 +326,21 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       g.ab[f] = (g.ab[f] ?? 0) + made;
       g.made[f] = (g.made[f] ?? 0) + 1;
       spend(g, 'bcell');
-      let msg = `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}).`;
+      // One literal per sentence, so the catalogue holds each (queue Q8; FINDINGS #53): a message
+      // composed into a variable first is one the extractor cannot follow.
       if (g.made[f] === AFFINITY_AT) {
-        msg += ` <b>AFFINITY MATURATION</b> — repeated practice against ${f} has improved your antibodies. You now make one extra per action.`;
+        pushLog(
+          g,
+          `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}). <b>AFFINITY MATURATION</b> — repeated practice against ${f} has improved your antibodies. You now make one extra per action.`,
+          'good',
+        );
+      } else {
+        pushLog(
+          g,
+          `<b>B-Cell</b> produced ${made} <b>${f}</b> antibod${made === 1 ? 'y' : 'ies'} (${g.ab[f]}/${cap}).`,
+          'good',
+        );
       }
-      pushLog(g, msg, 'good');
       return ok();
     }
     case 'clonalSelection': {
@@ -522,13 +532,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       // A targeted strike releases only a few granules — it does NOT wound the organ. Only a
       // full DEGRANULATION dumps enough toxic payload to scorch the surrounding tissue.
       spend(g, ck);
-      pushLog(
-        g,
-        died
-          ? `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`
-          : `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`,
-        died ? 'good' : '',
-      );
+      if (died) pushLog(g, `<b>${cname(ck as string)}</b> killed the ${iv.disease}.`, 'good');
+      else
+        pushLog(
+          g,
+          `<b>${cname(ck as string)}</b> struck the ${iv.disease} for ${dmg} — ${iv.hp}/${iv.maxhp} left.`,
+          '',
+        );
       return ok();
     }
     case 'degranulate': {
@@ -604,13 +614,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       } else {
         spend(g, 'bcell');
       }
-      pushLog(
-        g,
-        iv.type === 'worm'
-          ? `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`
-          : `Antibody <b>tagged</b> ${iv.disease}.`,
-        'good',
-      );
+      if (iv.type === 'worm')
+        pushLog(
+          g,
+          `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`,
+          'good',
+        );
+      else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');
       return ok();
     }
     case 'engulf': {
@@ -624,13 +634,13 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const m = g.cells.macrophage;
       if (m && m.freeEngulf) m.freeEngulf = false;
       else spend(g, 'macrophage');
-      pushLog(
-        g,
-        died
-          ? `<b>Monocyte</b> engulfed ${iv.disease}.`
-          : `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`,
-        'good',
-      );
+      if (died) pushLog(g, `<b>Monocyte</b> engulfed ${iv.disease}.`, 'good');
+      else
+        pushLog(
+          g,
+          `<b>Monocyte</b> chipped the ${iv.disease} — ${iv.hp}/${iv.maxhp} left. Fungi are tough; a Neutrophil NET kills them outright.`,
+          'good',
+        );
       return ok();
     }
     case 'memoryKill': {
@@ -857,10 +867,6 @@ function actionDraw(g: GameState, a: Action): ActionResult {
 
     const iv = makeInvader(g, c);
     if (iv.type === 'worm') noteWorm(g);
-    const entryMsg =
-      c.type === 'worm'
-        ? `<b>${c.dz}</b> entered via the ${ROUTES[c.lane].name} and is burrowing into the ${ORGANS[iv.organ as OrganKey].name}. Coat it, then the Eosinophil strikes.`
-        : `Infection: <b>${c.dz}</b> entered via the ${ROUTES[c.lane].name}.`;
     g.invaders.push(iv);
     g.everInfected = true;
     if (k === 0) g.drawn = c;
@@ -870,7 +876,15 @@ function actionDraw(g: GameState, a: Action): ActionResult {
       g.novelSeen = true;
       iv.novel = true;
     }
-    pushLog(g, entryMsg, 'big');
+    // The entry line, one literal per sentence (queue Q8). Nothing between here and the draw
+    // changes the card's name, its route or the invader's organ, so it reads what it always read.
+    if (c.type === 'worm')
+      pushLog(
+        g,
+        `<b>${c.dz}</b> entered via the ${ROUTES[c.lane].name} and is burrowing into the ${ORGANS[iv.organ as OrganKey].name}. Coat it, then the Eosinophil strikes.`,
+        'big',
+      );
+    else pushLog(g, `Infection: <b>${c.dz}</b> entered via the ${ROUTES[c.lane].name}.`, 'big');
 
     // SECONDARY RESPONSE — memory is DISEASE-SPECIFIC. It does not fill the shared class pool
     // (that would let you spend it on any pathogen of the class). Instead it marks THIS

@@ -187,8 +187,8 @@ export function effectChips(view: SessionView): EffectChip[] {
     });
   }
   // A rare event fires at the END of a spread, so the turn it belongs to is the one after
-  // `firedTurn`. It is a chip for that one turn (the sweep's rule: happening now), and the log
-  // keeps it for the game — see `rareLogLine`.
+  // `firedTurn`. It is a chip for that one turn (the sweep's rule: happening now); the engine's
+  // own log line is its record (FINDINGS #58, corrected 30 September 2026).
   const rare = g['rareBanner'] as { name?: unknown; why?: unknown; firedTurn?: unknown } | null;
   if (rare && typeof rare.name === 'string' && turn - num(rare.firedTurn) <= 1)
     out.push({
@@ -200,23 +200,6 @@ export function effectChips(view: SessionView): EffectChip[] {
     });
 
   return out;
-}
-
-/**
- * THE RARE EVENT'S LOG LINE (found by the 6 September sweep): the engine's `fireRare` sets the
- * banner and writes NO log line, so once its chip retires the event has no trace. Kartik's why
- * for a rare event is his best teaching text, so the UI authors one entry for the log from
- * the content's own words, dated to the turn it fired. Null when no rare event has fired.
- */
-export function rareLogLine(g: ViewState): { t: number; text: string; kind: string } | null {
-  const rare = g['rareBanner'] as { name?: unknown; why?: unknown; firedTurn?: unknown } | null;
-  if (!rare || typeof rare.name !== 'string') return null;
-  const why = typeof rare.why === 'string' && rare.why.trim() !== '' ? ` ${rare.why}` : '';
-  return {
-    t: num(rare.firedTurn),
-    text: `${t('log.rareEvent', { name: rare.name })}${why}`,
-    kind: 'bad',
-  };
 }
 
 /** The effects' short names for the top bar's banner (piece 5, §19): a crisis event's own name when
@@ -301,18 +284,15 @@ export function apTermLines(view: SessionView): { text: string; delta: number }[
 }
 
 /**
- * THE LOG, AS LINES, from any view: the engine's entries plus the rare event's authored one,
- * newest first. Extracted at §21 H so the Result screen can show what happened without a second
- * copy of the rule that files the rare line — two assemblies of one list is how they drift.
+ * THE LOG, AS LINES, from any view, newest first, as the engine keeps it. Extracted at §21 H so
+ * the Result screen shows what happened without a second assembly of one list.
+ *
+ * It added a UI-authored line for a rare event until queue Q8 (30 September 2026), on the
+ * premise that the engine never logs one (FINDINGS #58). It does, at the end of `fireRare`, and
+ * always has; so every rare event was in the log twice until the engine's line scrolled out.
  */
 export function logLinesOf(g: ViewState): LogLine[] {
-  const engineLines: LogLine[] = (
-    (g['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []
-  ).map((l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }));
-  const rare = rareLogLine(g);
-  return rare
-    ? [...engineLines, { t: rare.t, msg: '', kind: rare.kind, text: rare.text }].sort(
-        (a, b) => b.t - a.t,
-      )
-    : engineLines;
+  return ((g['log'] as { t?: unknown; msg?: unknown; kind?: unknown }[] | undefined) ?? []).map(
+    (l) => ({ t: Number(l.t ?? 0), msg: String(l.msg ?? ''), kind: String(l.kind ?? '') }),
+  );
 }

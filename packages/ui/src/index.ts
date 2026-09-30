@@ -70,7 +70,6 @@ export {
   turnLine,
   turnShort,
   logLinesOf,
-  rareLogLine,
   apTermLines,
   type EffectChip,
 } from './play/effects';
