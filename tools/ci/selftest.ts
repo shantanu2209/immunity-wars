@@ -1053,6 +1053,26 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/undo-budget.test.ts',
     expect: 'never alone',
   },
+  {
+    id: 'coverage-rule-a-arm-precise',
+    why: "FINDINGS #97: the coverage gate's rule A decided by the LINE, so arms that only shared a line with a `??` were excluded as defensive: a live left operand (ap.ts:31), a ternary's else, and an `||` between two real alternatives (simulate.ts:167). It decides by the operator that led to the arm now; an `||` is a fallback only before a literal.",
+    file: 'tests/equivalence/src/rule-a.ts',
+    mutate: (t) =>
+      t.replace(
+        "(a.op === '??' || (a.op === '||' && LITERAL.test(a.span)))",
+        "(a.op === '??' || a.op === '||')",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/rule-a.test.ts',
+    expect: 'keeps an || that is a real alternative',
+  },
+  {
+    id: 'engine-mp-arms-held-to-legacy',
+    why: "The multiplayer arms Phase 3 owed are held to legacy byte for byte (multiplayer-arms.test.ts). A port that said '1 Action Points' at a pool of one would differ from legacy in its log, the one arm reached only by a constructed state.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) => t.replace("Action Point${pool === 1 ? '' : 's'}", 'Action Points'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
+    expect: 'singular, when the pool is exactly one',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */
