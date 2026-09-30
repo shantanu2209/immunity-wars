@@ -67,7 +67,9 @@
     "comment:deps:check": "The React pair. Dependabot moved react-dom to 19.3.0 and left react at 19.2.8; React refuses to start unless the two are the same version, and typecheck, lint, every suite and CI stayed green over a blank app (docs/FINDINGS.md #92). Reads pnpm-lock.yaml and requires every react-dom to be paired with the same react. In pnpm verify and in CI. Controls: pnpm ci:selftest react-pair-split, react-pair-unread, react-pair-moved-together.",
     "deps:check": "tsx tools/ci/deps-check.ts",
     "comment:start:check": "The start check (ruled 26 September 2026): a build that does not start is never deployed. Serves a built folder on 127.0.0.1, opens it in headless Chrome, and requires the title with no uncaught error; --build builds the app into a temporary folder first. Run by deploy-app.sh and old-build.sh before anything is copied (docs/FINDINGS.md #92). Controls: pnpm ci:selftest start-check-refuses, start-check-words-free.",
-    "start:check": "tsx tools/perf/start-check.ts"
+    "start:check": "tsx tools/perf/start-check.ts",
+    "comment:update:check": "The update check (Update now, ruled 28 September 2026): the P3.6 morning replayed. Builds the app twice, serves the older build then the newer, has a stand-in relay refuse the phone on version (close code 4001), and requires Update now under that refusal to bring the newer build; a reload alone brings the older one back (docs/FINDINGS.md #93). Controls: pnpm ci:selftest update-check-reload-alone, update-check-no-button.",
+    "update:check": "tsx tools/perf/update-check.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

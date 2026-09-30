@@ -42,7 +42,6 @@ import {
   TogetherScreen,
   entryRefusal,
   refusalFromClose,
-  refusalText,
   t,
   MenuIcon,
   useNav,
@@ -71,7 +70,7 @@ import {
 import { clearHints, readHints, writeHints } from './hints';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { clearPlayed, readPlayed, writePlayed } from './played';
-import { startServiceWorker } from './serviceWorker';
+import { browserUpdates, startServiceWorker, updateNow } from './serviceWorker';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -86,6 +85,14 @@ interface Refusal {
   code: string;
   detail?: string;
 }
+
+/**
+ * UPDATE NOW (FINDINGS #93): take the newer version this phone has downloaded, or is downloading, and
+ * reload into it. Offered by the screens under a version refusal only.
+ */
+const update = (): void => {
+  void updateNow(browserUpdates(), () => window.location.reload());
+};
 
 const refusalOfEntry = (e: unknown): Refusal => ({
   code: e instanceof RelayError ? entryRefusal(e.code, e.closeCode) : 'unreachable',
@@ -568,6 +575,7 @@ function App({
           refusal={entering.refusal}
           onCreate={(name) => enter(name, () => RelayRoom.create({ url: RELAY_URL, name }))}
           rejoinCode={screen.rejoin && rejoin !== null ? rejoin.code : null}
+          onUpdate={update}
           onJoin={(name, code) => {
             if (screen.rejoin && rejoin !== null) {
               const self = asPlayerRef(rejoin.self);
@@ -586,6 +594,7 @@ function App({
           me={lobby.me}
           refusal={lobbyRefusal}
           connectionLost={connectionLost}
+          onUpdate={update}
           canShare={typeof navigator.share === 'function'}
           onShare={() => {
             navigator.share({ text: t('lobby.shareText', { code }) }).catch(() => undefined);
@@ -723,9 +732,10 @@ function App({
           // (ruling 4). Back to the title closes the game without leaving it; the title offers it again.
           <ConnectionLost
             reconnecting={reconnecting}
-            refusal={lobbyRefusal ? refusalText(lobbyRefusal.code, lobbyRefusal.detail) : null}
+            refusal={lobbyRefusal}
             onReconnect={reconnect}
             onTitle={quitToTitle}
+            onUpdate={update}
           />
         ) : null}
       </div>

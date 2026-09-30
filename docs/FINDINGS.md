@@ -3936,6 +3936,15 @@ on any path through pnpm's symlinked `node_modules`, so it would have been blind
 most likely to be cited by mistake. Two self-test controls: a code span naming a `node_modules` file
 must fail with the new diagnostic, and one naming a new source file must stay green.
 
+### Added 30 September 2026 (#93): what the replaced script also did
+
+The plugin's injected script
+was also the only thing that told a newer version's worker to take over (`registerType:
+'autoUpdate'`). Without it the newer version downloads and waits until every copy of the app is
+closed, and reloading does not bring it, measured. It was not noticed until the P3.6 session met an old
+copy on 26 September (#93), and not traced here until 30 September. Update now restores the step under
+the version refusal; whether anywhere else is #93's open question.
+
 ## 70. The occlusion check's first run reported 109 findings, and every one was wrong: it asked whether text OVERLAPPED a fixed control, when the question is whether that control HIDES it
 
 **Found 13 September 2026, building piece 1 of the play screen** ([`for-P2.7.md`](for-P2.7.md)
@@ -4749,16 +4758,54 @@ version downloads in the background, and the page already open stays the old one
 again. Nothing reloads it (`serviceWorker.ts` registers the worker and does nothing when a new one
 takes over).
 
+*Corrected 30 September 2026, by measurement:* reloading does not bring the new version either. In
+headless Chrome, on two real builds, the newer version downloaded and then **waited**, and the older
+one answered three reloads in a row. The generated worker takes over only when told to
+(`SKIP_WAITING`), or once every copy of the app is closed. The plugin's injected script used to tell
+it, and #69 replaced that script with `startServiceWorker`, which does not. So since 13 September a
+deploy has reached a returning player only once every copy of the app they had open was closed.
+
 **What held.** The refusal itself, on a real phone: an old copy could not get into a newer room,
 which is the half of Gate A's version item that protects a game.
 
 **What did not.** The other half, *"a message a player can act on"*. On the web there is no update
 for a player to find. What worked was waiting on the title and reloading. How many reloads each phone
-needed, and how long the download took, was not measured.
+needed, and how long the download took, was not measured. *(30 September 2026: by the measurement above,
+a reload alone could not have done it; the app being closed, or Chrome closing its tab, could. What
+actually happened that morning is not known.)*
 
 **Proposed** (for a ruling, not built): on the version refusal, an **Update now** button that asks
 the service worker for the new version and reloads the page. The installed apps of Phase 4 update
 through their stores instead, where the same words are the right ones.
+
+**Ruled 28 September 2026** (*"Yes I think we should have this"*). **Built 30 September 2026:**
+
+- **Where:** under the version refusal, wherever it can appear: Play together (where the P3.6
+  session met it), the lobby, and the sheet a game shows when its connection is lost.
+- **What pressing it does** (`updateNow`, `packages/app/src/serviceWorker.ts`): look for a newer
+  version, let it finish downloading, tell it to take over, and reload once it has. Every path ends in
+  a reload, since that is still the best thing left when there is no worker, nothing newer, or no
+  answer in time.
+- **Measured, the morning replayed** in headless Chrome: two real builds, an older one installed and
+  a newer one on the server, and a stand-in relay refusing with the version code. The refusal offered
+  the button, 312 by 48 pixels, and one press brought the newer build in about one to two seconds.
+  With nothing newer, it reloads into the same build.
+- **Held by:**
+  - `pnpm update:check` (`tools/perf/update-check.ts`), which replays the morning on every run;
+  - the unit tests of `updateNow`, and of `offersUpdate`, the rule that only the version refusal
+    offers it;
+  - the build test, which holds our message to the one the built worker listens for.
+  - **Five controls.** One of them, `update-check-reload-alone`, makes the button only reload,
+    which is the P3.6 failure, and the update check refuses it.
+- **Not measured:** a real phone.
+
+**For a ruling: the same step anywhere else.** Every deploy, not only one that changes the version,
+leaves a returning player on the older build until every copy of the app is closed, and without a
+version change nothing tells them. The newer version could instead be taken on the title screen,
+whenever one has finished downloading: a reload of a second or two, only after a deploy, never in a
+game (a reload there would drop a game played together). **Recommendation: yes, on the title only.**
+The alternative is to leave it: the version refusal is the only case where the older build stops
+anyone playing.
 
 ---
 

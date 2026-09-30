@@ -22,6 +22,7 @@ import {
   nameReady,
   entryRefusal,
   normaliseCode,
+  offersUpdate,
   refusalFromClose,
   refusalText,
   seatRows,
@@ -142,6 +143,23 @@ describe('a refusal', () => {
   it('every refusal key is in the catalogue', () => {
     for (const k of REFUSAL_KEYS) expect(loud(t(k)), k).toBe(false);
   });
+
+  // UPDATE NOW (FINDINGS #93), both ways. It answers one refusal: the versions differing, however the
+  // relay said so. Offered under any other, it would reload a phone for nothing and lose the room.
+  it('FIRES: the version refusal offers Update now, as a message and as the close code 4001', () => {
+    expect(offersUpdate('version')).toBe(true);
+    expect(offersUpdate(refusalFromClose(4001))).toBe(true);
+    expect(offersUpdate(entryRefusal('closed', 4001))).toBe(true);
+  });
+
+  it('PASSES: no other refusal offers it, from the relay, from a close, or unexpected', () => {
+    for (const code of ERROR_CODES.filter((c) => c !== 'version'))
+      expect(offersUpdate(code), code).toBe(false);
+    for (let c = 4000; c <= 4010; c += 1)
+      if (c !== 4001) expect(offersUpdate(refusalFromClose(c)), String(c)).toBe(false);
+    for (const code of ['unreachable', 'closed', 'somethingNew'])
+      expect(offersUpdate(code), code).toBe(false);
+  });
 });
 
 describe("the table's fixed messages", () => {
@@ -163,6 +181,7 @@ describe('every key the new screens name', () => {
     '../screens/CrashScreen.tsx',
     '../panels/TableMessages.tsx',
     '../panels/AntibodyPanel.tsx',
+    '../panels/UpdateNow.tsx',
   ];
   const keys = screens.flatMap((f) => {
     const src = readFileSync(fileURLToPath(new URL(f, import.meta.url)), 'utf8');

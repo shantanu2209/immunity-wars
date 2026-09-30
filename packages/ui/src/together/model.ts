@@ -146,6 +146,13 @@ export function refusalText(code: string, detail?: string): string {
   return t(`together.refusal.${key}`, { name: detail ?? '' });
 }
 
+/**
+ * WHICH REFUSAL OFFERS *UPDATE NOW* (FINDINGS #93, ruled 28 September 2026): the one that says this app
+ * and the game server are on different versions, whether the relay refused a message for it or closed
+ * the connection with its code (4001). It is the only refusal a newer copy of the app can answer.
+ */
+export const offersUpdate = (code: string): boolean => code === 'version';
+
 /** Every catalogue key this module can produce, so a test can hold each one to the catalogue. */
 export const REFUSAL_KEYS: readonly string[] = [...REFUSALS, 'other'].map(
   (k) => `together.refusal.${k}`,

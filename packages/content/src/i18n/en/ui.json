@@ -544,6 +544,8 @@
   "together.refusal.replaced": "You joined this room from another screen, so this one has stopped.",
   "together.refusal.unreachable": "Could not reach the game. Check your internet connection, then try again.",
   "together.refusal.other": "Something went wrong. Try again.",
+  "together.updateNow": "Update now",
+  "together.updating": "Updating…",
   "lobby.title": "Your room",
   "lobby.codeLead": "Share this code with the people you are playing with.",
   "lobby.share": "Share the code",
