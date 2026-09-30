@@ -1073,6 +1073,14 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
     expect: 'singular, when the pool is exactly one',
   },
+  {
+    id: 'engine-spendap-no-player',
+    why: 'DEVIATIONS #9, ruled 30 September 2026: the port\'s spendAP writes no budget for no player, where legacy writes one named "null". A port without its guard would match legacy there, and the ruled difference would be gone unseen unless the two cases pinning it (multiplayer-arms.test.ts) said so.',
+    file: 'packages/engine/src/ap.ts',
+    mutate: (t) => t.replace('  if (pid == null) return;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
+    expect: 'the port writes nothing',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

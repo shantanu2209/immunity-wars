@@ -1465,6 +1465,10 @@ tractable one: whether the Helper should grant a free action, to which cell, and
 Related: [#8](#8-seven-flags-entries-are-never-read) and [#11](#11-assorted-dead-code) —
 `g.antibodies`, the other field the census found empty, is already recorded there.
 
+**Added 30 September 2026 (#99): if the answer is ever yes, the points check must change with it.**
+It asks whether the cell an action *names* holds a free action, and several actions charge a
+different cell, so a free action on one cell would pay for another cell's action and never be spent.
+
 ---
 
 ## 30. #24 again — the coverage gate files a NON-multiplayer arm into Phase 3, by a whole-FILE rule
@@ -4886,7 +4890,7 @@ at the v4 reconciliation; it stopped one step short.
 
 ---
 
-## 98. The port's `spendAP` writes no budget for no player, where legacy writes one named "null" — found 28 September 2026, awaiting a ruling
+## 98. The port's `spendAP` writes no budget for no player, where legacy writes one named "null" — ruled 30 September 2026: kept (DEVIATIONS #9)
 
 **Found 28 September 2026**, holding the multiplayer arms Phase 3 owed to legacy's own functions
 (`tests/equivalence/src/multiplayer-arms.test.ts`). Given no player, legacy's `spendAP` writes
@@ -4894,9 +4898,51 @@ at the v4 reconciliation; it stopped one step short.
 since the Task B4 port (5 August 2026) with no entry in [`DEVIATIONS.md`](DEVIATIONS.md).
 
 **How far it reaches.** Nowhere a game goes. `spendAP` is internal in legacy and exported by the port
-only on its `./internal` entry; every caller passes the acting player; and an action from a player
-with no budget is refused as *"No Action Points."* before anything is spent. Neither version touches a
-real player's points. The test pins both behaviours, so it cannot change unseen.
+only on its `./internal` entry, and every caller passes the acting player, which played together is
+never missing: the room gives every action the player who sent it (`packages/room/src/room.ts`,
+`pid: pidOfMember(me)`). Neither version touches a real player's points. The test pins both
+behaviours, so it cannot change unseen.
+
+*Corrected 30 September 2026, after #125 had merged it:* this said that an action from a
+player with no budget is refused as *"No Action Points."* before anything is spent, and so that no
+action reaches the guard. A hand-built action with no player does, in a state given a free action by
+hand, which no game has, since nothing grants one (#99, #29). No game does, for the reason above.
 
 **For a ruling:** record the guard as a deliberate deviation, which is the recommendation (it keeps a
 budget for nobody out of the game's state), or remove it so that the port matches legacy here too.
+
+**Ruled 30 September 2026: kept** (*"I will go with your suggestion"*), and recorded as
+[`DEVIATIONS.md`](DEVIATIONS.md) #9. No code changed: the guard is the one the port already had.
+
+## 99. The points check asks about the cell an action names, not the one it charges: latent, and live the day a free action is granted (#29) — found 30 September 2026
+
+**Found 30 September 2026**, checking #98's claim, written two days earlier, that no action reaches
+`spendAP` for no player. A hand-built action does, in a hand-built state.
+
+**What happens.** `applyAction`'s points check (`actions.ts:220`) lets an action through when the
+cell it *names*, `a.cell`, holds a free action. Several actions then charge a fixed cell, whatever
+`a.cell` says: producing antibodies and tagging charge the B-Cell, engulfing the Macrophage, sniping
+the Killer T-Cell, netting the Neutrophil, the NK's kill the NK. So an action that names a cell with a
+free action, and charges one without, passes the check on a free action it never uses, and is charged
+to the acting player's points instead.
+
+**Demonstrated** through both engines on five seeds (`tests/equivalence/src/multiplayer-arms.test.ts`,
+the last block): played together, in a state given one free action on the NK by hand and no points
+anywhere, a `produce` with no player that names the NK makes the antibodies, spends nothing, and
+leaves the NK's free action in place. The two engines agree on all of it but #98's budget named
+"null", so it is legacy's behaviour, inherited by the bug-for-bug port.
+
+**Nobody can reach it today, because nothing grants a free action** (#29): in both engines `g.free`
+is emptied every turn and only ever decremented, so the check's free-action clause is always false in
+play. Nor would the app, if free actions existed: every action it sends names the cell that pays for
+it, or no cell at all (`packages/ui/src/play/offered.ts`). A modified app could.
+
+**Why it is recorded.** #29 is an open design question for Kartik: whether the Helper T-Cell should
+grant a free action. **If it is ever answered yes, this check must be fixed in the same change**, to
+ask about the cell the action charges, or a free action on one cell would pay for another cell's
+action and never be spent. Read from the code, not run: a real player with no points would then act
+for free together, since `spendAP` floors at 0, and alone single player's points would go below zero.
+
+**No action now.** Nothing reaches it. The test pins today's behaviour, but it hands the state its
+free action itself, so granting free actions would not make it fail; what makes the work on #29 meet
+this is a line added to #29 itself.
