@@ -1716,6 +1716,13 @@ failure, reproduced on purpose. Three more controls hold the unit tests, the rul
 refusal offers the button, and the build test that ties our message to the one the built worker
 listens for.
 
-**Not yet measured on a real phone.** And one question is open for a ruling (#93): whether the app
-should take a waiting newer version on the title screen too, since every deploy otherwise reaches a
-returning player only once every copy of the app is closed.
+**The title takes a newer version too, by ruling** (30 September 2026, *"Will go with your
+recommendation"*), since every deploy otherwise reaches a returning player only once every copy of the
+app is closed. On the title only, whenever one has finished downloading, and only once it has taken
+over, so it cannot reload in a loop; never in a game, where a reload would drop a game played
+together. The update check holds it on two more phones: the title takes the newer build by itself,
+and a game keeps the older one with the newer waiting until the player is back on the title. With it,
+the P3.6 morning would not have happened: the phone sat on the title while the newer version
+downloaded. Four more controls, nine in all.
+
+**Not yet measured on a real phone.**

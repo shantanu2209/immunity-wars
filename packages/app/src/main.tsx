@@ -70,7 +70,13 @@ import {
 import { clearHints, readHints, writeHints } from './hints';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { clearPlayed, readPlayed, writePlayed } from './played';
-import { browserUpdates, startServiceWorker, updateNow } from './serviceWorker';
+import {
+  browserUpdates,
+  startServiceWorker,
+  takeWaitingVersion,
+  updateNow,
+  whenNewerWaits,
+} from './serviceWorker';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -259,6 +265,20 @@ function App({
   };
 
   useEffect(refreshSave, []);
+
+  // THE TITLE TAKES A NEWER VERSION (FINDINGS #93, ruled 30 September 2026): whenever one has finished
+  // downloading, whether before the title appeared or while it shows. On the title ONLY: a reload in a
+  // game would drop a game played together, so a newer version waits for the player to come back here.
+  const onTitle = screen.name === 'title';
+  useEffect(() => {
+    if (!onTitle) return undefined;
+    const container = browserUpdates();
+    const take = (): void => {
+      void takeWaitingVersion(container, () => window.location.reload());
+    };
+    take();
+    return whenNewerWaits(container, take);
+  }, [onTitle]);
   useEffect(() => {
     void fetch('/art/manifest.json')
       .then((r) => (r.ok ? r.json() : null))

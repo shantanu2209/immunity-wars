@@ -1156,6 +1156,50 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm update:check',
     expect: 'offered no Update now',
   },
+  {
+    id: 'update-title-no-loop',
+    why: 'FINDINGS #93, ruled 30 September 2026: the title takes a newer version by itself, and reloads only once it has taken over. A reload that brought the same version back would find the same waiting worker and reload again, for ever.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) => t.replace("    if (outcome === 'switched') reload();", '    reload();'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'so it cannot reload for ever',
+  },
+  {
+    id: 'update-watch-first-install',
+    why: 'FINDINGS #93: a first install is not a newer version. A page nothing answers yet has no older version to replace, and telling its new worker to take over would wait for a switch that never comes.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) =>
+      t.replace(
+        "worker.state === 'installed' && container.controller !== null) listener();",
+        "worker.state === 'installed') listener();",
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'a first install is not a newer version',
+  },
+  {
+    id: 'update-check-title-takes-it',
+    why: 'FINDINGS #93, ruled 30 September 2026: on the title, a newer version is taken by itself. Without it every deploy reaches a returning player only once every copy of the app is closed; the update check must refuse a build that never takes it.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        '    if (!onTitle) return undefined;',
+        '    if (onTitle || !onTitle) return undefined;',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the title did not take the newer build by itself',
+  },
+  {
+    id: 'update-check-title-only',
+    why: 'FINDINGS #93, ruled 30 September 2026: the title ONLY. A reload in a game would drop a game played together; the update check must refuse a build that takes a newer version anywhere.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        "  const onTitle = screen.name === 'title';",
+        "  const onTitle = screen.name !== 'nowhere';",
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the page reloaded during a game',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

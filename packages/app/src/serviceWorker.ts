@@ -102,9 +102,13 @@ export interface RegistrationLike {
   readonly waiting: WorkerLike | null;
   readonly installing: WorkerLike | null;
   update(): Promise<unknown>;
+  addEventListener(type: 'updatefound', listener: () => void): void;
+  removeEventListener(type: 'updatefound', listener: () => void): void;
 }
 
 export interface UpdateContainerLike {
+  /** The worker answering this page, or null on a first visit, before any has. */
+  readonly controller: unknown;
   getRegistration(): Promise<RegistrationLike | undefined>;
   addEventListener(type: 'controllerchange', listener: () => void): void;
 }
@@ -134,14 +138,87 @@ async function takeNewerWorker(
     await registration.update().catch(() => undefined);
     const waiting = registration.waiting ?? (await installed(registration.installing, timeoutMs));
     if (waiting === null) return 'nothing newer';
-    const switched = within<boolean>(timeoutMs, (done) => {
-      container.addEventListener('controllerchange', () => done(true));
-    });
-    waiting.postMessage(SKIP_WAITING);
-    return (await switched) === true ? 'switched' : 'timed out';
+    return await tellToTakeOver(container, waiting, timeoutMs);
   } catch {
     return 'no worker';
   }
+}
+
+/** Tells a waiting worker to take over, and says whether it has within the time. */
+async function tellToTakeOver(
+  container: UpdateContainerLike,
+  waiting: WorkerLike,
+  timeoutMs: number,
+): Promise<'switched' | 'timed out'> {
+  const switched = within<boolean>(timeoutMs, (done) => {
+    container.addEventListener('controllerchange', () => done(true));
+  });
+  waiting.postMessage(SKIP_WAITING);
+  return (await switched) === true ? 'switched' : 'timed out';
+}
+
+/**
+ * THE SAME STEP ON THE TITLE (FINDINGS #93, ruled by Shantanu on 30 September 2026: *"Will go with
+ * your recommendation"*). Without it every deploy, not only one that changes the version, reaches a
+ * returning player only once every copy of the app is closed. So on the title screen, whenever a
+ * newer version has finished downloading, it is told to take over and the page reloads into it. Never
+ * in a game, where a reload would drop a game played together: `main.tsx` calls this on the title
+ * only.
+ *
+ * UNLIKE UPDATE NOW, IT RELOADS ONLY ONCE THE NEWER VERSION HAS TAKEN OVER. Update now is a player's
+ * request, and when nothing newer comes a reload is still the best thing left. Here nobody asked, and
+ * a reload that brought the same version back would find the same waiting worker and reload again,
+ * for ever.
+ */
+export async function takeWaitingVersion(
+  container: UpdateContainerLike | undefined,
+  reload: () => void,
+  timeoutMs = 30_000,
+): Promise<UpdateOutcome> {
+  if (container === undefined) return 'no worker';
+  try {
+    const registration = await container.getRegistration();
+    const waiting = registration?.waiting ?? null;
+    if (waiting === null) return 'nothing newer';
+    const outcome = await tellToTakeOver(container, waiting, timeoutMs);
+    if (outcome === 'switched') reload();
+    return outcome;
+  } catch {
+    return 'no worker';
+  }
+}
+
+/**
+ * Calls `listener` whenever a newer version finishes downloading while this page is open, so the
+ * title can take it at once rather than at the next launch. A first install is not a newer version:
+ * a page nothing answers yet has no older one to replace, so it is left alone. Returns the way to stop.
+ */
+export function whenNewerWaits(
+  container: UpdateContainerLike | undefined,
+  listener: () => void,
+): () => void {
+  if (container === undefined) return () => undefined;
+  let stopped = false;
+  let registration: RegistrationLike | undefined;
+  const found = (): void => {
+    const worker = registration?.installing ?? null;
+    if (worker === null) return;
+    worker.addEventListener('statechange', () => {
+      if (!stopped && worker.state === 'installed' && container.controller !== null) listener();
+    });
+  };
+  container
+    .getRegistration()
+    .then((r) => {
+      if (stopped || r === undefined) return;
+      registration = r;
+      r.addEventListener('updatefound', found);
+    })
+    .catch(() => undefined);
+  return () => {
+    stopped = true;
+    registration?.removeEventListener('updatefound', found);
+  };
 }
 
 /** The worker once it has finished downloading, or null if it fails or takes too long. */

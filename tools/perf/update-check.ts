@@ -1,17 +1,22 @@
 /**
- * THE UPDATE CHECK (`docs/FINDINGS.md` #93; Update now ruled by Shantanu, 28 September 2026). The
- * morning of the P3.6 session, replayed: a phone holds an older build of the app, the server now
- * serves a newer one, and the relay refuses the phone because the versions differ. A reload alone
- * brought the older build back, three times in a row (measured 30 September 2026), because the newer
- * version's service worker waits until something tells it to take over. So the check requires the
- * version refusal to offer Update now, and pressing it to bring the newer build.
+ * THE UPDATE CHECK (`docs/FINDINGS.md` #93). After a deploy, a newer build's service worker downloads
+ * and then waits until something tells it to take over: a reload alone brought the older build back
+ * three times in a row (measured 30 September 2026), which is why the P3.6 session met an old copy of
+ * the app. Two rulings answer it, and the check holds both, on three phones:
  *
- *   npx tsx tools/perf/update-check.ts    builds the app twice from source, then replays the morning
+ *   1. On the title, the newer build is taken by itself, as soon as it has downloaded (ruled
+ *      30 September 2026).
+ *   2. In a game, never: the newer build waits, the game keeps the older one, and the title takes it
+ *      once the player is back there. A reload in a game would drop a game played together.
+ *   3. Off the title, the version refusal offers Update now (ruled 28 September 2026), and pressing it
+ *      brings the newer build on the very next load. The morning of the session, replayed.
+ *
+ *   npx tsx tools/perf/update-check.ts    builds the app twice from source, then runs all three
  *
  * Two builds that differ only in the relay address baked into them, one site that serves the first
  * and then the second, a stand-in relay that refuses every connection with the relay's version close
- * code (4001), and a fresh headless Chrome. It passes only on the newer build, reached through the
- * button; anything that stops it, including a setup that did not hold, refuses.
+ * code (4001), and a fresh headless Chrome, one browser context per phone. Anything that stops it,
+ * including a setup that did not hold, refuses.
  */
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -22,12 +27,14 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import puppeteer from 'puppeteer-core';
+import puppeteer, { type Page } from 'puppeteer-core';
 
 const CHROME =
   process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const WAIT_MS = 30_000;
+/** How long a game must keep the older build with the newer one waiting. */
+const HOLD_MS = 3_000;
 /** The relay's close code for "this app and the game server are on different versions". */
 const VERSION_CLOSE = 4001;
 
@@ -126,62 +133,133 @@ try {
 
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
   try {
-    const context = await browser.createBrowserContext();
-    const page = await context.newPage();
-    await page.setViewport({ width: 360, height: 780 });
+    /** A fresh phone with the older build installed, its worker answering the page, on the title. */
+    const phone = async (): Promise<Page> => {
+      root = older;
+      const page = await (await browser.createBrowserContext()).newPage();
+      await page.setViewport({ width: 360, height: 780 });
+      await page.goto(url, { waitUntil: 'load' });
+      await page.evaluate('navigator.serviceWorker.ready.then(() => true)');
+      await page.reload({ waitUntil: 'load' });
+      if (!(await page.evaluate('!!navigator.serviceWorker.controller')))
+        refuse("the setup did not hold: the older build's worker never took charge of the page");
+      await page.waitForSelector('[data-title]', { timeout: WAIT_MS });
+      return page;
+    };
     // Strings, not functions: the page runs them as written, with nothing a transpiler added.
-    const running = (): Promise<string> =>
-      page.evaluate(
-        "[...document.scripts].map((s) => s.src).find((s) => s.includes('/assets/main-')) ?? ''",
-      ) as Promise<string>;
-    const waiting = (): Promise<boolean> =>
-      page.evaluate(
-        'navigator.serviceWorker.getRegistration().then((r) => !!(r && r.waiting))',
-      ) as Promise<boolean>;
+    const running = (page: Page): Promise<string> =>
+      (
+        page.evaluate(
+          "[...document.scripts].map((s) => s.src).find((s) => s.includes('/assets/main-')) ?? ''",
+        ) as Promise<string>
+      ).catch(() => ''); // a page in the middle of reloading has no answer yet
+    const waiting = (page: Page): Promise<boolean> =>
+      (
+        page.evaluate(
+          'navigator.serviceWorker.getRegistration().then((r) => !!(r && r.waiting))',
+        ) as Promise<boolean>
+      ).catch(() => false);
+    const poll = async (what: () => Promise<boolean>, failure: string): Promise<number> => {
+      const from = Date.now();
+      while (!(await what())) {
+        if (Date.now() - from > WAIT_MS) refuse(failure);
+        await new Promise((r) => setTimeout(r, 250));
+      }
+      return Date.now() - from;
+    };
+    /** The deploy: the server has the newer build, and the page's worker looks for it. */
+    const deploy = async (page: Page): Promise<void> => {
+      root = newer;
+      await page
+        .evaluate('navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => 1)')
+        .catch(() => undefined);
+    };
+    /** Every main script the page loads from now on, in order: each is one load of the app. */
+    const loadsOf = (page: Page): string[] => {
+      const loads: string[] = [];
+      page.on('request', (r) => {
+        if (r.url().includes('/assets/main-')) loads.push(r.url());
+      });
+      return loads;
+    };
+    const click = (page: Page, sel: string): Promise<void> =>
+      page
+        .waitForSelector(sel, { timeout: WAIT_MS })
+        .then(() =>
+          page.evaluate(`document.querySelector('${sel}').click()`).then(() => undefined),
+        );
 
-    // The phone, with the older build installed and in charge of the page.
-    await page.goto(url, { waitUntil: 'load' });
-    await page.evaluate('navigator.serviceWorker.ready.then(() => true)');
-    await page.reload({ waitUntil: 'load' });
-    if (!(await page.evaluate('!!navigator.serviceWorker.controller')))
-      refuse("the setup did not hold: the older build's worker never took charge of the page");
+    // 1. ON THE TITLE, the newer build is taken by itself, as soon as it has downloaded.
+    const title = await phone();
+    await deploy(title);
+    const tookOnTitle = await poll(
+      async () => (await running(title)).includes(newerMain),
+      'the title did not take the newer build by itself',
+    );
 
-    // The deploy: the newer build downloads and waits, and the page still runs the older one.
-    root = newer;
-    await page.reload({ waitUntil: 'load' });
-    const until = Date.now() + WAIT_MS;
-    while (!(await waiting())) {
-      if (Date.now() > until) refuse('the setup did not hold: the newer build never downloaded');
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    if (!(await running()).includes(olderMain))
-      refuse('the setup did not hold: the newer build arrived without Update now');
+    // 2. IN A GAME, never: the newer build downloads and waits, and the game keeps the older one
+    // until the player is back on the title, which then takes it.
+    const game = await phone();
+    await click(game, '[data-title="new"]');
+    await click(game, '[data-new-game="training"]');
+    await game.waitForSelector('[data-menu]', { timeout: WAIT_MS });
+    const inGame = loadsOf(game);
+    await deploy(game);
+    await poll(
+      async () => inGame.length > 0 || (await waiting(game)),
+      'the setup did not hold: the newer build never downloaded',
+    );
+    await new Promise((r) => setTimeout(r, HOLD_MS));
+    if (inGame.length > 0 || (await game.$('[data-menu]')) === null)
+      refuse('the page reloaded during a game');
+    if (!(await running(game)).includes(olderMain))
+      refuse('the setup did not hold: the game was not on the older build');
+    if (await game.$('[data-dialog-dismiss]')) await click(game, '[data-dialog-dismiss]');
+    await click(game, '[data-menu]');
+    await click(game, '[data-pause="quit"]');
+    await click(game, '[data-pause="quit-confirm"]');
+    const tookAfterGame = await poll(
+      async () => (await running(game)).includes(newerMain),
+      'back on the title after a game, the newer build was not taken',
+    );
 
-    // The player tries to play together, and is refused for the version.
-    await page.click('[data-title="together"]');
-    await page.waitForSelector('[data-together="name"]', { timeout: WAIT_MS });
-    await page.type('[data-together="name"]', 'Asha');
-    await page.click('[data-together="create"]');
-    await page.waitForSelector('[data-together="refusal"]', { timeout: WAIT_MS });
+    // 3. UPDATE NOW, off the title: the morning of the P3.6 session. The phone is on Play together
+    // when the newer build downloads, and the relay refuses it for the version.
+    const morning = await phone();
+    await click(morning, '[data-title="together"]');
+    await morning.waitForSelector('[data-together="name"]', { timeout: WAIT_MS });
+    const offTitle = loadsOf(morning);
+    await deploy(morning);
+    await poll(
+      async () => offTitle.length > 0 || (await waiting(morning)),
+      'the setup did not hold: the newer build never downloaded',
+    );
+    if (offTitle.length > 0 || !(await running(morning)).includes(olderMain))
+      refuse('the page reloaded away from the title, by itself');
+    await morning.type('[data-together="name"]', 'Asha');
+    await click(morning, '[data-together="create"]');
+    await morning.waitForSelector('[data-together="refusal"]', { timeout: WAIT_MS });
     if (refused === 0) refuse('the refusal did not come from the stand-in relay');
-
-    const button = await page.$('[data-update-now]');
-    if (button === null) refuse('the version refusal offered no Update now');
+    if ((await morning.$('[data-update-now]')) === null)
+      refuse('the version refusal offered no Update now');
+    // Every main script the phone loads from here, in order: the FIRST must be the newer one. A
+    // button that only reloaded would load the older build first, and the title would then take the
+    // newer one for it, which is the title's work, not the button's.
+    const loads = loadsOf(morning);
     const pressed = Date.now();
-    const reloaded = await Promise.all([
-      page.waitForNavigation({ waitUntil: 'load', timeout: WAIT_MS }),
-      button.click(),
-    ])
-      .then(() => true)
-      .catch(() => false);
-    if (!reloaded)
-      refuse(`Update now did not reload the page within ${String(WAIT_MS / 1000)} seconds`);
-    await page.waitForSelector('[data-title]', { timeout: WAIT_MS });
-    const after = await running();
-    if (after.includes(olderMain)) refuse('after Update now the page still ran the older build');
-    if (!after.includes(newerMain)) refuse(`after Update now the page ran neither build: ${after}`);
+    await click(morning, '[data-update-now]');
+    await poll(async () => loads.length > 0, `Update now did not reload the page`);
+    const first = loads[0] ?? '';
+    if (first.includes(olderMain)) refuse('after Update now the page still ran the older build');
+    if (!first.includes(newerMain)) refuse(`after Update now the page ran neither build: ${first}`);
+    const tookByButton = Date.now() - pressed;
+
     console.log(
-      `UPDATE CHECK: updated, the older build to the newer in ${String(Date.now() - pressed)} ms, ${url}`,
+      `UPDATE CHECK: passed, ${url}\n` +
+        `  on the title, the newer build taken by itself in ${String(tookOnTitle)} ms\n` +
+        `  in a game, the older build kept for ${String(HOLD_MS / 1000)} s with the newer one waiting, ` +
+        `and taken back on the title in ${String(tookAfterGame)} ms\n` +
+        `  Update now, under the version refusal off the title, the newer build first in ${String(tookByButton)} ms`,
     );
   } finally {
     await browser.close();

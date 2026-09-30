@@ -73,7 +73,7 @@ export function TitleScreen({
           {t('title.rejoin', { code: rejoin.code })}
         </button>
       ) : null}
-      <button style={BTN} onClick={onNewGame}>
+      <button style={BTN} onClick={onNewGame} data-title="new">
         {t('title.newGame')}
       </button>
       <button style={BTN} onClick={onTogether} data-title="together">

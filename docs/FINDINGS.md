@@ -3943,7 +3943,7 @@ was also the only thing that told a newer version's worker to take over (`regist
 'autoUpdate'`). Without it the newer version downloads and waits until every copy of the app is
 closed, and reloading does not bring it, measured. It was not noticed until the P3.6 session met an old
 copy on 26 September (#93), and not traced here until 30 September. Update now restores the step under
-the version refusal; whether anywhere else is #93's open question.
+the version refusal, and on the title whenever a newer version has downloaded (#93, both ruled).
 
 ## 70. The occlusion check's first run reported 109 findings, and every one was wrong: it asked whether text OVERLAPPED a fixed control, when the question is whether that control HIDES it
 
@@ -4806,6 +4806,26 @@ whenever one has finished downloading: a reload of a second or two, only after a
 game (a reload there would drop a game played together). **Recommendation: yes, on the title only.**
 The alternative is to leave it: the version refusal is the only case where the older build stops
 anyone playing.
+
+**Ruled 30 September 2026: yes, on the title only** (*"Will go with your recommendation"*). **Built the
+same day** (`takeWaitingVersion` and `whenNewerWaits` in `serviceWorker.ts`, called by `main.tsx` on
+the title alone):
+
+- **Whenever a newer version has finished downloading**, before the title appeared or while it shows,
+  it is told to take over and the page reloads into it.
+- **Unlike Update now, it reloads only once the newer version has taken over.** Nobody asked for this
+  reload, and one that brought the same version back would find the same waiting worker and reload
+  again, for ever.
+- **A first install is left alone**: a page nothing answers yet has no older version to replace.
+- **With it, the P3.6 morning would not have happened**: the phone sat on the title while the newer
+  version downloaded, and would have taken it there.
+
+`pnpm update:check` now holds three phones: on the title, the newer build taken by itself in about
+1.3 seconds; in a game, the older build kept for 3 seconds with the newer one waiting, and taken once
+the player is back on the title; and Update now, off the title, the newer build on the very next load.
+That last is required of the first load, because a button that only reloaded would now reach the
+newer build anyway, by way of the title. Four more controls, nine in all; `update-check-title-only`
+lets a newer version be taken anywhere, and the check refuses it for reloading a game.
 
 ---
 

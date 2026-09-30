@@ -70,6 +70,7 @@ export function DifficultyScreen({
           key={d}
           style={d === 'training' ? { ...BTN, borderColor: '#1F6F8B' } : BTN}
           onClick={() => pick(d)}
+          data-new-game={d}
         >
           <span style={{ fontWeight: 700 }}>{t(`difficulty.${d}`)}</span>
           {d === 'training' && firstGame ? (
