@@ -4,6 +4,7 @@
 > written after this queue, ruled out rule changes (§7) and never named it, so the queue did not land
 > there and nothing said so. When it runs is a ruling, set out in
 > [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4. The title and the paragraph below are kept as written.
+> **Ruled 30 September 2026: it runs now**, as its own piece between Phase 3 and Phase 4 (*"Now"*).
 
 **Opened 5 September 2026, at Kartik's rulings on his open design questions.** The engine is
 frozen for Phase 2 ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §0, §7): every change here is a

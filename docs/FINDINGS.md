@@ -4875,6 +4875,10 @@ rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and 
 `body` in `offered.ts`). Controls: `body-drawer-captain-only`, `antibodies-drawer-bcell-only`,
 `body-rings-captain-only`. Record: `for-P3.md` §9. **The relay's half is unchanged and still open.**
 
+**Ruled 30 September 2026, the relay's half: yes** (*"Yes"*, [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4):
+the room refuses body and antibody actions from anyone but their owners, as the screens already do,
+before Phase 4 ships.
+
 ## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
 
 **Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).
@@ -5096,3 +5100,5 @@ they were to land together, re-baselined once.
 
 **For a ruling**, set out in [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4: when the queue runs. The
 queue's own header is marked with this finding.
+
+**Ruled 30 September 2026: now** (*"Now"*), as its own piece between Phase 3 and Phase 4.

@@ -4,7 +4,7 @@
 different cities, play one game on their own phones, by sharing a code. Nobody signs up for anything."*
 
 **Status: complete, with one definition-of-done item NOT fully met, and one piece of planned work
-found unplaced.**
+found unplaced. Accepted by Shantanu, 30 September 2026** (*"Yes"*), with the rulings in §4.
 
 - **The unmet item:** the first, *"Gate A, every item, verified, on two real devices on two
   networks"*. Two of Gate A's nine items still owe a phone (§2).
@@ -108,6 +108,10 @@ version change, and today's deploy of version 5 is already one.
 ## 4. Decisions, and the checks still owed
 
 ### For Shantanu, with Kartik on the first
+
+**Ruled 30 September 2026:** *"1. Now 2. Yes 3. Yes"*. The queue runs now, before Phase 4; the room
+will refuse body and antibody actions from anyone but their owners, before Phase 4 ships; and this
+closeout is accepted. The items below are kept as they were put.
 
 1. **When the engine change queue runs** (#101). Ten ruled changes: five of them Kartik's, on the
    biology, and one of those (Q4) a live inaccuracy the engine's own log contradicts. Each breaks the
