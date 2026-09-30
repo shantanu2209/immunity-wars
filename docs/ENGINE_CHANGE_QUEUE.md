@@ -26,8 +26,8 @@ than inherited. The workarounds that expire with them are listed at the end.
 | **Q7** | **The engine's action literals into content, as one family** — `neutralise`'s 2-AP toxin cost; the antivenom dose (3 AP); degranulate's cost (2 AP) and damage (3); strike's damage (2 Eosinophil, 1 Monocyte); the Hard memory-response cost (1 AP) | Shantanu, at CP2; widened 6 September 2026 | The 2 is a literal in the engine, mirrored in the UI with a spanning test (#52). The 6 September ruling against mirrors found the rest: every one is a literal the UI also holds (`offered.ts`, held honest only one way by the offered-subset-of-accepted harness) or WANTS to hold and may not (the damage figures Shantanu ruled onto the action rows, withheld because a retyped copy could drift). When they are content, the UI reads them and the rows gain damage for free | #52; for-P2.5.md, 6 September, "the literal mirrors that remain" |
 | **Q8** | **Queries and log sites emit ids, not prose** | Shantanu, at CP2/CP5 | The Hindi edition renders five composed log lines in English until then | #53 |
 | **Q9** | **Degranulate burns the organ only when the fight is IN the organ** — organ damage when the Eosinophil (and its target) stand at branch step 0, not anywhere on the branch | Shantanu, S25 pass of 5 September 2026 | Eosinophil degranulation damages the tissue it happens in; granule proteins released on a lane are not released in the brain. Today  keys the burn to the TARGET being on a branch at any step, so a strike at step 1 of the Brain branch cost the Brain a point. Kartik's ruling that degranulate's cost is a risk you accept assumed the damage happens where the fight happens | #57 |
-
 | **Q10** | **Remove the inert `science` field** — `GameState.science`, `newGame`'s `cfg.science`, the `science` view key, and the session's `CreateGameConfig.science` that feeds it | Shantanu, 6 September 2026, at the P2.6 kickoff | Set at construction from a config flag, copied into the view, **read nowhere**: not by the port (`construct.ts`, `view.ts`, `simulate.ts` passing `false`), not by legacy (`v2_engine.js` sets and exposes it; the server and two tests pass it; nothing consults it). Nobody remembers what it was for, so there is nothing to toggle, and Settings gets no entry for it. Removing a view key breaks the corpus, so it waits here rather than being removed from a frozen engine | `APP_FLOW.md` §3 named a "science toggle" as out of the minimum shell, the field's only trace; [`for-P2.6.md`](for-P2.6.md) |
+| **Q11** | **A venom is never remembered** — no vaccine against one, and no memory response to one, whatever memory a game carries | Shantanu, 30 September 2026, after the queue ran | Venom acts in minutes and even a remembered response takes days; no vaccine against a venom is licensed for people. The game's own texts already said a second bite needs a second dose | #55; [`DEVIATIONS.md`](DEVIATIONS.md) #11 |
 
 ## Q2 — the check Kartik asked for: everything the Helper T-Cell does, and whether any of it uses the free slot
 
@@ -125,17 +125,25 @@ engine is unchanged", with the corpus as the proof.
 
 ## How it ran — 30 September 2026
 
-**Open, first.**
+**Open, first.** *Each item as it stood when the queue merged, and then as Shantanu ruled it the same
+evening.*
 
 - **The printed rules and Q1 disagree** ([`FINDINGS.md`](FINDINGS.md) #105): the rulebook's Neutralise
   allows no trypanosome, and the app now does. A ruling before the deploy: ship ahead of the printed
-  text, or wait for Kartik's wording.
+  text, or wait for Kartik's wording. **Ruled: ship; the printed texts are to be fixed as seems best.**
+  The app's own help states the rule since queue Q11's commit; the printed documents are not edited
+  yet, and #105 carries the proposed wording.
 - **The engine still writes English** (#53). Q8 brought every line it writes into the catalogue
-  without ids; whether and when it emits them is a ruling.
+  without ids; whether and when it emits them is a ruling. **Ruled: decided when the Hindi
+  translation work starts.**
 - **Whether a memory response should ever apply to a venom** (#55) was not part of Kartik's ruling,
-  and stays his.
+  and stays his. **Ruled by Shantanu: never, the scientifically accurate answer. Built as Q11, below.**
 - **Not deployed yet.** The relay and the app go out together, on Shantanu's word; a phone still on
-  the old rules is refused and told to update.
+  the old rules is refused and told to update. **Deployed 30 September 2026 at 21:25 IST** (*"Please
+  deploy"*): the relay `20260930-212505-cb59b39`, its 41 tests passed, restarted with nobody
+  connected, rules 4.0.0 and protocol 5 read back from the server; and the app
+  `20260930-212705-cb59b39`, its start check passed, the live build carrying "Recall to the organ"
+  and rules 4.0.0.
 
 **The method: "the original, as ruled"** ([`DEVIATIONS.md`](DEVIATIONS.md) #10). Every change was
 made twice, independently: in the port, and as an edit to the original's source applied in memory.
@@ -212,3 +220,33 @@ all 132: every one red where it must be and green where it must be, the tree lef
 - Four texts still described the rules before the queue: the engine's comment and a test's title
   saying the coat change can never fire, the reachability report saying the same, and a test title
   saying the engine honours `science`. Corrected.
+
+### Q11, after the queue ran — the same evening
+
+Ruled by Shantanu when the queue's open items came back (#55's second question: *"Do whatever is
+scientifically accurate"*): **a venom is never remembered** ([`DEVIATIONS.md`](DEVIATIONS.md) #11).
+Made twice, as the queue was, in commit `2c3296a`: `vaccinate` refuses a venom, and the draw gives
+a venom no memory response whatever memory a game carries. The vaccine lab stops offering one; the
+offered-subset-of-accepted harness caught the offer on recorded Normal games before the fix. The
+app's help was brought level with the queue's rules in the same commit (#105).
+
+**The balance panel saw it**, on the check's arm, against the bands of the queue:
+
+| | Training | Normal | Hard |
+|---|---|---|---|
+| Queue (4.0.0) | pass | pass | pass |
+| Q11 | pass, identical | **FAIL**: trunk kill share 0.9771 → 0.9668, −6.5σ | pass, small moves |
+
+The bot vaccinated against venom on Normal and never uses antivenom; Training has no vaccines.
+**Recalibrated** at `2c3296a` with the rules at 4.1.0 and the content at 1.2.0: Training's bands came
+out identical, Normal's trunk kill share moved from 0.9774 to 0.9681, and Hard moved a little. The
+held-out arm passes on all three, and the false-positive probe finds **0 failures in 24 unseen arms
+and no metric past 3σ**, the worst 2.66σ, on Training, as before.
+
+**It tipped a fast control** (#107). *"One fewer AP per turn fails the panel"*, on Normal, at the
+control's small scale, became a coin flip under Q11's rules: one metric past 3σ where the rule needs
+two, in four of five sizes measured. Against the shipped bands the same cut fails the panel on
+Normal (antibodies made −15.0σ) and on Hard (−34.0σ), and the brain lane still does not. The control
+now asserts the strength that holds at its scale, with a control of its own.
+
+**Controls:** 135, the three new ones seen firing.

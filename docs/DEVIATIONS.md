@@ -523,5 +523,43 @@ bot as much as the rules: it plays about six of the fourteen seats (`CLAUDE.md`,
 
 ---
 
+## 11. A venom is never remembered: no vaccine against one, and no memory response to one (queue Q11)
+
+**Legacy behaviour.** `vaccinate` accepts any disease the body has seen, a venom included, and a
+completed vaccine gives memory of it; on a later arrival the draw marks a remembered venom, and the
+memory response destroys it, free on Normal and for 1 Action Point on Hard. A game from before
+queue Q4 can also remember a venom killed by antivenom on Training.
+
+**Port behaviour.** `vaccinate` refuses a venom: *"There is no vaccine against venom: it acts in
+minutes, and even a remembered response takes days. Only antivenom works."* The draw never marks a
+venom remembered, whatever memory the game carries. Toxins keep their vaccines, because toxoid
+vaccines are real (diphtheria's); the three venoms are the deck's Snake venom, Russell's viper venom
+and Red scorpion sting.
+
+**Why.** It is the biology. Venom acts in minutes; a memory response makes new antibodies in days;
+no vaccine against a venom is licensed for people. The game's own texts already said so: passive
+immunity leaves no memory, and a second bite needs a second dose. This answers the second question
+of [`FINDINGS.md`](FINDINGS.md) #55, which Kartik's ruling of 5 September had not taken up.
+
+**The oracle.** As for #10: made twice, in the port and as two edits to the original in
+`tests/equivalence/src/ruled.ts`, which the corpus compares.
+
+**What the reference bot sees.** It vaccinated against venom on Normal: with Q11, Normal failed the
+old bands, its trunk kill share falling from 0.9771 to 0.9668 (−6.5σ), since it never uses
+antivenom. Training cannot show it, having no vaccines. The bands were recalibrated with the rules
+version, 4.1.0.
+
+**Decided by:** Shantanu, 30 September 2026, on #55's second question: *"No I don't think it should
+right? Do whatever is scientifically accurate."*
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q11 cases: *"a venom cannot be vaccinated
+against"*, *"a toxin still can"* and *"a venom a game already remembers meets no memory response on
+arrival"*, each in the port and the original as ruled, with the untouched original, which
+vaccinated and remembered, as the control. Mutation controls `queue-q11-no-venom-vaccine` and
+`queue-q11-no-memory-response-to-venom`. The screens' vaccine lab no longer offers a venom, held by
+the offered-subset-of-accepted harness, which caught the offer on recorded Normal games before the
+fix.
+
+---
+
 *Entries are appended as they are decided, never retroactively edited — if a decision is
 reversed, add a new entry saying so.*

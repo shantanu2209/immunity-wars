@@ -2,10 +2,10 @@
   "generated": "2026-09-30",
   "pack": {
     "packId": "immunity-wars-core",
-    "packVersion": "1.1.0",
-    "rulesVersion": "4.0.0"
+    "packVersion": "1.2.0",
+    "rulesVersion": "4.1.0"
   },
-  "total": 803,
+  "total": 804,
   "parts": [
     {
       "key": "diseases",
@@ -4094,6 +4094,12 @@
           "text": "Not alive, and far too fast for your B-cells. Only a ready-made antivenom dose works."
         },
         {
+          "id": "TYPE/venom/rest",
+          "subject": "Venom",
+          "label": "In How to play",
+          "text": "There is no vaccine against it, and beating it teaches the body nothing: a second bite needs a second dose."
+        },
+        {
           "id": "TYPE/fungus/beat",
           "subject": "Fungus",
           "label": "How it is beaten",
@@ -4157,7 +4163,7 @@
           "id": "TYPE/parasite/rest",
           "subject": "Parasite",
           "label": "In How to play",
-          "text": "Once it is on its last hit point the Monocyte can finally swallow it."
+          "text": "Once it is on its last hit point the Monocyte can finally swallow it. Antibodies may try to neutralise Sleeping sickness, but on a roll of 1 to 3 it changes its coat and the antibody no longer fits."
         }
       ]
     },
@@ -4308,7 +4314,7 @@
           "id": "CELL/bcell/rest",
           "subject": "B-Cell",
           "label": "In How to play",
-          "text": "Coat a bacterium, worm or parasite. Neutralise a virus, or a toxin for 2 AP. Vaccinate, 5 AP in total. Search for the clone, 3 AP, for Pathogen X."
+          "text": "Coat a bacterium, worm or parasite. Neutralise a virus, or a toxin for 2 AP, or try it on Sleeping sickness: on a roll of 1 to 3 its coat changes and the antibody is lost. Vaccinate, 5 AP in total, against anything but a venom. Search for the clone, 3 AP, for Pathogen X."
         },
         {
           "id": "CELL/tcell/Name",
@@ -4512,7 +4518,7 @@
           "id": "CELL/resident/rest",
           "subject": "The resident macrophages",
           "label": "In How to play",
-          "text": "It may never leave that branch, and it must be out on the branch to meet anything: nothing can be engulfed in the organ box itself. Engulf, free once per turn: destroy one virus or coated bacterium on its space."
+          "text": "It may never leave that branch, and it must be out on the branch to meet anything: nothing can be engulfed in the organ box itself. Engulf, free once per turn: destroy one virus or coated bacterium on its space. Recall, 1 AP: straight back to its organ box from any step."
         },
         {
           "id": "CELL/resident/heart",
