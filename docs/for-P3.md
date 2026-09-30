@@ -1541,3 +1541,148 @@ As ruled above, and recorded in the brief as v1.8 (§5):
   lobby's screens, the captain's and the other player's, measured in every pass with no finding.
   NOT REACHED, the deal (FINDINGS #68): a row with several targets in the base and ZOOM200 passes,
   with the one nesting path that needs it.
+
+### 2, built: undo, played together (protocol version 4)
+
+As ruled (*"Agree"*), with the engine change it turned out to need (*"Go with A"*):
+
+- **A player takes back their own moves, while nobody else has acted since**, and their Action Points
+  come back with them. The room holds that run of moves, and undoes through the engine's own `undo`,
+  back to the snapshot from just before the first of them. Any other accepted action ends it,
+  another player's or a committing one of their own; a refused action changes nothing and does not.
+- **Every view says whose moves an undo would take back, and how many** (`undo`, new in v4), so the
+  mover's Undo is live and everyone else's is not. Theirs says why: *"Undo takes back your own moves,
+  until anyone else acts."* An undo from anyone else is refused (`nothingToUndo`, which replaces
+  `undoIsSinglePlayer`).
+- **The points needed the engine.** Legacy's undo snapshot held single player's points and not the
+  table's budgets, so an undo together kept the point spent: measured, a budget of 2, 1 after a move,
+  1 after the undo ([`FINDINGS.md`](FINDINGS.md) #95). The proposal had said otherwise, and was put
+  right before anything was built. **[`DEVIATIONS.md`](DEVIATIONS.md) #8:** the snapshot holds the
+  budgets, in a game played together only. The brief moves to v1.9 to name it beside
+  `handOverCaptaincy`.
+- **The list of moves** undo may take back is shared now (`MOVE_CLASS`, in
+  `@immunity-wars/session-core`): `LocalSession` and the room read one list.
+
+**What proves it:**
+
+- **The engine** (`tests/equivalence/src/undo-budget.test.ts`): legacy's undo together keeps the point
+  spent and the port's gives it back, the piece back in both; alone, a snapshot never holds the
+  budgets, and a move and its undo are legacy's to the byte; together, with the snapshots' budgets
+  set aside, every path without an undo is byte-identical to legacy. **The corpus stays green, 400 of
+  400, run uncached.** Controls: `engine-undo-refunds-budget`, `engine-undo-budget-together-only`.
+- **The room** (`packages/room/src/room.test.ts`): a player's own two moves taken back, points and
+  all; the view names whose moves and how many; another player's undo refused and the moves left; an
+  undo refused once someone else has acted; a refused action in between survived; nothing to take back
+  before anyone moves. Controls: `room-undo-own-moves-only`, `room-undo-ends-when-others-act`, which
+  replace `room-undo-refused`.
+- **Over real sockets** (`packages/server/src/relay.test.ts`): a move taken back on one device, the
+  point with it; the other device told it is not theirs, and refused.
+- **On the screens, two players at 360 × 641 against a local relay, 6 checks:** before a move Undo has
+  nothing to take back; the move spent a point (AP 2 to 1); the mover's Undo is live and the other
+  player's is not; Undo put the Neutrophil back and gave the point back (AP 2).
+- **Coverage.** The generated documents were regenerated, as the engine's lines moved. Eight of the
+  twenty multiplayer arms deferred to Phase 3 are covered now, all in `ap.ts`, by the undo tests,
+  which play moves together through the engine: **12 remain.** The gate also reports an excluded arm
+  as covered, `ap.ts:31`'s `(g.apBudget[pid] || 0)`. A probe that threw on that arm never fired in the
+  four suites this change touched, so the `|| 0` path is not what they reach; which of the line's
+  arms the coverage provider counts as newly hit was not traced, and the exclusion is left as it is,
+  as the gate leaves it, for a judgement.
+- **The Gate 1 audit, `--together` against a local relay:** 44 controls all firing the right way, 81
+  screens per pass (83 under SIZE200), every check 0 under all four mechanisms, 38 nesting landings
+  and 0 wrong, offline met, and nothing NOT REACHED in any pass.
+
+### v4 deployed, 28 September 2026
+
+With Shantanu's go-ahead, after #120: the relay as `20260928-094308-8b38005`, restarted with nobody
+connected, and the app as `20260928-094348-8b38005`, the start check passing before it was copied.
+Read back from the server: `PROTOCOL_VERSION = 4`; and from the live site, the new words (*"for two
+to fifteen players"*, *"That room is full."*, the undo line).
+
+### The multiplayer coverage arms Phase 3 owed
+
+Gate A asks for the multiplayer arms deferred to Phase 3 to be covered. Twenty were owed; the undo
+tests covered eight (§9, "2, built"). **The other twelve, read caller by caller, were of two kinds:**
+
+- **Five a game played together reaches**, through `applyAction`: a player who is not captain handing
+  out points, the captain handing out more than the pool, a pool of exactly one point (*"1 Action
+  Point"*, singular), a player who is not captain ending the turn, and a player with no points of
+  their own trying to act.
+- **Seven no action reaches**, only a direct call: all five arms of `apOwnerOf`, which nothing in
+  either engine calls; `apAvail` alone, which is only ever called together; and `spendAP` for no
+  player, which no action can produce.
+
+**Covered** by `tests/equivalence/src/multiplayer-arms.test.ts`, held to legacy: the five through
+both engines on five seeds, byte-identical (with the undo snapshots' budgets set aside, DEVIATIONS #8,
+since even a refused move is snapshotted first); the seven against legacy's own functions, which
+legacy keeps internal and the harness exposes by adding their names to its exports, changing nothing
+else. Control: `engine-mp-arms-held-to-legacy`.
+
+**One difference was found doing it** ([`FINDINGS.md`](FINDINGS.md) #98): given no player, legacy's
+`spendAP` writes a budget named `"null"`, and the port writes nothing. No game reaches it. It is
+pinned by the test, and awaits a ruling.
+
+**And the instrument that counts the arms was wrong twice** (#97), found by tracing why it had called
+an excluded arm covered: rule A excluded by the line, so a live left operand, two ternaries' elses and
+an `||` between two alternatives were filed as defensive; and the key under the exclusions could not
+tell two branches on one line apart, so 47 arms were missing from the count. Both fixed, with a
+ledger that now balances itself on every run. And a lint control that went red for timing under a
+forced run of every suite, #96, given its own budget.
+
+**The coverage gate after all of it**, on a clean run: **no multiplayer arm deferred to Phase 3**,
+where there were twenty; 97.41% of the coverable arms covered, against a target of 95%. Two entries
+left the exclusion list because a test now reaches them, as the gate's self-policing requires:
+`apOwnerOf`, which rule B had as demonstrated dead (#11; it still has no caller), and `ap.ts:31`'s
+`|| 0`, which rule A had as defensive. Both are reached only by the direct calls above. Still open
+beyond Phase 3: 18 arms that wait for a competent bot, and 28 uncategorised.
+
+## 10. Gate B: what the relay costs, measured, and the prices read on the day (30 September 2026)
+
+**The bill.** Google's billing report for September, by SKU, before the trial credit (exported by
+Shantanu on 30 September 2026; the file itself is not kept here). It covers the server's first
+**104.69 hours**, from its creation on 25 September, the P3.6 game on two phones and every deploy
+since included.
+
+| What | Used | Billed |
+|---|---|---|
+| Processor (E2 core, Mumbai) | 26.17 core-hours | ₹65.51 |
+| Memory (E2 RAM, Mumbai) | 104.69 GiB-hours | ₹35.12 |
+| Disk (10 GB standard) | 1.45 GiB-months | ₹6.67 |
+| Data out to the internet | about 0.06 GiB | ₹0.60 |
+| Public address | 104.69 hours | ₹0.00 |
+| Ubuntu, data in | | ₹0.00 |
+| **Charged** | | **₹107.90** |
+| Network Intelligence Center, three modules | 109 resource-hours each | ₹31.25 *shown, not charged* |
+
+- **Network Intelligence Center** is not a cost. Google's pricing page, read 30 September: the three
+  modules *"are available to all users for 100% discount. The cost of these modules will be shown in
+  your billing details, but you will not be charged for them,"* with 90 days' notice of any change.
+  The report's total of ₹139.15 includes them.
+- **The public address billed nothing** over 104.69 hours, where the network pricing page, read the
+  same day, lists **$0.005 an hour** for an address in use on a standard VM, with a free allowance of
+  one hour a month. Why it billed nothing is not known, so the estimate below carries it at the
+  listed price as the cautious case.
+
+**A month, at the rate billed so far:** ₹107.90 over 104.69 hours is ₹1.03 an hour, so **about ₹750
+over 730 hours**, and about **₹1,100** if the address is charged at its listed price (about ₹350 a
+month, at the ₹95.6 to the dollar the bill itself implies). The brief's estimate was about ₹1,000
+(§6). The trial credit pays it until day 90; ₹72.88 of ₹28,663.51 had been used by the time of Shantanu's screenshot of the billing page.
+
+**What a real game costs.** Almost nothing beside the server, which costs the same whether anyone
+plays:
+
+- **Relay data:** 13 KiB a turn to each player, measured live (§5); up to about **2 MB per player**
+  for a full 45-turn game.
+- **The app, once per phone:** the deployed build is **1.2 MB**, measured on the server.
+- **The price of data out** from Mumbai to the rest of Asia, as billed: about **₹11 a GiB** (₹0.44 for
+  0.04 GiB). So a four-player game to its end is about 8 MB, **under ₹0.10**, and a new phone about
+  ₹0.01.
+
+**The server's own side**, read 30 September: it had been up since 03:31 IST that morning, having
+rebooted itself for a security update, as `setup.sh` arranges (unattended upgrades, rebooting at 03:30
+when an update requires it). A game still running at 03:30 would end there, as any restart of the
+relay ends the rooms it holds in memory. Since that boot it had sent 1.96 MB and received 2.98 MB
+with nobody playing; memory in use was 293 of 952 MB, 18 MB of it the relay's.
+
+**Gate B, the cost item:** *"The relay's cost at the measured traffic of a real game is recorded, with
+the provider's prices re-read on the day"*: recorded here. The server's fixed cost is the whole of it;
+a game's own traffic is under ₹0.10.

@@ -4322,6 +4322,15 @@ stack underneath it is shared.
 No multiplayer screen exists yet, so no player can reach it; **P3.7 owes the wording**. A per-player
 undo stack would be an engine change and is not proposed.
 
+### Superseded 27 September 2026 (protocol v4): undo, played together, by ruling
+
+Undo was ruled for games played together after the P3.6 session. The room still refuses an undo
+that could take back another player's move, which is what this entry found: it allows one only for
+a player's own moves while nobody has acted since (`nothingToUndo` otherwise), and the refusal code
+`undoIsSinglePlayer` is gone. The points come back with the moves, which needed the engine change
+this entry did not propose (#95, [`DEVIATIONS.md`](DEVIATIONS.md) #8). The `room-undo-refused`
+control became `room-undo-own-moves-only` and `room-undo-ends-when-others-act`.
+
 ---
 
 ## 80. `advanceIdsPast` reads the undo snapshots under a key the engine never writes — FIXED 25 September 2026
@@ -4787,3 +4796,107 @@ The Antibodies drawer is offered only to the B-Cell's player, and the Body drawe
 rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and the seat rule's
 `body` in `offered.ts`). Controls: `body-drawer-captain-only`, `antibodies-drawer-bcell-only`,
 `body-rings-captain-only`. Record: `for-P3.md` §9. **The relay's half is unchanged and still open.**
+
+## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
+
+**Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).
+The proposal put to Shantanu said the room could do it without touching the engine, and that the
+points would come back with the moves. **Reading the engine before building showed the second half
+false**, and a run confirmed it: in a two-player game a player's budget was 2, 1 after a move, and
+still 1 after the undo, the piece back in the bloodstream.
+
+**Why.** Legacy's undo snapshot holds single player's points (`g.ap`) and not the table's budgets
+(`g.apBudget`), which is where a player's points are spent from when played together. Legacy's relay
+let an undo through from any player, so the defect was reachable there; this relay refused undo in a
+room until v4 (#79), so it was not reachable here until undo was ruled.
+
+**Put to Shantanu with three ways,** before anything was built: (A) the engine saves the budgets in
+the snapshot, together only; (B) the room refunds the points itself, which would be a rule outside
+the engine; (C) undo without a refund, which misses what it was asked for. **Ruled: *"Go with A"*.**
+
+### ✅ FIXED, 27 September 2026, by ruling
+
+[`DEVIATIONS.md`](DEVIATIONS.md) #8: the budgets are in the snapshot in a game played together, and
+never alone. The corpus stays green; `tests/equivalence/src/undo-budget.test.ts` holds the change and
+its confinement. Undo together is built on it, in the room (protocol v4).
+
+## 96. A lint control went red for timing, not for its rule — FIXED inline 28 September 2026
+
+**Found 28 September 2026**, running every suite at once (`pnpm turbo run test --force --continue`)
+to trace a coverage report. `packages/ui/src/i18n-check.control.test.ts`, the control that proves the
+no-hardcoded-text rule fires, failed: *"Test timed out in 5000ms"*. Alone it passes in 0.85 s. It
+lints with a real ESLint, whose first run loads the whole configuration, and under a forced run of
+every suite at once that passed vitest's default five seconds.
+
+**Why it matters.** A control that goes red for timing teaches a reader to ignore a red control,
+which is the failure this project would least survive. The same class as #43, where suites ran on a
+budget nobody had declared.
+
+### ✅ FIXED inline: an instrument defect
+
+The control's `describe` declares its own budget of 60 seconds, with the reason beside it. Measured:
+green alone, as before.
+
+---
+
+## 97. The coverage gate's rule A decided by the line, and its exclusion key could not tell two branches on one line apart — FIXED inline 28 September 2026
+
+**Found 28 September 2026**, reading why the gate reported an excluded arm at `ap.ts:31` as newly
+covered after the undo tests (#95). Two defects in the instrument, each found by balancing a ledger
+by hand.
+
+**1. Rule A decided by the LINE.** Rule A excludes the fallback of a null-coalescing expression, the
+`0` in `x ?? 0` or `x || 0`, as defensive. It tested the line's text (`RULE_A.test(a.text)`), so
+every uncovered arm on a line that merely contained a `??` was excluded with it. Measured on the
+coverage data: of the 100 arms it excluded, 94 were fallbacks and 6 were not.
+
+- **Two live left operands**, `queries.ts:278` and `:282`, uncovered because nothing had run them:
+  test debt, hidden as defensive. `ap.ts:31`'s left operand, a player spending their points together,
+  was a third until the undo tests covered it, which is what the gate reported.
+- **Two ternaries' else**, `ap.ts:39` and `queries.ts:250`.
+- **One `||` between two real alternatives** in the bot, `simulate.ts:167`.
+- **One function** never called, whose declaration line held a `??`.
+
+**2. The exclusion key could not tell two branches on one line apart.** The coverable arms were keyed
+on file, line, arm number and line text, but not on which branch the arm belonged to. At
+`queries.ts:250` a ternary and the `??` inside it each have an arm 1, so excluding the `??`'s fallback
+silently removed the ternary's else from the denominator too. **47 arms were missing from the count**
+this way, 46 of them covered. The comment above the key records the same class, fixed at line level
+at the v4 reconciliation; it stopped one step short.
+
+### ✅ FIXED inline: an instrument defect
+
+- **Rule A reads the arm** (`tests/equivalence/src/rule-a.ts`, `isFallbackArm`): an arm is a fallback
+  when the operator that led to it is a `??`, or an `||` followed by one of the literals the rule has
+  always named. v8 draws an operand's span up to the next operand's start, so the operator is read
+  from the end of the previous operand's span, on whatever line that ends, and from the line as
+  written: the gate's own `lineAt` trims indentation, which the first attempt used and which shifted
+  every column (rule A excluded 1 arm instead of 94). Held arm by arm by `rule-a.test.ts`; control
+  `coverage-rule-a-arm-precise`. **Its first control was inert**: it removed an `armIndex >= 1` check
+  that could never change the answer, since a first operand has no operator before it. The check was
+  removed and the control aimed at the literal boundary, where it fires.
+- **The key is branch-precise**: file, the coverage map's branch id, arm number.
+- **The ledger balances itself** on every run: the coverable arms must be the raw ones less the
+  excluded ones, exactly, or the gate fails naming the difference. Negative control, by hand: with
+  the old key restored, *"LEDGER DOES NOT BALANCE: 1936 raw branch arms less 160 excluded is 1776, but
+  1729 are counted coverable"*, and the gate failed.
+- **The numbers after:** rule A excludes 95 arms, where it excluded 101; coverable coverage is 96.73%
+  of 1,776 arms, where it read 96.92% of 1,723. The five arms released joined the lists they belong
+  on: four still open, one deferred to a competent bot.
+
+---
+
+## 98. The port's `spendAP` writes no budget for no player, where legacy writes one named "null" — found 28 September 2026, awaiting a ruling
+
+**Found 28 September 2026**, holding the multiplayer arms Phase 3 owed to legacy's own functions
+(`tests/equivalence/src/multiplayer-arms.test.ts`). Given no player, legacy's `spendAP` writes
+`g.apBudget["null"] = 0`; the port returns first (`if (pid == null) return;`), a guard it has carried
+since the Task B4 port (5 August 2026) with no entry in [`DEVIATIONS.md`](DEVIATIONS.md).
+
+**How far it reaches.** Nowhere a game goes. `spendAP` is internal in legacy and exported by the port
+only on its `./internal` entry; every caller passes the acting player; and an action from a player
+with no budget is refused as *"No Action Points."* before anything is spent. Neither version touches a
+real player's points. The test pins both behaviours, so it cannot change unseen.
+
+**For a ruling:** record the guard as a deliberate deviation, which is the recommendation (it keeps a
+budget for nobody out of the game's state), or remove it so that the port matches legacy here too.

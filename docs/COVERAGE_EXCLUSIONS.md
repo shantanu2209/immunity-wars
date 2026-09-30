@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1932 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1936 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -39,9 +39,6 @@ weaker than a demonstration and is labelled so deliberately.
 ### ap.ts
 
 - `25` `const amount = n || 1;`
-- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
-- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
-- `39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 
 ### construct.ts
 
@@ -75,12 +72,8 @@ weaker than a demonstration and is labelled so deliberately.
 - `89` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `161` `return INV_SPEED[iv.type] || 1;`
 - `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
-- `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
 - `264` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
 - `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `303` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
 - `304` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
@@ -105,7 +98,6 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### simulate.ts
 
-- `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `178` `if ((g.ab[tf] ?? 0) > 0) {`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
@@ -135,19 +127,19 @@ weaker than a demonstration and is labelled so deliberately.
 ### view.ts
 
 - `38` `free: clone(g.free || {}),`
-- `42` `g.undo = g.undo || [];`
-- `94` `free: clone(g.free || {}),`
-- `97` `players: (g.players || []).slice(),`
-- `99` `owner: clone(g.owner || {}),`
-- `100` `apBudget: clone(g.apBudget || {}),`
-- `104` `suppress: clone(g.suppress || {}),`
-- `107` `rare: clone(g.rare || {}),`
-- `109` `ab: clone(g.ab || {}),`
-- `110` `made: clone(g.made || {}),`
-- `111` `memory: clone(g.memory || {}),`
-- `112` `vaccine: clone(g.vaccine || {}),`
-- `113` `seen: clone(g.seen || {}),`
-- `117` `undoDepth: (g.undo || []).length,`
+- `47` `g.undo = g.undo || [];`
+- `101` `free: clone(g.free || {}),`
+- `104` `players: (g.players || []).slice(),`
+- `106` `owner: clone(g.owner || {}),`
+- `107` `apBudget: clone(g.apBudget || {}),`
+- `111` `suppress: clone(g.suppress || {}),`
+- `114` `rare: clone(g.rare || {}),`
+- `116` `ab: clone(g.ab || {}),`
+- `117` `made: clone(g.made || {}),`
+- `118` `memory: clone(g.memory || {}),`
+- `119` `vaccine: clone(g.vaccine || {}),`
+- `120` `seen: clone(g.seen || {}),`
+- `124` `undoDepth: (g.undo || []).length,`
 
 ## Rule C — mechanical shapes from the v4-provider reconciliation
 
@@ -339,14 +331,6 @@ if (ck && g.free && free > 0) {
 ```
 
 docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
-
-### ap.ts:15
-
-```
-export function apOwnerOf(g: GameState, a: Action | null | undefined): string | null {
-```
-
-dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
 ### construct.ts:84
 
@@ -580,7 +564,7 @@ if (!org) return;
 
 arrivals always carry an organ assigned at makeInvader or during the march, and g.organs is total over organList. Demonstrated over 300 games
 
-### view.ts:50
+### view.ts:55
 
 ```
 if (!u) return err('Nothing to undo.');

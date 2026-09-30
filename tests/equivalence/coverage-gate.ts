@@ -80,6 +80,8 @@ import { relative } from 'node:path';
 
 import ts from 'typescript';
 
+import { isFallbackArm } from './src/rule-a.js';
+
 const TARGET = 95;
 
 /**
@@ -99,7 +101,9 @@ const MAX_EXCLUSION_RATIO = 0.094;
 /**
  * RULE A — defensive null-coalescing arms.
  *
- * Mechanical: the source line contains `??` or `|| <literal>`. These exist because
+ * Mechanical: the arm IS the fallback of a `??`, or of an `|| <literal>` (`src/rule-a.ts`). It
+ * was the LINE containing one until 28 September 2026, which excluded every uncovered arm sharing
+ * the line, a live left operand and a ternary's else among them (docs/FINDINGS.md #97). These exist because
  * noUncheckedIndexedAccess requires handling a miss; where the surrounding guard already
  * establishes presence, the miss arm cannot be taken.
  *
@@ -107,7 +111,7 @@ const MAX_EXCLUSION_RATIO = 0.094;
  * zero divergence means no such arm is both live and wrong. That is weaker than a per-arm
  * demonstration and is labelled as such.
  */
-const RULE_A = /\?\?|\|\|\s*(\{\}|\[\]|0\b|1\b|''|"")/;
+// The rule itself is `isFallbackArm`, in `src/rule-a.ts`, where a test holds it arm by arm.
 
 /**
  * RULE B — individually demonstrated dead arms.
@@ -188,11 +192,10 @@ const RULE_B: Demonstrated[] = [
     match: 'const org = iv.organ ? g.organs[iv.organ] : undefined;',
     why: 'the undefined arm is unreachable: makeInvader always assigns an organ before a worm can lodge. Demonstrated over 300 games',
   },
-  {
-    file: 'ap.ts',
-    match: 'export function apOwnerOf(g: GameState, a: Action | null | undefined): string | null {',
-    why: 'dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11',
-  },
+  // `apOwnerOf` was here until 28 September 2026, a dead function: legacy contains exactly one
+  // reference, the definition (docs/FINDINGS.md #11), and nothing in either engine calls it, which
+  // still holds. It is covered now, held to legacy's own by a direct call in
+  // multiplayer-arms.test.ts, so the self-policing check below rightly refused to call it dead.
 
   /* ------------------------------------------------------------------ *
    * ADDED 19 Aug 2026 at the v4-provider reconciliation (docs/FINDINGS.md #46). The AST-based
@@ -364,7 +367,9 @@ interface Loc {
    * start, not a missing one, so the check must be on `.line` — 405 of 1,876 arms in the first
    * run under it. See the fallback where arms are collected.
    */
-  start?: { line?: number };
+  start?: { line?: number; column?: number | null };
+  /** Read by rule A, for the operator that ends an operand's span (FINDINGS #97). */
+  end?: { line?: number; column?: number | null };
 }
 interface FileCoverage {
   path: string;
@@ -390,6 +395,11 @@ const lineAt = (path: string, n: number): string => {
   }
   return (s[n - 1] ?? '').trim();
 };
+/** The line as written, indentation and all: coverage columns count from its first character. */
+const rawLineAt = (path: string, n: number): string => {
+  lineAt(path, n);
+  return src.get(path)?.[n - 1] ?? '';
+};
 
 interface Arm {
   file: string;
@@ -405,6 +415,18 @@ interface Arm {
    * Found by the first run of rule C eating three bot-deferred arms in simulate.ts.
    */
   armIndex: number;
+  /**
+   * Which branch (or function) of its file the arm belongs to: the coverage map's own id. Two
+   * branches on one line share a line, a text and arm numbers, so without it their arms are one key
+   * (docs/FINDINGS.md #97).
+   */
+  id: string;
+  /** The coverage branch's type (`binary-expr`, `if`, …); '' for a function. Rule A reads it. */
+  type: string;
+  /** The operator ending the previous operand's span: what led to this one (rule A). */
+  op: string;
+  /** This operand's own text, from where it starts on its line (rule A). */
+  span: string;
 }
 
 const arms: Arm[] = [];
@@ -426,6 +448,12 @@ for (const fc of Object.values(data)) {
         // Never silently drop an arm — a skipped arm shrinks the denominator invisibly.
         throw new Error(`branch arm with no resolvable line: ${fc.path} branch ${id} arm ${i}`);
       }
+      // RULE A READS THE ARM ITSELF (FINDINGS #97): v8 draws an operand's span up to the next one's
+      // start, so the operator that led to this operand ends the PREVIOUS operand's span, on
+      // whatever line that span ends.
+      const loc = meta.locations[i];
+      const prev = i > 0 ? meta.locations[i - 1] : undefined;
+      const prevEnd = prev?.end?.line;
       arms.push({
         file: fc.path,
         short,
@@ -434,6 +462,16 @@ for (const fc of Object.values(data)) {
         covered: hits > 0,
         kind: 'branch',
         armIndex: i,
+        id: `b${id}`,
+        type: meta.type ?? '',
+        op:
+          prevEnd === undefined
+            ? ''
+            : rawLineAt(fc.path, prevEnd)
+                .slice(0, prev?.end?.column ?? undefined)
+                .trimEnd()
+                .slice(-2),
+        span: loc?.start?.line === n ? rawLineAt(fc.path, n).slice(loc.start.column ?? 0) : '',
       });
     });
   }
@@ -452,6 +490,10 @@ for (const fc of Object.values(data)) {
       covered: hits > 0,
       kind: 'function',
       armIndex: 0,
+      id: `f${id}`,
+      type: '',
+      op: '',
+      span: '',
     });
   }
 }
@@ -565,7 +607,7 @@ for (const a of arms) {
     excluded.push({ ...a, rule: 'B', why: b.why });
     continue;
   }
-  if (RULE_A.test(a.text)) {
+  if (isFallbackArm(a)) {
     excluded.push({
       ...a,
       rule: 'A',
@@ -719,12 +761,31 @@ if (excluded.length > maxExclusions) {
 // arm that then vanished from the deferred list Phase 3 inherits. The `if (a.covered) continue`
 // guard in the exclusion loop already expresses the intent (exclude only the dead arm); the key
 // now matches it. Found at the v4 reconciliation by balancing the bot list's ledger.
-const armKey2 = (a: Arm): string => `${a.file}:${a.line}:${a.armIndex}:${a.text}`;
+//
+// AND BRANCH-PRECISE (docs/FINDINGS.md #97, 28 September 2026). A line can hold two branches, a
+// ternary and the `??` inside it, whose arms share the line, its text and their numbers: keyed on
+// those alone, excluding the `??`'s fallback (arm 1) silently removed the ternary's else (arm 1) from
+// the denominator too, at queries.ts:250. Found, as the line-level defect was, by balancing a ledger.
+const armKey2 = (a: Arm): string => `${a.file}:${a.id}:${a.armIndex}`;
 const excludedKeys = new Set(excluded.map(armKey2));
 const coverable = arms.filter((a) => !excludedKeys.has(armKey2(a)));
 const branchArms = coverable.filter((a) => a.kind === 'branch');
 const coveredBranch = branchArms.filter((a) => a.covered).length;
 const pct = (coveredBranch / branchArms.length) * 100;
+
+// THE LEDGER BALANCES (docs/FINDINGS.md #97). Every branch arm is either excluded or coverable, once:
+// the coverable arms are the raw ones less the excluded ones, exactly. Twice the key under the
+// exclusions has taken more arms out of the denominator than were excluded, silently, and both
+// times it was found by balancing this ledger by hand. It balances itself now, every run.
+const excludedBranch = excluded.filter((e) => e.kind === 'branch').length;
+const rawBranchCount = arms.filter((a) => a.kind === 'branch').length;
+if (rawBranchCount - excludedBranch !== branchArms.length) {
+  problems.push(
+    `LEDGER DOES NOT BALANCE: ${rawBranchCount} raw branch arms less ${excludedBranch} excluded is ` +
+      `${rawBranchCount - excludedBranch}, but ${branchArms.length} are counted coverable. The exclusion key ` +
+      'takes arms out of the denominator that no rule excluded.',
+  );
+}
 
 const rawBranch = arms.filter((a) => a.kind === 'branch');
 const rawPct = (rawBranch.filter((a) => a.covered).length / rawBranch.length) * 100;

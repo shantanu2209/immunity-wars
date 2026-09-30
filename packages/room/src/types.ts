@@ -82,6 +82,25 @@ export interface RoomState {
    * not destroy a forty-minute game).
    */
   readonly emptySince: number | null;
+  /**
+   * WHOSE MOVES AN UNDO WOULD TAKE BACK (v4, ruled 27 September 2026), or null. The engine keeps one
+   * undo stack for the whole table, so an undo is safe only for the moves that are the LAST things
+   * done at it: a run of one member's moves with nobody else acting since. Any other accepted
+   * action, a committing one of their own included, ends it.
+   */
+  readonly undoRun: UndoRun | null;
+}
+
+/** One member's moves at the end of the table's actions, which an undo may take back. */
+export interface UndoRun {
+  /** The member whose moves they are. */
+  readonly ref: string;
+  /**
+   * The engine's snapshot from just before the first of them. An undo pops the stack back to it,
+   * inclusive; found by identity, so a stack that has shifted it out (the engine keeps 60) refuses.
+   */
+  readonly first: unknown;
+  readonly moves: number;
 }
 
 /** How long a room with nobody connected is held before it is discarded. Brief §5: 10 minutes. */
@@ -136,6 +155,8 @@ export type Message =
       readonly queries: PrecomputedQueries;
       /** Every scoped answer, for every cell and family: a client picks its own selection's. */
       readonly scoped: AllScoped;
+      /** Whose moves an undo would take back, by public id, and how many; null for nobody's (v4). */
+      readonly undo: { readonly member: number; readonly moves: number } | null;
     }
   | { readonly kind: 'burst'; readonly frames: readonly unknown[] }
   /**

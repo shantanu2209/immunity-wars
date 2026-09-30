@@ -8,7 +8,7 @@
  */
 
 import * as engine from '@immunity-wars/engine';
-import { advanceIdsPast, precompute, scope } from '@immunity-wars/session-core';
+import { MOVE_CLASS, advanceIdsPast, precompute, scope } from '@immunity-wars/session-core';
 
 import { newPlayerRef } from './player-ref.js';
 import { MemoryStorage, type Storage } from './storage.js';
@@ -34,14 +34,8 @@ const ns = engine as unknown as Record<string, unknown>;
 const call = (name: string, ...args: unknown[]): unknown =>
   (ns[name] as (...a: unknown[]) => unknown)(...args);
 
-/**
- * THE MOVE CLASS — the actions undo may unwind (ruling of 4 September 2026, `types.ts`).
- * Repositioning only: no dice, no hidden information, no target consumed. `recall` (back to
- * the hub) and `resmove` (a resident one step) are repositioning too, and `hop` (the lymphatic
- * crossing) rolls nothing. Everything else the engine accepts in the command phase is
- * COMMITMENT and ends undo for the phase.
- */
-const MOVE_CLASS: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
+// THE MOVE CLASS, the actions undo may unwind, is `@immunity-wars/session-core`'s since 27 September
+// 2026, when undo was ruled for games played together: the room reads the same list.
 /** Not player actions on the board; they mark the phase boundaries. */
 const PHASE_BOUNDARY: ReadonlySet<string> = new Set(['draw', 'endCommand']);
 

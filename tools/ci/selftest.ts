@@ -446,17 +446,29 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'holds across two rooms interleaved in one process',
   },
+  // WAS \`room-undo-refused\` (FINDINGS #79) until v4, when undo was ruled for games played together
+  // (27 September 2026). The engine's undo stack is still the whole table's, so the two controls
+  // below hold the room to the only undo that is safe on it.
   {
-    id: 'room-undo-refused',
-    why: "FINDINGS #79: the engine's undo stack is the game's, not a player's. In a room an undo would unwind whoever moved last, possibly another player.",
+    id: 'room-undo-own-moves-only',
+    why: "The engine's undo stack is the whole table's. An undo from anyone but the player whose moves are the last things done would take back someone else's moves.",
     file: 'packages/room/src/room.ts',
     mutate: (t) =>
       t.replace(
-        "      if (name === 'undo') return refuse(",
-        "      if (false && name === 'undo') return refuse(",
+        '  if (!run || run.ref !== me.ref || !stackOf(game).includes(run.first))',
+        '  if (!run || !stackOf(game).includes(run.first))',
       ),
     gate: 'pnpm --filter @immunity-wars/room test',
-    expect: 'is refused when it is an undo, before the engine sees it',
+    expect: "refuses another player's undo",
+  },
+  {
+    id: 'room-undo-ends-when-others-act',
+    why: "A player's run of moves ends when anyone else acts. Carried on through another player's move, an undo would pop back through that move too.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace('          ? run !== null && run.ref === me.ref', '          ? run !== null'),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'refuses an undo once someone else has acted since',
   },
   {
     id: 'room-result-after-ending',
@@ -1019,6 +1031,47 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/room test',
     expect: 'leaves out a player who is away and holds nothing',
+  },
+  {
+    id: 'engine-undo-refunds-budget',
+    why: "DEVIATIONS #8, ruled 27 September 2026: played together, undo gives the player's Action Points back. Legacy's snapshot did not hold the budgets, so an undo returned the piece and kept the point spent.",
+    file: 'packages/engine/src/view.ts',
+    mutate: (t) =>
+      t.replace('    ...(g.multiplayer ? { apBudget: clone(g.apBudget) } : {}),\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/undo-budget.test.ts',
+    expect: "the port's gives it back",
+  },
+  {
+    id: 'engine-undo-budget-together-only',
+    why: "DEVIATIONS #8's confinement: the budgets are saved in a snapshot only in a game played together. Saved alone as well, every single-player snapshot would differ from legacy's.",
+    file: 'packages/engine/src/view.ts',
+    mutate: (t) =>
+      t.replace(
+        '    ...(g.multiplayer ? { apBudget: clone(g.apBudget) } : {}),',
+        '    apBudget: clone(g.apBudget),',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/undo-budget.test.ts',
+    expect: 'never alone',
+  },
+  {
+    id: 'coverage-rule-a-arm-precise',
+    why: "FINDINGS #97: the coverage gate's rule A decided by the LINE, so arms that only shared a line with a `??` were excluded as defensive: a live left operand (ap.ts:31), a ternary's else, and an `||` between two real alternatives (simulate.ts:167). It decides by the operator that led to the arm now; an `||` is a fallback only before a literal.",
+    file: 'tests/equivalence/src/rule-a.ts',
+    mutate: (t) =>
+      t.replace(
+        "(a.op === '??' || (a.op === '||' && LITERAL.test(a.span)))",
+        "(a.op === '??' || a.op === '||')",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/rule-a.test.ts',
+    expect: 'keeps an || that is a real alternative',
+  },
+  {
+    id: 'engine-mp-arms-held-to-legacy',
+    why: "The multiplayer arms Phase 3 owed are held to legacy byte for byte (multiplayer-arms.test.ts). A port that said '1 Action Points' at a pool of one would differ from legacy in its log, the one arm reached only by a constructed state.",
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) => t.replace("Action Point${pool === 1 ? '' : 's'}", 'Action Points'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/multiplayer-arms.test.ts',
+    expect: 'singular, when the pool is exactly one',
   },
 ];
 

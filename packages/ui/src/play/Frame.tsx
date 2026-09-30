@@ -286,7 +286,8 @@ export function Toast({ text }: { text: string }): ReactElement {
 export interface ActionsUndo {
   available: boolean;
   moves: number;
-  /** `multiplayer` (P3.4): the relay refuses undo in a room (FINDINGS #79), worded at P3.7. */
+  /** `multiplayer`: played together, no moves of this player's own to take back (v4; until then the
+   *  relay refused every undo, FINDINGS #79). */
   reason?: 'available' | 'not-command' | 'no-moves' | 'committed' | 'resumed' | 'multiplayer';
   committedBy?: string | null;
 }
