@@ -13,7 +13,8 @@ affordable. Each phase ends with something you can hold, open, or install.
 ```
 Phase 1  Foundations ─────────── CLOSED (docs/PHASE1_CLOSEOUT.md)
 Phase 2  The app people see ──── PAUSED, not closed (docs/PHASE2_PAUSE.md)
-Phase 3  Playing together ─────── starting (docs/PHASE3_BRIEF.md)
+Phase 3  Playing together ─────── CLOSED (docs/PHASE3_CLOSEOUT.md)
+         ↓ the engine change queue, now (docs/ENGINE_CHANGE_QUEUE.md)
 Phase 4  Android
 Phase 5  iOS
 Phase 6  The classroom layer
@@ -108,7 +109,7 @@ them. That last part is the real work — at Hyderabad, a human explained the ga
 ## Phase 3 — Playing together
 
 **Goal:** two people in different cities play the same game.
-**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.7 (21 September 2026: one ruled engine
+**Spec:** [`docs/PHASE3_BRIEF.md`](docs/PHASE3_BRIEF.md) v1.10 (21 September 2026: one ruled engine
 addition, `handOverCaptaincy`; 24 September: the query builder shared between `LocalSession` and the
 relay, and the relay's home moved from Cloudflare to Oracle; 25 September: to Google Cloud, when
 Oracle's sign-up refused us, then its Mumbai region, paid, for the lag). P3.1 to P3.5 built: the room, the protocol, the frames-or-state measurement,
@@ -116,7 +117,14 @@ Oracle's sign-up refused us, then its Mumbai region, paid, for the lag). P3.1 to
 P3.7, the multiplayer screens, before P3.6, two real phones. **P3.7 built and audited, 25 September:**
 the way in and the lobby, playing your part, when someone drops, the end and leaving, the double-tap
 guard (FINDINGS #90), and the Gate 1 audit over every new screen ([`docs/for-P3.md`](docs/for-P3.md) §6).
-**P3.6 is next.**
+P3.6 was played on 26 September on two phones on two networks, and the rulings after it built:
+the lobby's rules, undo together, Update now, and another game in the same room (protocol v5).
+**CLOSED 30 September 2026**, with one definition-of-done item not fully met, since two Gate A items
+still owe a phone ([`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)).
+
+**Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, now
+([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), FINDINGS #101), and the relay's half
+of #94 before Phase 4 ships.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25

@@ -17,6 +17,13 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 **Current phase: Phase 3** — playing together: a relay, private rooms by invite code, no strangers.
 Spec: @docs/PHASE3_BRIEF.md (v1.10).
 
+**Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
+[`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), with two Gate A items still owing a phone. The
+marker above stays on Phase 3 because its brief still governs the room and the relay. **The work now,
+before Phase 4, is the engine change queue** ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
+ruled 30 September 2026: *"Now"*; `docs/FINDINGS.md` #101), and then the relay's half of #94, ruled to
+be built before Phase 4 ships.
+
 **Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
 acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,
 and Gate 2. **The handset pass is the one that bites: Phase 4 must not start without it**, or

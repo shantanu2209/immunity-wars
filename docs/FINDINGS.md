@@ -1469,6 +1469,13 @@ Related: [#8](#8-seven-flags-entries-are-never-read) and [#11](#11-assorted-dead
 It asks whether the cell an action *names* holds a free action, and several actions charge a
 different cell, so a free action on one cell would pay for another cell's action and never be spent.
 
+**Ruled 5 September 2026 (Kartik), and not recorded here until 30 September:** the slot is REMOVED,
+and free actions are not being added (*"the rebalancing is not worth it"*), queued as Q2 in
+[`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md) with every one of the Helper's effects enumerated
+and none using it. *Corrected 30 September 2026, writing the Phase 3 closeout:* the note above treated
+this as an open question, because this entry never said it had been answered. It stands only if that
+ruling is ever reversed; #99 ends when Q2 lands, with the slot.
+
 ---
 
 ## 30. #24 again — the coverage gate files a NON-multiplayer arm into Phase 3, by a whole-FILE rule
@@ -4868,6 +4875,10 @@ rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and 
 `body` in `offered.ts`). Controls: `body-drawer-captain-only`, `antibodies-drawer-bcell-only`,
 `body-rings-captain-only`. Record: `for-P3.md` §9. **The relay's half is unchanged and still open.**
 
+**Ruled 30 September 2026, the relay's half: yes** (*"Yes"*, [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4):
+the room refuses body and antibody actions from anyone but their owners, as the screens already do,
+before Phase 4 ships.
+
 ## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
 
 **Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).
@@ -4985,7 +4996,7 @@ budget for nobody out of the game's state), or remove it so that the port matche
 
 ---
 
-## 99. The points check asks about the cell an action names, not the one it charges: latent, and live the day a free action is granted (#29) — found 30 September 2026
+## 99. The points check asks about the cell an action names, not the one it charges: latent, and ends with the free-action slot (ENGINE_CHANGE_QUEUE Q2) — found 30 September 2026
 
 **Found 30 September 2026**, checking #98's claim, written two days earlier, that no action reaches
 `spendAP` for no player. A hand-built action does, in a hand-built state.
@@ -5013,6 +5024,12 @@ grant a free action. **If it is ever answered yes, this check must be fixed in t
 ask about the cell the action charges, or a free action on one cell would pay for another cell's
 action and never be spent. Read from the code, not run: a real player with no points would then act
 for free together, since `spendAP` floors at 0, and alone single player's points would go below zero.
+
+*Corrected 30 September 2026, writing the Phase 3 closeout:* #29 is not an open question. Kartik
+ruled on 5 September 2026 that the free-action slot is removed and free actions are not added
+([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md) Q2), which #29 itself had never recorded. So no
+free action will ever be granted, and this quirk goes when Q2 removes the slot. Until then it is as
+described: reachable only in a state given a free action by hand. The queue has not been run (#101).
 
 **No action now.** Nothing reaches it. The test pins today's behaviour, but it hands the state its
 free action itself, so granting free actions would not make it fail; what makes the work on #29 meet
@@ -5048,3 +5065,40 @@ silently"*, was true only while someone ran the whole suite.
   name it. And by hand: with the old mutation put back, the check names `room-no-ref-in-view` at once.
 
 The full run still matters: `--inert` proves a mutation lands, not that its gate fires on it.
+
+---
+
+## 101. The engine change queue was planned for Phase 3, and the Phase 3 brief ruled out rule changes: ten ruled changes, five of them Kartik's, have no phase — found 30 September 2026
+
+**Found 30 September 2026**, writing the Phase 3 closeout, while checking #99's premise.
+[`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), opened on 5 September 2026 at Kartik's rulings on
+his design questions, says its changes *"land together, in Phase 3, re-baselined once and measured
+once"*. The Phase 3 brief, written on 20 September, says *"No engine rule changes, but for the two
+ruled ones"* (§7), and never names the queue; its review on 25 September did not either. Neither
+document mentions the other, so the queue was not run in Phase 3, and nothing said so.
+
+**What waits in it.** Ten ruled changes, each with its record in the queue:
+
+- **Kartik's five, on the biology:**
+  - Q1, antigenic variation made reachable;
+  - Q2, the Helper T-Cell's free-action slot removed (#29, #99);
+  - Q3, Pathogen X's tropism declared;
+  - Q4, antivenom kills granting no memory;
+  - Q6, a resident's recall.
+- **Five more, Shantanu's or found in the work:**
+  - Q5, the invader id counter into `GameState`;
+  - Q7, the actions' literals into content;
+  - Q8, queries and log lines emitting ids, not English;
+  - Q9, degranulate burning an organ only when the fight is in it;
+  - Q10, the inert `science` field removed.
+
+**Why it matters.** One of them is a live inaccuracy in the game as played: an antivenom kill still
+grants memory, which is wrong on the science (antivenom is borrowed immunity and teaches the body
+nothing), and the engine's own log line says the opposite of what the engine does (Q4, #55). CLAUDE.md
+holds scientific accuracy as non-negotiable. Each change breaks the equivalence corpus, which is why
+they were to land together, re-baselined once.
+
+**For a ruling**, set out in [`PHASE3_CLOSEOUT.md`](PHASE3_CLOSEOUT.md) §4: when the queue runs. The
+queue's own header is marked with this finding.
+
+**Ruled 30 September 2026: now** (*"Now"*), as its own piece between Phase 3 and Phase 4.
