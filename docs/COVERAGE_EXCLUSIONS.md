@@ -39,8 +39,6 @@ weaker than a demonstration and is labelled so deliberately.
 ### ap.ts
 
 - `25` `const amount = n || 1;`
-- `31` `g.apBudget[pid] = Math.max(0, (g.apBudget[pid] || 0) - amount);`
-- `39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 
 ### construct.ts
 
@@ -74,12 +72,8 @@ weaker than a demonstration and is labelled so deliberately.
 - `89` `if (a.zone === 'branch' && a.organ === b.organ) return Math.abs((a.step ?? 0) - (b.step ?? 0));`
 - `161` `return INV_SPEED[iv.type] || 1;`
 - `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
-- `250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
 - `264` `let c = AB_CAP_FAM_BY_DIFF[g.difficulty] ?? AB_CAP_FAM;`
 - `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
-- `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `303` `const tier = PRESENT_TIER_BY_DIFF[g.difficulty] ?? PRESENT_TIER_BY_DIFF.normal;`
 - `304` `base = p >= (tier[2] ?? 0) ? 3 : p >= (tier[1] ?? 0) ? 2 : 1;`
@@ -104,7 +98,6 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### simulate.ts
 
-- `167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `178` `if ((g.ab[tf] ?? 0) > 0) {`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
 - `208` `.sort((a, b) => (need[b] ?? 0) - (need[a] ?? 0))`
@@ -338,14 +331,6 @@ if (ck && g.free && free > 0) {
 ```
 
 docs/FINDINGS.md #29: nothing ever grants a free action at any player count, so free is always 0
-
-### ap.ts:15
-
-```
-export function apOwnerOf(g: GameState, a: Action | null | undefined): string | null {
-```
-
-dead function. Legacy contains exactly one reference — the definition. docs/FINDINGS.md #11
 
 ### construct.ts:84
 

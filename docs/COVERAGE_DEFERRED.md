@@ -10,25 +10,13 @@ Contrast [`COVERAGE_EXCLUSIONS.md`](COVERAGE_EXCLUSIONS.md), which holds arms th
 be reached at all. The distinction is the point: dead code leaves the denominator, deferred
 work does not.
 
-## Phase 3 — multiplayer (12 arms)
+## Phase 3 — multiplayer (0 arms)
 
 The equivalence corpus is single-player by scope, so the allocation phase and the per-player
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
 
-- `actions.ts:89` `if (a.pid !== g.captain) return err('Only the captain allocates Action Points.');`
-- `actions.ts:94` `if (amt > pool) return err('Not enough unallocated AP.');`
-- `actions.ts:182` ``<b>Allocation phase.</b> Captain has ${pool} Action Point${pool === 1 ? '' : 's'} to distribute for`
-- `actions.ts:192` `if (g.multiplayer && a.pid !== g.captain) return err('Only the captain ends the turn.');`
-- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
-- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
-- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
-- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
-- `ap.ts:16` `return g.multiplayer && a && a.pid ? (a.pid as string) : null;`
-- `ap.ts:20` `if (!g.multiplayer) return g.ap;`
-- `ap.ts:21` `return g.apBudget && pid && g.apBudget[pid] ? g.apBudget[pid] : 0;`
-- `ap.ts:30` `if (pid == null) return;`
 
-## Deferred until a competent bot exists (17 arms)
+## Deferred until a competent bot exists (18 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
 emits 8 of 27 actions (docs/FINDINGS.md §1), so these heuristics are never entered. A bot
@@ -54,6 +42,7 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:113` `best &&`
 - `simulate.ts:114` `best.s < placeDist(helper, bcell) &&`
 - `simulate.ts:115` `applyAction(g, { action: 'move', cell: 'helper', ...best.d }).ok`
+- `simulate.ts:167` `hit.type === 'worm' && (hit.hp ?? 0) >= 3 && (hit.zone === 'branch' || hit.lodged);`
 - `simulate.ts:227` `if (`
 - `simulate.ts:230` `invadersWithNeutrophil(g).length >= 2 &&`
 - `simulate.ts:231` `applyAction(g, { action: 'net', cell: 'neutrophil' }).ok`
@@ -63,7 +52,7 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
-## Uncategorised — still open (24 arms)
+## Uncategorised — still open (28 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
@@ -82,9 +71,13 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:621` `if (!iv) return err('No such pathogen.');`
 - `actions.ts:626` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
 - `actions.ts:629` `if (apNow(g) < 1) return err('Need 1 Action Point for the memory response on Hard.');`
+- `ap.ts:39` `const free = ck && g.free ? (g.free[ck] ?? 0) : 0;`
 - `construct.ts:164` `default:`
 - `construct.ts:126` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
+- `queries.ts:250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
+- `queries.ts:278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`
+- `queries.ts:282` `return (g.ab[famOf(iv)] ?? 0) > 0;`
 - `queries.ts:329` `if (!g.flags.dendritic) {`
 - `queries.ts:420` `if (!attackable(iv)) return false;`
 - `queries.ts:434` `if (!attackable(iv)) return false;`

@@ -31,7 +31,10 @@ async function lintFixture(code: string): Promise<string[]> {
     .map((m) => m.message);
 }
 
-describe('iw/no-hardcoded-jsx-text — both control halves', () => {
+// ITS OWN TIME BUDGET (FINDINGS #96): it lints with a real ESLint, whose first run loads the whole
+// config. Alone that is under a second; in a forced run of every suite at once it passed vitest's
+// default 5 s, and a control that goes red for timing teaches a reader to ignore a red control.
+describe('iw/no-hardcoded-jsx-text — both control halves', { timeout: 60_000 }, () => {
   it('mustFail: hardcoded JSX text is rejected, every occurrence', async () => {
     const bad = `
       export function Control({ n }: { n: number }): unknown {
