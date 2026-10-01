@@ -20,17 +20,30 @@
  *
  * NOTHING ON A PIECE'S OWN ELEMENT IS A TRANSFORM. A piece is placed by `left`, `top` and `width`,
  * because the kit's motions are transforms and would replace one (kit/motion.ts).
+ *
+ * IT MOVES, AND IT SOUNDS (the third pull request of L4). Each time it is drawn, the picture is
+ * compared with the one before (`./changes`), and what differs is played with the kit's motions:
+ * a piece that went somewhere hops there from where it was, a new one arrives, one that is gone
+ * shrinks away, into the cell that swallowed it if one did, and a hurt organ flinches. The picture
+ * gets one sound, for what matters most in it. A piece is always DRAWN where the game says it is;
+ * the motion is only how it got there, so a motion cut short, or a phone that asks for none, leaves
+ * the board right. The first picture a board is given plays nothing: nothing has happened yet.
  */
 import { ORGANS, ROUTES } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
 import {
   memo,
+  useLayoutEffect,
+  useRef,
+  useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type ReactElement,
 } from 'react';
 
 import { t as say } from '../i18n';
+import { play } from '../kit/motion';
+import { kitAudio } from '../kit/sound';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { cellDisplayName, residentDisplayName, typeDisplayName } from '../names';
 import {
@@ -42,6 +55,7 @@ import {
   type IntegrityState,
   type ReadyTurn,
 } from './Board';
+import { boardChanges, soundFor, type Picture } from './changes';
 import {
   BASE_R,
   BODY_R,
@@ -194,7 +208,16 @@ function Piece({
   tappable,
   art,
   outward,
+  innerRef,
+  leaving = false,
 }: {
+  /** Hands the board the piece's own element, which is what a motion is played on. */
+  innerRef?: (el: HTMLDivElement | null) => void;
+  /**
+   * It is no longer on the board, and is drawn only while it goes. It carries none of the hooks a
+   * driver or the audit finds a piece by: there is nothing there to find.
+   */
+  leaving?: boolean;
   t: DisplayToken;
   at: Pt;
   scale: number;
@@ -232,15 +255,17 @@ function Piece({
   );
   return (
     <div
-      data-cell={t.cell}
-      data-resident={t.resident === true ? t.organ : undefined}
+      ref={innerRef}
+      data-leaving={leaving ? '1' : undefined}
+      data-cell={leaving ? undefined : t.cell}
+      data-resident={!leaving && t.resident === true ? t.organ : undefined}
       // An address for the headless drivers only (the Gate 1 audit opens the inspect sheet by
       // clicking an invader). Nothing shows it.
-      data-invader={t.kind === 'invader' ? t.label : undefined}
-      data-piece={t.piece ?? undefined}
-      data-coated={t.coated === true ? '1' : undefined}
-      data-hidden={t.hiddenIn}
-      data-unavailable={t.unavailable?.kind}
+      data-invader={!leaving && t.kind === 'invader' ? t.label : undefined}
+      data-piece={leaving ? undefined : (t.piece ?? undefined)}
+      data-coated={!leaving && t.coated === true ? '1' : undefined}
+      data-hidden={leaving ? undefined : t.hiddenIn}
+      data-unavailable={leaving ? undefined : t.unavailable?.kind}
       style={{
         position: 'absolute',
         ...place(at, PIECE_SPAN * scale),
@@ -345,6 +370,60 @@ function outwardOf(at: Pt): Pt | null {
   const dy = at.y - HUB_POS.y;
   const d = Math.hypot(dx, dy);
   return d > 0 && d < HUB_WELL_R ? { x: dx / d, y: dy / d } : null;
+}
+
+/** A piece that has left the board, drawn while it goes: what it was, and where it is going. */
+interface Ghost {
+  id: number;
+  t: DisplayToken;
+  at: Pt;
+  scale: number;
+  /** In px: toward the cell that swallowed it, or nowhere. */
+  dx: number;
+  dy: number;
+}
+
+function Leaving({
+  ghost,
+  art,
+  onGone,
+}: {
+  ghost: Ghost;
+  art: string;
+  onGone: (id: number) => void;
+}): ReactElement {
+  const el = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    let here = true;
+    const node = el.current;
+    if (!node) {
+      onGone(ghost.id);
+      return undefined;
+    }
+    // Held at its last frame, gone, until it is taken off the page a moment later.
+    void play(node, 'leave', { dx: ghost.dx, dy: ghost.dy, hold: true }).then(() => {
+      if (here) onGone(ghost.id);
+    });
+    return () => {
+      here = false;
+    };
+    // Played once, when it starts to go.
+  }, []);
+  return (
+    <Piece
+      t={ghost.t}
+      at={ghost.at}
+      scale={ghost.scale}
+      art={art}
+      outward={null}
+      selected={false}
+      tappable={false}
+      leaving
+      innerRef={(node) => {
+        el.current = node;
+      }}
+    />
+  );
 }
 
 /** Where an offer is drawn, and how: a move glows at its step, an attack rings what it would hit. */
@@ -452,6 +531,89 @@ export function ClayBoard({
     candidates.push({ kind: 'target', pos: at, payload: { kind: 'target', target: tg } });
   }
 
+  // ── WHAT CHANGED SINCE THE LAST PICTURE, PLAYED ──────────────────────────────────────────────
+  const surface = useRef<HTMLDivElement>(null);
+  const pieceEls = useRef(new Map<string, HTMLDivElement>());
+  const organEls = useRef(new Map<string, HTMLImageElement>());
+  const before = useRef<Picture | null>(null);
+  const drawnBefore = useRef(new Map<string, { t: DisplayToken; at: Pt; scale: number }>());
+  const [ghosts, setGhosts] = useState<Ghost[]>([]);
+  const ghostId = useRef(0);
+  const picture: Picture = {
+    pieces: drawnTokens.map(({ t, at, scale }) => ({
+      key: t.key,
+      kind: t.kind,
+      at,
+      scale,
+      step: t.pos,
+      ids: t.ids ?? [],
+      coated: t.coated === true,
+    })),
+    organs: Object.fromEntries(BOARD_ORGANS.map((o) => [o, Number(organs[o]?.hp ?? 0)])),
+  };
+  // After every draw, and before the phone paints it: so a piece that moved is never seen standing
+  // in its new place before it sets off from the old one.
+  useLayoutEffect(() => {
+    const was = before.current;
+    const wasDrawn = drawnBefore.current;
+    before.current = picture;
+    drawnBefore.current = new Map(drawnTokens.map((d) => [d.t.key, d]));
+    const el = surface.current;
+    if (was === null || el === null) return;
+    const changes = boardChanges(was, picture);
+    if (changes.length === 0) return;
+    /** px to a board unit, as the board is drawn now. */
+    const px = el.getBoundingClientRect().width / CLAY_VIEW.w;
+    const on = (key: string): HTMLDivElement | undefined => pieceEls.current.get(key);
+    const going: Ghost[] = [];
+    for (const c of changes) {
+      if (c.kind === 'move') {
+        const now = picture.pieces.find((p) => p.key === c.key);
+        const node = on(c.key);
+        if (now && node)
+          // A step taken is a hop; a piece only making room for another slides.
+          void play(node, c.stepped ? 'move' : 'shift', {
+            dx: (c.from.x - now.at.x) * px,
+            dy: (c.from.y - now.at.y) * px,
+          });
+      } else if (c.kind === 'arrive') {
+        const node = on(c.key);
+        if (node) void play(node, 'arrive');
+      } else if (c.kind === 'coat') {
+        const node = on(c.key);
+        if (node) void play(node, 'coat');
+      } else if (c.kind === 'grow') {
+        // What it stands for has multiplied: it swells, and settles.
+        const node = on(c.key);
+        if (node) void play(node, 'engulf', { onTop: true });
+      } else if (c.kind === 'thin') {
+        const node = on(c.key);
+        if (node) void play(node, 'hurt', { onTop: true });
+      } else if (c.kind === 'hurt') {
+        const node = organEls.current.get(c.organ);
+        if (node) void play(node, 'hurt');
+      } else {
+        const gone = wasDrawn.get(c.piece.key);
+        if (gone) {
+          ghostId.current += 1;
+          going.push({
+            id: ghostId.current,
+            ...gone,
+            dx: c.eater ? (c.eater.at.x - c.piece.at.x) * px : 0,
+            dy: c.eater ? (c.eater.at.y - c.piece.at.y) * px : 0,
+          });
+        }
+        const eater = c.eater ? on(c.eater.key) : undefined;
+        // Over the slide it may be making at the same moment, to the middle of a step it now has
+        // to itself.
+        if (eater) void play(eater, 'engulf', { onTop: true });
+      }
+    }
+    if (going.length > 0) setGhosts((all) => [...all, ...going]);
+    const sound = soundFor(changes);
+    if (sound) kitAudio.answer(sound);
+  });
+
   const handleTap = (e: ReactMouseEvent<HTMLDivElement>): void => {
     if (!onTap) return;
     // A direct hit on a cell is unambiguous, and it is how the drivers tap: a click on
@@ -463,6 +625,7 @@ export function ClayBoard({
         (c) => c.payload.kind === 'cell' && c.payload.cell === directCell,
       );
       if (hit) {
+        kitAudio.answer('tap');
         onTap(hit.payload);
         return;
       }
@@ -473,6 +636,7 @@ export function ClayBoard({
         (c) => c.payload.kind === 'resident' && c.payload.organ === directResident,
       );
       if (hit) {
+        kitAudio.answer('tap');
         onTap(hit.payload);
         return;
       }
@@ -486,6 +650,9 @@ export function ClayBoard({
       y: CLAY_VIEW.y + ((e.clientY - box.top) / box.height) * CLAY_VIEW.h,
     };
     const hit = resolveTap(candidates, p);
+    // A tap that found a piece or a step answers the finger at once. One that found a legal move
+    // does not: what it does is heard when the board changes.
+    if (hit && hit.payload.kind !== 'target') kitAudio.answer('tap');
     onTap(hit ? hit.payload : { kind: 'nothing' });
   };
 
@@ -502,6 +669,7 @@ export function ClayBoard({
       }}
     >
       <div
+        ref={surface}
         data-clay-surface=""
         onClick={handleTap}
         style={{
@@ -525,6 +693,10 @@ export function ClayBoard({
           return (
             <img
               key={o}
+              ref={(node) => {
+                if (node) organEls.current.set(o, node);
+                else organEls.current.delete(o);
+              }}
               data-organ-icon={o}
               alt={organName(o)}
               draggable={false}
@@ -566,11 +738,25 @@ export function ClayBoard({
             scale={scale}
             art={art}
             outward={outwardOf(at)}
+            innerRef={(node) => {
+              if (node) pieceEls.current.set(t.key, node);
+              else pieceEls.current.delete(t.key);
+            }}
             tappable={onTap !== undefined}
             selected={
               (t.cell !== undefined && t.cell === selectedCell) ||
               (t.resident === true && t.organ !== undefined && t.organ === selectedResident)
             }
+          />
+        ))}
+
+        {/* what has just left the board, while it goes */}
+        {ghosts.map((g) => (
+          <Leaving
+            key={g.id}
+            ghost={g}
+            art={art}
+            onGone={(id) => setGhosts((all) => all.filter((x) => x.id !== id))}
           />
         ))}
 

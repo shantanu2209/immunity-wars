@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame and the panels are built; motion, the camera and the measurement remain (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels and motion and sound are built; the camera and the measurement remain (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -623,3 +623,83 @@ the bare screen and would have passed. It now presses the cell only when none is
 
 **Control added, and fired:** `play-screen-colours-are-the-kits` (one old colour written into a
 redrawn panel: the test fails naming the file and the colour).
+
+### Played on his phone, 1 October 2026: the board, the frame and the panels
+
+Shantanu played the first two pull requests on his S25 and said: *"Plays very smooth, happy to
+proceed for the moment, there are ux improvements to be done but I want to do thay later after this
+is deployed on our online server."*
+
+- **The first two are played**, as ruling 5 asks of each. This is not Gate 2, and he did not say it
+  was.
+- **There are improvements to how it is used that he has not named yet.** They are his to name, and
+  he has put them after the look is on the server. Nothing was changed for them here.
+- **"Smooth" is his eye on his phone, not a measurement.** The frame rate on the S25 is still the
+  fifth pull request's to read.
+- **When the look reaches the server is not changed by this.** Ruling 2 stands: not before L6,
+  because the hints and the coach are off until the guided game replaces them.
+
+### Built: motion and sound (the third of the five)
+
+**The board plays what changed.** The engine hands over states, not events, so each time the board
+is drawn the picture is compared with the one before, in `packages/ui/src/board/changes.ts`, and
+what differs is named and played with the kit's motions.
+
+| What changed | What the board plays | The sound |
+|---|---|---|
+| A piece went to another step | It hops there from where it was | move |
+| A piece was only nudged aside to make room | It slides, and does not hop | none |
+| A piece is new to the board | It arrives | arrive |
+| A group multiplied where it stands | It swells, and settles | arrive |
+| A pathogen is gone from a step one of your cells stands on | It shrinks into the cell, which swells | engulf |
+| A pathogen is gone and no cell was on its step | It shrinks away | tap |
+| The same invaders are now coated | The coated picture snaps on | coat |
+| An organ lost health | Its coin flinches | hurt |
+
+- **One sound for a picture.** A spread can change a dozen things at once, and a dozen sounds is a
+  noise. The picture gets the sound of what matters most in it: an organ hurt, then a swallow, then
+  a coat, then an arrival, then a step.
+- **A piece is always drawn where the game says it is.** The motion is only how it got there. One
+  cut short, or a phone that asks for less motion, leaves the board right; with less motion nothing
+  travels at all.
+- **The first picture a board is given plays nothing:** nothing has happened yet.
+- **A tap on a piece or a step answers at once** with the tap. A tap on a legal move does not: what
+  it did is heard when the board changes.
+- **The game's last sound** is the win or the loss.
+- **Who is who.** One of your cells keeps its name from picture to picture. A piece that stands for
+  invaders does not: its name has its step in it, so a group that walks a step has a new name.
+  Followed by name, it would be one piece fading out and another popping in. It is followed by the
+  invaders it stands for.
+
+**Two things added to the kit, which he has not seen there.** A ninth motion, a slide, for a piece
+that is only making room; and a way to play one motion over another, so that a cell that swallows
+while it slides to the middle of its step does both, and does not jump.
+
+**The kit page's board can be changed,** one thing at a time, by buttons under it, so that each of
+these can be seen and heard on the real board: the buttons only hand it a new position.
+
+**Seen, in a headless browser on the PC.** It reads which motions the page started and which sound;
+it has no ears and no eyes.
+
+| Done | The board played | The sound started |
+|---|---|---|
+| In a game: the Monocyte moved out of the bloodstream | The Monocyte hopped (450 ms); the six cells left in the ring slid (320 ms) | move |
+| In a game: the turn ended, in two runs | In one, a later beat of the spread moved a virus a step, and it hopped; in the other nothing on the board changed | the end of the turn; then move, in the run where the virus moved |
+| On the kit page: the Monocyte engulfs a coated bacterium | The Monocyte swelled; the bacterium shrank into it and was then taken off the page | engulf |
+| A coat, an arrival, an advance, a hurt organ | Each its own motion | coat, arrive, move, hurt |
+| The same with less motion asked for | Only fades of 180 ms; nothing travelled | the same sounds |
+| The play screen left alone for two seconds, at seven stages | No layout, no style work, no script | |
+
+**The check was wrong on its first run, and its own list said so.** It pressed Engulf after moving
+the Monocyte away, when there was nothing left to engulf, and the line read "played: nothing, sound:
+none". The order was the check's mistake, not the board's.
+
+**Not measured:** the frame rate while these play, which is the fifth pull request's, on the S25.
+How any of it looks and sounds is his to judge.
+
+**Known, and left.** A new arrival's sound is heard while the new cards cover the board, because
+the board behind them is where it arrives. A kill from a distance has no sound of its own among the
+ten, and uses the tap.
+
+**Control added, and fired:** `board-motion-follows-the-invaders` (the comparison made by a
+piece's name: the test fails saying a group that walked a step came out as an arrival and a leave).

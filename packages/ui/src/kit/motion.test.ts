@@ -15,7 +15,17 @@ import { describe, expect, it } from 'vitest';
 
 import { motionPlan, type KitMotion, type MotionPlan } from './motion';
 
-const KINDS: KitMotion[] = ['move', 'arrive', 'leave', 'engulf', 'coat', 'refuse', 'hurt', 'press'];
+const KINDS: KitMotion[] = [
+  'move',
+  'shift',
+  'arrive',
+  'leave',
+  'engulf',
+  'coat',
+  'refuse',
+  'hurt',
+  'press',
+];
 const WAS = { dx: 30, dy: -12 };
 
 /** The properties a motion may change. `offset` and `easing` are timing, not properties. */

@@ -1040,6 +1040,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A FLAT ACTION CANNOT BE PRESSED',
   },
   {
+    id: 'board-motion-follows-the-invaders',
+    why: 'Stage L4: the board moves a piece by knowing it is the one that stood elsewhere a moment ago. A piece that stands for invaders has its step in its key, so compared by key a group that walks a step is one piece gone and another come, and the board would fade and pop where it should walk. With the comparison made by key, the test must FAIL saying what the walk came out as.',
+    file: 'packages/ui/src/board/changes.ts',
+    mutate: (t) =>
+      t.replace(
+        'const from = p.ids.map((id) => wasIn.get(id)).find((old) => old !== undefined);',
+        'const from = was.get(p.key);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'BOARD MOTION: a group that walked a step came out as',
+  },
+  {
     id: 'play-screen-colours-are-the-kits',
     why: 'Stage L4: every pairing of the kit’s colours that carries words is measured against Gate 1’s bound. A colour written straight into a screen is outside that, measured by nothing, and is how the old screens’ colours would come back one line at a time. With one old colour written into a redrawn panel, the test must FAIL naming the file and the colour.',
     file: 'packages/ui/src/panels/PieceStrip.tsx',

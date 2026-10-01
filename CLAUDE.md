@@ -35,8 +35,10 @@ The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `
 the same model in `board/Board.tsx`), from a picture `tools/art-pipeline/clay/board.py` renders;
 the frame round it (`play/Frame.tsx`) and everything the play screen opens are drawn from the kit,
 and a redrawn file may name no colour of its own (`play/clayColours.test.ts`); the new cards and
-planning stand on a sheet of the old paper (`OldPaper`) until L5. Motion, the camera and the S25
-measurement follow. What the kit is:
+planning stand on a sheet of the old paper (`OldPaper`) until L5. The board plays what changed
+between one picture and the next, with one sound for it (`board/changes.ts`). The camera and the S25
+measurement follow. He played the board, frame and panels on 1 October and has improvements to
+name later, after the look is on the server. What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`, used only by the kit

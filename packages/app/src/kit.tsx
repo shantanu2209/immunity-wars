@@ -451,8 +451,29 @@ const SAMPLE = {
   ],
 } as unknown as ViewState;
 
+/** The sample position's parts, loosely, so the buttons below can change one and hand it back. */
+interface Sample {
+  organs: Record<string, { hp: number; max: number }>;
+  cells: Record<string, Record<string, unknown>>;
+  invaders: Array<Record<string, unknown>>;
+}
+
 function TheBoard(): ReactElement {
   const [picked, setPicked] = useState<string | null>('macrophage');
+  // THE POSITION CAN BE CHANGED, one thing at a time, so that what the board plays for each kind of
+  // change can be seen and heard here. The board is only handed the new position: it works out
+  // what changed, and plays it, exactly as it does in a game.
+  const [view, setView] = useState<ViewState>(SAMPLE);
+  const [arrived, setArrived] = useState(0);
+  const now = view as unknown as Sample;
+  const change = (f: (v: Sample) => void): void => {
+    const next = JSON.parse(JSON.stringify(view)) as Sample;
+    f(next);
+    setView(next as unknown as ViewState);
+  };
+  const invader = (v: Sample, id: string): Record<string, unknown> | undefined =>
+    v.invaders.find((i) => i['id'] === id);
+  const monocyteAt = Number(now.cells['macrophage']?.['step'] ?? 0);
   const coins: Array<{ name: string; words: string }> = [
     ...Object.entries(ORGANS as Record<string, { name: string }>).map(([k, o]) => ({
       name: `organ-${k}`,
@@ -467,7 +488,7 @@ function TheBoard(): ReactElement {
   return (
     <>
       <ClayBoard
-        view={SAMPLE}
+        view={view}
         selectedCell={picked}
         readyTurn={{ nk: 6 }}
         targets={[
@@ -491,6 +512,104 @@ function TheBoard(): ReactElement {
         Tap a cell to ring it. A gold ring is a legal move, a blue one a hop along the lymph, a
         coral one an attack. The arc round an organ is its health: a thick segment is one it has, a
         thin line one it has lost. There are no words on the board.
+      </p>
+      <div style={{ ...CAP, margin: '4px 0 8px' }}>Change the position, and watch the board</div>
+      <KitRow>
+        <KitButton
+          sound={null}
+          data-board-change="move"
+          onPress={() =>
+            change((v) => {
+              const c = v.cells['macrophage'];
+              if (c) c['step'] = monocyteAt === 2 ? 1 : 2;
+            })
+          }
+        >
+          Monocyte moves
+        </KitButton>
+        <KitButton
+          sound={null}
+          data-board-change="engulf"
+          unavailable={invader(now, 'b') === undefined || monocyteAt !== 2}
+          onPress={() =>
+            change((v) => {
+              v.invaders = v.invaders.filter((i) => i['id'] !== 'b');
+            })
+          }
+        >
+          It engulfs
+        </KitButton>
+        <KitButton
+          sound={null}
+          data-board-change="coat"
+          unavailable={invader(now, 'a')?.['tagged'] === true}
+          onPress={() =>
+            change((v) => {
+              const a = invader(v, 'a');
+              if (a) a['tagged'] = true;
+            })
+          }
+        >
+          Coat one
+        </KitButton>
+        <KitButton
+          sound={null}
+          data-board-change="arrive"
+          onPress={() => {
+            setArrived((n) => n + 1);
+            change((v) => {
+              v.invaders.push({
+                id: `new${String(arrived)}`,
+                disease: 'Influenza',
+                type: 'virus',
+                zone: 'route',
+                lane: 'nose',
+                step: 5,
+              });
+            });
+          }}
+        >
+          One arrives
+        </KitButton>
+        <KitButton
+          sound={null}
+          data-board-change="spread"
+          onPress={() =>
+            change((v) => {
+              for (const i of v.invaders)
+                if (i['zone'] === 'route' && Number(i['step']) > 1)
+                  i['step'] = Number(i['step']) - 1;
+            })
+          }
+        >
+          They advance
+        </KitButton>
+        <KitButton
+          sound={null}
+          data-board-change="hurt"
+          onPress={() =>
+            change((v) => {
+              const heart = v.organs['heart'];
+              if (heart) heart.hp = heart.hp > 0 ? heart.hp - 1 : heart.max;
+            })
+          }
+        >
+          Hurt the heart
+        </KitButton>
+        <KitButton
+          data-board-change="reset"
+          onPress={() => {
+            setArrived(0);
+            setView(SAMPLE);
+          }}
+        >
+          Put it back
+        </KitButton>
+      </KitRow>
+      <p style={{ ...NOTE, marginTop: 10 }}>
+        Each button only changes the position. The board works out what changed, plays it, and makes
+        one sound for it: a hop for a step taken, a slide for a piece only making room, a swell and
+        a swallow, a coat snapping on, an arrival, a flinch.
       </p>
       <div style={{ ...CAP, margin: '14px 0 6px' }}>
         The seven organs, the six ways in, and a pathogen new to the body

@@ -55,6 +55,7 @@ import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { kitAudio } from '../kit/sound';
 import { COLOUR } from '../kit/tokens';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
@@ -434,6 +435,8 @@ export function PlayScreen({
     const g = authView.game;
     if (!endedRef.current && (g['won'] === true || Boolean(g['lost']))) {
       endedRef.current = true;
+      // The game's last sound: the body is clear, or it has fallen.
+      kitAudio.answer(g['won'] === true ? 'win' : 'loss');
       onGameEndRef.current?.(g);
     }
   }, [authView]);
