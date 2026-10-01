@@ -25,6 +25,8 @@
     "perf:full": "tsx tools/perf/measure-full.ts http://localhost:5173/dev.html 1,4,6",
     "comment:perf:full": "The mandatory full-UI per-redraw re-measure (brief §4): the dev shell must be running (pnpm --filter @immunity-wars/app dev). Writes JSON to stdout; record it in docs/P2_3_MEASUREMENT.md.",
     "gate1:audit": "tsx tools/perf/gate1-audit.ts http://localhost:4173",
+    "comment:look:frames": "Stage L4: the play screen's frames, counted on this machine by the page at /measure.html (the same page Shantanu opens on the S25). Needs `vite preview` of a build on 4173. `--control` makes every frame waste 40 ms and requires slow frames to be reported.",
+    "look:frames": "tsx tools/perf/play-frames.ts http://localhost:4173",
     "comment:gate1:audit": "Gate 1's machine-checkable half against the app shell on the PREVIEW of the shipped build (pnpm --filter @immunity-wars/app build:web, then preview): touch targets, contrast, text at 200% under both mechanisms (FONT200 the default-font-size preference, ZOOM200 Chrome for Android's page zoom at 180px), offline. Every check's controls, fires and passes, run first or it stops. Record in docs/GATE1_AUDIT.md.",
     "comment:test:balance": "Checks this engine against the MEASURED bands in tests/balance/bands.json. Calibrating is a different, deliberate command (`npx tsx tests/balance/metrics-run.ts`) and deliberately NOT this one — a harness that recalibrated on every run would overwrite its own reference and could never fail. Wiring this into CI is Task F's.",
     "test:balance": "tsx tests/balance/check.ts",

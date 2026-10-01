@@ -500,6 +500,13 @@ and the order is not the bump, since two builds on the same versions differ the 
 
 ## Added 1 October 2026 — the look prototype: one more thing that listens, and one advisory seen and not taken here
 
+> **The prototype was removed the same day**, once the play screen had been measured on the S25 in
+> its place ([`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md)): `tools/look-prototype/`, its
+> preview on port 4180, and `pixi.js`, `three` and `@types/three`, which leave the lockfile with it
+> (20 packages). What follows is the record of the hours it existed. **The advisory below is not
+> the prototype's and is still open.** What listens now, for a phone check, is the app's own
+> preview, as before.
+
 **What listens.** `pnpm --filter @immunity-wars/look-prototype preview` is `vite preview --host` on
 port 4180, started by the maintainer for the S25 measurement of stage L2
 ([`LOOK_PLAN.md`](LOOK_PLAN.md) §12) and stopped after it. It is the same kind of process as the

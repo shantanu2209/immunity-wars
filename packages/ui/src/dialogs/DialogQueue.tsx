@@ -10,6 +10,9 @@
  * (15). While a dialog is up its overlay blocks the surface behind it, which is what makes
  * "the pause can't open over a dialog" true without any coordination code.
  */
+import { KitButton } from '../kit/Button';
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { useCallback, useRef, useState, type ReactElement, type ReactNode } from 'react';
 
 export interface QueuedDialog {
@@ -70,7 +73,7 @@ export function DialogHost({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(46,42,40,0.45)',
+        background: 'rgba(4, 18, 22, 0.66)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -88,33 +91,18 @@ export function DialogHost({
           overflowWrap: 'anywhere',
           maxHeight: '80vh',
           overflowY: 'auto',
-          background: '#FFFDF9',
-          border: '2px solid #B03A2E',
-          borderRadius: 12,
-          padding: 16,
+          // A card of the kit's cream, since stage L4 of the look. What it is told is its own body's
+          // to draw; its one button is the kit's main one, because acknowledging it is all there is
+          // to do.
+          ...kitCardStyle,
+          padding: '16px 16px 20px',
         }}
       >
-        <h3 style={{ fontSize: '1.125rem', color: '#B03A2E', margin: '0 0 8px' }}>
-          {dialog.title}
-        </h3>
+        <h3 style={{ ...TYPE.heading, color: COLOUR.ink, margin: '0 0 8px' }}>{dialog.title}</h3>
         {dialog.body}
-        <button
-          style={{
-            display: 'block',
-            width: '100%',
-            minHeight: 44,
-            fontSize: '1rem',
-            borderRadius: 10,
-            border: '2px solid #8E6E53',
-            background: '#FFFDF9',
-            cursor: 'pointer',
-            marginTop: 12,
-          }}
-          onClick={onDismiss}
-          data-dialog-dismiss=""
-        >
+        <KitButton kind="main" style={{ marginTop: 14 }} onPress={onDismiss} data-dialog-dismiss="">
           {dialog.dismissLabel}
-        </button>
+        </KitButton>
       </div>
     </div>
   );

@@ -10,7 +10,7 @@
  *   the contrast gate             uses the same shape as a mask, to measure the pictogram's colour
  *                                 and the coin's separately in the finished render.
  *
- * Moved here from tools/look-prototype/blender/pictograms.ts at stage L4: the prototype is
+ * Moved here from the L2 prototype's own pictograms at stage L4: the prototype is
  * removed at the end of L4, and the play screen's coins are made from these.
  */
 import sharp from 'sharp';

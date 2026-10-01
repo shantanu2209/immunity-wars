@@ -52,6 +52,7 @@ import {
   type LobbyRoom,
   type SaveSummary,
 } from '@immunity-wars/ui';
+import { KitButton } from '@immunity-wars/ui/kit';
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -541,7 +542,7 @@ function App({
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
       hintsSeenAny={hintsSeen.length > 0 || played}
-      onResetHints={resetHints}
+      onResetHints={FIRST_GAME_HELP ? resetHints : null}
       onDeleteSave={deleteSave}
     />
   );
@@ -749,26 +750,15 @@ function App({
               // THE MENU, an icon at the right of the play screen's top bar (piece 5 of the play
               // screen, for-P2.7.md §19): the turn and the AP are the bar's own now, and the deck's
               // count left it.
-              <button
+              // Drawn in Clay since stage L4, like the bar it sits in: the kit's resting button.
+              <KitButton
                 data-menu=""
                 aria-label={t('play.pause')}
-                onClick={() => setPaused(true)}
-                style={{
-                  minHeight: 44,
-                  minWidth: 44,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  background: 'transparent',
-                  border: '1.5px solid #8E6E53',
-                  borderRadius: 8,
-                  color: '#2E2A28',
-                  cursor: 'pointer',
-                }}
+                onPress={() => setPaused(true)}
+                style={{ width: 44, minHeight: 44, padding: 0, flex: '0 0 auto' }}
               >
                 <MenuIcon />
-              </button>
+              </KitButton>
             )}
           />
           {paused ? (

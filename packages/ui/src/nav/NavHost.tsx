@@ -27,6 +27,7 @@ import {
 } from 'react';
 
 import { t } from '../i18n';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { createHistorySync, type HistorySync } from './history';
 import {
   closeLabel,
@@ -37,9 +38,11 @@ import {
   popTop,
   pushScreen,
   replaceScreen,
+  closePlace,
   stackOf,
   topEntry,
   type CloseLabel,
+  type LayerClose,
   type NavStack,
 } from './stack';
 
@@ -52,7 +55,7 @@ export const FLOAT_RESERVE = '5.5rem';
 
 /** What a component needs to put a layer on the stack. Stable for the life of the host. */
 export interface NavLayerApi {
-  openLayer: (id: string, floating: boolean, close: () => void) => void;
+  openLayer: (id: string, floating: LayerClose, close: () => void) => void;
   closeLayer: (id: string) => void;
 }
 
@@ -84,10 +87,16 @@ const NavContext = createContext<NavLayerApi | null>(null);
  */
 export interface NavState {
   depth: number;
+  /** The close is floating over the page. */
   floating: boolean;
+  /**
+   * The close is the screen's own to draw, in its slot (`LayerClose`): the word to put on it and
+   * what it does. Null when the close floats, or when there is nothing to close.
+   */
+  slotClose: { label: CloseLabel; close: () => void } | null;
 }
 
-const NavStateContext = createContext<NavState>({ depth: 0, floating: false });
+const NavStateContext = createContext<NavState>({ depth: 0, floating: false, slotClose: null });
 
 export function useNavState(): NavState {
   return useContext(NavStateContext);
@@ -115,7 +124,7 @@ export function useNav<S>(base: S, isMain: (screen: S) => boolean): Nav<S> {
         closers.current.clear();
         update(() => stackOf(next));
       },
-      openLayer: (id: string, floating: boolean, close: () => void): void => {
+      openLayer: (id: string, floating: LayerClose, close: () => void): void => {
         closers.current.set(id, close);
         update((s) => openLayer(s, id, floating));
       },
@@ -149,7 +158,12 @@ export function useNav<S>(base: S, isMain: (screen: S) => boolean): Nav<S> {
 }
 
 /** Puts a layer on the stack while `open` is true, through the host the component sits under. */
-export function useNavLayer(id: string, open: boolean, close: () => void, floating = true): void {
+export function useNavLayer(
+  id: string,
+  open: boolean,
+  close: () => void,
+  floating: LayerClose = true,
+): void {
   useNavLayerWith(useContext(NavContext), id, open, close, floating);
 }
 
@@ -159,7 +173,7 @@ export function useNavLayerWith(
   id: string,
   open: boolean,
   close: () => void,
-  floating = true,
+  floating: LayerClose = true,
 ): void {
   const closeRef = useRef(close);
   closeRef.current = close;
@@ -220,8 +234,18 @@ export function NavHost<S>({
   );
 
   const depth = depthOf(nav.stack);
-  const floating = nav.label !== null;
-  const navState = useMemo<NavState>(() => ({ depth, floating }), [depth, floating]);
+  const place = closePlace(nav.stack);
+  const floating = nav.label !== null && place === 'float';
+  const slotLabel = place === 'slot' ? nav.label : null;
+  const closeNow = nav.close;
+  const navState = useMemo<NavState>(
+    () => ({
+      depth,
+      floating,
+      slotClose: slotLabel !== null ? { label: slotLabel, close: closeNow } : null,
+    }),
+    [depth, floating, slotLabel, closeNow],
+  );
 
   return (
     <NavContext.Provider value={layerApi}>
@@ -229,10 +253,12 @@ export function NavHost<S>({
       {/* While the floating close shows, the page underneath can still scroll (the inspect sheet
           is not modal), so the document gets room at its end: without it the last lines of the
           game's page scroll under the button. The audit's occlusion check is what says so. */}
-      {nav.label !== null ? (
+      {nav.label !== null && floating ? (
         <div aria-hidden="true" data-nav-spacer="" style={{ height: FLOAT_RESERVE }} />
       ) : null}
-      {nav.label !== null ? <FloatingClose label={nav.label} onClose={nav.close} /> : null}
+      {nav.label !== null && floating ? (
+        <FloatingClose label={nav.label} onClose={nav.close} />
+      ) : null}
     </NavContext.Provider>
   );
 }
@@ -246,13 +272,17 @@ const FLOAT: CSSProperties = {
   boxSizing: 'border-box',
   minHeight: 48,
   padding: '10px 16px',
+  // Drawn in Clay since stage L4 of the look: the kit's resting button, standing on its edge. It is
+  // not the kit's component because it is held in place by a transform, which the kit's press
+  // would replace.
+  fontFamily: TYPE.family,
   fontSize: '1rem',
-  fontWeight: 700,
-  color: '#2E2A28',
-  background: '#FFFDF9',
-  border: '2px solid #8E6E53',
+  fontWeight: 800,
+  color: COLOUR.ink,
+  background: COLOUR.creamSunk,
+  border: 0,
   borderRadius: 999,
-  boxShadow: '0 4px 16px rgba(46,42,40,0.25)',
+  boxShadow: `0 5px 0 ${COLOUR.creamSunkEdge}, 0 12px 20px rgba(0, 0, 0, 0.4)`,
   cursor: 'pointer',
   // Above the cards (40) and the dialogs (30); a dialog on top hides the button altogether.
   zIndex: 50,

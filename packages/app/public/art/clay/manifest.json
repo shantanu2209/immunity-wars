@@ -2470,6 +2470,12 @@
           "px": 1200,
           "bytes": 86000,
           "sha256": "75249d8684c14844de13fadfe1c7064bef5eb6902c7b0278c88920b2dd179b66"
+        },
+        "5x": {
+          "file": "table/board@5x.webp",
+          "px": 2000,
+          "bytes": 166224,
+          "sha256": "2d9b2293e62e380100b7798c27b1c6a4981294796c3c090707aab693289baed0"
         }
       }
     }

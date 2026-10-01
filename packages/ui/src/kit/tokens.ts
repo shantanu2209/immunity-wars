@@ -44,6 +44,8 @@ export const COLOUR = {
   coral: '#E8674A',
   coralLit: '#F58A6E',
   coralEdge: '#B5452D',
+  /** A warning in words, on cream: coral dark enough to read. */
+  coralInk: '#9E3A22',
   /** What is healthy, and what is allowed. */
   mint: '#3FD6B4',
   mintLit: '#6FE9CB',
@@ -54,6 +56,8 @@ export const COLOUR = {
   /** Action Points and antibodies. */
   gold: '#E7B549',
   goldEdge: '#8F640B',
+  /** A note in words, on cream: gold dark enough to read. */
+  goldInk: '#6E4B05',
   /** A legal move, glowing. */
   glow: '#FFE08A',
   /** The lymph: its nodes on the board, and a hop along it. */
@@ -109,7 +113,7 @@ export const SHADOW = {
 
 /**
  * Motion, in milliseconds, with the curve each uses. The play screen and the kit page read these;
- * the L2 measurement was taken with the same figures (tools/look-prototype/src/timeline.ts).
+ * the L2 measurement was taken with the same figures (the L2 prototype's timeline, since removed).
  */
 export const MOTION = {
   /** A control answering a finger. Under a tenth of a second (plan §3, rule 2). */

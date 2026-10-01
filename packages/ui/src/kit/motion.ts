@@ -22,7 +22,7 @@
 import { MOTION } from './tokens';
 
 export type KitMotion =
-  'move' | 'arrive' | 'leave' | 'engulf' | 'coat' | 'refuse' | 'hurt' | 'press';
+  'move' | 'shift' | 'arrive' | 'leave' | 'engulf' | 'coat' | 'refuse' | 'hurt' | 'press';
 
 export interface MotionPlan {
   keyframes: Keyframe[];
@@ -53,6 +53,9 @@ export function motionPlan(
     if (kind === 'arrive' || kind === 'coat')
       return { keyframes: [{ opacity: 0 }, { opacity: 1 }], ...fade };
     if (kind === 'leave') return { keyframes: [{ opacity: 1 }, { opacity: 0 }], ...fade };
+    // A piece only making room is where it belongs already, and says nothing about it.
+    if (kind === 'shift')
+      return { keyframes: [{ opacity: 1 }, { opacity: 1 }], ms: 1, curve: 'linear' };
     // move, engulf, refuse, hurt, press: the thing is where it belongs and blinks once.
     return { keyframes: [{ opacity: 0.55 }, { opacity: 1 }], ...fade };
   }
@@ -67,6 +70,13 @@ export function motionPlan(
           { transform: at(0, 0, 'scale(1, 1)'), offset: 1 },
         ],
         ms: MOTION.move.ms,
+        curve: MOTION.move.curve,
+      };
+    case 'shift':
+      // Making room for another piece, not going anywhere: it slides, and does not hop.
+      return {
+        keyframes: [{ transform: at(dx, dy) }, { transform: at(0, 0) }],
+        ms: MOTION.arrive.ms,
         curve: MOTION.move.curve,
       };
     case 'arrive':
@@ -155,11 +165,16 @@ export function prefersReducedMotion(): boolean {
  * Play a motion on an element. `hold` keeps the last keyframe afterwards (a piece that has left
  * stays gone until the caller stops drawing it). Resolves when the motion has ended, and at once
  * where the browser has no animation engine.
+ *
+ * `onTop`: played over whatever else is moving the element, and not in its place. Two motions on
+ * one element both set its transform, and the later one would otherwise simply win: a cell sliding
+ * to the middle of its step while it swallows would jump there and then swell. Played on top, the
+ * swell is added to the slide. Only for a motion that does not travel itself.
  */
 export function play(
   el: Element,
   kind: KitMotion,
-  args: MotionArgs & { hold?: boolean } = {},
+  args: MotionArgs & { hold?: boolean; onTop?: boolean } = {},
 ): Promise<void> {
   const plan = motionPlan(kind, { ...args, reduced: args.reduced ?? prefersReducedMotion() });
   if (typeof el.animate !== 'function') return Promise.resolve();
@@ -167,6 +182,7 @@ export function play(
     duration: plan.ms,
     easing: plan.curve,
     fill: args.hold ? 'forwards' : 'none',
+    composite: args.onTop ? 'add' : 'replace',
   });
   return a.finished.then(
     () => undefined,

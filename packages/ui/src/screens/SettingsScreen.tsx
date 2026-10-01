@@ -93,7 +93,13 @@ export function SettingsScreen({
   onDeleteSave: () => void;
   /** True when this device has seen at least one hint; the row is disabled otherwise. */
   hintsSeenAny: boolean;
-  onResetHints: () => void;
+  /**
+   * Shows the first-game guidance again, or NULL WHEN THERE IS NONE TO SHOW, and then the row is
+   * not drawn. From stage L4 the coach and the hints are off until the guided game replaces them
+   * (docs/LOOK_PLAN.md §14, ruling 2), and a row that says they will appear again would say
+   * something false (docs/FINDINGS.md #111).
+   */
+  onResetHints: (() => void) | null;
 }): ReactElement {
   const [confirming, setConfirming] = useState<string | null>(null);
   // The confirm is a dialog on the navigation stack: the back gesture cancels it, and the floating
@@ -137,15 +143,19 @@ export function SettingsScreen({
           confirmYesKey: 'settings.deleteSaveDo',
           onAct: onDeleteSave,
         },
-        {
-          kind: 'action',
-          key: 'resetHints',
-          labelKey: 'settings.hintsShow',
-          blockedKey: hintsSeenAny ? null : 'settings.hintsReason',
-          confirmKey: 'settings.hintsConfirmBody',
-          confirmYesKey: 'settings.hintsConfirmYes',
-          onAct: onResetHints,
-        },
+        ...(onResetHints === null
+          ? []
+          : [
+              {
+                kind: 'action' as const,
+                key: 'resetHints',
+                labelKey: 'settings.hintsShow',
+                blockedKey: hintsSeenAny ? null : 'settings.hintsReason',
+                confirmKey: 'settings.hintsConfirmBody',
+                confirmYesKey: 'settings.hintsConfirmYes',
+                onAct: onResetHints,
+              },
+            ]),
       ],
     },
   ];

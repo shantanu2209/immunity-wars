@@ -55,6 +55,8 @@ import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { kitAudio } from '../kit/sound';
+import { COLOUR } from '../kit/tokens';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { FLOAT_RESERVE, useNavLayer, useNavState } from '../nav/NavHost';
@@ -71,7 +73,10 @@ import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
+  MiddleCard,
+  OldPaper,
   PlayArea,
+  SlotClose,
   SpreadView,
   TabRow,
   Toast,
@@ -260,7 +265,9 @@ export function PlayScreen({
   // THE LAYERS ON THE NAVIGATION STACK (docs/for-P2.7.md §9, rulings 8 and 9). Each registers
   // while it shows, in the order it opened, so the one floating close and the back gesture reach
   // the top one: a card opened from the inspect sheet closes back to the sheet.
-  useNavLayer('inspect', inspect !== null, () => setInspect(null));
+  // THE MIDDLE'S VIEWS CLOSE IN THE SLOT (stage L4; `LayerClose` in nav/stack.ts): the close is
+  // drawn where the stage's one button is, beside the three tiles, so it never covers them.
+  useNavLayer('inspect', inspect !== null, () => setInspect(null), 'slot');
   useNavLayer('pathogen-card', card !== null, () => setCard(null));
   useNavLayer('cell-card', cellCard !== null, () => setCellCard(null));
   // THE MIDDLE'S VIEWS (piece 5 of the play screen, docs/for-P2.7.md §19): a row's several targets,
@@ -270,11 +277,16 @@ export function PlayScreen({
   const [targetsFor, setTargetsFor] = useState<DockRow | null>(null);
   const [apSheet, setApSheet] = useState(false);
   const [effectsOpen, setEffectsOpen] = useState(false);
-  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
-  useNavLayer('ap-terms', apSheet, () => setApSheet(false));
-  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false));
+  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null), 'slot');
+  useNavLayer('ap-terms', apSheet, () => setApSheet(false), 'slot');
+  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false), 'slot');
   const [drawer, setDrawer] = useState<DrawerKind | null>(null);
-  useNavLayer('drawer', drawer !== null, () => setDrawer(null));
+  // Two layers for the one piece of state: the messages and the table are drawn over the whole
+  // screen, and their close floats over them; the Cells, Antibodies and Body views open in the
+  // middle, and theirs is in the slot.
+  const overAll = drawer === 'log' || drawer === 'table';
+  useNavLayer('drawer', overAll, () => setDrawer(null));
+  useNavLayer('middle-view', drawer !== null && !overAll, () => setDrawer(null), 'slot');
   // PLANNING'S FILTER: a tap on a place on the figure lists that place's pathogens; a tap anywhere
   // else on the body lists them all (§19).
   const [planFocus, setPlanFocus] = useState<string | null>(null);
@@ -423,6 +435,8 @@ export function PlayScreen({
     const g = authView.game;
     if (!endedRef.current && (g['won'] === true || Boolean(g['lost']))) {
       endedRef.current = true;
+      // The game's last sound: the body is clear, or it has fallen.
+      kitAudio.answer(g['won'] === true ? 'win' : 'loss');
       onGameEndRef.current?.(g);
     }
   }, [authView]);
@@ -1171,182 +1185,203 @@ export function PlayScreen({
     if (playing) return <SpreadView store={frameStore} />;
     if (apSheet)
       return (
-        <div data-middle-view="ap">
-          <ApTerms
-            terms={apTerms}
-            // Together, the terms add up to the table's points and the bar shows this player's own,
-            // so the sheet names both, and what every player has left (P3.7).
-            total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
-            yours={p.together && plan === null ? apShown : null}
-            players={p.together && plan === null ? budgetsOf(authView, p) : []}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="ap">
+            <ApTerms
+              terms={apTerms}
+              // Together, the terms add up to the table's points and the bar shows this player's own,
+              // so the sheet names both, and what every player has left (P3.7).
+              total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
+              yours={p.together && plan === null ? apShown : null}
+              players={p.together && plan === null ? budgetsOf(authView, p) : []}
+            />
+          </div>
+        </MiddleCard>
       );
     if (effectsOpen)
       return (
-        <div data-middle-view="effects">
-          <EffectsStrip chips={chips} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="effects">
+            <EffectsStrip chips={chips} />
+          </div>
+        </MiddleCard>
       );
+    // The new cards and planning are not redrawn until L5: each stands on the old paper.
     if (arrivalsNow !== null)
-      return <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />;
+      return (
+        <OldPaper>
+          <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
+        </OldPaper>
+      );
     if (plan !== null)
       return (
-        <div data-middle-view="planning">
-          {spentCells !== null ? (
-            <div
-              data-planning-cell-facts="1"
-              style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
-            >
-              {spentCells}
-            </div>
-          ) : null}
-          <PathogenList
-            model={plan}
-            focus={planFocus}
-            disabled={playing}
-            onPathogenCard={openPathogenCard}
-          />
-          {plan.allocation ? (
-            <AllocationBlock
-              slot={plan.allocation}
-              nameOf={p.nameOf}
-              control={
-                p.together && p.captain && captainPid !== null
-                  ? {
-                      draft,
-                      onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
-                      onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
-                      disabled: playing || confirming,
-                    }
-                  : null
-              }
+        <OldPaper>
+          <div data-middle-view="planning">
+            {spentCells !== null ? (
+              <div
+                data-planning-cell-facts="1"
+                style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
+              >
+                {spentCells}
+              </div>
+            ) : null}
+            <PathogenList
+              model={plan}
+              focus={planFocus}
+              disabled={playing}
+              onPathogenCard={openPathogenCard}
             />
-          ) : null}
-        </div>
+            {plan.allocation ? (
+              <AllocationBlock
+                slot={plan.allocation}
+                nameOf={p.nameOf}
+                control={
+                  p.together && p.captain && captainPid !== null
+                    ? {
+                        draft,
+                        onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
+                        onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
+                        disabled: playing || confirming,
+                      }
+                    : null
+                }
+              />
+            ) : null}
+          </div>
+        </OldPaper>
       );
     if (inspect)
       return (
-        <InspectSheet
-          hint={hintFor('inspect')}
-          info={inspect}
-          selectedCell={selectedCell}
-          disabled={playing}
-          offers={sheetOffers}
-          onOffer={(id) => {
-            setInspect(null);
-            sendOffer(id);
-          }}
-          onSelectCell={(ck) => {
-            tapCell(ck);
-            setInspect(null);
-          }}
-          selectedResident={selectedResident}
-          onSelectResident={(organ) => {
-            tapResident(organ);
-            setInspect(null);
-          }}
-          // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
-          // for cells as for pathogens.
-          onCellCard={(ck) =>
-            setCellCard({
-              cell: ck,
-              now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
-            })
-          }
-          onCard={(invaderId) => {
-            const iv = inspect.invaders.find((x) => x.id === invaderId);
-            if (!iv || iv.novel) return;
-            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
-            setCard({
-              disease: iv.disease,
-              type: iv.type,
-              remembered: memory[iv.disease] === true,
-              now: invaderNowLine(iv),
-            });
-          }}
-        />
+        <MiddleCard>
+          <InspectSheet
+            hint={hintFor('inspect')}
+            info={inspect}
+            selectedCell={selectedCell}
+            disabled={playing}
+            offers={sheetOffers}
+            onOffer={(id) => {
+              setInspect(null);
+              sendOffer(id);
+            }}
+            onSelectCell={(ck) => {
+              tapCell(ck);
+              setInspect(null);
+            }}
+            selectedResident={selectedResident}
+            onSelectResident={(organ) => {
+              tapResident(organ);
+              setInspect(null);
+            }}
+            // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
+            // for cells as for pathogens.
+            onCellCard={(ck) =>
+              setCellCard({
+                cell: ck,
+                now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
+              })
+            }
+            onCard={(invaderId) => {
+              const iv = inspect.invaders.find((x) => x.id === invaderId);
+              if (!iv || iv.novel) return;
+              const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+              setCard({
+                disease: iv.disease,
+                type: iv.type,
+                remembered: memory[iv.disease] === true,
+                now: invaderNowLine(iv),
+              });
+            }}
+          />
+        </MiddleCard>
       );
     if (targetsFor !== null)
       return (
-        <div
-          data-middle-view="targets"
-          style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-        >
-          <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#2E2A28' }}>
-            {t(`action.${targetsFor.action}`)}
+        <MiddleCard>
+          <div
+            data-middle-view="targets"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            <div style={{ fontSize: '0.9375rem', fontWeight: 900, color: COLOUR.ink }}>
+              {t(`action.${targetsFor.action}`)}
+            </div>
+            <TargetList
+              targets={targetsFor.targets}
+              disabled={playing}
+              onOffer={(id) => {
+                setTargetsFor(null);
+                sendOffer(id);
+              }}
+            />
           </div>
-          <TargetList
-            targets={targetsFor.targets}
-            disabled={playing}
-            onOffer={(id) => {
-              setTargetsFor(null);
-              sendOffer(id);
-            }}
-          />
-        </div>
+        </MiddleCard>
       );
     if (drawer === 'pieces')
       return (
-        <div data-middle-view="cells">
-          <PieceStrip
-            // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
-            // the live server): the Cells view is where a player picks what to move, and another's
-            // piece cannot be moved. Another's piece is still read by tapping it on the board, and
-            // the Table says who plays what.
-            pieces={
-              p.together
-                ? pieces.filter((pc) =>
-                    p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
-                  )
-                : pieces
-            }
-            emptyText={p.together ? t('pieces.noneYours') : null}
-            selectedCell={selectedCell}
-            selectedResident={selectedResident}
-            why={why}
-            disabled={playing}
-            // Picking a piece closes the view and selects it on the board (ruling 3).
-            onSelectCell={(ck) => {
-              tapCell(ck);
-              setDrawer(null);
-            }}
-            onSelectResident={(organ) => {
-              tapResident(organ);
-              setDrawer(null);
-            }}
-            onDeselect={() => {
-              deselect();
-              setDrawer(null);
-            }}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="cells">
+            <PieceStrip
+              // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
+              // the live server): the Cells view is where a player picks what to move, and another's
+              // piece cannot be moved. Another's piece is still read by tapping it on the board, and
+              // the Table says who plays what.
+              pieces={
+                p.together
+                  ? pieces.filter((pc) =>
+                      p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
+                    )
+                  : pieces
+              }
+              emptyText={p.together ? t('pieces.noneYours') : null}
+              selectedCell={selectedCell}
+              selectedResident={selectedResident}
+              why={why}
+              disabled={playing}
+              // Picking a piece closes the view and selects it on the board (ruling 3).
+              onSelectCell={(ck) => {
+                tapCell(ck);
+                setDrawer(null);
+              }}
+              onSelectResident={(organ) => {
+                tapResident(organ);
+                setDrawer(null);
+              }}
+              onDeselect={() => {
+                deselect();
+                setDrawer(null);
+              }}
+            />
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'antibodies' && mayAntibodies)
       return (
-        <div data-middle-view="antibodies">
-          <AntibodyPanel
-            rows={familyRows}
-            selectedFamily={selectedFamily}
-            detail={familyDetail}
-            produce={
-              playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
-            }
-            disabled={playing}
-            onSelectFamily={(family) =>
-              session.setSelection({ cell: selectedCell, family, resident: selectedResident })
-            }
-            onProduce={sendOffer}
-            onSay={setSaid}
-          />
-          {hintFor('antibodies')}
-        </div>
+        <MiddleCard>
+          <div data-middle-view="antibodies">
+            <AntibodyPanel
+              rows={familyRows}
+              selectedFamily={selectedFamily}
+              detail={familyDetail}
+              produce={
+                playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
+              }
+              disabled={playing}
+              onSelectFamily={(family) =>
+                session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+              }
+              onProduce={sendOffer}
+              onSay={setSaid}
+            />
+            {hintFor('antibodies')}
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'body' && mayBody)
       return (
-        <div data-middle-view="body">
-          <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="body">
+            <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+          </div>
+        </MiddleCard>
       );
     return (
       <ActionsView
@@ -1363,6 +1398,15 @@ export function PlayScreen({
             : selectedResident
               ? residentDisplayName(selectedResident)
               : null
+        }
+        // The piece in hand, as the board draws it: a resident is one of the body's own macrophages.
+        piece={
+          selectedCell || selectedResident
+            ? {
+                src: `/art/clay/board/${selectedCell ?? 'macrophage'}@3x.webp`,
+                base: '/art/clay/board/base@3x.webp',
+              }
+            : null
         }
         onCard={
           selectedCell
@@ -1418,19 +1462,28 @@ export function PlayScreen({
         display: 'flex',
         flexDirection: 'column',
         gap: 6,
-        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must. The 16px is
-        // the body's margin, above and below.
-        height: 'calc(100dvh - 16px)',
+        // THE TABLE (stage L4): the frame is drawn on the kit's dark ground, out to the screen's
+        // edges. The page has a margin of 8px all round, in the old paper; the frame is pulled out
+        // over it and given the same 8px back as its own padding, so nothing inside it moves.
+        background: COLOUR.table,
+        color: COLOUR.onDark,
+        margin: -8,
+        padding: 8,
+        boxSizing: 'border-box',
+        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must.
+        height: '100dvh',
         // While the floating close shows, NavHost appends its spacer below the page. The frame keeps
         // its size (nothing moves, §12 ruling 1) and lets the spacer overlap its own bottom, where
         // the hidden advance button keeps its slot, so the page does not scroll by the spacer.
-        marginBottom: navState.floating ? `calc(-1 * ${FLOAT_RESERVE})` : undefined,
+        marginBottom: navState.floating ? `calc(-8px - ${FLOAT_RESERVE})` : -8,
       }}
     >
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
         apText={`${t('commandBar.ap')} ${String(apShown)}`}
+        // The pips: what is left, of what the engine says this turn began with.
+        ap={{ have: apShown, of: authView.queries.ap.total }}
         apAvailable={apTerms.length > 0 && !playing}
         onAp={() => {
           closeMiddle();
@@ -1516,6 +1569,8 @@ export function PlayScreen({
             selectedResident={selectedResident}
             readyTurn={authView.queries.readyTurn}
             targets={boardTargets}
+            // While a spread plays the player is watching, and the camera moves in on each beat.
+            watching={playing}
             onTap={playing ? undefined : handleBoardTap}
           />
           {hintFor('pieces') !== null ? (
@@ -1532,21 +1587,42 @@ export function PlayScreen({
       </PlayArea>
       <div
         data-middle=""
-        style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
+        // Its floor is in rem, so it grows with the text it has to hold; the play area shrinks to
+        // leave it (Frame.tsx).
+        style={{ flex: '1 0 5rem', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
         {middle()}
       </div>
       <div
         data-bottom=""
-        style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 6 }}
+        // ONE ROW (stage L4, as in the picture picked at L1): the three views' tiles and, beside
+        // them, the stage's one button. It wraps when the words are too wide for one row, as they
+        // are with the phone's text at 200%.
+        style={{
+          flex: '0 0 auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'stretch',
+          gap: 6,
+          paddingBottom: 6,
+        }}
       >
-        {plan === null && arrivalsNow === null ? (
+        {/* Not while a spread plays: the tiles could not be pressed then, and the one button's
+            words ("Tap to continue") want the whole row. */}
+        {plan === null && arrivalsNow === null && !playing ? (
           <TabRow active={tabOpen} disabled={playing} shown={drawersFor(p.seats)} onTab={openTab} />
         ) : null}
         {/* THE CAPTAIN'S STEPS (P3.7 piece B): beginning command, the allocation and ending the turn
             are the captain's alone, as the draw is (above); the engine refuses them from anyone else.
             Every other player's button says who they are waiting for. */}
+        {navState.slotClose !== null ? (
+          <SlotClose label={navState.slotClose.label} onClose={navState.slotClose.close} />
+        ) : null}
         <AdvanceButton
+          // While a view's close has the slot, the stage's own button is not there at all. When it
+          // comes back it is a new button, and its guard counts no tap for half a second: a second
+          // tap meant for Close cannot end the turn.
+          gone={navState.slotClose !== null}
           keyName={
             playing
               ? 'spread'
@@ -1618,12 +1694,13 @@ export function PlayScreen({
                   style={{
                     minHeight: 44,
                     padding: '6px 8px',
+                    fontFamily: 'inherit',
                     fontSize: '0.8125rem',
-                    fontWeight: 700,
-                    color: '#2E2A28',
+                    fontWeight: 800,
+                    color: COLOUR.ink,
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: on ? '2px solid #B03A2E' : '2px solid transparent',
+                    borderBottom: on ? `3px solid ${COLOUR.coralEdge}` : '3px solid transparent',
                     cursor: 'pointer',
                   }}
                 >

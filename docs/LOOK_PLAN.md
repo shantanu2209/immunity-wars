@@ -5,8 +5,10 @@ same day: disregard low-end phones, give the game the look of the best modern mo
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
 resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0).
 
-**Stages L1, L2 and L3 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled
-the board is drawn as pictures on the page (§12), and approved the kit (§13). L4, the play screen,
+**Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
+board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
+which holds 60 frames a second on his S25 (§14). **He ruled it deployed that night, as a mix of two
+looks, with his review of the whole the next day** (§14, the last heading). L5, the other screens,
 is next.
 
 ## 1. What is decided already
@@ -106,7 +108,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board is built, standing still (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -210,7 +212,8 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
    home network, as the phone checks were before the app was served from the server: *"Agree. They
    way we used to do before deploying on the server."*
 
-**What is built.** [`tools/look-prototype/`](../tools/look-prototype/README.md): the Clay play
+**What is built.** `tools/look-prototype/` (*removed on 1 October 2026 once the play screen was
+measured in its place, §14; it is in the repository's history, last at commit `da7ad3f`*): the Clay play
 screen playing a calm turn and a crowded board, both recorded from the real engine, drawn as
 pictures on the page, as pictures on a GPU canvas, and as the models drawn live. One motion, decided
 once, is handed to all three. A frame timer and a tap timer measure them, and each timer was made to
@@ -532,3 +535,333 @@ coin fails for two.
 - **Not measured:** the frame rate, and anything on the S25. Both are the fifth pull request's.
 - **The accessibility audit was not run.** It walks the old screens, and is aimed at the new one in
   the fifth pull request.
+
+### Built: the frame (the second of the five, its first half)
+
+**The frame of the play screen is drawn from the kit**, `packages/ui/src/play/Frame.tsx`, on the
+table's dark ground out to the screen's edges. What each part is given, and the hooks the drivers
+and the audit find it by, are as they were.
+
+- **Top:** the turn; the Action Points as gold pips, as many lit as are left; what is in force, as a
+  chip; the messages and the menu as cream buttons.
+- **The selected piece's card:** its picture on its base, its name (which opens its card), Undo, and
+  its actions two abreast. **Mint is what the piece can do now. Flat and grey is what it cannot, and
+  a press on it says why. Cream is everything else.**
+- **Bottom, in one row, as in the picture he picked:** the three views' tiles, each a picture over
+  its word, and beside them the stage's one coral button.
+- **The spread's line** is said straight onto the table, with a die that hit in coral.
+
+**What is not redrawn yet stands on a sheet of the old paper:** the Cells, Antibodies and Body
+views, a tapped step, the Action Points' terms, what is in force in full, the new cards and
+planning. Its words keep the contrast they were measured at. Each sheet goes as its view is redrawn:
+the views in the second half of this pull request, the new cards and planning at L5.
+
+**The one close has a second place to be drawn.** With the tiles and the button in one row, the
+close that floats across the bottom of the screen covered the tiles, so a view could not be changed
+without closing first. A view opened in the middle now has its close drawn where the stage's one
+button was: the same close, with the same word and hook, beside the tiles. What is drawn over the
+whole screen (a card, the messages) still has the floating one. `nav/stack.ts` says which.
+
+**Measured, in a headless browser on the PC at the S25 tab's size, 360 by 641.**
+
+| Measured | Found | Changed |
+|---|---|---|
+| The room left for the middle | 162 px, and the card with one row of actions needs 162. With the tiles in a row of their own it was 100 | The one row is kept. Two rows of actions scroll |
+| "Tap to continue", beside the tiles | Two lines, and a taller row | The tiles are not drawn while a spread plays; they could not be pressed then |
+| The middle with the text at 200% | 25 px of a screen: the bars above and below had grown round it | The board gives way before the middle does. The middle has 160 px; the page is still one screen tall and no wider than the phone |
+| Controls under 44 px, at rest and at 200% | None | |
+| The screen left alone for two seconds, at each of seven stages | No layout and no style work at any of them; 1 ms of script in all | |
+
+**Not measured:** the frame rate, and anything on the S25.
+
+**The kit's button carries more:** the hooks and labels a screen's control needs, and a way to be
+drawn unavailable and still take a press. **Controls added, each fired:**
+`frame-flat-action-still-answers` (the frame's actions made unavailable the kit's plain way: the
+test fails saying a flat action cannot be pressed) and `frame-pips-show-what-is-left` (every pip
+lit: it fails naming the count).
+
+**The scripts that walk the game hung for minutes at their last line.** It was the browser being
+closed, with everything already measured and written; the page itself was idle. They now end
+without waiting for it.
+
+### Built: the panels (the second of the five, its second half)
+
+**Everything the play screen opens is drawn from the kit.**
+
+- **In the middle, each on a card:** the Cells, Antibodies and Body views, a tapped step, the Action
+  Points' terms, what is in force, and a row's several targets.
+- **Over the whole screen:** the pathogen's card and the cell's card, the messages and the table,
+  the dialogs, the menu, and the floating close.
+- **A piece is its Clay picture everywhere:** on its base in the Cells view and on a tapped step,
+  and at an angle at the head of its card, in the colour of its antigen class.
+- **Each antibody class's chip carries a dot of that class's own colour,** the content pack's,
+  which is the colour the pieces of that class wear on the board. An antibody matches a class; the
+  dot is how the two are seen to belong together.
+- **One of several is chosen by shape as well as colour:** pressed in and ringed.
+
+**Still on the old paper, for L5:** the new cards and planning. **Not redrawn, and not on the old
+paper:** the notices for a lost connection and a save that failed, which have their own grounds and
+read as they did; the hints and the coach, which are off.
+
+**A redrawn file may name no colour of its own.** The kit's colours are few and named, and every
+pairing of them that carries words or marks a control is measured, 45 pairings now. A colour written
+straight into a screen is outside that. `play/clayColours.test.ts` reads the 20 redrawn files with
+their comments taken out and fails on the first `#rrggbb` it finds, naming the file and the colour.
+The one exception is the old paper's own two colours, written where that sheet is, and it goes at L5.
+
+**Measured, in a headless browser on the PC at 360 by 641.**
+
+| Measured | Found |
+|---|---|
+| Seven views (cells, antibodies, the body, the Action Points' terms, the messages, the menu, a cell's card), each open, at rest and with the text at 200% | The page one screen tall and 360 px wide at all fourteen; nothing wider than the phone; no control under 44 px |
+| What the phone stores to play offline, from the files | 2.69 MB in 311 files, up from 2.14: the pieces as a card shows them, at every size |
+| Pictures on the cards, sheets and views walked | None broken |
+
+**The check was wrong on its first run, and its own list said so.** It printed, beside each reading,
+which view was open. At 200% the cell's card read as nothing open: the script had pressed the
+selected cell a second time, which lets it go, so there was no card to measure. The reading was of
+the bare screen and would have passed. It now presses the cell only when none is in hand.
+
+**Not measured:** the frame rate, and anything on the S25. **Not run:** the accessibility audit.
+
+**Control added, and fired:** `play-screen-colours-are-the-kits` (one old colour written into a
+redrawn panel: the test fails naming the file and the colour).
+
+**Found when the audit was run, and fixed on this branch: with no network the app came back as a
+blank page.** The kit's components, now used by the play screen, were built into a script named
+`kit-…js`, and the exclusion written at L3 to keep the kit page off a phone matched it by name. The
+build test passed, because it forbade anything named `kit` and never required what the app needs.
+The kit page's own script is now named `kitPage`, and the build test follows the app's page to every
+script it needs and requires each one stored; control `app-scripts-in-the-worker` puts the old
+exclusion back and sees it fail. [`FINDINGS.md`](FINDINGS.md) #109. It was never on `main`.
+
+### Played on his phone, 1 October 2026: the board, the frame and the panels
+
+Shantanu played the first two pull requests on his S25 and said: *"Plays very smooth, happy to
+proceed for the moment, there are ux improvements to be done but I want to do thay later after this
+is deployed on our online server."*
+
+- **The first two are played**, as ruling 5 asks of each. This is not Gate 2, and he did not say it
+  was.
+- **There are improvements to how it is used that he has not named yet.** They are his to name, and
+  he has put them after the look is on the server. Nothing was changed for them here.
+- **"Smooth" is his eye on his phone, not a measurement.** The frame rate on the S25 is still the
+  fifth pull request's to read.
+- **When the look reaches the server is not changed by this.** Ruling 2 stands: not before L6,
+  because the hints and the coach are off until the guided game replaces them.
+
+### Built: motion and sound (the third of the five)
+
+**The board plays what changed.** The engine hands over states, not events, so each time the board
+is drawn the picture is compared with the one before, in `packages/ui/src/board/changes.ts`, and
+what differs is named and played with the kit's motions.
+
+| What changed | What the board plays | The sound |
+|---|---|---|
+| A piece went to another step | It hops there from where it was | move |
+| A piece was only nudged aside to make room | It slides, and does not hop | none |
+| A piece is new to the board | It arrives | arrive |
+| A group multiplied where it stands | It swells, and settles | arrive |
+| A pathogen is gone from a step one of your cells stands on | It shrinks into the cell, which swells | engulf |
+| A pathogen is gone and no cell was on its step | It shrinks away | tap |
+| The same invaders are now coated | The coated picture snaps on | coat |
+| An organ lost health | Its coin flinches | hurt |
+
+- **One sound for a picture.** A spread can change a dozen things at once, and a dozen sounds is a
+  noise. The picture gets the sound of what matters most in it: an organ hurt, then a swallow, then
+  a coat, then an arrival, then a step.
+- **A piece is always drawn where the game says it is.** The motion is only how it got there. One
+  cut short, or a phone that asks for less motion, leaves the board right; with less motion nothing
+  travels at all.
+- **The first picture a board is given plays nothing:** nothing has happened yet.
+- **A tap on a piece or a step answers at once** with the tap. A tap on a legal move does not: what
+  it did is heard when the board changes.
+- **The game's last sound** is the win or the loss.
+- **Who is who.** One of your cells keeps its name from picture to picture. A piece that stands for
+  invaders does not: its name has its step in it, so a group that walks a step has a new name.
+  Followed by name, it would be one piece fading out and another popping in. It is followed by the
+  invaders it stands for.
+
+**Two things added to the kit, which he has not seen there.** A ninth motion, a slide, for a piece
+that is only making room; and a way to play one motion over another, so that a cell that swallows
+while it slides to the middle of its step does both, and does not jump.
+
+**The kit page's board can be changed,** one thing at a time, by buttons under it, so that each of
+these can be seen and heard on the real board: the buttons only hand it a new position.
+
+**Seen, in a headless browser on the PC.** It reads which motions the page started and which sound;
+it has no ears and no eyes.
+
+| Done | The board played | The sound started |
+|---|---|---|
+| In a game: the Monocyte moved out of the bloodstream | The Monocyte hopped (450 ms); the six cells left in the ring slid (320 ms) | move |
+| In a game: the turn ended, in two runs | In one, a later beat of the spread moved a virus a step, and it hopped; in the other nothing on the board changed | the end of the turn; then move, in the run where the virus moved |
+| On the kit page: the Monocyte engulfs a coated bacterium | The Monocyte swelled; the bacterium shrank into it and was then taken off the page | engulf |
+| A coat, an arrival, an advance, a hurt organ | Each its own motion | coat, arrive, move, hurt |
+| The same with less motion asked for | Only fades of 180 ms; nothing travelled | the same sounds |
+| The play screen left alone for two seconds, at seven stages | No layout, no style work, no script | |
+
+**The check was wrong on its first run, and its own list said so.** It pressed Engulf after moving
+the Monocyte away, when there was nothing left to engulf, and the line read "played: nothing, sound:
+none". The order was the check's mistake, not the board's.
+
+**Not measured:** the frame rate while these play, which is the fifth pull request's, on the S25.
+How any of it looks and sounds is his to judge.
+
+**Known, and left.** A new arrival's sound is heard while the new cards cover the board, because
+the board behind them is where it arrives. A kill from a distance has no sound of its own among the
+ten, and uses the tap.
+
+**Control added, and fired:** `board-motion-follows-the-invaders` (the comparison made by a
+piece's name: the test fails saying a group that walked a step came out as an arrival and a leave).
+
+### Built: the camera (the fourth of the five)
+
+**There is no camera.** The board's own element is drawn larger and shifted, one transform, eased
+over half a second. `packages/ui/src/board/camera.ts` is the arithmetic: given what just changed,
+which part of the board should fill the play area.
+
+| When | What it does |
+|---|---|
+| The player is choosing, and a piece only moved | Nothing. It stays wide |
+| The player is choosing, and something was swallowed, coated, killed, or an organ was hurt | In, to 1.3 times, on where it happened. Wide again 0.9 s later |
+| The spread is playing, and a beat changed something | In, to 1.8 times, on what changed. It follows each beat, and goes wide 1.3 s after the last |
+| What changed is spread across the whole board | It stays wide |
+| A finger touches the board | Wide at once |
+| The phone asks for less motion | It never moves |
+
+- **Why a plain move is left alone.** The plan's rule is that it moves in "on the action being
+  taken". Moving a piece is the commonest thing a player does and needs no explaining; a board that
+  leaned in after every step would never hold still. This is a reading of the rule, and his to
+  overrule when he names what he wants changed.
+- **It never shows what is not board.** The part shown is kept inside the picture, so moving in on
+  an organ at the rim does not bring the empty table in from the side.
+- **A tap is read where the board is drawn at that instant,** so a tap while it is in, or on its
+  way back, still lands on what the finger touched.
+- **In the bloodstream the pieces are 1.8 times larger while it is in:** about 20 px each where they
+  were 11. That is the answer the proposal gave for the crowded bloodstream, and it applies only
+  while the spread plays or just after an attack there.
+
+**The board's picture, measured before a size was chosen,** as the proposal said it would be.
+
+| The board's picture, as WebP | Size |
+|---|---|
+| 1,200 px across, what was drawn until now | 84 KB |
+| 1,600 px | 121 KB |
+| 2,000 px | 162 KB |
+| 2,400 px | 214 KB |
+
+At 1.8 times on a 360 px phone with three device px to one, the board is 1,944 px across. **2,000 px
+is chosen:** one px of picture to one of screen at the furthest it goes in. The pieces' pictures
+were already large enough. What the phone stores to play offline is 2.86 MB, up from 2.69.
+
+**Seen, in a headless browser on the PC.**
+
+| Done | The camera |
+|---|---|
+| On the kit page: a plain move | Wide |
+| An engulf | In at 1.30 times after 0.65 s; wide again by 1.85 s |
+| A hurt organ, then a tap on the board | In at 1.30 times; wide after the tap |
+| A hurt organ, with less motion asked for | Wide |
+| In a game: the spread's "The march", and "Bacteria divide" | In at 1.80 times; wide after the spread |
+| At every reading | The board covered the whole play area |
+| The play screen left alone for two seconds, at seven stages | No layout, no style work, no script |
+
+**Not measured, and it is the thing the proposal named as the risk:** the frame rate while the
+camera moves, on the S25. Stage L2 measured pieces moving, not the whole board being enlarged. If
+it cannot hold 60 there, the camera is cut back; a GPU canvas is not added.
+
+**Control added, and fired:** `camera-keeps-the-board-in-view` (the keeping-in taken off one axis:
+the test fails naming an organ).
+
+### Built: the measuring page, and the audit re-aimed (the fifth of the five, before the phone)
+
+**The numbers are in [`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md).** The S25's table there is
+empty: running it is his step, and this pull request waits on it.
+
+**The measuring page,** `/measure.html`: the play screen itself, the one the app mounts, with a
+card over it and a Measure button. Pressed, the page plays three turns of one real game by pressing
+the screen's own controls, watches each spread at the ruled pace, and counts the frames the phone
+gives it. It says how many were slow, how slow, when in the run the slowest five came, and counts
+on their own the frames in which the camera was moving or in. It takes the place of the L2
+prototype, whose frame timer it carries over. `pnpm look:frames` opens the same page on the PC.
+
+- **A slow frame is 20 ms or more,** as at L2, so the two measurements can be read side by side.
+- **It says what it played** (moves, spreads, times the camera moved in), and a run that made no
+  move, did not end its turns, or never saw the camera move is refused as not reached. A reading is
+  of something or it is not a reading.
+- **The same game every time:** on this page alone the dice and the cards are drawn from a seeded
+  source.
+- **A developer's page,** like the kit page: served by the PC, never stored on a phone.
+
+**The accessibility audit is aimed at the new screen,** and run in full, alone and together:
+82 screens in each of its four passes (84 in one), nothing not reached, every check at zero,
+offline met. Getting there took nine findings, listed in the measurement record in the order they
+came. The three that changed the product:
+
+| Found | Changed |
+|---|---|
+| With no network the app came back blank: the play screen needed a script the phone did not store, and the build test passed | Fixed on the frame's branch, where it began ([`FINDINGS.md`](FINDINGS.md) #109). The build test now follows the app's page to every script it needs |
+| Beside six pips the event banner was 36 px wide and 148 px tall, and the top bar three lines high | While a banner is up the Action Points are said as a number. **This changes what he played:** the pips show only when nothing is in force. The banner's words were ruled in September; the pips are this stage's, so the pips gave way. His to overrule |
+| At 200% page zoom the top bar, the three tiles and Undo were wider than the page | Each wraps there |
+
+**Left open, and filed:** Settings still offers to show the first-game guidance again, and says the
+coach and the hints will appear, which they will not until L6 ([`FINDINGS.md`](FINDINGS.md) #111).
+
+**On the PC, the first time the camera moves in costs two slow frames,** 36 to 54 ms as it starts
+and 35 to 37 ms as it arrives, in each of three runs; its five later moves in a run cost none. The
+PC is not the phone. It is the thing to look for in the S25's numbers.
+
+**The L2 prototype is removed,** with `pixi.js` and `three` (20 packages leave the lockfile), as the
+L2 ruling said: the play screen has been measured on the S25 in its place, below. It is in the
+repository's history, last at commit `da7ad3f`.
+
+**Controls added, and fired:** `app-scripts-in-the-worker`, `worker-leaves-developer-pages`,
+`frame-banner-has-room`; the frame meter's own (`pnpm look:frames --control`: every frame made to
+waste 40 ms, and 311 of 311 reported slow); and five lines in the audit for the coach and the hints.
+
+### Measured on the S25, 1 October 2026: it holds 60
+
+Shantanu ran the measuring page on his S25 that night. **2,324 frames in 38.8 s at 16.7 ms; 6 of them
+slow, each one missed refresh, 33.4 ms at worst; 4 of the 6 while the camera was moving or in; no
+task over 50 ms.** Three turns of a real game: 9 moves, 3 spreads, the camera in 6 times.
+[`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md) has the card he sent, read line by line.
+
+- **The play screen holds 60 frames a second on the S25,** with its motion, its sound and its
+  camera. The thing the proposal named as the risk, the whole board drawn larger, costs two missed
+  refreshes the first time it happens in a game and one in each later turn's spread.
+- **On this measurement the camera stays as built.** The plan cuts it back only if the phone cannot
+  hold 60 with it.
+- **Open:** one run, in a browser tab. 120 frames a second is unmeasured. The measurement in the
+  app's own shell is L7's.
+- **The meter's second line was wrong, and his run showed it:** it stood on one missed refresh and
+  not between one and two, so it counted one of five frames of the same kind. It is moved.
+
+**With that, stage L4's five parts are built, played and measured.**
+
+### Ruled, 1 October 2026, late: the look is deployed now, and his review of it is the next day
+
+After the S25's numbers Shantanu wrote: *"For now let's focus on deployment if everything works.
+Then I will do a consolidated ui/ux review for what is left. If we want to do the scripted game
+before that I am fine with it. My review will anyhow be tomorrow so anythig we can do before that
+will also get reviewed then (meaning we should try to get any additional/new content in so it can
+also be reviewed)."*
+
+He had been told, in the message he was answering, that rulings 1 and 2 above keep the new look off
+the server until L6, and why. **This ruling replaces that part of both:**
+
+| Rulings 1 and 2 said | Now |
+|---|---|
+| `main` is a mix of two looks and is not deployed until L5 is done | **`main` is deployed as it stands,** once what is built has merged: the play screen in Clay, every other screen as it was |
+| The new look does not reach the server before L6, because the coach and the hints are off | **It reaches the server with the coach and the hints off.** A newcomer on the live app has How to play and nothing else until the guided game arrives |
+
+- **What "if everything works" was taken to ask for, and what was done:** the audit clean on the
+  build that is deployed, alone and together; the Settings row that promised the coach taken off
+  the screen ([`FINDINGS.md`](FINDINGS.md) #111); the deploy script's own start check. The relay
+  is not touched: nothing in L4 changed the protocol, the room or the rules.
+- **His review is of the whole app as deployed,** and he names what to change then. What he said
+  after playing the board, frame and panels stands: the improvements are his to name.
+- **More may be built before that review** so that it is reviewed with the rest: the other screens
+  (L5), and the guided game (L6) if there is time. Building them is not approving them.
+- **The pull requests:** the rest of L4 went up as one, not four, to reach a deploy sooner; he had
+  played all of it by then.

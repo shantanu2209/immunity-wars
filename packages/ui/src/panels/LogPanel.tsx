@@ -19,6 +19,9 @@ import { useState } from 'react';
 
 import { engineLogText } from '../engineText';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR, RADIUS } from '../kit/tokens';
+import { SAY, TONE } from './onCard';
 
 export interface LogLine {
   t: number;
@@ -95,10 +98,11 @@ export function RichText({ text }: { text: string }): ReactElement {
   );
 }
 
-const COLOUR: Record<string, string> = {
-  good: '#2F6B4A',
-  bad: '#B03A2E',
-  big: '#2E2A28',
+/** What kind of line it is, in the panels' own tones (`onCard.ts`). */
+const LINE_COLOUR: Record<string, string> = {
+  good: TONE.good,
+  bad: TONE.bad,
+  big: COLOUR.ink,
 };
 
 export function LogPanel({
@@ -115,21 +119,20 @@ export function LogPanel({
     <div
       data-panel="log"
       style={{
+        // A sheet of its own, the kit's lighter cream: it is read on the messages' sheet in the
+        // game, and on the result screen, which is not redrawn until L5.
         marginTop: 6,
-        padding: '6px 8px',
-        border: '1.5px solid #C48377',
-        borderRadius: 10,
-        background: '#FFFDF9',
+        padding: '8px 10px',
+        borderRadius: RADIUS.control,
+        background: COLOUR.creamLit,
+        boxShadow: `inset 0 0 0 1.5px ${COLOUR.creamEdge}`,
+        ...SAY.body,
         fontSize: '0.8125rem',
       }}
     >
-      {titled ? (
-        <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
-          {t('log.title')}
-        </div>
-      ) : null}
+      {titled ? <div style={{ ...SAY.label, marginBottom: 2 }}>{t('log.title')}</div> : null}
       {shown.length === 0 ? (
-        <div style={{ color: '#78665D' }}>{t('log.empty')}</div>
+        <div style={{ color: COLOUR.inkSoft }}>{t('log.empty')}</div>
       ) : (
         shown.map((l, i) => {
           const r = engineLogText(l.msg);
@@ -142,13 +145,18 @@ export function LogPanel({
                 display: 'flex',
                 gap: 6,
                 padding: '3px 0',
-                borderTop: i === 0 ? 'none' : '1px solid #EADFD5',
-                color: COLOUR[l.kind] ?? '#4A423E',
-                fontWeight: l.kind === 'big' ? 700 : undefined,
+                borderTop: i === 0 ? 'none' : `1.5px solid ${COLOUR.creamEdge}`,
+                color: LINE_COLOUR[l.kind] ?? COLOUR.ink,
+                fontWeight: l.kind === 'big' ? 800 : undefined,
               }}
             >
               <span
-                style={{ color: '#78665D', fontSize: '0.6875rem', flex: '0 0 auto', paddingTop: 2 }}
+                style={{
+                  color: COLOUR.inkSoft,
+                  fontSize: '0.75rem',
+                  flex: '0 0 auto',
+                  paddingTop: 1,
+                }}
               >
                 {t('log.turn', { n: l.t })}
               </span>
@@ -160,21 +168,12 @@ export function LogPanel({
         })
       )}
       {lines.length > SHOWN ? (
-        <button
-          onClick={() => setAll((v) => !v)}
-          style={{
-            minHeight: 44,
-            width: '100%',
-            fontSize: '0.875rem',
-            marginTop: 4,
-            borderRadius: 8,
-            border: '1.5px solid #8E6E53',
-            background: '#FFFDF9',
-            cursor: 'pointer',
-          }}
+        <KitButton
+          onPress={() => setAll((v) => !v)}
+          style={{ minHeight: 44, fontSize: '0.875rem', marginTop: 6, marginBottom: 6 }}
         >
           {all ? t('log.showFewer') : t('log.showAll', { n: lines.length })}
-        </button>
+        </KitButton>
       ) : null}
     </div>
   );

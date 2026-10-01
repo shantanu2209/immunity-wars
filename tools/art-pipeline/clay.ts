@@ -361,6 +361,7 @@ async function ingest(): Promise<void> {
  */
 const TABLE = 'board';
 const TABLE_WIDTH = 400;
+const TABLE_SCALES = [1, 2, 3, 5];
 const TABLE_FEATHER = 0.012;
 /** How far the board's ground may sit from the swatch the pieces were measured on. */
 const GROUND_DRIFT = 1.15;
@@ -547,7 +548,9 @@ async function build(
     failures.push(...v.failures.map((x) => `[table] ${x}`));
     mkdirSync(join(outDir, 'table'), { recursive: true });
     const out: Asset['files'] = {};
-    for (const scale of [1, 2, 3]) {
+    // The fourth size is for when the camera has moved in (stage L4): the board is then drawn up
+    // to 1.8 times larger, and at three device px to one that is 1,944 px across on a 360 px phone.
+    for (const scale of TABLE_SCALES) {
       const px = TABLE_WIDTH * scale;
       const buf = await sharp(input)
         .resize({ width: px, kernel: 'lanczos3' })

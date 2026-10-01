@@ -5452,3 +5452,82 @@ out. Nothing was lost to it: the why-box test was run directly on each change to
 now moves with each of them, measured. `pnpm turbo:check`, inside `verify`, asserts they are in the
 hash, and control `turbo-outside-reads-hashed` removes one and sees the check fail. **An instrument
 defect, fixed inline.**
+
+## 109. Drawn from the kit, the play screen needed a script the phone did not store: with no network the app came back blank, and the build test passed — FIXED inline 1 October 2026
+
+**Found 1 October 2026 by the Gate 1 audit's offline pass**, on its first run against the Clay play
+screen (stage L4): with the network cut, a turn was played, the page was reloaded, and *the page
+loaded but the app did not render*. The one request that failed was `assets/kit-….js`.
+
+**What happened.** At stage L3 the kit page was kept off a player's phone by three exclusions in
+`packages/app/vite.config.ts`, one of them `assets/kit-*`, which then matched one file: the kit
+page's own script. At stage L4 the play screen's frame was drawn from the kit's components. The
+build puts what two pages share into a script of its own and names it after what is in it: the
+kit's components became `assets/kit-….js`, which the app's page needs, and the exclusion matched
+that too. The app started while the network was there, and could not start without it.
+
+**Why nothing said so.** `entries-build.test.ts` held the exclusion with "nothing of the kit is
+stored", read as "nothing in the worker's list has `kit` in its name". It had a control, which
+fired: with the exclusion removed the test failed. It had nothing that required the list to hold
+what the app needs. **"Forbid X" is half a specification** (CLAUDE.md, the rule P2.1 earned): the
+rule forbade more than it should, and forbidding more only makes a must-fail control pass harder.
+The pictures had their must-pass half ("every picture the board draws is stored") and the scripts
+did not.
+
+**How far it reached.** The branch with the board alone (`look/l4-board`) was built and read: its
+page needs four scripts and all four are stored. It starts with the frame's branch
+(`look/l4-frame`), and is fixed on that branch, before its pull request was opened. It was never on
+`main` and never deployed.
+
+**Fixed.**
+
+- The kit page's key in the build's `input` is `kitPage`, so its own script is `assets/kitPage-….js`,
+  and the exclusion names that. A shared script is stored whatever the build calls it.
+- `entries-build.test.ts` reads the app's page from the build, follows each script to the scripts it
+  imports until nothing new is found, and requires every one of them in the worker's list. It
+  refuses to pass on a page it read no script from.
+- Control `app-scripts-in-the-worker` puts the old exclusion back and sees the test fail, naming
+  the script. `clay-not-in-the-worker` and `clay-board-art-in-the-worker` still fire.
+
+**An instrument defect and a product defect together; both fixed inline,** because the instrument
+was passing a build that could not start offline, which Gate 1 requires. What caught it was the
+check that plays the built app with the network cut, not the one that reads a list of names.
+
+## 110. In a fresh checkout on Windows a self-test control did nothing, because Python files were checked out with Windows line ends — FIXED inline 1 October 2026
+
+**Found 1 October 2026** by `pnpm ci:selftest:inert`, inside `pnpm verify`, the first time verify was
+run in a second, fresh checkout of the repository on the Windows PC (made to fix #109 on its own
+branch): *1 of 158 controls are inert*, `clay-board-read-where-geometry-says`.
+
+The control changes `PAD = 24` in `tools/art-pipeline/clay/board.py` by matching the line with its
+line ends. `.gitattributes` pins `.ts`, `.json`, `.md` and the rest to Unix line ends and said
+nothing of `.py`, so a fresh Windows checkout wrote `board.py` with Windows ones and the match found
+nothing. In the working checkout the file had been written by hand with Unix line ends, and on CI's
+Linux it always has them, so the control fired everywhere it had been run.
+
+**Fixed:** `*.py text eol=lf` in `.gitattributes`. The control fires in the fresh checkout. **An
+instrument defect, fixed inline**, and a control that does nothing is what the inert check was put
+into every verify to find (#100).
+
+## 111. With the coach and the hints off, Settings still offered to show them again, and said they would appear — FIXED 1 October 2026, before the look was deployed
+
+**Found 1 October 2026**, while the Gate 1 audit was re-aimed at the Clay play screen. Ruling 2 of
+stage L4 (`docs/LOOK_PLAN.md` §14) switched the coach and the first-encounter hints off until the
+guided game replaces them at L6. Settings still has the row *First game guidance*, *Show it again*,
+and its confirmation says that the coach and the short lines will appear again. They will not.
+The row still does one thing: it brings back the difficulty screen's *Recommended for your first
+game*.
+
+**Filed, and then fixed the same evening,** because what made it safe to leave was gone. It was
+left on the ground that nothing reached a player before L6. That evening Shantanu ruled the look
+deployed now (`docs/LOOK_PLAN.md` §14), so a player would have read a row that says something
+false.
+
+**Fixed:** the row is not drawn while there is no guidance to show. The shell hands the Settings
+screen no way to show it again, and the screen draws the row only when it is handed one. The
+difficulty screen's *Recommended for your first game*, which the row also brought back, can no
+longer be brought back on a device that has played; nothing else is lost. The Gate 1 audit, which
+used to measure the row's confirmation as a screen, now records in every pass that the row is not
+there; a unit test holds the screen, and control `settings-no-guidance-row-when-off` draws the row
+regardless and sees the test fail. **To decide at L6:** whether the row comes back as the way into
+the guided game.

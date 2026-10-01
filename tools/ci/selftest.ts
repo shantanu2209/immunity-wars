@@ -1005,11 +1005,27 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/app/vite.config.ts',
     mutate: (t) =>
       t.replace(
-        "const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kit-*'];",
+        "const CLAY_NOT_YET = [\n  '**/art/clay/**',\n  'kit.html',\n  'assets/kitPage-*',\n  'measure.html',\n  'assets/measurePage-*',\n];",
         'const CLAY_NOT_YET: string[] = [];',
       ),
     gate: 'pnpm --filter @immunity-wars/app test',
     expect: 'THE WORKER STORES THE CLAY KIT',
+  },
+  {
+    id: 'worker-leaves-developer-pages',
+    why: 'Stage L4, measured before the S25 was sent to the measuring page: a phone that had opened the app got the app’s title for /kit.html and /measure.html, because its worker answers every page it does not store with index.html. With the exception removed from the app build, the build test must FAIL saying the worker answers a developer’s page with the app.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace('        navigateFallbackDenylist: DEVELOPER_PAGES,\n', ''),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER ANSWERS A DEVELOPER',
+  },
+  {
+    id: 'app-scripts-in-the-worker',
+    why: 'Stage L4, found by the Gate 1 audit’s offline pass: the exclusion written for the kit page, `assets/kit-*`, also matched the script the build made of the kit’s components once the play screen used them, so the app needed a script the phone did not store and came back blank with no network, while the build test (which forbade anything named `kit`) passed. With that exclusion put back, the build test must FAIL naming the script the worker does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace("'assets/kitPage-*'", "'assets/kit*'"),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER DOES NOT STORE A SCRIPT THE APP NEEDS: assets/kit-',
   },
   {
     id: 'kit-motion-less-motion-is-still',
@@ -1026,6 +1042,86 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) => t.replace('    if (this.muted) return false;\n', ''),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'KIT SOUND: a muted kit made a sound',
+  },
+  {
+    id: 'frame-flat-action-still-answers',
+    why: 'Stage L4: the play screen’s frame is built from the kit. An action that cannot be used is drawn flat, and a press on it is how the player asks why; the kit’s own unavailable button takes no press. With the frame’s actions made unavailable the kit’s plain way, the frame test must FAIL saying a flat action cannot be pressed.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '              unavailable={!row.available}\n              explains\n',
+        '              unavailable={!row.available}\n',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A FLAT ACTION CANNOT BE PRESSED',
+  },
+  {
+    id: 'camera-keeps-the-board-in-view',
+    why: 'Stage L4: the camera is the board drawn larger and shifted. Moved in on an organ at the rim and centred on it, the board would be pushed past the play area and the empty table shown beside it. The part shown is kept inside the picture. With that keeping-in taken off one axis, the camera test must FAIL naming an organ.',
+    file: 'packages/ui/src/board/camera.ts',
+    mutate: (t) =>
+      t.replace(
+        'x: within((x0 + x1) / 2, CLAY_VIEW.x + halfW, CLAY_VIEW.x + CLAY_VIEW.w - halfW),',
+        'x: (x0 + x1) / 2,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE CAMERA SHOWS WHAT IS NOT BOARD: moved in on the',
+  },
+  {
+    id: 'board-motion-follows-the-invaders',
+    why: 'Stage L4: the board moves a piece by knowing it is the one that stood elsewhere a moment ago. A piece that stands for invaders has its step in its key, so compared by key a group that walks a step is one piece gone and another come, and the board would fade and pop where it should walk. With the comparison made by key, the test must FAIL saying what the walk came out as.',
+    file: 'packages/ui/src/board/changes.ts',
+    mutate: (t) =>
+      t.replace(
+        'const from = p.ids.map((id) => wasIn.get(id)).find((old) => old !== undefined);',
+        'const from = was.get(p.key);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'BOARD MOTION: a group that walked a step came out as',
+  },
+  {
+    id: 'play-screen-colours-are-the-kits',
+    why: 'Stage L4: every pairing of the kit’s colours that carries words is measured against Gate 1’s bound. A colour written straight into a screen is outside that, measured by nothing, and is how the old screens’ colours would come back one line at a time. With one old colour written into a redrawn panel, the test must FAIL naming the file and the colour.',
+    file: 'packages/ui/src/panels/PieceStrip.tsx',
+    mutate: (t) =>
+      t.replace(
+        'data-pieces-none="" style={SAY.quiet}',
+        'data-pieces-none="" style={{ color: \'#78665D\' }}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
+  },
+  {
+    id: 'settings-no-guidance-row-when-off',
+    why: 'FINDINGS #111: with the coach and the hints off from stage L4, the Settings row that offers to show them again says something false, so it is not drawn when the shell gives the screen nothing to show. With the row drawn regardless, the Settings test must FAIL saying Settings offers the guidance when there is none.',
+    file: 'packages/ui/src/screens/SettingsScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        '        ...(onResetHints === null\n          ? []\n          : [',
+        '        ...(onResetHints === undefined\n          ? []\n          : [',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'SETTINGS OFFERS THE FIRST-GAME GUIDANCE WHEN THERE IS NONE TO SHOW',
+  },
+  {
+    id: 'frame-banner-has-room',
+    why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace('  if (banner) return 0;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE BANNER HAS NO ROOM',
+  },
+  {
+    id: 'frame-pips-show-what-is-left',
+    why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '<KitPips have={ap.have} of={of} label="" />',
+        '<KitPips have={of} of={of} label="" />',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE PIPS DO NOT SHOW WHAT IS LEFT',
   },
   {
     id: 'clay-page-and-blender-agree',
@@ -1057,7 +1153,7 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/app/vite.config.ts',
     mutate: (t) =>
       t.replace(
-        "const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*'];",
+        "const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];",
         'const CLAY_ON_THE_BOARD: string[] = [];',
       ),
     gate: 'pnpm --filter @immunity-wars/app test',
