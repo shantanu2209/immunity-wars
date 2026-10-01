@@ -1,5 +1,10 @@
 # Phase 2 — PAUSED, 20 September 2026. Not closed.
 
+> **RESUMED 1 October 2026**, as "the look" ([`LOOK_PLAN.md`](LOOK_PLAN.md);
+> [`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0). The three items owed below are carried by that plan:
+> the handset pass is measured on the Samsung Galaxy S25 alone, by ruling; the newcomer test is run
+> on the guided game; Gate 2 is the plan's last gate. This note is kept as the record of the pause.
+
 **Ruled by Shantanu, 20 September 2026:** *"Can we pause phase 2 at this stage, the ux is quite
 acceptable at this stage. We may of course have further refinement and beautification later but it's
 enough for now. Things work the way they are supposed to."*
