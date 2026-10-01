@@ -970,7 +970,7 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-manifest-not-measured',
     why: 'The manifest is the contract the app reads, and it must record what was measured, never what was hoped. A measured ratio edited by hand in the manifest, with the render untouched, must turn the check red.',
-    file: 'tools/art-pipeline/clay/out/manifest.json',
+    file: 'tools/art-pipeline/clay/built/manifest.json',
     mutate: (t) => t.replace(/"board": \d+\.?\d*/, '"board": 9.99'),
     gate: 'pnpm art:clay:check',
     expect: 'MANIFEST RECORDS WHAT WAS NOT MEASURED',
@@ -978,7 +978,7 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-output-not-recorded',
     why: 'An output picture that is not the one the manifest records (rebuilt by hand, edited, or left behind by an older run) must turn the check red: the app would be showing a picture the gate never saw.',
-    file: 'tools/art-pipeline/clay/out/manifest.json',
+    file: 'tools/art-pipeline/clay/built/manifest.json',
     mutate: (t) => t.replace(/"sha256": "[0-9a-f]{8}/g, '"sha256": "00000000'),
     gate: 'pnpm art:clay:check',
     expect: 'OUTPUT IS NOT WHAT THE MANIFEST RECORDS',

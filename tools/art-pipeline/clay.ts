@@ -34,10 +34,10 @@
  *
  * Usage:
  *   pnpm art:clay --ingest     clay/_png/ (Blender's output, not committed) -> clay/renders/
- *   pnpm art:clay              gate, and build clay/out/ with its manifest
+ *   pnpm art:clay              gate, and build clay/built/ with its manifest
  *   pnpm art:clay --control    run the gate's controls, build nothing
  *   pnpm art:clay --check      re-measure and compare, encode nothing (on every `pnpm verify`)
- *   pnpm art:clay --verify     rebuild to a temp dir, byte-compare with the committed clay/out/
+ *   pnpm art:clay --verify     rebuild to a temp dir, byte-compare with the committed clay/built/
  */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -56,7 +56,9 @@ const RENDERS = join(CLAY, 'renders');
  * (the next pull request), together with the rule that keeps it out of the players' download
  * until a screen uses it. Until something consumes it, it does not ship.
  */
-const OUT = join(CLAY, 'out');
+// Not `out`: the repository ignores every folder of that name, and an ignored output is an
+// output CI has never seen (found by counting the files in the first commit: 59, not 207).
+const OUT = join(CLAY, 'built');
 
 const MIN_CONTRAST = 3.0;
 const VIEWS = { board: 100, card: 120 } as const;

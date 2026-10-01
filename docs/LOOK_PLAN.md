@@ -319,6 +319,6 @@ grey at first, from the lamps' reflection on a dark surface, and is nearly matt 
   set with no board swatch is refused, never passed for want of a ground. With the bound raised to
   4:1 the real set fails, which shows the gate reads the pictures. A ratio edited in the manifest,
   and an output file that is not the recorded one, each turn the check red.
-- **The output's home is `tools/art-pipeline/clay/out/` for now.** It moves under the app with the
+- **The output's home is `tools/art-pipeline/clay/built/` for now.** It moves under the app with the
   kit page, in the next pull request, together with the rule that keeps it out of the players'
   download until a screen uses it. Nothing a player gets has changed.
