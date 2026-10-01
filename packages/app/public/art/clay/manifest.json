@@ -1,0 +1,1865 @@
+{
+  "generator": "tools/art-pipeline/clay.ts",
+  "minContrast": 3,
+  "grounds": {
+    "board": "#1c484d",
+    "well": "#193033",
+    "rim": "#fde7c5"
+  },
+  "provenance": {
+    "tool": "Blender, Cycles; modelled and rendered by tools/art-pipeline/clay/pieces.py",
+    "date": "2026-10-01",
+    "account": "none: free software, no service used",
+    "tosChecked": "not applicable",
+    "redistribution": "none declared, as for all content; nothing in the origin restricts it"
+  },
+  "assets": {
+    "board/bacteria-EXB": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#a7b147",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 4.32,
+          "well": 6
+        }
+      },
+      "source": {
+        "file": "renders/board/bacteria-EXB.webp",
+        "sha256": "e41822f8eb6f48621e6fda73362b7a01e50311b4bbd7633d488b788afeab32d6"
+      },
+      "files": {
+        "1x": {
+          "file": "board/bacteria-EXB@1x.webp",
+          "px": 100,
+          "bytes": 1798,
+          "sha256": "0f70971283c7e7770669ef0b7ba7833079a367830958c40dcdb80d3d646d240d"
+        },
+        "2x": {
+          "file": "board/bacteria-EXB@2x.webp",
+          "px": 200,
+          "bytes": 4488,
+          "sha256": "7934caff8a025a54b6fc27c2d947dfc41ae49af8c5655dda446c586fe29d1cd8"
+        },
+        "3x": {
+          "file": "board/bacteria-EXB@3x.webp",
+          "px": 300,
+          "bytes": 7702,
+          "sha256": "3e4aad059aab86dbaf9411975df206a56c49f4ee1744d4122496a6f55be6fd9d"
+        }
+      }
+    },
+    "board/bacteria-EXB-coated": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#b8b249",
+        "share": 0.11,
+        "edge": 0,
+        "against": {
+          "board": 4.56,
+          "well": 6.34
+        }
+      },
+      "source": {
+        "file": "renders/board/bacteria-EXB-coated.webp",
+        "sha256": "e1eb28960f8bb1f508a485b4d59a8bdf04ed6d6dace6dc1f144cb5ad5523881d"
+      },
+      "files": {
+        "1x": {
+          "file": "board/bacteria-EXB-coated@1x.webp",
+          "px": 100,
+          "bytes": 3496,
+          "sha256": "6d048a7095ddf51c70024e90848db748dc23a027f7372e3d2927140a5f8e5f00"
+        },
+        "2x": {
+          "file": "board/bacteria-EXB-coated@2x.webp",
+          "px": 200,
+          "bytes": 8300,
+          "sha256": "bcaebdea0513be27c339405483feac2cd6d35762c2670d1e3ace2363f580d4ef"
+        },
+        "3x": {
+          "file": "board/bacteria-EXB-coated@3x.webp",
+          "px": 300,
+          "bytes": 14448,
+          "sha256": "c4737f4f7e79bd1e8e4e3df2f2f74ab8f92949232b44851f25b00dee0a9f7a22"
+        }
+      }
+    },
+    "board/bacteria-ICB": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#43b89f",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 4.11,
+          "well": 5.71
+        }
+      },
+      "source": {
+        "file": "renders/board/bacteria-ICB.webp",
+        "sha256": "15eefd149ad8982545b4c021f9bf9ae4eb6dcb4fe45badebbb23f58472f1847b"
+      },
+      "files": {
+        "1x": {
+          "file": "board/bacteria-ICB@1x.webp",
+          "px": 100,
+          "bytes": 1780,
+          "sha256": "20f86317a42d4ddc8412e3c07121deb82698ccec82de9d03c8478b0459472a32"
+        },
+        "2x": {
+          "file": "board/bacteria-ICB@2x.webp",
+          "px": 200,
+          "bytes": 4448,
+          "sha256": "c0403fa44384c429f1dca889981efcb886ccb223467c14edfcc99fb9c223835c"
+        },
+        "3x": {
+          "file": "board/bacteria-ICB@3x.webp",
+          "px": 300,
+          "bytes": 7702,
+          "sha256": "3115c0ff0e8087614d9fc5977603f09702dc5a585afaba33fa68c850f2a58823"
+        }
+      }
+    },
+    "board/bacteria-ICB-coated": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#6db78b",
+        "share": 0.11,
+        "edge": 0,
+        "against": {
+          "board": 4.23,
+          "well": 5.88
+        }
+      },
+      "source": {
+        "file": "renders/board/bacteria-ICB-coated.webp",
+        "sha256": "696c56fb34831dafb57213d3504e94b6177118e67b631f8ef45e77ce87bda053"
+      },
+      "files": {
+        "1x": {
+          "file": "board/bacteria-ICB-coated@1x.webp",
+          "px": 100,
+          "bytes": 3512,
+          "sha256": "e2d0f579f6deccf2aa6d1f41889e98d9ca79fde8f6adbf3b5d5f091f5db86267"
+        },
+        "2x": {
+          "file": "board/bacteria-ICB-coated@2x.webp",
+          "px": 200,
+          "bytes": 8302,
+          "sha256": "a495d4f2e82ef11741c0a2468e165baa3de31434a39d82d94649f018a1d5f8ff"
+        },
+        "3x": {
+          "file": "board/bacteria-ICB-coated@3x.webp",
+          "px": 300,
+          "bytes": 14464,
+          "sha256": "dabd6b828b64493a7d45d17cf8d2b0385eb6b0e52b07f3a5cbbf3dec476f7ccb"
+        }
+      }
+    },
+    "board/base": {
+      "view": "board",
+      "kind": "base",
+      "displayPx": 100,
+      "measured": {
+        "body": "#fde7c5",
+        "share": 0,
+        "edge": 0,
+        "against": {
+          "board": 8.37
+        }
+      },
+      "source": {
+        "file": "renders/board/base.webp",
+        "sha256": "7e975a2c7683cdc31b0aef42180c134a6d774ddd732e3e1303e27477cdebb370"
+      },
+      "files": {
+        "1x": {
+          "file": "board/base@1x.webp",
+          "px": 100,
+          "bytes": 1880,
+          "sha256": "4e5dc23fc925af9989280d3bbfff7b4389f4d98f4329beaef0745aa55e22c40f"
+        },
+        "2x": {
+          "file": "board/base@2x.webp",
+          "px": 200,
+          "bytes": 4210,
+          "sha256": "bd7990e8fa5d2a867bba132ee991aa8f917d919dc8c0ff5042147c343a3980ef"
+        },
+        "3x": {
+          "file": "board/base@3x.webp",
+          "px": 300,
+          "bytes": 6768,
+          "sha256": "5a65d7aab52230fe2bb97bf8378749a1d2ef6361bdaea8d70cba5df0e47d2451"
+        }
+      }
+    },
+    "board/bcell": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#8ba4c4",
+        "share": 0.16,
+        "edge": 0,
+        "against": {
+          "well": 5.45
+        }
+      },
+      "source": {
+        "file": "renders/board/bcell.webp",
+        "sha256": "c4ba4e59f206edb668ef4b1dbfb79730118f995654d6bfafc09f06b3165ea941"
+      },
+      "files": {
+        "1x": {
+          "file": "board/bcell@1x.webp",
+          "px": 100,
+          "bytes": 3912,
+          "sha256": "ea1208c83d3a888754dba23094c4fadfaf308e32357ecd0e39be1602be2653b8"
+        },
+        "2x": {
+          "file": "board/bcell@2x.webp",
+          "px": 200,
+          "bytes": 9222,
+          "sha256": "015bb69559ed14b67032e1892d28acbf04987cc8fa4ca0ef332ffa46fc3710b6"
+        },
+        "3x": {
+          "file": "board/bcell@3x.webp",
+          "px": 300,
+          "bytes": 16560,
+          "sha256": "ce3f4f01795e5ccb65c1332ae3e3ce5224478a58bf0bc17cd51b0ba05448a66d"
+        }
+      }
+    },
+    "board/eosinophil": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#eb9d9f",
+        "share": 0.19,
+        "edge": 0,
+        "against": {
+          "well": 6.55
+        }
+      },
+      "source": {
+        "file": "renders/board/eosinophil.webp",
+        "sha256": "beac9d9963d612b5993c85aa6457c6ae3718fd9c3be3a882eeb3632e93c18655"
+      },
+      "files": {
+        "1x": {
+          "file": "board/eosinophil@1x.webp",
+          "px": 100,
+          "bytes": 2376,
+          "sha256": "f4550ec2d5692a85a9cfb6291cb301b00eb70bf8b56490856291392068334b7c"
+        },
+        "2x": {
+          "file": "board/eosinophil@2x.webp",
+          "px": 200,
+          "bytes": 5570,
+          "sha256": "a7255b4042f120afa9fa3500792b7303cf2d6e439d6f7dfa995e162aec850db6"
+        },
+        "3x": {
+          "file": "board/eosinophil@3x.webp",
+          "px": 300,
+          "bytes": 9156,
+          "sha256": "cf936bc3a364096fefe61d42c4d72ba5c9f51eb1d774261dc26723ac71cbb02c"
+        }
+      }
+    },
+    "board/fungus-EUK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#e783e4",
+        "share": 0.1,
+        "edge": 0,
+        "against": {
+          "board": 4.19,
+          "well": 5.82
+        }
+      },
+      "source": {
+        "file": "renders/board/fungus-EUK.webp",
+        "sha256": "9665f0dc5e66624bf4efa0d3d85dfdb278c35ec914c9422e04da3cc2191d715d"
+      },
+      "files": {
+        "1x": {
+          "file": "board/fungus-EUK@1x.webp",
+          "px": 100,
+          "bytes": 1830,
+          "sha256": "7f3544d201cd854f8af6d94b4803f3a41ead76ab666e1eccede700a88652ea6f"
+        },
+        "2x": {
+          "file": "board/fungus-EUK@2x.webp",
+          "px": 200,
+          "bytes": 4144,
+          "sha256": "23dfe3b12d4c6f909178802bf3d9a9edf1bf03d3688506f9e0f322b105ff210e"
+        },
+        "3x": {
+          "file": "board/fungus-EUK@3x.webp",
+          "px": 300,
+          "bytes": 7092,
+          "sha256": "dafa4760438e576fedd3ee0c8a328067900db3f9d47efab2c8d234331442602a"
+        }
+      }
+    },
+    "board/helper": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#eebd62",
+        "share": 0.16,
+        "edge": 0,
+        "against": {
+          "well": 8.06
+        }
+      },
+      "source": {
+        "file": "renders/board/helper.webp",
+        "sha256": "270193d66a001ecaf711a57ba3b1552e3e9b2165d294076eb7e31a505c6cc00b"
+      },
+      "files": {
+        "1x": {
+          "file": "board/helper@1x.webp",
+          "px": 100,
+          "bytes": 3004,
+          "sha256": "0dc8dcf5282b8b7d63f3ed764872279e8beecad21ee3d206454461eb37556164"
+        },
+        "2x": {
+          "file": "board/helper@2x.webp",
+          "px": 200,
+          "bytes": 7268,
+          "sha256": "06ab62143a3f87366f9802c6554037a83466eba5588cd5b625a2a9cf40268cb8"
+        },
+        "3x": {
+          "file": "board/helper@3x.webp",
+          "px": 300,
+          "bytes": 12360,
+          "sha256": "5ef99632f1618f9e79ec8524843d0fe1e45298ca6969ddaa449c29caee6fb1c8"
+        }
+      }
+    },
+    "board/hidden-ENV": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#ecc39d",
+        "share": 0.19,
+        "edge": 0,
+        "against": {
+          "board": 6.16,
+          "well": 8.56
+        }
+      },
+      "source": {
+        "file": "renders/board/hidden-ENV.webp",
+        "sha256": "28f582919402a199b4dcc97d3f325b8bc52fb6c36c9c078bd16c3cd05c561220"
+      },
+      "files": {
+        "1x": {
+          "file": "board/hidden-ENV@1x.webp",
+          "px": 100,
+          "bytes": 2104,
+          "sha256": "66c142cc9701a17ab4fd419caf4848d94d119cd61cb4a78001b173866451b1c9"
+        },
+        "2x": {
+          "file": "board/hidden-ENV@2x.webp",
+          "px": 200,
+          "bytes": 4782,
+          "sha256": "e0eefd7ac36990c3125e2ad0588bea87e9df037c2c29ca8bb8e7117100fc9c4f"
+        },
+        "3x": {
+          "file": "board/hidden-ENV@3x.webp",
+          "px": 300,
+          "bytes": 8120,
+          "sha256": "4a9856ca3394866bb306e835e553803585b566e75605900b50428b92a548e3bc"
+        }
+      }
+    },
+    "board/hidden-EUK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#ecc7ac",
+        "share": 0.19,
+        "edge": 0,
+        "against": {
+          "board": 6.39,
+          "well": 8.88
+        }
+      },
+      "source": {
+        "file": "renders/board/hidden-EUK.webp",
+        "sha256": "942169c1a9ce9aed74b4e999c49a895b11ebb9f601a518c69d90ff79343040b5"
+      },
+      "files": {
+        "1x": {
+          "file": "board/hidden-EUK@1x.webp",
+          "px": 100,
+          "bytes": 2096,
+          "sha256": "5c370d241db2f49d1d53261e7ca4065208f7e53fac5c25244e84ae1782e61359"
+        },
+        "2x": {
+          "file": "board/hidden-EUK@2x.webp",
+          "px": 200,
+          "bytes": 4836,
+          "sha256": "303a80e2e61e7499a87921089fd029b7f25135b775d4d66a5fff570be3338808"
+        },
+        "3x": {
+          "file": "board/hidden-EUK@3x.webp",
+          "px": 300,
+          "bytes": 8058,
+          "sha256": "4241327df2ac9e378377df3106f1e506a37afbf50deb72cca8d3e670ef6ba930"
+        }
+      }
+    },
+    "board/hidden-NAK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#edc79a",
+        "share": 0.19,
+        "edge": 0,
+        "against": {
+          "board": 6.32,
+          "well": 8.79
+        }
+      },
+      "source": {
+        "file": "renders/board/hidden-NAK.webp",
+        "sha256": "e408fde89fa749cadbe71a5dc49db47e1933f94762965c1ace2d84f9f2d742ab"
+      },
+      "files": {
+        "1x": {
+          "file": "board/hidden-NAK@1x.webp",
+          "px": 100,
+          "bytes": 2112,
+          "sha256": "3f399927553e0e8e42fd3ed4a6fe3c1fa4a09a229a349a51088ea6f39d67ff7e"
+        },
+        "2x": {
+          "file": "board/hidden-NAK@2x.webp",
+          "px": 200,
+          "bytes": 4828,
+          "sha256": "c3f54dc3f477c42c68ebbbf4b34fa1385c5684fddcc011ca6a99f95edfb82b22"
+        },
+        "3x": {
+          "file": "board/hidden-NAK@3x.webp",
+          "px": 300,
+          "bytes": 8102,
+          "sha256": "19705a9fddfd643b649bd253f5aacf124bd2661088b40893769154fe78c39245"
+        }
+      }
+    },
+    "board/macrophage": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#55af95",
+        "share": 0.21,
+        "edge": 0,
+        "against": {
+          "well": 5.27
+        }
+      },
+      "source": {
+        "file": "renders/board/macrophage.webp",
+        "sha256": "b4bc1f6136a667f545211bbafb9b019538b3ded6d266295003fd9cc20a58285a"
+      },
+      "files": {
+        "1x": {
+          "file": "board/macrophage@1x.webp",
+          "px": 100,
+          "bytes": 2558,
+          "sha256": "f87756d13cf47a19cd8fd5042ddecb9115552073ddb4a869dc0a4eade5b8c7ba"
+        },
+        "2x": {
+          "file": "board/macrophage@2x.webp",
+          "px": 200,
+          "bytes": 6254,
+          "sha256": "c7d3c8332e3eb10d24cda2c3d99392e46a579a7db661ea1fa5de03cc0bb2974c"
+        },
+        "3x": {
+          "file": "board/macrophage@3x.webp",
+          "px": 300,
+          "bytes": 10888,
+          "sha256": "ce818e240286383eb4cf291f99f5d75d19d90340145a19ddcb09821dc256a850"
+        }
+      }
+    },
+    "board/malaria-EUK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#ef7f78",
+        "share": 0.17,
+        "edge": 0,
+        "against": {
+          "board": 3.83,
+          "well": 5.32
+        }
+      },
+      "source": {
+        "file": "renders/board/malaria-EUK.webp",
+        "sha256": "df58a4bb90049fd56c1fc0a7a98241eca6894aab446c5ad176c8a88abde4c922"
+      },
+      "files": {
+        "1x": {
+          "file": "board/malaria-EUK@1x.webp",
+          "px": 100,
+          "bytes": 2104,
+          "sha256": "d8edf65b06544392721af1d96e7fe91eb95e2adb2fdf3e2f9c8872e809286a52"
+        },
+        "2x": {
+          "file": "board/malaria-EUK@2x.webp",
+          "px": 200,
+          "bytes": 4656,
+          "sha256": "a8df1c2ff559d20c170df292d9ce29db27965709e1271a4aa0e8aba7e3f27e1e"
+        },
+        "3x": {
+          "file": "board/malaria-EUK@3x.webp",
+          "px": 300,
+          "bytes": 7772,
+          "sha256": "87ecf56f2cd33aee0b87e754b87967fe49b7f2670d4e55576603049b905c6b1c"
+        }
+      }
+    },
+    "board/neutrophil": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#bfa3d9",
+        "share": 0.19,
+        "edge": 0,
+        "against": {
+          "well": 6.3
+        }
+      },
+      "source": {
+        "file": "renders/board/neutrophil.webp",
+        "sha256": "cd6e78935f64eb0966027e1c8d7c777a3c2678e0ab36f6a06523cdadcffed9a9"
+      },
+      "files": {
+        "1x": {
+          "file": "board/neutrophil@1x.webp",
+          "px": 100,
+          "bytes": 2174,
+          "sha256": "b7429cdadb47c6e0e0f3fb6565103cca38261b493f1284f1ef75eac531a206aa"
+        },
+        "2x": {
+          "file": "board/neutrophil@2x.webp",
+          "px": 200,
+          "bytes": 5056,
+          "sha256": "87fdd6e77b9704c844b62d3a3511f2883cf32cae412e88f96178d56e84c928e7"
+        },
+        "3x": {
+          "file": "board/neutrophil@3x.webp",
+          "px": 300,
+          "bytes": 8466,
+          "sha256": "fad5a23ba8acb2f681dd6235ffe20a46871b05df920071be51a1ffb17c3f9d90"
+        }
+      }
+    },
+    "board/nk": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#aaacc6",
+        "share": 0.18,
+        "edge": 0,
+        "against": {
+          "well": 6.27
+        }
+      },
+      "source": {
+        "file": "renders/board/nk.webp",
+        "sha256": "4927fad85b67bc11a1deda045bfcf5c5465fd01c5e286fcd2a086039673b0346"
+      },
+      "files": {
+        "1x": {
+          "file": "board/nk@1x.webp",
+          "px": 100,
+          "bytes": 2110,
+          "sha256": "28822b44bd90e351a6f86bca5f2f779e38d6378e03c12d52af27d18260bdcc75"
+        },
+        "2x": {
+          "file": "board/nk@2x.webp",
+          "px": 200,
+          "bytes": 4784,
+          "sha256": "ab697d0ab03d0024f6e7d882eaa4b1e72cf901ad3d1b0e348c17c7a249320ed7"
+        },
+        "3x": {
+          "file": "board/nk@3x.webp",
+          "px": 300,
+          "bytes": 7974,
+          "sha256": "62344948213989ceb281283aa03b5a6df088c8edfa53e73e04f00d52e5927d32"
+        }
+      }
+    },
+    "board/parasite-EUK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#e283dd",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 4.09,
+          "well": 5.68
+        }
+      },
+      "source": {
+        "file": "renders/board/parasite-EUK.webp",
+        "sha256": "86551ecd6ddc0de35eff8693668f4e0b28a3596d1b0983e049c4e7caae1e5bbb"
+      },
+      "files": {
+        "1x": {
+          "file": "board/parasite-EUK@1x.webp",
+          "px": 100,
+          "bytes": 1856,
+          "sha256": "8918523951a2d8ff96a91a2ff333536697c50da385bf7455f882b1eae1896b17"
+        },
+        "2x": {
+          "file": "board/parasite-EUK@2x.webp",
+          "px": 200,
+          "bytes": 4344,
+          "sha256": "72678b987197619ec71e4bd24275f6bd1f1af0392cfd09565e8d7b82fee97bd4"
+        },
+        "3x": {
+          "file": "board/parasite-EUK@3x.webp",
+          "px": 300,
+          "bytes": 7020,
+          "sha256": "6df1af27f88e0abcca98bdb2cd3f463c34878f89f91ba594dee34eb47a5bdddf"
+        }
+      }
+    },
+    "board/parasite-EUK-coated": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#e48aca",
+        "share": 0.07,
+        "edge": 0,
+        "against": {
+          "board": 4.2,
+          "well": 5.83
+        }
+      },
+      "source": {
+        "file": "renders/board/parasite-EUK-coated.webp",
+        "sha256": "f06e9813423327692f08030958bc072ad6c5f22a31678669b816228b280464f7"
+      },
+      "files": {
+        "1x": {
+          "file": "board/parasite-EUK-coated@1x.webp",
+          "px": 100,
+          "bytes": 2672,
+          "sha256": "b4a74572e28e695e9eb11602b0026acb134fada403c991731f283c1de0f619a8"
+        },
+        "2x": {
+          "file": "board/parasite-EUK-coated@2x.webp",
+          "px": 200,
+          "bytes": 6154,
+          "sha256": "8c54cc219a250d3ecb5ebc8399cefb540c942947ee5eb05cfd9d1a56f52d5b42"
+        },
+        "3x": {
+          "file": "board/parasite-EUK-coated@3x.webp",
+          "px": 300,
+          "bytes": 10198,
+          "sha256": "4a8dc31259c61d2795fab4462eda97fa017ff15af87b7b0f1db1228943b0cfd7"
+        }
+      }
+    },
+    "board/tcell": {
+      "view": "board",
+      "kind": "cell",
+      "displayPx": 100,
+      "measured": {
+        "body": "#86bf78",
+        "share": 0.16,
+        "edge": 0,
+        "against": {
+          "well": 6.47
+        }
+      },
+      "source": {
+        "file": "renders/board/tcell.webp",
+        "sha256": "609bd1b04a771f6b650fee7e3c126cdbe220ff203899c6fcdb8842b56f705224"
+      },
+      "files": {
+        "1x": {
+          "file": "board/tcell@1x.webp",
+          "px": 100,
+          "bytes": 2866,
+          "sha256": "3765f2d4e7d7a652f5c3af26c5a964a6eb0fc05246857486ed264ecbd4c8a2ee"
+        },
+        "2x": {
+          "file": "board/tcell@2x.webp",
+          "px": 200,
+          "bytes": 7038,
+          "sha256": "8e8553fb536e3a69cb0d2231b2736a45cfa9f0f17597257a2bebb321bb6d8de6"
+        },
+        "3x": {
+          "file": "board/tcell@3x.webp",
+          "px": 300,
+          "bytes": 12652,
+          "sha256": "ecc14cc30b54678d22bb01dfc9eb4af5175c4071a0cc33154874da2ba152de63"
+        }
+      }
+    },
+    "board/toxin-TOX": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#90c246",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 4.78,
+          "well": 6.64
+        }
+      },
+      "source": {
+        "file": "renders/board/toxin-TOX.webp",
+        "sha256": "a15ece41700daf5c217282faf52e2fc868247f106b060857bb31f3883c17c22e"
+      },
+      "files": {
+        "1x": {
+          "file": "board/toxin-TOX@1x.webp",
+          "px": 100,
+          "bytes": 1720,
+          "sha256": "bd3dbe869f8be3b1dbe06115e146983de39d6004ded20a2d46bfc6948ba32028"
+        },
+        "2x": {
+          "file": "board/toxin-TOX@2x.webp",
+          "px": 200,
+          "bytes": 4136,
+          "sha256": "43a091599cce6e0f835bdff435fef88f9e70fac820007fb605d7c7a3824e7632"
+        },
+        "3x": {
+          "file": "board/toxin-TOX@3x.webp",
+          "px": 300,
+          "bytes": 7248,
+          "sha256": "90616b2932dc390ea12a0367fd04365e6805351e373d8563578a1c4cdd961f96"
+        }
+      }
+    },
+    "board/venom-TOX": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#b4da61",
+        "share": 0.11,
+        "edge": 0,
+        "against": {
+          "board": 6.3,
+          "well": 8.75
+        }
+      },
+      "source": {
+        "file": "renders/board/venom-TOX.webp",
+        "sha256": "b426941811ccd59a9509c9cec1a980cc04960805564dacaa26aa8a93aad812b9"
+      },
+      "files": {
+        "1x": {
+          "file": "board/venom-TOX@1x.webp",
+          "px": 100,
+          "bytes": 2126,
+          "sha256": "9cfe28d6b52da183d11c37d15d05cab15538eaaa40347fc1acb5db326316fec2"
+        },
+        "2x": {
+          "file": "board/venom-TOX@2x.webp",
+          "px": 200,
+          "bytes": 4818,
+          "sha256": "8accfe8ec9b8406ce035a290e694a1376199bfcdd11af94e4d876918982bd460"
+        },
+        "3x": {
+          "file": "board/venom-TOX@3x.webp",
+          "px": 300,
+          "bytes": 8092,
+          "sha256": "177810c5dc7d5f4ee7ff06d365a64410fed192c4e1005580bbde315feb47a8a2"
+        }
+      }
+    },
+    "board/virus-ENV": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#f1716a",
+        "share": 0.1,
+        "edge": 0,
+        "against": {
+          "board": 3.51,
+          "well": 4.87
+        }
+      },
+      "source": {
+        "file": "renders/board/virus-ENV.webp",
+        "sha256": "668e1fa0d44463ee5dcbee71ac8bae41470e9d3f604e9f9bf05b64c5110aa190"
+      },
+      "files": {
+        "1x": {
+          "file": "board/virus-ENV@1x.webp",
+          "px": 100,
+          "bytes": 3334,
+          "sha256": "5fbb92e6c51fb66d7f2734cf50c6dbfddf2c080343654a778b272a4ac0e6c6ac"
+        },
+        "2x": {
+          "file": "board/virus-ENV@2x.webp",
+          "px": 200,
+          "bytes": 8494,
+          "sha256": "f9f804d401e940aedb753aceb3023c723803563393c8975cd15917014ecc8549"
+        },
+        "3x": {
+          "file": "board/virus-ENV@3x.webp",
+          "px": 300,
+          "bytes": 14860,
+          "sha256": "6ee21f4f5b6b539163449343b95829d560438fa0e922b3cce4055523b3fd4b6c"
+        }
+      }
+    },
+    "board/virus-NAK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#f58a49",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 4.11,
+          "well": 5.71
+        }
+      },
+      "source": {
+        "file": "renders/board/virus-NAK.webp",
+        "sha256": "1ae5280747f45496ec371d9bdd2d786b109c50725ec2efdf2d64d27f19bdbeed"
+      },
+      "files": {
+        "1x": {
+          "file": "board/virus-NAK@1x.webp",
+          "px": 100,
+          "bytes": 1918,
+          "sha256": "8cb55226351e8dc2c62d9d8a2819c994186046ec94418539e3a1d0d9980dd355"
+        },
+        "2x": {
+          "file": "board/virus-NAK@2x.webp",
+          "px": 200,
+          "bytes": 4628,
+          "sha256": "bf32889830f949cb55e9d5f89d061aa5251f8c7c12767559d326bb428c0cf1dc"
+        },
+        "3x": {
+          "file": "board/virus-NAK@3x.webp",
+          "px": 300,
+          "bytes": 8442,
+          "sha256": "6e83e5932e2fbfcbfb8b3867b5157eb28619a78c6b3c1b9e4061a11e910a3d14"
+        }
+      }
+    },
+    "board/worm-EUK": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#f18aee",
+        "share": 0.07,
+        "edge": 0,
+        "against": {
+          "board": 4.61,
+          "well": 6.41
+        }
+      },
+      "source": {
+        "file": "renders/board/worm-EUK.webp",
+        "sha256": "73fe94e3874903c81c4acfc804a65f739bb6ffe5a0cd0456740af72c9261072d"
+      },
+      "files": {
+        "1x": {
+          "file": "board/worm-EUK@1x.webp",
+          "px": 100,
+          "bytes": 1798,
+          "sha256": "485245e0b0614cb16bc2724cf76c567d777072665eafde913a52c1ceedac0106"
+        },
+        "2x": {
+          "file": "board/worm-EUK@2x.webp",
+          "px": 200,
+          "bytes": 3944,
+          "sha256": "7dcbd0dffe33550546781e298d35a690271fe2305e37ec0716a206be2dcb3701"
+        },
+        "3x": {
+          "file": "board/worm-EUK@3x.webp",
+          "px": 300,
+          "bytes": 6342,
+          "sha256": "c9e631de4bbe79107b822f27682ccc854920179601c767d988642ef8f5edc56a"
+        }
+      }
+    },
+    "board/worm-EUK-coated": {
+      "view": "board",
+      "kind": "invader",
+      "displayPx": 100,
+      "measured": {
+        "body": "#f090d5",
+        "share": 0.09,
+        "edge": 0,
+        "against": {
+          "board": 4.63,
+          "well": 6.44
+        }
+      },
+      "source": {
+        "file": "renders/board/worm-EUK-coated.webp",
+        "sha256": "4499184e508b2a6a63a8542fd7fe05d2000899fe5406d436f7cc75d76b208570"
+      },
+      "files": {
+        "1x": {
+          "file": "board/worm-EUK-coated@1x.webp",
+          "px": 100,
+          "bytes": 2612,
+          "sha256": "04649fbcc7d6116052ecb96b0d97a7d9819b11856b376cf78ddbbcec76e04ff9"
+        },
+        "2x": {
+          "file": "board/worm-EUK-coated@2x.webp",
+          "px": 200,
+          "bytes": 6048,
+          "sha256": "63f67a124b13d072d2aedc28f3df89d92f4fec94f01c2d0ca423326f6377e434"
+        },
+        "3x": {
+          "file": "board/worm-EUK-coated@3x.webp",
+          "px": 300,
+          "bytes": 10148,
+          "sha256": "2d376dc3ccc17fac4973a96a927213b5c4be37373c0f64eea06ed3582d9d2e2a"
+        }
+      }
+    },
+    "card/bacteria-EXB": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#9fab42",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 4,
+          "well": 5.56
+        }
+      },
+      "source": {
+        "file": "renders/card/bacteria-EXB.webp",
+        "sha256": "b054f9a38ebc947097e5db862f63305eb808a9b113bdd7e64a94c35c9b6d73cd"
+      },
+      "files": {
+        "1x": {
+          "file": "card/bacteria-EXB@1x.webp",
+          "px": 120,
+          "bytes": 1748,
+          "sha256": "0acbbf6448c208032573913f3f08d445c622233cb43590c4a5c0feebc1eee2e2"
+        },
+        "2x": {
+          "file": "card/bacteria-EXB@2x.webp",
+          "px": 240,
+          "bytes": 4200,
+          "sha256": "594ab5945189ec9d7491d845c0cc8ca882fe1d9e892cab94c00a7e93bc714a99"
+        },
+        "3x": {
+          "file": "card/bacteria-EXB@3x.webp",
+          "px": 360,
+          "bytes": 7292,
+          "sha256": "1bb12c46eafc1a6c433eacc6fafb6d7b47d62c3891f7619dfb4b8260a9893a1e"
+        }
+      }
+    },
+    "card/bacteria-EXB-coated": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#afab43",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 4.18,
+          "well": 5.81
+        }
+      },
+      "source": {
+        "file": "renders/card/bacteria-EXB-coated.webp",
+        "sha256": "eb32986f10e14bcf206ff3799c72aa091d0f7aa9c30a3981347ca9ca63ea94af"
+      },
+      "files": {
+        "1x": {
+          "file": "card/bacteria-EXB-coated@1x.webp",
+          "px": 120,
+          "bytes": 3308,
+          "sha256": "8d45d4041085d05cf69dd037839d9a18ec20fbef09e7cb0236eca42b6f10eecb"
+        },
+        "2x": {
+          "file": "card/bacteria-EXB-coated@2x.webp",
+          "px": 240,
+          "bytes": 7742,
+          "sha256": "375e7a2e20bacbf4052c691e7dd2319e513b59ba2026916eb38c62e761496f7b"
+        },
+        "3x": {
+          "file": "card/bacteria-EXB-coated@3x.webp",
+          "px": 360,
+          "bytes": 13224,
+          "sha256": "404ac2bf40024f17f5051e5bcce5344ca2af390ee8ac7c29573bf96599802716"
+        }
+      }
+    },
+    "card/bacteria-ICB": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#3db29a",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 3.85,
+          "well": 5.35
+        }
+      },
+      "source": {
+        "file": "renders/card/bacteria-ICB.webp",
+        "sha256": "afa16dc05c338c9e946609eb4684250d1918a46ca67c5c7f6978916284cca5e4"
+      },
+      "files": {
+        "1x": {
+          "file": "card/bacteria-ICB@1x.webp",
+          "px": 120,
+          "bytes": 1726,
+          "sha256": "3766b0c202690cc86c91d6e903c64aec951fe678dd75fafcdb5fcf0dbb8fb5d5"
+        },
+        "2x": {
+          "file": "card/bacteria-ICB@2x.webp",
+          "px": 240,
+          "bytes": 4166,
+          "sha256": "9ae46a8fe433234a80acfa28668753b20b5f63e310edfadb3d96bb4bb5412237"
+        },
+        "3x": {
+          "file": "card/bacteria-ICB@3x.webp",
+          "px": 360,
+          "bytes": 7246,
+          "sha256": "5fef59701dc3dc8170bd2dd57a97cc3f1f66b82c17c9b0028bd603febfef5ec7"
+        }
+      }
+    },
+    "card/bacteria-ICB-coated": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#64b086",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 3.89,
+          "well": 5.41
+        }
+      },
+      "source": {
+        "file": "renders/card/bacteria-ICB-coated.webp",
+        "sha256": "ed14703e40847d1845c924251e01b75a665d2596aac7081d1acaf0afcfcc5cdc"
+      },
+      "files": {
+        "1x": {
+          "file": "card/bacteria-ICB-coated@1x.webp",
+          "px": 120,
+          "bytes": 3328,
+          "sha256": "53492697ef1621799b1586252bcc078f959d8435dcdbab4654bd4db33ce6b19a"
+        },
+        "2x": {
+          "file": "card/bacteria-ICB-coated@2x.webp",
+          "px": 240,
+          "bytes": 7832,
+          "sha256": "45dd0ade26ba350409ab7095a980b7f83a810cf4b169dcd1e84649af49b9b809"
+        },
+        "3x": {
+          "file": "card/bacteria-ICB-coated@3x.webp",
+          "px": 360,
+          "bytes": 13184,
+          "sha256": "dacf429a61e01fce3ca705c552b0d53b40a99516ee93e95f09bf3d36f397cdf5"
+        }
+      }
+    },
+    "card/bcell": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#859ebe",
+        "share": 0.21,
+        "edge": 0,
+        "against": {
+          "well": 5.06
+        }
+      },
+      "source": {
+        "file": "renders/card/bcell.webp",
+        "sha256": "d6cda965eb454955533b9aa99fcd372eb84755ea1f8a3b6ad8b31bea2420687b"
+      },
+      "files": {
+        "1x": {
+          "file": "card/bcell@1x.webp",
+          "px": 120,
+          "bytes": 5394,
+          "sha256": "e6d468466b43bf2266436bed7c1782cbb745d58b7cbfabc65fae5c99ce79d092"
+        },
+        "2x": {
+          "file": "card/bcell@2x.webp",
+          "px": 240,
+          "bytes": 13196,
+          "sha256": "6d1893ddca4dd06519801aaea68fe2f85e7a245119e954bab9cd55905d8f2dda"
+        },
+        "3x": {
+          "file": "card/bcell@3x.webp",
+          "px": 360,
+          "bytes": 23446,
+          "sha256": "8bf564e40532f94b9da26aaf9617db8f2a0273ef0bf57bf0de6409b2fe54390a"
+        }
+      }
+    },
+    "card/eosinophil": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e9999c",
+        "share": 0.25,
+        "edge": 0,
+        "against": {
+          "well": 6.32
+        }
+      },
+      "source": {
+        "file": "renders/card/eosinophil.webp",
+        "sha256": "068af3667a865f91e20f7f308caec731f157fff658281a6488358c4fce67c107"
+      },
+      "files": {
+        "1x": {
+          "file": "card/eosinophil@1x.webp",
+          "px": 120,
+          "bytes": 3494,
+          "sha256": "29081c54759c75871c3941032e3bef0e4ff51038aad94bc96737f8d6c4da9556"
+        },
+        "2x": {
+          "file": "card/eosinophil@2x.webp",
+          "px": 240,
+          "bytes": 8382,
+          "sha256": "57ca4f72cdb4dab0d65acfdac5b87ab65746eb8c16f44ba8b4bba7169821366f"
+        },
+        "3x": {
+          "file": "card/eosinophil@3x.webp",
+          "px": 360,
+          "bytes": 13786,
+          "sha256": "0228d70ab719c1a56e6c8e8947b05dd65f05d2a4b5d3c0009e63d0b9ab5aa916"
+        }
+      }
+    },
+    "card/fungus-EUK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e079de",
+        "share": 0.14,
+        "edge": 0,
+        "against": {
+          "board": 3.83,
+          "well": 5.31
+        }
+      },
+      "source": {
+        "file": "renders/card/fungus-EUK.webp",
+        "sha256": "505c40e22dd2704a823476e09d2b6b63c731b094779d32c2331cce37a1be322d"
+      },
+      "files": {
+        "1x": {
+          "file": "card/fungus-EUK@1x.webp",
+          "px": 120,
+          "bytes": 2520,
+          "sha256": "e184d799d7b4b9658e52d3c0f51b1b863943f31c95a6d49ed64ad9fde79d87cb"
+        },
+        "2x": {
+          "file": "card/fungus-EUK@2x.webp",
+          "px": 240,
+          "bytes": 6016,
+          "sha256": "36bfb81ae7d569d51b96ded03577de23f5dc3730dfcba4e78b6342cc7793e704"
+        },
+        "3x": {
+          "file": "card/fungus-EUK@3x.webp",
+          "px": 360,
+          "bytes": 9950,
+          "sha256": "d592cd302b17648b6ff7e12bb4c58b73db31273ead35d14be65ae25fcc6eb01b"
+        }
+      }
+    },
+    "card/helper": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#ebb55b",
+        "share": 0.2,
+        "edge": 0,
+        "against": {
+          "well": 7.52
+        }
+      },
+      "source": {
+        "file": "renders/card/helper.webp",
+        "sha256": "45ced3cf11dc0b6fce36e74d78f732539bf2e01807434d9fa2200bedcbe98e57"
+      },
+      "files": {
+        "1x": {
+          "file": "card/helper@1x.webp",
+          "px": 120,
+          "bytes": 4456,
+          "sha256": "a2ed98fdf73e66b26fadbd049e636a3ef82767f038d0aa7db4f4c4b0b130651d"
+        },
+        "2x": {
+          "file": "card/helper@2x.webp",
+          "px": 240,
+          "bytes": 10858,
+          "sha256": "d81adea52cfa06454a61dc9d4c72df65765026954a311471d06438e514d7f155"
+        },
+        "3x": {
+          "file": "card/helper@3x.webp",
+          "px": 360,
+          "bytes": 18808,
+          "sha256": "a6fcc1dde1e57fd295ab023eca83404dbc3f8ca51a0c658a2ca24a88873053de"
+        }
+      }
+    },
+    "card/hidden-ENV": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e8bd99",
+        "share": 0.25,
+        "edge": 0,
+        "against": {
+          "board": 5.84,
+          "well": 8.12
+        }
+      },
+      "source": {
+        "file": "renders/card/hidden-ENV.webp",
+        "sha256": "d8396da3b0357da234e21df116296215281a8d3a081aa96ffbb659daef57cf84"
+      },
+      "files": {
+        "1x": {
+          "file": "card/hidden-ENV@1x.webp",
+          "px": 120,
+          "bytes": 3132,
+          "sha256": "0c0a4b794e9561c70388e9809d8cacc67f0038974cf70b749a0cb3e6d3c0a73b"
+        },
+        "2x": {
+          "file": "card/hidden-ENV@2x.webp",
+          "px": 240,
+          "bytes": 7420,
+          "sha256": "21dc45ad25f04a5477b426c399f40e14c625939c9c95b213fc83af9cec7cd594"
+        },
+        "3x": {
+          "file": "card/hidden-ENV@3x.webp",
+          "px": 360,
+          "bytes": 12518,
+          "sha256": "de61c6881898370152ceaac8250456a6d31c436f785c5bc2a25f8a80eeec510d"
+        }
+      }
+    },
+    "card/hidden-EUK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e8c1a8",
+        "share": 0.25,
+        "edge": 0,
+        "against": {
+          "board": 6.06,
+          "well": 8.42
+        }
+      },
+      "source": {
+        "file": "renders/card/hidden-EUK.webp",
+        "sha256": "6d0c6937f5ca8359e803da37e922c36cf370a72b1fad9b58db3e0f69e05c7653"
+      },
+      "files": {
+        "1x": {
+          "file": "card/hidden-EUK@1x.webp",
+          "px": 120,
+          "bytes": 3102,
+          "sha256": "c01dcbe4127d4702fedab3a455ac2958e3eac9907cf137629d67d2496b3eb3da"
+        },
+        "2x": {
+          "file": "card/hidden-EUK@2x.webp",
+          "px": 240,
+          "bytes": 7346,
+          "sha256": "480b989d908ee872c863b7a7b6648020a4389f9eda3c1395c5fbf26098968f68"
+        },
+        "3x": {
+          "file": "card/hidden-EUK@3x.webp",
+          "px": 360,
+          "bytes": 12548,
+          "sha256": "03286f115190db720123a3d8c543dadae35a0c54d681d5ad7fadfcee003923f3"
+        }
+      }
+    },
+    "card/hidden-NAK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e9c196",
+        "share": 0.25,
+        "edge": 0,
+        "against": {
+          "board": 6,
+          "well": 8.33
+        }
+      },
+      "source": {
+        "file": "renders/card/hidden-NAK.webp",
+        "sha256": "6f157a3978dcce05df22f4ae3bfadb3c0637580427fa4f716f530df274b2f168"
+      },
+      "files": {
+        "1x": {
+          "file": "card/hidden-NAK@1x.webp",
+          "px": 120,
+          "bytes": 3134,
+          "sha256": "9a9957ae5fff1d2e9bd85f8af249d6260828049ddf258ff7f21ccee5bcfe0da8"
+        },
+        "2x": {
+          "file": "card/hidden-NAK@2x.webp",
+          "px": 240,
+          "bytes": 7500,
+          "sha256": "3cf3468bfdb722959aaf440b70a9a62c53e353047b2f781d3651650ec16c92be"
+        },
+        "3x": {
+          "file": "card/hidden-NAK@3x.webp",
+          "px": 360,
+          "bytes": 12564,
+          "sha256": "80284ff0eeeaa0421b7d4ba259faa9504c3c825d83d64907cc6c63740382e3c8"
+        }
+      }
+    },
+    "card/macrophage": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#50ab92",
+        "share": 0.26,
+        "edge": 0,
+        "against": {
+          "well": 5.05
+        }
+      },
+      "source": {
+        "file": "renders/card/macrophage.webp",
+        "sha256": "31f898cff6ed198be91cbcdfc729fb7baa2384278addfdf15d1b6ac76b59911c"
+      },
+      "files": {
+        "1x": {
+          "file": "card/macrophage@1x.webp",
+          "px": 120,
+          "bytes": 3370,
+          "sha256": "87a6ad1aa68c39b81b768516ee728eb8b14d69b8b2c03c091d989f8235381ed5"
+        },
+        "2x": {
+          "file": "card/macrophage@2x.webp",
+          "px": 240,
+          "bytes": 8280,
+          "sha256": "640bcb069dd5d5f20bd0af7506161a4a1f6880075d29369fba5226ffbb8d984f"
+        },
+        "3x": {
+          "file": "card/macrophage@3x.webp",
+          "px": 360,
+          "bytes": 14726,
+          "sha256": "a503895a2792e08669c0fd28ee2389fa19719b0f841e09ef006643057eb89499"
+        }
+      }
+    },
+    "card/malaria-EUK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#ea736f",
+        "share": 0.21,
+        "edge": 0,
+        "against": {
+          "board": 3.44,
+          "well": 4.79
+        }
+      },
+      "source": {
+        "file": "renders/card/malaria-EUK.webp",
+        "sha256": "ee2c750dbad9a72221b92178bc16bde7aa734c2347cc24c94140a1f5dca3fa93"
+      },
+      "files": {
+        "1x": {
+          "file": "card/malaria-EUK@1x.webp",
+          "px": 120,
+          "bytes": 2706,
+          "sha256": "0d190708ce172c8033ca6f2be2798896a3cc2d91b21b26be05c12fac49ccb4db"
+        },
+        "2x": {
+          "file": "card/malaria-EUK@2x.webp",
+          "px": 240,
+          "bytes": 6214,
+          "sha256": "910548d0de1f548b1420e78e410f3c8519da147bcefa74d1769ee5b28f45e6e0"
+        },
+        "3x": {
+          "file": "card/malaria-EUK@3x.webp",
+          "px": 360,
+          "bytes": 10464,
+          "sha256": "aec16f29fcdb5d306f38d2db0c5e57f8fac4bb0ad80d9189a3066e06426b3704"
+        }
+      }
+    },
+    "card/neutrophil": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#b89ed6",
+        "share": 0.25,
+        "edge": 0,
+        "against": {
+          "well": 5.94
+        }
+      },
+      "source": {
+        "file": "renders/card/neutrophil.webp",
+        "sha256": "446684c8df35ed246ccc9f6dec99f02603dca19e35d989e34859475fd25a1b26"
+      },
+      "files": {
+        "1x": {
+          "file": "card/neutrophil@1x.webp",
+          "px": 120,
+          "bytes": 3226,
+          "sha256": "e542492b61408f173315238d48916518ca4b0e2bf459e6c8cde9f97904045146"
+        },
+        "2x": {
+          "file": "card/neutrophil@2x.webp",
+          "px": 240,
+          "bytes": 7656,
+          "sha256": "8f4e876f2037d8e630172924857a1582bd94f8600317a5529a30a95b054a2a4c"
+        },
+        "3x": {
+          "file": "card/neutrophil@3x.webp",
+          "px": 360,
+          "bytes": 13032,
+          "sha256": "9db78c7a0e3a448ff215410953955887840a752aa8d99db0a376a00dcba3bb69"
+        }
+      }
+    },
+    "card/nk": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#a2a6c2",
+        "share": 0.23,
+        "edge": 0,
+        "against": {
+          "well": 5.83
+        }
+      },
+      "source": {
+        "file": "renders/card/nk.webp",
+        "sha256": "19f16acbb599035c5324b95c452f02799a60757e59152ef986553c0a15ee706f"
+      },
+      "files": {
+        "1x": {
+          "file": "card/nk@1x.webp",
+          "px": 120,
+          "bytes": 3152,
+          "sha256": "ed719e0b19aa71343beabeaef99aca7e164920422e8c78800a433bf41f21e140"
+        },
+        "2x": {
+          "file": "card/nk@2x.webp",
+          "px": 240,
+          "bytes": 7462,
+          "sha256": "ea1d0799235cae8cb690acbb269f36bfe43f5c6e4993b8e400ec40c45d165964"
+        },
+        "3x": {
+          "file": "card/nk@3x.webp",
+          "px": 360,
+          "bytes": 12884,
+          "sha256": "906a425750999d49b4e0a3007bc54008d642507cebb925d601603648573998de"
+        }
+      }
+    },
+    "card/parasite-EUK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e079dc",
+        "share": 0.05,
+        "edge": 0,
+        "against": {
+          "board": 3.8,
+          "well": 5.28
+        }
+      },
+      "source": {
+        "file": "renders/card/parasite-EUK.webp",
+        "sha256": "c5ee9ce98cdf02b82851d1087ac213e2a5ca5d6528a580cb3197e9bcd52d9f17"
+      },
+      "files": {
+        "1x": {
+          "file": "card/parasite-EUK@1x.webp",
+          "px": 120,
+          "bytes": 1750,
+          "sha256": "9e3eee7b689d5fe778a20ff48d43e4761e5141856cf74105c7c1c166cd238e79"
+        },
+        "2x": {
+          "file": "card/parasite-EUK@2x.webp",
+          "px": 240,
+          "bytes": 4018,
+          "sha256": "a7a0bbfe87c722d02e757db2942eb6bbc1bf34f01491d27e715d4727922787df"
+        },
+        "3x": {
+          "file": "card/parasite-EUK@3x.webp",
+          "px": 360,
+          "bytes": 6750,
+          "sha256": "8c18b8db68fdff8385012f47989c178a6ba8495ad07eb6d671a934d707f1840b"
+        }
+      }
+    },
+    "card/parasite-EUK-coated": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#e180c7",
+        "share": 0.05,
+        "edge": 0,
+        "against": {
+          "board": 3.87,
+          "well": 5.38
+        }
+      },
+      "source": {
+        "file": "renders/card/parasite-EUK-coated.webp",
+        "sha256": "4aa1d0e0ed9bcd2ded00cd8199ffb321363f5268410497858c64d190ed99ba3f"
+      },
+      "files": {
+        "1x": {
+          "file": "card/parasite-EUK-coated@1x.webp",
+          "px": 120,
+          "bytes": 2434,
+          "sha256": "0b9b82cfa7e7301a2a150d6259256c752f32e1b104c4a53995b401a71e891acd"
+        },
+        "2x": {
+          "file": "card/parasite-EUK-coated@2x.webp",
+          "px": 240,
+          "bytes": 5716,
+          "sha256": "bf9a67cd0d2eeb814f17c22f92e22c6bca99e440bf4bc3a8bd42aef44d469973"
+        },
+        "3x": {
+          "file": "card/parasite-EUK-coated@3x.webp",
+          "px": 360,
+          "bytes": 9862,
+          "sha256": "2c5cc6af0ef6754847c7b2f1bed55b31df49b9647837e9aac09374afc11e52bf"
+        }
+      }
+    },
+    "card/tcell": {
+      "view": "card",
+      "kind": "cell",
+      "displayPx": 120,
+      "measured": {
+        "body": "#7cb872",
+        "share": 0.2,
+        "edge": 0,
+        "against": {
+          "well": 5.96
+        }
+      },
+      "source": {
+        "file": "renders/card/tcell.webp",
+        "sha256": "2553910f3613a5f44621aed4e4cc4f806af06f2d4a644ed4d3d43bc6cfe8b2ee"
+      },
+      "files": {
+        "1x": {
+          "file": "card/tcell@1x.webp",
+          "px": 120,
+          "bytes": 3882,
+          "sha256": "8dcc889e1f52aaf647b0e551636dc071648fc8e593b0cb0142d09db850907adb"
+        },
+        "2x": {
+          "file": "card/tcell@2x.webp",
+          "px": 240,
+          "bytes": 9696,
+          "sha256": "c65d4670df9bef06eb02493005e4c104f9082e7184c246e789f8adedff35d1a4"
+        },
+        "3x": {
+          "file": "card/tcell@3x.webp",
+          "px": 360,
+          "bytes": 17080,
+          "sha256": "152322fada0e365b15654ee458409eeb629cec414077983c00d98d2c2387711b"
+        }
+      }
+    },
+    "card/toxin-TOX": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#8abe42",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 4.56,
+          "well": 6.34
+        }
+      },
+      "source": {
+        "file": "renders/card/toxin-TOX.webp",
+        "sha256": "12593db1c248a5be4f345682c7248fd1d208037e18504169a2e8bfbe943dfc2d"
+      },
+      "files": {
+        "1x": {
+          "file": "card/toxin-TOX@1x.webp",
+          "px": 120,
+          "bytes": 2414,
+          "sha256": "3f688a860bf47f711bee575ffca16bcaebe4b01d075badbafd898d167c506a92"
+        },
+        "2x": {
+          "file": "card/toxin-TOX@2x.webp",
+          "px": 240,
+          "bytes": 5944,
+          "sha256": "8c2cde6847672a3263223594a3ef709be87eab3c8a26629fb513fbb8f4851a42"
+        },
+        "3x": {
+          "file": "card/toxin-TOX@3x.webp",
+          "px": 360,
+          "bytes": 10524,
+          "sha256": "a8c5095b6eb769dd127244a407120e45ceafa4b176aa3026a3c9546d86b2ceb2"
+        }
+      }
+    },
+    "card/venom-TOX": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#a9d25c",
+        "share": 0.08,
+        "edge": 0,
+        "against": {
+          "board": 5.78,
+          "well": 8.03
+        }
+      },
+      "source": {
+        "file": "renders/card/venom-TOX.webp",
+        "sha256": "7181b2f4e4057b40885a2d66c36d088eabe7aaf52f0a3ca60f382cb3e881731b"
+      },
+      "files": {
+        "1x": {
+          "file": "card/venom-TOX@1x.webp",
+          "px": 120,
+          "bytes": 2130,
+          "sha256": "38e74e98eccae4c1cc0e69909216cbfa078637a97788fc243458136b3e15abd8"
+        },
+        "2x": {
+          "file": "card/venom-TOX@2x.webp",
+          "px": 240,
+          "bytes": 5042,
+          "sha256": "501aa621ce66b0729bd1c0d58b5c3616f9f6fffdbde6f923a793dadaec093ec3"
+        },
+        "3x": {
+          "file": "card/venom-TOX@3x.webp",
+          "px": 360,
+          "bytes": 8574,
+          "sha256": "0eab7a04d52465f84e887c7c92205e094d1c1fea73a2d494a4a67ee33a4f3c97"
+        }
+      }
+    },
+    "card/virus-ENV": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#ed6c66",
+        "share": 0.14,
+        "edge": 0,
+        "against": {
+          "board": 3.32,
+          "well": 4.61
+        }
+      },
+      "source": {
+        "file": "renders/card/virus-ENV.webp",
+        "sha256": "b3fa9c6d16e39083d98e6d2d790dd26175197c9c6553db7044461492262fd5a7"
+      },
+      "files": {
+        "1x": {
+          "file": "card/virus-ENV@1x.webp",
+          "px": 120,
+          "bytes": 4392,
+          "sha256": "4f4cd141e22991d81b7011a8c009793cf252ac59dd6f45a43c1d3d08e823dd89"
+        },
+        "2x": {
+          "file": "card/virus-ENV@2x.webp",
+          "px": 240,
+          "bytes": 11396,
+          "sha256": "deb8ccddb8f1bb6494d240e32e0c0ad78d152e9e3456475bc83e2e1bbf652488"
+        },
+        "3x": {
+          "file": "card/virus-ENV@3x.webp",
+          "px": 360,
+          "bytes": 20172,
+          "sha256": "5a102a4b5ecac5c07564c6a2419a3c0c0d54347ae2854ac5b1a6a58962ca8a52"
+        }
+      }
+    },
+    "card/virus-NAK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#f28446",
+        "share": 0.09,
+        "edge": 0,
+        "against": {
+          "board": 3.9,
+          "well": 5.42
+        }
+      },
+      "source": {
+        "file": "renders/card/virus-NAK.webp",
+        "sha256": "b47b4aa4715f4f09697d6b5670336f0350a2c36d7e2c540e29d559e83d9f7c6c"
+      },
+      "files": {
+        "1x": {
+          "file": "card/virus-NAK@1x.webp",
+          "px": 120,
+          "bytes": 2786,
+          "sha256": "5d92a298fbecca420551a6209e4a9de5622fd22bc8bb16bc8683372989df40bf"
+        },
+        "2x": {
+          "file": "card/virus-NAK@2x.webp",
+          "px": 240,
+          "bytes": 6876,
+          "sha256": "865c17a86e49e9991265c27e8cd7a99b0c0e4bf53c975e81015672e0f5a033fc"
+        },
+        "3x": {
+          "file": "card/virus-NAK@3x.webp",
+          "px": 360,
+          "bytes": 12054,
+          "sha256": "3023709fb57e9831bd11ba3c4b25c36c3107023a0a693a8e9240ae918ef102e6"
+        }
+      }
+    },
+    "card/worm-EUK": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#ed7de9",
+        "share": 0.05,
+        "edge": 0,
+        "against": {
+          "board": 4.18,
+          "well": 5.8
+        }
+      },
+      "source": {
+        "file": "renders/card/worm-EUK.webp",
+        "sha256": "7bb5800542936ba8e65df32d653cbd48a075bc3f78323f62d9ca003ab2091244"
+      },
+      "files": {
+        "1x": {
+          "file": "card/worm-EUK@1x.webp",
+          "px": 120,
+          "bytes": 1884,
+          "sha256": "bbf096266e1f7783bd89c3a0a4b95a3e4a36c466f12266ae4400656e7af5b58b"
+        },
+        "2x": {
+          "file": "card/worm-EUK@2x.webp",
+          "px": 240,
+          "bytes": 4016,
+          "sha256": "d8d285dfc16172faa0e185fb47966db7f5c45c9774908ffad3a4c613b4f605b6"
+        },
+        "3x": {
+          "file": "card/worm-EUK@3x.webp",
+          "px": 360,
+          "bytes": 6516,
+          "sha256": "1400c2f214ed3c1666deb84567a81567b6bd9f536fdae91a237cf3ecfdf76903"
+        }
+      }
+    },
+    "card/worm-EUK-coated": {
+      "view": "card",
+      "kind": "invader",
+      "displayPx": 120,
+      "measured": {
+        "body": "#eb84cf",
+        "share": 0.06,
+        "edge": 0,
+        "against": {
+          "board": 4.18,
+          "well": 5.8
+        }
+      },
+      "source": {
+        "file": "renders/card/worm-EUK-coated.webp",
+        "sha256": "82a1cc368a1ac4ac4cfea21cbe657c3968272156d7bf06da6aace7c486483d35"
+      },
+      "files": {
+        "1x": {
+          "file": "card/worm-EUK-coated@1x.webp",
+          "px": 120,
+          "bytes": 2676,
+          "sha256": "215eb058fb2bc704bb8b2b332a7218516f5c461a0f0878cf7b432589b842343d"
+        },
+        "2x": {
+          "file": "card/worm-EUK-coated@2x.webp",
+          "px": 240,
+          "bytes": 5978,
+          "sha256": "49899e78ff574e77992793de60cb6070e8ad7ec91b6d2bdc8e480705cfb38f84"
+        },
+        "3x": {
+          "file": "card/worm-EUK-coated@3x.webp",
+          "px": 360,
+          "bytes": 10096,
+          "sha256": "5d9e37725f895592643d3eeb5f1ab6519671ec3d14248ef4eff56842e5c519e7"
+        }
+      }
+    }
+  }
+}

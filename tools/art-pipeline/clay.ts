@@ -30,14 +30,15 @@
  * Negative controls (`--control`), per the standing rule:
  *   mustFail  a piece the colour of the board itself (1.0:1) must be REJECTED
  *   mustPass  a cream piece (about 7:1) must be ACCEPTED
+ *   mustFail  a picture whose shadow is cut off at its edge must be REJECTED
  *   mustFail  a set with NO board swatch must be REJECTED, never passed for want of a ground
  *
  * Usage:
  *   pnpm art:clay --ingest     clay/_png/ (Blender's output, not committed) -> clay/renders/
- *   pnpm art:clay              gate, and build clay/built/ with its manifest
+ *   pnpm art:clay              gate, and build packages/app/public/art/clay/ with its manifest
  *   pnpm art:clay --control    run the gate's controls, build nothing
  *   pnpm art:clay --check      re-measure and compare, encode nothing (on every `pnpm verify`)
- *   pnpm art:clay --verify     rebuild to a temp dir, byte-compare with the committed clay/built/
+ *   pnpm art:clay --verify     rebuild to a temp dir, byte-compare with the committed output
  */
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -52,13 +53,16 @@ const CLAY = join(HERE, 'clay');
 const PNG = join(CLAY, '_png');
 const RENDERS = join(CLAY, 'renders');
 /**
- * The output's home for now. It moves under the app when the kit page that shows it is built
- * (the next pull request), together with the rule that keeps it out of the players' download
- * until a screen uses it. Until something consumes it, it does not ship.
+ * The app's own art folder, where the kit page reads the pictures from `/art/clay/`. The app's
+ * build keeps this folder out of what a player's phone stores for offline play until a screen
+ * uses it (packages/app/vite.config.ts, with its own check); the kit page is the only thing that
+ * shows it at L3.
+ *
+ * It was `clay/out` for one commit, and that commit had 59 files where 207 were meant: the
+ * repository ignores every folder named `out`, so the output was never staged. Found by counting
+ * the commit's files. A committed output must not live under a name git ignores.
  */
-// Not `out`: the repository ignores every folder of that name, and an ignored output is an
-// output CI has never seen (found by counting the files in the first commit: 59, not 207).
-const OUT = join(CLAY, 'built');
+const OUT = join(HERE, '../../packages/app/public/art/clay');
 
 const MIN_CONTRAST = 3.0;
 const VIEWS = { board: 100, card: 120 } as const;
@@ -154,6 +158,8 @@ async function grounds(read: (name: string) => Buffer | null): Promise<Grounds> 
 interface Measured {
   body: string;
   share: number;
+  /** The most there is of anything along the picture's outermost pixels, 0 to 255. */
+  edge: number;
   /** Each ground this picture is held to, and the ratio measured against it. */
   against: Record<string, number>;
 }
@@ -181,7 +187,42 @@ async function judge(name: string, input: Buffer, g: Grounds): Promise<Verdict> 
     .map(
       ([ground, v]) => `${name}: ${v.toFixed(2)}:1 against the ${ground}, under ${MIN_CONTRAST}:1`,
     );
-  return { measured: { body: hex(colour), share: round2(colour.share), against }, failures };
+  const edge = edgeOf(p);
+  if (edge > EDGE_MAX)
+    failures.push(`${name}: CUT OFF AT ITS EDGE, ${edge} of 255 there, over ${EDGE_MAX}`);
+  return { measured: { body: hex(colour), share: round2(colour.share), edge, against }, failures };
+}
+
+/**
+ * THE EDGE. A render's soft shadow can reach the picture's edge, where it is cut off: seen on a
+ * dark board it is nothing, seen on a cream card it is a faint box round the piece (found on the
+ * kit page, 1 October 2026; the first renders measured up to 48 of 255 at the edge). `feather`
+ * fades whatever lies in the outer tenth of the picture down to nothing at the edge itself, and
+ * takes off the thin haze a shadow catcher leaves everywhere. `edgeOf` is what the gate reads.
+ */
+const EDGE_MAX = 3;
+const FEATHER = 0.1;
+const HAZE = 5;
+function feather(p: Pixels): void {
+  const band = Math.max(1, Math.round(p.width * FEATHER));
+  for (let y = 0; y < p.height; y += 1)
+    for (let x = 0; x < p.width; x += 1) {
+      const i = (y * p.width + x) * 4 + 3;
+      let a = p.data[i] ?? 0;
+      if (a < SOLID) a = Math.max(0, a - HAZE) * (255 / (255 - HAZE));
+      const d = Math.min(x, y, p.width - 1 - x, p.height - 1 - y) / band;
+      if (d < 1) a *= d * d * (3 - 2 * d);
+      p.data[i] = Math.round(a);
+    }
+}
+function edgeOf(p: Pixels): number {
+  let max = 0;
+  for (let y = 0; y < p.height; y += 1)
+    for (let x = 0; x < p.width; x += 1) {
+      if (x > 0 && y > 0 && x < p.width - 1 && y < p.height - 1) continue;
+      max = Math.max(max, p.data[(y * p.width + x) * 4 + 3] ?? 0);
+    }
+  return max;
 }
 
 const sha = (b: Buffer): string => createHash('sha256').update(b).digest('hex');
@@ -199,7 +240,10 @@ async function ingest(): Promise<void> {
   for (const view of Object.keys(VIEWS) as View[]) {
     mkdirSync(join(RENDERS, view), { recursive: true });
     for (const name of names(join(PNG, view), '.png')) {
-      const out = await sharp(readFileSync(join(PNG, view, `${name}.png`)))
+      const px = await pixels(readFileSync(join(PNG, view, `${name}.png`)));
+      // The swatch is the board itself, solid to its edges on purpose.
+      if (name !== SWATCH) feather(px);
+      const out = await sharp(px.data, { raw: { width: px.width, height: px.height, channels: 4 } })
         .webp({ lossless: true, effort: 4 })
         .toBuffer();
       writeFileSync(join(RENDERS, view, `${name}.webp`), out);
@@ -313,6 +357,24 @@ async function control(): Promise<boolean> {
     cream.failures.length === 0,
     `${cream.measured.against['board']}:1 against the board, ${cream.failures.length === 0 ? 'accepted' : 'REJECTED'}`,
   );
+  // A piece that reads well against the board and whose shadow runs off the picture. It must be
+  // rejected FOR THE EDGE: the first version of this control had nothing solid in it, and was
+  // refused for that instead, which demonstrated nothing about the edge rule.
+  const cut = await sharp(
+    Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="rgb(0,0,0)" fill-opacity="0.4"/><circle cx="60" cy="60" r="40" fill="rgb(244,232,210)"/></svg>',
+    ),
+  )
+    .png()
+    .toBuffer();
+  const boxed = await judge('control-invader', cut, g);
+  const forEdge =
+    boxed.failures.length === 1 && (boxed.failures[0] ?? '').includes('CUT OFF AT ITS EDGE');
+  line(
+    'mustFail, a picture cut off at its edge',
+    forEdge,
+    `${boxed.measured.edge} of 255 at the edge, ${boxed.measured.against['board']}:1 against the board, ${forEdge ? 'rejected for its edge' : 'NOT REJECTED FOR ITS EDGE'}`,
+  );
   let refused = false;
   try {
     await grounds((name) => (name === SWATCH ? null : read(name)));
@@ -356,6 +418,7 @@ function compare(a: string, b: string): string[] {
  *   MANIFEST RECORDS WHAT WAS NOT MEASURED     a number in the manifest is not the one measured
  *   A RENDER IS NOT IN THE MANIFEST            a piece was rendered and never built
  *   OUTPUT IS NOT WHAT THE MANIFEST RECORDS    an output file is missing or is not the recorded one
+ *   THE KIT'S COLOUR IS NOT THE MEASURED ONE   the kit's board or well is not what the renders measure
  *
  * Without it the gate is a script somebody may or may not run before committing a new piece.
  * Controls: pnpm ci:selftest clay-gate-reads-the-pictures, clay-manifest-not-measured,
@@ -425,6 +488,18 @@ async function check(): Promise<{ problems: string[]; pictures: number; files: n
           );
       }
     }
+  // The kit writes the board's and the well's colours down so the page round the board can
+  // match it (packages/ui/src/kit/tokens.ts). They are measured values, and must stay the measured ones.
+  const tokens = readFileSync(join(HERE, '../../packages/ui/src/kit/tokens.ts'), 'utf8');
+  for (const ground of ['board', 'well'] as const) {
+    const m = new RegExp(`^\\s*${ground}: '(#[0-9a-fA-F]{6})'`, 'm').exec(tokens);
+    if (!m?.[1])
+      problems.push(`THE KIT'S COLOUR IS NOT THE MEASURED ONE: tokens.ts names no ${ground}`);
+    else if (m[1].toLowerCase() !== measuredGrounds[ground])
+      problems.push(
+        `THE KIT'S COLOUR IS NOT THE MEASURED ONE: tokens.ts has the ${ground} as ${m[1]}, the renders measure ${measuredGrounds[ground]}`,
+      );
+  }
   for (const key of Object.keys(manifest.assets))
     if (!seen.has(key))
       problems.push(`MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} has no render`);

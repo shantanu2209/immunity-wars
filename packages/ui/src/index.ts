@@ -149,3 +149,8 @@ export {
 export { diseaseLabel, CLONE_TARGET } from './play/offered';
 export { LogPanel, RichText, type LogLine } from './panels/LogPanel';
 export { engineText, engineLogText, type LogText } from './engineText';
+
+// THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13) is NOT exported from here. It has its own entry,
+// `@immunity-wars/ui/kit`, so that only the kit page pulls it in: exported from this file it rode
+// along in the chunk every player downloads (measured in the first build: the shared chunk carried
+// the kit's colours). It joins this file when the screens are built from it, at L4.

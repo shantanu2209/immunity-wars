@@ -29,8 +29,11 @@ second is the target (120 is unmeasured) and the phone's tap test was waived, no
 measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
 then removed with `pixi.js` and `three`. **L3, the kit, is under way** (plan §13, ruled 1 October):
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
-lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; colours, type and
-components with the kit page come next, then motion and sound, and he approves the kit on his phone.
+lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
+and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`, used only by the kit
+page, `/kit.html`), held to the contrast bounds by the kit's own test; the Clay art is served from
+`packages/app/public/art/clay/` and kept out of the service worker's list until L4. Motion and sound
+come next, and he approves the kit on his phone.
 **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
