@@ -21,6 +21,7 @@
 import { residentSeat, type Seat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
+  isValidElement,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -55,6 +56,7 @@ import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { COLOUR } from '../kit/tokens';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { FLOAT_RESERVE, useNavLayer, useNavState } from '../nav/NavHost';
@@ -71,7 +73,9 @@ import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
+  OldPaper,
   PlayArea,
+  SlotClose,
   SpreadView,
   TabRow,
   Toast,
@@ -260,7 +264,9 @@ export function PlayScreen({
   // THE LAYERS ON THE NAVIGATION STACK (docs/for-P2.7.md §9, rulings 8 and 9). Each registers
   // while it shows, in the order it opened, so the one floating close and the back gesture reach
   // the top one: a card opened from the inspect sheet closes back to the sheet.
-  useNavLayer('inspect', inspect !== null, () => setInspect(null));
+  // THE MIDDLE'S VIEWS CLOSE IN THE SLOT (stage L4; `LayerClose` in nav/stack.ts): the close is
+  // drawn where the stage's one button is, beside the three tiles, so it never covers them.
+  useNavLayer('inspect', inspect !== null, () => setInspect(null), 'slot');
   useNavLayer('pathogen-card', card !== null, () => setCard(null));
   useNavLayer('cell-card', cellCard !== null, () => setCellCard(null));
   // THE MIDDLE'S VIEWS (piece 5 of the play screen, docs/for-P2.7.md §19): a row's several targets,
@@ -270,11 +276,16 @@ export function PlayScreen({
   const [targetsFor, setTargetsFor] = useState<DockRow | null>(null);
   const [apSheet, setApSheet] = useState(false);
   const [effectsOpen, setEffectsOpen] = useState(false);
-  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
-  useNavLayer('ap-terms', apSheet, () => setApSheet(false));
-  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false));
+  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null), 'slot');
+  useNavLayer('ap-terms', apSheet, () => setApSheet(false), 'slot');
+  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false), 'slot');
   const [drawer, setDrawer] = useState<DrawerKind | null>(null);
-  useNavLayer('drawer', drawer !== null, () => setDrawer(null));
+  // Two layers for the one piece of state: the messages and the table are drawn over the whole
+  // screen, and their close floats over them; the Cells, Antibodies and Body views open in the
+  // middle, and theirs is in the slot.
+  const overAll = drawer === 'log' || drawer === 'table';
+  useNavLayer('drawer', overAll, () => setDrawer(null));
+  useNavLayer('middle-view', drawer !== null && !overAll, () => setDrawer(null), 'slot');
   // PLANNING'S FILTER: a tap on a place on the figure lists that place's pathogens; a tap anywhere
   // else on the body lists them all (§19).
   const [planFocus, setPlanFocus] = useState<string | null>(null);
@@ -1364,6 +1375,15 @@ export function PlayScreen({
               ? residentDisplayName(selectedResident)
               : null
         }
+        // The piece in hand, as the board draws it: a resident is one of the body's own macrophages.
+        piece={
+          selectedCell || selectedResident
+            ? {
+                src: `/art/clay/board/${selectedCell ?? 'macrophage'}@3x.webp`,
+                base: '/art/clay/board/base@3x.webp',
+              }
+            : null
+        }
         onCard={
           selectedCell
             ? () =>
@@ -1418,19 +1438,28 @@ export function PlayScreen({
         display: 'flex',
         flexDirection: 'column',
         gap: 6,
-        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must. The 16px is
-        // the body's margin, above and below.
-        height: 'calc(100dvh - 16px)',
+        // THE TABLE (stage L4): the frame is drawn on the kit's dark ground, out to the screen's
+        // edges. The page has a margin of 8px all round, in the old paper; the frame is pulled out
+        // over it and given the same 8px back as its own padding, so nothing inside it moves.
+        background: COLOUR.table,
+        color: COLOUR.onDark,
+        margin: -8,
+        padding: 8,
+        boxSizing: 'border-box',
+        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must.
+        height: '100dvh',
         // While the floating close shows, NavHost appends its spacer below the page. The frame keeps
         // its size (nothing moves, §12 ruling 1) and lets the spacer overlap its own bottom, where
         // the hidden advance button keeps its slot, so the page does not scroll by the spacer.
-        marginBottom: navState.floating ? `calc(-1 * ${FLOAT_RESERVE})` : undefined,
+        marginBottom: navState.floating ? `calc(-8px - ${FLOAT_RESERVE})` : -8,
       }}
     >
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
         apText={`${t('commandBar.ap')} ${String(apShown)}`}
+        // The pips: what is left, of what the engine says this turn began with.
+        ap={{ have: apShown, of: authView.queries.ap.total }}
         apAvailable={apTerms.length > 0 && !playing}
         onAp={() => {
           closeMiddle();
@@ -1532,21 +1561,49 @@ export function PlayScreen({
       </PlayArea>
       <div
         data-middle=""
-        style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
+        // Its floor is in rem, so it grows with the text it has to hold; the play area shrinks to
+        // leave it (Frame.tsx).
+        style={{ flex: '1 0 5rem', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
-        {middle()}
+        {(() => {
+          // What is drawn in Clay is said straight onto the table or on its own card. Every other
+          // view has not been redrawn yet, and stands on a sheet of the old paper until it is.
+          const view = middle();
+          const clay =
+            isValidElement(view) && (view.type === SpreadView || view.type === ActionsView);
+          return clay ? view : <OldPaper>{view}</OldPaper>;
+        })()}
       </div>
       <div
         data-bottom=""
-        style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 6 }}
+        // ONE ROW (stage L4, as in the picture picked at L1): the three views' tiles and, beside
+        // them, the stage's one button. It wraps when the words are too wide for one row, as they
+        // are with the phone's text at 200%.
+        style={{
+          flex: '0 0 auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'stretch',
+          gap: 6,
+          paddingBottom: 6,
+        }}
       >
-        {plan === null && arrivalsNow === null ? (
+        {/* Not while a spread plays: the tiles could not be pressed then, and the one button's
+            words ("Tap to continue") want the whole row. */}
+        {plan === null && arrivalsNow === null && !playing ? (
           <TabRow active={tabOpen} disabled={playing} shown={drawersFor(p.seats)} onTab={openTab} />
         ) : null}
         {/* THE CAPTAIN'S STEPS (P3.7 piece B): beginning command, the allocation and ending the turn
             are the captain's alone, as the draw is (above); the engine refuses them from anyone else.
             Every other player's button says who they are waiting for. */}
+        {navState.slotClose !== null ? (
+          <SlotClose label={navState.slotClose.label} onClose={navState.slotClose.close} />
+        ) : null}
         <AdvanceButton
+          // While a view's close has the slot, the stage's own button is not there at all. When it
+          // comes back it is a new button, and its guard counts no tap for half a second: a second
+          // tap meant for Close cannot end the turn.
+          gone={navState.slotClose !== null}
           keyName={
             playing
               ? 'spread'

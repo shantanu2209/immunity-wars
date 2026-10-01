@@ -44,6 +44,8 @@ export const COLOUR = {
   coral: '#E8674A',
   coralLit: '#F58A6E',
   coralEdge: '#B5452D',
+  /** A warning in words, on cream: coral dark enough to read. */
+  coralInk: '#9E3A22',
   /** What is healthy, and what is allowed. */
   mint: '#3FD6B4',
   mintLit: '#6FE9CB',

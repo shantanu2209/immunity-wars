@@ -1028,6 +1028,30 @@ const CONTROLS: readonly Control[] = [
     expect: 'KIT SOUND: a muted kit made a sound',
   },
   {
+    id: 'frame-flat-action-still-answers',
+    why: 'Stage L4: the play screen’s frame is built from the kit. An action that cannot be used is drawn flat, and a press on it is how the player asks why; the kit’s own unavailable button takes no press. With the frame’s actions made unavailable the kit’s plain way, the frame test must FAIL saying a flat action cannot be pressed.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '              unavailable={!row.available}\n              explains\n',
+        '              unavailable={!row.available}\n',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A FLAT ACTION CANNOT BE PRESSED',
+  },
+  {
+    id: 'frame-pips-show-what-is-left',
+    why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '<KitPips have={ap.have} of={of} label="" />',
+        '<KitPips have={of} of={of} label="" />',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE PIPS DO NOT SHOW WHAT IS LEFT',
+  },
+  {
     id: 'clay-page-and-blender-agree',
     why: 'Stage L4: the board is a picture Blender rendered with a margin round it, and the page lays every piece over that picture with the same margin. If the two numbers drift, every piece stands beside its step, and nothing else would say so. With the page given another margin, the board test must FAIL naming the number.',
     file: 'packages/ui/src/board/clay.ts',

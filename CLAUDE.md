@@ -33,7 +33,9 @@ then removed with `pixi.js` and `three`. **Stage L3 is done: he approved the kit
 and not before L6, because the hints and the coach are switched off for the guided game to replace.
 The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `board/clay.ts` and `board/clayLayout.ts`, over
 the same model in `board/Board.tsx`), from a picture `tools/art-pipeline/clay/board.py` renders;
-the frame and panels, motion, the camera and the S25 measurement follow. What the kit is:
+the frame round it (`play/Frame.tsx`) is drawn from the kit, and what is not redrawn yet stands on
+a sheet of the old paper (`OldPaper`); the panels, motion, the camera and the S25 measurement
+follow. What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`, used only by the kit

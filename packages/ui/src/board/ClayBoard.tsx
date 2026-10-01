@@ -31,7 +31,7 @@ import {
 } from 'react';
 
 import { t as say } from '../i18n';
-import { COLOUR } from '../kit/tokens';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { cellDisplayName, residentDisplayName, typeDisplayName } from '../names';
 import {
   buildNodeModel,
@@ -512,6 +512,8 @@ export function ClayBoard({
           userSelect: 'none',
           WebkitUserSelect: 'none',
           touchAction: 'manipulation',
+          // the numbers on the pieces are set in the kit's typeface, like every other
+          fontFamily: TYPE.family,
         }}
       >
         <Still art={art} />

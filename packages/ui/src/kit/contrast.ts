@@ -112,6 +112,18 @@ export const PAIRS: readonly Pair[] = [
   },
   { name: 'a count on a piece', fg: COLOUR.ink, bg: COLOUR.coral, bound: 'text' },
   { name: 'turns until a cell is back', fg: COLOUR.onDark, bg: COLOUR.table, bound: 'text' },
+  // the play screen's frame (stage L4)
+  { name: 'a warning on a card', fg: COLOUR.coralInk, bg: COLOUR.cream, bound: 'text' },
+  { name: 'a hint on a card', fg: COLOUR.mintInk, bg: COLOUR.cream, bound: 'text' },
+  { name: 'words on a resting tab', fg: COLOUR.onDark, bg: COLOUR.well, bound: 'text' },
+  { name: 'the open tab, by its ring', fg: COLOUR.glow, bg: COLOUR.tableLit, bound: 'control' },
+  {
+    name: 'a die that missed, by its edge',
+    fg: COLOUR.onDarkSoft,
+    bg: COLOUR.table,
+    bound: 'control',
+  },
+  { name: 'what is in force and good', fg: COLOUR.mintInk, bg: COLOUR.mintSoft, bound: 'text' },
 ];
 
 export interface Measured extends Pair {

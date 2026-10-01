@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board is built, standing still (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board and the frame round it are built (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -532,3 +532,51 @@ coin fails for two.
 - **Not measured:** the frame rate, and anything on the S25. Both are the fifth pull request's.
 - **The accessibility audit was not run.** It walks the old screens, and is aimed at the new one in
   the fifth pull request.
+
+### Built: the frame (the second of the five, its first half)
+
+**The frame of the play screen is drawn from the kit**, `packages/ui/src/play/Frame.tsx`, on the
+table's dark ground out to the screen's edges. What each part is given, and the hooks the drivers
+and the audit find it by, are as they were.
+
+- **Top:** the turn; the Action Points as gold pips, as many lit as are left; what is in force, as a
+  chip; the messages and the menu as cream buttons.
+- **The selected piece's card:** its picture on its base, its name (which opens its card), Undo, and
+  its actions two abreast. **Mint is what the piece can do now. Flat and grey is what it cannot, and
+  a press on it says why. Cream is everything else.**
+- **Bottom, in one row, as in the picture he picked:** the three views' tiles, each a picture over
+  its word, and beside them the stage's one coral button.
+- **The spread's line** is said straight onto the table, with a die that hit in coral.
+
+**What is not redrawn yet stands on a sheet of the old paper:** the Cells, Antibodies and Body
+views, a tapped step, the Action Points' terms, what is in force in full, the new cards and
+planning. Its words keep the contrast they were measured at. Each sheet goes as its view is redrawn:
+the views in the second half of this pull request, the new cards and planning at L5.
+
+**The one close has a second place to be drawn.** With the tiles and the button in one row, the
+close that floats across the bottom of the screen covered the tiles, so a view could not be changed
+without closing first. A view opened in the middle now has its close drawn where the stage's one
+button was: the same close, with the same word and hook, beside the tiles. What is drawn over the
+whole screen (a card, the messages) still has the floating one. `nav/stack.ts` says which.
+
+**Measured, in a headless browser on the PC at the S25 tab's size, 360 by 641.**
+
+| Measured | Found | Changed |
+|---|---|---|
+| The room left for the middle | 162 px, and the card with one row of actions needs 162. With the tiles in a row of their own it was 100 | The one row is kept. Two rows of actions scroll |
+| "Tap to continue", beside the tiles | Two lines, and a taller row | The tiles are not drawn while a spread plays; they could not be pressed then |
+| The middle with the text at 200% | 25 px of a screen: the bars above and below had grown round it | The board gives way before the middle does. The middle has 160 px; the page is still one screen tall and no wider than the phone |
+| Controls under 44 px, at rest and at 200% | None | |
+| The screen left alone for two seconds, at each of seven stages | No layout and no style work at any of them; 1 ms of script in all | |
+
+**Not measured:** the frame rate, and anything on the S25.
+
+**The kit's button carries more:** the hooks and labels a screen's control needs, and a way to be
+drawn unavailable and still take a press. **Controls added, each fired:**
+`frame-flat-action-still-answers` (the frame's actions made unavailable the kit's plain way: the
+test fails saying a flat action cannot be pressed) and `frame-pips-show-what-is-left` (every pip
+lit: it fails naming the count).
+
+**The scripts that walk the game hung for minutes at their last line.** It was the browser being
+closed, with everything already measured and written; the page itself was idle. They now end
+without waiting for it.

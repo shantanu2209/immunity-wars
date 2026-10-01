@@ -24,9 +24,21 @@
  * Pure, so the rule can be tested before it is trusted on a phone (`stack.test.ts`).
  */
 
+/**
+ * WHERE A LAYER'S CLOSE IS DRAWN.
+ *
+ *   true    floating over the page, at the bottom of the screen: the one close (ruling 8)
+ *   false   nowhere: a dialog is acknowledged by its own button, not closed
+ *   'slot'  in the screen's own place for it (stage L4 of the look). The play screen's views open
+ *           in its middle, beside the row its one button sits in; a close floating across that row
+ *           would cover the three tiles that open the other views. So the same close, with the same
+ *           word, is drawn where the screen's one button was, and the screen draws it.
+ */
+export type LayerClose = boolean | 'slot';
+
 export type NavEntry<S> =
   | { readonly kind: 'screen'; readonly screen: S }
-  | { readonly kind: 'layer'; readonly id: string; readonly floating: boolean };
+  | { readonly kind: 'layer'; readonly id: string; readonly floating: LayerClose };
 
 export interface NavStack<S> {
   readonly entries: readonly NavEntry<S>[];
@@ -59,7 +71,7 @@ export function replaceScreen<S>(s: NavStack<S>, screen: S): NavStack<S> {
 }
 
 /** Registers a layer over whatever is on top. Opening one already open changes nothing. */
-export function openLayer<S>(s: NavStack<S>, id: string, floating: boolean): NavStack<S> {
+export function openLayer<S>(s: NavStack<S>, id: string, floating: LayerClose): NavStack<S> {
   if (s.entries.some((e) => e.kind === 'layer' && e.id === id)) return s;
   return { entries: [...s.entries, { kind: 'layer', id, floating }] };
 }
@@ -77,6 +89,17 @@ export function popTop<S>(s: NavStack<S>): NavStack<S> {
 
 export function topEntry<S>(s: NavStack<S>): NavEntry<S> | undefined {
   return s.entries[s.entries.length - 1];
+}
+
+/**
+ * Where the close is drawn now: floating over the page, in the screen's own slot, or nowhere. The
+ * word on it is `closeLabel`'s either way.
+ */
+export function closePlace<S>(s: NavStack<S>): 'float' | 'slot' | null {
+  const top = topEntry(s);
+  if (top === undefined || s.entries.length <= 1) return null;
+  if (top.kind === 'screen') return 'float';
+  return top.floating === 'slot' ? 'slot' : top.floating ? 'float' : null;
 }
 
 /** The screen being shown: the topmost screen entry, whatever layers sit over it. */
