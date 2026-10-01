@@ -125,12 +125,10 @@ export interface Point {
 }
 
 /**
- * The planning screen's anatomical frame (P2.5 item 12): the keyed asset's key and its 1×
- * pixel size — the space `ANATOMY_POS` is authored in. Measured off the art manifest, never typed
- * from memory: `packages/app`'s anatomy-frame test holds the two equal.
+ * The planning screen's anatomical frame (P2.5 item 12): the size of the space `ANATOMY_POS` is
+ * authored in. It names no picture; the outline is drawn in code, in this space.
  */
 export interface FrameDef {
-  readonly asset: string;
   readonly w: number;
   readonly h: number;
 }

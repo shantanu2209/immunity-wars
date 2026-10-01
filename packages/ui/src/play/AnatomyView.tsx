@@ -54,7 +54,7 @@ const COIN_SHARE = { organ: (1.3 * 0.23) / 0.45, entry: (1.087 * 0.23) / 0.45 } 
 // at the 339px the figure is drawn at on a 360px phone since piece 5 (for-P2.7.md §19).
 const HIT_R = 26;
 
-const frame = FRAME as { asset: string; w: number; h: number };
+const frame = FRAME as { w: number; h: number };
 const organPos = ANATOMY_POS as Record<string, Pt>;
 const entryPos = ANATOMY_ENTRY as Record<string, Pt>;
 const hubPos = ANATOMY_HUB as Pt;

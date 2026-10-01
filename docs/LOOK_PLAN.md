@@ -977,6 +977,7 @@ request failed; 53 controls of the audit's own, each firing or passing as it mus
 - **The old pictures are still in the build, and nothing draws them:** the 89 files of the old art
   and the body's old outline. Taking them out retires the open question about their licence and
   0.41 MB of the 2.50 MB a phone stores (measured from the build's own list). It is its own change.
+  *Done, 2 October 2026 (§17).*
 - **The Clay title has no "THE" set small above the name,** as his L1 picture had: the name is one
   entry in the catalogue, and cutting an article off it in code would not survive the Hindi edition.
 - **A lone picture on a new card is small** beside the card: the card view's pictures leave room
@@ -1052,3 +1053,81 @@ every room, and renaming it changes what is stored for no player's benefit. The 
 comments still say Training where they mean that key. The Gate 1 audit
 presses the difficulty by the word a player reads, so it presses Easy now; it was not run again
 for this change, and is before anything is deployed.
+
+## 17. Removed, 2 October 2026: what is no longer needed
+
+Ruled the same day (§16, row 5): *"yes unnecessary things should be removed"*, whatever is wrong,
+redundant, stale or duplicate.
+
+### What went
+
+| What | How much | Why it was no longer needed |
+|---|---|---|
+| The art before Clay, as built | 90 WebP files, the body's outline among them, and their manifest, under `packages/app/public/art/` | Nothing has drawn them since L5. A phone still stored all of them |
+| The pictures it was built from | 30 generated originals and a note beside them, under `tools/art-pipeline/` | Inputs to a pipeline with no output left |
+| The pipeline that built it, and its two viewers | Three scripts and their three commands: `art:build`, `art:showcase`, `art:anatomy` | The Clay pipeline is the only one. The viewers drew the old board and the old outline |
+| The test that held the outline's picture to the content pack's frame | One file, four tests | The outline is drawn in code; `AnatomyView`'s own test holds every placed organ and way in inside it |
+| The picture's name in the content pack | One field of `FRAME` | It named a file that is gone. The frame is a size now, and a test refuses a name put back |
+| Sentences no screen asks for | 22 of the catalogue's 614 | Left behind as screens were replaced. A Hindi translator would have been handed each |
+
+**They are in the repository's history,** last at commit `86216ff`. [`ASSETS.md`](ASSETS.md) keeps
+the rows that say where the old art came from, marked removed.
+
+**What a phone stores to play offline, measured from the build's own list and the files:** 133 files,
+2.09 MB. Before: 224 files, 2.50 MB.
+
+**What it does to the licence question.** Every picture the app ships is now modelled in Blender or
+drawn in code here. The question of 20 August, whether anyone holds a copyright in generated
+images, no longer applies to anything the app ships. It still applies to what is kept for
+reference: the icon art in `tools/legacy/`, and the 16 rasters in the printed A2 board. **No
+licence is declared for content, as before;** whether to declare one is his.
+
+**Not run for this change: the Gate 1 audit.** One of its controls planted an old picture as "a
+picture the phone stores"; it plants a Clay one now. That line, and the whole audit, are run before
+anything is deployed, and are not claimed here.
+
+### A check added, so that the sentences do not come back
+
+`packages/app/src/catalogue.test.ts` reads the screens' sources and the catalogue, both ways: every
+sentence is asked for by a screen, and every key a screen asks for by name is there. On its first
+run, before anything was removed, it failed naming the same 22 that a search by hand had found.
+
+- **What it cannot see:** whether a sentence that is asked for is ever reached. The sentences of the
+  hints and the coach are asked for by code that is switched off, and count as used.
+- **Controls, each fired:** on planted sources, a sentence nothing asks for is reported and only
+  that one; a named key, a built key and a grown key each count as used; a key named only in a
+  comment does not. On the real catalogue, `catalogue-no-sentence-left-behind` (a sentence added
+  that nothing asks for: the test fails naming it).
+- **One assertion was taken out and not replaced.** The build test counted more than 80 pieces of
+  old art in the worker's list. "No art that is not Clay is stored" could not be made to fail
+  without such art, and a check that cannot fail is not kept.
+
+### Found on the way: the test cache could not see three files the board's test reads
+
+Writing that test raised a question about the ones already there, and the answer was no
+([`FINDINGS.md`](FINDINGS.md) #112). The board's test in `packages/ui` holds the page to numbers
+written in Blender's two scripts and to the Clay manifest, all outside `packages/ui`, so since
+stage L4 a change to one of them alone would have had `pnpm verify` replay a cached pass. It is the
+same blind spot as #108, found a second time by asking. **Fixed here, because it is the
+instrument:** the three files are declared, the guard requires each in the hash, and control
+`turbo-board-test-reads-hashed` takes one out and sees the guard fail. The catalogue test lives in
+`packages/app` for the same reason. **Nothing finds the next such read;** that is said in the
+finding, and is his to weigh.
+
+### How "not needed" was found, and what the search did not cover
+
+- **Files:** a walk of imports from the app's four pages reaches all 80 source files of
+  `packages/ui`, and from its entries all 13 of `packages/app`. No whole file is dead.
+- **Not searched:** dead code inside a file that is reached; the engine, the content's tables, the
+  room and the relay, which this stage does not touch; the documents, which are records.
+
+### Looked at and left, for his word
+
+| What | Why it was not simply removed |
+|---|---|
+| **The hints and the first-game coach**, switched off since L4 | The guided game replaces them, and may reuse the part that says a thing once, the first time it is met. They go with L6 |
+| **`docs/ART_BRIEF.md` and `docs/ANATOMY_FRAME_BRIEF.md`**, the prompts the old art was generated from | The asset register's rows cite them. They are the record of where removed art came from |
+| **`tools/legacy/stale/`**, two builds from before the Brain fix that contradict the rules | `tools/legacy/` is never edited: that is a hard rule of this repository, and his to lift |
+| **Two older measuring scripts**, `tools/perf/measure.ts` and `tools/perf/measure-full.ts`, and the developer page they drive | Written for the screens before Clay. Not run against the new ones, so whether they still measure anything is not known. For L7, where the measurement is re-aimed |
+| **124 names `packages/ui` offers that the app never asks for** | Its own tests use them. Harmless |
+| **Branches already merged**, here and on GitHub | Not part of the repository's files; his to say |

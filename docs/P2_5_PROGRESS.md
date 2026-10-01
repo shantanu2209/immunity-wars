@@ -424,7 +424,8 @@ consequence are in FINDINGS #53 and CP5's record.
    measured it: stroke `#786760`, 5.29:1 against the paper, interior provably empty, cropped
    mid-thigh, aspect 0.555; at 380px tall on a 360px screen the torso interior is 179 × 209px.
    It is a JPEG on white by choice — the PNG's alpha was a uniform 50%. **Check the keyed output
-   for a JPEG halo around the stroke before accepting it.** `tools/art-pipeline/build.ts` is the
+   for a JPEG halo around the stroke before accepting it.** `build.ts` in `tools/art-pipeline/`
+   (*removed on 2 October 2026 with the art before Clay*) is the
    pipeline; look at how it maps a raw filename to an asset key (the others are `cell-x.jpeg` →
    `cell-x`; `frame/body` may need the key written explicitly).
 2. **The seven organ positions into the CONTENT pack, beside the board geometry — propose the

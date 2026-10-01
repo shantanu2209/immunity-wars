@@ -351,12 +351,14 @@ describe('the board pack', () => {
     ).toThrow(/frame/);
   });
 
-  it('rejects a frame asset that is not under frame/', () => {
+  // The frame is a size and nothing else: it named a picture until that picture was removed
+  // (2 October 2026), and a name for a file that does not exist must not come back unnoticed.
+  it('rejects a frame that names a picture', () => {
     expect(
       corruptBoard((p) => {
-        (p['FRAME'] as Record<string, unknown>)['asset'] = 'organ-brain';
+        (p['FRAME'] as Record<string, unknown>)['asset'] = 'frame/body';
       }),
-    ).toThrow(/frame\//);
+    ).toThrow(/asset/);
   });
 
   it('rejects a frame with no size', () => {

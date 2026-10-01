@@ -91,6 +91,11 @@ const OUTSIDE_READS: readonly [string, string][] = [
   ['@immunity-wars/equivalence', '../../tools/legacy/v2_engine.js'],
   ['@immunity-wars/equivalence', '../../docs/Immunity_Wars_Rulebook_v3_1.docx'],
   ['@immunity-wars/equivalence', '../../docs/CONTENT_REACHABILITY.md'],
+  // The board's test (`packages/ui/src/board/clay.test.ts`) holds the page to numbers written in
+  // Blender's two scripts and to the Clay manifest (docs/FINDINGS.md #112).
+  ['@immunity-wars/ui', '../../tools/art-pipeline/clay/board.py'],
+  ['@immunity-wars/ui', '../../tools/art-pipeline/clay/pieces.py'],
+  ['@immunity-wars/ui', '../app/public/art/clay/manifest.json'],
 ];
 const inputsOf = new Map(dry.tasks.map((t) => [t.taskId, t.inputs ?? {}]));
 for (const [name, file] of OUTSIDE_READS) {

@@ -71,9 +71,9 @@ export default defineConfig({
       // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
       // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
       injectRegister: false,
-      // The art the screens use: the icons at the top of `art/`, the anatomy frame, and the Clay
+      // The art the screens use: the Clay
       // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
-      includeAssets: ['art/*', 'art/frame/**/*', ...CLAY_ON_THE_BOARD, 'fonts/**/*'],
+      includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*'],
       manifest: {
         name: 'The Immunity Wars',
         short_name: 'Immunity Wars',

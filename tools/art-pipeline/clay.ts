@@ -1,12 +1,12 @@
 /**
  * THE CLAY PIECES' PIPELINE — Blender's renders in, gated WebP and a manifest out.
- * Stage L3 of docs/LOOK_PLAN.md (section 13). `build.ts` beside this one is the pipeline of the
- * art the app ships today, and is untouched; this is its sibling for the look that replaces it.
+ * Stage L3 of docs/LOOK_PLAN.md (section 13). It is the only art pipeline: `build.ts`, which
+ * made the art the app shipped before Clay, left with that art on 2 October 2026.
  *
  * WHERE THE PICTURES COME FROM. `clay/pieces.py` builds every piece in Blender and renders it in
  * two views: BOARD (from straight above, under the board's own lamps, for the play screen) and
  * CARD (at an angle, for cards and the title). A render is not byte-reproducible across machines,
- * so, as with the generated art in `raw/`, the renders are INPUTS: `--ingest` stores them as
+ * so the renders are INPUTS: `--ingest` stores them as
  * lossless WebP under `clay/renders/`, committed. Everything after that is deterministic.
  *
  * THE GATE. WCAG 2.1's bound for a meaningful graphic is 3:1 against what it is seen on, and

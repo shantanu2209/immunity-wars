@@ -77,9 +77,6 @@ describe('both entries build', { timeout: 180_000 }, () => {
     // line. It did, on this test's first run: the pattern knew only the production spelling and
     // read 0 entries, and this line is what said so.
     expect(stored.length, 'THE WORKER LIST WAS NOT READ').toBeGreaterThan(100);
-    expect(
-      stored.filter((u) => u.startsWith('art/') && !u.includes('clay')).length,
-    ).toBeGreaterThan(80);
     // What the play screen draws: the board's own picture at every size; each piece, organ and
     // way in at the one size the board and the panels name (`@3x`); and each piece as a card shows
     // it, at every size. Listed from the build, not from memory.

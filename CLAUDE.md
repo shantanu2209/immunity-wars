@@ -52,7 +52,11 @@ built before the review would be reviewed with the rest, so **every choice in it
 printed texts, and in the one engine message that names a difficulty; the key in the code is still
 `training`; rules 4.1.1. **The guided game is not built:** his direction is a game scripted for the
 fewest turns that explain everything and then the player's to finish, and what it leaves open is
-put to him in the chat. **Nothing is sent to him as a file** (the same ruling).
+put to him in the chat. **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
+(the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
+is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
+asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach are still in
+the code, switched off, and go with the guided game.
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
