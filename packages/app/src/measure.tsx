@@ -149,8 +149,11 @@ function Row({ what, value }: { what: string; value: string }): ReactElement {
         ...TYPE.body,
       }}
     >
-      <span>{what}</span>
-      <span style={{ fontWeight: 900, textAlign: 'right' }}>{value}</span>
+      <span style={{ flex: '1 1 auto', minWidth: 0 }}>{what}</span>
+      {/* A short figure stays on one line, so a screenshot of this card cannot be misread. */}
+      <span style={{ fontWeight: 900, textAlign: 'right', flex: '0 0 auto', maxWidth: '62%' }}>
+        {value}
+      </span>
     </div>
   );
 }
