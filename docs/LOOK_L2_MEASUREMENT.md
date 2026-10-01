@@ -1,28 +1,97 @@
 # L2: the three ways of drawing Clay, measured
 
-**1 October 2026.** Numbers first; this document rules on nothing. The stage is
+**1 October 2026.** Numbers first; this document rules on nothing. **The S25 was measured the same day and leads; the PC follows.** The stage is
 [`LOOK_PLAN.md`](LOOK_PLAN.md) §12, and the instrument is
 [`tools/look-prototype/`](../tools/look-prototype/README.md).
 
-## Open, and it leads
+## The Samsung Galaxy S25, 1 October 2026
 
-> **THE SAMSUNG GALAXY S25 HAS NOT BEEN MEASURED.** Every figure below is from a development PC.
-> The plan rules the S25 the one device measured, so nothing here decides L2. The S25's table is
-> at the end, empty.
+Run by Shantanu on his phone: the built prototype served on the home network, **Measure all three**
+pressed once, the phone left alone. Read from his two screenshots of the page's own results.
 
-**What the PC's figures cannot say.**
+| | |
+|---|---|
+| Device | Samsung Galaxy S25, Adreno 830 (read from the page: ANGLE on OpenGL ES 3.2) |
+| Browser | Chrome 154 for Android, opened as a custom tab from another app |
+| Screen | 360 × 780 CSS pixels at 3 device pixels each; the board's box 360 × 355, drawn at 3× |
+| Refresh | **every 16.7 ms: the phone delivered 60 frames a second, not the 120 its screen can show** |
+| Network | home Wi-Fi, to the PC's `vite preview` of the production build |
+| Samples | 3 runs of each recording for each way, pooled; the page was never hidden during the run |
 
-- **They cannot tell the three ways apart on speed.** The PC holds every frame in all three, so it
-  shows that the instrument works and that none of the ways is broken, and nothing about which is
-  fastest on a phone. A desktop graphics card is not a phone's.
-- **They are from a 60 Hz headless browser.** The S25's screen refreshes 120 times a second, so its
-  frames are 8.3 ms apart and it has half the time per frame.
-- **Heat and battery are not measured at all**, on any device. A three-minute run does not show
-  what twenty minutes of play does.
+### Frames
+
+Milliseconds between frames.
+
+| Way | Recording | Frames | Typical | 99 in 100 | Worst | Slow (20 ms or more) | The page's own work per frame |
+|---|---|---|---|---|---|---|---|
+| Pictures on the page | calm turn | 1,705 | 16.7 | 16.8 | 16.8 | **0** | 0.6 |
+| Pictures on the page | crowded board | 1,685 | 16.7 | 16.8 | 33.3 | **1** | 2.6 |
+| Pictures on a GPU canvas | calm turn | 1,704 | 16.7 | 16.8 | 16.8 | **0** | 0.6 |
+| Pictures on a GPU canvas | crowded board | 1,685 | 16.7 | 16.8 | 33.3 | **1** | 0.6 |
+| Models drawn live | calm turn | 1,704 | 16.7 | 16.8 | 16.8 | **0** | 2.0 |
+| Models drawn live | crowded board | 1,686 | 16.7 | 16.8 | 16.8 | **0** | 4.6 |
+
+- **All three hold 60 frames a second.** Two rows have one slow frame each, and each is exactly one
+  missed refresh (33.3 ms) in 1,685 frames, 0.06%. One frame in three runs does not separate two
+  ways: the same count appears in the page way and the canvas way, and a single missed refresh can
+  be the phone's doing as easily as the page's. Under the ruling that a way marginally over is
+  evaluated before it is rejected, these two rows are marginal and nothing in them argues for
+  rejection.
+- **What does separate the ways is the page's own work per frame**, the time the phone's processor
+  spends deciding what to draw and telling the way to draw it, out of the 16.7 ms a frame has:
+
+  | | Calm turn | Crowded board | Share of a 60 Hz frame, crowded |
+  |---|---|---|---|
+  | Pictures on a GPU canvas | 0.6 ms | 0.6 ms | 4% |
+  | Pictures on the page | 0.6 ms | 2.6 ms | 16% |
+  | Models drawn live | 2.0 ms | 4.6 ms | 28% |
+
+  The canvas way's work does not grow with the crowd; the page way's and the live way's do. This
+  figure leaves out what the graphics chip does afterwards, which shows only in the frame gaps
+  above, and those are equal.
+
+### Loading
+
+| Way | First draw, over Wi-Fi | Sent, from the build | Fetched in this visit |
+|---|---|---|---|
+| Pictures on the page | **109 ms** | 287 KB | 287 KB in 14 files |
+| Pictures on a GPU canvas | **413 ms** | 433 KB | 163 KB in 13 files (the pictures were already fetched by the way before it) |
+| Models drawn live | **784 ms** | 849 KB | 2,991 KB in 26 files, as the phone counted them |
+
+All three are inside the 1 second line and far inside the 10 MB line. On the crowded board the live
+way issued 473 draw calls and 388,018 triangles a frame, the same as on the PC.
+
+**The memory figure is not a measurement.** The phone reported 9.5 MB of JS heap for all three
+ways alike. Chrome on Android reports this number coarsely, and three identical readings for ways
+whose PC readings were 3.1, 7.6 and 14.6 MB say that it did not resolve them. Memory on the phone
+is unmeasured.
+
+## Open
+
+- **120 frames a second is not measured.** The phone ran the page at 60. Whether that was the
+  phone's motion setting, a power saving mode, or the custom tab is not known. The pass line was
+  ruled at 16.7 ms, which is 60 a second, so the measurement answers the line as ruled; it says
+  nothing about how the three would behave with 8.3 ms a frame.
+- **Taps were not timed on the phone.** The tap test was not run there. With every frame arriving
+  16.7 ms apart and at most 4.6 ms of the page's own work in each, an answer within two or three
+  frames, 33 to 50 ms, is what the PC measured and what these frame times allow; that is an
+  inference, not the phone's reading.
+- **The ways were not looked at side by side in a loop**, including the live way with its camera
+  tilted. Shantanu's reading from the measured run: the three look much the same.
+- **Chrome, not the app's shell.** The app will run in a Capacitor web view, which is the same
+  engine and was not what was measured.
+- **Heat and battery are not measured at all.** A three-minute run does not show what twenty
+  minutes of play does.
 - **The picture is one camera and one board.** The ways were given the same motion to draw. What
-  each could do beyond that (the live way's tilting camera, turning pieces) is seen, not timed.
+  each could do beyond that is seen, not timed.
 
-## Conditions
+## The PC: the screening pass, and the proof that the timers work
+
+Taken before the phone's, on a development PC. **It cannot tell the three ways apart on speed:** it
+holds every frame in all three, and a desktop graphics card is not a phone's. What it gives is
+proof that the instrument works, each way's size, and what differs between them beyond speed.
+
+### Conditions on the PC
 
 | | |
 |---|---|
@@ -119,17 +188,3 @@ Facts, each from the prototype as built.
 | Library added | None | PixiJS, 493 KB as stored | three.js, 601 KB as stored |
 | Code in the prototype | 161 lines | 141 lines | 284 lines |
 | Lighting is decided | Once, in Blender | Once, in Blender | In Blender for the pictures elsewhere (cards, title) and again in code for the board: two lights to keep agreeing |
-
-## The S25: owed
-
-Run by opening the prototype on the phone and pressing **Measure all three**, then the tap test for
-each way. To be filled from the numbers the phone shows.
-
-| Way | Recording | Frames | Typical | 99 in 100 | Worst | Slow (20 ms or more) | Own work |
-|---|---|---|---|---|---|---|---|
-| Pictures on the page | calm turn | | | | | | |
-| Pictures on the page | crowded board | | | | | | |
-| Pictures on a GPU canvas | calm turn | | | | | | |
-| Pictures on a GPU canvas | crowded board | | | | | | |
-| Models drawn live | calm turn | | | | | | |
-| Models drawn live | crowded board | | | | | | |

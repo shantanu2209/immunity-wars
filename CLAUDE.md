@@ -22,8 +22,8 @@ prototype, the kit, the play screen, the other screens, the guided game and the 
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
 board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
 measured prototype, is built** (`tools/look-prototype/`: Clay drawn three ways, with a frame timer;
-plan §12) **and its measurement on the S25 is owed**; `docs/LOOK_L2_MEASUREMENT.md` has the PC's
-figures, which cannot choose between the three. **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+plan §12) **and measured on the S25** (1 October: all three hold 60 frames a second;
+`docs/LOOK_L2_MEASUREMENT.md`). **The board's technology is not yet ruled.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:

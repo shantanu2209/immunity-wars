@@ -102,7 +102,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | Stage | What is made | The gate |
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
-| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. *Built 1 October 2026; the S25's measurement is owed (§12)* |
+| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. *Built and measured on the S25, 1 October 2026; his ruling is awaited (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
@@ -191,7 +191,7 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
 4. **The typeface** is the one already shipped. Choosing one belongs to the kit.
 5. **The pictures are not app code.** Nothing under `packages/` changed for them.
 
-## 12. L2: ruled 1 October 2026, built, and waiting for the S25
+## 12. L2: ruled 1 October 2026, built, measured on the S25, and waiting for his ruling
 
 **Three rulings, Shantanu, 1 October 2026**, on the proposal that followed the pick:
 
@@ -214,13 +214,24 @@ pictures on the page, as pictures on a GPU canvas, and as the models drawn live.
 once, is handed to all three. A frame timer and a tap timer measure them, and each timer was made to
 fail on purpose before it was trusted.
 
-**What is measured.** [`LOOK_L2_MEASUREMENT.md`](LOOK_L2_MEASUREMENT.md). On a development PC all
-three hold every frame, so the PC cannot choose between them; what it does give is each way's size,
-its loading, and what differs between them beyond speed.
+**What is measured.** [`LOOK_L2_MEASUREMENT.md`](LOOK_L2_MEASUREMENT.md). **On the S25, 1 October
+2026, run by Shantanu: all three ways hold 60 frames a second**, on the calm turn and on the crowded
+board. Two rows have one missed refresh each in 1,685 frames, which does not separate the ways.
+What does separate them:
 
-**What is owed before L2 can be ruled.** The S25's measurement, and Shantanu's eye on the three
-playing side by side. Then the board's technology is his ruling, and with it locked decision #1
-(Capacitor against React Native), which the plan settles by this measurement (§8).
+| | The page's own work per frame, crowded board | First draw | Sent to the phone |
+|---|---|---|---|
+| Pictures on the page | 2.6 ms | 109 ms | 287 KB |
+| Pictures on a GPU canvas | 0.6 ms | 413 ms | 433 KB |
+| Models drawn live | 4.6 ms | 784 ms | 849 KB |
+
+The phone ran the page at 60 frames a second, not the 120 its screen can show, so 120 is not
+measured. Taps were not timed on the phone, and the ways were not watched side by side; his reading
+from the measured run is that the three look much the same and that the choice should go to what
+performs best.
+
+**What is owed before L2 is closed.** His ruling on the board's technology, and with it locked
+decision #1 (Capacitor against React Native), which the plan settles by this measurement (§8).
 
 **What the prototype is not.** It is a measuring instrument. Nothing under `packages/` imports it
 or changed for it, and it is removed when the ruling has been built into the app.
