@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels and motion and sound are built; the camera and the measurement remain (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels, motion and sound, and the camera are built; the measurement on the S25 remains (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -703,3 +703,62 @@ ten, and uses the tap.
 
 **Control added, and fired:** `board-motion-follows-the-invaders` (the comparison made by a
 piece's name: the test fails saying a group that walked a step came out as an arrival and a leave).
+
+### Built: the camera (the fourth of the five)
+
+**There is no camera.** The board's own element is drawn larger and shifted, one transform, eased
+over half a second. `packages/ui/src/board/camera.ts` is the arithmetic: given what just changed,
+which part of the board should fill the play area.
+
+| When | What it does |
+|---|---|
+| The player is choosing, and a piece only moved | Nothing. It stays wide |
+| The player is choosing, and something was swallowed, coated, killed, or an organ was hurt | In, to 1.3 times, on where it happened. Wide again 0.9 s later |
+| The spread is playing, and a beat changed something | In, to 1.8 times, on what changed. It follows each beat, and goes wide 1.3 s after the last |
+| What changed is spread across the whole board | It stays wide |
+| A finger touches the board | Wide at once |
+| The phone asks for less motion | It never moves |
+
+- **Why a plain move is left alone.** The plan's rule is that it moves in "on the action being
+  taken". Moving a piece is the commonest thing a player does and needs no explaining; a board that
+  leaned in after every step would never hold still. This is a reading of the rule, and his to
+  overrule when he names what he wants changed.
+- **It never shows what is not board.** The part shown is kept inside the picture, so moving in on
+  an organ at the rim does not bring the empty table in from the side.
+- **A tap is read where the board is drawn at that instant,** so a tap while it is in, or on its
+  way back, still lands on what the finger touched.
+- **In the bloodstream the pieces are 1.8 times larger while it is in:** about 20 px each where they
+  were 11. That is the answer the proposal gave for the crowded bloodstream, and it applies only
+  while the spread plays or just after an attack there.
+
+**The board's picture, measured before a size was chosen,** as the proposal said it would be.
+
+| The board's picture, as WebP | Size |
+|---|---|
+| 1,200 px across, what was drawn until now | 84 KB |
+| 1,600 px | 121 KB |
+| 2,000 px | 162 KB |
+| 2,400 px | 214 KB |
+
+At 1.8 times on a 360 px phone with three device px to one, the board is 1,944 px across. **2,000 px
+is chosen:** one px of picture to one of screen at the furthest it goes in. The pieces' pictures
+were already large enough. What the phone stores to play offline is 2.86 MB, up from 2.69.
+
+**Seen, in a headless browser on the PC.**
+
+| Done | The camera |
+|---|---|
+| On the kit page: a plain move | Wide |
+| An engulf | In at 1.30 times after 0.65 s; wide again by 1.85 s |
+| A hurt organ, then a tap on the board | In at 1.30 times; wide after the tap |
+| A hurt organ, with less motion asked for | Wide |
+| In a game: the spread's "The march", and "Bacteria divide" | In at 1.80 times; wide after the spread |
+| At every reading | The board covered the whole play area |
+| The play screen left alone for two seconds, at seven stages | No layout, no style work, no script |
+
+**Not measured, and it is the thing the proposal named as the risk:** the frame rate while the
+camera moves, on the S25. Stage L2 measured pieces moving, not the whole board being enlarged. If
+it cannot hold 60 there, the camera is cut back; a GPU canvas is not added.
+
+**Control added, and fired:** `camera-keeps-the-board-in-view` (the keeping-in taken off one axis:
+the test fails naming an organ).

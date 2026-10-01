@@ -28,6 +28,11 @@
  * gets one sound, for what matters most in it. A piece is always DRAWN where the game says it is;
  * the motion is only how it got there, so a motion cut short, or a phone that asks for none, leaves
  * the board right. The first picture a board is given plays nothing: nothing has happened yet.
+ *
+ * AND THE CAMERA MOVES IN (the fourth pull request). There is no camera: the board's own element is
+ * drawn larger and shifted, one transform, eased. `./camera` says on what and how far; it goes wide
+ * again a moment after the last thing happened, at once on a tap, and on a phone that asks for less
+ * motion it never moves. A tap is still read where the board is drawn at that instant.
  */
 import { ORGANS, ROUTES } from '@immunity-wars/content';
 import type { ViewState } from '@immunity-wars/session';
@@ -42,9 +47,9 @@ import {
 } from 'react';
 
 import { t as say } from '../i18n';
-import { play } from '../kit/motion';
+import { play, prefersReducedMotion } from '../kit/motion';
 import { kitAudio } from '../kit/sound';
-import { COLOUR, TYPE } from '../kit/tokens';
+import { COLOUR, MOTION, TYPE } from '../kit/tokens';
 import { cellDisplayName, residentDisplayName, typeDisplayName } from '../names';
 import {
   buildNodeModel,
@@ -55,6 +60,7 @@ import {
   type IntegrityState,
   type ReadyTurn,
 } from './Board';
+import { ZOOM_WATCHING, cameraTransform, focusFor, type Focus } from './camera';
 import { boardChanges, soundFor, type Picture } from './changes';
 import {
   BASE_R,
@@ -119,8 +125,9 @@ const Still = memo(function Still({ art }: { art: string }): ReactElement {
         alt=""
         draggable={false}
         src={board(2)}
-        srcSet={`${board(1)} 400w, ${board(2)} 800w, ${board(3)} 1200w`}
-        sizes="100vw"
+        srcSet={`${board(1)} 400w, ${board(2)} 800w, ${board(3)} 1200w, ${board(5)} 2000w`}
+        // As wide as it is ever drawn: the screen's width, times how far the camera moves in.
+        sizes={`${String(Math.round(ZOOM_WATCHING * 100))}vw`}
         style={FILL}
       />
       {LANES.map((lane) => {
@@ -426,6 +433,10 @@ function Leaving({
   );
 }
 
+/** How long the camera stays in after the last thing happened, in ms: a beat of the spread is 900. */
+const HOLD_WATCHING = 1300;
+const HOLD_CHOOSING = 900;
+
 /** Where an offer is drawn, and how: a move glows at its step, an attack rings what it would hit. */
 const OFFER: Record<BoardTarget['kind'], { r: number; style: CSSProperties }> = {
   move: {
@@ -460,7 +471,13 @@ export function ClayBoard({
   onTap,
   fill = false,
   art = '/art/',
+  watching = false,
 }: {
+  /**
+   * The spread is playing and the player is watching, not choosing: the camera moves in further,
+   * and on every beat that changes something (`./camera`).
+   */
+  watching?: boolean;
   view: ViewState;
   /** The cell whose selection the view carries. */
   selectedCell?: string | null;
@@ -539,6 +556,14 @@ export function ClayBoard({
   const drawnBefore = useRef(new Map<string, { t: DisplayToken; at: Pt; scale: number }>());
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const ghostId = useRef(0);
+  const [camera, setCamera] = useState<Focus | null>(null);
+  const goWide = useRef<number | null>(null);
+  useLayoutEffect(
+    () => () => {
+      if (goWide.current !== null) window.clearTimeout(goWide.current);
+    },
+    [],
+  );
   const picture: Picture = {
     pieces: drawnTokens.map(({ t, at, scale }) => ({
       key: t.key,
@@ -562,8 +587,12 @@ export function ClayBoard({
     if (was === null || el === null) return;
     const changes = boardChanges(was, picture);
     if (changes.length === 0) return;
-    /** px to a board unit, as the board is drawn now. */
-    const px = el.getBoundingClientRect().width / CLAY_VIEW.w;
+    /**
+     * px to a board unit, in the board's own measure: its width as laid out, whatever the camera is
+     * doing to it. A motion is played inside the board, so the camera enlarges it with everything
+     * else.
+     */
+    const px = el.offsetWidth / CLAY_VIEW.w;
     const on = (key: string): HTMLDivElement | undefined => pieceEls.current.get(key);
     const going: Ghost[] = [];
     for (const c of changes) {
@@ -612,6 +641,18 @@ export function ClayBoard({
     if (going.length > 0) setGhosts((all) => [...all, ...going]);
     const sound = soundFor(changes);
     if (sound) kitAudio.answer(sound);
+    // THE CAMERA: in on what changed, and wide again a moment after the last thing happened.
+    if (!prefersReducedMotion()) {
+      const focus = focusFor(changes, picture, watching);
+      if (focus !== null || watching) {
+        setCamera(focus);
+        if (goWide.current !== null) window.clearTimeout(goWide.current);
+        goWide.current =
+          focus === null
+            ? null
+            : window.setTimeout(() => setCamera(null), watching ? HOLD_WATCHING : HOLD_CHOOSING);
+      }
+    }
   });
 
   const handleTap = (e: ReactMouseEvent<HTMLDivElement>): void => {
@@ -666,14 +707,24 @@ export function ClayBoard({
         display: 'grid',
         placeItems: 'center',
         background: COLOUR.table,
+        // What the camera pushes past the play area's edge is not drawn.
+        overflow: 'hidden',
       }}
     >
       <div
         ref={surface}
         data-clay-surface=""
+        data-camera={camera === null ? 'wide' : 'in'}
         onClick={handleTap}
+        // A finger on the board brings the whole of it back at once.
+        onPointerDown={() => {
+          if (camera !== null) setCamera(null);
+        }}
         style={{
           position: 'relative',
+          transform: cameraTransform(camera),
+          transformOrigin: '0 0',
+          transition: `transform ${String(MOTION.camera.ms)}ms ${MOTION.camera.curve}`,
           // As wide as the box, or as wide as its height allows: the board keeps its shape.
           width: `min(100cqw, calc(100cqh * ${ASPECT.toFixed(5)}))`,
           aspectRatio: String(ASPECT),

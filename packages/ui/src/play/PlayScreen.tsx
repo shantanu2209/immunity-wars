@@ -1569,6 +1569,8 @@ export function PlayScreen({
             selectedResident={selectedResident}
             readyTurn={authView.queries.readyTurn}
             targets={boardTargets}
+            // While a spread plays the player is watching, and the camera moves in on each beat.
+            watching={playing}
             onTap={playing ? undefined : handleBoardTap}
           />
           {hintFor('pieces') !== null ? (

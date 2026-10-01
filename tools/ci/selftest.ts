@@ -1040,6 +1040,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A FLAT ACTION CANNOT BE PRESSED',
   },
   {
+    id: 'camera-keeps-the-board-in-view',
+    why: 'Stage L4: the camera is the board drawn larger and shifted. Moved in on an organ at the rim and centred on it, the board would be pushed past the play area and the empty table shown beside it. The part shown is kept inside the picture. With that keeping-in taken off one axis, the camera test must FAIL naming an organ.',
+    file: 'packages/ui/src/board/camera.ts',
+    mutate: (t) =>
+      t.replace(
+        'x: within((x0 + x1) / 2, CLAY_VIEW.x + halfW, CLAY_VIEW.x + CLAY_VIEW.w - halfW),',
+        'x: (x0 + x1) / 2,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE CAMERA SHOWS WHAT IS NOT BOARD: moved in on the',
+  },
+  {
     id: 'board-motion-follows-the-invaders',
     why: 'Stage L4: the board moves a piece by knowing it is the one that stood elsewhere a moment ago. A piece that stands for invaders has its step in its key, so compared by key a group that walks a step is one piece gone and another come, and the board would fade and pop where it should walk. With the comparison made by key, the test must FAIL saying what the walk came out as.',
     file: 'packages/ui/src/board/changes.ts',
