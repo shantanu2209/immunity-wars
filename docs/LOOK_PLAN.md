@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels, motion and sound, and the camera are built; the measurement on the S25 remains (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels, motion and sound, and the camera are built, the measuring page is built and the audit is re-aimed and clean; the measurement on the S25 is his step and remains (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -770,3 +770,49 @@ it cannot hold 60 there, the camera is cut back; a GPU canvas is not added.
 
 **Control added, and fired:** `camera-keeps-the-board-in-view` (the keeping-in taken off one axis:
 the test fails naming an organ).
+
+### Built: the measuring page, and the audit re-aimed (the fifth of the five, before the phone)
+
+**The numbers are in [`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md).** The S25's table there is
+empty: running it is his step, and this pull request waits on it.
+
+**The measuring page,** `/measure.html`: the play screen itself, the one the app mounts, with a
+card over it and a Measure button. Pressed, the page plays three turns of one real game by pressing
+the screen's own controls, watches each spread at the ruled pace, and counts the frames the phone
+gives it. It says how many were slow, how slow, when in the run the slowest five came, and counts
+on their own the frames in which the camera was moving or in. It takes the place of the L2
+prototype, whose frame timer it carries over. `pnpm look:frames` opens the same page on the PC.
+
+- **A slow frame is 20 ms or more,** as at L2, so the two measurements can be read side by side.
+- **It says what it played** (moves, spreads, times the camera moved in), and a run that made no
+  move, did not end its turns, or never saw the camera move is refused as not reached. A reading is
+  of something or it is not a reading.
+- **The same game every time:** on this page alone the dice and the cards are drawn from a seeded
+  source.
+- **A developer's page,** like the kit page: served by the PC, never stored on a phone.
+
+**The accessibility audit is aimed at the new screen,** and run in full, alone and together:
+82 screens in each of its four passes (84 in one), nothing not reached, every check at zero,
+offline met. Getting there took nine findings, listed in the measurement record in the order they
+came. The three that changed the product:
+
+| Found | Changed |
+|---|---|
+| With no network the app came back blank: the play screen needed a script the phone did not store, and the build test passed | Fixed on the frame's branch, where it began ([`FINDINGS.md`](FINDINGS.md) #109). The build test now follows the app's page to every script it needs |
+| Beside six pips the event banner was 36 px wide and 148 px tall, and the top bar three lines high | While a banner is up the Action Points are said as a number. **This changes what he played:** the pips show only when nothing is in force. The banner's words were ruled in September; the pips are this stage's, so the pips gave way. His to overrule |
+| At 200% page zoom the top bar, the three tiles and Undo were wider than the page | Each wraps there |
+
+**Left open, and filed:** Settings still offers to show the first-game guidance again, and says the
+coach and the hints will appear, which they will not until L6 ([`FINDINGS.md`](FINDINGS.md) #111).
+
+**On the PC, the first time the camera moves in costs two slow frames,** 36 to 54 ms as it starts
+and 35 to 37 ms as it arrives, in each of three runs; its five later moves in a run cost none. The
+PC is not the phone. It is the thing to look for in the S25's numbers.
+
+**Not done yet, and waiting on the S25:** `tools/look-prototype/` is still here, with `pixi.js` and
+`three`. The L2 ruling removes it once the play screen has been measured in its place, and that
+measurement is the phone's.
+
+**Controls added, and fired:** `app-scripts-in-the-worker`, `worker-leaves-developer-pages`,
+`frame-banner-has-room`; the frame meter's own (`pnpm look:frames --control`: every frame made to
+waste 40 ms, and 311 of 311 reported slow); and five lines in the audit for the coach and the hints.

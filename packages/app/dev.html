@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      NO ICON YET, SAID SO, so the browser does not go looking for /favicon.ico, which does not
+      exist. Asked for with no network, that is a request that fails, and from stage L4 the browser
+      asks again in the middle of play (measured: at the first press that makes a sound), so the
+      Gate 1 audit's offline pass counted a failed request in a build that plays offline. The app's
+      real icon is Phase 4's packaging.
+    -->
+    <link rel="icon" href="data:," />
     <title>Immunity Wars — dev shell</title>
     <!--
       THE INSTRUMENTED ENTRY (docs/APP_FLOW.md ruling 6): same PlayScreen as the app, plus

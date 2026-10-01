@@ -37,13 +37,18 @@ the frame round it (`play/Frame.tsx`) and everything the play screen opens are d
 and a redrawn file may name no colour of its own (`play/clayColours.test.ts`); the new cards and
 planning stand on a sheet of the old paper (`OldPaper`) until L5. The board plays what changed
 between one picture and the next, with one sound for it (`board/changes.ts`), and the camera moves
-in on it (`board/camera.ts`: the board drawn larger, one transform). The S25 measurement follows. He played the board, frame and panels on 1 October and has improvements to
+in on it (`board/camera.ts`: the board drawn larger, one transform). **The measuring page is built**
+(`/measure.html`, `packages/app/src/measure.tsx`; `pnpm look:frames` on the PC) **and the Gate 1
+audit is re-aimed at the new screen and clean** (`docs/LOOK_L4_MEASUREMENT.md`; it found the app
+blank with no network, `docs/FINDINGS.md` #109, fixed before it reached `main`). **The S25
+measurement is his step and is owed**; `tools/look-prototype/` goes when it is in. He played the board, frame and panels on 1 October and has improvements to
 name later, after the look is on the server. What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
-and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`, used only by the kit
-page, `/kit.html`), held to the contrast bounds by the kit's own test; the Clay art is served from
-`packages/app/public/art/clay/` and kept out of the service worker's list until L4; motion, sound
+and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`; the play screen is
+drawn from it, and the kit page, `/kit.html`, shows it), held to the contrast bounds by the kit's
+own test; the Clay art is served from `packages/app/public/art/clay/`, and a phone stores what the
+play screen draws and nothing of the kit page or the measuring page; motion, sound
 and touch are `kit/motion.ts` and `kit/sound.ts`, the sounds made in code with no sound file.
 **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.

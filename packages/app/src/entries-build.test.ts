@@ -61,6 +61,7 @@ describe('both entries build', { timeout: 180_000 }, () => {
   // not start with no network. A rule that forbids must be held beside what it has to permit.
   it('the kit page and the Clay art are built and served', () => {
     expect(existsSync(join(out, 'kit.html'))).toBe(true);
+    expect(existsSync(join(out, 'measure.html'))).toBe(true);
     expect(existsSync(join(out, 'art', 'clay', 'manifest.json'))).toBe(true);
     expect(existsSync(join(out, 'art', 'clay', 'board', 'macrophage@3x.webp'))).toBe(true);
   });
@@ -95,19 +96,41 @@ describe('both entries build', { timeout: 180_000 }, () => {
       missing,
       `THE WORKER DOES NOT STORE THE BOARD’S ART: ${missing.slice(0, 3).join(', ')}`,
     ).toEqual([]);
-    // What only the kit page uses: the page, its own script (named by its key in the build's
-    // `input`), and the art no screen draws.
+    // What only the kit page and the measuring page use: the pages, their own scripts (each named
+    // by its key in the build's `input`), and the art no screen draws.
     const kit = stored.filter(
       (u) =>
         (u.includes('art/clay/') && !drawn.includes(u)) ||
         u === 'kit.html' ||
-        u.startsWith('assets/kitPage-'),
+        u === 'measure.html' ||
+        u.startsWith('assets/kitPage-') ||
+        u.startsWith('assets/measurePage-'),
     );
     expect(kit, `THE WORKER STORES THE CLAY KIT: ${kit.slice(0, 3).join(', ')}`).toEqual([]);
+    const own = readdirSync(join(out, 'assets'));
     expect(
-      readdirSync(join(out, 'assets')).filter((f) => f.startsWith('kitPage-')).length,
+      own.filter((f) => f.startsWith('kitPage-')).length,
       'THE KIT PAGE’S OWN SCRIPT WAS NOT FOUND IN THE BUILD, so nothing was held out of the list',
     ).toBeGreaterThan(0);
+    expect(
+      own.filter((f) => f.startsWith('measurePage-')).length,
+      'THE MEASURING PAGE’S OWN SCRIPT WAS NOT FOUND IN THE BUILD',
+    ).toBeGreaterThan(0);
+  });
+
+  // A PHONE THAT HAS OPENED THE APP MUST STILL BE ABLE TO OPEN THE DEVELOPER'S PAGES. The worker
+  // answers a page it does not store with the app's own, so without an exception the kit page and
+  // the measuring page open as the title on any phone that has played once, which is the phone they
+  // are for. Read from the worker the build wrote; `pnpm look:frames` opens the measuring page from
+  // behind a worker and so holds it by doing it. Control: pnpm ci:selftest worker-leaves-developer-pages.
+  it('the worker leaves the kit page and the measuring page to the network', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    const denied = /denylist:\s*\[([^\]]*)\]/.exec(worker)?.[1] ?? '';
+    const missing = ['kit\\.html', 'measure\\.html'].filter((page) => !denied.includes(page));
+    expect(
+      missing,
+      `THE WORKER ANSWERS A DEVELOPER’S PAGE WITH THE APP: ${missing.join(', ')} is not in its exceptions (${denied === '' ? 'it has none' : denied})`,
+    ).toEqual([]);
   });
 
   // Control: pnpm ci:selftest app-scripts-in-the-worker.

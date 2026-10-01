@@ -80,6 +80,26 @@
  *            floating button and, on three paths, through the phone's back gesture. A path the
  *            deal does not offer is recorded NOT REACHED, never omitted.
  *
+ * RE-AIMED AT THE CLAY PLAY SCREEN (stage L4, docs/LOOK_PLAN.md §14, 1 October 2026). Three things
+ * changed under the walk, and each is said here because each would otherwise have read as a screen
+ * quietly missing:
+ *
+ *   THE BOARD IS PICTURES ON THE PAGE, not an SVG. So "the board's SVG is excluded" no longer hides
+ *   anything: the numbers hung on a piece are text runs like any other and are measured, and the
+ *   pieces are `<img>`, which the offline pass counts. A legal move is `[data-offer="move"]`, where
+ *   it was a dashed circle. The board still has no control of its own: a tap is read by the board
+ *   from where it landed.
+ *   THE COACH AND THE FIRST-ENCOUNTER HINTS ARE OFF (ruling 2 of §14), until the guided game
+ *   replaces them at L6. They were three screens of this walk. They are now a CHECK: at the two
+ *   places they used to show, neither may be on the page, and the row that says so is in the list
+ *   in every pass. A row, not an absence, because an omitted row and a clean row look the same.
+ *   A VIEW IN THE MIDDLE IS CLOSED FROM THE MAIN BUTTON'S PLACE, which carries the same
+ *   `data-nav-close` hook the floating close does, so `closeLevel` finds either.
+ *
+ * `--progress` names each screen on stderr as it is measured. A full run takes about twelve minutes
+ * and prints its report only at the end; the first run against the new screen was given ten and
+ * said nothing at all.
+ *
  * EVERY CHECK HAS A CONTROL BOTH WAYS, run first on the title screen: a planted defect that
  * MUST be flagged (fires) beside a planted sound element that MUST NOT be (passes). "Forbid
  * X" is half a specification — a check that forbade everything would satisfy every fires-
@@ -694,6 +714,35 @@ const notReached = (screen: string, why = 'the walk could not open it'): ScreenR
 });
 
 /**
+ * THE FIRST-GAME HELP IS OFF (stage L4, docs/LOOK_PLAN.md §14, ruling 2): the coach and the
+ * first-encounter hints are not shown from L4, and the guided game replaces them at L6. At each
+ * place they used to show, the walk reads the page for either and records a row: clean when
+ * neither is there, a finding naming what is showing when one is. When the guided game arrives this
+ * check is re-aimed with it.
+ */
+const HELP_PROBE = `(() => ({
+  coach: document.querySelector('[data-coach]') !== null,
+  hint: document.querySelector('[data-hint]') !== null,
+}))()`;
+
+function helpOffResult(where: string, seen: { coach: boolean; hint: boolean }): ScreenResult {
+  const screen = `${where}: the coach and the hints are off`;
+  const showing = [...(seen.coach ? ['the coach'] : []), ...(seen.hint ? ['a hint'] : [])];
+  return {
+    screen,
+    controls: 0,
+    textRuns: 0,
+    findings: showing.map((what) => ({
+      check: 'touch' as const,
+      screen,
+      path: '',
+      text: '',
+      detail: `SHOWING, AND RULED OFF: ${what} is on the page (docs/LOOK_PLAN.md §14, ruling 2)`,
+    })),
+  };
+}
+
+/**
  * THE PLAY AREA'S ONE HEIGHT (piece 5, docs/for-P2.7.md §19; "equal play area height for all
  * phases is important", Shantanu, 20 September 2026). The figure in planning and the board in
  * command sit in one box, so on every screen of the base pass that shows it, in either stage, it
@@ -836,7 +885,18 @@ const advance = (page: Page): Promise<boolean> =>
     return true;
   });
 
+/**
+ * `--progress`: each screen is named on stderr as it is measured. The report is printed only at the
+ * end, so a walk that stops on a screen says nothing at all without this; it is how a run that does
+ * not finish is found (stage L4: the first run against the Clay play screen ran out its time).
+ */
+const PROGRESS = process.argv.includes('--progress');
+const progress = (pass: string, screen: string): void => {
+  if (PROGRESS) console.error(`  .. ${pass}: ${screen}`);
+};
+
 async function audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
+  progress('base', screen);
   const r = (await page.evaluate(AUDITOR)) as {
     controls: number;
     textRuns: number;
@@ -857,6 +917,7 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
 
 /** FONT200: scaling per text run, then the layout, with the root at 200% on a 360px page. */
 async function font200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
+  progress('200% font', screen);
   const s = (await page.evaluate(SCALE_AUDITOR)) as {
     findings: Omit<Finding, 'screen'>[];
     runs: number;
@@ -885,6 +946,7 @@ interface Layout {
 /** ZOOM200: the layout alone, on a 180x390 page — a zoom scales everything, so scaling is
  *  given and the layout is the thing. */
 async function zoom200Audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
+  progress('200% zoom', screen);
   const l = (await page.evaluate(LAYOUT_AUDITOR)) as Layout;
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const name = `${screen} @200% page zoom`;
@@ -908,6 +970,7 @@ async function walk(
 ): Promise<void> {
   coverage.cellCard = false;
   coverage.targets = false;
+  coverage.inspectSheet = false;
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   // THE FIRST-ENCOUNTER HINTS ARE RESET AT THE TOP OF EVERY PASS.
@@ -1188,20 +1251,15 @@ async function walk(
     results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
     nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
   }
-  // THE COACH (piece 8, §20) is on for a first game on a fresh profile. It is measured as its own
-  // screen — it is player-visible text on a 360px phone like everything else — and then stopped, so
-  // the screens after it are measured without it.
-  if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
-    await step(page, 'arrivals, the coach', results);
+  // THE COACH (piece 8, §20) was on for a first game on a fresh profile, and was a screen of this
+  // walk. It is OFF from stage L4 (LOOK_PLAN §14, ruling 2), so what is recorded here is that it is
+  // not showing, on the profile the walk has just put back to new, which is where it used to. If it
+  // is showing, that is a finding, and it is stopped so the screens after it are measured without it.
+  const helpAtArrivals = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
+  results.push(helpOffResult('arrivals, a first game', helpAtArrivals));
+  if (helpAtArrivals.coach) {
     await clickSel(page, '[data-coach-stop]');
     await sleep(200);
-    if (await page.evaluate(() => document.querySelector('[data-coach]') !== null)) {
-      results.push(notReached('the coach stops', 'Stop left it on screen'));
-    }
-  } else {
-    results.push(
-      notReached('arrivals, the coach', 'no coach on this pass: the profile has played'),
-    );
   }
   await click(page, 'Plan your turn');
   await sleep(300);
@@ -1293,100 +1351,26 @@ async function walk(
   await click(page, 'Command your cells');
   await sleep(900);
   await step(page, 'command, nothing selected', results);
-  // The inspect sheet by its node door: a tap on an invader token with NOTHING selected (with
-  // a cell selected the same tap picks a target instead). The deck decides whether the bar's
-  // other door, "What's here", is offered, so the first audits reached the sheet by luck and
-  // some runs never did. A puppeteer click, not `.click()`: the board resolves the hit from
-  // real pointer coordinates.
-  // The hit is resolved to the NEAREST node, so a token placed beside an organ's resident can
-  // resolve to the resident (a selection, no sheet): every token is tried until one opens the
-  // sheet, and a run in which none does records the sheet as NOT REACHED — a red line in the
-  // JSON, never a silent absence from the screen list (CLAUDE.md: read the coverage).
-  let sheetOpened = false;
-  // HANDLES ARE RE-QUERIED EVERY TIME rather than held across a click.
-  //
-  // This loop used to hold an ElementHandle and click it twice, and it worked until a tap could
-  // re-render the region the token lives in — which is what the first-encounter hint does. The
-  // second click then threw "Node is detached from document" and took the whole audit with it.
-  // Found on this change's first audit run. An instrument defect, so it is fixed here.
-  const tokenCount = await page.evaluate(() => document.querySelectorAll('[data-invader]').length);
-  const tapToken = async (i: number): Promise<void> => {
-    const el = (await page.$$('[data-invader]'))[i];
-    if (!el) return;
-    try {
-      await el.click();
-    } catch {
-      // The node moved under us. The next iteration re-queries; nothing is lost but this tap.
+  // The inspect sheet by its node door: tried here, and on every turn of the walk to the Result
+  // until a tap opens it (`tryInspectSheet`, below).
+  await tryInspectSheet(page, results, step, nesting);
+  // FIRST-ENCOUNTER HINTS (P2.6, ruled 8 September 2026) appeared on first contact with a thing, and
+  // selecting a cell is first contact. They are OFF from stage L4 with the coach (LOOK_PLAN §14,
+  // ruling 2): the cell is selected on a profile whose hints the walk has just reset, and what is
+  // recorded is that none shows. The selection itself is measured as a screen of its own, which it
+  // was not before: the B-Cell's card is the one with the most rows.
+  if (await pick(page, 'cell:bcell')) {
+    await sleep(350);
+    const helpAtSelect = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
+    results.push(helpOffResult('command, first contact with a cell', helpAtSelect));
+    if (helpAtSelect.hint) {
+      await clickSel(page, '[data-hint-dismiss]');
+      await sleep(200);
     }
-  };
-  for (let i = 0; i < tokenCount; i += 1) {
-    await tapToken(i);
-    await sleep(300);
-    sheetOpened = await page.evaluate(
-      () => document.querySelector('[data-inspect-sheet]') !== null,
-    );
-    if (sheetOpened) break;
-    // The tap may have selected a cell or a resident instead (a tap on the selected piece
-    // deselects it; a tap on nothing deselects too): the same tap again undoes it.
-    await tapToken(i);
-    await sleep(150);
-  }
-  if (sheetOpened) {
-    await step(page, 'inspect sheet', results);
-    // INSPECT SHEET → PATHOGEN CARD and → CELL CARD each close back to the sheet (ruling 9).
-    if (await clickSel(page, '[data-inspect-sheet] [data-sheet-card]')) {
-      await sleep(300);
-      await nest(page, nesting, 'Inspect sheet → pathogen card', 'inspect sheet');
-    } else {
-      nestNotReached(nesting, 'Inspect sheet → pathogen card', 'the sheet offered no card');
-    }
-    if (await clickSel(page, '[data-inspect-sheet] [data-cell-card]')) {
-      await sleep(300);
-      await step(page, 'cell card, from the inspect sheet', results);
-      coverage.cellCard = true;
-      await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
-    }
-    // Not reached here, the walk to the Result keeps trying, turn after turn (see `coverage`).
-    await nest(page, nesting, 'Inspect sheet → close', 'play');
+    await step(page, 'command, B-Cell selected', results);
   } else {
-    nestNotReached(
-      nesting,
-      'Inspect sheet → pathogen card',
-      'no invader token tap opened the sheet',
-    );
-    results.push({
-      screen: 'inspect sheet',
-      controls: 0,
-      textRuns: 0,
-      findings: [
-        {
-          check: 'touch',
-          screen: 'inspect sheet',
-          path: '',
-          text: '',
-          detail: 'NOT REACHED: no invader token tap opened the sheet',
-        },
-      ],
-    });
-  }
-  // FIRST-ENCOUNTER HINTS (P2.6, ruled 8 September 2026). Selecting a cell is first contact, so
-  // the hint is up by the time the piece strip is measured. Measured as its own screen because
-  // a hint appears at 200% text on a 360px phone like everything else, and because a line that
-  // pushes the action rows off the fold would be a real defect nobody would see in a total.
-  await pick(page, 'cell:bcell');
-  await sleep(350);
-  if (await page.evaluate(() => document.querySelector('[data-hint]') !== null)) {
-    await step(page, 'command, a first encounter hint', results);
-    await clickSel(page, '[data-hint-dismiss]');
-    await sleep(200);
-    if (await page.evaluate(() => document.querySelector('[data-hint]') === null)) {
-      await step(page, 'command, hint dismissed', results);
-    } else {
-      results.push(notReached('command, hint dismissed', 'the dismiss control left it on screen'));
-    }
-  } else {
-    results.push(notReached('command, a first encounter hint'));
-    results.push(notReached('command, hint dismissed'));
+    results.push(notReached('command, first contact with a cell: the coach and the hints are off'));
+    results.push(notReached('command, B-Cell selected', 'no piece chip for the B-Cell'));
   }
   // THE AP TERMS, from the top bar, open in the middle below the play area (§19).
   if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
@@ -1473,14 +1457,16 @@ async function walk(
   await deselect(page);
   await sleep(200);
   // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
-  // covers the fullest slot set. The Monocyte is moved off the bloodstream by a ring if it stands
-  // there, the screen is audited, and the move is undone.
+  // covers the fullest slot set. The Monocyte is moved off the bloodstream by a legal move's glow if
+  // it stands there, the screen is audited, and the move is undone. The glow is `[data-offer="move"]`
+  // since the board became pictures on the page (stage L4); it was a dashed SVG circle, and the walk
+  // that looked for the circle reported this screen NOT REACHED on the new board.
   await pick(page, 'cell:macrophage');
   await sleep(250);
   const recallNow = (): Promise<boolean> =>
     page.evaluate(() => document.querySelector('[data-dock-move="recall"]') !== null);
   if (!(await recallNow())) {
-    const ring = await page.$('circle[stroke-dasharray="6 4"]');
+    const ring = await page.$('[data-offer="move"]');
     if (ring) {
       try {
         await ring.click();
@@ -1500,7 +1486,7 @@ async function walk(
     results.push(
       notReached(
         'command, Monocyte off the bloodstream, Recall showing',
-        'no move ring took the Monocyte off the bloodstream',
+        'no legal move took the Monocyte off the bloodstream',
       ),
     );
   }
@@ -1646,7 +1632,71 @@ async function walk(
  * tries them where it can and the walk to the Result keeps trying on every idle turn, while the
  * invaders pile up; only a run that never reaches one records it NOT REACHED. Reset per walk.
  */
-const coverage = { cellCard: false, targets: false };
+const coverage = { cellCard: false, targets: false, inspectSheet: false };
+
+/**
+ * THE INSPECT SHEET BY ITS NODE DOOR: a tap on an invader with NOTHING selected (with a cell
+ * selected the same tap picks a target instead). A puppeteer click, not `.click()`: the board
+ * resolves the hit from real pointer coordinates, to the NEAREST node, so an invader standing
+ * beside an organ's resident can resolve to the resident (a selection, no sheet). Every invader on
+ * the board is tried until one opens the sheet.
+ *
+ * TRIED UNTIL IT COMES, like the two above (stage L4, 1 October 2026). It was tried once, on the
+ * first turn, and a first turn has one or two invaders: on the first full run against the Clay
+ * board the base pass drew them where no tap opened the sheet, and the sheet went unmeasured in the
+ * one pass that measures touch and contrast. Only a run that never opens it records NOT REACHED.
+ *
+ * HANDLES ARE RE-QUERIED EVERY TIME rather than held across a click: a tap can redraw the region
+ * the piece lives in, and a held handle then throws "Node is detached from document".
+ */
+async function tryInspectSheet(
+  page: Page,
+  results: ScreenResult[],
+  step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  nesting: NestResult[] | null,
+): Promise<void> {
+  if (coverage.inspectSheet) return;
+  const tokenCount = await page.evaluate(() => document.querySelectorAll('[data-invader]').length);
+  const tapToken = async (i: number): Promise<void> => {
+    const el = (await page.$$('[data-invader]'))[i];
+    if (!el) return;
+    try {
+      await el.click();
+    } catch {
+      // The node moved under us. The next iteration re-queries; nothing is lost but this tap.
+    }
+  };
+  let sheetOpened = false;
+  for (let i = 0; i < tokenCount; i += 1) {
+    await tapToken(i);
+    await sleep(300);
+    sheetOpened = await page.evaluate(
+      () => document.querySelector('[data-inspect-sheet]') !== null,
+    );
+    if (sheetOpened) break;
+    // The tap may have selected a cell or a resident instead (a tap on the selected piece
+    // deselects it; a tap on nothing deselects too): the same tap again undoes it.
+    await tapToken(i);
+    await sleep(150);
+  }
+  if (!sheetOpened) return;
+  coverage.inspectSheet = true;
+  await step(page, 'inspect sheet', results);
+  // INSPECT SHEET → PATHOGEN CARD and → CELL CARD each close back to the sheet (ruling 9).
+  if (await clickSel(page, '[data-inspect-sheet] [data-sheet-card]')) {
+    await sleep(300);
+    await nest(page, nesting, 'Inspect sheet → pathogen card', 'inspect sheet');
+  } else {
+    nestNotReached(nesting, 'Inspect sheet → pathogen card', 'the sheet offered no card');
+  }
+  if (!coverage.cellCard && (await clickSel(page, '[data-inspect-sheet] [data-cell-card]'))) {
+    await sleep(300);
+    await step(page, 'cell card, from the inspect sheet', results);
+    coverage.cellCard = true;
+    await nest(page, nesting, 'Inspect sheet → cell card', 'inspect sheet');
+  }
+  await nest(page, nesting, 'Inspect sheet → close', 'play');
+}
 
 /** Opens a dock row's targets when some piece has several, audits them, closes them. */
 async function tryDockTargets(
@@ -1735,6 +1785,7 @@ async function walkToResult(
     await tryDockTargets(page, results, step, nesting);
     await deselect(page);
     await sleep(150);
+    await tryInspectSheet(page, results, step, nesting);
     await tryCellCard(page, results, step, nesting);
     await click(page, 'End turn');
     for (let i = 0; i < 40; i += 1) {
@@ -1744,6 +1795,12 @@ async function walkToResult(
       const more = await advance(page);
       if (!more && i > 8) break;
     }
+  }
+  if (!coverage.inspectSheet) {
+    results.push(
+      notReached('inspect sheet', 'no tap on an invader opened it in the walk or 14 idle turns'),
+    );
+    nestNotReached(nesting, 'Inspect sheet → pathogen card', 'no tap opened the sheet');
   }
   if (!coverage.cellCard) {
     results.push(
@@ -2859,6 +2916,40 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'scroll fires: a run that measured no screen at rest is NOT REACHED, never clean',
     restFindings([]).some((f) => f.detail.startsWith('NOT REACHED')),
+  );
+
+  // THE FIRST-GAME HELP IS OFF (stage L4): the check must report a coach or a hint that is on the
+  // page, by name, and pass a page with neither. The probe is run on this page both ways: with a
+  // coach planted it must see one, and with it taken away it must not.
+  line(
+    'help off fires: a coach on the page is reported, ruled off',
+    helpOffResult('x', { coach: true, hint: false }).findings.some((f) =>
+      f.detail.startsWith('SHOWING, AND RULED OFF: the coach'),
+    ),
+  );
+  line(
+    'help off fires: a hint on the page is reported, ruled off',
+    helpOffResult('x', { coach: false, hint: true }).findings.some((f) =>
+      f.detail.startsWith('SHOWING, AND RULED OFF: a hint'),
+    ),
+  );
+  line(
+    'help off passes: a page with neither is NOT reported',
+    helpOffResult('x', { coach: false, hint: false }).findings.length === 0,
+  );
+  await page.evaluate(() => {
+    const planted = document.createElement('div');
+    planted.setAttribute('data-coach', '');
+    planted.setAttribute('data-control', 'coach');
+    document.body.append(planted);
+  });
+  const helpPlanted = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
+  await page.evaluate(() => document.querySelector('[data-control="coach"]')?.remove());
+  const helpClear = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
+  line('help off fires: the probe sees a coach planted on the page', helpPlanted.coach);
+  line(
+    'help off passes: the probe sees none once it is taken away',
+    !helpClear.coach && !helpClear.hint,
   );
 
   // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands

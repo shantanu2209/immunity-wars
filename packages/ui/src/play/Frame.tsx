@@ -124,8 +124,24 @@ const PILL: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-/** More Action Points than this are said as a number: a row of pips that long is not counted at a glance. */
-const PIPS_MAX = 8;
+/**
+ * HOW MANY PIPS THE BAR HAS ROOM FOR, on a 360 px phone at the standard text size. More Action
+ * Points than this are said as a number. Measured on the built screen, 1 October 2026: the turn is
+ * 56 px, the AP button 44 px and 16 px a pip, the messages and the menu 94 px, the table's button
+ * (in a game played together) 50 px more, and the bar is 344 px with 6 px between its parts.
+ *
+ *   alone             206 + 16 a pip  <= 344   8 fit; 7 is taken, because at 200% page zoom the bar
+ *                                              is 164 px and the AP button alone must fit a line
+ *   together          256 + 16 a pip  <= 344   5 fit
+ *   with a banner     none: the banner's words need the room. The first run of the Gate 1 audit
+ *                     against this bar found the banner 36 px wide and 148 px tall beside six pips,
+ *                     and the bar three lines high. The banner's words were ruled (piece 5, §19); the
+ *                     pips are this stage's, so the pips give way.
+ */
+export function pipRoom(banner: boolean, together: boolean): number {
+  if (banner) return 0;
+  return together ? 5 : 7;
+}
 
 /** THE TOP BAR: the turn and the AP on the left, the banner between, the messages and menu right. */
 export function TopBar({
@@ -165,6 +181,7 @@ export function TopBar({
 }): ReactElement {
   const face = banner ? BANNER_FACE[banner.kind] : null;
   const of = Math.max(ap.of, ap.have);
+  const pips = of <= pipRoom(banner !== null, table !== null);
   return (
     <div
       data-top-bar=""
@@ -176,12 +193,22 @@ export function TopBar({
         flex: '0 0 auto',
         fontFamily: TYPE.family,
         // THE LAST RESORT at 200% page zoom (a 180px layout): the fixed parts are wider than the
-        // screen there, so the icons wrap to a second line rather than leave it. The banner's basis
-        // is 0, so on any wider screen it shrinks before anything wraps.
+        // screen there, so the icons wrap to a second line rather than leave it, and the turn and
+        // the AP button, wider together than that screen, take a line each. The banner's basis is
+        // 0, so on any wider screen it shrinks before anything wraps.
         flexWrap: 'wrap',
       }}
     >
-      <span style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+      <span
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          flex: '0 1 auto',
+          minWidth: 0,
+          flexWrap: 'wrap',
+        }}
+      >
         <span data-turn="" style={{ ...PILL, fontSize: '0.9375rem', fontWeight: 900 }}>
           {turnText}
         </span>
@@ -193,14 +220,24 @@ export function TopBar({
           style={{ ...PILL, cursor: apAvailable ? 'pointer' : 'default' }}
         >
           <span style={{ ...TYPE.label, color: COLOUR.onDarkSoft }}>{t('commandBar.ap')}</span>
-          {of <= PIPS_MAX ? (
+          {pips ? (
             <KitPips have={ap.have} of={of} label="" />
           ) : (
             <span style={{ fontSize: '0.9375rem', fontWeight: 900 }}>{ap.have}</span>
           )}
         </button>
       </span>
-      <span style={{ flex: '1 1 0', minWidth: 0, display: 'flex', justifyContent: 'center' }}>
+      <span
+        style={{
+          flex: '1 1 0',
+          // A banner is never squeezed to a sliver: with less than this it takes a line of its own
+          // (a game played together on a 360 px phone, or 200% page zoom). With no banner the span
+          // is empty and must ask for nothing, or it would push the icons to a second line.
+          minWidth: banner ? '6rem' : 0,
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
         {banner && face ? (
           <button
             data-banner=""
@@ -458,7 +495,16 @@ export function ActionsView(props: {
         gap: 6,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: TOUCH.min }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          minHeight: TOUCH.min,
+          // Undo goes under the name at 200% page zoom, where the two do not fit one line.
+          flexWrap: 'wrap',
+        }}
+      >
         {props.selectedName !== null && piece ? (
           <span
             aria-hidden="true"
@@ -732,7 +778,11 @@ export function TabRow({
 }): ReactElement {
   const tabs = TABS.filter((tab) => shown.includes(tab.kind));
   return (
-    <div data-tab-row="" style={{ display: 'flex', gap: 6, flex: '0 1 auto', minWidth: 0 }}>
+    <div
+      data-tab-row=""
+      // The tiles wrap among themselves at 200% page zoom, where three do not fit a 164 px line.
+      style={{ display: 'flex', gap: 6, flex: '0 1 auto', minWidth: 0, flexWrap: 'wrap' }}
+    >
       {tabs.map((tab) => {
         const on = active === tab.kind;
         return (

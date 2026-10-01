@@ -14,7 +14,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { t } from '../i18n';
-import { ActionsView, AdvanceButton, SlotClose, TabRow, TopBar } from './Frame';
+import { ActionsView, AdvanceButton, SlotClose, TabRow, TopBar, pipRoom } from './Frame';
 import type { DockRow } from './offered';
 
 const row = (action: string, available: boolean): DockRow =>
@@ -111,7 +111,11 @@ describe('the selected piece’s card', () => {
 });
 
 describe('the top bar', () => {
-  const bar = (have: number, of: number): string =>
+  const bar = (
+    have: number,
+    of: number,
+    with_: { banner?: boolean; together?: boolean } = {},
+  ): string =>
     renderToStaticMarkup(
       createElement(TopBar, {
         turnText: '3/15',
@@ -119,11 +123,12 @@ describe('the top bar', () => {
         ap: { have, of },
         apAvailable: true,
         onAp: () => undefined,
-        banner: null,
+        banner: with_.banner === true ? { text: 'Next turn: Co-infection', kind: 'bad' } : null,
         onBanner: () => undefined,
         onChat: () => undefined,
         chatLabel: 'Messages',
         menu: null,
+        table: with_.together === true ? { onOpen: () => undefined, waiting: 0 } : null,
       }),
     );
   /** The pips: the little discs inside the AP button. */
@@ -157,6 +162,28 @@ describe('the top bar', () => {
 
   it('more left than the turn began with is still shown whole', () => {
     expect(pips(bar(7, 6))).toBe(7);
+  });
+
+  // THE BAR'S ROOM (the Gate 1 audit's first run against this bar: the banner was 36 px wide and
+  // 148 px tall beside six pips). A render to text has no widths, so what is held here is the rule
+  // the measured widths gave; the audit holds the widths. Control: frame-banner-has-room.
+  it('with a banner up, the points are a number, so the banner’s words have the room', () => {
+    const crowded = bar(4, 6, { banner: true });
+    expect(
+      pips(crowded),
+      'THE BANNER HAS NO ROOM: the pips are drawn beside it, which left it 36 px on a phone',
+    ).toBe(0);
+    expect(crowded).toContain('>4</span>');
+    expect(crowded).toContain('Next turn: Co-infection');
+    expect(tag(crowded, 'data-bar-ap="1"')).toContain('aria-label="AP 4"');
+  });
+
+  it('together, the table’s button takes the room of three pips', () => {
+    expect(pips(bar(4, 5, { together: true }))).toBe(5);
+    expect(pips(bar(4, 6, { together: true }))).toBe(0);
+    expect(pipRoom(false, false)).toBe(7);
+    expect(pipRoom(false, true)).toBe(5);
+    expect(pipRoom(true, false)).toBe(0);
   });
 
   it('too many to count at a glance are said as a number, and a reader is told the figure either way', () => {

@@ -1005,11 +1005,19 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/app/vite.config.ts',
     mutate: (t) =>
       t.replace(
-        "const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kitPage-*'];",
+        "const CLAY_NOT_YET = [\n  '**/art/clay/**',\n  'kit.html',\n  'assets/kitPage-*',\n  'measure.html',\n  'assets/measurePage-*',\n];",
         'const CLAY_NOT_YET: string[] = [];',
       ),
     gate: 'pnpm --filter @immunity-wars/app test',
     expect: 'THE WORKER STORES THE CLAY KIT',
+  },
+  {
+    id: 'worker-leaves-developer-pages',
+    why: 'Stage L4, measured before the S25 was sent to the measuring page: a phone that had opened the app got the app’s title for /kit.html and /measure.html, because its worker answers every page it does not store with index.html. With the exception removed from the app build, the build test must FAIL saying the worker answers a developer’s page with the app.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace('        navigateFallbackDenylist: DEVELOPER_PAGES,\n', ''),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER ANSWERS A DEVELOPER',
   },
   {
     id: 'app-scripts-in-the-worker',
@@ -1082,6 +1090,14 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
+  },
+  {
+    id: 'frame-banner-has-room',
+    why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace('  if (banner) return 0;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE BANNER HAS NO ROOM',
   },
   {
     id: 'frame-pips-show-what-is-left',

@@ -30,8 +30,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * the board and the panels draw them; and each piece as a card shows it, at every size, because a
  * card picks the size the phone's screen wants. Leaving them out would break play with no network.
  *
- * WHAT IS STILL NOT STORED: the kit page, and the smaller sizes of the board's pictures, which only
- * the kit page shows.
+ * WHAT IS STILL NOT STORED: the kit page and the measuring page, which are a developer's, and the
+ * smaller sizes of the board's pictures, which only the kit page shows.
  *
  * THE KIT PAGE'S OWN SCRIPT IS NAMED `kitPage`, NOT `kit`, AND THAT IS LOAD-BEARING. The build names
  * a page's script after its key in `input`, and names a script two pages share after what is in it.
@@ -45,7 +45,16 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * list; every picture the board draws is; and nothing that only the kit page uses is.
  */
 const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];
-const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kitPage-*'];
+const CLAY_NOT_YET = [
+  '**/art/clay/**',
+  'kit.html',
+  'assets/kitPage-*',
+  'measure.html',
+  'assets/measurePage-*',
+];
+
+/** The pages that are a developer's: served, never stored, and never answered by the worker. */
+const DEVELOPER_PAGES = [/^\/kit\.html/, /^\/measure\.html/];
 
 export default defineConfig({
   plugins: [
@@ -74,6 +83,12 @@ export default defineConfig({
         // The art at 1×/2×/3× plus the anatomy frame is a few MB; precache it all, on purpose.
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: 'index.html',
+        // THE DEVELOPER'S PAGES ARE NOT THE APP'S TO ANSWER. With the fallback alone, a phone that
+        // had opened the app once got the app's title for `/kit.html` and `/measure.html` ever
+        // after: its worker answers every page it does not store with `index.html`, and it stores
+        // neither. Measured 1 October 2026, before the phone was sent to the measuring page. These
+        // two go to the network, so they open while the PC is serving them and not otherwise.
+        navigateFallbackDenylist: DEVELOPER_PAGES,
       },
       devOptions: { enabled: false },
     }),
@@ -86,6 +101,9 @@ export default defineConfig({
         // The Clay kit page (stage L3). Built with the other two so it cannot rot quietly. Its
         // key names its script, and the worker's exclusion above depends on that name.
         kitPage: resolve(HERE, 'kit.html'),
+        // The measuring page (stage L4): the play screen with a frame meter, for the S25. Named
+        // as the kit page is, and for the same reason.
+        measurePage: resolve(HERE, 'measure.html'),
       },
     },
   },
