@@ -103,7 +103,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
-| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. *Ruled 1 October 2026 and under way: the pieces are built (§13)* |
+| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. *Ruled 1 October 2026; all three parts are built (§13) and it awaits his look, and his ear, on the kit page* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
@@ -352,3 +352,61 @@ set, a picture cut off at its edge rejected for its edge. Two of these checks we
 first run and said so: the edge control was refused for having nothing solid in it, which showed
 nothing about edges, and the worker test read 0 entries from a list written in a spelling it did not
 know, which its own "the list was read" line caught.
+
+### Built: motion, sound and touch (the third of the three)
+
+- **Motion**, `packages/ui/src/kit/motion.ts`: eight named motions (a move, an arrival, a
+  departure, an engulf, a coat, a refusal, damage, a press), each written as data, a list of
+  keyframes with a length and a curve taken from the kit's named values, and played by the
+  browser's own animation engine.
+- **A move is played from the new place.** The screen draws the piece where the game now says it
+  is, then plays the hop from where it was. So a motion that ends, is cut short, or is never played
+  leaves the piece where it belongs.
+- **Less motion.** On a phone that asks for it, nothing travels, swells or shakes: an arrival or a
+  departure fades, and anything else blinks once where it is.
+- **Sound**, `packages/ui/src/kit/sound.ts`: ten sounds (tap, move, engulf, coat, arrive, damage,
+  refuse, end of turn, win, loss), each a short list of notes made by the browser's audio engine.
+  **There is no sound file**, so nothing was bought, downloaded or generated, and there is nothing
+  to license. On by default, as ruled; one mute silences sound and buzz together. The Settings
+  screen that holds the mute is L5's.
+- **Touch.** Seven of the ten also ask the phone for a short buzz, where a web page is allowed to.
+  That is Android's browser; an iPhone's browser has no such thing, and the fuller version waits for
+  the app's own shell at Phase 4.
+- **Every kit button answers** with the tap sound and a buzz, through the one shared audio, unless
+  it names a sound of its own.
+- **On the kit page:** a Motion section (a cell that hops, engulfs and refuses; a bacterium that
+  arrives and is coated; an organ that takes damage; a switch that shows the less-motion version)
+  and a Sound and touch section (the ten sounds, and the mute).
+
+**What was measured, and what was not.**
+
+| Measured, in a headless phone-sized browser on the PC, pressing each button | Found |
+|---|---|
+| Each of the six motion buttons | Starts its own motion (260 to 550 ms), one or two voices in the audio engine, and its own buzz request; the arrival has no buzz, by design |
+| The same six with less motion | Only fades and blinks of 180 ms; no transform is animated at all |
+| The cell after a hop, and after a second | Drawn at 98 px, then back at 14 px: where the page put it, not where a motion left it |
+| The ten sound buttons | 1 to 4 voices each, as the list says; the audio engine running after the first press |
+| Muted | No voice and no buzz request; the motions still play |
+| The page with every word at 200% | 377 px at first: one sound button's length label spilled 17 px past the phone's edge. The length now sits under the word, and the page is 360 px wide with nothing wider |
+
+- **Not measured: how any of it sounds or feels.** A headless browser has no ears and no motor. That
+  a sound was started is known; whether it is the right sound for an engulf is his to judge, on the
+  phone.
+- **Not measured: frame rate.** These are the same kind of motion as stage L2 measured (page
+  elements moved by transform and opacity), but the kit page was not itself timed. The play screen
+  is, at L4.
+- **A design rule taken on general grounds, not from the S25:** a phone's small speaker plays little
+  of a low note, so every sound has a note starting at 250 Hz or above. The first drafts of three of
+  them (arrive, damage, refuse) sat wholly lower and were raised before anything was heard.
+
+**Checks and their controls, each fired.** The kit's tests hold every motion to changing only
+transform, opacity and filter, to not travelling when less motion is asked for, and to 600 ms; and
+every sound to a note a phone plays, to notes that never add up past full loudness, and to the
+mute. `kit-motion-less-motion-is-still` (the less-motion branch switched off: the test fails naming
+the move) and `kit-sound-mute-is-obeyed` (the mute no longer read: the test fails saying a muted kit
+made a sound). **The check on the page was itself wrong on its first run:** it pressed the first
+button called Move, which is the one in the Controls section, and reported a move with no motion.
+Its own list of what each press started is what showed it.
+
+**Not held by a standing check:** that a kit button's press reaches the audio. The package has no
+way to press a button in a test; it was seen once, in the headless run above.

@@ -9,11 +9,17 @@
  *
  * A button that cannot be used is drawn pressed flat into the card, with no edge to stand on.
  *
+ * It answers the ear and the hand as well: a press plays the kit's `tap` and asks the phone for a
+ * short buzz, through the one shared `kitAudio`, so its mute silences every button at once. A
+ * button whose press is itself an event with a sound of its own (an engulf, the end of a turn)
+ * names that sound, or `null` when the caller plays it.
+ *
  * Its word comes from the caller, which takes it from the catalogue; nothing is written here.
  */
 import { useState } from 'react';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
+import { kitAudio, type KitSound } from './sound';
 import { COLOUR, DEPTH, MOTION, RADIUS, SHADOW, TOUCH, TYPE } from './tokens';
 
 export type KitButtonKind = 'main' | 'go' | 'rest';
@@ -77,12 +83,15 @@ export function KitButton({
   kind = 'rest',
   unavailable = false,
   onPress,
+  sound = 'tap',
   children,
 }: {
   kind?: KitButtonKind;
   /** Drawn flat, and not pressable. The caller says why elsewhere; a dead button explains nothing. */
   unavailable?: boolean;
   onPress?: () => void;
+  /** What a press sounds and feels like. `null`: the caller answers for it. */
+  sound?: KitSound | null;
   children: ReactNode;
 }): ReactElement {
   const [pressed, setPressed] = useState(false);
@@ -95,7 +104,10 @@ export function KitButton({
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
       onPointerCancel={() => setPressed(false)}
-      onClick={onPress}
+      onClick={() => {
+        if (sound) kitAudio.answer(sound);
+        onPress?.();
+      }}
     >
       {children}
     </button>

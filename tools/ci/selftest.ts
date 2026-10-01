@@ -1012,6 +1012,22 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER STORES THE CLAY KIT',
   },
   {
+    id: 'kit-motion-less-motion-is-still',
+    why: 'Stage L3: when a phone asks for less motion, nothing in the kit may travel; a piece that moved is simply in its new place. A test that looked only at its own made-up plans would pass a kit that ignored the request. With the less-motion branch switched off in the real plans, the kit test must FAIL, naming the motion.',
+    file: 'packages/ui/src/kit/motion.ts',
+    mutate: (t) => t.replace('  if (reduced) {', '  if (reduced && dx > 1e9) {'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT MOTION: with less motion asked for, move still travels',
+  },
+  {
+    id: 'kit-sound-mute-is-obeyed',
+    why: 'Stage L3, ruled 1 October 2026: sound is on by default with a mute. A mute that the audio does not obey is a setting that lies. With the mute no longer read before a sound is played, the kit test must FAIL saying a muted kit made a sound.',
+    file: 'packages/ui/src/kit/sound.ts',
+    mutate: (t) => t.replace('    if (this.muted) return false;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT SOUND: a muted kit made a sound',
+  },
+  {
     id: 'start-check-refuses',
     why: 'FINDINGS #92, ruled 26 September 2026: a build that does not start is never deployed. The React split made the app throw as it loaded, and every other check passed it; a build that throws as it loads must be refused. (Also measured by hand against the real split build, which it refused with React error #527.)',
     file: 'packages/app/src/main.tsx',
