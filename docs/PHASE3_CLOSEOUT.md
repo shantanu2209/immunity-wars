@@ -3,13 +3,20 @@
 **Objective, from [`PHASE3_BRIEF.md`](PHASE3_BRIEF.md) §0:** *"Two people who know each other, in
 different cities, play one game on their own phones, by sharing a code. Nobody signs up for anything."*
 
-**Status: complete, with one definition-of-done item NOT fully met, and one piece of planned work
-found unplaced. Accepted by Shantanu, 30 September 2026** (*"Yes"*), with the rulings in §4.
+**Status: CLOSED, with nothing owing, 1 October 2026.** Shantanu waived the two phone checks Gate A
+still owed (*"Please ignore the 2 remaining phase 3 checks and close phase 3 please"*). They are
+**waived, not met**: items 6 and 7 below stay as measured, and §3 still says what they would have
+proven. The unplaced work ran the day before (the engine change queue, below).
+
+*As written on 30 September:* **Status: complete, with one definition-of-done item NOT fully met, and
+one piece of planned work found unplaced. Accepted by Shantanu, 30 September 2026** (*"Yes"*), with
+the rulings in §4.
 
 - **The unmet item:** the first, *"Gate A, every item, verified, on two real devices on two
   networks"*. Two of Gate A's nine items still owe a phone (§2).
 - **The unplaced work:** the engine change queue, planned for this phase and never taken into it
-  ([`FINDINGS.md`](FINDINGS.md) #101).
+  ([`FINDINGS.md`](FINDINGS.md) #101). *It ran on 30 September, between this phase and the next, and
+  was deployed that evening* ([`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md), "How it ran").
 
 Both are named here, and neither is hidden behind a qualifier.
 
@@ -74,7 +81,8 @@ From [`PHASE3_BRIEF.md`](PHASE3_BRIEF.md) §8.
 | 9 | Single player unchanged, and working with no network at all | **Yes, on the S25**; not tried on the iPhone | §9 step 11; the Gate 1 audit plays a turn offline on every run; the corpus; item 3 above |
 
 **What closes item 1:** one short session, listed in §4. It costs an eleven-minute wait and a
-version change, and today's deploy of version 5 is already one.
+version change, and today's deploy of version 5 is already one. **Waived by Shantanu, 1 October 2026:
+item 1 stands at seven of nine on the phones or by check, and the phase is closed on it.**
 
 ### Gate B, item by item
 
@@ -132,6 +140,9 @@ closeout is accepted. The items below are kept as they were put.
 
 ### The phone checks owed: one short session closes Gate A item 1
 
+**Waived, 1 October 2026** (Shantanu). The session below was not played; it is kept as the list of
+what a phone would still show.
+
 1. **Open the app on each phone.** Today's deploy is version 5, so a phone on version 4 is refused.
    - On the build from 30 September's first deploy, it offers **Update now**. Press it, and note
      how long it takes.
@@ -160,7 +171,7 @@ and Gate 2 are owed with it ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)).
 | **The update policy for installed apps** (review R4) | The relay refuses any other protocol version exactly. On the web, Update now and the title fix that in a second. An installed app updates through its store, which can lag by days, so a store rollout needs either a window of accepted versions or a store-forced update, decided before the first store build |
 | **Versioned saved games** (review R3) | Saves carry no version. The first app update that changes the rules is where one is needed |
 | **The relay** | Mumbai `e2-micro`, about ₹750 to ₹1,100 a month once the trial credit ends. A budget alert catches anything more. The 03:30 reboot ends games in progress, so it may want moving |
-| **The engine change queue** | Unless §4's ruling takes it first (#101) |
+| **The engine change queue** | It ran on 30 September 2026, before Phase 4 (#101; [`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md)) |
 | **The coverage still open** | 18 arms that wait for a competent bot, and 28 uncategorised ([`COVERAGE_DEFERRED.md`](COVERAGE_DEFERRED.md)) |
 | **#83** | One UI test failed once, under a forced concurrent run, and never again. Unexplained, and recorded as that |
 | **The instruments** | Every one in §1, and the toolchain battery in `CLAUDE.md`, which a runner or toolchain move must pass in full |
