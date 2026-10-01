@@ -81,6 +81,20 @@ For every asset, we need:
 | `tools/art-pipeline/raw/organ-marrow.jpeg` (organ, Bone Marrow) | Google Flow | 20 Aug 2026 | Pro | `ART_BRIEF.md` prompt 29, verbatim | 20 Aug 2026 — see batch note above the register | None declared — DECISION, see Resolution log |
 | `tools/art-pipeline/raw/frame-body.jpeg` (planning screen, the anatomical FRAME — asset key `frame/body`, emitted at `art/frame/body@{1,2,3}x.webp`, 224×380 at 1×) | Google Flow | 5 Sep 2026 | **Google AI Pro** (confirmed by Shantanu, 5 Sep 2026) | `ANATOMY_FRAME_BRIEF.md` anchor sentence, verbatim | 5 Sep 2026 — measured by Shantanu before acceptance: stroke #786760, 5.29:1 against #FFFDF9 (needed 3:1); interior provably empty; head–torso–pelvis cropped mid-thigh; aspect 0.555. A JPEG on white was chosen over the PNG, whose alpha was a uniform 50% (3.99:1, a visible compositing rectangle). **Through the pipeline 5 Sep 2026** as its own class (global key, aspect kept, sized by height): the gate re-measured 5.29:1; **the halo check was done by looking, not assumed** — the keyed 3× output composited on the paper shows a clean anti-aliased edge, zero light opaque pixels, no speckle. The pipeline's border flood would have left the closed outline's interior opaque white (23.9% of the canvas); a coverage gate with a control pair on this very file now rejects that | None declared — DECISION, see Resolution log |
 
+### The Clay set, made for stage L2 of the look (1 October 2026)
+
+Made here, from nothing but geometry: no image tool, no download, no purchase, so there are no
+terms to check. The rows are grouped, because every file in a group has the same origin.
+
+| Asset | Origin | Date | Account/plan | Prompt or source | ToS checked | Redistribution |
+|---|---|---|---|---|---|---|
+| `tools/look-prototype/public/art/board.webp` and the 11 pictures under `tools/look-prototype/public/art/pieces/` (the board, the seven cells, a bacterium plain and coated, a fungus, a virus) | Blender 5.2.1, Cycles: modelled and rendered by `tools/look-prototype/blender/clay.py`, written with Claude under Shantanu's direction | 1 Oct 2026 | Blender is free software; its output belongs to whoever made it | The script itself, which builds every shape from spheres, cylinders and curves and reads the board's positions from the content pack | Not applicable: no service was used | None declared, as for all content ([LICENSES.md](../LICENSES.md)). Nothing in the origin restricts it |
+| The 12 models under `tools/look-prototype/public/art/models/` (the same pieces and the board, as glTF) | Exported from the same Blender scene by the same script | 1 Oct 2026 | as above | as above | Not applicable | as above |
+| The 13 pictograms under `tools/look-prototype/blender/tex/` and `tools/look-prototype/public/art/tex/` (seven organs, six ways in) | Drawn in code as SVG paths, at stage L1; rendered by `tools/look-prototype/blender/pictograms.ts` | 1 Oct 2026 | none | The SVG paths in that file | Not applicable | as above |
+| `docs/look/l1-clay-play.webp`, `docs/look/l1-clay-title.webp`, `docs/look/l1-clay-card.webp` (the L1 style frames Shantanu picked) | Blender renders of the same models, composed with page elements; the typeface is the Nunito the app ships | 1 Oct 2026 | as above | `docs/LOOK_PLAN.md` §11 | Nunito: SIL Open Font License, already recorded | as above |
+
+**What these are not.** They are a prototype's art and three reference pictures. Nothing here is
+shipped in the app yet; the 89 files the app ships are the rows above this section.
 ---
 
 ## Known asset locations

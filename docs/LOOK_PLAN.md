@@ -77,6 +77,11 @@ A small prototype of each, playing one turn and one spread, measured for frame r
 This project's rule is to simulate before building, and this is the decision most expensive to
 reverse.
 
+> ⚠️ *Amended 1 October 2026, by ruling (§12).* This section was written before the look was
+> picked. Clay is made of 3D models, which adds a third way: **(c) the models themselves drawn live
+> on the phone** (three.js). All three are prototyped and measured. "The present SVG" in (b) is,
+> for Clay, pictures on the page moved with CSS.
+
 ## 6. The guided game, and Easy
 
 **The guided game.** Three to five minutes, scripted: an infection arrives, move a cell, engulf it,
@@ -97,7 +102,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | Stage | What is made | The gate |
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
-| **L2 The moving prototype** | The chosen frame playing one turn and one spread, both ways (§5), on the S25 | Frame rates read; the board's technology ruled |
+| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. *Built 1 October 2026; the S25's measurement is owed (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
@@ -185,3 +190,37 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
    scaled to 200% allows. The kit (L3) and the play screen (L4) are where they are held to the gates.
 4. **The typeface** is the one already shipped. Choosing one belongs to the kit.
 5. **The pictures are not app code.** Nothing under `packages/` changed for them.
+
+## 12. L2: ruled 1 October 2026, built, and waiting for the S25
+
+**Three rulings, Shantanu, 1 October 2026**, on the proposal that followed the pick:
+
+1. **All three ways are prototyped**, and their practical pros and cons are to rest on real data
+   where that is possible: *"Yes we need to prototype all 3. And we need to understand the
+   practical pros and cons of each based on real data where possible."*
+2. **The pass line**, set before any number existed: no frame slower than 16.7 ms through the turn
+   and the spread; a tap answered within 100 ms; the board drawn within 1 second; all pictures and
+   models under 10 MB. **It is not a hard rule:** *"Yes but let's not make it a very hard rule,
+   things are that marginally over can still be considered etc. basically evaluate before rejecting
+   to see if it can be made to work."*
+3. **The prototype is committed**, as `tools/look-prototype/`, with PixiJS and three.js as its own
+   dependencies and nowhere else, and it is measured on the S25 with the built page served on the
+   home network, as the phone checks were before the app was served from the server: *"Agree. They
+   way we used to do before deploying on the server."*
+
+**What is built.** [`tools/look-prototype/`](../tools/look-prototype/README.md): the Clay play
+screen playing a calm turn and a crowded board, both recorded from the real engine, drawn as
+pictures on the page, as pictures on a GPU canvas, and as the models drawn live. One motion, decided
+once, is handed to all three. A frame timer and a tap timer measure them, and each timer was made to
+fail on purpose before it was trusted.
+
+**What is measured.** [`LOOK_L2_MEASUREMENT.md`](LOOK_L2_MEASUREMENT.md). On a development PC all
+three hold every frame, so the PC cannot choose between them; what it does give is each way's size,
+its loading, and what differs between them beyond speed.
+
+**What is owed before L2 can be ruled.** The S25's measurement, and Shantanu's eye on the three
+playing side by side. Then the board's technology is his ruling, and with it locked decision #1
+(Capacitor against React Native), which the plan settles by this measurement (§8).
+
+**What the prototype is not.** It is a measuring instrument. Nothing under `packages/` imports it
+or changed for it, and it is removed when the ruling has been built into the app.
