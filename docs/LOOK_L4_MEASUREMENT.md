@@ -108,15 +108,16 @@ slow. The counting has its own tests (`packages/app/src/frameMeter.test.ts`).
 ## The audit, re-aimed at the new screen
 
 The full run: alone and playing together, against a build that talks to a relay on this PC, in a
-headless Chrome 154. About seventeen minutes.
+headless Chrome 154. About seventeen minutes. **These are the numbers of the last run, on the code
+that is deployed,** after everything below was fixed and the Settings row was taken off.
 
 | | Base, 360 × 780 | Text at 200%, by font size | Text at 200%, by page zoom (180 × 390) | Text at 200%, by the app's own setting |
 |---|---|---|---|---|
 | Screens measured | 82 | 82 | 82 | 84 |
 | Not reached | 0 | 0 | 0 | 0 |
-| Touch targets under 44 px | 0 of 1,042 controls | | | |
-| Contrast, words and control edges | 0 of 2,115 text runs | | | |
-| Text that did not scale | | 0 of 2,117 | | 0 of 2,157 |
+| Touch targets under 44 px | 0 of 1,030 controls | | | |
+| Contrast, words and control edges | 0 of 2,093 text runs | | | |
+| Text that did not scale | | 0 of 2,130 | | 0 of 2,159 |
 | Layout: wider than the screen, a control off it, or text cut short | | 0 | 0 | 0 |
 | Words under a fixed control | 0 | 0 | 0 | 0 |
 
@@ -125,9 +126,10 @@ headless Chrome 154. About seventeen minutes.
 | Where a close lands | 38 paths, 0 wrong, 0 not reached |
 | The play area's one height | 338.7 px on 42 screens, in all four stages |
 | The main screen without scroll | 22 screens at rest, three of them at 360 × 641; none scrolls |
-| Offline | Met: a turn played with the network cut, the page reloaded with no network, a turn played again; 45 to 47 pictures on the screen, none broken; no request failed |
-| The audit's own controls | 49, each firing or passing as it must |
+| Offline | Met: a turn played with the network cut, the page reloaded with no network, a turn played again; 45 pictures on the screen, none broken; no request failed |
+| The audit's own controls | 51, each firing or passing as it must |
 | The coach and the hints, ruled off | Looked for at the two places they used to show, in every pass: not showing |
+| Settings' offer to show them again | Looked for in every pass: not there ([`FINDINGS.md`](FINDINGS.md) #111) |
 
 ## What the audit found on the new screen, in the order it found it
 
