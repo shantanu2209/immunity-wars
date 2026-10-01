@@ -866,6 +866,24 @@ the server until L6, and why. **This ruling replaces that part of both:**
 - **The pull requests:** the rest of L4 went up as one, not four, to reach a deploy sooner; he had
   played all of it by then.
 
+**Deployed, 2 October 2026, 00:57 IST,** on that ruling, once he had merged the rest of L4: the
+app, from `main` at `3299bfe`, as version `20261002-005739-3299bfe`. The app only: the relay was
+not touched or restarted (protocol 5 and rules 4.1.0, as it already ran).
+
+| Checked | Found |
+|---|---|
+| The deploy script's own checks | The build talks to the server's relay; it starts, in a headless browser, with no error; the server serves this build, with the service worker uncached |
+| The live app, opened from the PC in a headless phone-sized browser, read only | The title; a game alone to the command stage; the Clay board drawn, 43 pictures and none broken, seven cells; no coach and no hint; no error and no failed request |
+| The relay | Still running; it answers through the server as before |
+| The versions kept on the server | This one, and the two before it |
+
+- **`/kit.html` and `/measure.html` are on the server too,** as `/dev.html` always was. They are a
+  developer's pages, nothing links to them, and they collect nothing.
+- **A phone that has the app** takes the new version on its title, by itself, the next time it is
+  opened there.
+- **Not checked on the live server:** playing together, which would mean making a room on it. The
+  audit walked it against a relay on the PC, on the same code.
+
 ## 15. L5, every other screen: built for his review of 2 October 2026
 
 **Built without a proposal round, on his word.** Every stage before this was proposed and ruled

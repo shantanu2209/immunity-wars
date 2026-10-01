@@ -41,7 +41,8 @@ for it (`board/changes.ts`), and the camera moves in on it (`board/camera.ts`: t
 larger, one transform). **The hints and the first-game coach are switched off** until the guided
 game replaces them at L6. **He ruled the look deployed on the night of 1 October, as a mix of two
 looks** (the play screen in Clay, every other screen as it was), replacing the earlier ruling that
-kept it off the server until L6; **his review of the whole app is the next day**, and the
+kept it off the server until L6, **and it was deployed on 2 October** (the app only, from `main` at
+`3299bfe`; the relay untouched); **his review of the whole app follows**, and the
 improvements are his to name then. **L5, the other screens, is built for that review** (plan §15:
 the title from the picture he picked, with `tools/art-pipeline/clay/hero.py`; every other screen
 from `packages/ui/src/screens/chrome.ts`; the new cards and planning in Clay, the body drawn in code
