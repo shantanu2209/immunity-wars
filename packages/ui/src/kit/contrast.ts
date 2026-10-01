@@ -88,6 +88,30 @@ export const PAIRS: readonly Pair[] = [
   { name: 'a legal move on the board', fg: COLOUR.glow, bg: COLOUR.board, bound: 'control' },
   { name: 'health on the board', fg: COLOUR.mint, bg: COLOUR.board, bound: 'control' },
   { name: 'the bloodstream on the board', fg: COLOUR.coral, bg: COLOUR.board, bound: 'control' },
+  // the play screen's board (stage L4)
+  { name: 'worn health on the board', fg: COLOUR.gold, bg: COLOUR.board, bound: 'control' },
+  { name: 'failing health on the board', fg: COLOUR.coralLit, bg: COLOUR.board, bound: 'control' },
+  {
+    name: 'health that is lost, on the board',
+    fg: COLOUR.onDarkSoft,
+    bg: COLOUR.board,
+    bound: 'control',
+  },
+  {
+    name: 'a hop along the lymph on the board',
+    fg: COLOUR.lymph,
+    bg: COLOUR.board,
+    bound: 'control',
+  },
+  { name: 'an attack on the board', fg: COLOUR.coralLit, bg: COLOUR.board, bound: 'control' },
+  {
+    name: 'the selected piece on the board',
+    fg: COLOUR.onDark,
+    bg: COLOUR.board,
+    bound: 'control',
+  },
+  { name: 'a count on a piece', fg: COLOUR.ink, bg: COLOUR.coral, bound: 'text' },
+  { name: 'turns until a cell is back', fg: COLOUR.onDark, bg: COLOUR.table, bound: 'text' },
 ];
 
 export interface Measured extends Pair {

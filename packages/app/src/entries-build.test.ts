@@ -19,7 +19,7 @@
  * reloading into the old version, which is the failure it exists to end.
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -48,11 +48,11 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(existsSync(join(out, 'dev.html'))).toBe(true);
   });
 
-  // THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13), both ways. The kit page and its art must be
-  // BUILT AND SERVED, or the page Shantanu approves the kit on is not there; and they must be
-  // LEFT OUT of what the worker stores on a player's phone, because no screen a player has uses
-  // them until L4. The second half is removed with CLAY_NOT_YET in vite.config.ts, at L4, when
-  // leaving the art out would break play with no network. Control: pnpm ci:selftest
+  // THE CLAY ART (docs/LOOK_PLAN.md §13 and §14), held three ways. The kit page and its art must be
+  // BUILT AND SERVED, or the page the kit is judged on is not there. From stage L4 the board is
+  // drawn in Clay, so EVERY PICTURE THE BOARD DRAWS MUST BE STORED by the worker, or the game does
+  // not play with no network. And NOTHING ELSE of the kit may be stored, because no screen a player
+  // has uses it yet. Controls: pnpm ci:selftest clay-board-art-in-the-worker,
   // clay-not-in-the-worker.
   it('the kit page and the Clay art are built and served', () => {
     expect(existsSync(join(out, 'kit.html'))).toBe(true);
@@ -60,7 +60,7 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(existsSync(join(out, 'art', 'clay', 'board', 'macrophage@3x.webp'))).toBe(true);
   });
 
-  it('the worker stores none of the kit on a player’s phone, and still stores the art the screens use', () => {
+  it('the worker stores every picture the board draws, and nothing else of the kit', () => {
     const worker = readFileSync(join(out, 'sw.js'), 'utf8');
     // Both spellings: a production build writes `url:"…"`, and this test's build (NODE_ENV=test)
     // the readable `"url": "…"`.
@@ -74,7 +74,23 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(
       stored.filter((u) => u.startsWith('art/') && !u.includes('clay')).length,
     ).toBeGreaterThan(80);
-    const kit = stored.filter((u) => u.includes('art/clay/') || u.includes('kit'));
+    // What the board draws: the board's own picture at every size, and each piece, organ and way
+    // in at the one size ClayBoard.tsx names (`@3x`). Listed from the build, not from memory.
+    const drawn = [
+      ...readdirSync(join(out, 'art', 'clay', 'table')).map((f) => `art/clay/table/${f}`),
+      ...readdirSync(join(out, 'art', 'clay', 'board'))
+        .filter((f) => f.endsWith('@3x.webp'))
+        .map((f) => `art/clay/board/${f}`),
+    ];
+    expect(drawn.length, 'THE BOARD’S PICTURES WERE NOT FOUND IN THE BUILD').toBeGreaterThan(40);
+    const missing = drawn.filter((u) => !stored.includes(u));
+    expect(
+      missing,
+      `THE WORKER DOES NOT STORE THE BOARD’S ART: ${missing.slice(0, 3).join(', ')}`,
+    ).toEqual([]);
+    const kit = stored.filter(
+      (u) => (u.includes('art/clay/') && !drawn.includes(u)) || u.includes('kit'),
+    );
     expect(kit, `THE WORKER STORES THE CLAY KIT: ${kit.slice(0, 3).join(', ')}`).toEqual([]);
   });
 

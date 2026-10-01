@@ -30,13 +30,9 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
-import {
-  Board,
-  inspectInfoForCell,
-  inspectInfoForInvader,
-  inspectInfoForResident,
-} from '../board/Board';
+import type { BoardTap, BoardTarget, InspectInfo } from '../board/Board';
+import { inspectInfoForCell, inspectInfoForInvader, inspectInfoForResident } from '../board/Board';
+import { ClayBoard } from '../board/ClayBoard';
 import { engineText } from '../engineText';
 import {
   CLONE_TARGET,
@@ -184,7 +180,6 @@ export interface PlayControlsCtx {
 
 export function PlayScreen({
   session,
-  artMetrics,
   coach = false,
   skipBursts = false,
   onCheck,
@@ -225,7 +220,6 @@ export function PlayScreen({
    */
   hintsSeen?: readonly HintSubject[];
   onHintsSeen?: (seen: readonly HintSubject[]) => void;
-  artMetrics?: ArtMetrics;
   /**
    * THE COACH (piece 8, §20): on for a first game only. The shell decides, because whether this
    * device has played before is a preference, and the play screen holds no preferences.
@@ -641,8 +635,14 @@ export function PlayScreen({
     // state through a ref rather than closing over it, so re-running on anything else would
     // re-contact the same subject and cost a spurious consumption.
   }, [hintSubject, turnNow]);
+  // HINTS ARE ON ONLY WHEN THE SHELL TAKES WHAT HAS BEEN SEEN. The note on the two props said that
+  // leaving both out turned hints off. It did not: with nothing given the list of what had been
+  // seen was empty, so every hint showed, to a shell that could not remember any of them. Found
+  // on 1 October 2026 by a walk whose list of buttons still had a hint's in it, after the shell had
+  // been told to switch them off (docs/LOOK_PLAN.md §14).
+  const hintsOn = onHintsSeen !== undefined;
   const hintFor = (place: 'pieces' | 'inspect' | 'antibodies'): ReactElement | null =>
-    hintShown && hintPlace(hintShown) === place ? (
+    hintsOn && hintShown && hintPlace(hintShown) === place ? (
       <HintLine
         text={t(hintKey(hintShown))}
         onDismiss={() => applyHints(dismiss(hintsRef.current))}
@@ -1515,7 +1515,6 @@ export function PlayScreen({
             selectedCell={selectedCell}
             selectedResident={selectedResident}
             readyTurn={authView.queries.readyTurn}
-            artMetrics={artMetrics}
             targets={boardTargets}
             onTap={playing ? undefined : handleBoardTap}
           />
@@ -1695,7 +1694,7 @@ function LiveControls({
   );
 }
 
-type BoardProps = Parameters<typeof Board>[0];
+type BoardProps = Parameters<typeof ClayBoard>[0];
 
 function LiveBoard({
   store,
@@ -1703,7 +1702,7 @@ function LiveBoard({
   ...rest
 }: Omit<BoardProps, 'view'> & { store: FrameStore; game: ViewState }): ReactElement {
   const frame = useFrame(store);
-  return <Board view={frame ? frame.view : game} {...rest} />;
+  return <ClayBoard view={frame ? frame.view : game} {...rest} />;
 }
 
 function LiveLog({ store, game }: { store: FrameStore; game: ViewState }): ReactElement {

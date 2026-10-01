@@ -56,6 +56,8 @@ export const COLOUR = {
   goldEdge: '#8F640B',
   /** A legal move, glowing. */
   glow: '#FFE08A',
+  /** The lymph: its nodes on the board, and a hop along it. */
+  lymph: '#8FD3E8',
 } as const;
 
 /** Sizes in rem, so the phone's own text size scales every one of them. 1rem is 16px at rest. */

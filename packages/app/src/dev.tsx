@@ -22,7 +22,6 @@ import {
   NavHost,
   PlayScreen,
   useNav,
-  type ArtMetrics,
 } from '@immunity-wars/ui';
 import { useEffect, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -45,7 +44,6 @@ function DevApp(): ReactElement {
   const [throwOnRender, setThrowOnRender] = useState(false);
   const [checks, setChecks] = useState<string[]>([]);
   const [idbLines, setIdbLines] = useState<string[]>([]);
-  const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
   // The same navigation stack as the app, so the dev shell's cards and inspect sheet close too.
   // Its base is the game and nothing else, and the back gesture there leaves, as it always has.
   const nav = useNav<'play'>('play', () => true);
@@ -55,14 +53,6 @@ function DevApp(): ReactElement {
       .then((summary) => setIdbLines((l) => [...l, '', summary]))
       .catch((e: unknown) => setIdbLines((l) => [...l, `THREW: ${String(e)}`]));
   }, []);
-  useEffect(() => {
-    void fetch('/art/manifest.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((m: { assets?: ArtMetrics } | null) => {
-        if (m && typeof m === 'object' && m.assets) setArtMetrics(m.assets);
-      })
-      .catch(() => undefined);
-  }, []);
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 700, margin: '0 auto' }}>
@@ -70,7 +60,6 @@ function DevApp(): ReactElement {
       <NavHost nav={nav}>
         <PlayScreen
           session={session}
-          artMetrics={artMetrics}
           skipBursts={skip}
           onCheck={(line) => setChecks((c) => [...c, line])}
           onFrame={recordFrame}

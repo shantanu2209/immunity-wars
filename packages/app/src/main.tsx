@@ -46,7 +46,6 @@ import {
   MenuIcon,
   useNav,
   useNavLayerWith,
-  type ArtMetrics,
   type CrashCase,
   type HelpSectionKey,
   type LibraryView,
@@ -139,6 +138,18 @@ type Screen =
    *  leaving a room is a decision made with its own button, never a gesture made by accident. */
   | { name: 'lobby' };
 
+/**
+ * THE FIRST-ENCOUNTER HINTS AND THE FIRST-GAME COACH ARE OFF (ruled by Shantanu, 1 October 2026;
+ * docs/LOOK_PLAN.md §14, ruling 2). The guided game replaces both at stage L6, so they are not
+ * redrawn in the new look: they were switched off when the board was, at L4. What they are made of
+ * (the play screen's hint and coach parts, this shell's record of what has been seen) stays until
+ * the guided game is built, and goes then.
+ *
+ * WHAT FOLLOWS FROM IT: until L6 a newcomer has no help in a first game, so the new look is not
+ * deployed before L6.
+ */
+const FIRST_GAME_HELP: boolean = false;
+
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
 }
@@ -176,7 +187,6 @@ function App({
     applyTextSize(s.textSize);
     writeSettings(prefStore, s);
   };
-  const [artMetrics, setArtMetrics] = useState<ArtMetrics | undefined>(undefined);
   // Whether a game is under way, reported up so the crash screen can tell case A from case B.
   // A ref in the parent rather than state here: this must survive the tree that threw.
   useEffect(() => {
@@ -279,14 +289,6 @@ function App({
     take();
     return whenNewerWaits(container, take);
   }, [onTitle]);
-  useEffect(() => {
-    void fetch('/art/manifest.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((m: { assets?: ArtMetrics } | null) => {
-        if (m && typeof m === 'object' && m.assets) setArtMetrics(m.assets);
-      })
-      .catch(() => undefined);
-  }, []);
 
   /**
    * THE SHELL LISTENS FOR THE NOTICE, not PlayScreen, because the warning outlives any one
@@ -728,10 +730,9 @@ function App({
           <PlayScreen
             key={gameId}
             session={session}
-            artMetrics={artMetrics}
             // THE COACH TEACHES A GAME PLAYED ALONE: its steps ("tap End turn") are the captain's in a
             // game played together, so it is off there (P3.7 piece B).
-            coach={!played && roomRef.current === null}
+            coach={FIRST_GAME_HELP && !played && roomRef.current === null}
             // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
             table={roomRef.current !== null && lobby !== null ? lobby : null}
             // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.
@@ -740,8 +741,9 @@ function App({
             // THE TABLE'S FIXED MESSAGES (protocol v3): what has been said, and saying one.
             tableSaid={tableSaid}
             onSay={roomRef.current !== null ? (m) => roomRef.current?.say(m) : null}
-            hintsSeen={hintsSeen}
-            onHintsSeen={rememberHints}
+            // Leaving both out is what turns the hints off (PlayScreen's own rule).
+            hintsSeen={FIRST_GAME_HELP ? hintsSeen : undefined}
+            onHintsSeen={FIRST_GAME_HELP ? rememberHints : undefined}
             onGameEnd={onGameEnd}
             renderControls={() => (
               // THE MENU, an icon at the right of the play screen's top bar (piece 5 of the play
