@@ -25,7 +25,10 @@ import { describe, expect, it } from 'vitest';
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Redrawn at stage L4: the board, the frame, and everything the play screen opens. */
+/**
+ * Redrawn at stage L4: the board, the frame, and everything the play screen opens. And at stage L5:
+ * the new cards and planning, the two notices, and every screen that is not the play screen.
+ */
 const REDRAWN = [
   'board/ClayBoard.tsx',
   'play/Frame.tsx',
@@ -47,15 +50,32 @@ const REDRAWN = [
   'dialogs/DialogQueue.tsx',
   'dialogs/GoalBody.tsx',
   'nav/NavHost.tsx',
+  'play/Arrivals.tsx',
+  'play/PlanningScreen.tsx',
+  'play/AnatomyView.tsx',
+  'panels/ConnectionLost.tsx',
+  'panels/SaveFailedNotice.tsx',
+  'panels/UpdateNow.tsx',
+  'screens/chrome.ts',
+  'screens/icons.tsx',
+  'screens/TitleScreen.tsx',
+  'screens/DifficultyScreen.tsx',
+  'screens/ResultScreen.tsx',
+  'screens/SettingsScreen.tsx',
+  'screens/HelpScreen.tsx',
+  'screens/LibraryScreen.tsx',
+  'screens/AboutScreen.tsx',
+  'screens/TogetherScreen.tsx',
+  'screens/LobbyScreen.tsx',
+  'screens/CrashScreen.tsx',
 ];
 
 /**
- * THE ONE EXCEPTION, AND WHY. The frame lays a sheet of the old screens' paper under the two views
- * that are not redrawn until L5 (the new cards and planning), so that their words keep the contrast
- * they were measured at. That sheet's two colours are the old screens' own, written where the sheet
- * is. They go when those views are redrawn, and this goes with them.
+ * NO EXCEPTION IS LEFT. There was one until stage L5: the frame laid a sheet of the old screens'
+ * paper under the two views that were not yet redrawn, and that sheet's two colours were written
+ * where the sheet was. Those views are redrawn and the sheet is gone.
  */
-const ALLOWED: Record<string, readonly string[]> = { 'play/Frame.tsx': ['#FFFDF9', '#2E2A28'] };
+const ALLOWED: Record<string, readonly string[]> = {};
 
 const withoutComments = (source: string): string =>
   source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
@@ -73,7 +93,7 @@ describe('what is redrawn is drawn in the kit’s colours', () => {
   });
 
   it('reads every file it lists: one that was not there would be passed for having no colours', () => {
-    expect(REDRAWN.length).toBeGreaterThanOrEqual(20);
+    expect(REDRAWN.length).toBeGreaterThanOrEqual(38);
     for (const file of REDRAWN)
       expect(readFileSync(join(SRC, file), 'utf8').length, file).toBeGreaterThan(200);
   });

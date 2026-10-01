@@ -63,7 +63,8 @@
  *            The pass ends by choosing Standard through the same control, so the offline pass
  *            that follows runs at the default.
  *   LAYOUT   the same checks under every mechanism: no horizontal scrolling, every control
- *            still in the viewport, no text clipped to an ellipsis.
+ *            still in the viewport, no text clipped to an ellipsis, and (since stage L5) no part
+ *            of the screen that scrolls sideways inside itself.
  *   OFFLINE  after the first load, the network is cut: a full turn is played and every
  *            failed request recorded; then a reload with no network, which MUST render the
  *            app and let a turn be played (the service worker's precache; FINDINGS #59). The
@@ -322,6 +323,12 @@ const LAYOUT_AUDITOR = `
     const cs = getComputedStyle(el);
     if (cs.overflow === 'hidden' && cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1)
       out.findings.push({ check: 'layout', path: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 40), detail: 'clipped with an ellipsis: ' + el.scrollWidth + ' > ' + el.clientWidth });
+    // A PART OF THE SCREEN THAT SCROLLS SIDEWAYS INSIDE ITSELF (stage L5). The page not being wider
+    // than the phone says nothing of a card that is: a card that scrolls holds its own overflow, so
+    // the page's width stays right while a line inside runs off the card's edge. Found by eye at
+    // 200% page zoom on the pathogen's card, which three clean audits had passed.
+    if ((cs.overflowX === 'auto' || cs.overflowX === 'scroll') && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 1)
+      out.findings.push({ check: 'layout', path: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 40), detail: 'scrolls sideways inside itself: ' + el.scrollWidth + ' > ' + el.clientWidth });
   }
   return out;
 })()
@@ -2349,14 +2356,28 @@ type Planted = Omit<Finding, 'screen'>[];
 
 /** Plants elements at the START of the body, so a document-order cap in an auditor's list of
  *  named elements (the overflow finding names the first five) cannot drop them. */
+/**
+ * THE PLANTED ELEMENTS STAND ON A WHITE GROUND OF THEIR OWN. The controls say "a #eee border on
+ * white", and the page was white, so they were planted straight into it. From stage L5 the page's
+ * ground is the kit's dark table: a pale border on it is plain to see and a black one is not, so
+ * both border controls came out the wrong way round and the audit, rightly, refused to run. The
+ * checks were right; the controls had been leaning on the page. They bring their own ground now.
+ */
 const PLANT = `
 (function (specs) {
+  let ground = document.querySelector('[data-control="ground"]');
+  if (!ground) {
+    ground = document.createElement('div');
+    ground.setAttribute('data-control', 'ground');
+    ground.style.background = '#fff';
+    document.body.prepend(ground);
+  }
   for (const s of specs.slice().reverse()) {
     const el = document.createElement(s.tag);
     el.textContent = s.text;
     el.setAttribute('data-control', s.id);
     Object.assign(el.style, s.style);
-    document.body.prepend(el);
+    ground.prepend(el);
   }
 })
 `;
@@ -2509,10 +2530,14 @@ async function controls(page: Page): Promise<string[]> {
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
     });
+  /** A box that scrolls, holding one line that cannot break. */
+  const scroller = (width: string): Record<string, string> =>
+    box({ display: 'block', width, overflowX: 'auto', whiteSpace: 'nowrap' });
   await plant([
     { tag: 'div', id: 'fits', text: 'planted fits', style: box({ width: '100%', height: '10px' }) },
     { tag: 'button', id: 'in', text: 'planted in', style: fixed('0') },
     { tag: 'div', id: 'short', text: 'planted short', style: ellipsis('160px') },
+    { tag: 'div', id: 'held', text: 'planted held', style: scroller('160px') },
   ]);
   const z1 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
   line(
@@ -2527,6 +2552,10 @@ async function controls(page: Page): Promise<string[]> {
     'zoom layout passes: an ellipsis whose text fits is NOT flagged as clipped',
     !has(z1.findings, 'layout', 'planted short', 'clipped'),
   );
+  line(
+    'zoom layout passes: a scrolling box whose line fits is NOT flagged as scrolling sideways',
+    !has(z1.findings, 'layout', 'planted held', 'scrolls sideways'),
+  );
   await plant([
     {
       tag: 'div',
@@ -2536,6 +2565,7 @@ async function controls(page: Page): Promise<string[]> {
     },
     { tag: 'button', id: 'out', text: 'planted out', style: fixed('300px') },
     { tag: 'div', id: 'long', text: 'planted long', style: ellipsis('40px') },
+    { tag: 'div', id: 'spill', text: 'planted spill over the side', style: scroller('40px') },
   ]);
   const z2 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
   line(
@@ -2549,6 +2579,10 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'zoom layout fires: an ellipsis that clips its text is flagged',
     has(z2.findings, 'layout', 'planted long', 'clipped'),
+  );
+  line(
+    'zoom layout fires: a scrolling box whose line runs off its side is flagged',
+    has(z2.findings, 'layout', 'planted spill over the side', 'scrolls sideways'),
   );
   await unplant();
   await page.setViewport({ width: 360, height: 780 });

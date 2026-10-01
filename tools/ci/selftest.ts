@@ -1092,6 +1092,39 @@ const CONTROLS: readonly Control[] = [
     expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
   },
   {
+    id: 'body-outline-holds-every-place',
+    why: 'Stage L5: the body in planning is drawn in code, and the organs and ways in hung on it are the content pack’s. Nothing else says the two still agree. With one leg of the outline cut short, the figure’s test must FAIL naming the way in that is left off the body.',
+    file: 'packages/ui/src/play/AnatomyView.tsx',
+    mutate: (t) => t.replace("  'L 171 366',\n", "  'L 171 300',\n"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A PLACE IS NOT ON THE BODY: the way in: wound',
+  },
+  {
+    id: 'title-one-main-button',
+    why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) => t.replace("kind={save ? 'rest' : 'main'}", 'kind="main"'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE TITLE HAS TWO MAIN BUTTONS',
+  },
+  {
+    id: 'settings-old-record-is-kept',
+    why: 'Stage L5: the sound setting was added to a record players already have. Without a default, a record stored before it fails the schema and reads as the defaults, and a player’s text size is reset by an update. With the default taken off the new field, the settings test must FAIL saying an old record was read as the defaults.',
+    file: 'packages/app/src/settings.ts',
+    mutate: (t) =>
+      t.replace("sound: z.enum(SOUND_SETTINGS).default('on'),", 'sound: z.enum(SOUND_SETTINGS),'),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'AN OLD RECORD WAS READ AS THE DEFAULTS',
+  },
+  {
+    id: 'page-ground-is-the-kits-table',
+    why: 'Stage L5: the app’s pages paint the table’s colour before any script runs, as text, and the kit names it in its tokens: copies of one value drift. With the app’s page painted white, the app’s test must FAIL naming the page.',
+    file: 'packages/app/index.html',
+    mutate: (t) => t.replace('background: #0e2a30;', 'background: #ffffff;'),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE PAGE’S GROUND IS NOT THE KIT’S TABLE: index.html',
+  },
+  {
     id: 'settings-no-guidance-row-when-off',
     why: 'FINDINGS #111: with the coach and the hints off from stage L4, the Settings row that offers to show them again says something false, so it is not drawn when the shell gives the screen nothing to show. With the row drawn regardless, the Settings test must FAIL saying Settings offers the guidance when there is none.',
     file: 'packages/ui/src/screens/SettingsScreen.tsx',
@@ -1151,11 +1184,7 @@ const CONTROLS: readonly Control[] = [
     id: 'clay-board-art-in-the-worker',
     why: 'Stage L4: the board is drawn in Clay, so its pictures are part of what the game needs with no network. If the service worker did not store them, the game would open offline to a board with nothing on it. With the board’s pictures left out of the worker’s list, the build test must FAIL naming one.',
     file: 'packages/app/vite.config.ts',
-    mutate: (t) =>
-      t.replace(
-        "const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];",
-        'const CLAY_ON_THE_BOARD: string[] = [];',
-      ),
+    mutate: (t) => t.replace("  'art/clay/board/*@3x.webp',\n", "  'art/clay/nothing/*',\n"),
     gate: 'pnpm --filter @immunity-wars/app test',
     expect: 'THE WORKER DOES NOT STORE THE BOARD',
   },

@@ -36,15 +36,21 @@ import {
 import { Fragment, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR } from '../kit/tokens';
 import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
 import { RichText } from '../panels/LogPanel';
-import { BODY as P, BTN, GROUP, LEAD, PAGE, ROW_BTN, TITLE } from './chrome';
-const NAME: CSSProperties = { fontWeight: 700 };
+
+import { BODY as P, CARD, GROUP, LEAD, PAGE, ROW, STACK, TITLE } from './chrome';
+import { ScreenIcon } from './icons';
+
+const NAME: CSSProperties = { fontWeight: 900 };
+/** An example of what the screen shows: set in from the prose by a bar, and said more quietly. */
 const EXAMPLE: CSSProperties = {
   ...P,
-  borderLeft: '3px solid #C48377',
+  borderLeft: `3px solid ${COLOUR.creamSunkEdge}`,
   paddingLeft: 10,
-  color: '#78665D',
+  color: COLOUR.inkSoft,
 };
 
 /** The ten sections, in the agreed order. The key is what the shell carries. */
@@ -328,19 +334,16 @@ export function HelpScreen({
         <h1 style={TITLE}>{t('help.title')}</h1>
         <p style={LEAD}>{t('help.index.lead')}</p>
         {HELP_SECTION_KEYS.map((k, i) => (
-          <button key={k} style={ROW_BTN} onClick={() => onOpen(k)} data-help-section={k}>
+          <KitButton key={k} style={ROW} onPress={() => onOpen(k)} data-help-section={k}>
             {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
-          </button>
+          </KitButton>
         ))}
         <div style={{ marginTop: 22 }}>
           <p style={LEAD}>{t('help.libraryLead')}</p>
-          <button
-            style={{ ...ROW_BTN, borderColor: '#C48377' }}
-            onClick={onLibrary}
-            data-help-library=""
-          >
+          <KitButton style={ROW} onPress={onLibrary} data-help-library="">
+            <ScreenIcon kind="library" />
             {t('title.library')}
-          </button>
+          </KitButton>
         </div>
       </div>
     );
@@ -353,44 +356,47 @@ export function HelpScreen({
       <h1 style={TITLE}>
         {t('help.number', { n: i + 1 })} {t(`help.${section}.title`)}
       </h1>
-      {sectionBody(section)}
+      {/* Read on a card (stage L5): a section is prose, and prose is read on cream. */}
+      <div style={CARD}>{sectionBody(section)}</div>
       {/* The rulebook's "why it works this way" boxes that belong to this section, by the
           content pack's own mapping; they live in the library and link back here. */}
       {WHY.filter((w) => w.help === section).length > 0 ? (
-        <section style={{ marginTop: 16 }} data-help-why="">
+        <section data-help-why="">
           <h2 style={GROUP}>{t('help.whyLink')}</h2>
           {WHY.filter((w) => w.help === section).map((w) => (
-            <button
+            <KitButton
               key={w.key}
-              style={ROW_BTN}
-              onClick={() => onWhy(w.key)}
+              style={{ ...ROW, marginTop: 6 }}
+              onPress={() => onWhy(w.key)}
               data-help-why-link={w.key}
             >
               {t(`library.why.${w.key}.title`)}
-            </button>
+            </KitButton>
           ))}
         </section>
       ) : null}
       {/* They wrap at 200% page zoom (a 180px layout), where side by side they were 185px wide:
           the audit's finding on this piece's first run. */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
         {prev ? (
-          <button
-            style={{ ...BTN, flex: '1 1 8rem', minWidth: 0 }}
-            onClick={() => onNext(prev)}
+          <KitButton
+            style={{ ...STACK, flex: '1 1 8rem', width: 'auto', minWidth: 0 }}
+            onPress={() => onNext(prev)}
             data-help-prev={prev}
           >
             {t('help.previous')}
-          </button>
+          </KitButton>
         ) : null}
         {next ? (
-          <button
-            style={{ ...BTN, flex: '1 1 8rem', minWidth: 0 }}
-            onClick={() => onNext(next)}
+          // A reader going in order: Next is what this screen is for, so it is the coral one.
+          <KitButton
+            kind="main"
+            style={{ ...STACK, flex: '1 1 8rem', width: 'auto', minWidth: 0 }}
+            onPress={() => onNext(next)}
             data-help-next={next}
           >
             {t('help.next')}
-          </button>
+          </KitButton>
         ) : null}
       </div>
     </div>

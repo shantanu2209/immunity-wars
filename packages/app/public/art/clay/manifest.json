@@ -2432,6 +2432,41 @@
         }
       }
     },
+    "scene/title": {
+      "view": "scene",
+      "kind": "scene",
+      "displayPx": 360,
+      "measured": {
+        "body": "#4f7270",
+        "share": 0.6,
+        "edge": 0,
+        "against": {}
+      },
+      "source": {
+        "file": "renders/scene/title.webp",
+        "sha256": "db33dbbafa5a4c8568210bc01e3535a58886d2f1ae125493e9bb650b9536d24f"
+      },
+      "files": {
+        "1x": {
+          "file": "scene/title@1x.webp",
+          "px": 360,
+          "bytes": 19976,
+          "sha256": "15338c911fd7d70345eeb9f0ea220d7d723aa6eaf6ef226053c3e4736da58b9d"
+        },
+        "2x": {
+          "file": "scene/title@2x.webp",
+          "px": 720,
+          "bytes": 47610,
+          "sha256": "da61b239f61f667d92527d2ce3efcdddc109c8446c4a9bcc74ee95de95a98d30"
+        },
+        "3x": {
+          "file": "scene/title@3x.webp",
+          "px": 1080,
+          "bytes": 81572,
+          "sha256": "09069b73d3a1f9658d9a07e355d5f74a03b7fa379a9c72c3dcf2fedb119e4b00"
+        }
+      }
+    },
     "table/board": {
       "view": "table",
       "kind": "board",

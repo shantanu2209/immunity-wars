@@ -67,6 +67,7 @@ import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/Anti
 import { ApTerms } from '../panels/ApTerms';
 import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
+import { SAY, TONE, pieceArt } from '../panels/onCard';
 import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
 import { CoachLine } from '../panels/CoachLine';
 import { coachStep } from './coach';
@@ -74,7 +75,6 @@ import {
   ActionsView,
   AdvanceButton,
   MiddleCard,
-  OldPaper,
   PlayArea,
   SlotClose,
   SpreadView,
@@ -964,7 +964,8 @@ export function PlayScreen({
         if (!target || !from) continue;
         const to = target.getBoundingClientRect();
         const ghost = document.createElement('img');
-        ghost.src = `/art/organ-${organ}@3x.webp`;
+        // The organ's coin, the one picture both stages draw (stage L5): it lands on itself.
+        ghost.src = pieceArt(`organ-${organ}`);
         ghost.alt = '';
         ghost.setAttribute('data-flight-ghost', organ);
         Object.assign(ghost.style, {
@@ -1206,21 +1207,21 @@ export function PlayScreen({
           </div>
         </MiddleCard>
       );
-    // The new cards and planning are not redrawn until L5: each stands on the old paper.
+    // The new cards' notes and planning's list are on the middle's card, as every view is (L5).
     if (arrivalsNow !== null)
       return (
-        <OldPaper>
+        <MiddleCard>
           <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
-        </OldPaper>
+        </MiddleCard>
       );
     if (plan !== null)
       return (
-        <OldPaper>
+        <MiddleCard>
           <div data-middle-view="planning">
             {spentCells !== null ? (
               <div
                 data-planning-cell-facts="1"
-                style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
+                style={{ ...SAY.quiet, color: TONE.note, marginBottom: 2 }}
               >
                 {spentCells}
               </div>
@@ -1248,7 +1249,7 @@ export function PlayScreen({
               />
             ) : null}
           </div>
-        </OldPaper>
+        </MiddleCard>
       );
     if (inspect)
       return (

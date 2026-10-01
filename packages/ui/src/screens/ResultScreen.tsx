@@ -2,29 +2,35 @@
  * RESULT — a screen, not a dialog (docs/APP_FLOW.md ruling 7): it ends the session cleanly
  * before navigation. States: win / loss (loss names the organ that fell). The shell clears
  * the autosave before showing this screen, so Continue never offers a finished game.
+ *
+ * DRAWN IN CLAY (stage L5): the verdict on the table, in mint for a win and coral for a loss, the
+ * three figures on a card, and the ways on below. The colour repeats the words; the words say it.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
 
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 52,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 12,
-};
+import { BODY, CARD, LEAD, PAGE, STACK } from './chrome';
+import { ScreenIcon } from './icons';
 
 export interface ResultStats {
   turns: number;
   organsDamaged: number;
   antibodiesMade: number;
 }
+
+const FIGURE: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'baseline',
+  gap: 12,
+  padding: '0.3em 0',
+  ...TYPE.body,
+  color: COLOUR.ink,
+};
 
 export function ResultScreen({
   won,
@@ -63,39 +69,56 @@ export function ResultScreen({
   rematch?: { mine: boolean; onRematch: () => void } | null;
 }): ReactElement {
   const [showLog, setShowLog] = useState(false);
+  const figure = (label: string, value: number): ReactElement => (
+    <div style={FIGURE}>
+      <span>{label}</span>
+      <span style={{ ...TYPE.heading }}>{value}</span>
+    </div>
+  );
+  // One main button: the next game, whichever kind this one was.
+  const rematchMine = rematch !== null && rematch.mine;
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
-      <h1 style={{ fontSize: '1.625rem', color: won ? '#2F6B4A' : '#B03A2E' }}>
+    <div style={{ ...PAGE, paddingTop: 36, textAlign: 'center' }}>
+      <h1
+        data-result-verdict={won ? 'win' : 'loss'}
+        style={{
+          ...TYPE.display,
+          fontSize: '2rem',
+          margin: 0,
+          color: won ? COLOUR.mint : COLOUR.coralLit,
+        }}
+      >
         {won ? t('result.win') : t('result.loss')}
       </h1>
       {!won && lossOrgan !== null ? (
-        <p style={{ fontSize: '0.9375rem' }}>
-          {t('result.lossOrgan')} <span style={{ fontWeight: 700 }}>{lossOrgan}</span>
+        <p style={{ ...LEAD, color: COLOUR.onDark, margin: '8px 0 0' }}>
+          {t('result.lossOrgan')} <span style={{ fontWeight: 900 }}>{lossOrgan}</span>
         </p>
       ) : null}
-      <div style={{ fontSize: '0.9375rem', margin: '18px 0', color: '#2E2A28' }}>
-        <div>
-          {t('result.turns')} <span style={{ fontWeight: 700 }}>{stats.turns}</span>
-        </div>
-        <div>
-          {t('result.organsDamaged')} <span style={{ fontWeight: 700 }}>{stats.organsDamaged}</span>
-        </div>
-        <div>
-          {t('result.antibodies')} <span style={{ fontWeight: 700 }}>{stats.antibodiesMade}</span>
-        </div>
+      <div style={{ ...CARD, textAlign: 'left', marginTop: 18 }}>
+        {figure(t('result.turns'), stats.turns)}
+        {figure(t('result.organsDamaged'), stats.organsDamaged)}
+        {figure(t('result.antibodies'), stats.antibodiesMade)}
       </div>
       {log.length > 0 ? (
         <>
-          <button
-            style={BTN}
+          <KitButton
+            style={{ ...STACK, marginTop: 18 }}
             data-result-log={showLog ? 'open' : 'closed'}
             aria-expanded={showLog}
-            onClick={() => setShowLog((v) => !v)}
+            onPress={() => setShowLog((v) => !v)}
           >
             {showLog ? t('result.hideLog') : t('result.showLog')}
-          </button>
+          </KitButton>
           {showLog ? (
-            <div style={{ textAlign: 'left', maxHeight: '40dvh', overflowY: 'auto' }}>
+            <div
+              style={{
+                ...CARD,
+                textAlign: 'left',
+                maxHeight: '40dvh',
+                overflowY: 'auto',
+              }}
+            >
               <LogPanel lines={log} titled={false} />
             </div>
           ) : null}
@@ -103,36 +126,45 @@ export function ResultScreen({
       ) : null}
       {rematch !== null ? (
         rematch.mine ? (
-          <button
-            style={{ ...BTN, borderColor: '#B03A2E' }}
-            onClick={rematch.onRematch}
-            data-result="rematch"
-          >
+          <KitButton kind="main" style={STACK} onPress={rematch.onRematch} data-result="rematch">
+            <ScreenIcon kind="again" />
             {t('result.rematch')}
-          </button>
+          </KitButton>
         ) : (
-          <p style={{ fontSize: '0.9375rem', color: '#2E2A28' }} data-result="rematch-waiting">
+          <p style={{ ...BODY, color: COLOUR.onDark, marginTop: 14 }} data-result="rematch-waiting">
             {t('result.rematchWaiting')}
           </p>
         )
       ) : null}
       {onTogether !== null ? (
-        <button style={BTN} onClick={onTogether} data-result="together">
+        <KitButton
+          kind={rematch === null ? 'main' : 'rest'}
+          style={STACK}
+          onPress={onTogether}
+          data-result="together"
+        >
           {t('result.playTogether')}
-        </button>
+        </KitButton>
       ) : (
         <>
-          <button style={BTN} onClick={onPlayAgain} data-result="again">
+          <KitButton
+            kind={rematchMine ? 'rest' : 'main'}
+            style={STACK}
+            onPress={onPlayAgain}
+            data-result="again"
+          >
+            <ScreenIcon kind="again" />
             {t('result.playAgain')}
-          </button>
-          <button style={BTN} onClick={onChangeDifficulty}>
+          </KitButton>
+          <KitButton style={STACK} onPress={onChangeDifficulty}>
             {t('result.changeDifficulty')}
-          </button>
+          </KitButton>
         </>
       )}
-      <button style={BTN} onClick={onTitle}>
+      <KitButton style={STACK} onPress={onTitle}>
+        <ScreenIcon kind="home" />
         {t('result.title')}
-      </button>
+      </KitButton>
     </div>
   );
 }

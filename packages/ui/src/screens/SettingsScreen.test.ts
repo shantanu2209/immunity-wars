@@ -18,6 +18,8 @@ const settings = (onResetHints: (() => void) | null): string =>
       textSizes: ['100', '150', '200'],
       language: 'en',
       languages: ['en'],
+      sound: 'on',
+      sounds: ['on', 'off'],
       onChoose: () => undefined,
       deleteSaveBlock: null,
       onDeleteSave: () => undefined,
@@ -40,5 +42,16 @@ describe('the Settings screen’s first-game guidance row', () => {
 
   it('is drawn when there is', () => {
     expect(settings(() => undefined)).toContain('data-settings-row="resetHints"');
+  });
+});
+
+describe('the Settings screen’s sound row', () => {
+  it('offers on and off, and shows which is in force', () => {
+    const html = settings(null);
+    expect(html).toContain('data-settings-row="sound"');
+    const on = /<button[^>]*data-settings-option="on"[^>]*>/.exec(html)?.[0] ?? '';
+    const off = /<button[^>]*data-settings-option="off"[^>]*>/.exec(html)?.[0] ?? '';
+    expect(on).toContain('aria-pressed="true"');
+    expect(off).toContain('aria-pressed="false"');
   });
 });

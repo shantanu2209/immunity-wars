@@ -10,21 +10,22 @@
 import { useState, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { BTN } from '../screens/chrome';
+import { KitButton } from '../kit/Button';
 
 export function UpdateNow({ onUpdate }: { onUpdate: () => void }): ReactElement {
   const [updating, setUpdating] = useState(false);
   return (
-    <button
+    <KitButton
+      kind="go"
       data-update-now=""
-      style={BTN}
-      disabled={updating}
-      onClick={() => {
+      style={{ marginTop: 12 }}
+      unavailable={updating}
+      onPress={() => {
         setUpdating(true);
         onUpdate();
       }}
     >
       {updating ? t('together.updating') : t('together.updateNow')}
-    </button>
+    </KitButton>
   );
 }

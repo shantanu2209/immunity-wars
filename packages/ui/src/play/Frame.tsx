@@ -17,8 +17,8 @@
  * table's dark ground. What each part is given and the hooks it carries are as they were; only the
  * drawing changed. Dumb by design: the play screen decides what each part shows.
  *
- * WHAT IS NOT YET REDRAWN, the new cards and planning, stands on a sheet of the old paper
- * (`OldPaper`), so that its words keep the contrast they were measured at. They are L5's.
+ * THE NEW CARDS AND PLANNING were the last to be redrawn, at stage L5, and stood on a sheet of the
+ * old screens' paper until then. Nothing in the frame is on that paper now.
  */
 import {
   useLayoutEffect,
@@ -42,30 +42,6 @@ import { diceOf } from './SpreadNarration';
 import type { DockRow } from './offered';
 import { useFrame, type FrameStore } from './frameStore';
 import { tapCounts } from './stepGuard';
-
-/**
- * THE OLD SCREENS' PAPER. A view that has not been redrawn yet (the new cards, and planning) was
- * drawn for this ground and measured on it, so until it is redrawn it stands on a sheet of it, laid
- * on the table. Both are L5's, and this goes with them.
- */
-const OLD_PAPER = '#FFFDF9';
-export function OldPaper({ children }: { children: ReactNode }): ReactElement {
-  return (
-    <div
-      data-old-paper=""
-      style={{
-        background: OLD_PAPER,
-        color: '#2E2A28',
-        borderRadius: RADIUS.control,
-        padding: 8,
-        minHeight: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
-      {children}
-    </div>
-  );
-}
 
 /**
  * A VIEW IN THE MIDDLE, on a card of the kit's cream: the Cells, Antibodies and Body views, a tapped
@@ -337,8 +313,6 @@ export function PlayArea({
   coach?: ReactNode;
   children: ReactNode;
 }): ReactElement {
-  // The new cards and the body in planning are not redrawn until L5: they keep their paper.
-  const old = stage === 'arrivals' || stage === 'planning';
   return (
     <div
       data-play-area={stage}
@@ -355,7 +329,6 @@ export function PlayArea({
         maxHeight: '55dvh',
         overflow: 'hidden',
         borderRadius: RADIUS.control,
-        background: old ? OLD_PAPER : undefined,
       }}
     >
       {children}

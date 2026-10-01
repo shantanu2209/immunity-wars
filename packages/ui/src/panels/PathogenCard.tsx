@@ -134,9 +134,11 @@ export function PathogenCard({
           padding: '12px 14px 16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* The name goes under the picture when there is not room for it beside: at 200% page
+            zoom it had 34 px, and broke two letters to a line (seen at stage L5). */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <KitPiece name={piece} view="card" size={84} label="" style={{ flex: '0 0 auto' }} />
-          <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+          <div style={{ flex: '1 1 9rem', minWidth: 0 }}>
             <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>{disease}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
               <KitChip>{typeDisplayName(type)}</KitChip>
@@ -219,9 +221,10 @@ export function PathogenCard({
               ] as const
             ).map(([key, text]) =>
               text ? (
-                <div key={key} style={ROW}>
+                // The fact goes under its label when there is not room beside it (200% page zoom).
+                <div key={key} style={{ ...ROW, flexWrap: 'wrap' }}>
                   <span style={{ ...LABEL, flex: '0 0 6em' }}>{t(key)}</span>
-                  <span>{text}</span>
+                  <span style={{ flex: '1 1 9rem', minWidth: 0 }}>{text}</span>
                 </div>
               ) : null,
             )}

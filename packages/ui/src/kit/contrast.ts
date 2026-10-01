@@ -148,6 +148,29 @@ export const PAIRS: readonly Pair[] = [
   },
   { name: 'words on a sheet', fg: COLOUR.ink, bg: COLOUR.creamLit, bound: 'text' },
   { name: 'quiet words on a sheet', fg: COLOUR.inkSoft, bg: COLOUR.creamLit, bound: 'text' },
+  // the other screens (stage L5)
+  { name: 'a warning on the table', fg: COLOUR.coralLit, bg: COLOUR.table, bound: 'text' },
+  { name: 'a win, said on the table', fg: COLOUR.mint, bg: COLOUR.table, bound: 'text' },
+  {
+    name: 'a resting button on the table',
+    fg: COLOUR.creamSunk,
+    bg: COLOUR.table,
+    bound: 'control',
+  },
+  {
+    name: 'a box to type in, on the table',
+    fg: COLOUR.creamLit,
+    bg: COLOUR.table,
+    bound: 'control',
+  },
+  {
+    name: 'the body in planning, by its edge',
+    fg: COLOUR.onDarkSoft,
+    bg: COLOUR.table,
+    bound: 'control',
+  },
+  { name: 'a count on the body', fg: COLOUR.ink, bg: COLOUR.coral, bound: 'text' },
+  { name: 'a count on a row', fg: COLOUR.cream, bg: COLOUR.ink, bound: 'text' },
 ];
 
 export interface Measured extends Pair {

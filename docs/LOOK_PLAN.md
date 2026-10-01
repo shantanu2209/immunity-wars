@@ -8,8 +8,8 @@ resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIE
 **Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
 board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
 which holds 60 frames a second on his S25 (§14). **He ruled it deployed that night, as a mix of two
-looks, with his review of the whole the next day** (§14, the last heading). L5, the other screens,
-is next.
+looks, with his review of the whole the next day** (§14, the last heading). **L5, the other screens,
+is built for that review and not yet ruled on** (§15).
 
 ## 1. What is decided already
 
@@ -109,7 +109,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
-| **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
+| **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
@@ -865,3 +865,131 @@ the server until L6, and why. **This ruling replaces that part of both:**
   (L5), and the guided game (L6) if there is time. Building them is not approving them.
 - **The pull requests:** the rest of L4 went up as one, not four, to reach a deploy sooner; he had
   played all of it by then.
+
+**Deployed, 2 October 2026, 00:57 IST,** on that ruling, once he had merged the rest of L4: the
+app, from `main` at `3299bfe`, as version `20261002-005739-3299bfe`. The app only: the relay was
+not touched or restarted (protocol 5 and rules 4.1.0, as it already ran).
+
+| Checked | Found |
+|---|---|
+| The deploy script's own checks | The build talks to the server's relay; it starts, in a headless browser, with no error; the server serves this build, with the service worker uncached |
+| The live app, opened from the PC in a headless phone-sized browser, read only | The title; a game alone to the command stage; the Clay board drawn, 43 pictures and none broken, seven cells; no coach and no hint; no error and no failed request |
+| The relay | Still running; it answers through the server as before |
+| The versions kept on the server | This one, and the two before it |
+
+- **`/kit.html` and `/measure.html` are on the server too,** as `/dev.html` always was. They are a
+  developer's pages, nothing links to them, and they collect nothing.
+- **A phone that has the app** takes the new version on its title, by itself, the next time it is
+  opened there.
+- **Not checked on the live server:** playing together, which would mean making a room on it. The
+  audit walked it against a relay on the PC, on the same code.
+
+## 15. L5, every other screen: built for his review of 2 October 2026
+
+**Built without a proposal round, on his word.** Every stage before this was proposed and ruled
+before it was built. On the night of 1 October he wrote that his review is the next day and that
+*"anything we can do before that will also get reviewed then (meaning we should try to get any
+additional/new content in so it can also be reviewed)"*. So the other screens were built that
+night, from the kit he approved and from the title he picked at L1, and **every choice below is
+unruled: it is his to overrule at the review.** Building them is not approving them.
+
+### What is built
+
+**Every screen stands on the table.** The page's own ground is the kit's table, from the first
+paint. A screen's name and the line under it are written on it in cream; **prose is read on a
+card**, because a paragraph in cream on a dark ground passes its contrast bound and is still tiring
+at length, and the help, the library and About are read at length. A list is a column of resting
+buttons. One coral button to a screen: the thing the screen is for.
+
+| Screen | What it is now |
+|---|---|
+| **The title** | The picture he picked at L1, made again from the kit's pieces: the seven cells on their board, the Monocyte in the bloodstream's dish. The game's name and what it is, on the table. One coral button: Continue when a game is waiting, New game when none is. A room to go back to is mint. Settings and About are quiet links at the foot |
+| **Difficulty** | Three rows, each with its name and what it is. On a device that has never started a game, Training is mint and says in words that it is recommended |
+| **The new cards** | Each a cream card standing on the table, with the piece as a card shows it, in its antigen class's colour; the class by its code with its colour as a dot. They are dealt, one after another. A pathogen new to the body is the pale unknown piece. The turn's event and what the spread did are on the middle's card |
+| **Planning** | The body is a dark figure on the table, like the board, **drawn in code**. On it are the same coins the board has for the organs and the ways in, so an organ in planning and in command is one picture, and the flight between the two stages lands a coin on itself. The list is on the middle's card, each row with the piece a player sees on the board |
+| **The result** | The verdict on the table, mint for a win and coral for a loss; the three figures on a card; the ways on below |
+| **How to play** | The contents as rows; a section's prose on a card; Next is the coral button |
+| **The disease library** | Each row has the disease's own piece, its name, and its class as a dot and a code. The ways to jump down the page are wells in the table |
+| **Settings** | Each group a card. The choice in force is pressed in and ringed. **Sound and vibration, on or off**: the mute ruled at L3, one switch for both, on by default |
+| **About** | Each section a card |
+| **Play together, and the lobby** | The boxes to type in are cream wells. A seat is a row with its picture: a cell on its base, a resident as its organ's coin. Yours is pressed in and ringed in mint; one somebody else holds is flat and says who; a free one stands up |
+| **The notices** | A lost connection and a save that failed are cards of the kit |
+| **After a crash** | In the kit's colours, with plain buttons wearing the kit's button style: the thing that threw may be the kit, so this screen uses as little of it as draws it |
+
+**No old paper is left.** The sheet the frame laid under the new cards and planning is gone, and
+with it the last exception to "a redrawn file names no colour of its own": the test now reads 38
+files and allows none.
+
+### The art
+
+- **The title's picture** is rendered by `tools/art-pipeline/clay/hero.py` from the kit's pieces,
+  and comes through the pipeline as a new kind, a **scene**: a picture of the pieces for a screen
+  that is not the board. It tells a player nothing they must read to play, so it is **not held to
+  3:1**; it is held to standing clear of its own edge and to having something in it, and the
+  pipeline's lines say how many pictures were held to which. 82 KB at the largest size.
+- **The body in planning has no picture at all.** Its outline is a path written in code, in the
+  frame the content pack's places are given in. It claims no anatomy: it is a shape to hang the
+  places on. A test holds every organ, every way in and the bloodstream inside it.
+- **Nothing was bought, downloaded or generated.**
+
+### What was changed that is not drawing
+
+- **The sound setting is stored with the text size, and an update must not reset the text size.** A
+  record a phone already holds has no sound in it. The new field has a default, so that record reads
+  as it was, with sound on; without the default it would fail to read, and a player who had chosen
+  the largest text would be put back to standard by the update that added a sound switch. A test
+  reads such a record, and a control takes the default off and sees it fail.
+- **Three sentences of How to play** described the old board and were false of the new one:
+  *numbered circles* (the steps carry no numbers), *the pips above each organ* (its health is an arc
+  round it) and *the red hub* (a red ring). They say what the board shows now. **"Organ box" is
+  kept**: it is the game's own word, and the engine's messages use it.
+- **The first-game guidance row stays off Settings** (§14, [`FINDINGS.md`](FINDINGS.md) #111).
+
+### Seen, in a headless browser on the PC at 360 by 641
+
+| Seen | Found |
+|---|---|
+| The title, with and without a game to continue | One screen tall; the picture is what shrinks when Continue is added |
+| Difficulty, the new cards, planning, the command stage, the menu, the result, the crash screen | Each one screen tall |
+| Twenty-two screens walked | Nothing wider than the phone, no control under 44 px, no picture broken |
+| The lobby, with two players on a relay on this PC | Yours, taken and free seats each told by shape; one screen wide |
+| The first picture of the body | The heart's health lay under the lungs' coin. What hangs on a place is now drawn over every coin |
+
+### The audit, on these screens
+
+Run in full, alone and together, against a relay on this PC. It took four runs to a clean one, and
+two of the four things it turned up were the audit's own:
+
+| Found | Whose | Done |
+|---|---|---|
+| The audit refused to run: its two controls on a control's edge came out the wrong way round | The audit's. They plant a pale edge and a black one "on white", straight onto the page, and the page is the dark table now | The planted elements stand on a white ground of their own |
+| At 200% page zoom the library's rows were wider than the page (204 px of 180) | The screen's | A row wraps: the class goes under the name, and a long name may break |
+| At 200% page zoom the pathogen's card broke a name two letters to a line, and its class ran off the card's side. **Three clean audits had passed it** | Both. The card scrolls, so it held its own overflow and the page's width stayed right; the audit asked only about the page | The name goes under the picture when there is not room beside it. **The audit now reports any part of a screen that scrolls sideways inside itself**, with a control each way |
+| With that check, the crash screen's details scrolled sideways at 200% | The screen's | A stack trace breaks where it must |
+
+**The last run, on the code as committed:** 82 screens in each of the four passes (84 in one),
+nothing not reached; every check at zero over 1,052 controls and 2,172 text runs; 38 close paths,
+none wrong; the play area one height on 42 screens; no scroll at rest on 22; offline met, with no
+request failed; 53 controls of the audit's own, each firing or passing as it must.
+
+### Known, and left for his review
+
+- **The old pictures are still in the build, and nothing draws them:** the 89 files of the old art
+  and the body's old outline. Taking them out retires the open question about their licence and
+  0.41 MB of the 2.50 MB a phone stores (measured from the build's own list). It is its own change.
+- **The Clay title has no "THE" set small above the name,** as his L1 picture had: the name is one
+  entry in the catalogue, and cutting an article off it in code would not survive the Hindi edition.
+- **A lone picture on a new card is small** beside the card: the card view's pictures leave room
+  round a piece.
+- **Not played on his phone.** Everything above is the PC's.
+
+### Controls added, each fired
+
+`body-outline-holds-every-place` (one leg of the outline cut short: the test fails naming the way in
+left off the body), `title-one-main-button` (New game always coral: it fails saying there are two),
+`page-ground-is-the-kits-table` (the page painted white: it fails naming the page),
+`settings-old-record-is-kept` (the default taken off the sound setting: it fails saying an old record
+was read as the defaults), two lines in the audit for a part that scrolls sideways,
+`play-screen-colours-are-the-kits` again over the 38 files, and in the pipeline's own set a scene
+that runs off its picture and one with next to nothing in it, each refused, beside one the colour
+of the board, accepted.
