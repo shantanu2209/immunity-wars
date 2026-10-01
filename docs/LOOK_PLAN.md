@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board is built, standing still (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -425,3 +425,110 @@ perfect. Please proceed."*
 - **What the approval is not.** It is of the kit, on the kit page. The screens built from it are
   judged at their own stages, and Gate 2, his approval of the whole look, is still L7's.
 - What he pressed and for how long is not recorded; only his words are.
+
+## 14. L4, the play screen: ruled 1 October 2026
+
+**The proposal's five points.** Each was put with a recommendation, and Shantanu answered:
+*"Agree with the steps please proceeed"*. It is read as agreement to all five, and he was told it
+was read so.
+
+1. **Built in place; the server keeps today's app.** The present screen's drawing is replaced piece
+   by piece, so there is one play screen and one set of tests throughout. From the first merge of
+   L4 until the other screens are done at L5, `main` is a mix of two looks and **is not deployed**.
+   A fix to the live app in that time is made from the commit that is deployed.
+2. **The hints and the first-game coach are switched off from L4, not redrawn.** The guided game
+   replaces them at L6. So the new look does not reach the server before L6.
+3. **No words on the board.** Organ and route names and step numbers leave it; each name is its
+   picture's label and is said on its card.
+4. **The board, the organs and the ways in are new art**, shown on the kit page before the play
+   screen depends on them.
+5. **Five pull requests in this order**, one at a time, each played on his phone: the board,
+   standing still; the frame and the panels; motion and sound; the camera; measured on the S25 and
+   tidied.
+
+### Built: the board, standing still (the first of the five)
+
+**The art**, made in Blender and held to the same gate as the pieces.
+
+- `tools/art-pipeline/clay/board.py` renders the board itself: its routes, branches, steps, lymph
+  nodes and bloodstream, each where `geometry.json` says, and nothing that moves.
+- `clay/pieces.py` gains a coin for each of the seven organs and the six ways in, and the piece for
+  a pathogen new to the body: a pale lump with a question mark, wearing none of the six class
+  colours, because its antigen matches none of them. It also stands for anything the game is hiding.
+- The pictograms on the coins moved into the pipeline (`clay/pictograms.ts`), since the prototype
+  that drew them is removed at the end of L4.
+- 65 pictures as 195 files, 1.4 MB, of which the board draws 42.
+
+**What the gate holds, added here.** Controls for each were fired.
+
+| What | Held to 3:1 | Measured |
+|---|---|---|
+| An organ's coin | Its cream pictogram against the coin's own face | 3.61 to 4.60 |
+| A way in's coin | Its dark pictogram against the coin; the coin against the board | 6.59 to 7.04; 8.5 |
+| The unknown piece | As an invader; and its question mark against its body | 5.89 and 8.19; 5.80 |
+| The board's routes | The faintest of them against the board's own ground | 4.44 |
+| Its branches, steps, lymph nodes | The same | 5.31, 7.51, 6.75 |
+| The bloodstream's rim | The same | 3.46 |
+| The board's ground | Against the swatch the pieces were measured on, within 1.15:1 | `#1a4549` and `#1c484d` |
+
+The pictogram is found in the finished render with its own shape, laid where Blender laid it. A
+shape in the wrong place mixes the two colours and reads lower, so it cannot pass a coin that
+should fail.
+
+**What measuring changed, before it was built on.**
+
+| Measured | Found | Changed |
+|---|---|---|
+| A cream pictogram on the organ coins of the L1 picture | A coin cannot be both 3:1 against the dark board and 3:1 under a cream pictogram, except in a sliver. The lungs read 3.15 and the marrow 3.16 | What must be read is the pictogram: it is held against its coin and against the board. The lungs and the marrow are darker: 3.73 and 3.77 |
+| The board's steps | 5.33, the colour of a lane: each lane ran over its steps, so a step was a dot with a line through it | The steps stand taller than a lane is thick: 7.51 |
+| A number on a piece in the bloodstream | Laid over the cell, the number was larger than the cell | A number hangs on a piece's edge; for a cell in the bloodstream, outward, on the rim |
+| What the phone stores to play offline | The proposal said about 1.2 MB, from the build tool's own line. That line leaves the art out. Measured from the files it was 1.62 MB | With the board's 42 pictures it is 2.14 MB |
+
+**The board on the page**, `packages/ui/src/board/ClayBoard.tsx`, in place of the SVG board.
+
+- **It decides nothing.** What stands where, what a tap means and what is offered are the same
+  working parts as before; the old drawing was cut out of `Board.tsx`, which keeps the model.
+- **One piece is one kind in one class.** A piece's colour says its antigen class, so one piece
+  cannot stand for an enveloped virus and a naked one. Two classes of a kind on a step are two
+  pieces, each with its own count. Before, a step's invaders were gathered by kind alone.
+- **No words on it.** Numbers only: how many a piece stands for, and the turns until a spent cell
+  is back.
+- **An organ's health is an arc of segments.** One it has is thick and coloured; one it has lost is
+  a thin pale line. The count is carried by shape, and the colour repeats it.
+- **The bloodstream is still a zone:** what invades is gathered at its centre, your cells ring it.
+- **A legal move glows gold, a hop along the lymph blue, an attack is ringed in coral.**
+- **The bloodstream is drawn 53 units across its rim; the print's is 50.3.** Every position is the
+  content pack's; only the dish's drawn size differs, as in the picture he picked.
+
+**Seen, in a headless phone-sized browser on the PC:** a real game walked from the title to the
+command stage: 43 pictures drawn, none broken; 7 cells, 7 residents, 7 organs, 6 ways in; 13 legal
+moves for the Monocyte. On the kit page, real taps by position: a tap on a cell rings it, a tap
+12 px off it still does, a tap on bare board clears it. At 200% text the page is 360 px wide.
+
+**The hints and the coach are off**, as ruled, in the app's shell. **Switching them off found a
+false note.** The play screen's own comment said that leaving two inputs out turned hints off. It
+did not: every hint still showed. The walk's list of buttons had a hint's button in it after the
+switch, and that is what said so. The play screen now does what its comment says.
+
+**A masked pathogen's name no longer reaches the page.** The hook the drivers find an invader by
+carried the first six letters of its disease, "Pathog" for one the game was hiding. Nothing showed
+it, and anyone who looked could read it. It carries the kind now.
+
+**Controls added, each fired:** `clay-page-and-blender-agree`, `clay-every-disease-has-a-picture`,
+`clay-no-words-on-the-board`, `clay-board-art-in-the-worker`,
+`clay-board-read-where-geometry-says`; and in the gate's own set, a coin whose pictogram is its
+face's colour, a board with nothing drawn on it, and a board that is not the pieces' ground. One
+control was wrong on its first run: it asked that a blank coin fail for one reason only, and a blank
+coin fails for two.
+
+**Not done here, and known.**
+
+- **The bloodstream is crowded.** Seven cells in it are each about 11 px across on the phone. That
+  is the size the old board drew them at, and it is small. The camera, the fourth pull request, is
+  what moves in on it.
+- **The organs still fly in from the old planning picture.** At "Command your cells" the old organ
+  icons travel to the board and land on the new coins. The planning screen is redrawn at L5.
+- **The look is a mix:** the board is Clay, and everything round it is not yet.
+- **Not measured:** the frame rate, and anything on the S25. Both are the fifth pull request's.
+- **The accessibility audit was not run.** It walks the old screens, and is aimed at the new one in
+  the fifth pull request.

@@ -28,7 +28,12 @@ page**, Blender's renders moved as page elements, with no GPU canvas and no live
 second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
 measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
 then removed with `pixi.js` and `three`. **Stage L3 is done: he approved the kit on his phone on
-1 October** (*"Tested. It's perfect."*; plan §13). **L4, the play screen, is next.** What the kit is:
+1 October** (*"Tested. It's perfect."*; plan §13). **L4, the play screen, is ruled and under way**
+(plan §14): built in place, so `main` is a mix of two looks and **is not deployed** until L5 is done,
+and not before L6, because the hints and the coach are switched off for the guided game to replace.
+The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `board/clay.ts` and `board/clayLayout.ts`, over
+the same model in `board/Board.tsx`), from a picture `tools/art-pipeline/clay/board.py` renders;
+the frame and panels, motion, the camera and the S25 measurement follow. What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`, used only by the kit

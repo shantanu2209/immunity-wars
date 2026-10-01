@@ -17,11 +17,13 @@ import {
   FAMILIES,
   FAMILY,
   ORGANS,
+  ROUTES,
   TROPISM,
   UI_,
   UM,
 } from '@immunity-wars/content';
-import { t } from '@immunity-wars/ui';
+import { ClayBoard, t } from '@immunity-wars/ui';
+import type { ViewState } from '@immunity-wars/session';
 import {
   BOUND,
   CLAY_CELLS,
@@ -393,6 +395,117 @@ function Pieces({ view }: { view: 'board' | 'card' }): ReactElement {
   );
 }
 
+/**
+ * A POSITION MADE UP FOR THIS PAGE, so the board can be seen with things on it: a cell out on a
+ * route, three in the bloodstream with a spent one among them, each organ's resident at home,
+ * organs at full, worn and failing health, and one of each thing that can stand on a step,
+ * the piece for a pathogen new to the body among them. The diseases are the content pack's own,
+ * so each wears the class the pack gives it.
+ */
+const SAMPLE = {
+  turn: 4,
+  organs: Object.fromEntries(
+    Object.entries(ORGANS as Record<string, { integrity: number }>).map(([k, o], i) => [
+      k,
+      { hp: Math.max(1, o.integrity - (i % 3)), max: o.integrity },
+    ]),
+  ),
+  cells: {
+    macrophage: { zone: 'route', lane: 'wound', step: 2, alive: true },
+    neutrophil: { zone: 'route', lane: 'nose', step: 1, alive: true },
+    bcell: { zone: 'hub', alive: true },
+    tcell: { zone: 'branch', organ: 'liver', step: 2, alive: true },
+    helper: { zone: 'hub', alive: true },
+    nk: { zone: 'hub', alive: false },
+    eosinophil: { zone: 'route', lane: 'gut', step: 2, alive: true },
+  },
+  residents: Object.fromEntries(Object.keys(ORGANS).map((k) => [k, { step: 0, infectedBy: null }])),
+  invaders: [
+    { id: 'a', disease: 'Cellulitis', type: 'bacteria', zone: 'route', lane: 'wound', step: 3 },
+    {
+      id: 'b',
+      disease: 'Cellulitis',
+      type: 'bacteria',
+      zone: 'route',
+      lane: 'wound',
+      step: 2,
+      tagged: true,
+    },
+    { id: 'c', disease: 'Influenza', type: 'virus', zone: 'route', lane: 'nose', step: 3 },
+    { id: 'd', disease: 'COVID-19', type: 'virus', zone: 'route', lane: 'nose', step: 3 },
+    { id: 'e', disease: 'Common cold', type: 'virus', zone: 'route', lane: 'nose', step: 4 },
+    { id: 'f', disease: 'Hookworm', type: 'worm', zone: 'route', lane: 'gut', step: 3 },
+    {
+      id: 'g',
+      disease: 'Pathogen X',
+      type: 'virus',
+      novel: true,
+      zone: 'route',
+      lane: 'contact',
+      step: 3,
+    },
+    { id: 'h', disease: 'Malaria', type: 'malaria', zone: 'route', lane: 'bite', step: 2 },
+    { id: 'i', disease: 'Tuberculosis', type: 'bacteria', zone: 'branch', organ: 'lungs', step: 2 },
+    { id: 'j', disease: 'Snake venom', type: 'venom', zone: 'hub' },
+    { id: 'k', disease: 'Aspergillosis', type: 'fungus', zone: 'hub' },
+  ],
+} as unknown as ViewState;
+
+function TheBoard(): ReactElement {
+  const [picked, setPicked] = useState<string | null>('macrophage');
+  const coins: Array<{ name: string; words: string }> = [
+    ...Object.entries(ORGANS as Record<string, { name: string }>).map(([k, o]) => ({
+      name: `organ-${k}`,
+      words: o.name,
+    })),
+    ...Object.entries(ROUTES as Record<string, { name: string }>).map(([k, r]) => ({
+      name: `entry-${k}`,
+      words: r.name,
+    })),
+    { name: 'unknown', words: t('inspect.unknown') },
+  ];
+  return (
+    <>
+      <ClayBoard
+        view={SAMPLE}
+        selectedCell={picked}
+        readyTurn={{ nk: 6 }}
+        targets={[
+          {
+            key: 'm1',
+            kind: 'move',
+            located: { zone: 'route', lane: 'wound', step: 1 },
+            payload: null,
+          },
+          {
+            key: 'm2',
+            kind: 'hop',
+            located: { zone: 'route', lane: 'contact', step: 3 },
+            payload: null,
+          },
+          { key: 'x1', kind: 'attack', invaderId: 'b', payload: null },
+        ]}
+        onTap={(hit) => setPicked(hit.kind === 'cell' ? hit.cell : null)}
+      />
+      <p style={{ ...NOTE, marginTop: 10 }}>
+        Tap a cell to ring it. A gold ring is a legal move, a blue one a hop along the lymph, a
+        coral one an attack. The arc round an organ is its health: a thick segment is one it has, a
+        thin line one it has lost. There are no words on the board.
+      </p>
+      <div style={{ ...CAP, margin: '14px 0 6px' }}>
+        The seven organs, the six ways in, and a pathogen new to the body
+      </div>
+      <div style={GROUND}>
+        {coins.map((c) => (
+          <Tile key={c.name} words={c.words}>
+            <KitPiece name={c.name} size={72} label="" />
+          </Tile>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function BoardSize(): ReactElement {
   // On the phone a piece's picture is 50 px across with the whole board in view, and a cell in
   // the bloodstream or an organ's resident smaller still. This is that, on the board's colour.
@@ -619,6 +732,12 @@ function Kit(): ReactElement {
         {big ? 'Text is at 200%. Put it back' : 'Show every word at 200%'}
       </KitButton>
 
+      <Section
+        title="The board"
+        note="New at stage L4, and not part of the kit you approved: the board itself, the organs’ and the ways in’s coins, and the pale piece with the question mark. The position is made up for this page."
+      >
+        <TheBoard />
+      </Section>
       <Section
         title="Pieces at the size they have on the board"
         note="50 px across with the whole board in view; the small one is an organ’s resident. Your cells stand on a base, and an invader never does."

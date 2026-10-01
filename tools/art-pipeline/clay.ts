@@ -17,6 +17,17 @@
  *   an invader      its body against the BOARD, and against the WELL (the bloodstream's dish)
  *   one of your cells   its body against the WELL of the base it always stands on
  *   the base        its cream RIM against the BOARD
+ *   an organ's coin its cream PICTOGRAM against the coin's own face, and against the BOARD
+ *   a way in's coin its dark PICTOGRAM against the coin's face, and the FACE against the BOARD
+ *   the unknown     as an invader, and its question mark against its own body
+ *   the board       every route, every branch, every step, every lymph node and the bloodstream's
+ *                   rim against the board's own ground, each read where geometry.json says it is;
+ *                   and that ground against the swatch the pieces were measured on
+ *
+ * A coin's face and its pictogram are told apart with the pictogram's own shape, from
+ * `clay/pictograms.ts`, laid over the render where `clay/pieces.py` put it. A shape that lay in
+ * the wrong place would mix the two colours and so read LOWER, never higher: it cannot pass a coin
+ * that should fail.
  *
  * "Its body" is the mean colour of the pixels that are fully there (alpha 0.95 or more): the
  * piece, and not the soft shadow rendered with it. A piece that fails fails the whole run.
@@ -32,8 +43,11 @@
  *   mustPass  a cream piece (about 7:1) must be ACCEPTED
  *   mustFail  a picture whose shadow is cut off at its edge must be REJECTED
  *   mustFail  a set with NO board swatch must be REJECTED, never passed for want of a ground
+ *   mustFail  a coin whose pictogram is the colour of its face must be REJECTED
+ *   mustPass  a coin with a cream pictogram on a dark face must be ACCEPTED
  *
  * Usage:
+ *   pnpm art:clay --pictograms write the coins' pictograms where clay/pieces.py reads them
  *   pnpm art:clay --ingest     clay/_png/ (Blender's output, not committed) -> clay/renders/
  *   pnpm art:clay              gate, and build packages/app/public/art/clay/ with its manifest
  *   pnpm art:clay --control    run the gate's controls, build nothing
@@ -47,6 +61,8 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import sharp from 'sharp';
+
+import { PICTOGRAMS, pictogramPng } from './clay/pictograms';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLAY = join(HERE, 'clay');
@@ -155,6 +171,49 @@ async function grounds(read: (name: string) => Buffer | null): Promise<Grounds> 
   return { board: ring(s, 0, 0.6), well: ring(b, 0, 0.4), rim: ring(b, 0.54, 0.59) };
 }
 
+/**
+ * THE MARKED PICTURES: a coin with a pictogram, or the unknown pathogen with its question mark.
+ * `pic` is the half-width of the square the pictogram is drawn in and `face` the radius of what
+ * it lies on, both as fractions of the picture's half-width. They are clay/pieces.py's own numbers
+ * (ORGAN_R and ORGAN_PIC, ENTRY_R and ENTRY_PIC, MARK_PIC) times the board view's scale: a model
+ * is drawn at 0.23 in a picture 0.9 wide.
+ */
+const MODEL = 0.23 / 0.45;
+type MarkKind = 'organ' | 'entry' | 'unknown';
+const markOf = (name: string): { kind: MarkKind; pic: number; face: number } | null =>
+  name.startsWith('organ-')
+    ? { kind: 'organ', pic: 0.95 * MODEL, face: 1.3 * MODEL }
+    : name.startsWith('entry-')
+      ? { kind: 'entry', pic: 0.826 * MODEL, face: 1.087 * MODEL }
+      : name === 'unknown'
+        ? { kind: 'unknown', pic: 0.88 * MODEL, face: 1.0 * MODEL }
+        : null;
+
+/** The pictogram's colour and its face's, read through the pictogram's own shape. */
+async function marked(
+  p: Pixels,
+  shape: Buffer,
+  m: { pic: number; face: number },
+): Promise<{ pictogram: Rgb; face: Rgb }> {
+  const size = Math.round(m.pic * p.width);
+  const mask = await pixels(await sharp(shape).resize(size, size).png().toBuffer());
+  const x0 = Math.round((p.width - size) / 2);
+  const y0 = Math.round((p.height - size) / 2);
+  const inMask = (x: number, y: number): number | null => {
+    const mx = x - x0;
+    const my = y - y0;
+    if (mx < 0 || my < 0 || mx >= size || my >= size) return null;
+    return mask.data[(my * size + mx) * 4 + 3] ?? 0;
+  };
+  // Well inside the pictogram, and well clear of it: the pixels along its outline are a blend.
+  const pictogram = mean(p, (x, y, a) => a >= SOLID && (inMask(x, y) ?? 0) >= 250);
+  const face = mean(p, (x, y, a) => {
+    const d = Math.hypot(x - p.width / 2, y - p.height / 2) / (p.width / 2);
+    return a >= SOLID && d <= m.face * 0.82 && (inMask(x, y) ?? 0) <= 2;
+  });
+  return { pictogram, face };
+}
+
 interface Measured {
   body: string;
   share: number;
@@ -167,13 +226,31 @@ interface Verdict {
   measured: Measured;
   failures: string[];
 }
-async function judge(name: string, input: Buffer, g: Grounds): Promise<Verdict> {
+async function judge(
+  name: string,
+  input: Buffer,
+  g: Grounds,
+  /** The pictogram's shape, for a marked picture. Controls hand in their own. */
+  shape: Buffer | null = null,
+  /** The mark is found by its place in the picture, which is known only for the view from above. */
+  view: View = 'board',
+): Promise<Verdict> {
   const p = await pixels(input);
   const against: Record<string, number> = {};
   let colour: Rgb & { share: number };
+  const m = view === 'board' ? markOf(name) : null;
   if (name === BASE) {
     colour = { ...g.rim, share: 0 };
     against['board'] = round2(contrast(g.rim, g.board));
+  } else if (m && m.kind !== 'unknown') {
+    // A gate with no shape has not found the pictogram, and must say so rather than pass.
+    const mask = shape ?? (await pictogramPng(name, 512));
+    const { pictogram, face } = await marked(p, mask, m);
+    colour = { ...face, share: body(p).share };
+    against['pictogram on its coin'] = round2(contrast(pictogram, face));
+    if (m.kind === 'organ')
+      against['pictogram on the board'] = round2(contrast(pictogram, g.board));
+    else against['board'] = round2(contrast(face, g.board));
   } else {
     colour = body(p);
     if (CELLS.has(name)) against['well'] = round2(contrast(colour, g.well));
@@ -181,12 +258,19 @@ async function judge(name: string, input: Buffer, g: Grounds): Promise<Verdict> 
       against['board'] = round2(contrast(colour, g.board));
       against['well'] = round2(contrast(colour, g.well));
     }
+    if (m) {
+      const mask = shape ?? (await pictogramPng(name, 512));
+      const { pictogram, face } = await marked(p, mask, m);
+      against['mark on its body'] = round2(contrast(pictogram, face));
+    }
   }
   const failures = Object.entries(against)
     .filter(([, v]) => v < MIN_CONTRAST)
-    .map(
-      ([ground, v]) => `${name}: ${v.toFixed(2)}:1 against the ${ground}, under ${MIN_CONTRAST}:1`,
-    );
+    .map(([what, v]) => {
+      // "the board" and "the well" are grounds; the rest name the pair measured.
+      const said = what === 'board' || what === 'well' ? `against the ${what}` : `for its ${what}`;
+      return `${name}: ${v.toFixed(2)}:1 ${said}, under ${MIN_CONTRAST}:1`;
+    });
   const edge = edgeOf(p);
   if (edge > EDGE_MAX)
     failures.push(`${name}: CUT OFF AT ITS EDGE, ${edge} of 255 there, over ${EDGE_MAX}`);
@@ -203,8 +287,8 @@ async function judge(name: string, input: Buffer, g: Grounds): Promise<Verdict> 
 const EDGE_MAX = 3;
 const FEATHER = 0.1;
 const HAZE = 5;
-function feather(p: Pixels): void {
-  const band = Math.max(1, Math.round(p.width * FEATHER));
+function feather(p: Pixels, share = FEATHER): void {
+  const band = Math.max(1, Math.round(p.width * share));
   for (let y = 0; y < p.height; y += 1)
     for (let x = 0; x < p.width; x += 1) {
       const i = (y * p.width + x) * 4 + 3;
@@ -250,6 +334,19 @@ async function ingest(): Promise<void> {
       n += 1;
     }
   }
+  const table = join(PNG, 'table', `${TABLE}.png`);
+  if (existsSync(table)) {
+    mkdirSync(join(RENDERS, 'table'), { recursive: true });
+    const px = await pixels(readFileSync(table));
+    // The board reaches nearly to the picture's edge, so only a thin band is faded: enough for
+    // its shadow to end softly, and nowhere near the rim.
+    feather(px, TABLE_FEATHER);
+    const out = await sharp(px.data, { raw: { width: px.width, height: px.height, channels: 4 } })
+      .webp({ lossless: true, effort: 4 })
+      .toBuffer();
+    writeFileSync(join(RENDERS, 'table', `${TABLE}.webp`), out);
+    n += 1;
+  }
   if (n === 0)
     throw new Error(
       `nothing under ${relative(HERE, PNG)}: render in Blender first (clay/pieces.py)`,
@@ -257,9 +354,141 @@ async function ingest(): Promise<void> {
   console.log(`ingested ${n} renders into ${relative(HERE, RENDERS)}`);
 }
 
+/**
+ * THE BOARD'S OWN PICTURE (stage L4). It is not a piece: it is what the pieces are seen on, and
+ * its lines are what a player follows. So it is read at the places geometry.json gives, the one
+ * source of where things are, with the margin clay/board.py drew round them.
+ */
+const TABLE = 'board';
+const TABLE_WIDTH = 400;
+const TABLE_FEATHER = 0.012;
+/** How far the board's ground may sit from the swatch the pieces were measured on. */
+const GROUND_DRIFT = 1.15;
+type Pt = { x: number; y: number };
+interface Geometry {
+  VIEWBOX: { x: number; y: number; w: number; h: number };
+  HUB: Pt;
+  ORGAN_POS: Record<string, Pt>;
+  ROUTE: Record<string, Record<string, Pt>>;
+  BRANCH: Record<string, Record<string, Pt>>;
+}
+const REPO = join(HERE, '../..');
+const geometry = (): Geometry =>
+  JSON.parse(
+    readFileSync(join(REPO, 'packages/content/src/board/geometry.json'), 'utf8'),
+  ) as Geometry;
+const rules = (): { LYMPH_GROUP: Record<string, string | null>; LYMPH_STEP: number } =>
+  JSON.parse(readFileSync(join(REPO, 'packages/content/src/rules/board.json'), 'utf8')) as {
+    LYMPH_GROUP: Record<string, string | null>;
+    LYMPH_STEP: number;
+  };
+/** A number clay/board.py wrote down, read from that file so there is one place it is written. */
+function boardPy(name: string): number {
+  const m = new RegExp(`^${name} = ([0-9.]+)`, 'm').exec(
+    readFileSync(join(CLAY, 'board.py'), 'utf8'),
+  );
+  if (!m?.[1]) throw new Error(`clay/board.py names no ${name}`);
+  return Number(m[1]);
+}
+
+async function judgeTable(input: Buffer, g: Grounds): Promise<Verdict> {
+  const p = await pixels(input);
+  const geo = geometry();
+  const rule = rules();
+  const pad = boardPy('PAD');
+  const perUnit = p.width / (geo.VIEWBOX.w + pad * 2);
+  /** Mean colour within `r` board units of a board position. */
+  const at = (c: Pt, r: number): Rgb => {
+    const cx = (c.x - (geo.VIEWBOX.x - pad)) * perUnit;
+    const cy = (c.y - (geo.VIEWBOX.y - pad)) * perUnit;
+    return mean(p, (x, y, a) => a >= SOLID && Math.hypot(x - cx, y - cy) <= r * perUnit);
+  };
+  const mid = (a: Pt, b: Pt): Pt => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  const angle = (c: Pt): number => Math.atan2(c.y - geo.HUB.y, c.x - geo.HUB.x);
+  const polar = (rad: number, th: number): Pt => ({
+    x: geo.HUB.x + rad * Math.cos(th),
+    y: geo.HUB.y + rad * Math.sin(th),
+  });
+
+  // THE GROUND: bare board half way between each pair of neighbouring branches, out where they
+  // have spread apart. Read in several places because the lamps do not light it evenly.
+  const ends = Object.values(geo.ORGAN_POS).sort((a, b) => angle(a) - angle(b));
+  const bare: Rgb[] = [];
+  ends.slice(1).forEach((b, i) => {
+    const a = ends[i];
+    if (!a) return;
+    const rad = Math.hypot(a.x - geo.HUB.x, a.y - geo.HUB.y) * 0.9;
+    bare.push(at(polar(rad, (angle(a) + angle(b)) / 2), 6));
+  });
+  if (bare.length === 0) throw new Error('no bare board was found to measure the lines against');
+  const ground = {
+    r: bare.reduce((n, c) => n + c.r, 0) / bare.length,
+    g: bare.reduce((n, c) => n + c.g, 0) / bare.length,
+    b: bare.reduce((n, c) => n + c.b, 0) / bare.length,
+  };
+  /** The WORST of a set against the ground: one faint route is a route a player cannot follow. */
+  const worst = (colours: Rgb[]): number =>
+    round2(Math.min(...colours.map((c) => contrast(c, ground))));
+  const stepsOf = (t: Record<string, Pt>): Pt[] =>
+    Object.keys(t)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => t[k])
+      .filter((c): c is Pt => c !== undefined);
+  const between = (t: Record<string, Pt>): Pt[] => {
+    const st = stepsOf(t);
+    return st.slice(1).map((b, i) => mid(st[i] ?? b, b));
+  };
+  const routeLines = Object.values(geo.ROUTE).flatMap((t) => between(t).map((c) => at(c, 2.5)));
+  const branchLines = Object.values(geo.BRANCH).flatMap((t) => between(t).map((c) => at(c, 2.5)));
+  const lymph: Rgb[] = [];
+  const steps: Rgb[] = [];
+  for (const [lane, t] of Object.entries(geo.ROUTE))
+    for (const [k, c] of Object.entries(t))
+      (rule.LYMPH_GROUP[lane] && Number(k) === rule.LYMPH_STEP ? lymph : steps).push(at(c, 5));
+  for (const t of Object.values(geo.BRANCH)) for (const c of Object.values(t)) steps.push(at(c, 5));
+  for (const c of Object.values(geo.ORGAN_POS)) steps.push(at(c, 5));
+  const rimAt = (boardPy('HUB_R') + boardPy('HUB_WELL_R')) / 2;
+  const rim = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => at(polar(rimAt, (i * Math.PI) / 4 + 0.2), 1.5));
+
+  const against: Record<string, number> = {
+    'routes on the board': worst(routeLines),
+    'branches on the board': worst(branchLines),
+    'steps on the board': worst(steps),
+    'lymph nodes on the board': worst(lymph),
+    "bloodstream's rim on the board": worst(rim),
+  };
+  const failures = Object.entries(against)
+    .filter(([, v]) => v < MIN_CONTRAST)
+    .map(([what, v]) => `${TABLE}: ${v.toFixed(2)}:1 for its ${what}, under ${MIN_CONTRAST}:1`);
+  // The pieces were measured against the swatch. The board they are seen on must be that ground.
+  const drift = round2(contrast(ground, g.board));
+  if (drift > GROUND_DRIFT)
+    failures.push(
+      `${TABLE}: THE BOARD IS NOT THE GROUND THE PIECES WERE MEASURED ON, ${hex(ground)} here and ${hex(g.board)} in the swatch, ${drift}:1 apart, over ${GROUND_DRIFT}:1`,
+    );
+  const edge = edgeOf(p);
+  if (edge > EDGE_MAX)
+    failures.push(`${TABLE}: CUT OFF AT ITS EDGE, ${edge} of 255 there, over ${EDGE_MAX}`);
+  return {
+    measured: { body: hex(ground), share: round2(body(p).share), edge, against },
+    failures,
+  };
+}
+
+const kindOf = (name: string): Asset['kind'] =>
+  name === BASE
+    ? 'base'
+    : CELLS.has(name)
+      ? 'cell'
+      : name.startsWith('organ-')
+        ? 'organ'
+        : name.startsWith('entry-')
+          ? 'entry'
+          : 'invader';
+
 interface Asset {
-  view: View;
-  kind: 'cell' | 'invader' | 'base';
+  view: View | 'table';
+  kind: 'cell' | 'invader' | 'base' | 'organ' | 'entry' | 'board';
   displayPx: number;
   measured: Measured;
   source: { file: string; sha256: string };
@@ -285,7 +514,7 @@ async function build(
       if (name === SWATCH) continue; // measured, never shipped
       const input = read(view, name);
       if (!input) continue;
-      const v = await judge(name, input, g);
+      const v = await judge(name, input, g, null, view);
       failures.push(...v.failures.map((f) => `[${view}] ${f}`));
       const displayPx = VIEWS[view];
       const out: Asset['files'] = {};
@@ -303,13 +532,41 @@ async function build(
       }
       assets[`${view}/${name}`] = {
         view,
-        kind: name === BASE ? 'base' : CELLS.has(name) ? 'cell' : 'invader',
+        kind: kindOf(name),
         displayPx,
         measured: v.measured,
         source: { file: `renders/${view}/${name}.webp`, sha256: sha(input) },
         files: out,
       };
     }
+  }
+  const tableFile = join(RENDERS, 'table', `${TABLE}.webp`);
+  if (existsSync(tableFile)) {
+    const input = readFileSync(tableFile);
+    const v = await judgeTable(input, g);
+    failures.push(...v.failures.map((x) => `[table] ${x}`));
+    mkdirSync(join(outDir, 'table'), { recursive: true });
+    const out: Asset['files'] = {};
+    for (const scale of [1, 2, 3]) {
+      const px = TABLE_WIDTH * scale;
+      const buf = await sharp(input)
+        .resize({ width: px, kernel: 'lanczos3' })
+        .webp({ quality: 88, alphaQuality: 100, effort: 4 })
+        .toBuffer();
+      const file = `${TABLE}@${scale}x.webp`;
+      writeFileSync(join(outDir, 'table', file), buf);
+      out[`${scale}x`] = { file: `table/${file}`, px, bytes: buf.length, sha256: sha(buf) };
+      files += 1;
+      bytes += buf.length;
+    }
+    assets[`table/${TABLE}`] = {
+      view: 'table',
+      kind: 'board',
+      displayPx: TABLE_WIDTH,
+      measured: v.measured,
+      source: { file: `renders/table/${TABLE}.webp`, sha256: sha(input) },
+      files: out,
+    };
   }
   const manifest = {
     generator: 'tools/art-pipeline/clay.ts',
@@ -386,6 +643,86 @@ async function control(): Promise<boolean> {
     refused,
     refused ? 'refused to measure' : 'MEASURED AGAINST NOTHING',
   );
+
+  // A COIN, made here: a flat face with the heart's pictogram laid on it where pieces.py lays it.
+  const coin = async (face: Rgb, pictogram: Rgb): Promise<Buffer> => {
+    const size = 300;
+    const m = markOf('organ-heart');
+    if (!m) throw new Error('the control has no coin to make');
+    const side = Math.round(m.pic * size);
+    const rgb = (c: Rgb): string => `rgb(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)})`;
+    const shape = await sharp(await pictogramPng('organ-heart', side))
+      .ensureAlpha()
+      .raw()
+      .toBuffer();
+    for (let i = 0; i < shape.length; i += 4) {
+      shape[i] = Math.round(pictogram.r);
+      shape[i + 1] = Math.round(pictogram.g);
+      shape[i + 2] = Math.round(pictogram.b);
+    }
+    const tinted = await sharp(shape, { raw: { width: side, height: side, channels: 4 } })
+      .png()
+      .toBuffer();
+    const disc = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${size / 2}" cy="${size / 2}" r="${(m.face * size) / 2}" fill="${rgb(face)}"/></svg>`;
+    return sharp(Buffer.from(disc))
+      .composite([{ input: tinted }])
+      .png()
+      .toBuffer();
+  };
+  const dark = { r: 150, g: 60, b: 60 };
+  const blank = await judge('organ-heart', await coin(dark, dark), g);
+  // It fails twice over (a dark pictogram is also lost on the board); what is asked is that one
+  // of the reasons given is the pictogram on its own coin.
+  const forMark = blank.failures.some((x) => x.includes('pictogram on its coin'));
+  line(
+    'mustFail, a coin whose pictogram is the colour of its face',
+    forMark,
+    `${blank.measured.against['pictogram on its coin']}:1 for the pictogram on its coin, ${forMark ? 'rejected for it' : 'NOT REJECTED FOR IT'}`,
+  );
+  const clear = await judge('organ-heart', await coin(dark, { r: 255, g: 246, b: 234 }), g);
+  line(
+    'mustPass, a cream pictogram on a dark coin',
+    clear.failures.length === 0,
+    `${clear.measured.against['pictogram on its coin']}:1 for the pictogram on its coin, ${clear.failures.length === 0 ? 'accepted' : 'REJECTED'}`,
+  );
+
+  // A BOARD, made here: one flat colour. It has no route, no branch and no step to follow.
+  const flat = async (c: Rgb): Promise<Buffer> =>
+    sharp({
+      create: {
+        width: 600,
+        height: 591,
+        channels: 4,
+        background: { r: Math.round(c.r), g: Math.round(c.g), b: Math.round(c.b), alpha: 1 },
+      },
+    })
+      .png()
+      .toBuffer();
+  const bare = await judgeTable(await flat(g.board), g);
+  const noRoutes = bare.failures.some((x) => x.includes('routes on the board'));
+  line(
+    'mustFail, a board with nothing drawn on it',
+    noRoutes,
+    `${bare.measured.against['routes on the board']}:1 for its routes, ${noRoutes ? 'rejected for them' : 'NOT REJECTED FOR THEM'}`,
+  );
+  const pale = await judgeTable(await flat({ r: 120, g: 160, b: 165 }), g);
+  const drifted = pale.failures.some((x) =>
+    x.includes('NOT THE GROUND THE PIECES WERE MEASURED ON'),
+  );
+  line(
+    'mustFail, a board that is not the colour the pieces were measured on',
+    drifted,
+    drifted ? 'rejected for its ground' : 'NOT REJECTED FOR ITS GROUND',
+  );
+  const tableFile = join(RENDERS, 'table', `${TABLE}.webp`);
+  if (existsSync(tableFile)) {
+    const real = await judgeTable(readFileSync(tableFile), g);
+    line(
+      'mustPass, the board as rendered',
+      real.failures.length === 0,
+      `routes ${real.measured.against['routes on the board']}:1, steps ${real.measured.against['steps on the board']}:1, ${real.failures.length === 0 ? 'accepted' : 'REJECTED'}`,
+    );
+  }
   return ok;
 }
 
@@ -462,7 +799,7 @@ async function check(): Promise<{ problems: string[]; pictures: number; files: n
       const input = read(view, name);
       const asset = manifest.assets[key];
       if (!input) continue;
-      const v = await judge(name, input, g);
+      const v = await judge(name, input, g, null, view);
       if (v.failures.length > 0)
         problems.push(...v.failures.map((f) => `CONTRAST GATE: [${view}] ${f}`));
       if (!asset) {
@@ -500,6 +837,36 @@ async function check(): Promise<{ problems: string[]; pictures: number; files: n
         `THE KIT'S COLOUR IS NOT THE MEASURED ONE: tokens.ts has the ${ground} as ${m[1]}, the renders measure ${measuredGrounds[ground]}`,
       );
   }
+  const tableFile = join(RENDERS, 'table', `${TABLE}.webp`);
+  if (existsSync(tableFile)) {
+    const key = `table/${TABLE}`;
+    seen.add(key);
+    const input = readFileSync(tableFile);
+    const asset = manifest.assets[key];
+    const v = await judgeTable(input, g);
+    problems.push(...v.failures.map((x) => `CONTRAST GATE: [table] ${x}`));
+    if (!asset) problems.push(`A RENDER IS NOT IN THE MANIFEST: ${key}`);
+    else {
+      if (JSON.stringify(asset.measured) !== JSON.stringify(v.measured))
+        problems.push(
+          `MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} measures ${JSON.stringify(v.measured)}, the manifest says ${JSON.stringify(asset.measured)}`,
+        );
+      if (asset.source.sha256 !== sha(input))
+        problems.push(
+          `MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} was built from a different render`,
+        );
+      for (const out of Object.values(asset.files)) {
+        const file = join(OUT, out.file);
+        files += 1;
+        if (!existsSync(file))
+          problems.push(`OUTPUT IS NOT WHAT THE MANIFEST RECORDS: ${out.file} is missing`);
+        else if (sha(readFileSync(file)) !== out.sha256)
+          problems.push(
+            `OUTPUT IS NOT WHAT THE MANIFEST RECORDS: ${out.file} is not the file that was built`,
+          );
+      }
+    }
+  }
   for (const key of Object.keys(manifest.assets))
     if (!seen.has(key))
       problems.push(`MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} has no render`);
@@ -507,7 +874,15 @@ async function check(): Promise<{ problems: string[]; pictures: number; files: n
 }
 
 const arg = (flag: string): boolean => process.argv.includes(flag);
-if (arg('--ingest')) {
+if (arg('--pictograms')) {
+  // What clay/pieces.py lays on the coins. Not committed: they are remade from pictograms.ts.
+  mkdirSync(join(PNG, 'tex'), { recursive: true });
+  for (const name of Object.keys(PICTOGRAMS))
+    writeFileSync(join(PNG, 'tex', `${name}.png`), await pictogramPng(name, 512));
+  console.log(
+    `wrote ${Object.keys(PICTOGRAMS).length} pictograms into ${relative(HERE, join(PNG, 'tex'))}`,
+  );
+} else if (arg('--ingest')) {
   await ingest();
 } else if (arg('--check')) {
   const r = await check();

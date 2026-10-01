@@ -22,17 +22,21 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * preview is the check: a reload with the network cut must render and play.
  */
 /**
- * THE CLAY ART IS NOT A PLAYER'S DOWNLOAD YET (stage L3, docs/LOOK_PLAN.md §13). The offline
- * rule above stores everything the game needs on the phone at the first visit. The Clay pieces
- * (147 pictures, 1.35 MB) and the kit page that shows them are needed by no screen a player has:
- * the screens are replaced at L4 and L5. Until then they are served, so the kit page works, and
- * kept out of the worker's list, so no player pays for art no screen shows.
+ * THE CLAY ART, AND WHAT OF IT A PLAYER'S PHONE STORES (docs/LOOK_PLAN.md §13 and §14). The
+ * offline rule above stores everything the game needs at the first visit, and only that.
  *
- * REMOVE THIS WHEN THE PLAY SCREEN USES THE CLAY PIECES (L4): from that day they are part of
- * "everything the game needs", and leaving them out would break play with no network.
- * `entries-build.test.ts` holds it both ways meanwhile: the kit page builds, and the worker's list
- * names nothing of the kit.
+ * FROM STAGE L4 THE BOARD IS DRAWN IN CLAY, so its pictures are part of "everything the game
+ * needs": the board itself, and each piece, organ and way in at the one size the board draws
+ * them (`CLAY_ON_THE_BOARD`). Leaving them out would break play with no network.
+ *
+ * WHAT IS STILL NOT STORED: the kit page, the pieces' pictures for a card, and the smaller sizes of
+ * the board's pictures, which only the kit page shows. No screen a player has uses them yet; they
+ * join this list as the panels (L4) and the other screens (L5) are redrawn.
+ *
+ * `entries-build.test.ts` holds it both ways: every picture the board draws is in the worker's
+ * list, and nothing else of the kit is.
  */
+const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*'];
 const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kit-*'];
 
 export default defineConfig({
@@ -44,9 +48,9 @@ export default defineConfig({
       // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
       // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
       injectRegister: false,
-      // The art the screens use: the icons at the top of `art/` and the anatomy frame. NOT
-      // `art/clay/`, see CLAY_NOT_YET below.
-      includeAssets: ['art/*', 'art/frame/**/*', 'fonts/**/*'],
+      // The art the screens use: the icons at the top of `art/`, the anatomy frame, and the Clay
+      // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
+      includeAssets: ['art/*', 'art/frame/**/*', ...CLAY_ON_THE_BOARD, 'fonts/**/*'],
       manifest: {
         name: 'The Immunity Wars',
         short_name: 'Immunity Wars',

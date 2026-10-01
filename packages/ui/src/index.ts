@@ -1,17 +1,17 @@
 /**
  * @immunity-wars/ui
  *
- * React components. First real occupant: the P2.2 board — an SVG derived at render time from
+ * React components. First real occupant: the board, laid out at render time from
  * `geometry.json` through content's validated loader, taking a plain `ViewState` so the same
- * component renders authoritative views and burst frames alike.
+ * component renders authoritative views and burst frames alike. Since stage L4 of the look it is
+ * drawn in Clay, as pictures on the page (`board/ClayBoard.tsx`).
  */
 
 export const PACKAGE_NAME = '@immunity-wars/ui';
 
+export { ClayBoard } from './board/ClayBoard';
 export {
-  Board,
   buildNodeModel,
-  type ArtMetrics,
   type InspectInfo,
   type InspectInvader,
   type DisplayToken,
