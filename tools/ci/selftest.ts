@@ -1688,6 +1688,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'is up to date with the content it describes',
   },
   {
+    id: 'queue-q12-the-engine-says-easy',
+    why: 'Queue Q12 (Shantanu, 1 and 2 October 2026): Training is renamed Easy, on the screens, in the printed texts and in the engine’s own messages. The engine names the difficulty in one message. With the port saying Training again, the queue’s test must FAIL saying the engine does not call it Easy (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "'On Easy, immunity comes from SURVIVING",
+        "'On Training, immunity comes from SURVIVING",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE DOES NOT CALL IT EASY',
+  },
+  {
     id: 'queue-q11-no-venom-vaccine',
     why: 'Queue Q11 (Shantanu, 30 September 2026, "do whatever is scientifically accurate"): there is no vaccine against a venom. Venom acts in minutes and even a remembered response takes days; no vaccine against one is licensed for people. An engine that took one must fail against the original as ruled.',
     file: 'packages/engine/src/actions.ts',

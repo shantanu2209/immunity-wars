@@ -1242,7 +1242,7 @@ async function walk(
   await step(page, 'difficulty', results);
   await page.evaluate(() => {
     const el = [...document.querySelectorAll('*')].find(
-      (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+      (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
     ) as HTMLElement | undefined;
     el?.click();
   });
@@ -3040,14 +3040,14 @@ async function controls(page: Page): Promise<string[]> {
         .waitForFunction(
           () =>
             [...document.querySelectorAll('*')].some(
-              (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+              (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
             ),
           { timeout: 8000 },
         )
         .catch(() => undefined);
       await p.evaluate(() => {
         const el = [...document.querySelectorAll('*')].find(
-          (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+          (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
         ) as HTMLElement | undefined;
         el?.click();
       });
@@ -3128,19 +3128,19 @@ async function playATurn(page: Page): Promise<{
     )
     .then(() => click(page, 'Start and replace'))
     .catch(() => undefined);
-  await step('Training', async () => {
+  await step('Easy', async () => {
     await page
       .waitForFunction(
         () =>
           [...document.querySelectorAll('*')].some(
-            (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+            (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
           ),
         { timeout: 8000 },
       )
       .catch(() => undefined);
     return page.evaluate(() => {
       const el = [...document.querySelectorAll('*')].find(
-        (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+        (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
       ) as HTMLElement | undefined;
       el?.click();
       return el !== undefined;
@@ -3214,14 +3214,14 @@ async function restAt641(page: Page): Promise<{ screen: string; overflow: number
     .waitForFunction(
       () =>
         [...document.querySelectorAll('*')].some(
-          (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+          (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
         ),
       { timeout: 8000 },
     )
     .catch(() => undefined);
   await page.evaluate(() => {
     const el = [...document.querySelectorAll('*')].find(
-      (x) => x.textContent?.trim() === 'Training' && x.children.length === 0,
+      (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
     ) as HTMLElement | undefined;
     el?.click();
   });
