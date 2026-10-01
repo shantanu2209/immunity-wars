@@ -85,6 +85,36 @@ export type Seat = (typeof SEATS)[number];
 export const residentSeat = (organ: string): string => `res_${organ}`;
 
 /**
+ * THE PIECE AN ACTION BELONGS TO WHEN THE ACTION ITSELF NAMES NONE (FINDINGS #94; ruled 30 September
+ * 2026). The engine needs no `cell` for these, each can only ever be that piece's, so the room
+ * cannot read whose it is from the message: antibodies are the B-Cell's, and the four attacks are
+ * their own cell's. `strike`, `degranulate`, the moves and a resident's actions name their piece,
+ * and are not here. Shared, so the room and the screens' action list cannot come to disagree.
+ */
+export const SEAT_OF_ACTION: Readonly<Record<string, Seat>> = {
+  produce: 'bcell',
+  tag: 'bcell',
+  neutralise: 'bcell',
+  engulf: 'macrophage',
+  snipe: 'tcell',
+  nkkill: 'nk',
+  net: 'neutrophil',
+};
+
+/**
+ * THE BODY'S ACTIONS, WHICH ARE THE CAPTAIN'S (ruled 26 September 2026 for the screens, 30 September
+ * for the relay): the vaccine lab, the search for the clone, ordering and giving antivenom, and the
+ * memory response. They belong to no piece.
+ */
+export const BODY_ACTIONS: ReadonlySet<string> = new Set([
+  'clonalSelection',
+  'vaccinate',
+  'orderAntivenom',
+  'antivenom',
+  'memoryKill',
+]);
+
+/**
  * THE ENGINE'S NAME FOR A MEMBER, from their public id (their join order). The room tells the
  * engine who holds what and who acts in these names, and the engine's view carries them back in
  * `players`, `captain`, `owner` and `apBudget`; a client reads its own budget with it (P3.7). Here,

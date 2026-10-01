@@ -30,9 +30,11 @@ import { applyAction, newGame, viewState } from '@immunity-wars/engine';
 import type { Action, GameState } from '@immunity-wars/engine';
 
 import {
+  BODY_ACTIONS,
   MAX_MEMBERS,
   SAY_MESSAGES,
   SEATS,
+  SEAT_OF_ACTION,
   pidOf,
   residentSeat,
   type ErrorCode,
@@ -306,8 +308,18 @@ function syncCaptain(room: RoomState): Outbound[] {
   return [viewFor(g, 'all', undoOf(room))];
 }
 
-/** The seat an action is for, or null when the action is nobody's seat in particular. */
+/**
+ * The seat an action is for, or null when the action is nobody's seat in particular.
+ *
+ * AN ACTION THAT CAN ONLY BE ONE PIECE'S IS THAT PIECE'S, WHATEVER THE MESSAGE NAMES (FINDINGS #94).
+ * The engine needs no `cell` for Produce, Coat, Neutralise or the four attacks, so until 1 October
+ * 2026 the room, reading only `cell` and `organ`, let them through from any member; and a message
+ * naming a cell its sender did hold would have passed for another's. The table comes first.
+ */
 function seatOf(action: Record<string, unknown>): string | null {
+  const name = action['action'];
+  const bound = typeof name === 'string' ? SEAT_OF_ACTION[name] : undefined;
+  if (bound !== undefined) return bound;
   const cell = action['cell'];
   if (typeof cell === 'string') return cell;
   const organ = action['organ'];
@@ -499,6 +511,9 @@ export function step(room: RoomState, msg: Inbound, now: number): Step {
       const seat = seatOf(msg.action);
       if (seat !== null && !me.seats.includes(seat))
         return refuse(room, msg.ref, msg.id, 'notYourPiece');
+      // THE BODY'S ACTIONS ARE THE CAPTAIN'S (FINDINGS #94), as the screens already have them.
+      if (typeof name === 'string' && BODY_ACTIONS.has(name) && room.captain !== me.ref)
+        return refuse(room, msg.ref, msg.id, 'notCaptain');
       const game = room.game as GameState;
       // The sender's PUBLIC id, stamped after the spread so an action cannot carry another's.
       const result = apply(game, { ...msg.action, pid: pidOfMember(me) });

@@ -4990,6 +4990,29 @@ rings only to the captain (`drawersFor` in `packages/ui/src/play/table.ts`, and 
 the room refuses body and antibody actions from anyone but their owners, as the screens already do,
 before Phase 4 ships.
 
+### ✅ The relay's half BUILT, 1 October 2026
+
+The room now reads whose an action is from the action itself, before anything the message names:
+
+- **A piece's actions that name no piece** (Produce, Coat, Neutralise for the B-Cell; Engulf, Snipe,
+  the NK kill and the NET for their cells) are refused from anyone who does not hold that piece
+  (`notYourPiece`), whatever cell the message names. Naming a cell the sender does hold no longer
+  passes for another's.
+- **The body's actions** (the vaccine lab, the search for the clone, ordering and giving antivenom,
+  the memory response) are refused from anyone but the captain (`notCaptain`).
+
+The two tables are in `packages/protocol` (`SEAT_OF_ACTION`, `BODY_ACTIONS`), so the room and the
+screens read one statement of the fact, and `tests/session/src/seat-of-action.test.ts` holds the
+screens' own list to it, both ways. No refusal code is new, so the protocol version stays at 5.
+
+**Each refusal has its permitting twin** in `packages/room/src/room.test.ts`: the holder's own action
+and the captain's reach the engine. Five controls, each seen firing, one of them a room that refuses
+the body from EVERYONE, which the permitting test catches. **On the path players take:** the Gate 1
+audit's walk of a game played together, against a local relay running this room, measured all 22
+screens through to a Result with nothing not reached.
+
+It takes effect when the relay is next deployed; the app does not change.
+
 ## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
 
 **Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).

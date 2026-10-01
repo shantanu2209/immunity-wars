@@ -10,6 +10,7 @@
 export const PACKAGE_NAME = '@immunity-wars/protocol';
 
 export {
+  BODY_ACTIONS,
   CELL_SEATS,
   ERROR_CODES,
   MAX_MEMBERS,
@@ -17,6 +18,7 @@ export {
   PROTOCOL_VERSION,
   RULES_VERSION,
   SEATS,
+  SEAT_OF_ACTION,
   pidOf,
   residentSeat,
   SAY_ID,

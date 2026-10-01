@@ -24,8 +24,10 @@ brief still governs the room and the relay, and Phase 4 cannot start before Phas
 change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
 changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
-same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). **Next, before
-Phase 4, is the relay's half of #94**, ruled to be built before Phase 4 ships. **One thing the queue
+same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). The relay's half
+of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
+actions from anyone who does not hold it, and the body's from anyone but the captain. **What stands
+between here and Phase 4 is what Phase 2 still owes**, below. **One thing the queue
 left open touched a hard rule,** the printed rules' wording for queues Q1 and Q11, and is closed:
 the rulebook, quick reference and study packet now say what the app does (`docs/FINDINGS.md` #105).
 

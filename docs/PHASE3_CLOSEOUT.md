@@ -104,7 +104,7 @@ item 1 stands at seven of nine on the phones or by check, and the phase is close
 | **The grace period on a phone** | Step 12 was not played; the room's and the hub's tests hold it |
 | **Single player offline on an iPhone** | Tried on the S25 only |
 | **Load** | No test has run many rooms at once. The relay's limits are set (for-P3 §5); what an `e2-micro` holds under them has not been measured |
-| **The relay against a modified app** | The room checks who holds a piece only for actions that name one (#94, its relay half open and unruled). The rooms are private and among friends, which is the whole of the defence today |
+| **The relay against a modified app** | The room checks who holds a piece only for actions that name one (#94, its relay half open and unruled). The rooms are private and among friends, which is the whole of the defence today. *Built 1 October 2026: the room refuses those actions from anyone but the piece's holder, and the body's from anyone but the captain* |
 | **Security beyond the automatic** | CodeQL, Dependabot and `pnpm audit` run, and the relay's inputs are bounded and schema-checked. Nobody has tried to break it |
 | **That a game survives the night** | The server reboots itself at 03:30 when a security update needs it, and a restart ends every room in memory |
 | **The cost after day 90** | Extrapolated from 104.69 hours of one month's bill; the trial credit pays until 90 days from sign-up |
@@ -195,7 +195,8 @@ and Gate 2 are owed with it ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)).
 - "Works for up to fifteen players": fifteen is the rule; two played on phones, three headless.
 - "Updates itself on phones": proven in Chrome on a computer; not yet seen on a phone.
 - "Secure against cheating": a modified app could act for pieces it does not hold, in some actions
-  (#94). The rooms are private, among friends.
+  (#94). The rooms are private, among friends. *Since 1 October the room refuses those actions; it
+  is still not a claim to make, since nothing here was built or tested as a defence against cheating.*
 - "The science was corrected in Phase 3": Kartik's rulings on the science wait in the queue (#101).
 
 **Design credit is Kartik's; the implementation is Claude's, directed by Shantanu.** That
