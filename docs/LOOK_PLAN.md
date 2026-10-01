@@ -5,7 +5,9 @@ same day: disregard low-end phones, give the game the look of the best modern mo
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
 resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0).
 
-**Stage L1 is done: he picked the Clay direction, 1 October 2026** (§11). L2 is next.
+**Stages L1, L2 and L3 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled
+the board is drawn as pictures on the page (§12), and approved the kit (§13). L4, the play screen,
+is next.
 
 ## 1. What is decided already
 
@@ -103,7 +105,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
-| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. *Ruled 1 October 2026; all three parts are built (§13) and it awaits his look, and his ear, on the kit page* |
+| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
@@ -410,3 +412,16 @@ Its own list of what each press started is what showed it.
 
 **Not held by a standing check:** that a kit button's press reaches the audio. The package has no
 way to press a button in a test; it was seen once, in the headless run above.
+
+### The kit approved, 1 October 2026
+
+Shantanu opened the kit page on his S25, with all three parts on it, and ruled: *"Tested. It's
+perfect. Please proceed."*
+
+- **That is the gate of stage L3**, and it is his judgement of what no check here could make: how
+  the pieces, the controls, the motions and the sounds look, sound and feel on the phone.
+- **Asked for no change.** The kit goes to the play screen as it stands, the measured changes above
+  included: the darker board, the rimmed bases, the dark word on the coral button.
+- **What the approval is not.** It is of the kit, on the kit page. The screens built from it are
+  judged at their own stages, and Gate 2, his approval of the whole look, is still L7's.
+- What he pressed and for how long is not recorded; only his words are.
