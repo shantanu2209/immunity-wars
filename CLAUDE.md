@@ -19,7 +19,9 @@ are replaced so the game looks like the best modern mobile games, before Phase 4
 Spec: @docs/PHASE2_BRIEF.md (v2.0). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
-to Easy, and Gate 2. **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
+board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
+measured prototype, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:

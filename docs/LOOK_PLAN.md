@@ -5,6 +5,8 @@ same day: disregard low-end phones, give the game the look of the best modern mo
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
 resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0).
 
+**Stage L1 is done: he picked the Clay direction, 1 October 2026** (§11). L2 is next.
+
 ## 1. What is decided already
 
 | # | Ruling (Shantanu, 1 October 2026) |
@@ -94,7 +96,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 
 | Stage | What is made | The gate |
 |---|---|---|
-| **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this |
+| **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, both ways (§5), on the S25 | Frame rates read; the board's technology ruled |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
@@ -134,3 +136,52 @@ and Hindi).
 4. **Portrait only**, as now: *"Yes."*
 5. **Blender** is installed, with its connector; he starts it when a stage needs it.
 6. **Bookkeeping:** this is Phase 2 resumed, under a new version of its brief: *"Yes."*
+
+## 11. L1, ruled 1 October 2026: Clay
+
+Three directions were drawn, each as the play screen, the title and a card, at 1080 × 2340, the
+S25's own screen:
+
+| | Direction | How it was made |
+|---|---|---|
+| A | Daylight: light, flat and calm | Drawn in code |
+| B | Under the lens: dark and luminous, like fluorescence microscopy | Drawn in code |
+| **C** | **Clay: soft 3D pieces on a board that looks like an object** | **Modelled and rendered in Blender** |
+
+**Shantanu picked C:** *"I love c, the clay look."* Claude had recommended B; the look is his to
+decide (§1, ruling 4), and this is that decision.
+
+| The play screen | The title | A card |
+|---|---|---|
+| ![The play screen in the Clay direction](look/l1-clay-play.webp) | ![The title in the Clay direction](look/l1-clay-title.webp) | ![A pathogen card in the Clay direction](look/l1-clay-card.webp) |
+
+**What the pictures are.** All three directions showed one position from a recorded Easy game: turn
+8 of 15, 3 of 6 Action Points left, the Monocyte selected, and its two legal moves taken from the
+engine's own move query rather than drawn by hand. Every word on them comes from the content pack.
+The board's positions were read from `packages/content/src/board/geometry.json`.
+
+**What Clay commits to.**
+
+- The seven cells, the pathogens and the board are 3D models: a soft flattened body, with the
+  nucleus, granules and receptors laid on top so that the features that tell the cells apart read
+  from above. Each drawing makes a claim a scientist can check: the monocyte's one kidney-shaped
+  nucleus, the neutrophil's lobes joined by strands, the eosinophil's two lobes and large granules,
+  the B cell's antibody receptors with stems in the membrane and arms outward, and a coated microbe's
+  antibodies the other way round, arms on the microbe and stems outward.
+- Deep teal for the table and the board, cream for the controls, coral for the bloodstream and the
+  main button, mint for what is healthy or allowed, gold for Action Points and antibodies.
+- Controls that look pressed out of the same material: thick, rounded, with a visible edge.
+- No money spent: Blender is free, the models are ours outright, and the typeface is the Nunito the
+  app already ships under the Open Font License.
+
+**What the pictures do not settle, carried forward.**
+
+1. **How clay moves.** §5 was written before the pick and names two ways to draw the board. A look
+   made of 3D models has a third, drawing the models live. Which of them L2 measures is not ruled.
+2. **The bacterium is one generic rod**, as in the present art. Cellulitis, the disease on the card,
+   is caused by round bacteria. A piece shaped to each disease needs a shape recorded in the content
+   pack, and that is Kartik's decision.
+3. **The accessibility gates were not measured on pictures.** Some labels are drawn smaller than text
+   scaled to 200% allows. The kit (L3) and the play screen (L4) are where they are held to the gates.
+4. **The typeface** is the one already shipped. Choosing one belongs to the kit.
+5. **The pictures are not app code.** Nothing under `packages/` changed for them.
