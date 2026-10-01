@@ -694,7 +694,7 @@ def catcher(name, z, size, coll):
 
 
 # ── THE BOARD VIEW: seen from straight above, under the board's own lamps ─────
-# The lamps stand where the board picture's do (tools/look-prototype/blender/clay.py), so a
+# The lamps stand where the board picture's do (the L2 prototype's, since removed), so a
 # piece's picture carries the light and the soft shadow it has on the board.
 bv = bpy.data.scenes.new(P + "board_view")
 setup_render(bv, 128)

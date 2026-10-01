@@ -20,29 +20,30 @@ Spec: @docs/PHASE2_BRIEF.md (v2.0). **The plan its stages follow is @docs/LOOK_P
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
-board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
-measured prototype, is built** (`tools/look-prototype/`: Clay drawn three ways, with a frame timer;
-plan §12) **and measured on the S25** (1 October: all three hold 60 frames a second;
-`docs/LOOK_L2_MEASUREMENT.md`). **Stage L2 is done: he ruled the board is drawn as pictures on the
-page**, Blender's renders moved as page elements, with no GPU canvas and no live 3D; 60 frames a
-second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
-measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
-then removed with `pixi.js` and `three`. **Stage L3 is done: he approved the kit on his phone on
-1 October** (*"Tested. It's perfect."*; plan §13). **L4, the play screen, is ruled and under way**
-(plan §14): built in place, so `main` is a mix of two looks and **is not deployed** until L5 is done,
-and not before L6, because the hints and the coach are switched off for the guided game to replace.
-The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `board/clay.ts` and `board/clayLayout.ts`, over
-the same model in `board/Board.tsx`), from a picture `tools/art-pipeline/clay/board.py` renders;
-the frame round it (`play/Frame.tsx`) and everything the play screen opens are drawn from the kit,
-and a redrawn file may name no colour of its own (`play/clayColours.test.ts`); the new cards and
-planning stand on a sheet of the old paper (`OldPaper`) until L5. The board plays what changed
-between one picture and the next, with one sound for it (`board/changes.ts`), and the camera moves
-in on it (`board/camera.ts`: the board drawn larger, one transform). **The measuring page is built**
-(`/measure.html`, `packages/app/src/measure.tsx`; `pnpm look:frames` on the PC) **and the Gate 1
-audit is re-aimed at the new screen and clean** (`docs/LOOK_L4_MEASUREMENT.md`; it found the app
-blank with no network, `docs/FINDINGS.md` #109, fixed before it reached `main`). **The S25
-measurement is his step and is owed**; `tools/look-prototype/` goes when it is in. He played the board, frame and panels on 1 October and has improvements to
-name later, after the look is on the server. What the kit is:
+board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2 is done:** a
+prototype drew Clay three ways and was measured on the S25 (`docs/LOOK_L2_MEASUREMENT.md`), and **he
+ruled the board is drawn as pictures on the page**, Blender's renders moved as page elements, with no
+GPU canvas and no live 3D; 60 frames a second is the target (120 is unmeasured) and the phone's tap
+test was waived, not met. On that measurement Capacitor holds, to be confirmed at L7. The prototype
+and its two libraries were removed once the play screen had been measured in its place.
+**Stage L3 is done: he approved the kit on his phone on 1 October** (*"Tested. It's perfect."*; plan
+§13). **Stage L4, the play screen, is done** (plan §14): played on his phone, the Gate 1 audit
+re-aimed at it and clean, and **measured on the S25 at 60 frames a second**
+(`docs/LOOK_L4_MEASUREMENT.md`: 6 frames of 2,324 missed one refresh; measured from `/measure.html`,
+`packages/app/src/measure.tsx`, which `pnpm look:frames` opens on the PC).
+The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `board/clay.ts` and
+`board/clayLayout.ts`, over the same model in `board/Board.tsx`), from a picture
+`tools/art-pipeline/clay/board.py` renders; the frame round it (`play/Frame.tsx`) and everything the
+play screen opens are drawn from the kit, and a redrawn file may name no colour of its own
+(`play/clayColours.test.ts`); the new cards and planning stand on a sheet of the old paper
+(`OldPaper`) until L5. The board plays what changed between one picture and the next, with one sound
+for it (`board/changes.ts`), and the camera moves in on it (`board/camera.ts`: the board drawn
+larger, one transform). **The hints and the first-game coach are switched off** until the guided
+game replaces them at L6. **He ruled the look deployed on the night of 1 October, as a mix of two
+looks** (the play screen in Clay, every other screen as it was), replacing the earlier ruling that
+kept it off the server until L6; **his review of the whole app is the next day**, and the
+improvements are his to name then. L5, the other screens, is next.
+What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`; the play screen is

@@ -1092,6 +1092,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
   },
   {
+    id: 'settings-no-guidance-row-when-off',
+    why: 'FINDINGS #111: with the coach and the hints off from stage L4, the Settings row that offers to show them again says something false, so it is not drawn when the shell gives the screen nothing to show. With the row drawn regardless, the Settings test must FAIL saying Settings offers the guidance when there is none.',
+    file: 'packages/ui/src/screens/SettingsScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        '        ...(onResetHints === null\n          ? []\n          : [',
+        '        ...(onResetHints === undefined\n          ? []\n          : [',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'SETTINGS OFFERS THE FIRST-GAME GUIDANCE WHEN THERE IS NONE TO SHOW',
+  },
+  {
     id: 'frame-banner-has-room',
     why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
     file: 'packages/ui/src/play/Frame.tsx',

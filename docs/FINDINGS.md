@@ -5509,7 +5509,7 @@ Linux it always has them, so the control fired everywhere it had been run.
 instrument defect, fixed inline**, and a control that does nothing is what the inert check was put
 into every verify to find (#100).
 
-## 111. With the coach and the hints off, Settings still offers to show them again, and says they will appear — OPEN, for L5 or L6
+## 111. With the coach and the hints off, Settings still offered to show them again, and said they would appear — FIXED 1 October 2026, before the look was deployed
 
 **Found 1 October 2026**, while the Gate 1 audit was re-aimed at the Clay play screen. Ruling 2 of
 stage L4 (`docs/LOOK_PLAN.md` §14) switched the coach and the first-encounter hints off until the
@@ -5518,7 +5518,16 @@ and its confirmation says that the coach and the short lines will appear again. 
 The row still does one thing: it brings back the difficulty screen's *Recommended for your first
 game*.
 
-**Not changed here.** It is a defect in the product, not in an instrument, so it is filed and waits
-its turn. Nothing reaches a player before it is decided: by the same ruling the new look is not put
-on the server before L6. **To decide when Settings is redrawn (L5) or when the guided game arrives
-(L6):** remove the row until then, or make it the way back into the guided game.
+**Filed, and then fixed the same evening,** because what made it safe to leave was gone. It was
+left on the ground that nothing reached a player before L6. That evening Shantanu ruled the look
+deployed now (`docs/LOOK_PLAN.md` §14), so a player would have read a row that says something
+false.
+
+**Fixed:** the row is not drawn while there is no guidance to show. The shell hands the Settings
+screen no way to show it again, and the screen draws the row only when it is handed one. The
+difficulty screen's *Recommended for your first game*, which the row also brought back, can no
+longer be brought back on a device that has played; nothing else is lost. The Gate 1 audit, which
+used to measure the row's confirmation as a screen, now records in every pass that the row is not
+there; a unit test holds the screen, and control `settings-no-guidance-row-when-off` draws the row
+regardless and sees the test fail. **To decide at L6:** whether the row comes back as the way into
+the guided game.

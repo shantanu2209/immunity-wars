@@ -5,8 +5,12 @@
 > **Ruled on these numbers, 1 October 2026: the board is drawn as pictures on the page.** The
 > ruling, and what was accepted and waived with it, is in [`LOOK_PLAN.md`](LOOK_PLAN.md) §12. What
 > is listed under Open below was open when he ruled, and stays unmeasured. The stage is
-[`LOOK_PLAN.md`](LOOK_PLAN.md) §12, and the instrument is
-[`tools/look-prototype/`](../tools/look-prototype/README.md).
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §12, and the instrument was the prototype in `tools/look-prototype/`.
+
+> **The instrument was removed on 1 October 2026**, as the ruling said it would be, once the play
+> screen itself had been measured on the S25 in its place
+> ([`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md)). It is in the repository's history, last at commit `da7ad3f`, with its
+> README. The file names below are its files, as they were.
 
 ## The Samsung Galaxy S25, 1 October 2026
 
@@ -103,7 +107,7 @@ proof that the instrument works, each way's size, and what differs between them 
 | Browser | headless Chrome 154, the real graphics chip (ANGLE on Direct3D 11, read from the page), 60 Hz |
 | Viewport | 360 × 780 CSS pixels at 3 device pixels each, the S25's; the board's box 360 × 355, drawn at 3× |
 | Served by | `vite preview` of the production build, on the same machine |
-| Driver | `tools/look-prototype/drive.ts`: it only opens the page and reads what the page measured |
+| Driver | the prototype's `drive.ts`: it only opens the page and reads what the page measured |
 | What is played | Two recordings made by the real engine (rules 4.1.0): a calm turn, 9 pictures of the game with 2 pathogens; a crowded board, 8 pictures with 42 pathogens rising to 54 |
 | Samples | 3 runs of each recording for each way: about 1,700 frames per row below |
 
@@ -155,7 +159,7 @@ in it, and shows only in the gaps between frames.
 | Pictures on a GPU canvas | 247 ms | 148 KB | 285 KB | **433 KB** | 285 KB | 7.6 MB |
 | Models drawn live | 223 ms | 151 KB | 698 KB | **849 KB** | 2,841 KB | 14.6 MB |
 
-- "Sent" is gzip, as a server sends it; read off the build by `tools/look-prototype/weigh.ts`, not
+- "Sent" is gzip, as a server sends it; read off the build by the prototype's `weigh.ts`, not
   from the browser, whose own count depends on what it already had cached. Another 50 KB (the page,
   the recording, the typeface) is shared by all three.
 - First draw is from asking for the way to its first frame, its code and art included, with the

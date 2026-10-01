@@ -113,7 +113,7 @@ export const SHADOW = {
 
 /**
  * Motion, in milliseconds, with the curve each uses. The play screen and the kit page read these;
- * the L2 measurement was taken with the same figures (tools/look-prototype/src/timeline.ts).
+ * the L2 measurement was taken with the same figures (the L2 prototype's timeline, since removed).
  */
 export const MOTION = {
   /** A control answering a finger. Under a tenth of a second (plan §3, rule 2). */

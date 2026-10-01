@@ -35,6 +35,16 @@ describe('the frame meter’s counting', () => {
     expect(summarise([VERY_SLOW_MS]).verySlow).toBe(1);
   });
 
+  // The S25's own run, 1 October 2026: five frames that each missed one refresh, at 33.2 to 33.4 ms.
+  // The second line stood at 33.4 then and counted one of the five. One missed refresh is one kind
+  // of frame, and the line must put all of them on the same side.
+  it('frames that missed one refresh are all on one side of the second line, jitter or not', () => {
+    const s = summarise([33.2, 33.3, 33.4, 33.4, 33.4, 16.7, 16.7]);
+    expect(s.slow).toBe(5);
+    expect(s.verySlow).toBe(0);
+    expect(summarise([50]).verySlow).toBe(1);
+  });
+
   it('CONTROL, must fail: a run in which every frame took 57 ms is all slow', () => {
     const s = summarise(Array.from({ length: 100 }, () => 57));
     expect(s.slow).toBe(100);

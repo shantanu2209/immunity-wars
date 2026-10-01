@@ -4,8 +4,8 @@
  *
  * It reads the time between the frames the browser actually gives the page (the timestamps
  * `requestAnimationFrame` hands out), for as long as it is left running, and says how many were
- * slow. It is the timer the L2 measurement was taken with (tools/look-prototype/src/measure.ts),
- * moved here because that prototype is removed once this has measured the real screen.
+ * slow. It is the timer the L2 measurement was taken with, moved here from the L2 prototype, which
+ * was removed once this had measured the real screen on the S25 (1 October 2026).
  *
  * WHAT COUNTS AS A SLOW FRAME: 20 ms or more between two frames, as at L2, so the two measurements
  * can be read side by side. The line ruled is 16.7 ms (60 a second), accepted as the target at L2
@@ -22,8 +22,17 @@
  * with it on, slow frames MUST be reported, or the meter is not measuring.
  */
 export const SLOW_MS = 20;
-/** Two missed refreshes at 60 a second. */
-export const VERY_SLOW_MS = 33.4;
+/**
+ * MORE THAN ONE REFRESH MISSED, at 60 a second: halfway between one missed (33.3 ms) and two
+ * (50 ms).
+ *
+ * It was 33.4, and the S25's own run showed what was wrong with that (1 October 2026): a frame
+ * that misses one refresh arrives at 33.3 ms give or take the timer's jitter, so a line at 33.4
+ * cut through the middle of them. Five frames of 33.2 to 33.4 ms were counted as one "of 33 ms or
+ * more" and four not, and the count said nothing. A line belongs between the things it separates,
+ * not on one of them.
+ */
+export const VERY_SLOW_MS = 41.7;
 
 export interface FrameStats {
   frames: number;
@@ -35,7 +44,7 @@ export interface FrameStats {
   worst: number;
   /** Frames that took 20 ms or more. */
   slow: number;
-  /** Frames that took 33.4 ms or more. */
+  /** Frames that took 41.7 ms or more: more than one refresh missed. */
   verySlow: number;
 }
 

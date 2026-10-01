@@ -274,7 +274,10 @@ function Measure(): ReactElement {
               what="Slow frames (20 ms or more)"
               value={`${String(r.all.slow)} of ${String(r.all.frames)}`}
             />
-            <Row what="Of them, 33 ms or more" value={String(r.all.verySlow)} />
+            <Row
+              what="Of them, more than one refresh missed (42 ms or more)"
+              value={String(r.all.verySlow)}
+            />
             <Row
               what="A frame: middle, 95th, 99th of a hundred, worst"
               value={`${String(r.all.median)} / ${String(r.all.p95)} / ${String(r.all.p99)} / ${String(r.all.worst)} ms`}

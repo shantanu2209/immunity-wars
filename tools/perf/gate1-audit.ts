@@ -725,6 +725,33 @@ const HELP_PROBE = `(() => ({
   hint: document.querySelector('[data-hint]') !== null,
 }))()`;
 
+/**
+ * AND SETTINGS DOES NOT OFFER TO SHOW IT AGAIN (docs/FINDINGS.md #111). The row "First game
+ * guidance: show it again" says the coach and the hints will appear, which is false while they are
+ * off, so the row is not drawn. The row was a screen of this walk (its confirmation); it is now a
+ * check that it is not there, recorded as a row in every pass.
+ */
+function guidanceRowResult(present: boolean): ScreenResult {
+  const screen = 'settings, with a save: the first-game guidance is not offered';
+  return {
+    screen,
+    controls: 0,
+    textRuns: 0,
+    findings: present
+      ? [
+          {
+            check: 'touch' as const,
+            screen,
+            path: '',
+            text: '',
+            detail:
+              'SHOWING, AND RULED OFF: Settings offers to show the first-game guidance again (docs/FINDINGS.md #111)',
+          },
+        ]
+      : [],
+  };
+}
+
 function helpOffResult(where: string, seen: { coach: boolean; hint: boolean }): ScreenResult {
   const screen = `${where}: the coach and the hints are off`;
   const showing = [...(seen.coach ? ['the coach'] : []), ...(seen.hint ? ['a hint'] : [])];
@@ -1600,15 +1627,18 @@ async function walk(
       await click(page, 'Keep');
       await sleep(150);
     }
-    // The hints reset row (P2.6, ruling 5). Live by now, because the walk has already dismissed
-    // a hint, so this also measures the row in its ENABLED state rather than only disabled.
-    if (await clickSel(page, '[data-settings-row=resetHints] button')) {
+    // The hints reset row (P2.6, ruling 5) was measured here with its confirmation. From stage L4
+    // the coach and the hints are off and the row is not drawn (docs/FINDINGS.md #111): what is
+    // recorded is that it is not there. If it is, that is a finding, and it is still measured.
+    const guidanceRow = await page.evaluate(
+      () => document.querySelector('[data-settings-row=resetHints]') !== null,
+    );
+    results.push(guidanceRowResult(guidanceRow));
+    if (guidanceRow && (await clickSel(page, '[data-settings-row=resetHints] button'))) {
       await sleep(200);
       await step(page, 'settings, hints reset confirm', results);
       await click(page, 'Keep');
       await sleep(150);
-    } else {
-      results.push(notReached('settings, hints reset confirm'));
     }
     await closeLevel(page);
   }
@@ -2936,6 +2966,14 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'help off passes: a page with neither is NOT reported',
     helpOffResult('x', { coach: false, hint: false }).findings.length === 0,
+  );
+  line(
+    'help off fires: a Settings row that offers the guidance again is reported',
+    guidanceRowResult(true).findings.some((f) => f.detail.startsWith('SHOWING, AND RULED OFF')),
+  );
+  line(
+    'help off passes: Settings without that row is NOT reported',
+    guidanceRowResult(false).findings.length === 0,
   );
   await page.evaluate(() => {
     const planted = document.createElement('div');

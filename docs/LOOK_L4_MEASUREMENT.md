@@ -7,33 +7,62 @@
 
 ## Open
 
-1. **The S25 has not been measured.** It is Shantanu's step, and the table below is empty until he
-   runs it. Until then nothing is known about the frame rate of the new play screen on a phone, and
-   the camera, which stage L2 never exercised, is the part in question.
-2. **120 frames a second is unmeasured**, as at L2. The line is 60.
-3. **The audit is a headless Chrome on the PC.** It measures sizes, colours, layout and what the
+*The S25 was measured the evening this was written, and leads; the PC follows.*
+
+1. **One run, of three turns.** The S25 was measured once. At L2 each way had three runs pooled.
+2. **120 frames a second is unmeasured**, as at L2. The phone ran the page at 60, and the line is 60.
+3. **In a browser tab, not in the app's own shell.** The plan measures again at L7, in the shell,
+   on the finished screens; that is where Capacitor against React Native is confirmed.
+4. **The audit is a headless Chrome on the PC.** It measures sizes, colours, layout and what the
    service worker serves. It does not measure a finger, an eye or an ear.
-4. **How the screen looks, moves and sounds** is his to judge, and is not measured by anything here.
+5. **How the screen looks, moves and sounds** is his to judge, and is not measured by anything here.
 
-## The Samsung Galaxy S25: not yet measured
+## The Samsung Galaxy S25, 1 October 2026
 
-**How it is run.** The PC serves the built app on the home network; on the phone, in Chrome, open
-`/measure.html` at the PC's address, press **Measure**, and leave the phone alone for about 40
-seconds. The page plays three turns of a real game by itself and shows what it counted. A phone
-that has opened the app before shows the app's title for two or three seconds first and then
-changes to the measuring page by itself (measured, below).
+Run by Shantanu on his phone at 22:59: the production build served on the home network,
+`/measure.html` opened in a Chrome tab, **Measure** pressed once, the phone left alone. Read from
+his screenshot of the page's own result.
 
 | | The S25 |
 |---|---|
-| The screen refreshes every | |
-| Played: moves, spreads, times the camera moved in | |
-| Frames, and how long | |
-| Slow frames (20 ms or more) | |
-| Of them, 33 ms or more | |
-| A frame: middle, 95th and 99th of a hundred, worst | |
-| While the camera was moving or in: slow frames, and worst | |
-| The slowest five, and when | |
-| Tasks over 50 ms | |
+| Browser | Chrome 154 for Android, in an ordinary tab |
+| The screen refreshes every | **16.7 ms: 60 frames a second**, as at L2 |
+| Played | 9 moves, 3 spreads; the camera moved in 6 times |
+| Frames, and how long | 2,324 in 38.8 s |
+| Slow frames (20 ms or more) | **6 of 2,324** |
+| A frame: middle, 95th and 99th of a hundred, worst | 16.7, 16.7, 16.8, **33.4 ms** |
+| While the camera was moving or in | 4 slow of 741; worst 33.4 ms |
+| The slowest five, and when | 33.4 ms at 4.9 s; 33.4 and 33.4 at 6.4 s, the camera; 33.3 at 32.2 s, the camera; 33.2 at 18.5 s, the camera |
+| Tasks over 50 ms | 0 |
+
+- **It holds 60 frames a second.** 2,318 of 2,324 frames came on time. Each of the six that did not
+  missed one refresh: the worst frame of the run is 33.4 ms, which is two refreshes of 16.7. None
+  missed two.
+- **The camera costs four of the six,** in 741 frames. Two are together at 6.4 s, where the camera
+  moves in for the first time in the game; the other two are one each in the second and third
+  turns' spreads. The PC had pointed at that first move, and it is there on the phone too, as two
+  missed refreshes and not as the 36 to 54 ms the PC drew.
+- **What the PC drew at 2.2 s, as the command stage opens, is not among the phone's slowest five.**
+  The sixth slow frame is not named by the card; it is 33.2 ms or less.
+- **Under the ruling of L2, that a way marginally over is weighed before it is rejected:** six
+  single missed refreshes in 39 seconds of play, 0.26% of frames, and he had played the same build
+  by hand and called it very smooth. **On this measurement the camera stays as built:** the plan
+  cuts it back only if the phone cannot hold 60 with it, and it holds. No GPU canvas is in question.
+- **At L2 the prototype, pieces alone, had 0 or 1 slow frame in about 1,700.** The play screen has
+  6 in 2,324, with the camera, the frame round the board and the sound. The cost of the whole screen
+  over the prototype is that difference, and it is small.
+
+**The card's second line was wrong, and this run is what showed it.** It read *Of them, 33 ms or
+more: 1*. The line stood at 33.4 ms, and a frame that misses one refresh arrives at 33.3 ms give or
+take the timer's jitter: five frames of 33.2 to 33.4 ms, all the same kind, and the line counted
+one of them. It now stands at 41.7 ms, halfway between one missed refresh and two, and says so. By
+it the S25's count is 0, read from the worst frame; the PC's column below is restated from each
+run's own list of its slowest five. An instrument defect, fixed inline.
+
+**How it is run.** The PC serves the built app on the home network; on the phone, in Chrome, open
+`/measure.html` at the PC's address, press **Measure**, and leave the phone alone for about 40
+seconds. A phone that has opened the app before shows the app's title for two or three seconds
+first and then changes to the measuring page by itself (measured, below).
 
 ## The PC: frames
 
@@ -43,11 +72,11 @@ worker as a phone reaches it. **This is not the phone:** it says the page and it
 what the screen costs here. Three runs of `pnpm look:frames`, each three turns of one seeded game:
 9 moves, 3 spreads, and the camera in 6 times.
 
-| Run | Frames | Slow (20 ms or more) | Of them, 33 ms or more | Middle | 99 in 100 | Worst | With the camera moving or in: frames, slow, worst |
+| Run | Frames | Slow (20 ms or more) | Of them, 41.7 ms or more | Middle | 99 in 100 | Worst | With the camera moving or in: frames, slow, worst |
 |---|---|---|---|---|---|---|---|
-| 1 | 2,209 in 39.0 s | 5 | 3 | 17.6 ms | 18.6 | 71.2 | 702, 3, 44.8 |
-| 2 | 2,205 in 38.9 s | 7 | 3 | 17.6 ms | 18.6 | 53.3 | 704, 2, 36.8 |
-| 3 | 2,205 in 39.0 s | 9 | 3 | 17.6 ms | 18.7 | 73.0 | 703, 3, 53.7 |
+| 1 | 2,209 in 39.0 s | 5 | 2 | 17.6 ms | 18.6 | 71.2 | 702, 3, 44.8 |
+| 2 | 2,205 in 38.9 s | 7 | 1 | 17.6 ms | 18.6 | 53.3 | 704, 2, 36.8 |
+| 3 | 2,205 in 39.0 s | 9 | 2 | 17.6 ms | 18.7 | 73.0 | 703, 3, 53.7 |
 
 - **The screen refreshed every 17.6 to 17.8 ms** in this browser, not 16.7: a headless Chrome's own
   pace. So the middle frame is the screen's pace, and a slow frame is one that missed a refresh.
@@ -61,16 +90,17 @@ what the screen costs here. Three runs of `pnpm look:frames`, each three turns o
   | 7.0 s | 35.6, 36.8, 36.0 ms | The camera arrives, 0.6 s later |
 
 - **The camera's five later moves in each run have no frame of 33 ms or more.** The cost is at its
-  first move, at both ends of it.
+  first move, at both ends of it. *(The S25, above: two missed refreshes at that first move, and one
+  in each later turn's spread.)*
 - **No task over 50 ms was reported in any run,** so the three are not the page's script: they are
   the browser drawing. The first is where the board's pictures are first drawn; the other two are
   where the board is first drawn larger.
 - The other two to six slow frames of a run are between 20 and 32 ms, at different moments each
   run.
 
-**What this suggests for the phone, and it is a guess until measured:** the first time the camera
-moves in may be seen as a hitch. If it is, the plan's answer stands: the camera is cut back, and a
-GPU canvas is not added.
+**What this suggested for the phone, written before the phone was measured:** that the first time
+the camera moves in might be seen as a hitch. The phone's numbers are above: it is two missed
+refreshes there.
 
 **The meter's control.** With every frame made to waste 40 ms, 311 of 311 frames were reported
 slow. The counting has its own tests (`packages/app/src/frameMeter.test.ts`).

@@ -542,7 +542,7 @@ function App({
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
       hintsSeenAny={hintsSeen.length > 0 || played}
-      onResetHints={resetHints}
+      onResetHints={FIRST_GAME_HELP ? resetHints : null}
       onDeleteSave={deleteSave}
     />
   );

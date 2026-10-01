@@ -5,8 +5,10 @@ same day: disregard low-end phones, give the game the look of the best modern mo
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
 resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0).
 
-**Stages L1, L2 and L3 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled
-the board is drawn as pictures on the page (§12), and approved the kit (§13). L4, the play screen,
+**Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
+board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
+which holds 60 frames a second on his S25 (§14). **He ruled it deployed that night, as a mix of two
+looks, with his review of the whole the next day** (§14, the last heading). L5, the other screens,
 is next.
 
 ## 1. What is decided already
@@ -106,7 +108,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame, the panels, motion and sound, and the camera are built, the measuring page is built and the audit is re-aimed and clean; the measurement on the S25 is his step and remains (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -210,7 +212,8 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
    home network, as the phone checks were before the app was served from the server: *"Agree. They
    way we used to do before deploying on the server."*
 
-**What is built.** [`tools/look-prototype/`](../tools/look-prototype/README.md): the Clay play
+**What is built.** `tools/look-prototype/` (*removed on 1 October 2026 once the play screen was
+measured in its place, §14; it is in the repository's history, last at commit `da7ad3f`*): the Clay play
 screen playing a calm turn and a crowded board, both recorded from the real engine, drawn as
 pictures on the page, as pictures on a GPU canvas, and as the models drawn live. One motion, decided
 once, is handed to all three. A frame timer and a tap timer measure them, and each timer was made to
@@ -809,10 +812,56 @@ coach and the hints will appear, which they will not until L6 ([`FINDINGS.md`](F
 and 35 to 37 ms as it arrives, in each of three runs; its five later moves in a run cost none. The
 PC is not the phone. It is the thing to look for in the S25's numbers.
 
-**Not done yet, and waiting on the S25:** `tools/look-prototype/` is still here, with `pixi.js` and
-`three`. The L2 ruling removes it once the play screen has been measured in its place, and that
-measurement is the phone's.
+**The L2 prototype is removed,** with `pixi.js` and `three` (20 packages leave the lockfile), as the
+L2 ruling said: the play screen has been measured on the S25 in its place, below. It is in the
+repository's history, last at commit `da7ad3f`.
 
 **Controls added, and fired:** `app-scripts-in-the-worker`, `worker-leaves-developer-pages`,
 `frame-banner-has-room`; the frame meter's own (`pnpm look:frames --control`: every frame made to
 waste 40 ms, and 311 of 311 reported slow); and five lines in the audit for the coach and the hints.
+
+### Measured on the S25, 1 October 2026: it holds 60
+
+Shantanu ran the measuring page on his S25 that night. **2,324 frames in 38.8 s at 16.7 ms; 6 of them
+slow, each one missed refresh, 33.4 ms at worst; 4 of the 6 while the camera was moving or in; no
+task over 50 ms.** Three turns of a real game: 9 moves, 3 spreads, the camera in 6 times.
+[`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md) has the card he sent, read line by line.
+
+- **The play screen holds 60 frames a second on the S25,** with its motion, its sound and its
+  camera. The thing the proposal named as the risk, the whole board drawn larger, costs two missed
+  refreshes the first time it happens in a game and one in each later turn's spread.
+- **On this measurement the camera stays as built.** The plan cuts it back only if the phone cannot
+  hold 60 with it.
+- **Open:** one run, in a browser tab. 120 frames a second is unmeasured. The measurement in the
+  app's own shell is L7's.
+- **The meter's second line was wrong, and his run showed it:** it stood on one missed refresh and
+  not between one and two, so it counted one of five frames of the same kind. It is moved.
+
+**With that, stage L4's five parts are built, played and measured.**
+
+### Ruled, 1 October 2026, late: the look is deployed now, and his review of it is the next day
+
+After the S25's numbers Shantanu wrote: *"For now let's focus on deployment if everything works.
+Then I will do a consolidated ui/ux review for what is left. If we want to do the scripted game
+before that I am fine with it. My review will anyhow be tomorrow so anythig we can do before that
+will also get reviewed then (meaning we should try to get any additional/new content in so it can
+also be reviewed)."*
+
+He had been told, in the message he was answering, that rulings 1 and 2 above keep the new look off
+the server until L6, and why. **This ruling replaces that part of both:**
+
+| Rulings 1 and 2 said | Now |
+|---|---|
+| `main` is a mix of two looks and is not deployed until L5 is done | **`main` is deployed as it stands,** once what is built has merged: the play screen in Clay, every other screen as it was |
+| The new look does not reach the server before L6, because the coach and the hints are off | **It reaches the server with the coach and the hints off.** A newcomer on the live app has How to play and nothing else until the guided game arrives |
+
+- **What "if everything works" was taken to ask for, and what was done:** the audit clean on the
+  build that is deployed, alone and together; the Settings row that promised the coach taken off
+  the screen ([`FINDINGS.md`](FINDINGS.md) #111); the deploy script's own start check. The relay
+  is not touched: nothing in L4 changed the protocol, the room or the rules.
+- **His review is of the whole app as deployed,** and he names what to change then. What he said
+  after playing the board, frame and panels stands: the improvements are his to name.
+- **More may be built before that review** so that it is reviewed with the rest: the other screens
+  (L5), and the guided game (L6) if there is time. Building them is not approving them.
+- **The pull requests:** the rest of L4 went up as one, not four, to reach a deploy sooner; he had
+  played all of it by then.
