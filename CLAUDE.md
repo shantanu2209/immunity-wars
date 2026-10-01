@@ -27,7 +27,11 @@ plan §12) **and measured on the S25** (1 October: all three hold 60 frames a se
 page**, Blender's renders moved as page elements, with no GPU canvas and no live 3D; 60 frames a
 second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
 measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
-then removed with `pixi.js` and `three`. **L3, the kit, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+then removed with `pixi.js` and `three`. **L3, the kit, is under way** (plan §13, ruled 1 October):
+the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
+lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; colours, type and
+components with the kit page come next, then motion and sound, and he approves the kit on his phone.
+**Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:

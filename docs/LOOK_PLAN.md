@@ -103,7 +103,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
-| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
+| **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. *Ruled 1 October 2026 and under way: the pieces are built (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
@@ -260,3 +260,65 @@ go with it. Neither is used by anything else, and neither is to be.
 
 **What the prototype is not.** It is a measuring instrument. Nothing under `packages/` imports it
 or changed for it, and it is removed when the ruling has been built into the app.
+
+## 13. L3, the kit: ruled 1 October 2026
+
+**The proposal's five points, all ruled as recommended:** *"Agree with all your recommendations.
+Please proceed."*
+
+1. **The piece set and its three rules.** Shape says what kind of thing it is. Colour says its
+   antigen class, which is what an antibody has to match; the six class colours are the content
+   pack's own. Soft and rounded is alive, hard-edged is not: only the toxin and the venom have hard
+   edges.
+2. **Your own cells stand on a base, and an invader never does**, so that colour never has to tell
+   friend from foe. With seven cells and six classes on one colour wheel it cannot: the Monocyte and
+   an intracellular bacterium are both teal.
+3. **One shape per kind of pathogen.** The bacterium is a rod, though some of its diseases are caused
+   by round bacteria; the parasite is a trypanosome, though its six diseases include an amoeba and a
+   mite; the worm is a roundworm, though its seven include a tapeworm and a fluke. A shape per
+   disease would need one recorded for each of the 97 diseases in the content pack, and is Kartik's
+   to decide.
+4. **The typeface stays Nunito. Sound is on by default, with a mute in Settings.**
+5. **He approves the kit on a kit page on his phone**, built as three pull requests in this order:
+   the pieces; then colours, type, buttons, cards and sheets, with the kit page; then motion, sound
+   and haptics.
+
+**Left for Kartik, and not part of the ruling:** the kind the content pack names "Hidden Virus"
+includes two diseases caused by protozoa. The piece, one of your own cells with something showing
+through it, is true of all thirteen; the name is his to keep or change.
+
+### What the first measurement changed, before anything was built
+
+The contrast gate ruled to be kept (§10, ruling 3) asks 3:1 of a meaningful picture against what it
+is seen on. Measured from the renders on 1 October, before the gate was written:
+
+| What was measured | Found | What it changed |
+|---|---|---|
+| Each cell against a plain cream base | 1.7 to 2.8: **every one fails** | The base is a **cream rim round a dark well**. Cells against the well: 5.05 to 8.06 |
+| Each piece against the board of the L1 frame | The virus 2.6, the Monocyte 2.8, the fungus 2.9, the B-Cell 2.9: **four fail** | **The board is darker.** Invaders against it: 3.32 to 6.39 |
+| A piece on the coral bloodstream | The virus 1.0, the bacterium 1.2: **unreadable** | **The bloodstream is a coral rim round a dark dish**, the same well as the bases. Invaders against it: 4.61 to 8.88 |
+| The malaria piece's red blood cell | 3.08 against the darker board: passing with nothing to spare | A lighter red: 3.44 |
+
+So ruling 2 is built as a rimmed base, not a plain disc, and the board and the bloodstream of the
+play screen (L4) are darker than in the picture picked at L1. The board keeps its teal: it came out
+grey at first, from the lamps' reflection on a dark surface, and is nearly matt now.
+
+### Built: the pieces (the first of the three pull requests)
+
+- **`tools/art-pipeline/clay/pieces.py`** builds all 24 pieces in Blender, with the base and a
+  swatch of the board, and renders each in two views: the board view, from straight above under the
+  board's own lamps, and the card view, at an angle. Its header says what each shape claims.
+- **`tools/art-pipeline/clay.ts`** (`pnpm art:clay`) takes the renders in, holds every picture to
+  the gate, and writes 49 pictures as 147 WebP files (1.35 MB) with a manifest that records what was
+  measured. The grounds are measured from renders too: the board reads `#1c484d` once lit, the
+  well `#193033`, the rim `#fde7c5`.
+- **`pnpm art:clay:check` runs on every `pnpm verify` and in CI.** It re-measures every committed
+  render, holds it to the gate, and requires the manifest and the output to be what the renders
+  produce. It encodes nothing, so it takes seconds and answers the same on any machine.
+- **Controls, each fired.** A piece the colour of the board is rejected and a cream one accepted; a
+  set with no board swatch is refused, never passed for want of a ground. With the bound raised to
+  4:1 the real set fails, which shows the gate reads the pictures. A ratio edited in the manifest,
+  and an output file that is not the recorded one, each turn the check red.
+- **The output's home is `tools/art-pipeline/clay/built/` for now.** It moves under the app with the
+  kit page, in the next pull request, together with the rule that keeps it out of the players'
+  download until a screen uses it. Nothing a player gets has changed.
