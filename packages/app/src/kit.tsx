@@ -3,7 +3,8 @@
  *
  * Every part of the Clay kit, shown as the real component and not a drawing of it: each colour
  * with the contrast the kit's own test measured, the type at rest and at 200%, every control in
- * each state, a card, and every piece at the size it has on the board and on a card.
+ * each state, a card, every piece at the size it has on the board and on a card, and each motion,
+ * sound and buzz, played by pressing.
  *
  * A developer's page. Its own headings are written here in English, as the dev shell's are; the
  * GAME's words on it (names, classes, advice) come from the content pack and the catalogue, so
@@ -35,11 +36,25 @@ import {
   KitPips,
   KitRow,
   KitSheet,
+  SOUNDS,
   TOUCH,
   TYPE,
+  kitAudio,
   measure,
+  play,
+  prefersReducedMotion,
+  soundLength,
+  type KitSound,
 } from '@immunity-wars/ui/kit';
-import { useEffect, useState, type CSSProperties, type ReactElement, type ReactNode } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 
 const cells = UM as Record<string, { n: string; r: string }>;
@@ -400,6 +415,186 @@ function BoardSize(): ReactElement {
   );
 }
 
+/** How far the cell hops in the demonstration, in px. */
+const HOP = 84;
+
+function Motion(): ReactElement {
+  const [side, setSide] = useState(0);
+  const [there, setThere] = useState(true);
+  const [coated, setCoated] = useState(false);
+  const [integrity, setIntegrity] = useState(3);
+  const [less, setLess] = useState(false);
+  const cell = useRef<HTMLDivElement>(null);
+  const invader = useRef<HTMLDivElement>(null);
+  const organ = useRef<HTMLDivElement>(null);
+  const was = useRef(0);
+  const asked = prefersReducedMotion();
+  const reduced = less || asked;
+
+  // The cell is DRAWN in its new place first, and the hop is played from where it was.
+  useLayoutEffect(() => {
+    if (was.current !== side && cell.current)
+      void play(cell.current, 'move', { dx: (was.current - side) * HOP, reduced });
+    was.current = side;
+    // Played once per move, not again when the motion setting changes.
+  }, [side]);
+  useLayoutEffect(() => {
+    if (invader.current) void play(invader.current, coated ? 'coat' : 'arrive', { reduced });
+    // Played when the picture changes, not again when the motion setting changes.
+  }, [there, coated]);
+
+  const engulf = (): void => {
+    const eater = cell.current;
+    const eaten = invader.current;
+    if (!eater || !eaten) return;
+    const a = eater.getBoundingClientRect();
+    const b = eaten.getBoundingClientRect();
+    void play(eater, 'engulf', { reduced });
+    void play(eaten, 'leave', {
+      dx: a.left - b.left,
+      dy: a.top - b.top,
+      reduced,
+      hold: true,
+    }).then(() => {
+      setThere(false);
+      setCoated(false);
+    });
+  };
+
+  return (
+    <>
+      <div
+        style={{
+          position: 'relative',
+          height: 104,
+          background: COLOUR.board,
+          borderRadius: 20,
+          boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.4)',
+        }}
+      >
+        <div ref={cell} style={{ position: 'absolute', left: 14 + side * HOP, top: 12 }}>
+          <KitPiece name="macrophage" size={80} onBase label={cells['macrophage']?.n ?? ''} />
+        </div>
+        {there ? (
+          <div ref={invader} style={{ position: 'absolute', right: 18, top: 12 }}>
+            <KitPiece
+              name={coated ? 'bacteria-EXB-coated' : 'bacteria-EXB'}
+              size={80}
+              label={kinds['bacteria']?.n ?? ''}
+            />
+          </div>
+        ) : null}
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <KitRow>
+          <KitButton kind="go" sound="move" onPress={() => setSide((s) => 1 - s)}>
+            {t('action.move')}
+          </KitButton>
+          <KitButton kind="go" sound="engulf" unavailable={!there} onPress={engulf}>
+            {t('action.engulf')}
+          </KitButton>
+          <KitButton sound="coat" unavailable={!there || coated} onPress={() => setCoated(true)}>
+            Coat
+          </KitButton>
+          <KitButton sound="arrive" unavailable={there} onPress={() => setThere(true)}>
+            Arrive
+          </KitButton>
+          <KitButton
+            sound="refuse"
+            onPress={() => {
+              if (cell.current) void play(cell.current, 'refuse', { reduced });
+            }}
+          >
+            Refuse
+          </KitButton>
+        </KitRow>
+      </div>
+      <KitCard style={{ marginTop: 14 }}>
+        <div ref={organ}>
+          <KitMeter
+            label={(ORGANS as Record<string, { name: string }>)['spleen']?.name ?? ''}
+            value={integrity}
+            of={3}
+          />
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <KitButton
+            sound="hurt"
+            onPress={() => {
+              setIntegrity((n) => (n > 0 ? n - 1 : 3));
+              if (organ.current) void play(organ.current, 'hurt', { reduced });
+            }}
+          >
+            Damage it
+          </KitButton>
+        </div>
+      </KitCard>
+      <div style={{ marginTop: 14 }}>
+        <KitButton onPress={() => setLess((l) => !l)}>
+          {less ? 'Less motion is on. Put it back' : 'Show it with less motion'}
+        </KitButton>
+      </div>
+      <p style={{ ...NOTE, marginTop: 10 }}>
+        {asked
+          ? 'This phone asks for less motion, so that is what is shown: nothing travels, things fade or blink.'
+          : 'This phone has not asked for less motion. The button shows what a phone that has would see: nothing travels, things fade or blink.'}
+      </p>
+    </>
+  );
+}
+
+const SOUND_WORDS: Record<KitSound, string> = {
+  tap: 'Tap',
+  move: 'Move',
+  engulf: 'Engulf',
+  coat: 'Coat',
+  arrive: 'Arrive',
+  hurt: 'Damage',
+  refuse: 'Refuse',
+  endTurn: 'End of turn',
+  win: 'Win',
+  loss: 'Loss',
+};
+
+function Sound(): ReactElement {
+  const [muted, setMuted] = useState(kitAudio.muted);
+  const canBuzz = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+  return (
+    <>
+      <KitRow>
+        {(Object.keys(SOUNDS) as KitSound[]).map((s) => (
+          <KitButton key={s} sound={s}>
+            {/* The length sits under the word, so a long word at 200% has the button's whole width. */}
+            <span style={{ display: 'grid', justifyItems: 'center', lineHeight: 1.15 }}>
+              {SOUND_WORDS[s]}
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: COLOUR.inkSoft }}>
+                {Math.round(soundLength(s) * 1000)} ms
+              </span>
+            </span>
+          </KitButton>
+        ))}
+      </KitRow>
+      <div style={{ marginTop: 14 }}>
+        <KitButton
+          onPress={() => {
+            kitAudio.muted = !kitAudio.muted;
+            setMuted(kitAudio.muted);
+          }}
+        >
+          {muted ? 'Muted: no sound, no buzz. Turn them on' : 'Mute sound and buzz'}
+        </KitButton>
+      </div>
+      <p style={{ ...NOTE, marginTop: 10 }}>
+        {canBuzz
+          ? 'This browser lets a page ask the phone to buzz. Tap, move, engulf, coat, damage, refuse and end of turn each do.'
+          : 'This browser does not let a page ask for a buzz, so only the sounds are played here.'}{' '}
+        Every button on this page plays the tap. The phone’s own silent mode and media volume still
+        apply.
+      </p>
+    </>
+  );
+}
+
 function Kit(): ReactElement {
   const [big, setBig] = useState(false);
   useEffect(() => {
@@ -435,6 +630,18 @@ function Kit(): ReactElement {
         note="Press them. A button stands on its own edge and sinks under a finger."
       >
         <Controls />
+      </Section>
+      <Section
+        title="Motion"
+        note="Press them. Each thing that happens has its own motion, its own sound and, on a phone that allows it, its own buzz."
+      >
+        <Motion />
+      </Section>
+      <Section
+        title="Sound and touch"
+        note="Ten sounds, made in code: there is no sound file. Sound is on unless muted; the mute goes in Settings."
+      >
+        <Sound />
       </Section>
       <Section
         title="A card"

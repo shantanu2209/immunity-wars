@@ -97,6 +97,11 @@ terms to check. The rows are grouped, because every file in a group has the same
 **What these are not.** They are a prototype's art, three reference pictures and the kit's pieces.
 Nothing here is shipped in the app yet; the 89 files the app ships are the rows above this section.
 
+**Sound has no row, because there is no sound asset.** The kit's ten sounds (stage L3) are lists of
+notes in `packages/ui/src/kit/sound.ts`, played by the browser's own audio engine. No recording,
+sample or generated audio file exists in this repository, so there is no origin and no terms to
+record. If a sound file is ever added, it gets a row here before it ships, like any picture.
+
 ---
 
 ## Known asset locations
