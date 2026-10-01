@@ -56,6 +56,8 @@ export const COLOUR = {
   /** Action Points and antibodies. */
   gold: '#E7B549',
   goldEdge: '#8F640B',
+  /** A note in words, on cream: gold dark enough to read. */
+  goldInk: '#6E4B05',
   /** A legal move, glowing. */
   glow: '#FFE08A',
   /** The lymph: its nodes on the board, and a hop along it. */

@@ -27,6 +27,7 @@ import {
 } from 'react';
 
 import { t } from '../i18n';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { createHistorySync, type HistorySync } from './history';
 import {
   closeLabel,
@@ -271,13 +272,17 @@ const FLOAT: CSSProperties = {
   boxSizing: 'border-box',
   minHeight: 48,
   padding: '10px 16px',
+  // Drawn in Clay since stage L4 of the look: the kit's resting button, standing on its edge. It is
+  // not the kit's component because it is held in place by a transform, which the kit's press
+  // would replace.
+  fontFamily: TYPE.family,
   fontSize: '1rem',
-  fontWeight: 700,
-  color: '#2E2A28',
-  background: '#FFFDF9',
-  border: '2px solid #8E6E53',
+  fontWeight: 800,
+  color: COLOUR.ink,
+  background: COLOUR.creamSunk,
+  border: 0,
   borderRadius: 999,
-  boxShadow: '0 4px 16px rgba(46,42,40,0.25)',
+  boxShadow: `0 5px 0 ${COLOUR.creamSunkEdge}, 0 12px 20px rgba(0, 0, 0, 0.4)`,
   cursor: 'pointer',
   // Above the cards (40) and the dialogs (30); a dialog on top hides the button altogether.
   zIndex: 50,

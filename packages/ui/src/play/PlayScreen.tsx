@@ -21,7 +21,6 @@
 import { residentSeat, type Seat } from '@immunity-wars/protocol';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
-  isValidElement,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -73,6 +72,7 @@ import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
+  MiddleCard,
   OldPaper,
   PlayArea,
   SlotClose,
@@ -1182,182 +1182,203 @@ export function PlayScreen({
     if (playing) return <SpreadView store={frameStore} />;
     if (apSheet)
       return (
-        <div data-middle-view="ap">
-          <ApTerms
-            terms={apTerms}
-            // Together, the terms add up to the table's points and the bar shows this player's own,
-            // so the sheet names both, and what every player has left (P3.7).
-            total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
-            yours={p.together && plan === null ? apShown : null}
-            players={p.together && plan === null ? budgetsOf(authView, p) : []}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="ap">
+            <ApTerms
+              terms={apTerms}
+              // Together, the terms add up to the table's points and the bar shows this player's own,
+              // so the sheet names both, and what every player has left (P3.7).
+              total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
+              yours={p.together && plan === null ? apShown : null}
+              players={p.together && plan === null ? budgetsOf(authView, p) : []}
+            />
+          </div>
+        </MiddleCard>
       );
     if (effectsOpen)
       return (
-        <div data-middle-view="effects">
-          <EffectsStrip chips={chips} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="effects">
+            <EffectsStrip chips={chips} />
+          </div>
+        </MiddleCard>
       );
+    // The new cards and planning are not redrawn until L5: each stands on the old paper.
     if (arrivalsNow !== null)
-      return <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />;
+      return (
+        <OldPaper>
+          <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
+        </OldPaper>
+      );
     if (plan !== null)
       return (
-        <div data-middle-view="planning">
-          {spentCells !== null ? (
-            <div
-              data-planning-cell-facts="1"
-              style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
-            >
-              {spentCells}
-            </div>
-          ) : null}
-          <PathogenList
-            model={plan}
-            focus={planFocus}
-            disabled={playing}
-            onPathogenCard={openPathogenCard}
-          />
-          {plan.allocation ? (
-            <AllocationBlock
-              slot={plan.allocation}
-              nameOf={p.nameOf}
-              control={
-                p.together && p.captain && captainPid !== null
-                  ? {
-                      draft,
-                      onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
-                      onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
-                      disabled: playing || confirming,
-                    }
-                  : null
-              }
+        <OldPaper>
+          <div data-middle-view="planning">
+            {spentCells !== null ? (
+              <div
+                data-planning-cell-facts="1"
+                style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
+              >
+                {spentCells}
+              </div>
+            ) : null}
+            <PathogenList
+              model={plan}
+              focus={planFocus}
+              disabled={playing}
+              onPathogenCard={openPathogenCard}
             />
-          ) : null}
-        </div>
+            {plan.allocation ? (
+              <AllocationBlock
+                slot={plan.allocation}
+                nameOf={p.nameOf}
+                control={
+                  p.together && p.captain && captainPid !== null
+                    ? {
+                        draft,
+                        onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
+                        onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
+                        disabled: playing || confirming,
+                      }
+                    : null
+                }
+              />
+            ) : null}
+          </div>
+        </OldPaper>
       );
     if (inspect)
       return (
-        <InspectSheet
-          hint={hintFor('inspect')}
-          info={inspect}
-          selectedCell={selectedCell}
-          disabled={playing}
-          offers={sheetOffers}
-          onOffer={(id) => {
-            setInspect(null);
-            sendOffer(id);
-          }}
-          onSelectCell={(ck) => {
-            tapCell(ck);
-            setInspect(null);
-          }}
-          selectedResident={selectedResident}
-          onSelectResident={(organ) => {
-            tapResident(organ);
-            setInspect(null);
-          }}
-          // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
-          // for cells as for pathogens.
-          onCellCard={(ck) =>
-            setCellCard({
-              cell: ck,
-              now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
-            })
-          }
-          onCard={(invaderId) => {
-            const iv = inspect.invaders.find((x) => x.id === invaderId);
-            if (!iv || iv.novel) return;
-            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
-            setCard({
-              disease: iv.disease,
-              type: iv.type,
-              remembered: memory[iv.disease] === true,
-              now: invaderNowLine(iv),
-            });
-          }}
-        />
+        <MiddleCard>
+          <InspectSheet
+            hint={hintFor('inspect')}
+            info={inspect}
+            selectedCell={selectedCell}
+            disabled={playing}
+            offers={sheetOffers}
+            onOffer={(id) => {
+              setInspect(null);
+              sendOffer(id);
+            }}
+            onSelectCell={(ck) => {
+              tapCell(ck);
+              setInspect(null);
+            }}
+            selectedResident={selectedResident}
+            onSelectResident={(organ) => {
+              tapResident(organ);
+              setInspect(null);
+            }}
+            // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
+            // for cells as for pathogens.
+            onCellCard={(ck) =>
+              setCellCard({
+                cell: ck,
+                now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
+              })
+            }
+            onCard={(invaderId) => {
+              const iv = inspect.invaders.find((x) => x.id === invaderId);
+              if (!iv || iv.novel) return;
+              const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+              setCard({
+                disease: iv.disease,
+                type: iv.type,
+                remembered: memory[iv.disease] === true,
+                now: invaderNowLine(iv),
+              });
+            }}
+          />
+        </MiddleCard>
       );
     if (targetsFor !== null)
       return (
-        <div
-          data-middle-view="targets"
-          style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-        >
-          <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#2E2A28' }}>
-            {t(`action.${targetsFor.action}`)}
+        <MiddleCard>
+          <div
+            data-middle-view="targets"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            <div style={{ fontSize: '0.9375rem', fontWeight: 900, color: COLOUR.ink }}>
+              {t(`action.${targetsFor.action}`)}
+            </div>
+            <TargetList
+              targets={targetsFor.targets}
+              disabled={playing}
+              onOffer={(id) => {
+                setTargetsFor(null);
+                sendOffer(id);
+              }}
+            />
           </div>
-          <TargetList
-            targets={targetsFor.targets}
-            disabled={playing}
-            onOffer={(id) => {
-              setTargetsFor(null);
-              sendOffer(id);
-            }}
-          />
-        </div>
+        </MiddleCard>
       );
     if (drawer === 'pieces')
       return (
-        <div data-middle-view="cells">
-          <PieceStrip
-            // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
-            // the live server): the Cells view is where a player picks what to move, and another's
-            // piece cannot be moved. Another's piece is still read by tapping it on the board, and
-            // the Table says who plays what.
-            pieces={
-              p.together
-                ? pieces.filter((pc) =>
-                    p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
-                  )
-                : pieces
-            }
-            emptyText={p.together ? t('pieces.noneYours') : null}
-            selectedCell={selectedCell}
-            selectedResident={selectedResident}
-            why={why}
-            disabled={playing}
-            // Picking a piece closes the view and selects it on the board (ruling 3).
-            onSelectCell={(ck) => {
-              tapCell(ck);
-              setDrawer(null);
-            }}
-            onSelectResident={(organ) => {
-              tapResident(organ);
-              setDrawer(null);
-            }}
-            onDeselect={() => {
-              deselect();
-              setDrawer(null);
-            }}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="cells">
+            <PieceStrip
+              // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
+              // the live server): the Cells view is where a player picks what to move, and another's
+              // piece cannot be moved. Another's piece is still read by tapping it on the board, and
+              // the Table says who plays what.
+              pieces={
+                p.together
+                  ? pieces.filter((pc) =>
+                      p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
+                    )
+                  : pieces
+              }
+              emptyText={p.together ? t('pieces.noneYours') : null}
+              selectedCell={selectedCell}
+              selectedResident={selectedResident}
+              why={why}
+              disabled={playing}
+              // Picking a piece closes the view and selects it on the board (ruling 3).
+              onSelectCell={(ck) => {
+                tapCell(ck);
+                setDrawer(null);
+              }}
+              onSelectResident={(organ) => {
+                tapResident(organ);
+                setDrawer(null);
+              }}
+              onDeselect={() => {
+                deselect();
+                setDrawer(null);
+              }}
+            />
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'antibodies' && mayAntibodies)
       return (
-        <div data-middle-view="antibodies">
-          <AntibodyPanel
-            rows={familyRows}
-            selectedFamily={selectedFamily}
-            detail={familyDetail}
-            produce={
-              playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
-            }
-            disabled={playing}
-            onSelectFamily={(family) =>
-              session.setSelection({ cell: selectedCell, family, resident: selectedResident })
-            }
-            onProduce={sendOffer}
-            onSay={setSaid}
-          />
-          {hintFor('antibodies')}
-        </div>
+        <MiddleCard>
+          <div data-middle-view="antibodies">
+            <AntibodyPanel
+              rows={familyRows}
+              selectedFamily={selectedFamily}
+              detail={familyDetail}
+              produce={
+                playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
+              }
+              disabled={playing}
+              onSelectFamily={(family) =>
+                session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+              }
+              onProduce={sendOffer}
+              onSay={setSaid}
+            />
+            {hintFor('antibodies')}
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'body' && mayBody)
       return (
-        <div data-middle-view="body">
-          <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="body">
+            <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+          </div>
+        </MiddleCard>
       );
     return (
       <ActionsView
@@ -1565,14 +1586,7 @@ export function PlayScreen({
         // leave it (Frame.tsx).
         style={{ flex: '1 0 5rem', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
-        {(() => {
-          // What is drawn in Clay is said straight onto the table or on its own card. Every other
-          // view has not been redrawn yet, and stands on a sheet of the old paper until it is.
-          const view = middle();
-          const clay =
-            isValidElement(view) && (view.type === SpreadView || view.type === ActionsView);
-          return clay ? view : <OldPaper>{view}</OldPaper>;
-        })()}
+        {middle()}
       </div>
       <div
         data-bottom=""
@@ -1675,12 +1689,13 @@ export function PlayScreen({
                   style={{
                     minHeight: 44,
                     padding: '6px 8px',
+                    fontFamily: 'inherit',
                     fontSize: '0.8125rem',
-                    fontWeight: 700,
-                    color: '#2E2A28',
+                    fontWeight: 800,
+                    color: COLOUR.ink,
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: on ? '2px solid #B03A2E' : '2px solid transparent',
+                    borderBottom: on ? `3px solid ${COLOUR.coralEdge}` : '3px solid transparent',
                     cursor: 'pointer',
                   }}
                 >

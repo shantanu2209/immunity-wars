@@ -11,8 +11,12 @@ import { CELL_CARDS, NK_HITS, SPEED, UM } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitPiece } from '../kit/Piece';
+import { KitChip, kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 import { cellDisplayName } from '../names';
+import { SAY, TONE } from './onCard';
 
 export interface CellCardSubject {
   cell: string;
@@ -28,7 +32,7 @@ interface Fields {
   fact?: string;
 }
 
-const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
+const LABEL: CSSProperties = SAY.label;
 
 export function CellCard({ subject }: { subject: CellCardSubject }): ReactElement {
   const { cell } = subject;
@@ -51,30 +55,38 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
         // A FULL WINDOW, as the pathogen card is (Shantanu, 20 September 2026).
         position: 'fixed',
         inset: 0,
-        background: '#FFFDF9',
+        background: COLOUR.table,
         overflowY: 'auto',
         zIndex: 40,
-        padding: `14px 14px ${FLOAT_RESERVE}`,
+        padding: `14px 12px ${FLOAT_RESERVE}`,
         boxSizing: 'border-box',
       }}
     >
       <div
         data-cell-card-open={cell}
-        style={{ maxWidth: 560, margin: '0 auto', fontSize: '0.875rem', color: '#2E2A28' }}
+        style={{
+          ...kitCardStyle,
+          ...SAY.body,
+          maxWidth: 560,
+          margin: '0 auto 10px',
+          padding: '12px 14px 16px',
+        }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src={`/art/cell-${cell}@3x.webp`} width={48} height={48} alt="" />
-          <div style={{ flex: '1 1 auto' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#8E6E53' }}>
-              {cellDisplayName(cell)}
-            </div>
-            {tag ? <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>{tag}</div> : null}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <KitPiece name={cell} view="card" size={84} label="" style={{ flex: '0 0 auto' }} />
+          <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>{cellDisplayName(cell)}</div>
+            {tag ? (
+              <div style={{ marginTop: 6 }}>
+                <KitChip>{tag}</KitChip>
+              </div>
+            ) : null}
           </div>
         </div>
         {subject.now !== null ? (
           <div style={{ marginTop: 8 }}>
             <div style={LABEL}>{t('card.nowLabel')}</div>
-            <div style={{ color: '#7A5600', fontWeight: 700 }}>{subject.now}</div>
+            <div style={{ color: TONE.note, fontWeight: 800 }}>{subject.now}</div>
           </div>
         ) : null}
         {fields.map(([key, text]) =>
@@ -100,10 +112,12 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
           </div>
         ) : null}
         {card.fact ? (
-          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#78665D' }}>{card.fact}</div>
+          <div style={{ marginTop: 8, fontStyle: 'italic', color: COLOUR.inkSoft }}>
+            {card.fact}
+          </div>
         ) : null}
         {!filled ? (
-          <div style={{ marginTop: 8, color: '#78665D' }}>{t('cellCard.empty')}</div>
+          <div style={{ marginTop: 8, color: COLOUR.inkSoft }}>{t('cellCard.empty')}</div>
         ) : null}
       </div>
     </div>

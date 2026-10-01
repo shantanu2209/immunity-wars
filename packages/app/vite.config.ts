@@ -25,18 +25,18 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * THE CLAY ART, AND WHAT OF IT A PLAYER'S PHONE STORES (docs/LOOK_PLAN.md §13 and §14). The
  * offline rule above stores everything the game needs at the first visit, and only that.
  *
- * FROM STAGE L4 THE BOARD IS DRAWN IN CLAY, so its pictures are part of "everything the game
- * needs": the board itself, and each piece, organ and way in at the one size the board draws
- * them (`CLAY_ON_THE_BOARD`). Leaving them out would break play with no network.
+ * FROM STAGE L4 THE PLAY SCREEN IS DRAWN IN CLAY, so its pictures are part of "everything the
+ * game needs" (`CLAY_ON_THE_BOARD`): the board itself; each piece, organ and way in at the one size
+ * the board and the panels draw them; and each piece as a card shows it, at every size, because a
+ * card picks the size the phone's screen wants. Leaving them out would break play with no network.
  *
- * WHAT IS STILL NOT STORED: the kit page, the pieces' pictures for a card, and the smaller sizes of
- * the board's pictures, which only the kit page shows. No screen a player has uses them yet; they
- * join this list as the panels (L4) and the other screens (L5) are redrawn.
+ * WHAT IS STILL NOT STORED: the kit page, and the smaller sizes of the board's pictures, which only
+ * the kit page shows.
  *
  * `entries-build.test.ts` holds it both ways: every picture the board draws is in the worker's
  * list, and nothing else of the kit is.
  */
-const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*'];
+const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];
 const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kit-*'];
 
 export default defineConfig({

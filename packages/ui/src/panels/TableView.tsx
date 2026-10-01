@@ -12,27 +12,14 @@ import type { CSSProperties, ReactElement } from 'react';
 import type { Seat } from '@immunity-wars/protocol';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR } from '../kit/tokens';
 import type { TableSummary } from '../play/table';
+import { SAY, SMALL, TONE } from './onCard';
 
-const GROUP: CSSProperties = {
-  fontSize: '0.75rem',
-  fontWeight: 700,
-  color: '#78665D',
-  margin: '10px 6px 4px',
-};
+const GROUP: CSSProperties = { ...SAY.label, margin: '10px 6px 4px' };
 
-const MARK: CSSProperties = { fontSize: '0.8125rem', color: '#78665D', marginLeft: 6 };
-
-const GIVE: CSSProperties = {
-  minHeight: 44,
-  padding: '0 12px',
-  borderRadius: 8,
-  border: '1.5px solid #8E6E53',
-  background: '#FFFDF9',
-  color: '#2E2A28',
-  fontSize: '0.875rem',
-  cursor: 'pointer',
-};
+const MARK: CSSProperties = { ...SAY.quiet, marginLeft: 6 };
 
 export function TableView({
   summary,
@@ -48,21 +35,21 @@ export function TableView({
   onGive: (seat: Seat, to: number) => void;
 }): ReactElement {
   return (
-    <div data-table-view="" style={{ fontSize: '0.875rem', color: '#2E2A28' }}>
+    <div data-table-view="" style={SAY.body}>
       <div style={GROUP}>{t('table.players')}</div>
       {summary.members.map((m) => (
         <div key={m.id} data-table-member={m.id} style={{ padding: '4px 6px' }}>
           <div>
-            <span style={{ fontWeight: 700 }}>{m.name}</span>
+            <span style={{ fontWeight: 800 }}>{m.name}</span>
             {m.you ? <span style={MARK}>{t('lobby.you')}</span> : null}
             {m.captain ? <span style={MARK}>{t('lobby.captain')}</span> : null}
             {m.away ? (
-              <span data-away="" style={{ ...MARK, color: '#B03A2E', fontWeight: 700 }}>
+              <span data-away="" style={{ ...MARK, color: TONE.bad, fontWeight: 800 }}>
                 {t('lobby.away')}
               </span>
             ) : null}
           </div>
-          <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>
+          <div style={SAY.quiet}>
             {m.pieces.length > 0 ? m.pieces.join(', ') : t('table.noPieces')}
           </div>
         </div>
@@ -71,7 +58,7 @@ export function TableView({
       {summary.waiting.length > 0 ? (
         <section data-table-waiting={String(summary.waiting.length)}>
           <div style={GROUP}>{t('table.waitingTitle')}</div>
-          <div style={{ fontSize: '0.8125rem', color: '#78665D', margin: '0 6px 4px' }}>
+          <div style={{ ...SAY.quiet, margin: '0 6px 4px' }}>
             {captain
               ? t('table.waitingCaptain')
               : t('table.waitingOthers', { name: captainName ?? t('table.theCaptain') })}
@@ -80,28 +67,34 @@ export function TableView({
             <div
               key={w.seat}
               data-table-seat={w.seat}
-              style={{ padding: '6px', borderTop: '1px solid #EADFD5' }}
+              style={{ padding: '6px', borderTop: `1.5px solid ${COLOUR.creamEdge}` }}
             >
               <div>
-                <span style={{ fontWeight: 700 }}>{w.name}</span>
+                <span style={{ fontWeight: 800 }}>{w.name}</span>
                 <span style={MARK}>
                   {w.holder ? t('table.heldAway', { name: w.holder.name }) : t('table.heldNobody')}
                 </span>
               </div>
-              {w.detail ? (
-                <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>{w.detail}</div>
-              ) : null}
+              {w.detail ? <div style={SAY.quiet}>{w.detail}</div> : null}
               {captain ? (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '10px 6px',
+                    margin: '4px 0 6px',
+                  }}
+                >
                   {summary.present.map((p) => (
-                    <button
+                    <KitButton
                       key={p.id}
+                      kind="go"
                       data-give={`${w.seat}:${String(p.id)}`}
-                      style={GIVE}
-                      onClick={() => onGive(w.seat, p.id)}
+                      style={SMALL}
+                      onPress={() => onGive(w.seat, p.id)}
                     >
                       {t('table.giveTo', { name: p.name })}
-                    </button>
+                    </KitButton>
                   ))}
                 </div>
               ) : null}

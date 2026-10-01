@@ -106,7 +106,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
 | **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
-| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board and the frame round it are built (§14)* |
+| **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. *Ruled 1 October 2026 and under way: the board, the frame and the panels are built; motion, the camera and the measurement remain (§14)* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
 | **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
@@ -580,3 +580,46 @@ lit: it fails naming the count).
 **The scripts that walk the game hung for minutes at their last line.** It was the browser being
 closed, with everything already measured and written; the page itself was idle. They now end
 without waiting for it.
+
+### Built: the panels (the second of the five, its second half)
+
+**Everything the play screen opens is drawn from the kit.**
+
+- **In the middle, each on a card:** the Cells, Antibodies and Body views, a tapped step, the Action
+  Points' terms, what is in force, and a row's several targets.
+- **Over the whole screen:** the pathogen's card and the cell's card, the messages and the table,
+  the dialogs, the menu, and the floating close.
+- **A piece is its Clay picture everywhere:** on its base in the Cells view and on a tapped step,
+  and at an angle at the head of its card, in the colour of its antigen class.
+- **Each antibody class's chip carries a dot of that class's own colour,** the content pack's,
+  which is the colour the pieces of that class wear on the board. An antibody matches a class; the
+  dot is how the two are seen to belong together.
+- **One of several is chosen by shape as well as colour:** pressed in and ringed.
+
+**Still on the old paper, for L5:** the new cards and planning. **Not redrawn, and not on the old
+paper:** the notices for a lost connection and a save that failed, which have their own grounds and
+read as they did; the hints and the coach, which are off.
+
+**A redrawn file may name no colour of its own.** The kit's colours are few and named, and every
+pairing of them that carries words or marks a control is measured, 45 pairings now. A colour written
+straight into a screen is outside that. `play/clayColours.test.ts` reads the 20 redrawn files with
+their comments taken out and fails on the first `#rrggbb` it finds, naming the file and the colour.
+The one exception is the old paper's own two colours, written where that sheet is, and it goes at L5.
+
+**Measured, in a headless browser on the PC at 360 by 641.**
+
+| Measured | Found |
+|---|---|
+| Seven views (cells, antibodies, the body, the Action Points' terms, the messages, the menu, a cell's card), each open, at rest and with the text at 200% | The page one screen tall and 360 px wide at all fourteen; nothing wider than the phone; no control under 44 px |
+| What the phone stores to play offline, from the files | 2.69 MB in 311 files, up from 2.14: the pieces as a card shows them, at every size |
+| Pictures on the cards, sheets and views walked | None broken |
+
+**The check was wrong on its first run, and its own list said so.** It printed, beside each reading,
+which view was open. At 200% the cell's card read as nothing open: the script had pressed the
+selected cell a second time, which lets it go, so there was no card to measure. The reading was of
+the bare screen and would have passed. It now presses the cell only when none is in hand.
+
+**Not measured:** the frame rate, and anything on the S25. **Not run:** the accessibility audit.
+
+**Control added, and fired:** `play-screen-colours-are-the-kits` (one old colour written into a
+redrawn panel: the test fails naming the file and the colour).

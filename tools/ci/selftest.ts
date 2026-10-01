@@ -1040,6 +1040,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A FLAT ACTION CANNOT BE PRESSED',
   },
   {
+    id: 'play-screen-colours-are-the-kits',
+    why: 'Stage L4: every pairing of the kit’s colours that carries words is measured against Gate 1’s bound. A colour written straight into a screen is outside that, measured by nothing, and is how the old screens’ colours would come back one line at a time. With one old colour written into a redrawn panel, the test must FAIL naming the file and the colour.',
+    file: 'packages/ui/src/panels/PieceStrip.tsx',
+    mutate: (t) =>
+      t.replace(
+        'data-pieces-none="" style={SAY.quiet}',
+        'data-pieces-none="" style={{ color: \'#78665D\' }}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
+  },
+  {
     id: 'frame-pips-show-what-is-left',
     why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
     file: 'packages/ui/src/play/Frame.tsx',
@@ -1081,7 +1093,7 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/app/vite.config.ts',
     mutate: (t) =>
       t.replace(
-        "const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*'];",
+        "const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];",
         'const CLAY_ON_THE_BOARD: string[] = [];',
       ),
     gate: 'pnpm --filter @immunity-wars/app test',

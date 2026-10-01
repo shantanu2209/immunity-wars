@@ -10,19 +10,13 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { kitCardStyle } from '../kit/Surface';
 import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
+import { SAY } from './onCard';
 
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '0.9375rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
-};
+/** Room above each button for the one before it to stand on its edge. */
+const BTN: CSSProperties = { marginTop: 12 };
 
 export function PauseSheet({
   onResume,
@@ -56,7 +50,7 @@ export function PauseSheet({
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(46,42,40,0.45)',
+        background: 'rgba(4, 18, 22, 0.66)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -68,62 +62,53 @@ export function PauseSheet({
       <div
         style={{
           width: 'min(88vw, 340px)',
-          background: '#FFFDF9',
-          border: '2px solid #8E6E53',
-          borderRadius: 12,
-          padding: 16,
+          boxSizing: 'border-box',
+          ...kitCardStyle,
+          padding: '6px 16px 22px',
         }}
       >
         {confirming === 'leave' && onLeave !== null ? (
           <>
-            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>{t('pause.leaveNote')}</p>
-            <button
-              data-pause="leave-confirm"
-              style={{ ...BTN, borderColor: '#B03A2E' }}
-              onClick={onLeave}
-            >
+            <p style={{ ...SAY.body, margin: '12px 0 0' }}>{t('pause.leaveNote')}</p>
+            <KitButton kind="main" data-pause="leave-confirm" style={BTN} onPress={onLeave}>
               {t('pause.leaveConfirm')}
-            </button>
-            <button style={BTN} onClick={() => setConfirming(null)}>
+            </KitButton>
+            <KitButton style={BTN} onPress={() => setConfirming(null)}>
               {t('pause.quitCancel')}
-            </button>
+            </KitButton>
           </>
         ) : confirming === 'quit' ? (
           <>
-            <p style={{ fontSize: '0.875rem', color: '#78665D' }}>
+            <p style={{ ...SAY.body, margin: '12px 0 0' }}>
               {together ? t('pause.closeNote') : t('pause.quitNote')}
             </p>
-            <button
-              data-pause="quit-confirm"
-              style={{ ...BTN, borderColor: '#B03A2E' }}
-              onClick={onQuit}
-            >
+            <KitButton kind="main" data-pause="quit-confirm" style={BTN} onPress={onQuit}>
               {together ? t('pause.closeConfirm') : t('pause.quitConfirm')}
-            </button>
-            <button style={BTN} onClick={() => setConfirming(null)}>
+            </KitButton>
+            <KitButton style={BTN} onPress={() => setConfirming(null)}>
               {t('pause.quitCancel')}
-            </button>
+            </KitButton>
           </>
         ) : (
           <>
             {/* RESUME IS THE FIRST ROW (§21 I): the floating close does the same thing, but
                 nothing on the menu said so, and it is the one thing a paused player wants. */}
-            <button style={{ ...BTN, borderColor: '#B03A2E' }} onClick={onResume}>
+            <KitButton kind="go" style={BTN} onPress={onResume}>
               {t('pause.resume')}
-            </button>
-            <button style={BTN} onClick={onHelp}>
+            </KitButton>
+            <KitButton style={BTN} onPress={onHelp}>
               {t('pause.help')}
-            </button>
-            <button style={BTN} onClick={onSettings}>
+            </KitButton>
+            <KitButton style={BTN} onPress={onSettings}>
               {t('pause.settings')}
-            </button>
-            <button data-pause="quit" style={BTN} onClick={() => setConfirming('quit')}>
+            </KitButton>
+            <KitButton data-pause="quit" style={BTN} onPress={() => setConfirming('quit')}>
               {together ? t('pause.close') : t('pause.quit')}
-            </button>
+            </KitButton>
             {together ? (
-              <button data-pause="leave" style={BTN} onClick={() => setConfirming('leave')}>
+              <KitButton data-pause="leave" style={BTN} onPress={() => setConfirming('leave')}>
                 {t('pause.leave')}
-              </button>
+              </KitButton>
             ) : null}
           </>
         )}

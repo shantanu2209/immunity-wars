@@ -17,8 +17,8 @@
  * table's dark ground. What each part is given and the hooks it carries are as they were; only the
  * drawing changed. Dumb by design: the play screen decides what each part shows.
  *
- * WHAT IS NOT YET REDRAWN stands on a sheet of the old paper (`OldPaper`), so that its words keep
- * the contrast they were measured at. It goes as each view is redrawn.
+ * WHAT IS NOT YET REDRAWN, the new cards and planning, stands on a sheet of the old paper
+ * (`OldPaper`), so that its words keep the contrast they were measured at. They are L5's.
  */
 import {
   useLayoutEffect,
@@ -44,10 +44,9 @@ import { useFrame, type FrameStore } from './frameStore';
 import { tapCounts } from './stepGuard';
 
 /**
- * THE OLD SCREENS' PAPER. A view that has not been redrawn yet (the cells, antibodies and body
- * views, a tapped node, the new cards, planning) was drawn for this ground and measured on it, so
- * until it is redrawn it stands on a sheet of it, laid on the table. REMOVE each use as its view is
- * redrawn; the planning and the new cards' are L5's.
+ * THE OLD SCREENS' PAPER. A view that has not been redrawn yet (the new cards, and planning) was
+ * drawn for this ground and measured on it, so until it is redrawn it stands on a sheet of it, laid
+ * on the table. Both are L5's, and this goes with them.
  */
 const OLD_PAPER = '#FFFDF9';
 export function OldPaper({ children }: { children: ReactNode }): ReactElement {
@@ -61,6 +60,28 @@ export function OldPaper({ children }: { children: ReactNode }): ReactElement {
         padding: 8,
         minHeight: '100%',
         boxSizing: 'border-box',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * A VIEW IN THE MIDDLE, on a card of the kit's cream: the Cells, Antibodies and Body views, a tapped
+ * step, the Action Points' terms, what is in force, a row's several targets. The same flat card the
+ * selected piece's actions are on, so that whatever the middle shows, it shows on one kind of thing.
+ */
+export function MiddleCard({ children }: { children: ReactNode }): ReactElement {
+  return (
+    <div
+      data-middle-card=""
+      style={{
+        ...kitCardStyle,
+        borderRadius: RADIUS.primary,
+        boxShadow: `0 4px 0 ${COLOUR.creamEdge}`,
+        padding: '10px 10px 12px',
+        marginBottom: 4,
       }}
     >
       {children}

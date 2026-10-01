@@ -46,7 +46,7 @@ describe('the kit’s sizes', () => {
   const kinds: KitButtonKind[] = ['main', 'go', 'rest'];
   it('every button, in every state, is at least 44 px tall', () => {
     for (const kind of kinds)
-      for (const state of ['resting', 'pressed', 'unavailable'] as const)
+      for (const state of ['resting', 'pressed', 'unavailable', 'selected'] as const)
         expect(
           Number(kitButtonStyle(kind, state).minHeight),
           `${kind}, ${state}`,

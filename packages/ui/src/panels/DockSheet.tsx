@@ -10,6 +10,9 @@
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 import type { ActionRow } from '../play/offered';
 
@@ -23,11 +26,8 @@ const SHEET: CSSProperties = {
   maxHeight: '46vh',
   overflowY: 'auto',
   overflowWrap: 'anywhere',
-  background: '#FFFDF9',
-  border: '2px solid #8E6E53',
-  borderRadius: 12,
-  boxShadow: '0 6px 24px rgba(46,42,40,0.25)',
-  padding: 8,
+  ...kitCardStyle,
+  padding: 10,
   zIndex: 10,
   display: 'flex',
   flexDirection: 'column',
@@ -36,21 +36,13 @@ const SHEET: CSSProperties = {
 
 const ROW: CSSProperties = {
   minHeight: 44,
-  width: '100%',
-  boxSizing: 'border-box',
   padding: '4px 12px',
   fontSize: '0.875rem',
-  borderRadius: 8,
-  border: '1.5px solid #B03A2E',
-  background: '#FFFDF9',
-  color: '#2E2A28',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
   justifyContent: 'space-between',
   flexWrap: 'wrap',
   gap: 8,
   textAlign: 'left',
+  marginBottom: 6,
 };
 
 export function DockSheet({
@@ -65,9 +57,7 @@ export function DockSheet({
   return (
     <div data-dock-sheet={kind} style={SHEET}>
       {title !== null ? (
-        <div
-          style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#2E2A28', padding: '2px 4px' }}
-        >
+        <div style={{ ...TYPE.action, fontWeight: 900, color: COLOUR.ink, padding: '2px 4px' }}>
           {title}
         </div>
       ) : null}
@@ -89,22 +79,23 @@ export function TargetList({
   return (
     <>
       {targets.map((r) => (
-        <button
+        <KitButton
           key={r.id}
+          kind="go"
           data-dock-target={r.id}
           disabled={disabled || r.offerId === null}
-          onClick={() => {
+          onPress={() => {
             if (r.offerId !== null) onOffer(r.offerId);
           }}
           style={ROW}
         >
           <span>{r.label}</span>
           {r.detail !== null || r.cost !== null ? (
-            <span style={{ fontSize: '0.75rem', color: '#78665D' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.85 }}>
               {[r.detail, r.cost].filter((x) => x !== null).join(` ${t('inspect.sep')} `)}
             </span>
           ) : null}
-        </button>
+        </KitButton>
       ))}
     </>
   );

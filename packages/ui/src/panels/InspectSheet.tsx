@@ -23,8 +23,12 @@ export const organEffect = (organ: string): string | null => {
   const e = (ORGANS as Record<string, { effect?: unknown } | undefined>)[organ]?.effect;
   return typeof e === 'string' && e.trim() !== '' ? e : null;
 };
+import { pieceFor } from '../board/clay';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR } from '../kit/tokens';
 import { CardIcon } from './CardIcon';
+import { SAY, SMALL, TONE, pieceArt } from './onCard';
 import {
   cellDisplayName as cellName,
   organDisplayName,
@@ -39,28 +43,57 @@ const ROW: CSSProperties = {
   minHeight: 44,
 };
 
-const BTN: CSSProperties = {
-  minHeight: 44,
-  padding: '0 12px',
-  fontSize: '0.875rem',
-  borderRadius: 8,
-  border: '1.5px solid #B03A2E',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-};
-
 /** The card icon's button (for-P2.7.md §14, ruling 5): 44px square, narrower than "Card" was. */
-const ICON_BTN: CSSProperties = {
-  ...BTN,
-  width: 44,
-  minWidth: 44,
-  padding: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#8E6E53',
-  flex: '0 0 auto',
+const ICON_BTN: CSSProperties = { width: 44, minHeight: 44, padding: 0, flex: '0 0 auto' };
+
+/** A piece's picture in a row of the sheet: the base under one of the body's own, the piece on it. */
+const PICTURE: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: '100%',
+  height: '100%',
 };
+function Pic({
+  name,
+  own,
+  dim = false,
+}: {
+  name: string;
+  own: boolean;
+  dim?: boolean;
+}): ReactElement {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        position: 'relative',
+        width: 40,
+        height: 40,
+        flex: '0 0 auto',
+        ...(dim ? { opacity: 0.45, filter: 'grayscale(1)' } : {}),
+      }}
+    >
+      {own ? <img alt="" src={pieceArt('base')} style={PICTURE} /> : null}
+      <img alt="" src={pieceArt(name)} style={PICTURE} />
+    </span>
+  );
+}
+
+/** A row that selects what stands in it: nothing but its words and picture, until it is chosen. */
+const pick = (chosen: boolean): CSSProperties => ({
+  ...ROW,
+  ...SAY.body,
+  minWidth: 0,
+  padding: '0 6px',
+  borderRadius: 12,
+  border: 'none',
+  background: chosen ? COLOUR.mintSoft : 'transparent',
+  boxShadow: chosen ? `inset 0 0 0 2px ${COLOUR.mintEdge}` : undefined,
+  cursor: 'pointer',
+  textAlign: 'left',
+  fontFamily: 'inherit',
+});
 
 export interface InvaderOffer {
   id: string;
@@ -122,26 +155,21 @@ export function InspectSheet({
     // IN THE MIDDLE, not over the board (piece 5, docs/for-P2.7.md §19): what stands on a tapped node
     // shows below the play area, so the board stays in view, and the floating close returns to the
     // actions.
-    <div data-inspect-sheet="" data-middle-view="node">
+    <div data-inspect-sheet="" data-middle-view="node" style={SAY.body}>
       {hint}
       {info.invaders.map((iv, i) => (
         <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
-          <img
-            src={`/art/path-${iv.novel ? 'virus' : iv.type}@3x.webp`}
-            width={36}
-            height={36}
-            alt=""
-            style={iv.novel ? { filter: 'brightness(0.2)' } : undefined}
-          />
-          <span style={{ fontSize: '0.875rem', flex: '1 1 auto' }}>
+          {/* The same picture the board draws it with: its kind, in its antigen class's colour. */}
+          <Pic name={pieceFor(iv.type, iv.cls, iv.coated).piece} own={false} />
+          <span style={{ flex: '1 1 auto' }}>
             {iv.novel ? t('inspect.unknown') : iv.disease}
-            <span style={{ color: '#78665D' }}>
+            <span style={{ color: COLOUR.inkSoft }}>
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
             </span>
             {iv.coated ? (
               // The badge is a symbol nobody has been taught; the precise surface says the word.
-              <span style={{ color: '#7A5600', fontWeight: 700 }}>
+              <span style={{ color: TONE.note, fontWeight: 800 }}>
                 {' '}
                 {t('inspect.sep')} {t('inspect.coated')}
               </span>
@@ -152,25 +180,26 @@ export function InspectSheet({
           {!iv.novel && onCard ? (
             // THE CARD's entry point: the sheet is "tell me about this" with ≥44px rows, and a
             // novel pathogen gets no card — it is masked everywhere as unknown.
-            <button
+            <KitButton
               style={ICON_BTN}
               aria-label={t('card.about', { name: iv.disease })}
               disabled={disabled}
-              onClick={() => onCard(iv.id)}
+              onPress={() => onCard(iv.id)}
               data-sheet-card={iv.id}
             >
               <CardIcon />
-            </button>
+            </KitButton>
           ) : null}
           {(offers[iv.id] ?? []).map((o) => (
-            <button
+            <KitButton
               key={o.id}
-              style={BTN}
+              kind="go"
+              style={SMALL}
               disabled={disabled || !onOffer}
-              onClick={() => onOffer?.(o.id)}
+              onPress={() => onOffer?.(o.id)}
             >
               {o.label}
-            </button>
+            </KitButton>
           ))}
         </div>
       ))}
@@ -182,28 +211,13 @@ export function InspectSheet({
             data-sheet-cell={ck}
             onClick={() => onSelectCell?.(ck)}
             disabled={disabled || !onSelectCell}
-            style={{
-              ...ROW,
-              flex: '1 1 auto',
-              minWidth: 0,
-              background: selectedCell === ck ? '#FBEAE5' : 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              textAlign: 'left',
-            }}
+            style={{ ...pick(selectedCell === ck), flex: '1 1 auto' }}
           >
-            <img
-              src={`/art/cell-${ck}@3x.webp`}
-              width={36}
-              height={36}
-              alt=""
-              style={info.unavailable[ck] ? { opacity: 0.38, filter: 'grayscale(1)' } : undefined}
-            />
+            <Pic name={ck} own dim={info.unavailable[ck] !== undefined} />
             <span>
               {cellName(ck)}
               {info.unavailable[ck] ? (
-                <span style={{ color: '#78665D' }}>
+                <span style={{ color: COLOUR.inkSoft }}>
                   {' '}
                   {t('inspect.sep')} {unavailableText(info.unavailable[ck])}
                 </span>
@@ -211,15 +225,15 @@ export function InspectSheet({
             </span>
           </button>
           {onCellCard ? (
-            <button
+            <KitButton
               data-cell-card={ck}
               style={ICON_BTN}
               aria-label={t('card.about', { name: cellName(ck) })}
               disabled={disabled}
-              onClick={() => onCellCard(ck)}
+              onPress={() => onCellCard(ck)}
             >
               <CardIcon />
-            </button>
+            </KitButton>
           ) : null}
         </div>
       ))}
@@ -231,20 +245,12 @@ export function InspectSheet({
             if (info.resident !== null) onSelectResident?.(info.resident);
           }}
           disabled={disabled || !onSelectResident}
-          style={{
-            ...ROW,
-            width: '100%',
-            background: selectedResident === info.resident ? '#FBEAE5' : 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-            textAlign: 'left',
-          }}
+          style={{ ...pick(selectedResident === info.resident), width: '100%' }}
         >
-          <img src="/art/cell-macrophage@3x.webp" width={36} height={36} alt="" />
+          <Pic name="macrophage" own />
           <span>
             {residentDisplayName(info.resident)}
-            <span style={{ color: '#78665D' }}>
+            <span style={{ color: COLOUR.inkSoft }}>
               {' '}
               {t('resident.of', { organ: organDisplayName(info.resident) })}
             </span>
@@ -257,7 +263,7 @@ export function InspectSheet({
         // that let the permanent organ-damage chip leave the strip. The column is content, a
         // table cell rendered as a labelled value, never spliced into a sentence.
         <div data-sheet-organ={info.organ.key} style={{ ...ROW, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.875rem' }}>
+          <span>
             {t('inspect.organ', {
               organ: organDisplayName(info.organ.key),
               // THE ORGAN'S KIND (strings 45 and 46, ruled IN 6 September 2026): the rulebook's
@@ -268,7 +274,7 @@ export function InspectSheet({
               max: info.organ.max,
             })}
             {info.organ.hp < info.organ.max && organEffect(info.organ.key) !== null ? (
-              <span style={{ display: 'block', fontSize: '0.8125rem', color: '#B03A2E' }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', color: TONE.bad }}>
                 {t('effects.organEffect', { effect: organEffect(info.organ.key) ?? '' })}
               </span>
             ) : null}

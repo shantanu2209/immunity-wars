@@ -74,15 +74,17 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(
       stored.filter((u) => u.startsWith('art/') && !u.includes('clay')).length,
     ).toBeGreaterThan(80);
-    // What the board draws: the board's own picture at every size, and each piece, organ and way
-    // in at the one size ClayBoard.tsx names (`@3x`). Listed from the build, not from memory.
+    // What the play screen draws: the board's own picture at every size; each piece, organ and
+    // way in at the one size the board and the panels name (`@3x`); and each piece as a card shows
+    // it, at every size. Listed from the build, not from memory.
     const drawn = [
       ...readdirSync(join(out, 'art', 'clay', 'table')).map((f) => `art/clay/table/${f}`),
+      ...readdirSync(join(out, 'art', 'clay', 'card')).map((f) => `art/clay/card/${f}`),
       ...readdirSync(join(out, 'art', 'clay', 'board'))
         .filter((f) => f.endsWith('@3x.webp'))
         .map((f) => `art/clay/board/${f}`),
     ];
-    expect(drawn.length, 'THE BOARD’S PICTURES WERE NOT FOUND IN THE BUILD').toBeGreaterThan(40);
+    expect(drawn.length, 'THE BOARD’S PICTURES WERE NOT FOUND IN THE BUILD').toBeGreaterThan(110);
     const missing = drawn.filter((u) => !stored.includes(u));
     expect(
       missing,

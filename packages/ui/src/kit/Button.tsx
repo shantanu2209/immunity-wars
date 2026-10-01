@@ -39,7 +39,7 @@ const FACE: Record<KitButtonKind, { top: string; bottom: string; edge: string; i
 /** The style a kit button has in each state. Exported so the kit's own test can read its sizes. */
 export function kitButtonStyle(
   kind: KitButtonKind,
-  state: 'resting' | 'pressed' | 'unavailable',
+  state: 'resting' | 'pressed' | 'unavailable' | 'selected',
 ): CSSProperties {
   const face = FACE[kind];
   const stand = kind === 'main' ? DEPTH.standPrimary : DEPTH.stand;
@@ -70,6 +70,16 @@ export function kitButtonStyle(
       transform: `translateY(${stand - DEPTH.pressed}px)`,
       cursor: 'default',
     };
+  if (state === 'selected')
+    return {
+      ...base,
+      // THE CHOSEN ONE OF SEVERAL: pressed in and ringed, so it is told from the rest by its shape
+      // as well as by its colour.
+      color: COLOUR.mintInk,
+      background: COLOUR.mintSoft,
+      boxShadow: `inset 0 0 0 2.5px ${COLOUR.mintEdge}`,
+      transform: `translateY(${stand - DEPTH.pressed}px)`,
+    };
   const down = state === 'pressed' ? stand - DEPTH.pressed : 0;
   return {
     ...base,
@@ -84,6 +94,7 @@ export function KitButton({
   kind = 'rest',
   unavailable = false,
   explains = false,
+  selected = false,
   onPress,
   sound = 'tap',
   children,
@@ -99,6 +110,8 @@ export function KitButton({
    * The caller's `onPress` says it, and the press sounds as a refusal.
    */
   explains?: boolean;
+  /** The chosen one of several: drawn pressed in and ringed. It still takes a press. */
+  selected?: boolean;
   onPress?: () => void;
   /** What a press sounds and feels like. `null`: the caller answers for it. */
   sound?: KitSound | null;
@@ -121,7 +134,10 @@ export function KitButton({
       type="button"
       disabled={disabled === true || (unavailable && !explains)}
       style={{
-        ...kitButtonStyle(kind, flat ? 'unavailable' : pressed ? 'pressed' : 'resting'),
+        ...kitButtonStyle(
+          kind,
+          flat ? 'unavailable' : selected ? 'selected' : pressed ? 'pressed' : 'resting',
+        ),
         ...style,
       }}
       onPointerDown={() => setPressed(true)}
