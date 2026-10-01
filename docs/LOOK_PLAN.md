@@ -309,7 +309,7 @@ grey at first, from the lamps' reflection on a dark surface, and is nearly matt 
   swatch of the board, and renders each in two views: the board view, from straight above under the
   board's own lamps, and the card view, at an angle. Its header says what each shape claims.
 - **`tools/art-pipeline/clay.ts`** (`pnpm art:clay`) takes the renders in, holds every picture to
-  the gate, and writes 49 pictures as 147 WebP files (1.35 MB) with a manifest that records what was
+  the gate, and writes 49 pictures as 147 WebP files (0.96 MB) with a manifest that records what was
   measured. The grounds are measured from renders too: the board reads `#1c484d` once lit, the
   well `#193033`, the rim `#fde7c5`.
 - **`pnpm art:clay:check` runs on every `pnpm verify` and in CI.** It re-measures every committed
@@ -319,6 +319,36 @@ grey at first, from the lamps' reflection on a dark surface, and is nearly matt 
   set with no board swatch is refused, never passed for want of a ground. With the bound raised to
   4:1 the real set fails, which shows the gate reads the pictures. A ratio edited in the manifest,
   and an output file that is not the recorded one, each turn the check red.
-- **The output's home is `tools/art-pipeline/clay/built/` for now.** It moves under the app with the
-  kit page, in the next pull request, together with the rule that keeps it out of the players'
-  download until a screen uses it. Nothing a player gets has changed.
+- **The output's home was `tools/art-pipeline/clay/built/` for that pull request.** It moved under
+  the app with the kit page, below.
+
+### Built: colours, type, components and the kit page (the second of the three)
+
+- **The kit**, in `packages/ui/src/kit/`: the named values (`tokens.ts`), the colour pairings and
+  the bound each is held to (`contrast.ts`), and the components: the button in its three kinds, the
+  card, the sheet, the pill, the chip, Action Point pips, the meter, a wrapping row of controls, the
+  piece, and the pathogen's card. It has its own entry, `@immunity-wars/ui/kit`, so only the kit
+  page pulls it in; every word a component shows is the caller's, from the catalogue.
+- **The kit page**, `/kit.html`: every part as the real component, for him to look at on his phone.
+- **The Clay art is served and is not a player's download.** It lives in
+  `packages/app/public/art/clay/`, and the app's build keeps it and the kit page out of what the
+  service worker stores on a phone, until a screen uses them at L4. Measured on the build: 194
+  entries stored, none of them the kit's; 147 Clay pictures served.
+
+**What measuring changed, again before it was built on.**
+
+| Measured | Found | Changed |
+|---|---|---|
+| The kit's 23 colour pairings | Two failed: the go button's edge on a card (2.89) and a resting button's edge on a card (1.60) | Both edges darker: 4.00 and 3.55. A resting button is now marked by its edge and not only by its word |
+| White words on the coral button | 3.25: under 4.5 | The main button's word is dark ink on coral: 4.68 |
+| The quiet text of the L1 frame on cream | 4.16: under 4.5 | A darker quiet ink: 5.80 |
+| The kit page with every word at 200% | The page grew wider than the phone: three buttons in a row, the card's four measures, and the grids of named pieces did not fit | Rows of controls wrap; the measures and the grids reflow; long display words may break. At 200% the page is 360 px wide and nothing is wider |
+| A piece on a cream card | A faint box round it: the render's shadow reached the picture's edge (up to 48 of 255 there) | The pipeline feathers the edge, and the gate refuses a picture with more than 3 of 255 at its edge. Now 0 |
+
+**Controls added, each fired:** `kit-contrast-reads-the-tokens` (a pale quiet ink fails by name),
+`clay-kit-colour-is-measured` (the kit's board colour edited by hand fails), `clay-not-in-the-worker`
+(the exclusion removed, the build test fails naming what the worker stores), and in the gate's own
+set, a picture cut off at its edge rejected for its edge. Two of these checks were wrong on their
+first run and said so: the edge control was refused for having nothing solid in it, which showed
+nothing about edges, and the worker test read 0 entries from a list written in a spelling it did not
+know, which its own "the list was read" line caught.

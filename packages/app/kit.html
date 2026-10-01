@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0E2A30" />
+    <title>Immunity Wars — the Clay kit</title>
+    <link rel="icon" href="data:," />
+    <!--
+      THE KIT PAGE (stage L3, docs/LOOK_PLAN.md §13): every part of the Clay kit as the real
+      thing, for Shantanu to look at on his phone and approve. A developer's page, like dev.html:
+      no player is sent here, and the build keeps it and the art it shows out of what a phone
+      stores for offline play. A build-check test fails if this entry stops building.
+    -->
+    <style>
+      /* The whole range of weights: the kit sets headings at 900, which the app's own
+         declaration (400 to 700) would have drawn as a faked bold. */
+      @font-face {
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 200 1000;
+        font-display: swap;
+        src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+      }
+      html,
+      body {
+        margin: 0;
+        background: #0e2a30;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/kit.tsx"></script>
+  </body>
+</html>

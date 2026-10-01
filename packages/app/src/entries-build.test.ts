@@ -48,6 +48,36 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(existsSync(join(out, 'dev.html'))).toBe(true);
   });
 
+  // THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13), both ways. The kit page and its art must be
+  // BUILT AND SERVED, or the page Shantanu approves the kit on is not there; and they must be
+  // LEFT OUT of what the worker stores on a player's phone, because no screen a player has uses
+  // them until L4. The second half is removed with CLAY_NOT_YET in vite.config.ts, at L4, when
+  // leaving the art out would break play with no network. Control: pnpm ci:selftest
+  // clay-not-in-the-worker.
+  it('the kit page and the Clay art are built and served', () => {
+    expect(existsSync(join(out, 'kit.html'))).toBe(true);
+    expect(existsSync(join(out, 'art', 'clay', 'manifest.json'))).toBe(true);
+    expect(existsSync(join(out, 'art', 'clay', 'board', 'macrophage@3x.webp'))).toBe(true);
+  });
+
+  it('the worker stores none of the kit on a player’s phone, and still stores the art the screens use', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    // Both spellings: a production build writes `url:"…"`, and this test's build (NODE_ENV=test)
+    // the readable `"url": "…"`.
+    const stored = [...worker.matchAll(/["']?url["']?:\s*["']([^"']+)["']/g)].map(
+      (m) => m[1] ?? '',
+    );
+    // Read the instrument that reports coverage: a list that matched nothing would pass the last
+    // line. It did, on this test's first run: the pattern knew only the production spelling and
+    // read 0 entries, and this line is what said so.
+    expect(stored.length, 'THE WORKER LIST WAS NOT READ').toBeGreaterThan(100);
+    expect(
+      stored.filter((u) => u.startsWith('art/') && !u.includes('clay')).length,
+    ).toBeGreaterThan(80);
+    const kit = stored.filter((u) => u.includes('art/clay/') || u.includes('kit'));
+    expect(kit, `THE WORKER STORES THE CLAY KIT: ${kit.slice(0, 3).join(', ')}`).toEqual([]);
+  });
+
   it('the worker it builds takes over when told SKIP_WAITING, which Update now depends on', () => {
     const worker = readFileSync(join(out, 'sw.js'), 'utf8');
     // Either way round: a production build writes `"SKIP_WAITING"===e.data.type&&self.skipWaiting()`,

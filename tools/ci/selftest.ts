@@ -970,7 +970,7 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-manifest-not-measured',
     why: 'The manifest is the contract the app reads, and it must record what was measured, never what was hoped. A measured ratio edited by hand in the manifest, with the render untouched, must turn the check red.',
-    file: 'tools/art-pipeline/clay/built/manifest.json',
+    file: 'packages/app/public/art/clay/manifest.json',
     mutate: (t) => t.replace(/"board": \d+\.?\d*/, '"board": 9.99'),
     gate: 'pnpm art:clay:check',
     expect: 'MANIFEST RECORDS WHAT WAS NOT MEASURED',
@@ -978,10 +978,38 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-output-not-recorded',
     why: 'An output picture that is not the one the manifest records (rebuilt by hand, edited, or left behind by an older run) must turn the check red: the app would be showing a picture the gate never saw.',
-    file: 'tools/art-pipeline/clay/built/manifest.json',
+    file: 'packages/app/public/art/clay/manifest.json',
     mutate: (t) => t.replace(/"sha256": "[0-9a-f]{8}/g, '"sha256": "00000000'),
     gate: 'pnpm art:clay:check',
     expect: 'OUTPUT IS NOT WHAT THE MANIFEST RECORDS',
+  },
+  {
+    id: 'clay-kit-colour-is-measured',
+    why: 'The kit writes down the lit colour of the board and of the well so the page can match the board. They are measurements, read from the renders by the art pipeline; a value typed in by hand, or left behind when the board is re-rendered, must turn the check red.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/board: '#[0-9a-fA-F]{6}'/, "board: '#123456'"),
+    gate: 'pnpm art:clay:check',
+    expect: "THE KIT'S COLOUR IS NOT THE MEASURED ONE",
+  },
+  {
+    id: 'kit-contrast-reads-the-tokens',
+    why: 'Stage L3: every pairing of the kit colours that carries words or marks a control is held to Gate 1 bounds by the kit test. A test that passed whatever the tokens said would pass a card nobody can read. With the quiet ink turned pale, the real pairings must FAIL, by name.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/inkSoft: '#[0-9a-fA-F]{6}'/, "inkSoft: '#B7AAB2'"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT CONTRAST: quiet words on a card',
+  },
+  {
+    id: 'clay-not-in-the-worker',
+    why: 'Stage L3: the Clay art and the kit page are served but must not be stored on a player phone until a screen uses them (L4). With the exclusion removed from the app build, the build test must FAIL naming what the worker stores.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t.replace(
+        "const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kit-*'];",
+        'const CLAY_NOT_YET: string[] = [];',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER STORES THE CLAY KIT',
   },
   {
     id: 'start-check-refuses',
