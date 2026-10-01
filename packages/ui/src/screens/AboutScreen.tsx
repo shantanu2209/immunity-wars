@@ -34,37 +34,46 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { BODY, PAGE, SECTION, TITLE } from './chrome';
+import { BODY, CARD, LEAD, PAGE, SECTION, TITLE } from './chrome';
 
 /** Its way back is the floating close (docs/for-P2.7.md §9, ruling 8), not a button at the end. */
 export function AboutScreen(): ReactElement {
   return (
     <div style={PAGE} data-screen="about">
       <h1 style={TITLE}>{t('about.title')}</h1>
-      <p style={BODY}>{t('about.lead')}</p>
+      <p style={LEAD}>{t('about.lead')}</p>
 
-      <h2 style={SECTION}>{t('about.credits')}</h2>
-      <p style={BODY}>
-        <b>{t('about.design')}</b> {t('about.designBody')}
-      </p>
-      <p style={BODY}>
-        <b>{t('about.direction')}</b> {t('about.directionBody')}
-      </p>
-      <p style={BODY}>
-        <b>{t('about.code')}</b> {t('about.codeBody')}
-      </p>
+      {/* Each section is a card (stage L5): prose is read on cream, not on the dark table. */}
+      <section style={CARD}>
+        <h2 style={SECTION}>{t('about.credits')}</h2>
+        <p style={BODY}>
+          <b>{t('about.design')}</b> {t('about.designBody')}
+        </p>
+        <p style={BODY}>
+          <b>{t('about.direction')}</b> {t('about.directionBody')}
+        </p>
+        <p style={{ ...BODY, marginBottom: 0 }}>
+          <b>{t('about.code')}</b> {t('about.codeBody')}
+        </p>
+      </section>
 
-      <h2 style={SECTION}>{t('about.recognition')}</h2>
-      <p style={BODY}>{t('about.prize')}</p>
-      <p style={BODY}>{t('about.showcase')}</p>
+      <section style={CARD}>
+        <h2 style={SECTION}>{t('about.recognition')}</h2>
+        <p style={BODY}>{t('about.prize')}</p>
+        <p style={{ ...BODY, marginBottom: 0 }}>{t('about.showcase')}</p>
+      </section>
 
-      <h2 style={SECTION}>{t('about.privacy')}</h2>
-      <p style={BODY}>{t('about.privacyBody')}</p>
+      <section style={CARD}>
+        <h2 style={SECTION}>{t('about.privacy')}</h2>
+        <p style={{ ...BODY, marginBottom: 0 }}>{t('about.privacyBody')}</p>
+      </section>
 
-      <h2 style={SECTION}>{t('about.licence')}</h2>
-      <p style={BODY}>{t('about.licenceCode')}</p>
-      <p style={BODY}>{t('about.licenceContent')}</p>
-      <p style={BODY}>{t('about.classroom')}</p>
+      <section style={CARD}>
+        <h2 style={SECTION}>{t('about.licence')}</h2>
+        <p style={BODY}>{t('about.licenceCode')}</p>
+        <p style={BODY}>{t('about.licenceContent')}</p>
+        <p style={{ ...BODY, marginBottom: 0 }}>{t('about.classroom')}</p>
+      </section>
     </div>
   );
 }

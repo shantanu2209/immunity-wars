@@ -121,6 +121,9 @@ export function KitChip({
         display: 'inline-flex',
         alignItems: 'center',
         gap: '0.4em',
+        // Never wider than what it is in: its words take a second line first.
+        maxWidth: '100%',
+        boxSizing: 'border-box',
         padding: '0.25em 0.7em',
         borderRadius: RADIUS.pill,
         background: tone === 'now' ? COLOUR.gold : COLOUR.creamSunk,

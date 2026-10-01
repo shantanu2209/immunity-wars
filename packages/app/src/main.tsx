@@ -52,19 +52,22 @@ import {
   type LobbyRoom,
   type SaveSummary,
 } from '@immunity-wars/ui';
-import { KitButton } from '@immunity-wars/ui/kit';
+import { KitButton, kitAudio } from '@immunity-wars/ui/kit';
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import {
   LOCALES,
+  SOUND_SETTINGS,
   TEXT_SIZES,
+  applySound,
   applyTextSize,
   browserStore,
   readSettings,
   writeSettings,
   type Locale,
   type Settings,
+  type SoundSetting,
   type TextSize,
 } from './settings';
 import { clearHints, readHints, writeHints } from './hints';
@@ -113,6 +116,7 @@ const initialSettings = readSettings(prefStore);
 const initialHintsSeen = readHints(prefStore).seen;
 const initialPlayed = readPlayed(prefStore).played;
 applyTextSize(initialSettings.textSize);
+applySound(initialSettings.sound, kitAudio);
 
 type Screen =
   | { name: 'title' }
@@ -186,6 +190,7 @@ function App({
   const saveSettings = (s: Settings): void => {
     setSettings(s);
     applyTextSize(s.textSize);
+    applySound(s.sound, kitAudio);
     writeSettings(prefStore, s);
   };
   // Whether a game is under way, reported up so the crash screen can tell case A from case B.
@@ -533,11 +538,15 @@ function App({
       textSizes={TEXT_SIZES}
       language={settings.language}
       languages={LOCALES}
+      sound={settings.sound}
+      sounds={SOUND_SETTINGS}
       onChoose={(row, v) =>
         saveSettings(
           row === 'textSize'
             ? { ...settings, textSize: v as TextSize }
-            : { ...settings, language: v as Locale },
+            : row === 'sound'
+              ? { ...settings, sound: v as SoundSetting }
+              : { ...settings, language: v as Locale },
         )
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}

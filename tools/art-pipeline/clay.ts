@@ -347,6 +347,16 @@ async function ingest(): Promise<void> {
     writeFileSync(join(RENDERS, 'table', `${TABLE}.webp`), out);
     n += 1;
   }
+  for (const name of names(join(PNG, 'scene'), '.png')) {
+    mkdirSync(join(RENDERS, 'scene'), { recursive: true });
+    const px = await pixels(readFileSync(join(PNG, 'scene', `${name}.png`)));
+    feather(px, SCENE_FEATHER);
+    const out = await sharp(px.data, { raw: { width: px.width, height: px.height, channels: 4 } })
+      .webp({ lossless: true, effort: 4 })
+      .toBuffer();
+    writeFileSync(join(RENDERS, 'scene', `${name}.webp`), out);
+    n += 1;
+  }
   if (n === 0)
     throw new Error(
       `nothing under ${relative(HERE, PNG)}: render in Blender first (clay/pieces.py)`,
@@ -476,6 +486,33 @@ async function judgeTable(input: Buffer, g: Grounds): Promise<Verdict> {
   };
 }
 
+/**
+ * A SCENE (stage L5): a picture of the pieces, for a screen that is not the board. The title's is
+ * the first. It tells a player nothing they must read to play: no state, no control, no choice. So
+ * it is NOT held to 3:1, and the run says how many pictures were held to what, so that a scene is
+ * never counted among the pictures measured for contrast. What it is held to:
+ *
+ *   NOT CUT OFF AT ITS EDGE   it stands on the page's own ground, and a shadow or a piece that
+ *                             reaches the picture's edge shows as a straight line across the screen
+ *   SOMETHING IS IN IT        a render that came out empty is refused, not shipped as a clear picture
+ */
+const SCENE_WIDTH = 360;
+const SCENE_FEATHER = 0.03;
+const SCENE_MIN_SHARE = 0.2;
+async function judgeScene(name: string, input: Buffer): Promise<Verdict> {
+  const p = await pixels(input);
+  const b = body(p);
+  const edge = edgeOf(p);
+  const failures: string[] = [];
+  if (edge > EDGE_MAX)
+    failures.push(`${name}: CUT OFF AT ITS EDGE, ${edge} of 255 there, over ${EDGE_MAX}`);
+  if (b.share < SCENE_MIN_SHARE)
+    failures.push(
+      `${name}: NOTHING IS IN IT, ${round2(b.share)} of the picture is solid, under ${SCENE_MIN_SHARE}`,
+    );
+  return { measured: { body: hex(b), share: round2(b.share), edge, against: {} }, failures };
+}
+
 const kindOf = (name: string): Asset['kind'] =>
   name === BASE
     ? 'base'
@@ -488,8 +525,8 @@ const kindOf = (name: string): Asset['kind'] =>
           : 'invader';
 
 interface Asset {
-  view: View | 'table';
-  kind: 'cell' | 'invader' | 'base' | 'organ' | 'entry' | 'board';
+  view: View | 'table' | 'scene';
+  kind: 'cell' | 'invader' | 'base' | 'organ' | 'entry' | 'board' | 'scene';
   displayPx: number;
   measured: Measured;
   source: { file: string; sha256: string };
@@ -568,6 +605,33 @@ async function build(
       displayPx: TABLE_WIDTH,
       measured: v.measured,
       source: { file: `renders/table/${TABLE}.webp`, sha256: sha(input) },
+      files: out,
+    };
+  }
+  for (const name of names(join(RENDERS, 'scene'), '.webp')) {
+    const input = readFileSync(join(RENDERS, 'scene', `${name}.webp`));
+    const v = await judgeScene(name, input);
+    failures.push(...v.failures.map((x) => `[scene] ${x}`));
+    mkdirSync(join(outDir, 'scene'), { recursive: true });
+    const out: Asset['files'] = {};
+    for (const scale of [1, 2, 3]) {
+      const px = SCENE_WIDTH * scale;
+      const buf = await sharp(input)
+        .resize({ width: px, kernel: 'lanczos3' })
+        .webp({ quality: 86, alphaQuality: 100, effort: 4 })
+        .toBuffer();
+      const file = `${name}@${scale}x.webp`;
+      writeFileSync(join(outDir, 'scene', file), buf);
+      out[`${scale}x`] = { file: `scene/${file}`, px, bytes: buf.length, sha256: sha(buf) };
+      files += 1;
+      bytes += buf.length;
+    }
+    assets[`scene/${name}`] = {
+      view: 'scene',
+      kind: 'scene',
+      displayPx: SCENE_WIDTH,
+      measured: v.measured,
+      source: { file: `renders/scene/${name}.webp`, sha256: sha(input) },
       files: out,
     };
   }
@@ -726,6 +790,49 @@ async function control(): Promise<boolean> {
       `routes ${real.measured.against['routes on the board']}:1, steps ${real.measured.against['steps on the board']}:1, ${real.failures.length === 0 ? 'accepted' : 'REJECTED'}`,
     );
   }
+
+  // A SCENE, made here (stage L5). It is held to its edge and to having something in it, and to
+  // nothing else: a scene the colour of the board is accepted, which a piece would not be.
+  const scene = async (inner: string): Promise<Buffer> =>
+    sharp(
+      Buffer.from(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="320">${inner}</svg>`,
+      ),
+    )
+      .png()
+      .toBuffer();
+  const boardRgb = `rgb(${Math.round(g.board.r)},${Math.round(g.board.g)},${Math.round(g.board.b)})`;
+  const whole = await judgeScene(
+    'control-scene',
+    await scene(`<ellipse cx="180" cy="160" rx="150" ry="120" fill="${boardRgb}"/>`),
+  );
+  line(
+    'mustPass, a scene the colour of the board, clear of its edge',
+    whole.failures.length === 0,
+    `${whole.measured.edge} of 255 at the edge, ${whole.measured.share} of it solid, ${whole.failures.length === 0 ? 'accepted' : 'REJECTED'}`,
+  );
+  const cutScene = await judgeScene(
+    'control-scene',
+    await scene(`<ellipse cx="180" cy="160" rx="200" ry="120" fill="${boardRgb}"/>`),
+  );
+  const sceneForEdge =
+    cutScene.failures.length === 1 && (cutScene.failures[0] ?? '').includes('CUT OFF AT ITS EDGE');
+  line(
+    'mustFail, a scene that runs off the picture',
+    sceneForEdge,
+    `${cutScene.measured.edge} of 255 at the edge, ${sceneForEdge ? 'rejected for its edge' : 'NOT REJECTED FOR ITS EDGE'}`,
+  );
+  const speck = await judgeScene(
+    'control-scene',
+    await scene(`<circle cx="180" cy="160" r="20" fill="${boardRgb}"/>`),
+  );
+  const forEmpty =
+    speck.failures.length === 1 && (speck.failures[0] ?? '').includes('NOTHING IS IN IT');
+  line(
+    'mustFail, a scene with next to nothing in it',
+    forEmpty,
+    `${speck.measured.share} of it solid, ${forEmpty ? 'rejected for it' : 'NOT REJECTED FOR IT'}`,
+  );
   return ok;
 }
 
@@ -764,13 +871,19 @@ function compare(a: string, b: string): string[] {
  * Controls: pnpm ci:selftest clay-gate-reads-the-pictures, clay-manifest-not-measured,
  * clay-output-not-recorded.
  */
-async function check(): Promise<{ problems: string[]; pictures: number; files: number }> {
+async function check(): Promise<{
+  problems: string[];
+  pictures: number;
+  scenes: number;
+  files: number;
+}> {
   const problems: string[] = [];
   const manifestPath = join(OUT, 'manifest.json');
   if (!existsSync(manifestPath))
     return {
       problems: ['OUTPUT IS NOT WHAT THE MANIFEST RECORDS: there is no manifest'],
       pictures: 0,
+      scenes: 0,
       files: 0,
     };
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
@@ -870,10 +983,41 @@ async function check(): Promise<{ problems: string[]; pictures: number; files: n
       }
     }
   }
+  let scenes = 0;
+  for (const name of names(join(RENDERS, 'scene'), '.webp')) {
+    const key = `scene/${name}`;
+    seen.add(key);
+    scenes += 1;
+    const input = readFileSync(join(RENDERS, 'scene', `${name}.webp`));
+    const asset = manifest.assets[key];
+    const v = await judgeScene(name, input);
+    problems.push(...v.failures.map((x) => `SCENE GATE: [scene] ${x}`));
+    if (!asset) problems.push(`A RENDER IS NOT IN THE MANIFEST: ${key}`);
+    else {
+      if (JSON.stringify(asset.measured) !== JSON.stringify(v.measured))
+        problems.push(
+          `MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} measures ${JSON.stringify(v.measured)}, the manifest says ${JSON.stringify(asset.measured)}`,
+        );
+      if (asset.source.sha256 !== sha(input))
+        problems.push(
+          `MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} was built from a different render`,
+        );
+      for (const out of Object.values(asset.files)) {
+        const file = join(OUT, out.file);
+        files += 1;
+        if (!existsSync(file))
+          problems.push(`OUTPUT IS NOT WHAT THE MANIFEST RECORDS: ${out.file} is missing`);
+        else if (sha(readFileSync(file)) !== out.sha256)
+          problems.push(
+            `OUTPUT IS NOT WHAT THE MANIFEST RECORDS: ${out.file} is not the file that was built`,
+          );
+      }
+    }
+  }
   for (const key of Object.keys(manifest.assets))
     if (!seen.has(key))
       problems.push(`MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} has no render`);
-  return { problems, pictures: seen.size, files };
+  return { problems, pictures: seen.size - scenes, scenes, files };
 }
 
 const arg = (flag: string): boolean => process.argv.includes(flag);
@@ -895,7 +1039,7 @@ if (arg('--pictograms')) {
     process.exit(1);
   }
   console.log(
-    `clay check: ${r.pictures} pictures re-measured from their renders, every one at ${MIN_CONTRAST}:1 or better against its ground; the manifest records what was measured, and its ${r.files} output files are the ones built`,
+    `clay check: ${r.pictures} pictures re-measured from their renders, every one at ${MIN_CONTRAST}:1 or better against its ground; ${r.scenes} scene${r.scenes === 1 ? '' : 's'}, held to its edge and not to contrast; the manifest records what was measured, and its ${r.files} output files are the ones built`,
   );
 } else if (arg('--control')) {
   console.log('clay gate controls');
@@ -928,7 +1072,7 @@ if (arg('--pictograms')) {
     );
   } else {
     console.log(
-      `built ${r.assets} pictures as ${r.files} files, ${(r.bytes / 1024).toFixed(0)} KB, into ${relative(HERE, OUT)}; every one at ${MIN_CONTRAST}:1 or better against its ground`,
+      `built ${r.assets} pictures as ${r.files} files, ${(r.bytes / 1024).toFixed(0)} KB, into ${relative(HERE, OUT)}; every piece, coin and board at ${MIN_CONTRAST}:1 or better against its ground, and every scene clear of its edge`,
     );
   }
 }

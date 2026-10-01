@@ -86,6 +86,7 @@ describe('both entries build', { timeout: 180_000 }, () => {
     const drawn = [
       ...readdirSync(join(out, 'art', 'clay', 'table')).map((f) => `art/clay/table/${f}`),
       ...readdirSync(join(out, 'art', 'clay', 'card')).map((f) => `art/clay/card/${f}`),
+      ...readdirSync(join(out, 'art', 'clay', 'scene')).map((f) => `art/clay/scene/${f}`),
       ...readdirSync(join(out, 'art', 'clay', 'board'))
         .filter((f) => f.endsWith('@3x.webp'))
         .map((f) => `art/clay/board/${f}`),

@@ -44,7 +44,13 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * `entries-build.test.ts` holds it three ways: every script the app's page needs is in the worker's
  * list; every picture the board draws is; and nothing that only the kit page uses is.
  */
-const CLAY_ON_THE_BOARD = ['art/clay/board/*@3x.webp', 'art/clay/table/*', 'art/clay/card/*'];
+const CLAY_ON_THE_BOARD = [
+  'art/clay/board/*@3x.webp',
+  'art/clay/table/*',
+  'art/clay/card/*',
+  // The title's picture (stage L5), at every size: a phone picks the one its screen wants.
+  'art/clay/scene/*',
+];
 const CLAY_NOT_YET = [
   '**/art/clay/**',
   'kit.html',
@@ -73,8 +79,10 @@ export default defineConfig({
         short_name: 'Immunity Wars',
         description: 'A cooperative immunology game, designed by Kartik Chaudhary',
         display: 'standalone',
-        background_color: '#FFFDF9',
-        theme_color: '#B03A2E',
+        // The kit's table (COLOUR.table), since stage L5: an installed app opens on the ground
+        // its screens stand on. src/ground.test.ts holds these to the kit's value.
+        background_color: '#0e2a30',
+        theme_color: '#0e2a30',
         icons: [],
       },
       workbox: {

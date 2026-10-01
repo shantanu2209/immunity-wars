@@ -11,6 +11,15 @@
       real icon is Phase 4's packaging.
     -->
     <link rel="icon" href="data:," />
+    <style>
+      /* THE TABLE (stage L5): the page's own ground is the kit's table, from the first paint, so a
+         screen that is loading is dark and not a white flash. The colour is the kit's
+         (packages/ui/src/kit/tokens.ts, COLOUR.table); src/ground.test.ts holds the two together. */
+      html,
+      body {
+        background: #0e2a30;
+      }
+    </style>
     <title>The Immunity Wars</title>
     <!--
       THE APP (docs/APP_FLOW.md): Title -> Difficulty -> Play -> Result. The instrumented

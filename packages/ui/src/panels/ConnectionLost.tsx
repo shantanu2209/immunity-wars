@@ -12,8 +12,11 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { BTN } from '../screens/chrome';
+import { KitButton } from '../kit/Button';
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { offersUpdate, refusalText } from '../together/model';
+
 import { UpdateNow } from './UpdateNow';
 
 export function ConnectionLost({
@@ -35,37 +38,31 @@ export function ConnectionLost({
     <>
       <div
         aria-hidden="true"
-        style={{ position: 'fixed', inset: 0, background: 'rgba(46,42,40,0.45)', zIndex: 40 }}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(4, 18, 22, 0.72)', zIndex: 40 }}
       />
       <div
         data-connection-lost=""
         role="alertdialog"
         aria-label={t('lobby.connectionLost')}
         style={{
+          ...kitCardStyle,
           position: 'fixed',
-          left: 16,
-          right: 16,
-          top: '30%',
+          left: 12,
+          right: 12,
+          top: '24%',
           margin: '0 auto',
           maxWidth: 420,
-          padding: '14px 16px',
-          borderRadius: 14,
-          border: '2px solid #B03A2E',
-          background: '#FFFDF9',
+          padding: '1em',
           zIndex: 41,
         }}
       >
-        <div style={{ fontSize: '1rem', fontWeight: 700, color: '#B03A2E' }}>
-          {t('lobby.connectionLost')}
-        </div>
-        <p style={{ fontSize: '0.9375rem', color: '#2E2A28', margin: '8px 0 0' }}>
-          {t('table.lostBody')}
-        </p>
+        <div style={{ ...TYPE.heading, color: COLOUR.coralInk }}>{t('lobby.connectionLost')}</div>
+        <p style={{ ...TYPE.body, color: COLOUR.ink, margin: '8px 0 0' }}>{t('table.lostBody')}</p>
         {refusal !== null ? (
           <p
             data-connection-refusal=""
             role="alert"
-            style={{ fontSize: '0.875rem', color: '#B03A2E', margin: '8px 0 0' }}
+            style={{ ...TYPE.body, color: COLOUR.coralInk, margin: '8px 0 0' }}
           >
             {refusalText(refusal.code, refusal.detail)}
           </p>
@@ -73,17 +70,18 @@ export function ConnectionLost({
         {refusal !== null && onUpdate && offersUpdate(refusal.code) ? (
           <UpdateNow onUpdate={onUpdate} />
         ) : null}
-        <button
+        <KitButton
+          kind="main"
           data-reconnect=""
-          style={{ ...BTN, borderColor: '#B03A2E' }}
-          disabled={reconnecting}
-          onClick={onReconnect}
+          style={{ marginTop: 12 }}
+          unavailable={reconnecting}
+          onPress={onReconnect}
         >
           {reconnecting ? t('table.reconnecting') : t('lobby.reconnect')}
-        </button>
-        <button data-lost-title="" style={BTN} onClick={onTitle}>
+        </KitButton>
+        <KitButton data-lost-title="" style={{ marginTop: 12 }} onPress={onTitle}>
           {t('table.backToTitle')}
-        </button>
+        </KitButton>
       </div>
     </>
   );

@@ -5,10 +5,16 @@
  * command: the play area holds this draw's cards, the middle says what the spread did and what the
  * turn's event was, and the one button at the bottom begins planning.
  *
- * THE CARDS ARE DRAWN FROM DATA, not from the printed card's artwork: the kind's art (`path-*`, the
- * same file the board and the inspect sheet use), the disease's name, and its antibody class. So a
- * disease added to the content pack has a front the moment it has a row, and the physical deck and
- * the app cannot drift apart — the parity rule in CLAUDE.md, applied to a card.
+ * THE CARDS ARE DRAWN FROM DATA, not from the printed card's artwork: the piece that stands for it
+ * on the board, the disease's name, and its antibody class. So a disease added to the content pack
+ * has a front the moment it has a row, and the physical deck and the app cannot drift apart — the
+ * parity rule in CLAUDE.md, applied to a card.
+ *
+ * DRAWN IN CLAY (stage L5 of docs/LOOK_PLAN.md). A card is a slab of the kit's cream standing on
+ * the table, with the piece as a card shows it: seen at an angle, in the colour of its antigen
+ * class. So the picture on a new card is the picture that then walks the board. A pathogen new to
+ * the body is the pale unknown piece and says so; its class is not shown, because it has none yet.
+ * The cards are dealt: each arrives a moment after the one before, with the kit's arrival.
  *
  * A tap flips one card to its back: where it came in, whether it is novel or remembered, and the
  * class that neutralises it, with the card icon opening the full pathogen card. A second tap flips
@@ -16,32 +22,47 @@
  * not fit a tile, and item 11 of the same message forbids an intermediate level that says nothing —
  * so the icon goes straight to the card from either face.
  */
-import { FAMILY, ROUTES } from '@immunity-wars/content';
+import { FAMILIES, FAMILY, ROUTES } from '@immunity-wars/content';
 
-import { useState, type CSSProperties, type ReactElement } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
+import { classOf, pieceFor } from '../board/clay';
+import type { RevealArrival, RevealCrisis } from '../dialogs/RevealBody';
 import { t } from '../i18n';
+import { play } from '../kit/motion';
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 import { CardIcon } from '../panels/CardIcon';
 import { RichText } from '../panels/LogPanel';
+import { SAY, TONE } from '../panels/onCard';
 
-import type { RevealArrival, RevealCrisis } from '../dialogs/RevealBody';
+/** How long after the card before it each card is dealt. */
+const DEAL_GAP_MS = 110;
 
 const CARD: CSSProperties = {
+  ...kitCardStyle,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'flex-start',
   gap: 2,
-  minHeight: 44,
-  padding: '6px 4px',
-  borderRadius: 10,
-  border: '1.5px solid #C48377',
-  background: '#FFFDF9',
+  minHeight: TOUCH.min,
+  padding: '6px 6px 8px',
+  borderRadius: RADIUS.control,
+  border: 0,
+  boxShadow: `0 4px 0 ${COLOUR.creamEdge}, 0 8px 14px rgba(0, 0, 0, 0.3)`,
   cursor: 'pointer',
-  font: 'inherit',
   textAlign: 'center',
   overflow: 'hidden',
 };
+const NAME: CSSProperties = {
+  ...TYPE.action,
+  fontSize: '0.875rem',
+  fontWeight: 900,
+  color: COLOUR.ink,
+  overflowWrap: 'anywhere',
+};
+const SMALL: CSSProperties = { ...SAY.quiet, fontSize: '0.75rem', lineHeight: 1.25 };
 
 /** A route's player-facing name, as the reveal said it. */
 const routeName = (lane: string): string => {
@@ -52,19 +73,39 @@ const routeName = (lane: string): string => {
 const familyOf = (disease: string): string =>
   String((FAMILY as Record<string, string | undefined>)[disease] ?? '');
 
+/** A class's own colour, the content pack's: the one its pieces wear. */
+const classColour = (family: string): string | null =>
+  (FAMILIES as Record<string, { col?: string } | undefined>)[family]?.col ?? null;
+
 /** One card, front or back; the whole tile is the button that flips it. */
 function ArrivalCard({
   arrival,
+  index,
   onCard,
 }: {
   arrival: RevealArrival;
+  /** Its place in the deal: later cards arrive later. */
+  index: number;
   onCard: ((a: RevealArrival) => void) | undefined;
 }): ReactElement {
   const [back, setBack] = useState(false);
+  const ref = useRef<HTMLButtonElement | null>(null);
+  // Dealt once, when it is first shown. A card is drawn where it belongs and the arrival is only
+  // how it got there, so a phone that asks for less motion, or a deal cut short, leaves it right.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const timer = window.setTimeout(() => play(el, 'arrive'), index * DEAL_GAP_MS);
+    return () => window.clearTimeout(timer);
+  }, [index]);
   const family = familyOf(arrival.disease);
   const name = arrival.novel ? t('inspect.unknown') : arrival.disease;
+  const { piece } = pieceFor(arrival.type, classOf(arrival.disease, arrival.novel), false);
+  const colour = classColour(family);
   return (
     <button
+      ref={ref}
+      type="button"
       data-arrival={arrival.disease}
       data-arrival-face={back ? 'back' : 'front'}
       style={CARD}
@@ -72,26 +113,22 @@ function ArrivalCard({
     >
       {back ? (
         <>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#2E2A28' }}>{name}</span>
+          <span style={NAME}>{name}</span>
           {arrival.lane !== null ? (
-            <span style={{ fontSize: '0.6875rem', color: '#78665D' }}>
-              {t('arrivals.via', { place: routeName(arrival.lane) })}
-            </span>
+            <span style={SMALL}>{t('arrivals.via', { place: routeName(arrival.lane) })}</span>
           ) : null}
           {arrival.novel ? (
-            <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#B03A2E' }}>
+            <span style={{ ...SMALL, fontWeight: 800, color: TONE.bad }}>
               {t('arrivals.novel')}
             </span>
           ) : null}
           {arrival.remembered ? (
-            <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#1F6F8B' }}>
+            <span style={{ ...SMALL, fontWeight: 800, color: TONE.good }}>
               {t('arrivals.remembered')}
             </span>
           ) : null}
           {family !== '' && !arrival.novel ? (
-            <span style={{ fontSize: '0.6875rem', color: '#2F6B4A' }}>
-              {t('arrivals.beatenBy', { family })}
-            </span>
+            <span style={{ ...SMALL, color: TONE.good }}>{t('arrivals.beatenBy', { family })}</span>
           ) : null}
           {!arrival.novel && onCard ? (
             <span
@@ -100,15 +137,18 @@ function ArrivalCard({
               tabIndex={0}
               aria-label={t('card.about', { name: arrival.disease })}
               style={{
-                color: '#8E6E53',
+                color: COLOUR.ink,
                 marginTop: 'auto',
                 // A CONTROL IS 44 (Gate 1): the icon alone measured 26 x 26 on the audit's first
                 // run of this piece, which is what the touch check is for.
-                minWidth: 44,
-                minHeight: 44,
+                minWidth: TOUCH.min,
+                minHeight: TOUCH.min,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderRadius: RADIUS.control,
+                background: COLOUR.creamSunk,
+                boxShadow: `0 3px 0 ${COLOUR.creamSunkEdge}`,
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -127,24 +167,36 @@ function ArrivalCard({
       ) : (
         <>
           <img
-            src={`/art/path-${arrival.novel ? 'hidden' : arrival.type}@3x.webp`}
-            width={40}
-            height={40}
+            src={`/art/clay/card/${piece}@2x.webp`}
             alt=""
-            style={{ flex: '0 0 auto' }}
+            style={{ flex: '0 1 auto', width: '78%', maxWidth: 96, aspectRatio: '1', minHeight: 0 }}
           />
-          <span
-            style={{
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#2E2A28',
-              overflowWrap: 'anywhere',
-            }}
-          >
-            {name}
-          </span>
+          <span style={NAME}>{name}</span>
           {family !== '' && !arrival.novel ? (
-            <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#B03A2E' }}>
+            // The class by its code, with its colour as a dot beside it: the code carries the
+            // meaning, the dot is the colour its piece wears.
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: '0.75rem',
+                fontWeight: 900,
+                color: COLOUR.ink,
+              }}
+            >
+              {colour !== null ? (
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: colour,
+                    boxShadow: `0 0 0 1.5px ${COLOUR.ink}`,
+                  }}
+                />
+              ) : null}
               {family}
             </span>
           ) : null}
@@ -173,15 +225,17 @@ export function ArrivalsGrid({
         // column and row capped so one arrival does not stretch into a poster. The play area's
         // height is fixed, so a draw with more cards than fit scrolls inside the grid.
         gridTemplateColumns: `repeat(${String(Math.min(3, Math.max(1, arrivals.length)))}, minmax(0, 7.5rem))`,
-        gridAutoRows: 'minmax(0, 9rem)',
+        gridAutoRows: 'minmax(0, 10rem)',
         justifyContent: 'center',
         alignContent: 'center',
-        gap: 6,
+        gap: 10,
+        padding: 6,
+        boxSizing: 'border-box',
         overflowY: 'auto',
       }}
     >
       {arrivals.map((a, i) => (
-        <ArrivalCard key={[a.disease, String(i)].join('-')} arrival={a} onCard={onCard} />
+        <ArrivalCard key={[a.disease, String(i)].join('-')} arrival={a} index={i} onCard={onCard} />
       ))}
     </div>
   );
@@ -201,27 +255,30 @@ export function ArrivalsNotes({
   return (
     <div data-middle-view="arrivals" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {crisis ? (
+        // The turn's event: good news on the kit's mint ground, bad news behind a coral bar. Each
+        // says which it is in words; the colour repeats it.
         <div
           data-reveal-crisis={crisis.name}
           style={{
             padding: '6px 10px',
-            borderRadius: 8,
-            border: `1.5px solid ${crisis.bad ? '#B03A2E' : '#2F6B4A'}`,
-            background: crisis.bad ? '#FBEAE5' : '#EAF3EC',
-            color: crisis.bad ? '#B03A2E' : '#2F6B4A',
+            borderRadius: 12,
+            ...(crisis.bad
+              ? { background: COLOUR.creamSunk, borderLeft: `6px solid ${COLOUR.coral}` }
+              : { background: COLOUR.mintSoft }),
+            color: crisis.bad ? COLOUR.ink : COLOUR.mintInk,
           }}
         >
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78665D' }}>
+          <div style={{ ...SAY.label, color: crisis.bad ? TONE.bad : COLOUR.mintInk }}>
             {t(crisis.bad ? 'reveal.crisisBad' : 'reveal.crisisGood')}
           </div>
-          <div style={{ fontSize: '0.9375rem', fontWeight: 700 }}>{crisis.name}</div>
+          <div style={{ ...SAY.heading, color: 'inherit' }}>{crisis.name}</div>
           {crisis.why !== null ? (
-            <div style={{ fontSize: '0.8125rem', color: '#4A423E' }}>
+            <div style={{ ...SAY.body, color: 'inherit' }}>
               <RichText text={crisis.why} />
             </div>
           ) : null}
           {crisis.effects.map((e, i) => (
-            <div key={String(i)} style={{ fontSize: '0.8125rem', fontWeight: 700 }}>
+            <div key={String(i)} style={{ ...SAY.body, fontWeight: 800, color: 'inherit' }}>
               {e}
             </div>
           ))}
@@ -229,17 +286,15 @@ export function ArrivalsNotes({
       ) : null}
       {spread.length > 0 ? (
         <div data-spread-summary={String(spread.length)}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78665D' }}>
-            {t('arrivals.spreadTitle')}
-          </div>
+          <div style={SAY.label}>{t('arrivals.spreadTitle')}</div>
           {spread.map((line, i) => (
-            <div key={String(i)} style={{ fontSize: '0.8125rem', color: '#2E2A28' }}>
+            <div key={String(i)} style={SAY.body}>
               {line}
             </div>
           ))}
         </div>
       ) : null}
-      <div style={{ fontSize: '0.75rem', color: '#78665D' }}>{t('arrivals.flipHint')}</div>
+      <div style={SAY.quiet}>{t('arrivals.flipHint')}</div>
     </div>
   );
 }

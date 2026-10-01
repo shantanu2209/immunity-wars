@@ -28,15 +28,28 @@ export type TextSize = (typeof TEXT_SIZES)[number];
 export const LOCALES = ['en'] as const;
 export type Locale = (typeof LOCALES)[number];
 
+/**
+ * SOUND AND TOUCH (stage L5; ruled at L3, 1 October 2026: "sound is on by default, with a mute in
+ * Settings"). One switch for the sounds and the buzz together, as the kit's audio has one mute.
+ */
+export const SOUND_SETTINGS = ['on', 'off'] as const;
+export type SoundSetting = (typeof SOUND_SETTINGS)[number];
+
 const SettingsSchema = z.object({
   v: z.literal(1),
   textSize: z.enum(TEXT_SIZES),
   language: z.enum(LOCALES),
+  // IT HAS A DEFAULT, AND THAT IS LOAD-BEARING. A record stored before this field existed has no
+  // `sound`; without a default it would fail the schema, the whole record would read as the
+  // defaults, and a player's text size would be reset by an update that added a sound switch.
+  // `hints.ts` kept the hints out of this object for exactly that reason. With the default an old
+  // record reads as it was, with sound on. Control: pnpm ci:selftest settings-old-record-is-kept.
+  sound: z.enum(SOUND_SETTINGS).default('on'),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;
 
-export const DEFAULT_SETTINGS: Settings = { v: 1, textSize: '100', language: 'en' };
+export const DEFAULT_SETTINGS: Settings = { v: 1, textSize: '100', language: 'en', sound: 'on' };
 
 export const SETTINGS_KEY = 'immunity-wars.settings';
 
@@ -85,6 +98,16 @@ export function writeSettings(store: KeyValueStore | null | undefined, s: Settin
 }
 
 /** The root element's two surfaces this mechanism touches; a fake satisfies it in tests. */
+/** What can be muted: the kit's audio, or a stand-in for it in a test. */
+export interface Mutable {
+  muted: boolean;
+}
+
+/** Applies the sound setting to the audio: off is the kit's one mute, for sounds and buzz alike. */
+export function applySound(sound: SoundSetting, audio: Mutable): void {
+  audio.muted = sound === 'off';
+}
+
 export interface RootLike {
   style: { fontSize: string };
   dataset: { textSize?: string };
