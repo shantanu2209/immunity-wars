@@ -90,7 +90,14 @@ describe('the Clay board, drawn', () => {
   });
 
   it('NO WORDS ON THE BOARD: what is written on it is numbers, and nothing else', () => {
-    const written = html.replace(/<[^>]*>/g, '').trim();
+    // What stands BETWEEN the tags is read out; nothing is cut out of the markup. Cutting tags out
+    // with one pass of a pattern is the shape the code scanner refuses, here as on pull request
+    // #70 (tests/equivalence/src/strip-markup.ts), because as a way of making markup safe it is
+    // not one. This makes nothing safe: it reads.
+    const written = [...html.matchAll(/>([^<>]+)</g)]
+      .map((m) => m[1] ?? '')
+      .join(' ')
+      .trim();
     expect(
       /^[0-9\s]*$/.test(written) ? [] : [`THE BOARD HAS WORDS ON IT: ${written.slice(0, 60)}`],
     ).toEqual([]);
