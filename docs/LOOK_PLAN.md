@@ -1082,9 +1082,22 @@ images, no longer applies to anything the app ships. It still applies to what is
 reference: the icon art in `tools/legacy/`, and the 16 rasters in the printed A2 board. **No
 licence is declared for content, as before;** whether to declare one is his.
 
-**Not run for this change: the Gate 1 audit.** One of its controls planted an old picture as "a
-picture the phone stores"; it plants a Clay one now. That line, and the whole audit, are run before
-anything is deployed, and are not claimed here.
+**The Gate 1 audit was not run before this change was committed, and was run after it,** on this
+change and Easy together, alone and with others (2 October, on the PC, against a build pointed at a
+relay on the same machine):
+
+| Read | Found |
+|---|---|
+| Screens in each of the four passes | 82, 82, 82 and 84 |
+| Not reached | **One, in one pass:** a row of actions with several targets, with the page zoomed to 200%. No piece had such a row in that walk or in 14 idle turns. It depends on what the game deals, and has gone unreached this way before; the other three passes reached it |
+| Controls measured, and runs of text | 1,045 and 2,122 |
+| Touch targets, contrast, text that scales, layout, things covering each other | 0 findings in every one |
+| The ways back out of each screen | 38 paths, none wrong |
+| With no network | The app came back and a turn was played: New game, **Easy**, Begin, to the end of a turn, each step done; 45 pictures, none broken |
+| The audit's own controls | 53, each fired. Among them the one this change touched: a Clay picture the build stores is not counted broken with the network cut |
+
+It presses the difficulty by the word a player reads, so this is also the first run in which it
+pressed Easy.
 
 ### A check added, so that the sentences do not come back
 
