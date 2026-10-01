@@ -5452,3 +5452,59 @@ out. Nothing was lost to it: the why-box test was run directly on each change to
 now moves with each of them, measured. `pnpm turbo:check`, inside `verify`, asserts they are in the
 hash, and control `turbo-outside-reads-hashed` removes one and sees the check fail. **An instrument
 defect, fixed inline.**
+
+## 109. Drawn from the kit, the play screen needed a script the phone did not store: with no network the app came back blank, and the build test passed — FIXED inline 1 October 2026
+
+**Found 1 October 2026 by the Gate 1 audit's offline pass**, on its first run against the Clay play
+screen (stage L4): with the network cut, a turn was played, the page was reloaded, and *the page
+loaded but the app did not render*. The one request that failed was `assets/kit-….js`.
+
+**What happened.** At stage L3 the kit page was kept off a player's phone by three exclusions in
+`packages/app/vite.config.ts`, one of them `assets/kit-*`, which then matched one file: the kit
+page's own script. At stage L4 the play screen's frame was drawn from the kit's components. The
+build puts what two pages share into a script of its own and names it after what is in it: the
+kit's components became `assets/kit-….js`, which the app's page needs, and the exclusion matched
+that too. The app started while the network was there, and could not start without it.
+
+**Why nothing said so.** `entries-build.test.ts` held the exclusion with "nothing of the kit is
+stored", read as "nothing in the worker's list has `kit` in its name". It had a control, which
+fired: with the exclusion removed the test failed. It had nothing that required the list to hold
+what the app needs. **"Forbid X" is half a specification** (CLAUDE.md, the rule P2.1 earned): the
+rule forbade more than it should, and forbidding more only makes a must-fail control pass harder.
+The pictures had their must-pass half ("every picture the board draws is stored") and the scripts
+did not.
+
+**How far it reached.** The branch with the board alone (`look/l4-board`) was built and read: its
+page needs four scripts and all four are stored. It starts with the frame's branch
+(`look/l4-frame`), and is fixed on that branch, before its pull request was opened. It was never on
+`main` and never deployed.
+
+**Fixed.**
+
+- The kit page's key in the build's `input` is `kitPage`, so its own script is `assets/kitPage-….js`,
+  and the exclusion names that. A shared script is stored whatever the build calls it.
+- `entries-build.test.ts` reads the app's page from the build, follows each script to the scripts it
+  imports until nothing new is found, and requires every one of them in the worker's list. It
+  refuses to pass on a page it read no script from.
+- Control `app-scripts-in-the-worker` puts the old exclusion back and sees the test fail, naming
+  the script. `clay-not-in-the-worker` and `clay-board-art-in-the-worker` still fire.
+
+**An instrument defect and a product defect together; both fixed inline,** because the instrument
+was passing a build that could not start offline, which Gate 1 requires. What caught it was the
+check that plays the built app with the network cut, not the one that reads a list of names.
+
+## 110. In a fresh checkout on Windows a self-test control did nothing, because Python files were checked out with Windows line ends — FIXED inline 1 October 2026
+
+**Found 1 October 2026** by `pnpm ci:selftest:inert`, inside `pnpm verify`, the first time verify was
+run in a second, fresh checkout of the repository on the Windows PC (made to fix #109 on its own
+branch): *1 of 158 controls are inert*, `clay-board-read-where-geometry-says`.
+
+The control changes `PAD = 24` in `tools/art-pipeline/clay/board.py` by matching the line with its
+line ends. `.gitattributes` pins `.ts`, `.json`, `.md` and the rest to Unix line ends and said
+nothing of `.py`, so a fresh Windows checkout wrote `board.py` with Windows ones and the match found
+nothing. In the working checkout the file had been written by hand with Unix line ends, and on CI's
+Linux it always has them, so the control fired everywhere it had been run.
+
+**Fixed:** `*.py text eol=lf` in `.gitattributes`. The control fires in the fresh checkout. **An
+instrument defect, fixed inline**, and a control that does nothing is what the inert check was put
+into every verify to find (#100).

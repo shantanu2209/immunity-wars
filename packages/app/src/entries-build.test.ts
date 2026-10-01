@@ -51,9 +51,14 @@ describe('both entries build', { timeout: 180_000 }, () => {
   // THE CLAY ART (docs/LOOK_PLAN.md §13 and §14), held three ways. The kit page and its art must be
   // BUILT AND SERVED, or the page the kit is judged on is not there. From stage L4 the board is
   // drawn in Clay, so EVERY PICTURE THE BOARD DRAWS MUST BE STORED by the worker, or the game does
-  // not play with no network. And NOTHING ELSE of the kit may be stored, because no screen a player
-  // has uses it yet. Controls: pnpm ci:selftest clay-board-art-in-the-worker,
-  // clay-not-in-the-worker.
+  // not play with no network. And NOTHING THAT ONLY THE KIT PAGE USES may be stored. Controls:
+  // pnpm ci:selftest clay-board-art-in-the-worker, clay-not-in-the-worker.
+  //
+  // AND EVERY SCRIPT THE APP NEEDS MUST BE STORED (the test below this one). "Nothing of the kit is
+  // stored" was half a specification, and the half that was missing broke the app: it read
+  // "nothing whose name has `kit` in it", the play screen began to use the kit's components, the
+  // build put them in a script named `kit-…js`, and this test went on passing while the app could
+  // not start with no network. A rule that forbids must be held beside what it has to permit.
   it('the kit page and the Clay art are built and served', () => {
     expect(existsSync(join(out, 'kit.html'))).toBe(true);
     expect(existsSync(join(out, 'art', 'clay', 'manifest.json'))).toBe(true);
@@ -90,10 +95,55 @@ describe('both entries build', { timeout: 180_000 }, () => {
       missing,
       `THE WORKER DOES NOT STORE THE BOARD’S ART: ${missing.slice(0, 3).join(', ')}`,
     ).toEqual([]);
+    // What only the kit page uses: the page, its own script (named by its key in the build's
+    // `input`), and the art no screen draws.
     const kit = stored.filter(
-      (u) => (u.includes('art/clay/') && !drawn.includes(u)) || u.includes('kit'),
+      (u) =>
+        (u.includes('art/clay/') && !drawn.includes(u)) ||
+        u === 'kit.html' ||
+        u.startsWith('assets/kitPage-'),
     );
     expect(kit, `THE WORKER STORES THE CLAY KIT: ${kit.slice(0, 3).join(', ')}`).toEqual([]);
+    expect(
+      readdirSync(join(out, 'assets')).filter((f) => f.startsWith('kitPage-')).length,
+      'THE KIT PAGE’S OWN SCRIPT WAS NOT FOUND IN THE BUILD, so nothing was held out of the list',
+    ).toBeGreaterThan(0);
+  });
+
+  // Control: pnpm ci:selftest app-scripts-in-the-worker.
+  it('the worker stores every script the app’s page needs, however the build names them', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    const stored = [...worker.matchAll(/["']?url["']?:\s*["']([^"']+)["']/g)].map(
+      (m) => m[1] ?? '',
+    );
+    // From the page itself: its scripts and what it preloads; then, script by script, what each
+    // one imports from beside it, until nothing new is found.
+    const page = readFileSync(join(out, 'index.html'), 'utf8');
+    const needed = new Set(
+      [...page.matchAll(/(?:src|href)="\.?\/?(assets\/[^"]+\.(?:js|css))"/g)].map(
+        (m) => m[1] ?? '',
+      ),
+    );
+    const direct = needed.size;
+    const queue = [...needed].filter((u) => u.endsWith('.js'));
+    for (let u = queue.pop(); u !== undefined; u = queue.pop()) {
+      const text = readFileSync(join(out, u), 'utf8');
+      for (const m of text.matchAll(/(?:from|import)\s*\(?\s*["']\.\/([\w.-]+\.js)["']/g)) {
+        const next = `assets/${m[1] ?? ''}`;
+        if (!needed.has(next)) {
+          needed.add(next);
+          queue.push(next);
+        }
+      }
+    }
+    // Read the coverage: a page read as needing nothing would pass the last line.
+    expect(direct, 'THE APP’S PAGE WAS NOT READ: it names no script').toBeGreaterThan(0);
+    expect(needed.size, 'THE APP’S SCRIPTS WERE NOT FOLLOWED').toBeGreaterThanOrEqual(3);
+    const missing = [...needed].filter((u) => !stored.includes(u));
+    expect(
+      missing,
+      `THE WORKER DOES NOT STORE A SCRIPT THE APP NEEDS: ${missing.join(', ')}`,
+    ).toEqual([]);
   });
 
   it('the worker it builds takes over when told SKIP_WAITING, which Update now depends on', () => {
