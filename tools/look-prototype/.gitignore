@@ -1,0 +1,2 @@
+# Blender's PNG renders are intermediate: pack-art.ts turns them into the WebP the page loads.
+public/art/**/*.png

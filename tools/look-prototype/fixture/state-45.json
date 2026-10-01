@@ -1,0 +1,1113 @@
+{
+  "phase": "command",
+  "turn": 8,
+  "difficulty": "training",
+  "apMax": 6,
+  "ap": 3,
+  "maxTurn": 15,
+  "flags": {
+    "organs": true,
+    "residents": true,
+    "residentMove": true,
+    "primeResident": true,
+    "lymph": true,
+    "crisisEvents": true,
+    "heartOrgan": true,
+    "dendritic": true,
+    "helperT": true,
+    "nkCell": true,
+    "complement": true,
+    "toxins": true,
+    "fungus": true,
+    "worms": true,
+    "malaria": true,
+    "eosinophil": true,
+    "rareEvents": true,
+    "specials": true,
+    "tierB": true
+  },
+  "organList": ["heart", "lungs", "liver", "marrow", "brain", "spleen", "kidneys"],
+  "organs": {
+    "heart": { "key": "heart", "hp": 3, "max": 3, "clear": 7, "failed": false },
+    "lungs": { "key": "lungs", "hp": 3, "max": 3, "clear": 7, "failed": false },
+    "liver": { "key": "liver", "hp": 3, "max": 3, "clear": 7, "failed": false },
+    "marrow": { "key": "marrow", "hp": 3, "max": 3, "clear": 7, "failed": false },
+    "brain": { "key": "brain", "hp": 2, "max": 2, "clear": 7, "failed": false },
+    "spleen": { "key": "spleen", "hp": 3, "max": 3, "clear": 7, "failed": false },
+    "kidneys": { "key": "kidneys", "hp": 3, "max": 3, "clear": 7, "failed": false }
+  },
+  "cells": {
+    "macrophage": {
+      "zone": "route",
+      "lane": "wound",
+      "organ": null,
+      "step": 2,
+      "freeEngulf": true
+    },
+    "neutrophil": {
+      "zone": "hub",
+      "lane": null,
+      "organ": null,
+      "step": 0,
+      "alive": true,
+      "regenAt": null
+    },
+    "bcell": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+    "tcell": { "zone": "route", "lane": "contact", "organ": null, "step": 2 },
+    "helper": { "zone": "hub", "lane": null, "organ": null, "step": 0, "usedThisTurn": false },
+    "nk": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+    "eosinophil": {
+      "zone": "route",
+      "lane": "gut",
+      "organ": null,
+      "step": 4,
+      "alive": true,
+      "regenAt": null
+    }
+  },
+  "events": { "4": "fever", "8": "neutropenia", "11": "antibodyShortage" },
+  "banner": {
+    "key": "neutropenia",
+    "name": "Neutropenia",
+    "bad": true,
+    "why": "Neutrophil count crashes."
+  },
+  "warning": null,
+  "fx": { "capTurns": 0, "noProduce": false, "apMod": 0, "skipMarch": false },
+  "wormsSpawned": 0,
+  "wormsThisTurn": 0,
+  "suppress": { "neutrophil": 2, "tcell": 0 },
+  "undo": [
+    {
+      "inv": [
+        {
+          "id": "i8",
+          "type": "bacteria",
+          "lane": "wound",
+          "organ": null,
+          "tagged": true,
+          "disease": "Cellulitis",
+          "hp": 1,
+          "maxhp": 1,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 4,
+          "justEnteredHub": false
+        },
+        {
+          "id": "i9",
+          "type": "fungus",
+          "lane": "nose",
+          "organ": null,
+          "tagged": false,
+          "disease": "Pneumocystis pneumonia",
+          "hp": 2,
+          "maxhp": 2,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 5
+        }
+      ],
+      "cells": {
+        "macrophage": {
+          "zone": "route",
+          "lane": "nose",
+          "organ": null,
+          "step": 1,
+          "freeEngulf": true
+        },
+        "neutrophil": {
+          "zone": "hub",
+          "lane": null,
+          "organ": null,
+          "step": 0,
+          "alive": true,
+          "regenAt": null
+        },
+        "bcell": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "tcell": { "zone": "route", "lane": "contact", "organ": null, "step": 2 },
+        "helper": { "zone": "hub", "lane": null, "organ": null, "step": 0, "usedThisTurn": false },
+        "nk": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "eosinophil": {
+          "zone": "route",
+          "lane": "gut",
+          "organ": null,
+          "step": 4,
+          "alive": true,
+          "regenAt": null
+        }
+      },
+      "residents": {
+        "heart": { "organ": "heart", "step": 0, "ate": false },
+        "lungs": { "organ": "lungs", "step": 0, "ate": false },
+        "liver": { "organ": "liver", "step": 0, "ate": false },
+        "marrow": { "organ": "marrow", "step": 0, "ate": false },
+        "brain": { "organ": "brain", "step": 0, "ate": false },
+        "spleen": { "organ": "spleen", "step": 0, "ate": false },
+        "kidneys": { "organ": "kidneys", "step": 0, "ate": false }
+      },
+      "ap": 6,
+      "antibodies": 0,
+      "ab": { "ENV": 0, "NAK": 0, "EXB": 5, "ICB": 5, "TOX": 0, "EUK": 5, "X": 0 },
+      "made": { "ENV": 0, "NAK": 0, "EXB": 4, "ICB": 2, "TOX": 0, "EUK": 6, "X": 0 },
+      "memory": {
+        "Ringworm": true,
+        "Human papillomavirus": true,
+        "Whooping cough": true,
+        "Giardia": true,
+        "Tuberculosis": true
+      },
+      "vaccine": {},
+      "clone": 0,
+      "cloneFound": false,
+      "presentations": 6,
+      "free": {},
+      "organs": {
+        "heart": { "key": "heart", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "lungs": { "key": "lungs", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "liver": { "key": "liver", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "marrow": { "key": "marrow", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "brain": { "key": "brain", "hp": 2, "max": 2, "clear": 7, "failed": false },
+        "spleen": { "key": "spleen", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "kidneys": { "key": "kidneys", "hp": 3, "max": 3, "clear": 7, "failed": false }
+      },
+      "log": [
+        {
+          "t": 8,
+          "msg": "Infection: <b>Pneumocystis pneumonia</b> entered via the Nose.",
+          "kind": "big"
+        },
+        { "t": 8, "msg": "<b>⚠ Neutropenia</b> — Neutrophil count crashes.", "kind": "bad" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 1.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 2.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        {
+          "t": 7,
+          "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5). <b>AFFINITY MATURATION</b> — repeated practice against EXB has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Antibody <b>tagged</b> Cellulitis.", "kind": "good" },
+        {
+          "t": 7,
+          "msg": "<b>Memory response</b> destroyed Tuberculosis — recognised and cleared at once. (free)",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Cellulitis</b> entered via the Wound.", "kind": "big" },
+        {
+          "t": 7,
+          "msg": "<b>MEMORY RESPONSE.</b> Your body has met Tuberculosis before, so memory cells recognise it instantly. Destroying it is <b>free</b> — memory cells handle it at once. <i>This is why you only get chickenpox once — and it works only on Tuberculosis, not on other germs of the same type.</i>",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 6, "msg": "<b>Monocyte</b> engulfed Tuberculosis.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Tuberculosis defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "<b>Monocyte</b> moved to Nose 5.", "kind": "" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 6, "msg": "Antibody <b>tagged</b> Tuberculosis.", "kind": "good" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 6, "msg": "<b>Eosinophil</b> killed the Giardia.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Giardia defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 4.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 3.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 2.", "kind": "" },
+        { "t": 5, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        { "t": 5, "msg": "Antibody <b>tagged</b> Giardia.", "kind": "good" },
+        { "t": 5, "msg": "Infection: <b>Giardia</b> entered via the Gut.", "kind": "big" },
+        { "t": 4, "msg": "Fever holds the invaders — no advance this turn.", "kind": "good" },
+        { "t": 4, "msg": "<b>Monocyte</b> engulfed Whooping cough.", "kind": "good" },
+        {
+          "t": 4,
+          "msg": "<b>Whooping cough defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "<b>Killer T-Cell</b> sniped hidden Human papillomavirus.",
+          "kind": "good"
+        },
+        {
+          "t": 4,
+          "msg": "<b>Human papillomavirus defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 2.", "kind": "" },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 1.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "Infection: <b>Human papillomavirus</b> entered via the Contact.",
+          "kind": "big"
+        },
+        {
+          "t": 4,
+          "msg": "<b>✚ Fever</b> — Raised temperature slows the invaders (at an energy cost).",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5).", "kind": "good" },
+        { "t": 3, "msg": "Antibody <b>tagged</b> Whooping cough.", "kind": "good" },
+        { "t": 3, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 3,
+          "msg": "<b>Ringworm defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 2 <b>EXB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 3 <b>EXB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 3, "msg": "Infection: <b>Whooping cough</b> entered via the Nose.", "kind": "big" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 5.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 2.", "kind": "" },
+        { "t": 2, "msg": "Infection: <b>Ringworm</b> entered via the Contact.", "kind": "big" },
+        { "t": 1, "msg": "<b>Monocyte</b> moved to Contact 1.", "kind": "" },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        {
+          "t": 1,
+          "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (4/5). <b>AFFINITY MATURATION</b> — repeated practice against EUK has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (3/5).", "kind": "good" },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (2/5).", "kind": "good" }
+      ]
+    },
+    {
+      "inv": [
+        {
+          "id": "i8",
+          "type": "bacteria",
+          "lane": "wound",
+          "organ": null,
+          "tagged": true,
+          "disease": "Cellulitis",
+          "hp": 1,
+          "maxhp": 1,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 4,
+          "justEnteredHub": false
+        },
+        {
+          "id": "i9",
+          "type": "fungus",
+          "lane": "nose",
+          "organ": null,
+          "tagged": false,
+          "disease": "Pneumocystis pneumonia",
+          "hp": 2,
+          "maxhp": 2,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 5
+        }
+      ],
+      "cells": {
+        "macrophage": { "zone": "hub", "lane": null, "organ": null, "step": 0, "freeEngulf": true },
+        "neutrophil": {
+          "zone": "hub",
+          "lane": null,
+          "organ": null,
+          "step": 0,
+          "alive": true,
+          "regenAt": null
+        },
+        "bcell": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "tcell": { "zone": "route", "lane": "contact", "organ": null, "step": 2 },
+        "helper": { "zone": "hub", "lane": null, "organ": null, "step": 0, "usedThisTurn": false },
+        "nk": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "eosinophil": {
+          "zone": "route",
+          "lane": "gut",
+          "organ": null,
+          "step": 4,
+          "alive": true,
+          "regenAt": null
+        }
+      },
+      "residents": {
+        "heart": { "organ": "heart", "step": 0, "ate": false },
+        "lungs": { "organ": "lungs", "step": 0, "ate": false },
+        "liver": { "organ": "liver", "step": 0, "ate": false },
+        "marrow": { "organ": "marrow", "step": 0, "ate": false },
+        "brain": { "organ": "brain", "step": 0, "ate": false },
+        "spleen": { "organ": "spleen", "step": 0, "ate": false },
+        "kidneys": { "organ": "kidneys", "step": 0, "ate": false }
+      },
+      "ap": 5,
+      "antibodies": 0,
+      "ab": { "ENV": 0, "NAK": 0, "EXB": 5, "ICB": 5, "TOX": 0, "EUK": 5, "X": 0 },
+      "made": { "ENV": 0, "NAK": 0, "EXB": 4, "ICB": 2, "TOX": 0, "EUK": 6, "X": 0 },
+      "memory": {
+        "Ringworm": true,
+        "Human papillomavirus": true,
+        "Whooping cough": true,
+        "Giardia": true,
+        "Tuberculosis": true
+      },
+      "vaccine": {},
+      "clone": 0,
+      "cloneFound": false,
+      "presentations": 6,
+      "free": {},
+      "organs": {
+        "heart": { "key": "heart", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "lungs": { "key": "lungs", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "liver": { "key": "liver", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "marrow": { "key": "marrow", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "brain": { "key": "brain", "hp": 2, "max": 2, "clear": 7, "failed": false },
+        "spleen": { "key": "spleen", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "kidneys": { "key": "kidneys", "hp": 3, "max": 3, "clear": 7, "failed": false }
+      },
+      "log": [
+        { "t": 8, "msg": "<b>Monocyte</b> moved to the bloodstream.", "kind": "" },
+        {
+          "t": 8,
+          "msg": "Infection: <b>Pneumocystis pneumonia</b> entered via the Nose.",
+          "kind": "big"
+        },
+        { "t": 8, "msg": "<b>⚠ Neutropenia</b> — Neutrophil count crashes.", "kind": "bad" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 1.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 2.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        {
+          "t": 7,
+          "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5). <b>AFFINITY MATURATION</b> — repeated practice against EXB has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Antibody <b>tagged</b> Cellulitis.", "kind": "good" },
+        {
+          "t": 7,
+          "msg": "<b>Memory response</b> destroyed Tuberculosis — recognised and cleared at once. (free)",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Cellulitis</b> entered via the Wound.", "kind": "big" },
+        {
+          "t": 7,
+          "msg": "<b>MEMORY RESPONSE.</b> Your body has met Tuberculosis before, so memory cells recognise it instantly. Destroying it is <b>free</b> — memory cells handle it at once. <i>This is why you only get chickenpox once — and it works only on Tuberculosis, not on other germs of the same type.</i>",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 6, "msg": "<b>Monocyte</b> engulfed Tuberculosis.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Tuberculosis defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "<b>Monocyte</b> moved to Nose 5.", "kind": "" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 6, "msg": "Antibody <b>tagged</b> Tuberculosis.", "kind": "good" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 6, "msg": "<b>Eosinophil</b> killed the Giardia.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Giardia defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 4.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 3.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 2.", "kind": "" },
+        { "t": 5, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        { "t": 5, "msg": "Antibody <b>tagged</b> Giardia.", "kind": "good" },
+        { "t": 5, "msg": "Infection: <b>Giardia</b> entered via the Gut.", "kind": "big" },
+        { "t": 4, "msg": "Fever holds the invaders — no advance this turn.", "kind": "good" },
+        { "t": 4, "msg": "<b>Monocyte</b> engulfed Whooping cough.", "kind": "good" },
+        {
+          "t": 4,
+          "msg": "<b>Whooping cough defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "<b>Killer T-Cell</b> sniped hidden Human papillomavirus.",
+          "kind": "good"
+        },
+        {
+          "t": 4,
+          "msg": "<b>Human papillomavirus defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 2.", "kind": "" },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 1.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "Infection: <b>Human papillomavirus</b> entered via the Contact.",
+          "kind": "big"
+        },
+        {
+          "t": 4,
+          "msg": "<b>✚ Fever</b> — Raised temperature slows the invaders (at an energy cost).",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5).", "kind": "good" },
+        { "t": 3, "msg": "Antibody <b>tagged</b> Whooping cough.", "kind": "good" },
+        { "t": 3, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 3,
+          "msg": "<b>Ringworm defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 2 <b>EXB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 3 <b>EXB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 3, "msg": "Infection: <b>Whooping cough</b> entered via the Nose.", "kind": "big" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 5.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 2.", "kind": "" },
+        { "t": 2, "msg": "Infection: <b>Ringworm</b> entered via the Contact.", "kind": "big" },
+        { "t": 1, "msg": "<b>Monocyte</b> moved to Contact 1.", "kind": "" },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        {
+          "t": 1,
+          "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (4/5). <b>AFFINITY MATURATION</b> — repeated practice against EUK has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (3/5).", "kind": "good" }
+      ]
+    },
+    {
+      "inv": [
+        {
+          "id": "i8",
+          "type": "bacteria",
+          "lane": "wound",
+          "organ": null,
+          "tagged": true,
+          "disease": "Cellulitis",
+          "hp": 1,
+          "maxhp": 1,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 4,
+          "justEnteredHub": false
+        },
+        {
+          "id": "i9",
+          "type": "fungus",
+          "lane": "nose",
+          "organ": null,
+          "tagged": false,
+          "disease": "Pneumocystis pneumonia",
+          "hp": 2,
+          "maxhp": 2,
+          "stage": null,
+          "age": 0,
+          "embed": 0,
+          "killsHelper": false,
+          "hidesInMac": false,
+          "blocksLymph": false,
+          "amnesia": false,
+          "drain": 0,
+          "variant": false,
+          "forced": null,
+          "novel": false,
+          "zone": "route",
+          "step": 5
+        }
+      ],
+      "cells": {
+        "macrophage": {
+          "zone": "route",
+          "lane": "wound",
+          "organ": null,
+          "step": 1,
+          "freeEngulf": true
+        },
+        "neutrophil": {
+          "zone": "hub",
+          "lane": null,
+          "organ": null,
+          "step": 0,
+          "alive": true,
+          "regenAt": null
+        },
+        "bcell": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "tcell": { "zone": "route", "lane": "contact", "organ": null, "step": 2 },
+        "helper": { "zone": "hub", "lane": null, "organ": null, "step": 0, "usedThisTurn": false },
+        "nk": { "zone": "hub", "lane": null, "organ": null, "step": 0 },
+        "eosinophil": {
+          "zone": "route",
+          "lane": "gut",
+          "organ": null,
+          "step": 4,
+          "alive": true,
+          "regenAt": null
+        }
+      },
+      "residents": {
+        "heart": { "organ": "heart", "step": 0, "ate": false },
+        "lungs": { "organ": "lungs", "step": 0, "ate": false },
+        "liver": { "organ": "liver", "step": 0, "ate": false },
+        "marrow": { "organ": "marrow", "step": 0, "ate": false },
+        "brain": { "organ": "brain", "step": 0, "ate": false },
+        "spleen": { "organ": "spleen", "step": 0, "ate": false },
+        "kidneys": { "organ": "kidneys", "step": 0, "ate": false }
+      },
+      "ap": 4,
+      "antibodies": 0,
+      "ab": { "ENV": 0, "NAK": 0, "EXB": 5, "ICB": 5, "TOX": 0, "EUK": 5, "X": 0 },
+      "made": { "ENV": 0, "NAK": 0, "EXB": 4, "ICB": 2, "TOX": 0, "EUK": 6, "X": 0 },
+      "memory": {
+        "Ringworm": true,
+        "Human papillomavirus": true,
+        "Whooping cough": true,
+        "Giardia": true,
+        "Tuberculosis": true
+      },
+      "vaccine": {},
+      "clone": 0,
+      "cloneFound": false,
+      "presentations": 6,
+      "free": {},
+      "organs": {
+        "heart": { "key": "heart", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "lungs": { "key": "lungs", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "liver": { "key": "liver", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "marrow": { "key": "marrow", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "brain": { "key": "brain", "hp": 2, "max": 2, "clear": 7, "failed": false },
+        "spleen": { "key": "spleen", "hp": 3, "max": 3, "clear": 7, "failed": false },
+        "kidneys": { "key": "kidneys", "hp": 3, "max": 3, "clear": 7, "failed": false }
+      },
+      "log": [
+        { "t": 8, "msg": "<b>Monocyte</b> moved to Wound 1.", "kind": "" },
+        { "t": 8, "msg": "<b>Monocyte</b> moved to the bloodstream.", "kind": "" },
+        {
+          "t": 8,
+          "msg": "Infection: <b>Pneumocystis pneumonia</b> entered via the Nose.",
+          "kind": "big"
+        },
+        { "t": 8, "msg": "<b>⚠ Neutropenia</b> — Neutrophil count crashes.", "kind": "bad" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 1.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 2.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        {
+          "t": 7,
+          "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5). <b>AFFINITY MATURATION</b> — repeated practice against EXB has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Antibody <b>tagged</b> Cellulitis.", "kind": "good" },
+        {
+          "t": 7,
+          "msg": "<b>Memory response</b> destroyed Tuberculosis — recognised and cleared at once. (free)",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Cellulitis</b> entered via the Wound.", "kind": "big" },
+        {
+          "t": 7,
+          "msg": "<b>MEMORY RESPONSE.</b> Your body has met Tuberculosis before, so memory cells recognise it instantly. Destroying it is <b>free</b> — memory cells handle it at once. <i>This is why you only get chickenpox once — and it works only on Tuberculosis, not on other germs of the same type.</i>",
+          "kind": "good"
+        },
+        { "t": 7, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 6, "msg": "<b>Monocyte</b> engulfed Tuberculosis.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Tuberculosis defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "<b>Monocyte</b> moved to Nose 5.", "kind": "" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 6, "msg": "Antibody <b>tagged</b> Tuberculosis.", "kind": "good" },
+        { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 6, "msg": "<b>Eosinophil</b> killed the Giardia.", "kind": "good" },
+        {
+          "t": 6,
+          "msg": "<b>Giardia defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 6, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 4.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 3.", "kind": "" },
+        { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 2.", "kind": "" },
+        { "t": 5, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        { "t": 5, "msg": "Antibody <b>tagged</b> Giardia.", "kind": "good" },
+        { "t": 5, "msg": "Infection: <b>Giardia</b> entered via the Gut.", "kind": "big" },
+        { "t": 4, "msg": "Fever holds the invaders — no advance this turn.", "kind": "good" },
+        { "t": 4, "msg": "<b>Monocyte</b> engulfed Whooping cough.", "kind": "good" },
+        {
+          "t": 4,
+          "msg": "<b>Whooping cough defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+        { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "<b>Killer T-Cell</b> sniped hidden Human papillomavirus.",
+          "kind": "good"
+        },
+        {
+          "t": 4,
+          "msg": "<b>Human papillomavirus defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 2.", "kind": "" },
+        { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 1.", "kind": "" },
+        {
+          "t": 4,
+          "msg": "Infection: <b>Human papillomavirus</b> entered via the Contact.",
+          "kind": "big"
+        },
+        {
+          "t": 4,
+          "msg": "<b>✚ Fever</b> — Raised temperature slows the invaders (at an energy cost).",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5).", "kind": "good" },
+        { "t": 3, "msg": "Antibody <b>tagged</b> Whooping cough.", "kind": "good" },
+        { "t": 3, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 3,
+          "msg": "<b>Ringworm defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+          "kind": "good"
+        },
+        { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 2 <b>EXB</b> antibodies (5/5).", "kind": "good" },
+        { "t": 3, "msg": "<b>B-Cell</b> produced 3 <b>EXB</b> antibodies (3/5).", "kind": "good" },
+        { "t": 3, "msg": "Infection: <b>Whooping cough</b> entered via the Nose.", "kind": "big" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 5.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+        {
+          "t": 2,
+          "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+          "kind": "good"
+        },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+        { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 2.", "kind": "" },
+        { "t": 2, "msg": "Infection: <b>Ringworm</b> entered via the Contact.", "kind": "big" },
+        { "t": 1, "msg": "<b>Monocyte</b> moved to Contact 1.", "kind": "" },
+        { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+        {
+          "t": 1,
+          "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (4/5). <b>AFFINITY MATURATION</b> — repeated practice against EUK has improved your antibodies. You now make one extra per action.",
+          "kind": "good"
+        }
+      ]
+    }
+  ],
+  "residents": {
+    "heart": { "organ": "heart", "step": 0, "ate": false },
+    "lungs": { "organ": "lungs", "step": 0, "ate": false },
+    "liver": { "organ": "liver", "step": 0, "ate": false },
+    "marrow": { "organ": "marrow", "step": 0, "ate": false },
+    "brain": { "organ": "brain", "step": 0, "ate": false },
+    "spleen": { "organ": "spleen", "step": 0, "ate": false },
+    "kidneys": { "organ": "kidneys", "step": 0, "ate": false }
+  },
+  "presentations": 6,
+  "complement": 0,
+  "antivenom": 2,
+  "avOrder": 0,
+  "ab": { "ENV": 0, "NAK": 0, "EXB": 5, "ICB": 5, "TOX": 0, "EUK": 5, "X": 0 },
+  "made": { "ENV": 0, "NAK": 0, "EXB": 4, "ICB": 2, "TOX": 0, "EUK": 6, "X": 0 },
+  "memory": {
+    "Ringworm": true,
+    "Human papillomavirus": true,
+    "Whooping cough": true,
+    "Giardia": true,
+    "Tuberculosis": true
+  },
+  "vaccine": {},
+  "seen": {
+    "Ringworm": true,
+    "Whooping cough": true,
+    "Human papillomavirus": true,
+    "Giardia": true,
+    "Tuberculosis": true,
+    "Cellulitis": true,
+    "Pneumocystis pneumonia": true
+  },
+  "clone": 0,
+  "cloneFound": false,
+  "novelSeen": false,
+  "rare": {
+    "armed": true,
+    "fired": null,
+    "seen": { "tbKilled": true },
+    "malariaLiver": false,
+    "killedThisTurn": 0
+  },
+  "free": {},
+  "antibodies": 0,
+  "invaders": [
+    {
+      "id": "i8",
+      "type": "bacteria",
+      "lane": "wound",
+      "organ": null,
+      "tagged": true,
+      "disease": "Cellulitis",
+      "hp": 1,
+      "maxhp": 1,
+      "stage": null,
+      "age": 0,
+      "embed": 0,
+      "killsHelper": false,
+      "hidesInMac": false,
+      "blocksLymph": false,
+      "amnesia": false,
+      "drain": 0,
+      "variant": false,
+      "forced": null,
+      "novel": false,
+      "zone": "route",
+      "step": 4,
+      "justEnteredHub": false
+    },
+    {
+      "id": "i9",
+      "type": "fungus",
+      "lane": "nose",
+      "organ": null,
+      "tagged": false,
+      "disease": "Pneumocystis pneumonia",
+      "hp": 2,
+      "maxhp": 2,
+      "stage": null,
+      "age": 0,
+      "embed": 0,
+      "killsHelper": false,
+      "hidesInMac": false,
+      "blocksLymph": false,
+      "amnesia": false,
+      "drain": 0,
+      "variant": false,
+      "forced": null,
+      "novel": false,
+      "zone": "route",
+      "step": 5
+    }
+  ],
+  "deck": [
+    { "dz": "Leptospirosis", "type": "bacteria", "lane": "wound" },
+    { "dz": "Zika", "type": "virus", "lane": "bite" },
+    { "dz": "Smallpox", "type": "virus", "lane": "nose" },
+    { "dz": "Transfusion malaria", "type": "malaria", "lane": "blood" },
+    { "dz": "Scrub typhus", "type": "bacteria", "lane": "bite" },
+    { "dz": "Snake venom", "type": "venom", "lane": "bite" },
+    { "dz": "Chlamydia", "type": "bacteria", "lane": "contact" },
+    { "dz": "Candida", "type": "fungus", "lane": "gut" },
+    { "dz": "Food poisoning", "type": "bacteria", "lane": "gut" },
+    { "dz": "Norovirus", "type": "virus", "lane": "gut" },
+    { "dz": "HIV", "type": "hidden", "lane": "contact", "killsHelper": true },
+    { "dz": "Leprosy", "type": "bacteria", "lane": "nose" },
+    { "dz": "Cryptococcus", "type": "fungus", "lane": "nose" },
+    { "dz": "Meningitis", "type": "bacteria", "lane": "nose" },
+    { "dz": "Hepatitis C", "type": "hidden", "lane": "blood" },
+    { "dz": "Cytomegalovirus", "type": "hidden", "lane": "nose" },
+    { "dz": "Trachoma", "type": "bacteria", "lane": "contact" },
+    { "dz": "Listeria", "type": "bacteria", "lane": "gut" },
+    { "dz": "Mucormycosis", "type": "fungus", "lane": "nose" },
+    { "dz": "Polio", "type": "virus", "lane": "gut" },
+    { "dz": "Mumps", "type": "virus", "lane": "nose" },
+    { "dz": "Dysentery", "type": "bacteria", "lane": "gut" },
+    { "dz": "Roundworm", "type": "worm", "lane": "gut" },
+    { "dz": "Rotavirus", "type": "virus", "lane": "gut" },
+    { "dz": "Gas gangrene", "type": "bacteria", "lane": "wound" },
+    { "dz": "Toxoplasmosis", "type": "hidden", "lane": "gut" },
+    { "dz": "Measles", "type": "virus", "lane": "nose", "amnesia": true },
+    { "dz": "Typhoid", "type": "bacteria", "lane": "gut" },
+    { "dz": "Diphtheria", "type": "toxin", "lane": "nose" },
+    { "dz": "Influenza", "type": "virus", "lane": "nose" },
+    { "dz": "Lyme disease", "type": "bacteria", "lane": "bite" },
+    { "dz": "Common cold", "type": "virus", "lane": "nose" },
+    { "dz": "Stomach ulcer (H. pylori)", "type": "bacteria", "lane": "gut" },
+    { "dz": "Pneumonia", "type": "bacteria", "lane": "nose" },
+    { "dz": "Amoebiasis", "type": "parasite", "lane": "gut", "forced": "liver" },
+    { "dz": "Filariasis", "type": "worm", "lane": "bite", "blocksLymph": true },
+    { "dz": "Guinea worm", "type": "worm", "lane": "wound" },
+    { "dz": "Legionnaires' disease", "type": "bacteria", "lane": "nose" },
+    { "dz": "COVID-19", "type": "virus", "lane": "nose" },
+    { "dz": "Molluscum contagiosum", "type": "virus", "lane": "contact" },
+    { "dz": "Malaria", "type": "malaria", "lane": "bite" },
+    { "dz": "Botulism", "type": "toxin", "lane": "gut" },
+    { "dz": "Chagas disease", "type": "hidden", "lane": "bite" },
+    { "dz": "Trichomoniasis", "type": "parasite", "lane": "contact" },
+    { "dz": "Dengue", "type": "virus", "lane": "bite" },
+    { "dz": "Chickenpox", "type": "hidden", "lane": "nose" },
+    { "dz": "MRSA", "type": "bacteria", "lane": "wound" },
+    { "dz": "Impetigo", "type": "bacteria", "lane": "contact" },
+    { "dz": "Japanese encephalitis", "type": "virus", "lane": "bite" },
+    { "dz": "Yellow fever", "type": "virus", "lane": "bite" },
+    { "dz": "Tetanus", "type": "bacteria", "lane": "wound" },
+    { "dz": "Rabies", "type": "hidden", "lane": "bite" },
+    { "dz": "RSV", "type": "virus", "lane": "nose" },
+    { "dz": "Plague", "type": "bacteria", "lane": "bite" },
+    { "dz": "Catheter sepsis", "type": "fungus", "lane": "blood" },
+    { "dz": "Whipworm", "type": "worm", "lane": "gut" },
+    { "dz": "Cholera", "type": "bacteria", "lane": "gut" },
+    { "dz": "Kala-azar", "type": "parasite", "lane": "bite", "hidesInMac": true },
+    { "dz": "Cannula infection", "type": "bacteria", "lane": "blood" },
+    { "dz": "West Nile fever", "type": "virus", "lane": "bite" },
+    { "dz": "Strep throat", "type": "bacteria", "lane": "nose" },
+    { "dz": "Syphilis", "type": "bacteria", "lane": "contact" },
+    { "dz": "Chikungunya", "type": "virus", "lane": "bite" },
+    { "dz": "Hepatitis B", "type": "hidden", "lane": "blood" },
+    { "dz": "Brucellosis", "type": "bacteria", "lane": "wound" },
+    { "dz": "Endocarditis", "type": "bacteria", "lane": "blood" },
+    { "dz": "Shiga toxin (E. coli O157)", "type": "toxin", "lane": "gut" },
+    { "dz": "Schistosomiasis", "type": "worm", "lane": "wound" },
+    { "dz": "Sleeping sickness", "type": "parasite", "lane": "bite", "variant": true },
+    { "dz": "Tapeworm", "type": "worm", "lane": "gut" },
+    { "dz": "Scabies", "type": "parasite", "lane": "contact" },
+    { "dz": "Nipah", "type": "virus", "lane": "nose" },
+    { "dz": "Histoplasmosis", "type": "fungus", "lane": "wound" },
+    { "dz": "Glandular fever", "type": "hidden", "lane": "nose" },
+    { "dz": "Russell's viper venom", "type": "venom", "lane": "bite" },
+    { "dz": "Hepatitis D", "type": "hidden", "lane": "blood", "needsHepB": true },
+    { "dz": "Anthrax", "type": "toxin", "lane": "wound" },
+    { "dz": "Hepatitis A", "type": "virus", "lane": "gut" },
+    { "dz": "Cold sore", "type": "hidden", "lane": "wound" },
+    { "dz": "Aspergillosis", "type": "fungus", "lane": "nose" },
+    { "dz": "Red scorpion sting", "type": "venom", "lane": "bite" },
+    { "dz": "Rubella", "type": "virus", "lane": "nose" },
+    { "dz": "Gonorrhoea", "type": "bacteria", "lane": "contact" },
+    { "dz": "Conjunctivitis", "type": "virus", "lane": "contact" },
+    { "dz": "Ebola", "type": "virus", "lane": "wound" },
+    { "dz": "Genital herpes", "type": "hidden", "lane": "contact" },
+    { "dz": "Hepatitis E", "type": "virus", "lane": "gut" },
+    { "dz": "Hand-foot-and-mouth", "type": "virus", "lane": "nose" },
+    { "dz": "Hookworm", "type": "worm", "lane": "wound" }
+  ],
+  "discard": [
+    { "dz": "Ringworm", "type": "fungus", "lane": "contact" },
+    { "dz": "Whooping cough", "type": "bacteria", "lane": "nose" },
+    { "dz": "Human papillomavirus", "type": "hidden", "lane": "contact" },
+    { "dz": "Giardia", "type": "parasite", "lane": "gut", "drain": 1 },
+    { "dz": "Tuberculosis", "type": "bacteria", "lane": "nose" },
+    { "dz": "Cellulitis", "type": "bacteria", "lane": "wound" },
+    { "dz": "Pneumocystis pneumonia", "type": "fungus", "lane": "nose" }
+  ],
+  "drawn": { "dz": "Pneumocystis pneumonia", "type": "fungus", "lane": "nose" },
+  "log": [
+    { "t": 8, "msg": "<b>Monocyte</b> moved to Wound 2.", "kind": "" },
+    { "t": 8, "msg": "<b>Monocyte</b> moved to Wound 1.", "kind": "" },
+    { "t": 8, "msg": "<b>Monocyte</b> moved to the bloodstream.", "kind": "" },
+    {
+      "t": 8,
+      "msg": "Infection: <b>Pneumocystis pneumonia</b> entered via the Nose.",
+      "kind": "big"
+    },
+    { "t": 8, "msg": "<b>⚠ Neutropenia</b> — Neutrophil count crashes.", "kind": "bad" },
+    { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 1.", "kind": "" },
+    { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 2.", "kind": "" },
+    { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+    { "t": 7, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+    {
+      "t": 7,
+      "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5). <b>AFFINITY MATURATION</b> — repeated practice against EXB has improved your antibodies. You now make one extra per action.",
+      "kind": "good"
+    },
+    { "t": 7, "msg": "Antibody <b>tagged</b> Cellulitis.", "kind": "good" },
+    {
+      "t": 7,
+      "msg": "<b>Memory response</b> destroyed Tuberculosis — recognised and cleared at once. (free)",
+      "kind": "good"
+    },
+    { "t": 7, "msg": "Infection: <b>Cellulitis</b> entered via the Wound.", "kind": "big" },
+    {
+      "t": 7,
+      "msg": "<b>MEMORY RESPONSE.</b> Your body has met Tuberculosis before, so memory cells recognise it instantly. Destroying it is <b>free</b> — memory cells handle it at once. <i>This is why you only get chickenpox once — and it works only on Tuberculosis, not on other germs of the same type.</i>",
+      "kind": "good"
+    },
+    { "t": 7, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+    { "t": 6, "msg": "<b>Monocyte</b> engulfed Tuberculosis.", "kind": "good" },
+    {
+      "t": 6,
+      "msg": "<b>Tuberculosis defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+      "kind": "good"
+    },
+    { "t": 6, "msg": "<b>Monocyte</b> moved to Nose 5.", "kind": "" },
+    { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (5/5).", "kind": "good" },
+    { "t": 6, "msg": "Antibody <b>tagged</b> Tuberculosis.", "kind": "good" },
+    { "t": 6, "msg": "<b>B-Cell</b> produced 3 <b>ICB</b> antibodies (3/5).", "kind": "good" },
+    { "t": 6, "msg": "<b>Eosinophil</b> killed the Giardia.", "kind": "good" },
+    {
+      "t": 6,
+      "msg": "<b>Giardia defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+      "kind": "good"
+    },
+    { "t": 6, "msg": "Infection: <b>Tuberculosis</b> entered via the Nose.", "kind": "big" },
+    { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 4.", "kind": "" },
+    { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 3.", "kind": "" },
+    { "t": 5, "msg": "<b>Eosinophil</b> moved to Gut 2.", "kind": "" },
+    { "t": 5, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" },
+    { "t": 5, "msg": "Antibody <b>tagged</b> Giardia.", "kind": "good" },
+    { "t": 5, "msg": "Infection: <b>Giardia</b> entered via the Gut.", "kind": "big" },
+    { "t": 4, "msg": "Fever holds the invaders — no advance this turn.", "kind": "good" },
+    { "t": 4, "msg": "<b>Monocyte</b> engulfed Whooping cough.", "kind": "good" },
+    {
+      "t": 4,
+      "msg": "<b>Whooping cough defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+      "kind": "good"
+    },
+    { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 4.", "kind": "" },
+    { "t": 4, "msg": "<b>Monocyte</b> moved to Nose 3.", "kind": "" },
+    { "t": 4, "msg": "<b>Killer T-Cell</b> sniped hidden Human papillomavirus.", "kind": "good" },
+    {
+      "t": 4,
+      "msg": "<b>Human papillomavirus defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+      "kind": "good"
+    },
+    { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 2.", "kind": "" },
+    { "t": 4, "msg": "<b>Killer T-Cell</b> moved to Contact 1.", "kind": "" },
+    {
+      "t": 4,
+      "msg": "Infection: <b>Human papillomavirus</b> entered via the Contact.",
+      "kind": "big"
+    },
+    {
+      "t": 4,
+      "msg": "<b>✚ Fever</b> — Raised temperature slows the invaders (at an energy cost).",
+      "kind": "good"
+    },
+    { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+    { "t": 3, "msg": "<b>B-Cell</b> produced 1 <b>EXB</b> antibody (5/5).", "kind": "good" },
+    { "t": 3, "msg": "Antibody <b>tagged</b> Whooping cough.", "kind": "good" },
+    { "t": 3, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+    {
+      "t": 3,
+      "msg": "<b>Ringworm defeated.</b> Memory cells for it now survive in your body — if it ever returns, your response will be immediate.",
+      "kind": "good"
+    },
+    { "t": 3, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+    { "t": 3, "msg": "<b>B-Cell</b> produced 2 <b>EXB</b> antibodies (5/5).", "kind": "good" },
+    { "t": 3, "msg": "<b>B-Cell</b> produced 3 <b>EXB</b> antibodies (3/5).", "kind": "good" },
+    { "t": 3, "msg": "Infection: <b>Whooping cough</b> entered via the Nose.", "kind": "big" },
+    {
+      "t": 2,
+      "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+      "kind": "good"
+    },
+    { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 5.", "kind": "" },
+    { "t": 2, "msg": "<b>Monocyte</b> engulfed Ringworm.", "kind": "good" },
+    {
+      "t": 2,
+      "msg": "<b>Monocyte</b> chipped the Ringworm — 1/2 left. Fungi are tough; a Neutrophil NET kills them outright.",
+      "kind": "good"
+    },
+    { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 4.", "kind": "" },
+    { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 3.", "kind": "" },
+    { "t": 2, "msg": "<b>Monocyte</b> moved to Contact 2.", "kind": "" },
+    { "t": 2, "msg": "Infection: <b>Ringworm</b> entered via the Contact.", "kind": "big" },
+    { "t": 1, "msg": "<b>Monocyte</b> moved to Contact 1.", "kind": "" },
+    { "t": 1, "msg": "<b>B-Cell</b> produced 1 <b>EUK</b> antibody (5/5).", "kind": "good" }
+  ],
+  "won": false,
+  "lost": null,
+  "science": false,
+  "stats": {
+    "killedTrunk": 7,
+    "killedBranch": 0,
+    "organHits": 0,
+    "failures": [],
+    "arrivals": { "virus": 0, "hidden": 0, "bacteriaTagged": 0, "bacteriaUntagged": 0 },
+    "residentAte": 0,
+    "gotThrough": { "virus": 0, "hidden": 0, "bacteriaTagged": 0, "bacteriaUntagged": 0 }
+  },
+  "multiplayer": false,
+  "players": [],
+  "captain": null,
+  "owner": {},
+  "apBudget": {},
+  "apPool": 0,
+  "_actingPid": null,
+  "drawnList": [{ "dz": "Pneumocystis pneumonia", "type": "fungus", "lane": "nose" }],
+  "everInfected": true
+}

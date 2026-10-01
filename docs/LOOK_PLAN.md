@@ -77,6 +77,11 @@ A small prototype of each, playing one turn and one spread, measured for frame r
 This project's rule is to simulate before building, and this is the decision most expensive to
 reverse.
 
+> ⚠️ *Amended 1 October 2026, by ruling (§12).* This section was written before the look was
+> picked. Clay is made of 3D models, which adds a third way: **(c) the models themselves drawn live
+> on the phone** (three.js). All three are prototyped and measured. "The present SVG" in (b) is,
+> for Clay, pictures on the page moved with CSS.
+
 ## 6. The guided game, and Easy
 
 **The guided game.** Three to five minutes, scripted: an infection arrives, move a cell, engulf it,
@@ -97,7 +102,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | Stage | What is made | The gate |
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
-| **L2 The moving prototype** | The chosen frame playing one turn and one spread, both ways (§5), on the S25 | Frame rates read; the board's technology ruled |
+| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
@@ -185,3 +190,73 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
    scaled to 200% allows. The kit (L3) and the play screen (L4) are where they are held to the gates.
 4. **The typeface** is the one already shipped. Choosing one belongs to the kit.
 5. **The pictures are not app code.** Nothing under `packages/` changed for them.
+
+## 12. L2, ruled 1 October 2026: the board is pictures on the page
+
+**Three rulings, Shantanu, 1 October 2026**, on the proposal that followed the pick:
+
+1. **All three ways are prototyped**, and their practical pros and cons are to rest on real data
+   where that is possible: *"Yes we need to prototype all 3. And we need to understand the
+   practical pros and cons of each based on real data where possible."*
+2. **The pass line**, set before any number existed: no frame slower than 16.7 ms through the turn
+   and the spread; a tap answered within 100 ms; the board drawn within 1 second; all pictures and
+   models under 10 MB. **It is not a hard rule:** *"Yes but let's not make it a very hard rule,
+   things are that marginally over can still be considered etc. basically evaluate before rejecting
+   to see if it can be made to work."*
+3. **The prototype is committed**, as `tools/look-prototype/`, with PixiJS and three.js as its own
+   dependencies and nowhere else, and it is measured on the S25 with the built page served on the
+   home network, as the phone checks were before the app was served from the server: *"Agree. They
+   way we used to do before deploying on the server."*
+
+**What is built.** [`tools/look-prototype/`](../tools/look-prototype/README.md): the Clay play
+screen playing a calm turn and a crowded board, both recorded from the real engine, drawn as
+pictures on the page, as pictures on a GPU canvas, and as the models drawn live. One motion, decided
+once, is handed to all three. A frame timer and a tap timer measure them, and each timer was made to
+fail on purpose before it was trusted.
+
+**What is measured.** [`LOOK_L2_MEASUREMENT.md`](LOOK_L2_MEASUREMENT.md). **On the S25, 1 October
+2026, run by Shantanu: all three ways hold 60 frames a second**, on the calm turn and on the crowded
+board. Two rows have one missed refresh each in 1,685 frames, which does not separate the ways.
+What does separate them:
+
+| | The page's own work per frame, crowded board | First draw | Sent to the phone |
+|---|---|---|---|
+| Pictures on the page | 2.6 ms | 109 ms | 287 KB |
+| Pictures on a GPU canvas | 0.6 ms | 413 ms | 433 KB |
+| Models drawn live | 4.6 ms | 784 ms | 849 KB |
+
+The phone ran the page at 60 frames a second, not the 120 its screen can show, so 120 is not
+measured. Taps were not timed on the phone, and the ways were not watched side by side; his reading
+from the measured run is that the three look much the same and that the choice should go to what
+performs best.
+
+### L2 ruled and closed, 1 October 2026
+
+Asked three things after the phone's numbers, Shantanu ruled: *"1. Page 2. Accept 60 3. Waive it"*.
+
+1. **The board is drawn as pictures on the page.** Blender renders each piece and the board; the
+   app moves them as page elements. Claude had recommended it, for being the lightest and the
+   fastest to load, for adding no library, and for keeping every piece an element the
+   accessibility checks and the audit can read. **No GPU canvas and no live 3D are added.** If an
+   effect built at L4 cannot hold the frame rate this way, a canvas for that effect alone is a new
+   proposal, measured then; it is not part of this ruling.
+2. **60 frames a second is the target.** The phone ran the prototype at 60 and the line was ruled at
+   16.7 ms. **120 frames a second is unmeasured, and nothing is claimed about it.**
+3. **The tap test on the phone is waived: waived, not met.** The 100 ms line for a tap was never
+   read on the S25. What the frame times allow, and what the PC measured, is an answer within about
+   50 ms; that is an inference.
+
+**Locked decision #1, Capacitor against React Native.** On this measurement Capacitor holds: the
+look is reached with web technology at 60 frames a second on the S25. The plan measures again at L7
+(§8), on the finished screens and in the app's own shell, which this measurement did not use; the
+decision is confirmed there, before Phase 4.
+
+**What this does to §9's warning.** "A canvas board is invisible to the accessibility audit" no
+longer applies: there is no canvas board.
+
+**What happens to the prototype.** It stays as the instrument its record was taken with, until the
+play screen is built at L4 and measured in its place; then it is removed, and `pixi.js` and `three`
+go with it. Neither is used by anything else, and neither is to be.
+
+**What the prototype is not.** It is a measuring instrument. Nothing under `packages/` imports it
+or changed for it, and it is removed when the ruling has been built into the app.

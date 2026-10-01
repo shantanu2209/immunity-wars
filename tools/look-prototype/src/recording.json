@@ -1,0 +1,6524 @@
+{
+  "turn": {
+    "source": "fixture/state-45.json: a recorded Easy game at turn 8. The Monocyte walks to a coated bacterium and engulfs it, the turn ends, the spread runs, the next arrivals are drawn.",
+    "seed": 6,
+    "rulesVersion": "4.1.0",
+    "words": {
+      "cells": {
+        "macrophage": "Monocyte",
+        "neutrophil": "Neutrophil",
+        "bcell": "B-Cell",
+        "tcell": "Killer T-Cell",
+        "helper": "Helper T-Cell",
+        "nk": "NK Cell",
+        "eosinophil": "Eosinophil"
+      },
+      "roles": {
+        "macrophage": "roams · innate",
+        "neutrophil": "scout · innate",
+        "bcell": "antibodies · adaptive",
+        "tcell": "sniper · adaptive",
+        "helper": "commander · adaptive",
+        "nk": "innate killer",
+        "eosinophil": "anti-parasite"
+      },
+      "turn": "Turn",
+      "endTurn": "End turn",
+      "move": "Move",
+      "engulf": "Engulf",
+      "undo": "Undo"
+    },
+    "beats": [
+      {
+        "kind": "start",
+        "label": "",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 3,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 2
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i8",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "route",
+                "lane": "wound",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "select",
+        "label": "",
+        "dice": [],
+        "selected": "macrophage",
+        "moves": [
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 1
+          },
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 3
+          }
+        ],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 3,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 2
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i8",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "route",
+                "lane": "wound",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "move",
+        "label": "",
+        "dice": [],
+        "selected": "macrophage",
+        "moves": [
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 2
+          },
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 4
+          },
+          {
+            "zone": "route",
+            "lane": "bite",
+            "organ": null,
+            "step": 3
+          }
+        ],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 2,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 3
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i8",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "route",
+                "lane": "wound",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "move",
+        "label": "",
+        "dice": [],
+        "selected": "macrophage",
+        "moves": [
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 3
+          },
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 5
+          }
+        ],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i8",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "route",
+                "lane": "wound",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "engulf",
+        "label": "",
+        "dice": [],
+        "selected": "macrophage",
+        "moves": [
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 3
+          },
+          {
+            "zone": "route",
+            "lane": "wound",
+            "organ": null,
+            "step": 5
+          }
+        ],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Toxin released",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "The march",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 3
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Next turn",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 9,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 3
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "draw",
+        "label": "",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 9,
+          "maxTurn": 15,
+          "ap": 1,
+          "apMax": 6,
+          "cells": {
+            "macrophage": {
+              "zone": "route",
+              "lane": "wound",
+              "organ": null,
+              "step": 4
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "route",
+              "lane": "contact",
+              "organ": null,
+              "step": 2
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "route",
+              "lane": "gut",
+              "organ": null,
+              "step": 4
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i9",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 3
+              }
+            },
+            {
+              "id": "i10",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  "crowd": {
+    "source": "fixture/state-19.json: a recorded Hard game at turn 7 with 42 pathogens on the board. The turn ends at once, the spread runs, the next arrivals are drawn.",
+    "seed": 20,
+    "rulesVersion": "4.1.0",
+    "words": {
+      "cells": {
+        "macrophage": "Monocyte",
+        "neutrophil": "Neutrophil",
+        "bcell": "B-Cell",
+        "tcell": "Killer T-Cell",
+        "helper": "Helper T-Cell",
+        "nk": "NK Cell",
+        "eosinophil": "Eosinophil"
+      },
+      "roles": {
+        "macrophage": "roams · innate",
+        "neutrophil": "scout · innate",
+        "bcell": "antibodies · adaptive",
+        "tcell": "sniper · adaptive",
+        "helper": "commander · adaptive",
+        "nk": "innate killer",
+        "eosinophil": "anti-parasite"
+      },
+      "turn": "Turn",
+      "endTurn": "End turn",
+      "move": "Move",
+      "engulf": "Engulf",
+      "undo": "Undo"
+    },
+    "beats": [
+      {
+        "kind": "start",
+        "label": "",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Complement",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Bacteria divide",
+        "dice": [
+          {
+            "label": "Leprosy",
+            "face": 5,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 3,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Meningitis",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Meningitis",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 4,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 2,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 3,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 2,
+            "hit": true
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Leprosy",
+            "face": 0,
+            "hit": false
+          },
+          {
+            "label": "Listeria",
+            "face": 5,
+            "hit": true
+          }
+        ],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Viruses hide",
+        "dice": [
+          {
+            "label": "Zika",
+            "face": 6,
+            "hit": false
+          }
+        ],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Toxin released",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "contact",
+                "organ": null,
+                "step": 1
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "The march",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 7,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 3
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "spread",
+        "label": "Next turn",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 3
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "kind": "draw",
+        "label": "",
+        "dice": [],
+        "selected": null,
+        "moves": [],
+        "shot": {
+          "turn": 8,
+          "maxTurn": 30,
+          "ap": 1,
+          "apMax": 4,
+          "cells": {
+            "macrophage": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "neutrophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "bcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "tcell": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "helper": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "nk": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            },
+            "eosinophil": {
+              "zone": "hub",
+              "lane": null,
+              "organ": null,
+              "step": 0
+            }
+          },
+          "residents": {
+            "heart": 0,
+            "lungs": 0,
+            "liver": 0,
+            "marrow": 0,
+            "brain": 0,
+            "spleen": 0,
+            "kidneys": 0
+          },
+          "invaders": [
+            {
+              "id": "i5",
+              "type": "bacteria",
+              "tagged": true,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i6",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i7",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i10",
+              "type": "fungus",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i11",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i12",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i13",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i14",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i15",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i17",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i18",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i19",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i20",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i21",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "nose",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i22",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i23",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i24",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i25",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i26",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i27",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i28",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i29",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i30",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 1
+              }
+            },
+            {
+              "id": "i31",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i32",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i33",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i35",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 3
+              }
+            },
+            {
+              "id": "i36",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i37",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i38",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i39",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i40",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i41",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i42",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i43",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "contact",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i44",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i45",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i46",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i47",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i48",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i49",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i51",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i52",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "nose",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i53",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "branch",
+                "lane": "gut",
+                "organ": "brain",
+                "step": 3
+              }
+            },
+            {
+              "id": "i54",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i55",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i56",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "gut",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i57",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i58",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i59",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i60",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "hub",
+                "lane": "contact",
+                "organ": null,
+                "step": 0
+              }
+            },
+            {
+              "id": "i61",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "gut",
+                "organ": null,
+                "step": 4
+              }
+            },
+            {
+              "id": "i62",
+              "type": "bacteria",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "nose",
+                "organ": null,
+                "step": 5
+              }
+            },
+            {
+              "id": "i63",
+              "type": "virus",
+              "tagged": false,
+              "at": {
+                "zone": "route",
+                "lane": "bite",
+                "organ": null,
+                "step": 5
+              }
+            }
+          ],
+          "organs": {
+            "heart": {
+              "hp": 3,
+              "max": 3
+            },
+            "lungs": {
+              "hp": 3,
+              "max": 3
+            },
+            "liver": {
+              "hp": 3,
+              "max": 3
+            },
+            "marrow": {
+              "hp": 3,
+              "max": 3
+            },
+            "brain": {
+              "hp": 2,
+              "max": 2
+            },
+            "spleen": {
+              "hp": 3,
+              "max": 3
+            },
+            "kidneys": {
+              "hp": 3,
+              "max": 3
+            }
+          }
+        }
+      }
+    ]
+  }
+}

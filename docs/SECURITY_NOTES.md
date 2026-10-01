@@ -497,3 +497,27 @@ worker, so the app was built on the old versions and on the new. Every file is b
 and the order is not the bump, since two builds on the same versions differ the same way.
 
 > ### The property, re-read 30 September 2026: no open advisory is in a process that listens, because no advisory is open; the relay's dependency set is `ws`, `zod` and our own code.
+
+## Added 1 October 2026 — the look prototype: one more thing that listens, and one advisory seen and not taken here
+
+**What listens.** `pnpm --filter @immunity-wars/look-prototype preview` is `vite preview --host` on
+port 4180, started by the maintainer for the S25 measurement of stage L2
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §12) and stopped after it. It is the same kind of process as the
+app's own phone-check preview above: it serves the built `dist/`, static files, to the home network
+for the length of the check. It accepts nothing: there is no endpoint that takes input, and the
+page it serves reads no file and sends nothing back.
+
+**What it gained.** `pixi.js` and `three`, with `@types/three`, are dependencies of
+`tools/look-prototype/` and of nothing else (ruled 1 October 2026). Both are code the browser runs,
+bundled into the page. Neither is loaded by the server process, which is vite alone, so the
+listening process's own dependency set is unchanged. `pnpm audit` reports nothing in either.
+
+**One advisory, seen while installing them, that is not theirs.** `pnpm audit` is no longer clean:
+GHSA-gfhx-hw2g-v5hg, low, `serialize-javascript` 7.1.1, reached through `packages/app` >
+`vite-plugin-pwa` > `workbox-build` > `@rollup/plugin-terser`. It is present with and without this
+change (checked by stashing it and auditing again), it is in a tool that runs when a build writes
+the service worker, and it is in no process that listens. **It is not fixed here**: one thing to a
+change, and a toolchain pin wants its own battery. It is recorded so that the line above it,
+"no advisory is open", is not left standing as true.
+
+> ### The property, re-read 1 October 2026: no open advisory is in a process that listens. One low advisory is open, in a build-time tool.

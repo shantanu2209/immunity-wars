@@ -21,7 +21,13 @@ Shantanu the same day: style frames first and nothing built before he picks one;
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
 board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
-measured prototype, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+measured prototype, is built** (`tools/look-prototype/`: Clay drawn three ways, with a frame timer;
+plan §12) **and measured on the S25** (1 October: all three hold 60 frames a second;
+`docs/LOOK_L2_MEASUREMENT.md`). **Stage L2 is done: he ruled the board is drawn as pictures on the
+page**, Blender's renders moved as page elements, with no GPU canvas and no live 3D; 60 frames a
+second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
+measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
+then removed with `pixi.js` and `three`. **L3, the kit, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
@@ -299,7 +305,10 @@ contract Task B was measured against.
   clean state is a fact about today's lockfile, not a property; the re-check rule below
   stands. *It lapsed on 30 September 2026*, when seven alerts on build tools arrived overnight
   (`brace-expansion`, `fast-uri`), and was restored the same day by two pins and a Dependabot
-  bump, none of it in a process that listens (`docs/SECURITY_NOTES.md`). **The old acceptance sentence — "this
+  bump, none of it in a process that listens (`docs/SECURITY_NOTES.md`). *It lapsed again on
+  1 October 2026:* one low advisory, `serialize-javascript` through the service worker's build
+  tools, in no process that listens, seen while the look prototype's libraries were installed and
+  not caused by them; recorded in `docs/SECURITY_NOTES.md` and **not yet cleared**. **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on

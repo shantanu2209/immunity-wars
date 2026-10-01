@@ -27,6 +27,11 @@ packages:
   # the dev shell and collects the page's own __iwMetrics. A workspace member so typecheck and
   # lint reach it — an instrument nobody typechecks is the known failure shape.
   - 'tools/perf'
+  # Stage L2 of the look (docs/LOOK_PLAN.md): the Clay play screen drawn three ways, with the
+  # frame timer that measures them on the S25. A workspace member for the same reason as
+  # tools/perf, and the only home of pixi.js and three (ruled 1 October 2026). Nothing in
+  # packages/ may import it; it is removed when L2's ruling has been built into the app.
+  - 'tools/look-prototype'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed
