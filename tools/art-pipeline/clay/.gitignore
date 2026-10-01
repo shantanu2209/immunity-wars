@@ -1,0 +1,2 @@
+# Blender writes PNG here; `pnpm art:clay --ingest` turns them into the committed renders/.
+_png/

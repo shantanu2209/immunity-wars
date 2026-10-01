@@ -92,9 +92,11 @@ terms to check. The rows are grouped, because every file in a group has the same
 | The 12 models under `tools/look-prototype/public/art/models/` (the same pieces and the board, as glTF) | Exported from the same Blender scene by the same script | 1 Oct 2026 | as above | as above | Not applicable | as above |
 | The 13 pictograms under `tools/look-prototype/blender/tex/` and `tools/look-prototype/public/art/tex/` (seven organs, six ways in) | Drawn in code as SVG paths, at stage L1; rendered by `tools/look-prototype/blender/pictograms.ts` | 1 Oct 2026 | none | The SVG paths in that file | Not applicable | as above |
 | `docs/look/l1-clay-play.webp`, `docs/look/l1-clay-title.webp`, `docs/look/l1-clay-card.webp` (the L1 style frames Shantanu picked) | Blender renders of the same models, composed with page elements; the typeface is the Nunito the app ships | 1 Oct 2026 | as above | `docs/LOOK_PLAN.md` §11 | Nunito: SIL Open Font License, already recorded | as above |
+| The 50 renders under `tools/art-pipeline/clay/renders/` (24 pieces in two views, the base, and a swatch of the board) and the 147 files built from them under `tools/art-pipeline/clay/out/` | Blender 5.2.1, Cycles: modelled and rendered by `tools/art-pipeline/clay/pieces.py`; gated and built by `tools/art-pipeline/clay.ts`. Written with Claude under Shantanu’s direction | 1 Oct 2026 | as above | The script itself; its header says what each shape claims about the real cell or pathogen | Not applicable | as above. The manifest beside the output carries the same provenance and every measured contrast |
 
-**What these are not.** They are a prototype's art and three reference pictures. Nothing here is
-shipped in the app yet; the 89 files the app ships are the rows above this section.
+**What these are not.** They are a prototype's art, three reference pictures and the kit's pieces.
+Nothing here is shipped in the app yet; the 89 files the app ships are the rows above this section.
+
 ---
 
 ## Known asset locations
