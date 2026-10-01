@@ -121,6 +121,8 @@ interface Results {
   };
   slowFrameMs: number;
   control: { slowMs: number };
+  /** How many times the page was hidden while measuring (the screen slept, or another app came up). */
+  hidden: number;
   ways: WayResult[];
 }
 
@@ -144,8 +146,15 @@ async function measure(): Promise<void> {
     },
     slowFrameMs: SLOW_MS,
     control: { slowMs: slow },
+    hidden: 0,
     ways: [],
   };
+  // A hidden page is given no frames at all, so a screen that sleeps mid-run reads as one
+  // enormous frame. That is the phone's doing, not the way's, and the run must be thrown away.
+  const onHide = (): void => {
+    if (document.hidden) results.hidden += 1;
+  };
+  document.addEventListener('visibilitychange', onHide);
   for (const key of ways) {
     const screen = playScreen(first);
     screen.setHud(new Timeline(first).hud(0), `${WAY_NAME[key]}: loading`);
@@ -180,6 +189,7 @@ async function measure(): Promise<void> {
     results.ways.push(out);
     await new Promise((r) => setTimeout(r, 300));
   }
+  document.removeEventListener('visibilitychange', onHide);
   show(results);
 }
 
@@ -231,7 +241,7 @@ function show(results: Results): void {
   const d = results.device;
   app.innerHTML = `<div class="results">
 <div class="clay"><h1>L2 measurement</h1>
-<div class="dev">${results.when}<br>${d.userAgent}<br>screen ${d.screen} at ${d.devicePixelRatio}x, board ${d.boardBox} drawn at ${d.drawnAt}x, refresh every ${d.refreshMs} ms${results.control.slowMs ? `<br><b>CONTROL: ${results.control.slowMs} ms burned in every frame on purpose</b>` : ''}</div></div>
+<div class="dev">${results.when}<br>${d.userAgent}<br>screen ${d.screen} at ${d.devicePixelRatio}x, board ${d.boardBox} drawn at ${d.drawnAt}x, refresh every ${d.refreshMs} ms${results.hidden ? `<br><b style="color:#c2371b">THE SCREEN WENT OFF OR THE PAGE WAS HIDDEN ${results.hidden} TIME(S) WHILE MEASURING. These numbers are not a measurement: keep the screen on and run it again.</b>` : ''}${results.control.slowMs ? `<br><b>CONTROL: ${results.control.slowMs} ms burned in every frame on purpose</b>` : ''}</div></div>
 <div class="clay"><h2>Frames (milliseconds between them)</h2>
 <table><tr><th></th><th>typical</th><th>99 in 100</th><th>worst</th><th>slow (${results.slowFrameMs}+)</th><th>own work</th></tr>${rows}</table></div>
 <div class="clay"><h2>Loading</h2>
