@@ -263,12 +263,14 @@ Easy, on the screens, in the engine's own messages and in the printed texts, in 
 ([`LOOK_PLAN.md`](LOOK_PLAN.md) §1 and §6), and on 2 October that it is done now and does not wait
 for the guided game.
 
-- **The engine names a difficulty to a player in one message of its 196:** the refusal of a vaccine
-  on the gentlest one. That message says Easy. Nothing plays differently, and the difficulty's key
+- **One message of the engine's 196 said Training:** the refusal of a vaccine on the gentlest
+  difficulty. That message says Easy. Nothing plays differently, and the difficulty's key
   is `training` everywhere, as it was.
 - **Made the queue's way:** in the port, and as one edit to the original applied in memory
   (`tests/equivalence/src/ruled.ts`), with a test that shows the word in both and the untouched
   original still saying Training, and a mutation control.
 - **The screens and the printed texts in the same change:** seven sentences and one cell label in
   the catalogue; 9 places in the rulebook, 2 in the quick reference, 4 in the study packet.
+- **Rules 4.1.1, content 1.3.0.** The bands were measured again for the version, on 24 arms and
+  150,000 games, and no number in them moved: the rules play as they did.
 - [`DEVIATIONS.md`](DEVIATIONS.md) #12.

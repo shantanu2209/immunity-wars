@@ -1,9 +1,9 @@
 {
-  "generated": "2026-09-30",
+  "generated": "2026-10-01",
   "pack": {
     "packId": "immunity-wars-core",
-    "packVersion": "1.2.0",
-    "rulesVersion": "4.1.0"
+    "packVersion": "1.3.0",
+    "rulesVersion": "4.1.1"
   },
   "total": 804,
   "parts": [
@@ -4332,7 +4332,7 @@
           "id": "CELL/tcell/home",
           "subject": "Killer T-Cell",
           "label": "Where it comes from",
-          "text": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell."
+          "text": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Easy, 2 on Normal and Hard, +1 beside a primed Helper T-Cell."
         },
         {
           "id": "CELL/tcell/bestAgainst",
@@ -4362,7 +4362,7 @@
           "id": "CELL/tcell/rest",
           "subject": "Killer T-Cell",
           "label": "In How to play",
-          "text": "Range 3 on Training, 2 on Normal and Hard, +1 while a primed Helper stands with it."
+          "text": "Range 3 on Easy, 2 on Normal and Hard, +1 while a primed Helper stands with it."
         },
         {
           "id": "CELL/helper/Name",

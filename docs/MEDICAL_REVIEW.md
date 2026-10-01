@@ -6,7 +6,7 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-09-30 from `packages/content/src` — pack `immunity-wars-core`, content `1.2.0`, rules `4.1.0`.
+Generated 2026-10-01 from `packages/content/src` — pack `immunity-wars-core`, content `1.3.0`, rules `4.1.1`.
 
 **804 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
@@ -1346,12 +1346,12 @@ Seven cells a player commands, each with a card, and seven resident macrophages 
 |---|---|---|
 | `CELL/tcell/Name` | The name we use | The app calls this piece the Killer T-Cell, for the real-world tcell. |
 | `CELL/tcell/role` | What it does | The sniper. It kills infected cells, anything hiding inside one of your own cells, from a distance, and it never misses. |
-| `CELL/tcell/home` | Where it comes from | Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell. |
+| `CELL/tcell/home` | Where it comes from | Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Easy, 2 on Normal and Hard, +1 beside a primed Helper T-Cell. |
 | `CELL/tcell/bestAgainst` | What it is best against | Hidden viruses and the protozoa that live inside cells: Toxoplasma, Chagas, liver-stage malaria, a parasite inside a resident macrophage. Useless against anything out in the open. |
 | `CELL/tcell/deficiency` | What happens without it | Without killer T-cells, a virus that hides inside cells is never cleared, because the infected cell is never destroyed. Reactivating viruses like shingles are what a weakened T-cell system lets through. |
 | `CELL/tcell/fact` | Card fact | A killer T-cell recognises an infected cell by the fragments of virus that cell displays on its own surface. The cell reports its own infection. |
 | `CELL/tcell/hint` | In How to play | Snipe: destroys a pathogen hiding inside one of your cells. Never misses. |
-| `CELL/tcell/rest` | In How to play | Range 3 on Training, 2 on Normal and Hard, +1 while a primed Helper stands with it. |
+| `CELL/tcell/rest` | In How to play | Range 3 on Easy, 2 on Normal and Hard, +1 while a primed Helper stands with it. |
 
 ### Helper T-Cell
 

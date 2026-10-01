@@ -1689,7 +1689,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'queue-q12-the-engine-says-easy',
-    why: 'Queue Q12 (Shantanu, 1 and 2 October 2026): Training is renamed Easy, on the screens, in the printed texts and in the engine’s own messages. The engine names the difficulty in one message. With the port saying Training again, the queue’s test must FAIL saying the engine does not call it Easy (and the corpus, which compares the port with the original as ruled, fails with it).',
+    why: 'Queue Q12 (Shantanu, 1 and 2 October 2026): Training is renamed Easy, on the screens, in the printed texts and in the engine’s own messages. The engine named that difficulty in one message. With the port saying Training again, the queue’s test must FAIL saying the engine does not call it Easy (and the corpus, which compares the port with the original as ruled, fails with it).',
     file: 'packages/engine/src/actions.ts',
     mutate: (t) =>
       t.replace(

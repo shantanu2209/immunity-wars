@@ -347,7 +347,7 @@ describe('Q11 (Shantanu, FINDINGS #55): a venom is never remembered', () => {
 });
 
 describe('Q12 (Shantanu, 1 and 2 October 2026): the gentlest difficulty is called Easy', () => {
-  // The engine says the difficulty's name to a player in one message: the refusal of a vaccine on
+  // The engine says this difficulty's name to a player in one message: the refusal of a vaccine on
   // it. The rule is the same in all three engines, a vaccine is refused there; only the word is the
   // change, so the control is the untouched original, which must still say Training.
   const DISEASE = 'Measles';

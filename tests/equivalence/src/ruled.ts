@@ -270,7 +270,7 @@ export const RULED: readonly RuledChange[] = [
   // Q12, RULED AFTER THE QUEUE RAN, AND IT CHANGES NO PLAY. Shantanu, 1 October 2026
   // (docs/LOOK_PLAN.md §1, ruling 5: "Training is renamed Easy"), and "Now" on 2 October: the word
   // changes on the screens, in the printed texts and in the engine's own messages. The engine says
-  // the difficulty's name to a player in exactly one message, the refusal of a vaccine on that
+  // this difficulty's name to a player in exactly one message, the refusal of a vaccine on that
   // difficulty. The difficulty's KEY stays `training`, in both engines. docs/DEVIATIONS.md #12.
   {
     queue: 'Q12',

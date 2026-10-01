@@ -110,7 +110,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16); the guided game waits on his rulings* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -993,3 +993,62 @@ was read as the defaults), two lines in the audit for a part that scrolls sidewa
 `play-screen-colours-are-the-kits` again over the 38 files, and in the pipeline's own set a scene
 that runs off its picture and one with next to nothing in it, each refused, beside one the colour
 of the board, accepted.
+
+## 16. Ruled 2 October 2026: Easy now, the guided game's direction, and what is removed
+
+Shantanu, 2 October 2026, answering four things put to him after L5 was built:
+
+> *"1. Please do not send me files, anything that needs to be discussed with me should be done here
+> in the chat with full explanations, implications of the choices and your recommendations. I think
+> it should be fully scripted till the minimum number of turns required to explain everything, once
+> done, the player is free to finish it (should be an 'easy' level game, but we do need some place
+> to explain that certain things are different between difficulties, what do you think?). 2. Now
+> 3. This will be covered when I do the review tomorrow, I don;t need any guidelines for the review,
+> when I come with my issues and suggestions etc. if this point is not covered then raise it. yes
+> unnecessary things should be removed. Keep everything that needs to be removed (because it is
+> wrong, redundant, stale, duplicate or some other reason why it is no longer needed)."*
+
+| # | What it rules | What follows |
+|---|---|---|
+| 1 | **Nothing is sent to him as a file.** What needs his decision is put in the chat, with the explanation, what each choice leads to, and a recommendation | The proposal for L6 written as a file is withdrawn; its questions are put to him in the chat |
+| 2 | **The guided game's direction:** scripted for the fewest turns that explain everything, then the same game is the player's to finish; it is an Easy game. **Where the differences between difficulties are explained is open:** he asked for a view | Not built until he has ruled on what is put to him. §6 is otherwise unchanged |
+| 3 | **Easy is done now,** and does not wait for the guided game | Below |
+| 4 | **Whether the Action Points' pips or what is in force gives way in the top bar** is held for his review, and raised only if the review does not cover it | Nothing changed |
+| 5 | **What is no longer needed is removed:** wrong, redundant, stale or duplicate | Its own change, after this one. *"Keep everything that needs to be removed"* is read as "remove", with a list kept of what went and what was left for his word; he was told it was read so |
+
+### Built: Easy (queue Q12)
+
+**One change, as §6 says: the screens, the engine's own message, and the printed texts.**
+
+| Where | What changed |
+|---|---|
+| The engine | The one message of its 196 that said Training, the refusal of a vaccine on the gentlest difficulty, says Easy. **One word. Nothing plays differently** |
+| The screens | Seven sentences of the catalogue and one cell label |
+| The printed texts | The word replaced 9 times in the rulebook, twice in the quick reference, 4 times in the study packet. The study packet's sentence about how T cells are trained is about the immune system, and is left alone |
+| The code | **Nothing.** The difficulty's key is `training` everywhere, as it was: in both engines, the content pack, a saved game and a room. A saved game stores the key, not the word |
+| The versions | Rules 4.1.0 to **4.1.1**, content 1.2.0 to 1.3.0 |
+
+- **Made the queue's way,** because it is engine text, which is not edited for style: in the port,
+  and as one edit to the original applied in memory, so the corpus still compares the two engines
+  byte for byte ([`DEVIATIONS.md`](DEVIATIONS.md) #12,
+  [`ENGINE_CHANGE_QUEUE.md`](ENGINE_CHANGE_QUEUE.md)).
+- **Why the rules version moves when no rule did.** The relay refuses a phone on any other rules
+  version, exactly. Without the move, a phone on the old wording and a room on the new would play
+  together and read different words for the same refusal.
+- **The balance bands were measured again for the new version: 24 arms, 150,000
+  games.** Every number in the file is what it was, to the last digit; only the versions, the
+  commit and the time differ. That is the measurement saying what the change claims: nothing
+  plays differently.
+- **The medical review was regenerated:** two of its 804 claims carry the word.
+- **Control added, and fired:** `queue-q12-the-engine-says-easy` (the port saying Training again:
+  the queue's test fails saying the engine does not call it Easy).
+
+**What it means for the server.** The app and the relay go together, because the rules version
+moved, and the relay's restart ends any game being played together at that moment. Neither is
+deployed by merging this.
+
+**Not done here.** The key `training` in the code is not renamed: it is in every saved game and
+every room, and renaming it changes what is stored for no player's benefit. The code's own
+comments still say Training where they mean that key. The Gate 1 audit
+presses the difficulty by the word a player reads, so it presses Easy now; it was not run again
+for this change, and is before anything is deployed.
