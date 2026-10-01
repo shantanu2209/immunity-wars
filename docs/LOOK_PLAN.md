@@ -623,3 +623,11 @@ the bare screen and would have passed. It now presses the cell only when none is
 
 **Control added, and fired:** `play-screen-colours-are-the-kits` (one old colour written into a
 redrawn panel: the test fails naming the file and the colour).
+
+**Found when the audit was run, and fixed on this branch: with no network the app came back as a
+blank page.** The kit's components, now used by the play screen, were built into a script named
+`kit-…js`, and the exclusion written at L3 to keep the kit page off a phone matched it by name. The
+build test passed, because it forbade anything named `kit` and never required what the app needs.
+The kit page's own script is now named `kitPage`, and the build test follows the app's page to every
+script it needs and requires each one stored; control `app-scripts-in-the-worker` puts the old
+exclusion back and sees it fail. [`FINDINGS.md`](FINDINGS.md) #109. It was never on `main`.

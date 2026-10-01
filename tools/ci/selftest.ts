@@ -1005,11 +1005,19 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/app/vite.config.ts',
     mutate: (t) =>
       t.replace(
-        "const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kit-*'];",
+        "const CLAY_NOT_YET = ['**/art/clay/**', 'kit.html', 'assets/kitPage-*'];",
         'const CLAY_NOT_YET: string[] = [];',
       ),
     gate: 'pnpm --filter @immunity-wars/app test',
     expect: 'THE WORKER STORES THE CLAY KIT',
+  },
+  {
+    id: 'app-scripts-in-the-worker',
+    why: 'Stage L4, found by the Gate 1 audit’s offline pass: the exclusion written for the kit page, `assets/kit-*`, also matched the script the build made of the kit’s components once the play screen used them, so the app needed a script the phone did not store and came back blank with no network, while the build test (which forbade anything named `kit`) passed. With that exclusion put back, the build test must FAIL naming the script the worker does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace("'assets/kitPage-*'", "'assets/kit*'"),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER DOES NOT STORE A SCRIPT THE APP NEEDS: assets/kit-',
   },
   {
     id: 'kit-motion-less-motion-is-still',
