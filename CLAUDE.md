@@ -23,7 +23,11 @@ to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 Octob
 board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
 measured prototype, is built** (`tools/look-prototype/`: Clay drawn three ways, with a frame timer;
 plan §12) **and measured on the S25** (1 October: all three hold 60 frames a second;
-`docs/LOOK_L2_MEASUREMENT.md`). **The board's technology is not yet ruled.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+`docs/LOOK_L2_MEASUREMENT.md`). **Stage L2 is done: he ruled the board is drawn as pictures on the
+page**, Blender's renders moved as page elements, with no GPU canvas and no live 3D; 60 frames a
+second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
+measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
+then removed with `pixi.js` and `three`. **L3, the kit, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:

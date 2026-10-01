@@ -102,7 +102,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | Stage | What is made | The gate |
 |---|---|---|
 | **L1 Style frames** | Two or three directions, each as one finished picture of the play screen, the title and a card | **He picks one.** No code before this. ✅ *Done, 1 October 2026: Clay (§11)* |
-| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. *Built and measured on the S25, 1 October 2026; his ruling is awaited (§12)* |
+| **L2 The moving prototype** | The chosen frame playing one turn and one spread, all three ways (§5, §12), on the S25 | Frame rates read; the board's technology ruled. ✅ *Done, 1 October 2026: measured on the S25, and ruled pictures on the page (§12)* |
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together |
@@ -191,7 +191,7 @@ The board's positions were read from `packages/content/src/board/geometry.json`.
 4. **The typeface** is the one already shipped. Choosing one belongs to the kit.
 5. **The pictures are not app code.** Nothing under `packages/` changed for them.
 
-## 12. L2: ruled 1 October 2026, built, measured on the S25, and waiting for his ruling
+## 12. L2, ruled 1 October 2026: the board is pictures on the page
 
 **Three rulings, Shantanu, 1 October 2026**, on the proposal that followed the pick:
 
@@ -230,8 +230,33 @@ measured. Taps were not timed on the phone, and the ways were not watched side b
 from the measured run is that the three look much the same and that the choice should go to what
 performs best.
 
-**What is owed before L2 is closed.** His ruling on the board's technology, and with it locked
-decision #1 (Capacitor against React Native), which the plan settles by this measurement (§8).
+### L2 ruled and closed, 1 October 2026
+
+Asked three things after the phone's numbers, Shantanu ruled: *"1. Page 2. Accept 60 3. Waive it"*.
+
+1. **The board is drawn as pictures on the page.** Blender renders each piece and the board; the
+   app moves them as page elements. Claude had recommended it, for being the lightest and the
+   fastest to load, for adding no library, and for keeping every piece an element the
+   accessibility checks and the audit can read. **No GPU canvas and no live 3D are added.** If an
+   effect built at L4 cannot hold the frame rate this way, a canvas for that effect alone is a new
+   proposal, measured then; it is not part of this ruling.
+2. **60 frames a second is the target.** The phone ran the prototype at 60 and the line was ruled at
+   16.7 ms. **120 frames a second is unmeasured, and nothing is claimed about it.**
+3. **The tap test on the phone is waived: waived, not met.** The 100 ms line for a tap was never
+   read on the S25. What the frame times allow, and what the PC measured, is an answer within about
+   50 ms; that is an inference.
+
+**Locked decision #1, Capacitor against React Native.** On this measurement Capacitor holds: the
+look is reached with web technology at 60 frames a second on the S25. The plan measures again at L7
+(§8), on the finished screens and in the app's own shell, which this measurement did not use; the
+decision is confirmed there, before Phase 4.
+
+**What this does to §9's warning.** "A canvas board is invisible to the accessibility audit" no
+longer applies: there is no canvas board.
+
+**What happens to the prototype.** It stays as the instrument its record was taken with, until the
+play screen is built at L4 and measured in its place; then it is removed, and `pixi.js` and `three`
+go with it. Neither is used by anything else, and neither is to be.
 
 **What the prototype is not.** It is a measuring instrument. Nothing under `packages/` imports it
 or changed for it, and it is removed when the ruling has been built into the app.

@@ -1,6 +1,10 @@
 # L2: the three ways of drawing Clay, measured
 
-**1 October 2026.** Numbers first; this document rules on nothing. **The S25 was measured the same day and leads; the PC follows.** The stage is
+**1 October 2026.** Numbers first; this document rules on nothing. **The S25 was measured the same day and leads; the PC follows.**
+
+> **Ruled on these numbers, 1 October 2026: the board is drawn as pictures on the page.** The
+> ruling, and what was accepted and waived with it, is in [`LOOK_PLAN.md`](LOOK_PLAN.md) §12. What
+> is listed under Open below was open when he ruled, and stays unmeasured. The stage is
 [`LOOK_PLAN.md`](LOOK_PLAN.md) §12, and the instrument is
 [`tools/look-prototype/`](../tools/look-prototype/README.md).
 
@@ -68,11 +72,11 @@ is unmeasured.
 
 ## Open
 
-- **120 frames a second is not measured.** The phone ran the page at 60. Whether that was the
+- **120 frames a second is not measured.** *Accepted by ruling: 60 is the target.* The phone ran the page at 60. Whether that was the
   phone's motion setting, a power saving mode, or the custom tab is not known. The pass line was
   ruled at 16.7 ms, which is 60 a second, so the measurement answers the line as ruled; it says
   nothing about how the three would behave with 8.3 ms a frame.
-- **Taps were not timed on the phone.** The tap test was not run there. With every frame arriving
+- **Taps were not timed on the phone.** *Waived by ruling: waived, not met.* The tap test was not run there. With every frame arriving
   16.7 ms apart and at most 4.6 ms of the page's own work in each, an answer within two or three
   frames, 33 to 50 ms, is what the PC measured and what these frame times allow; that is an
   inference, not the phone's reading.
