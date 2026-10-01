@@ -14,28 +14,34 @@ Repository is on Shantanu's account; Kartik does not have one.
 
 Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Capacitor.
 
-**Current phase: Phase 3** — playing together: a relay, private rooms by invite code, no strangers.
-Spec: @docs/PHASE3_BRIEF.md (v1.10).
+**Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
+are replaced so the game looks like the best modern mobile games, before Phase 4.
+Spec: @docs/PHASE2_BRIEF.md (v2.0). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Shantanu the same day: style frames first and nothing built before he picks one; then a measured
+prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
+to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
+board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
+measured prototype, is next.** **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
+codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
 [`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), **with nothing owing since 1 October**, when he
-waived the two Gate A phone checks (waived, not met). The marker above stays on Phase 3 because its
-brief still governs the room and the relay, and Phase 4 cannot start before Phase 2's handset pass. **The engine
+waived the two Gate A phone checks (waived, not met). Its brief, `docs/PHASE3_BRIEF.md` (v1.10), still
+governs the room and the relay. **The engine
 change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
 changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
 same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
 actions from anyone who does not hold it, and the body's from anyone but the captain. **What stands
-between here and Phase 4 is what Phase 2 still owes**, below. **One thing the queue
+between here and Phase 4 is Phase 2**, above. **One thing the queue
 left open touched a hard rule,** the printed rules' wording for queues Q1 and Q11, and is closed:
 the rulebook, quick reference and study packet now say what the app does (`docs/FINDINGS.md` #105).
 
-**Phase 2 is PAUSED, not closed** (20 September 2026, `docs/PHASE2_PAUSE.md`): the UX was judged
-acceptable for now, and three things stay owed — the handset performance pass, the newcomer test,
-and Gate 2. **The handset pass is the one that bites: Phase 4 must not start without it**, or
-locked decision #1 (Capacitor vs React Native) goes into it unresolved. Spec:
-`docs/PHASE2_BRIEF.md` (v1.7). Phase 1 is closed; its spec and closeout are
+**What Phase 2 owed when it paused** (20 September 2026, `docs/PHASE2_PAUSE.md`) is carried by the
+plan: the handset performance pass is measured on the S25, and still settles locked decision #1
+(Capacitor vs React Native) **before Phase 4, which must not start without it**; the newcomer test
+is run on the guided game; Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
 `docs/PHASE1_BRIEF.md` and `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not
 proven.
 

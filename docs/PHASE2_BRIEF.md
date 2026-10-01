@@ -1,8 +1,32 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 1.7 · 6 September 2026
+**Version:** 2.0 · 1 October 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
-**Status:** Approved to start. P2.1 may begin; one step inside it holds for a decision — see §3.
+**Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
+([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
+at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.0 records
+
+Shantanu, 1 October 2026: the screens are *"very bland and basic"*, and the game is to have the look
+of the best modern mobile games **before Phase 4**, on modern phones only. **The spec for the
+resumed phase is [`LOOK_PLAN.md`](LOOK_PLAN.md)**, ruled the same day; this brief governs wherever
+that plan is silent.
+
+- **The screens are replaced, not the codebase.** One TypeScript codebase and Capacitor; the engine,
+  content, protocol, room and relay untouched; the board's renderer decided by a measured prototype.
+- **Low-end phones are out of scope.** §4's deciding handset pass on a ₹6–8k phone is replaced by a
+  measurement on the Samsung Galaxy S25 alone. Locked decision #1, Capacitor against React Native,
+  is settled by that measurement, before Phase 4.
+- **Gate 1's accessibility items stand** (touch targets, contrast, text to 200%, offline), re-aimed
+  at the new screens. Its newcomer test is run on the new guided game.
+- **Gate 2 is the gate this ends on:** his visual approval, at the plan's last stage.
+- **Training is renamed Easy**, and a guided game replaces How to play as the way in.
+- **No money is spent on art:** written in code, modelled in Blender, or generated under terms that
+  allow redistribution, recorded in [`ASSETS.md`](ASSETS.md).
+
+*As it read at v1.7:* **Status:** Approved to start. P2.1 may begin; one step inside it holds for a
+decision — see §3.
 
 Read alongside [`PHASE2_INPUTS.md`](PHASE2_INPUTS.md), [`SEAM_DECISIONS.md`](SEAM_DECISIONS.md)
 and [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md). This brief makes decisions; those documents

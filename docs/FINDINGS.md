@@ -5013,6 +5013,9 @@ screens through to a Result with nothing not reached.
 
 It takes effect when the relay is next deployed; the app does not change.
 
+**Deployed 1 October 2026 at 12:19 IST**, on Shantanu's word: the relay `20261001-121915-abec86e`,
+its 41 tests passed, restarted with nobody connected, the table read back from the server's copy.
+
 ## 95. Legacy's undo, played together, took the piece back and kept its Action Point spent — FIXED 27 September 2026, by ruling (DEVIATIONS #8)
 
 **Found 27 September 2026**, building undo for games played together (ruled after the P3.6 session).
