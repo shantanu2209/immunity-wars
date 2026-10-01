@@ -1491,6 +1491,55 @@ const CONTROLS: readonly Control[] = [
     gate: 'pnpm turbo:check',
     expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
   },
+  {
+    id: 'room-bound-actions-owner-only',
+    why: "FINDINGS #94, the relay's half: Produce, Coat, Neutralise and the four attacks name no piece, and the room, reading only `cell` and `organ`, let them through from any member. A room that stopped reading the table would again.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) => t.replace('  if (bound !== undefined) return bound;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'is refused from anyone who does not hold that piece',
+  },
+  {
+    id: 'room-bound-actions-table-first',
+    why: "FINDINGS #94: an action that can only be one piece's is that piece's whatever the message names. Reading the named cell first, a player holding the Neutrophil could engulf by saying so.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        "  if (bound !== undefined) return bound;\n  const cell = action['cell'];\n  if (typeof cell === 'string') return cell;\n",
+        "  const cell = action['cell'];\n  if (typeof cell === 'string') return cell;\n  if (bound !== undefined) return bound;\n",
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: 'naming a piece the sender does hold does not make the action theirs',
+  },
+  {
+    id: 'room-body-actions-captain-only',
+    why: "FINDINGS #94: the body's actions, the vaccine lab, the clone, antivenom and the memory response, are the captain's on the screens (ruled 26 September 2026) and in the room (30 September). A room that did not check would take them from anyone.",
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace(
+        'BODY_ACTIONS.has(name) && room.captain !== me.ref)',
+        'BODY_ACTIONS.has(name) && room.captain !== me.ref && false)',
+      ),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: "the body's actions are refused from anyone but the captain",
+  },
+  {
+    id: 'room-body-actions-captain-allowed',
+    why: 'FINDINGS #94, the permitting half: a room that refused the body from EVERYONE would pass the control above. The captain must still reach the engine.',
+    file: 'packages/room/src/room.ts',
+    mutate: (t) =>
+      t.replace('BODY_ACTIONS.has(name) && room.captain !== me.ref)', 'BODY_ACTIONS.has(name))'),
+    gate: 'pnpm --filter @immunity-wars/room test',
+    expect: "the captain reaches the engine with the body's actions",
+  },
+  {
+    id: 'room-and-screens-one-table',
+    why: "FINDINGS #94: the room's table of whose each action is, and the screens' list of what each piece is offered, are two statements of one fact. Drifting apart, the screens would offer a button the room refuses.",
+    file: 'packages/protocol/src/vocabulary.ts',
+    mutate: (t) => t.replace("  nkkill: 'nk',", "  nkkill: 'tcell',"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/seat-of-action.test.ts',
+    expect: 'every action a cell is offered',
+  },
 ];
 
 /** Tracked-file status, used to prove the run restored everything it touched. */

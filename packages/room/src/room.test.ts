@@ -11,6 +11,7 @@
  */
 import { moveDestinations } from '@immunity-wars/engine';
 import type { GameState } from '@immunity-wars/engine';
+import { BODY_ACTIONS, SEAT_OF_ACTION } from '@immunity-wars/protocol';
 import { CELL_KEYS, FAMILIES } from '@immunity-wars/session-core';
 import { describe, expect, it } from 'vitest';
 
@@ -526,6 +527,59 @@ describe('an action', () => {
     // catalogue as single player does.
     expect(errorsOf(s.out)).toEqual(['engine']);
     expect(detailsOf(s.out)[0]).toBeTruthy();
+  });
+
+  /*
+   * FINDINGS #94, THE RELAY'S HALF (ruled 30 September 2026). `a` is the captain and holds the
+   * B-Cell; `b` holds the Neutrophil. The engine needs no `cell` for these actions, so until this
+   * the room read none and let them through from anyone. Each refusal has its permitting twin: an
+   * action that reaches the ENGINE, whose own refusal (nothing is drawn yet) shows the room had none.
+   */
+  const act = (ref: string, action: Record<string, unknown>): string[] =>
+    errorsOf(step(playing(), { kind: 'action', id: 1, ref, action }, T0).out);
+
+  it("an action that can only be one piece's is refused from anyone who does not hold that piece, though it names none", () => {
+    // Everything in the table but `net`, which is b's own.
+    const notBs = Object.keys(SEAT_OF_ACTION).filter((n) => n !== 'net');
+    expect(notBs.length).toBeGreaterThanOrEqual(6);
+    for (const name of notBs) {
+      expect(act('b', { action: name, family: 'ENV', invaderId: 'i1' }), name).toEqual([
+        'notYourPiece',
+      ]);
+    }
+    // And the B-Cell's player cannot throw the Neutrophil's NET.
+    expect(act('a', { action: 'net' })).toEqual(['notYourPiece']);
+  });
+
+  it('naming a piece the sender does hold does not make the action theirs', () => {
+    // Engulf is the Monocyte's alone; b holds the Neutrophil and says so.
+    expect(act('b', { action: 'engulf', cell: 'neutrophil', invaderId: 'i1' })).toEqual([
+      'notYourPiece',
+    ]);
+  });
+
+  it("the piece's own player reaches the engine with the same actions", () => {
+    expect(act('a', { action: 'produce', family: 'ENV' })).toEqual(['engine']);
+    expect(act('b', { action: 'net' })).toEqual(['engine']);
+  });
+
+  it("the body's actions are refused from anyone but the captain", () => {
+    expect(BODY_ACTIONS.size).toBe(5);
+    for (const name of BODY_ACTIONS) {
+      expect(
+        act('b', { action: name, disease: 'Influenza', invaderId: 'i1', ap: 1 }),
+        name,
+      ).toEqual(['notCaptain']);
+    }
+  });
+
+  it("the captain reaches the engine with the body's actions", () => {
+    for (const name of BODY_ACTIONS) {
+      expect(
+        act('a', { action: name, disease: 'Influenza', invaderId: 'i1', ap: 1 }),
+        name,
+      ).toEqual(['engine']);
+    }
   });
 
   it("cannot smuggle someone else's pid inside the action: the room stamps the sender's own", () => {
