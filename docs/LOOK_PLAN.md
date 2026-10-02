@@ -1531,3 +1531,48 @@ where a missing row and a clean one look the same.
 
 **With this the guided game is built.** What it still wants is people: his review, Kartik's reading
 of the 63 sentences and of these, and a newcomer playing it unaided, which is the gate of stage L6.
+
+## 20. Ruled 2 October 2026, the fourth set: the guided game goes up, and coat is the word
+
+Six things were put to him in the chat when the guided game was built. He answered:
+
+> *"1. Merged 2. Keep 3. Make the call yourself please. 4. Which all pathogens does this apply to?
+> Bacteria and worms? Anythibg else? Is it scientifically differnt for different pathogens? If it
+> is then keep the name what makes sense scientifically for those pathogens. If it is the same then
+> I guess coat is better. 5. Unseeded. 6. Yes please"*
+
+| # | What was put | His ruling | What follows |
+|---|---|---|---|
+| 1 | Merge the engine's part of the guided game | **Merged** | The other three parts went up as one pull request and not three, to reach a deploy in one merge |
+| 2 | The card of the main differences departs from what he agreed: one card that compares, and after every game on Easy | **Keep** | As built (§19). Those two choices are no longer unruled |
+| 3 | Which of the engine's other differences between the difficulties a player is told, which was put as Kartik's | **Claude's to decide** | Below, when it is built |
+| 4 | A bacterium's button said Tag and How to play said Coat | **Coat, if the science is the same** | It is. Below |
+| 5 | Whether the audit's game is seeded | **Unseeded** | Nothing changes. What it reaches on some screens goes on depending on the dice, and each run says what it did not reach |
+| 6 | Deploy the guided game once it is merged, the app only | **Yes** | When that pull request is merged |
+
+### Built: coat is the one word (queue Q14)
+
+**His question, answered from the game and the science.**
+
+| Asked | Answer |
+|---|---|
+| Which pathogens does it apply to? | A bacterium, a worm and a parasite. Those three and no others can be coated |
+| Anything else? | No. A virus, a toxin and malaria in the blood are neutralised, which is a different act. A fungus cannot be coated. A virus hiding in a cell cannot be reached |
+| Is it scientifically different between them? | **What the antibody does is the same:** it binds the surface and leaves its stem outward for a cell to hold. What differs is what the cell then does: it swallows a coated bacterium, and strikes a coated worm, which is too large to swallow. The game has words for those already, Engulf and Strike |
+| What does the printed rulebook say? | One action for all three, named *"Coat (tag)"* |
+
+**So it is Coat, everywhere a player reads it.**
+
+| Where | What changed |
+|---|---|
+| The row of the B-Cell's action | Coat on every target. It said Tag on a bacterium |
+| The engine | Three of its 196 sentences said tagged: a log line and two refusals. They say coated and uncoated. **Three words. Nothing plays differently** |
+| The screens' other sentences | Two about what a resident eats; the lesson's two that said "then Tag", one of which no longer has to explain that a tag coats |
+| The printed texts | **Nothing.** They say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*, twice in print, are Kartik's |
+| The code | **Nothing.** The action is `tag` and the mark `tagged`, as they were |
+
+- **Made the queue's way,** as Easy was (§16): in the port, and as three edits to the original
+  applied in memory, so the corpus still compares the two engines byte for byte
+  ([`DEVIATIONS.md`](DEVIATIONS.md) #14).
+- **Control added, and fired:** `queue-q14-the-engine-says-coated` (the port logging a coated
+  bacterium as tagged again: the queue's test fails saying the engine still says tagged).

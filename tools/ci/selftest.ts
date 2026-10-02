@@ -1765,8 +1765,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/engine/src/actions.ts',
     mutate: (t) =>
       t.replace(
-        "else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');",
-        "else {\n        const tagged = `Antibody <b>tagged</b> ${iv.disease}.`;\n        pushLog(g, tagged, 'good');\n      }",
+        "else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`, 'good');",
+        "else {\n        const coated = `Antibody <b>coated</b> ${iv.disease}.`;\n        pushLog(g, coated, 'good');\n      }",
       ),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/i18n-engine.test.ts',
     expect: 'a log line or rejection composed where the catalogue cannot see it',
@@ -1865,6 +1865,18 @@ const CONTROLS: readonly Control[] = [
       t.replace('    if (written) c = DECK_MASTER.find((x) => x.dz === written[k]);\n', ''),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
     expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
+  },
+  {
+    id: 'queue-q14-the-engine-says-coated',
+    why: 'Queue Q14 (Shantanu, 2 October 2026): what an antibody does to a bacterium, a worm or a parasite is one thing with one word, coat; the engine said tagged in three sentences. With the port logging a coated bacterium as tagged again, the queue’s test must FAIL saying the engine still says tagged (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        'else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`',
+        'else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS TAGGED',
   },
   {
     id: 'queue-q12-the-engine-says-easy',

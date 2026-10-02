@@ -381,6 +381,75 @@ describe('Q12 (Shantanu, 1 and 2 October 2026): the gentlest difficulty is calle
   });
 });
 
+describe('Q14 (Shantanu, 2 October 2026): an antibody coats; the engine no longer says tagged', () => {
+  // One action in every engine, `tag`, on a bacterium, a worm or a parasite. What it does is the
+  // same in all three engines here; only three sentences changed their word, so the control is the
+  // untouched original, which must still say tagged.
+  const BACTERIUM = 'Whooping cough';
+  const lab = (E: Engine, g: Game): void => {
+    E.forceInjectCard(g, BACTERIUM);
+    g['phase'] = 'command';
+    g['ap'] = 5;
+    const ab = g['ab'] as Record<string, number>;
+    for (const f of Object.keys(ab)) ab[f] = 1;
+  };
+  const idOf = (g: Game): unknown =>
+    (g['invaders'] as unknown as Raw[]).find((x) => x['disease'] === BACTERIUM)?.['id'];
+  const coat = (g: Game): Raw[] => [{ action: 'tag', invaderId: idOf(g) }];
+  const logged = (g: Game): string[] =>
+    (g['log'] as { msg: string }[]).map((l) => l.msg).filter((m) => m.startsWith('Antibody <b>'));
+
+  it('a coated bacterium is logged as coated, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'normal', lab, coat);
+      expect(results[0], name).toEqual({ ok: true });
+      expect(logged(g), `${name}: THE ENGINE STILL SAYS TAGGED`).toEqual([
+        `Antibody <b>coated</b> ${BACTERIUM}.`,
+      ]);
+      // The word changed and nothing else: the bacterium is marked as it was, and the cube is spent.
+      const b = (g['invaders'] as unknown as Raw[]).find((x) => x['disease'] === BACTERIUM);
+      expect(b?.['tagged'], name).toBe(true);
+    }
+  });
+
+  it('the two refusals say coated and uncoated, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const nothing = run(E, 1, 'normal', lab, () => [{ action: 'tag', invaderId: 'nothing' }]);
+      expect(nothing.results[0], name).toEqual({
+        ok: false,
+        error: 'Pick an uncoated bacterium, worm or parasite.',
+      });
+      const resident = run(E, 1, 'normal', lab, () => [{ action: 'resengulf', organ: 'heart' }]);
+      expect(resident.results[0], name).toEqual({
+        ok: false,
+        error:
+          'Nothing to engulf where it stands — move it onto a virus or a coated bacterium first.',
+      });
+    }
+  });
+
+  it('CONTROL: the original, untouched, does the same things and still says tagged', () => {
+    const { g, results } = run(ORIGINAL, 1, 'normal', lab, coat);
+    expect(results[0]).toEqual({ ok: true });
+    expect(logged(g)).toEqual([`Antibody <b>tagged</b> ${BACTERIUM}.`]);
+    const nothing = run(ORIGINAL, 1, 'normal', lab, () => [
+      { action: 'tag', invaderId: 'nothing' },
+    ]);
+    expect(nothing.results[0]).toEqual({
+      ok: false,
+      error: 'Pick an untagged bacterium, worm or parasite.',
+    });
+    const resident = run(ORIGINAL, 1, 'normal', lab, () => [
+      { action: 'resengulf', organ: 'heart' },
+    ]);
+    expect(resident.results[0]).toEqual({
+      ok: false,
+      error:
+        'Nothing to engulf where it stands — move it onto a virus or a tagged bacterium first.',
+    });
+  });
+});
+
 describe('Q13 (Shantanu, 2 October 2026): a game may be handed its first turns, written', () => {
   // The guided game's seven turns, as he ruled them (docs/LOOK_PLAN.md §19). What is shown here is
   // the engine's part only: that a written turn brings exactly what is written and rolls nothing,

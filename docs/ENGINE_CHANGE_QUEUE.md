@@ -292,3 +292,21 @@ its seven turns are as listed and that the rules version does not move (§19).
 - **Rules 4.1.1, as it was.** The balance bands are not measured again: they are tied to the rules
   version, and no game the panel plays is handed the writing.
 - [`DEVIATIONS.md`](DEVIATIONS.md) #13.
+
+### Q14, after the queue ran — 2 October 2026: an antibody coats
+
+Not one of the ten, and not a rule: a word. The engine called one action "tagged" in three
+sentences and a coat in six, and the screens had followed it, so a bacterium was tagged and a worm
+coated. Shantanu ruled on 2 October that if the two are the same thing the word is coat. They are:
+one action in the engine, one thing an antibody does, and one name in the printed rulebook.
+
+- **Three sentences of the engine's 196 said tagged:** the log line for a bacterium or a parasite,
+  the refusal of a coat on something that cannot take one, and a resident's refusal with nothing to
+  eat. They say coated and uncoated. Nothing plays differently, and the action's own name is `tag`
+  everywhere, as it was.
+- **Made the queue's way:** in the port, and as three edits to the original applied in memory, with
+  tests that show the words in both and the untouched original still saying tagged, and a mutation
+  control.
+- **The screens in the same change:** the row's word, two sentences about residents, two of the
+  lesson's. The printed texts already said Coat.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #14.

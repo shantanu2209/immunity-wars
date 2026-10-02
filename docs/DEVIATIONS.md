@@ -654,6 +654,73 @@ rolls as it always did; and the untouched original, handed the same turns, deals
 the same, which is the control. Mutation controls `queue-q13-a-written-turn-rolls-nothing` and
 `queue-q13-a-written-turn-brings-what-is-written`.
 
+## 14. An antibody coats: the engine no longer says "tagged" (queue Q14)
+
+**Legacy behaviour.** One action, `tag`, spends an antibody on a bacterium, a worm or a parasite and
+marks it. Three of the engine's sentences call that "tagged":
+
+- the log, for a bacterium or a parasite: *"Antibody **tagged** Whooping cough."*
+- the refusal of the action on anything else: *"Pick an untagged bacterium, worm or parasite."*
+- a resident with nothing to eat: *"Nothing to engulf where it stands — move it onto a virus or a
+  tagged bacterium first."*
+
+Six others call the same thing a coat: *"Coat it with an antibody first"* (twice), *"Antibodies
+**coated** the Roundworm"*, *"Memory antibodies coated …"*, *"Complement coated …"*, *"Coat it,
+then the Eosinophil strikes"*.
+
+**Port behaviour.** The same action, on the same things, at the same cost, with the same mark. The
+three sentences say *coated*, *uncoated* and *a coated bacterium*. **Three words differ.** Nothing
+plays differently.
+
+**Why.** The screens had followed the log: a bacterium's button said Tag, a worm's and a
+parasite's said Coat, and How to play and the printed rulebook said Coat of all three. A newcomer
+met two words for one thing, and the guided game had to say that a tag coats. Asked which it should
+be, Shantanu asked back on 2 October 2026: *"Which all pathogens does this apply to? Bacteria and
+worms? Anythibg else? Is it scientifically differnt for different pathogens? If it is then keep the
+name what makes sense scientifically for those pathogens. If it is the same then I guess coat is
+better."*
+
+**It is the same, so it is coat.**
+
+- **What it applies to:** a bacterium, a worm and a parasite, and nothing else. A virus, a toxin
+  and malaria in the blood are neutralised, which is a different act: there the antibody alone
+  stops the thing. A fungus cannot be coated in this game, and a virus hiding in a cell cannot be
+  reached.
+- **What the antibody does is one thing.** Its arms bind the pathogen's surface and its stem is
+  left pointing outward, for a cell's receptors to hold. That is what the Clay piece of a coated
+  microbe shows.
+- **What differs is what a cell then does, and that has its own word already.** A phagocyte
+  swallows a coated bacterium: opsonisation in the strict sense, and the game's Engulf. A worm is
+  too large to swallow, so the eosinophil holds on by the antibodies and empties its granules
+  against it: the game's Strike and Degranulate.
+- **The printed rulebook names the action "Coat (tag)"** and says of all three: *"Spend one
+  antibody cube of the matching class to coat a bacterium, worm or parasite"*.
+- **A limit, said plainly:** against worms the body mostly uses another class of antibody than
+  against bacteria. The game's antibody classes follow the antigen and not that, and this change
+  claims nothing about it either way.
+
+**It is an engine text change,** refused as a matter of style and made only as a deliberate,
+isolated change measured against the corpus. This is that: it was ruled, it is three sentences, and
+it was made the queue's way.
+
+**The oracle.** As for #10 to #13: made twice, in the port and as three edits to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory and the corpus compares. The
+original's file is not touched.
+
+**The rest of the one change, which is not the engine's:** the row's word for the action is Coat
+on every target, where it was Tag on a bacterium; two sentences about what a resident eats say
+coated; and the lesson's two sentences that said "then Tag" say "then Coat". **The printed texts
+are not changed:** they say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*,
+once in the rulebook and once in the study packet, are Kartik's to keep or change.
+
+**The engine's own names are not changed:** the action is still `tag` and the mark still
+`tagged`, in both engines, in a saved game and in a room. Only what a player reads has changed.
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q14 cases: a coated bacterium logged as
+coated and both refusals, in the port and the original as ruled, with the untouched original, which
+still says tagged, as the control. Mutation control `queue-q14-the-engine-says-coated`.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

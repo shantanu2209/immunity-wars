@@ -5627,6 +5627,9 @@ engine's own log, which says "tagged" of a bacterium and "coated" of a worm. A n
 words for one thing. The lesson's sentences name each button as the screen words it, and say once
 that a tag coats.
 
+**Ruled the same day, and done:** it is one thing, so the word is Coat on every target, on the
+screens and in the engine's three sentences that said tagged (queue Q14, `docs/DEVIATIONS.md` #14).
+
 ## 115. With two new cards at the largest text, the cards could be scrolled 2 px sideways while they were dealt — FIXED inline 2 October 2026
 
 **Found 2 October 2026**, by the Gate 1 audit's second run on the guided game's branch, in the

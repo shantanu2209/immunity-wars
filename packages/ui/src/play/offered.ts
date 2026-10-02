@@ -220,11 +220,16 @@ const ids = (xs: unknown): Target[] =>
 
 /**
  * THE VERB NAMED FOR ITS TARGET (ruled 6 September 2026): every action row uses the name a
- * player would use for what it does to THIS target, not the engine's internal verb. `tag` on a
- * worm or parasite is "Coat" (the engine's own log says "coated"; the Eosinophil "strikes a
- * coated worm"); `engulf` on a fungus or a parasite is "Chip" (the engine's log: "chipped the
- * Candida — 1/2 left"), because the Monocyte does not swallow those, it wounds them. The
- * engine action and the params are unchanged; only the word changes.
+ * player would use for what it does to THIS target, not the engine's internal verb. `engulf` on
+ * a fungus or a parasite is "Chip" (the engine's log: "chipped the Candida — 1/2 left"), because
+ * the Monocyte does not swallow those, it wounds them. The engine action and the params are
+ * unchanged; only the word changes.
+ *
+ * `tag` IS "Coat" ON EVERYTHING IT CAN BE DONE TO (ruled 2 October 2026, queue Q14). Until then a
+ * bacterium was "tagged" and a worm or a parasite "coated", after the engine's log. It is one
+ * action on all three and one thing an antibody does, opsonisation: it binds to the surface, and
+ * what differs is what a cell then does, which has its own word, Engulf or Strike. The printed
+ * rulebook names the action Coat. So the catalogue's word for `tag` is Coat, and no case is needed.
  *
  * AND WHEN THE WOUND IS THE LAST ONE IT IS "Engulf" (2 October 2026, docs/FINDINGS.md #114): on
  * its last hit point the target dies, and the engine's own log says "engulfed". A parasite is
@@ -233,7 +238,6 @@ const ids = (xs: unknown): Target[] =>
  * swallowed", stood beside a button that said Chip.
  */
 function verbFor(action: string, type: string, hp: number | null): string {
-  if (action === 'tag' && (type === 'worm' || type === 'parasite')) return t('action.coat');
   if (action === 'engulf' && (type === 'fungus' || type === 'parasite') && (hp === null || hp > 1))
     return t('action.chip');
   return t(`action.${action}`);

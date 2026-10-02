@@ -600,7 +600,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
         iv.tagged ||
         !(iv.type === 'bacteria' || iv.type === 'worm' || iv.type === 'parasite')
       ) {
-        return err('Pick an untagged bacterium, worm or parasite.');
+        return err('Pick an uncoated bacterium, worm or parasite.');
       }
       if (!attackable(iv)) return err('Cannot reach it in the bloodstream.');
       if (iv.inMac)
@@ -628,7 +628,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
           `Antibodies <b>coated</b> the ${iv.disease}. Cells can now grip it — the Eosinophil hits hardest.`,
           'good',
         );
-      else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');
+      else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`, 'good');
       return ok();
     }
     case 'engulf': {
@@ -792,7 +792,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const iv = list.find((x) => x.id === a.invaderId) || list[0];
       if (!iv)
         return err(
-          'Nothing to engulf where it stands — move it onto a virus or a tagged bacterium first.',
+          'Nothing to engulf where it stands — move it onto a virus or a coated bacterium first.',
         );
       killInvader(g, iv, 'resident');
       present(g, 1);
