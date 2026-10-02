@@ -26,7 +26,8 @@ import {
 } from '@immunity-wars/session';
 import { describe, expect, it } from 'vitest';
 
-const STEPS = LESSON.turns.flatMap((t) => t.steps);
+/** The steps that ask the engine for something. A `tell` is said, and asks for nothing. */
+const STEPS = LESSON.turns.flatMap((t) => t.steps).filter((s) => s.do !== 'tell');
 const WRITTEN = LESSON.turns.map((t) => t.arrive);
 const kindOf = (dz: string): string => DECK_MASTER.find((c) => c.dz === dz)?.type ?? 'NO SUCH CARD';
 
@@ -140,6 +141,7 @@ async function onRails(
     await send({ action: 'draw' });
     await send({ action: 'beginCommand' });
     for (const step of turn.steps) {
+      if (step.do === 'tell') continue;
       const action = lessonAction(step, view());
       if (!action) throw new Error(`${step.id} names what is not in the body`);
       await send(action);

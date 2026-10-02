@@ -38,8 +38,8 @@ play screen opens are drawn from the kit, and a redrawn file may name no colour 
 (`play/clayColours.test.ts`); the new cards and planning stand on a sheet of the old paper
 (`OldPaper`) until L5. The board plays what changed between one picture and the next, with one sound
 for it (`board/changes.ts`), and the camera moves in on it (`board/camera.ts`: the board drawn
-larger, one transform). **The hints and the first-game coach are switched off** until the guided
-game replaces them at L6. **He ruled the look deployed on the night of 1 October, as a mix of two
+larger, one transform). **The hints and the first-game coach are removed** (2 October): the guided
+game replaced them. **He ruled the look deployed on the night of 1 October, as a mix of two
 looks** (the play screen in Clay, every other screen as it was), replacing the earlier ruling that
 kept it off the server until L6, **and it was deployed on 2 October** (the app only, from `main` at
 `3299bfe`; the relay untouched); **his review of the whole app follows**, and the
@@ -61,14 +61,20 @@ changed and the rules version stays 4.1.1, by ruling. **The lesson is a file hel
 (`packages/content/src/guide/lesson.json`): `tests/session/src/lesson.test.ts` plays it whole
 through the session against the real engine, with its seed for dice, and `pnpm guide:seed` finds a
 seed when a change breaks it. Its dice are swapped in round each engine call and nowhere else
-(`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. The light that leads
-the player, the sentences and the way in are not built yet.
+(`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. **The light that leads the
+player is built** (`packages/ui/src/guide/`: `model.ts` says the one sentence and the one control
+for where the player is; `Spotlight.tsx` dims the rest and hands a press to the real control), with
+its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on a phone that has
+never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
+app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
+had no button (`docs/FINDINGS.md` #113). **Not built:** the difficulty screen's *What changes* and
+the guided game's result card. **Not read by him or Kartik:** the sentences.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
 is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
-asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach are still in
-the code, switched off, and go with the guided game.
+asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the
+guided game (2 October): their code, tests and sentences are removed.
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type

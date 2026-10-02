@@ -792,6 +792,9 @@ const LessonStepS = z.discriminatedUnion('do', [
   }),
   z.strictObject({ id: z.string().min(1), do: z.literal('recall'), cell: CellKeyS }),
   z.strictObject({ id: z.string().min(1), do: z.literal('net') }),
+  // Something the lesson SAYS and the player does not do: what the Helper T-Cell is, what was not
+  // shown. It asks the engine for nothing. `cell` is what it points at, when it points at one.
+  z.strictObject({ id: z.string().min(1), do: z.literal('tell'), cell: CellKeyS.optional() }),
   z.strictObject({
     id: z.string().min(1),
     do: z.literal('strike'),

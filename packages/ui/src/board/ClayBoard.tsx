@@ -818,6 +818,8 @@ export function ClayBoard({
             <span
               key={tg.key}
               data-offer={tg.kind}
+              // Which offer this is, for the guided game to light and the drivers to find.
+              data-at={tg.key}
               style={{
                 position: 'absolute',
                 ...place(at, o.r * 2 * scale),

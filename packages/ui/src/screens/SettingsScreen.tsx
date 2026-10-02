@@ -68,6 +68,8 @@ type Row =
        *  renderer, which is exactly the shape the rows table exists to avoid. */
       confirmKey: string;
       confirmYesKey: string;
+      /** The word on the button that says no. "Keep" for a delete; another word where that is odd. */
+      confirmNoKey?: string;
       onAct: () => void;
     };
 
@@ -86,8 +88,7 @@ export function SettingsScreen({
   onChoose,
   deleteSaveBlock,
   onDeleteSave,
-  hintsSeenAny,
-  onResetHints,
+  guide,
 }: {
   /** The text size in force and the sizes offered (percentages of the browser default). */
   textSize: string;
@@ -106,15 +107,12 @@ export function SettingsScreen({
   /** Why the delete row is disabled, or null when a save exists and is not being played. */
   deleteSaveBlock: DeleteSaveBlock;
   onDeleteSave: () => void;
-  /** True when this device has seen at least one hint; the row is disabled otherwise. */
-  hintsSeenAny: boolean;
   /**
-   * Shows the first-game guidance again, or NULL WHEN THERE IS NONE TO SHOW, and then the row is
-   * not drawn. From stage L4 the coach and the hints are off until the guided game replaces them
-   * (docs/LOOK_PLAN.md §14, ruling 2), and a row that says they will appear again would say
-   * something false (docs/FINDINGS.md #111).
+   * THE GUIDED GAME, to be played again (stage L6, ruled 2 October 2026). Not while a game is
+   * being played: the row then says why. Its confirm says, when a game is saved, that the lesson's
+   * end replaces it.
    */
-  onResetHints: (() => void) | null;
+  guide: { block: 'inPlay' | null; replacesSave: boolean; onStart: () => void };
 }): ReactElement {
   const [confirming, setConfirming] = useState<string | null>(null);
   // The confirm is a dialog on the navigation stack: the back gesture cancels it, and the floating
@@ -170,19 +168,16 @@ export function SettingsScreen({
           confirmYesKey: 'settings.deleteSaveDo',
           onAct: onDeleteSave,
         },
-        ...(onResetHints === null
-          ? []
-          : [
-              {
-                kind: 'action' as const,
-                key: 'resetHints',
-                labelKey: 'settings.hintsShow',
-                blockedKey: hintsSeenAny ? null : 'settings.hintsReason',
-                confirmKey: 'settings.hintsConfirmBody',
-                confirmYesKey: 'settings.hintsConfirmYes',
-                onAct: onResetHints,
-              },
-            ]),
+        {
+          kind: 'action',
+          key: 'guide',
+          labelKey: 'settings.guide',
+          blockedKey: guide.block === 'inPlay' ? 'settings.guideInPlay' : null,
+          confirmKey: guide.replacesSave ? 'settings.guideConfirmSave' : 'settings.guideConfirm',
+          confirmYesKey: 'settings.guideYes',
+          confirmNoKey: 'settings.guideNo',
+          onAct: guide.onStart,
+        },
       ],
     },
   ];
@@ -261,7 +256,7 @@ export function SettingsScreen({
               {t(confirmRow?.confirmYesKey ?? '')}
             </KitButton>
             <KitButton style={STACK} onPress={() => setConfirming(null)}>
-              {t('settings.deleteSaveKeep')}
+              {t(confirmRow?.confirmNoKey ?? 'settings.deleteSaveKeep')}
             </KitButton>
           </div>
         </div>

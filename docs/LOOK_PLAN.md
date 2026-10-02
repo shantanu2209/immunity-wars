@@ -11,7 +11,8 @@ which holds 60 frames a second on his S25 (§14). **He ruled it deployed that ni
 looks, with his review of the whole the next day** (§14, the last heading). **L5, the other screens,
 is built for that review and not yet ruled on** (§15); **it was deployed on 2 October, with Easy**
 (§19). **L6 is under way:** Easy is done (§16), and the guided game is ruled to script everything,
-its seven turns ruled as listed, and the engine's part of it built (§18, §19).
+its seven turns ruled as listed, and built: the engine's part, the lesson, and the light that leads
+the player (§18, §19). The hints and the coach are removed.
 
 ## 1. What is decided already
 
@@ -112,7 +113,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed and the engine's part is built (§19); the lesson itself is not yet* |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed, and the engine's part, the lesson and the light that leads the player are built (§19); the difficulties' explanations are not yet* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -1350,3 +1351,102 @@ coated, stopped at that step by name.
 
 **Nothing a player sees has changed.** The light that leads the player, the sentences, the way in
 from the title and the removal of the hints and the coach are the next part.
+
+### Built: the light that leads the player, and the way in (the third part of the guided game)
+
+**What a player sees.** One control is lit, with a gold ring; everything else is dimmed and cannot
+be tapped; and a card beside the lit control says one sentence. The card also says how far through
+the lesson the player is, and always carries a quiet way out, *Leave the lesson*.
+
+- **What is lit is the real control.** The Antibodies tile, a cell on the board, a row of its
+  actions, a glowing step, End turn. The guide lays a button of its own over it, at least 44 px
+  each way, and a press on that button is handed to the control underneath. So a player who has
+  been through the lesson has used the game's own controls, in the order they are used.
+- **Why a button over it and not a hole.** A hole would let the finger through to whatever is
+  nearest, and seven cells stand in the bloodstream within a finger's width.
+- **The card stands beside what is lit**, on the side with more room, so that what is far from it
+  stays in view: with End turn lit, the Action Points at the top are not under the card that is
+  talking about them. When a place on the board is lit, the card stands at the foot of the screen,
+  off the board.
+- **The spread is watched, not dimmed.** The sentence stands alone, and a finger anywhere moves the
+  spread on, as it always does.
+- **Four things are said and not done,** each with its own Next: that the body remembers what it
+  beats, with the one line about the other difficulties (§18); the Helper T-Cell; degranulate; and
+  what neglect does. The last word hands the game over, with *Play on*.
+- **If the game and the lesson part, the guide lets go.** It moves on only when the engine has
+  accepted exactly the step it asked for. If the engine accepts anything else, the light goes out
+  and the game is the player's. It cannot happen while only the lit control can be tapped; it is
+  there so that the guide can never point at a step the game is not at.
+
+**The way in.**
+
+- **On a phone that has never finished a game, the title's main button is *Learn to play*,** and
+  New game is beside it. With a game waiting, Continue is still the main one. Once a game or the
+  lesson has been finished it leaves the title.
+- **Settings has *Play the guided game*.** Not from inside a game, and the row says so. Its
+  confirmation says, when a game is saved, that the lesson's end replaces it.
+- **Leaving the lesson goes back to the title, and nothing of it is kept.** Finishing it, the game
+  is saved from that moment like any other.
+- **The light is not drawn over the menu.**
+
+**The sentences** are 63, in the catalogue under `guide.`, written from How to play. They name each
+button by the word on it. *He and Kartik have not read them.*
+
+**The hints and the first-game coach are removed,** as ruled (§18): their code, their tests, their
+15 sentences, the shell's record of what had been seen, and the audit's rows that recorded them as
+switched off. The Settings row that would have shown them again is the guided game's row now.
+
+**What walking it found.** The lesson is held to the engine by a test that presses no button, so the
+built app was walked: `pnpm guide:walk` opens it on a phone-sized screen, starts the lesson from the
+title, and presses only what the guide lights, to the end.
+
+| Found | Whose | Done |
+|---|---|---|
+| **A resident's Recall had no button anywhere.** A rule since queue Q6, on the server since 30 September, that no player could use: it was on the session's list of moves and not on the screens' | The play screen's, since before the look | Drawn. The two lists are held together by a test ([`FINDINGS.md`](FINDINGS.md) #113) |
+| **The Monocyte's engulf said "Chip" when it kills.** A parasite is only ever offered on its last hit point, so its row always said Chip and always swallowed | The play screen's, since 6 September | Chip while the target survives it, Engulf when it does not (#114) |
+| The lesson's last word never came: the guide went quiet when the last spread ended | The guide's | Fixed |
+| A ring was left standing on the last control when the next one was not on the page yet | The guide's. **Found by its own control**, which asked the walk to say "nothing is lit" and was told "what is lit does nothing" | Fixed |
+| Coating a bacterium is worded *Tag* on its button and *Coat* in How to play | Older than this, and his or Kartik's | Left. The sentences name the button as it is worded, and say once that a tag coats (#114) |
+
+**What the audit found.** It walks six guided screens in each of its four passes, pressing only
+what the guide lights, and it took three runs to a clean one.
+
+| Run | Found | Whose | Done |
+|---|---|---|---|
+| 1 | It stopped in its 200% zoom pass. On a screen 180 px wide the lit control was below the screen's foot, and a player cannot scroll to it: every touch outside the light is swallowed | The guide's | The guide brings the lit control into view when it becomes the lit one |
+| 1 | The walk could not leave the lesson while a spread played, and went on to the game's own screens with the light still up | The audit's | It moves the spread on and then leaves; if it is still in the lesson it records that and loads the page again |
+| 2 | At 200% text, *a row of actions lit* was NOT REACHED in two passes. The row was lit. There it is taller than the middle has room for, the middle scrolls, and the light went round the row's whole rectangle, which runs on under the tiles below. The audit read a tile as lit | The guide's: a player saw the ring round the row and a strip of the tiles | The light goes round what can be seen of a control, and a control cut off by a part that scrolls is scrolled to (`packages/ui/src/guide/box.ts`) |
+| 2 | At 200% text the new cards *scroll sideways inside themselves*, 346 px in 344. In the game's own walk, not the lesson's: that run drew two cards on its first turn, which Easy does one time in six | The screen's, since the cards were dealt at L5 ([`FINDINGS.md`](FINDINGS.md) #115) | The grid scrolls down and never sideways |
+
+**Measured.**
+
+| | |
+|---|---|
+| The walk, on a fresh build at 360 by 641 | 69 beats, every one in the lesson's order; the guide gone after *Play on*; the game at turn 8 of 15; no error |
+| The Gate 1 audit's third run, alone and together | 86 screens in each of the four passes (88 in one), six of them the guided game's; every check at zero over 1,120 controls and 2,227 text runs; 38 close paths, none wrong; the play area one height on 48 screens; no scroll at rest on 27; offline met, with no request failed; 47 controls of the audit's own, each firing or passing as it must. **One screen was not reached in one pass:** a row's several targets at 200% zoom, which that pass's dice did not deal in 14 turns. It was measured there in the second run, and nothing that draws it changed between the two |
+| The lesson at 200% text, 360 by 780, before and after | The Tag row's light: 529 to 657 px down, over the tiles at 622; then 489 to 617, clear of them |
+
+- **The audit's occlusion check was taught one thing.** It flags readable text under a control that
+  stays put on the screen. The guide's light is such a control, laid over the control it lights,
+  and is see-through and empty: what is under it is read through it. A control like that hides
+  nothing and is no longer counted, with a control that plants one over text and requires it not to
+  be flagged, beside the existing one that requires a button with a face to be.
+- **Not measured: how long the lesson takes a person,** nor how it reads to one. The newcomer test
+  is what measures both. **Not played on his phone.**
+
+**Controls added, each fired:** `guide-walk-names-a-stuck-beat` (one hook misnamed: the walk fails
+naming the beat and saying nothing is lit), `guide-lets-go-when-the-game-parts`,
+`guide-every-beat-has-its-sentence`, `moves-are-one-list`, `engulf-is-chip-only-when-it-wounds`,
+`title-guided-game-leads-a-new-phone`, `settings-guide-row-says-what-it-costs`,
+`guide-light-is-on-what-is-seen` (the light put round a cut-off row's whole rectangle again: the
+test fails saying it stands over a control it does not light); and one line in the audit.
+`settings-no-guidance-row-when-off` went with the row it guarded.
+
+**Known, and left for his review.**
+
+- During the lesson the new cards cannot be turned over, the pieces' cards cannot be opened and
+  Undo cannot be pressed: only the lit control can. They are there again when the lesson ends.
+- The lesson's sentences are long on turn 1 and short after. At the largest text the card scrolls
+  inside itself.
+- **Not built yet:** the difficulty screen's *What changes*, and the card on the result of a guided
+  game (§18, row 3).

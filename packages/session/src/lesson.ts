@@ -75,6 +75,9 @@ export function lessonAction(step: LessonStep, view: ViewState): Record<string, 
       return { action: 'recall', cell: step.cell };
     case 'net':
       return { action: 'net', cell: 'neutrophil' };
+    case 'tell':
+      // Said, not done: there is nothing to ask the engine for.
+      return null;
     case 'resMove':
       return { action: 'resmove', organ: step.organ, step: step.step };
     case 'resEngulf':
@@ -149,6 +152,7 @@ export async function replayLesson(lesson: Lesson, seed: number): Promise<Lesson
       if (!(await session.sendAction({ action: 'beginCommand' })).ok)
         return stop(`turn ${String(t + 1)}: the command stage would not begin`);
       for (const step of turn.steps) {
+        if (step.do === 'tell') continue;
         const action = lessonAction(step, view() as unknown as ViewState);
         if (!action) return stop(`${step.id}: what it names is not in the body`);
         const outcome = await session.sendAction(action);

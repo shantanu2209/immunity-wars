@@ -68,6 +68,8 @@ const REDRAWN = [
   'screens/TogetherScreen.tsx',
   'screens/LobbyScreen.tsx',
   'screens/CrashScreen.tsx',
+  // The guided game's light (stage L6).
+  'guide/Spotlight.tsx',
 ];
 
 /**

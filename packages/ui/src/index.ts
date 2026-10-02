@@ -149,6 +149,23 @@ export {
 export { diseaseLabel, CLONE_TARGET } from './play/offered';
 export { LogPanel, RichText, type LogLine } from './panels/LogPanel';
 export { engineText, engineLogText, type LogText } from './engineText';
+// THE GUIDED GAME (stage L6): the rules of where a player is in the lesson, for the tests that hold
+// them to the engine. The light itself is the play screen's own, and is not offered here.
+export {
+  GUIDE_START,
+  afterAccepted,
+  afterTold,
+  guideBeat,
+  lessonOver,
+  progress as guideProgress,
+  sameAction,
+  stepAt,
+  stopsFor,
+  type GuideBeat,
+  type GuideMove,
+  type GuidePos,
+  type GuideStage,
+} from './guide/model';
 
 // THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13) is NOT exported from here. It has its own entry,
 // `@immunity-wars/ui/kit`, so that only the kit page pulls it in: exported from this file it rode

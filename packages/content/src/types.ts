@@ -160,6 +160,8 @@ export type LessonStep =
     }
   | { readonly id: string; readonly do: 'recall'; readonly cell: CellKey }
   | { readonly id: string; readonly do: 'net' }
+  /** Said, not done: it asks the engine for nothing. `cell` is what it points at, if anything. */
+  | { readonly id: string; readonly do: 'tell'; readonly cell?: CellKey }
   | {
       readonly id: string;
       readonly do: 'strike';

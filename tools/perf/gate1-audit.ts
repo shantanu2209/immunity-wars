@@ -354,7 +354,14 @@ const OCCLUSION_AUDITOR = `
     return false;
   };
   const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-  const controls = [...document.querySelectorAll('button, [role=button], a[href]')].filter((el) => !el.closest('svg') && shown(el) && isFixed(el));
+  // A control that is see-through and has nothing in it hides nothing: what is under it is seen
+  // through it. The guided game's light is one, laid over the control it lights (stage L6).
+  const seeThrough = (el) => {
+    const cs = getComputedStyle(el);
+    const clear = cs.backgroundColor === 'rgba(0, 0, 0, 0)' || cs.backgroundColor === 'transparent';
+    return clear && cs.backgroundImage === 'none' && el.children.length === 0 && (el.textContent || '').trim() === '';
+  };
+  const controls = [...document.querySelectorAll('button, [role=button], a[href]')].filter((el) => !el.closest('svg') && shown(el) && isFixed(el) && !seeThrough(el));
   if (controls.length === 0) return out;
   const scrollers = [document.scrollingElement];
   for (const el of document.querySelectorAll('body *')) {
@@ -721,62 +728,6 @@ const notReached = (screen: string, why = 'the walk could not open it'): ScreenR
 });
 
 /**
- * THE FIRST-GAME HELP IS OFF (stage L4, docs/LOOK_PLAN.md §14, ruling 2): the coach and the
- * first-encounter hints are not shown from L4, and the guided game replaces them at L6. At each
- * place they used to show, the walk reads the page for either and records a row: clean when
- * neither is there, a finding naming what is showing when one is. When the guided game arrives this
- * check is re-aimed with it.
- */
-const HELP_PROBE = `(() => ({
-  coach: document.querySelector('[data-coach]') !== null,
-  hint: document.querySelector('[data-hint]') !== null,
-}))()`;
-
-/**
- * AND SETTINGS DOES NOT OFFER TO SHOW IT AGAIN (docs/FINDINGS.md #111). The row "First game
- * guidance: show it again" says the coach and the hints will appear, which is false while they are
- * off, so the row is not drawn. The row was a screen of this walk (its confirmation); it is now a
- * check that it is not there, recorded as a row in every pass.
- */
-function guidanceRowResult(present: boolean): ScreenResult {
-  const screen = 'settings, with a save: the first-game guidance is not offered';
-  return {
-    screen,
-    controls: 0,
-    textRuns: 0,
-    findings: present
-      ? [
-          {
-            check: 'touch' as const,
-            screen,
-            path: '',
-            text: '',
-            detail:
-              'SHOWING, AND RULED OFF: Settings offers to show the first-game guidance again (docs/FINDINGS.md #111)',
-          },
-        ]
-      : [],
-  };
-}
-
-function helpOffResult(where: string, seen: { coach: boolean; hint: boolean }): ScreenResult {
-  const screen = `${where}: the coach and the hints are off`;
-  const showing = [...(seen.coach ? ['the coach'] : []), ...(seen.hint ? ['a hint'] : [])];
-  return {
-    screen,
-    controls: 0,
-    textRuns: 0,
-    findings: showing.map((what) => ({
-      check: 'touch' as const,
-      screen,
-      path: '',
-      text: '',
-      detail: `SHOWING, AND RULED OFF: ${what} is on the page (docs/LOOK_PLAN.md §14, ruling 2)`,
-    })),
-  };
-}
-
-/**
  * THE PLAY AREA'S ONE HEIGHT (piece 5, docs/for-P2.7.md §19; "equal play area height for all
  * phases is important", Shantanu, 20 September 2026). The figure in planning and the board in
  * command sit in one box, so on every screen of the base pass that shows it, in either stage, it
@@ -995,6 +946,142 @@ async function zoom200Audit(page: Page, screen: string, results: ScreenResult[])
 }
 
 /** Title → Difficulty → goal → first draw → reveal → planning → command, auditing each. */
+/**
+ * THE GUIDED GAME'S SCREENS (stage L6, docs/LOOK_PLAN.md §19). The guide dims the screen, lights
+ * one control and says one sentence, so each kind of beat is a screen of its own to measure: the
+ * card of the sentence, the lit control's own button, and the way out. The walk presses only what
+ * the guide lights, as a player led by it would, and measures at six beats:
+ *
+ *   the new cards · planning · a tile lit · a row of a piece's actions lit · a place on the board
+ *   lit · something said, with its own Next
+ *
+ * Then it leaves the lesson by the card's own way out, which is also measured as being there. The
+ * lesson's last word is the same card as a thing said; walking to it is `pnpm guide:walk`'s.
+ *
+ * DOES THIS SCREEN CONSUME SOMETHING WHEN IT IS SHOWN? The title offers the guided game only to a
+ * phone that has never finished a game. This walk leaves the lesson before its end, so the phone
+ * has still never finished one, and each pass finds the offer there. A pass that does not find it
+ * records every beat NOT REACHED, never clean.
+ */
+const GUIDE_SCREENS = [
+  'guided game: the new cards',
+  'guided game: planning',
+  'guided game: a tile lit',
+  'guided game: a row of actions lit',
+  'guided game: a place on the board lit',
+  'guided game: said, with its own Next',
+] as const;
+const GUIDE_LOOK = `(() => {
+  const g = document.querySelector('[data-guide]');
+  const p = document.querySelector('[data-guide-press]');
+  const under = (sel) => {
+    if (!p) return false;
+    const r = p.getBoundingClientRect();
+    return [...document.querySelectorAll(sel)].some((el) => {
+      const e = el.getBoundingClientRect();
+      const cx = e.left + e.width / 2;
+      const cy = e.top + e.height / 2;
+      return e.width > 0 && cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    });
+  };
+  return {
+    beat: g ? g.getAttribute('data-guide') : null,
+    lit: g ? g.getAttribute('data-guide-lit') === '1' : false,
+    next: document.querySelector('[data-guide-next]') !== null,
+    spread: document.querySelector('[data-tap-advance]') !== null,
+    dialog: document.querySelector('[data-dialog-dismiss]') !== null,
+    onTile: under('[data-tab]'),
+    onRow: under('[data-dock-row]'),
+    onBoard: under('[data-offer]'),
+  };
+})()`;
+interface GuideLook {
+  beat: string | null;
+  lit: boolean;
+  next: boolean;
+  spread: boolean;
+  dialog: boolean;
+  onTile: boolean;
+  onRow: boolean;
+  onBoard: boolean;
+}
+async function walkGuide(
+  page: Page,
+  results: ScreenResult[],
+  step: (page: Page, screen: string, results: ScreenResult[]) => Promise<void>,
+  rootPct: string | null,
+): Promise<void> {
+  const done = new Set<string>();
+  const measure = async (screen: (typeof GUIDE_SCREENS)[number]): Promise<void> => {
+    if (done.has(screen)) return;
+    done.add(screen);
+    await sleep(250);
+    await step(page, screen, results);
+  };
+  if (await clickSel(page, '[data-title="learn"]')) {
+    await sleep(700);
+    // Longer than the play screen's half-second guard on a step that has just changed. It stops at
+    // the beat after the first thing said, by which point every kind of beat has come: a walk that
+    // ran on would be measuring nothing new, further into a lesson it then has to get out of.
+    for (let i = 0; i < 90 && done.size < GUIDE_SCREENS.length; i += 1) {
+      const s = (await page.evaluate(GUIDE_LOOK)) as GuideLook;
+      if (s.beat === 't2.helper') break;
+      if (s.dialog) {
+        await clickSel(page, '[data-dialog-dismiss]');
+        await sleep(650);
+        continue;
+      }
+      if (s.beat !== null && s.beat.endsWith('.cards') && s.lit) await measure(GUIDE_SCREENS[0]);
+      else if (s.beat !== null && s.beat.endsWith('.plan') && s.lit)
+        await measure(GUIDE_SCREENS[1]);
+      else if (s.lit && s.onTile) await measure(GUIDE_SCREENS[2]);
+      else if (s.lit && s.onRow) await measure(GUIDE_SCREENS[3]);
+      else if (s.lit && s.onBoard) await measure(GUIDE_SCREENS[4]);
+      else if (s.next) await measure(GUIDE_SCREENS[5]);
+      if (s.next) await clickSel(page, '[data-guide-next]');
+      else if (s.spread) {
+        await page.evaluate(() =>
+          document
+            .querySelector('[data-tap-advance]')
+            ?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })),
+        );
+      } else await clickSel(page, '[data-guide-press]');
+      await sleep(650);
+    }
+    // The way out, by the card's own control: back to the title, with nothing of the lesson kept.
+    // A spread has no way out on its card, so one that is playing is moved on first.
+    for (let i = 0; i < 12; i += 1) {
+      if (await clickSel(page, '[data-guide-leave]')) break;
+      await page.evaluate(() =>
+        document
+          .querySelector('[data-tap-advance]')
+          ?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })),
+      );
+      await sleep(650);
+    }
+    await sleep(500);
+  }
+  for (const screen of GUIDE_SCREENS) {
+    if (!done.has(screen)) {
+      results.push(notReached(screen, 'the guided game did not come to this kind of beat'));
+    }
+  }
+  if (!(await page.evaluate(() => document.querySelector('[data-title]') !== null))) {
+    // Still in the lesson: the screens after this would be measured with its light over them, as
+    // if they were the game's own. Recorded, and the page loaded again, which drops a lesson: none
+    // of it is saved.
+    results.push(
+      notReached('guided game: left, back at the title', 'leaving it did not reach the title'),
+    );
+    await page.reload({ waitUntil: 'load' });
+    await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
+    await page.evaluate((p: string | null) => {
+      if (p) document.documentElement.style.fontSize = p;
+    }, rootPct);
+    await sleep(300);
+  }
+}
+
 async function walk(
   page: Page,
   results: ScreenResult[],
@@ -1005,19 +1092,6 @@ async function walk(
   coverage.cellCard = false;
   coverage.targets = false;
   coverage.inspectSheet = false;
-  await page.goto(URL, { waitUntil: 'load' });
-  await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
-  // THE FIRST-ENCOUNTER HINTS ARE RESET AT THE TOP OF EVERY PASS.
-  //
-  // The four passes share one browser profile, so a hint consumed by the FIRST pass can never
-  // fire again and the other three measure a screen that is not there. That is exactly what the
-  // first run of this change reported: the hint reached under the base pass and NOT REACHED
-  // under all three scaled ones. A hint is the one screen in this walk whose whole nature is to
-  // appear once, so it is the one that needed saying out loud.
-  //
-  // Cleared through the app's own key rather than by wiping storage, so the save the later
-  // steps depend on survives. Reloaded after, because the shell reads the key once at startup.
-  await page.evaluate(() => localStorage.removeItem('immunity-wars.hints'));
   await page.goto(URL, { waitUntil: 'load' });
   await page.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
   // The app renders from a module script BEFORE DOMContentLoaded, so the root size installed
@@ -1235,6 +1309,9 @@ async function walk(
     if (p) document.documentElement.style.fontSize = p;
   }, rootPct);
   await sleep(300);
+  // THE GUIDED GAME (stage L6), from the title of a phone that has never played, which is what the
+  // lines above have just made this one. Left before its end, so nothing of it is kept.
+  await walkGuide(page, results, step, rootPct);
   await click(page, 'New game');
   await sleep(200);
   await click(page, 'Start and replace');
@@ -1284,16 +1361,6 @@ async function walk(
     results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
     results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
     nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
-  }
-  // THE COACH (piece 8, §20) was on for a first game on a fresh profile, and was a screen of this
-  // walk. It is OFF from stage L4 (LOOK_PLAN §14, ruling 2), so what is recorded here is that it is
-  // not showing, on the profile the walk has just put back to new, which is where it used to. If it
-  // is showing, that is a finding, and it is stopped so the screens after it are measured without it.
-  const helpAtArrivals = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
-  results.push(helpOffResult('arrivals, a first game', helpAtArrivals));
-  if (helpAtArrivals.coach) {
-    await clickSel(page, '[data-coach-stop]');
-    await sleep(200);
   }
   await click(page, 'Plan your turn');
   await sleep(300);
@@ -1388,22 +1455,11 @@ async function walk(
   // The inspect sheet by its node door: tried here, and on every turn of the walk to the Result
   // until a tap opens it (`tryInspectSheet`, below).
   await tryInspectSheet(page, results, step, nesting);
-  // FIRST-ENCOUNTER HINTS (P2.6, ruled 8 September 2026) appeared on first contact with a thing, and
-  // selecting a cell is first contact. They are OFF from stage L4 with the coach (LOOK_PLAN §14,
-  // ruling 2): the cell is selected on a profile whose hints the walk has just reset, and what is
-  // recorded is that none shows. The selection itself is measured as a screen of its own, which it
-  // was not before: the B-Cell's card is the one with the most rows.
+  // A CELL IN HAND, as a screen of its own: the B-Cell's card is the one with the most rows.
   if (await pick(page, 'cell:bcell')) {
     await sleep(350);
-    const helpAtSelect = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
-    results.push(helpOffResult('command, first contact with a cell', helpAtSelect));
-    if (helpAtSelect.hint) {
-      await clickSel(page, '[data-hint-dismiss]');
-      await sleep(200);
-    }
     await step(page, 'command, B-Cell selected', results);
   } else {
-    results.push(notReached('command, first contact with a cell: the coach and the hints are off'));
     results.push(notReached('command, B-Cell selected', 'no piece chip for the B-Cell'));
   }
   // THE AP TERMS, from the top bar, open in the middle below the play area (§19).
@@ -1634,18 +1690,18 @@ async function walk(
       await click(page, 'Keep');
       await sleep(150);
     }
-    // The hints reset row (P2.6, ruling 5) was measured here with its confirmation. From stage L4
-    // the coach and the hints are off and the row is not drawn (docs/FINDINGS.md #111): what is
-    // recorded is that it is not there. If it is, that is a finding, and it is still measured.
-    const guidanceRow = await page.evaluate(
-      () => document.querySelector('[data-settings-row=resetHints]') !== null,
-    );
-    results.push(guidanceRowResult(guidanceRow));
-    if (guidanceRow && (await clickSel(page, '[data-settings-row=resetHints] button'))) {
+    // THE GUIDED GAME'S ROW (stage L6): it took the place of the row that offered the first-game
+    // guidance again, and its confirmation is a screen. With a game saved, as here, the confirmation
+    // says that the lesson's end replaces it.
+    if (await clickSel(page, '[data-settings-row=guide] button:not([disabled])')) {
       await sleep(200);
-      await step(page, 'settings, hints reset confirm', results);
-      await click(page, 'Keep');
+      await step(page, 'settings, guided game confirm', results);
+      await click(page, 'Not now');
       await sleep(150);
+    } else {
+      results.push(
+        notReached('settings, guided game confirm', 'the guided game’s row cannot be pressed'),
+      );
     }
     await closeLevel(page);
   }
@@ -2900,6 +2956,39 @@ async function controls(page: Page): Promise<string[]> {
     !has(behind.findings, 'occlusion', 'planted behind'),
   );
   await unplant();
+  // THE GUIDED GAME'S LIGHT (stage L6): a fixed button that is see-through and empty, laid over the
+  // control it lights, so that what is under it is read through it. It hides nothing, and must NOT
+  // be flagged. The other half is the first control above: a fixed button with a face still is.
+  await plant([
+    {
+      tag: 'button',
+      id: 'light',
+      text: '',
+      style: {
+        position: 'fixed',
+        left: '0',
+        bottom: '0',
+        width: '100%',
+        height: '60px',
+        padding: '0',
+        background: 'transparent',
+        border: '3px solid #fc0',
+        zIndex: '9999',
+      },
+    },
+    {
+      tag: 'span',
+      id: 'through',
+      text: 'planted through',
+      style: box({ position: 'fixed', left: '10px', bottom: '20px' }),
+    },
+  ]);
+  const through = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Planted };
+  line(
+    'occlusion passes: text under a see-through, empty fixed button is NOT flagged',
+    !has(through.findings, 'occlusion', 'planted through'),
+  );
+  await unplant();
 
   // ------------------------------------------------------------------------------------------
   // NESTING (docs/for-P2.7.md §9, ruling 9): the landing check must report a close that went too
@@ -2980,48 +3069,6 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'scroll fires: a run that measured no screen at rest is NOT REACHED, never clean',
     restFindings([]).some((f) => f.detail.startsWith('NOT REACHED')),
-  );
-
-  // THE FIRST-GAME HELP IS OFF (stage L4): the check must report a coach or a hint that is on the
-  // page, by name, and pass a page with neither. The probe is run on this page both ways: with a
-  // coach planted it must see one, and with it taken away it must not.
-  line(
-    'help off fires: a coach on the page is reported, ruled off',
-    helpOffResult('x', { coach: true, hint: false }).findings.some((f) =>
-      f.detail.startsWith('SHOWING, AND RULED OFF: the coach'),
-    ),
-  );
-  line(
-    'help off fires: a hint on the page is reported, ruled off',
-    helpOffResult('x', { coach: false, hint: true }).findings.some((f) =>
-      f.detail.startsWith('SHOWING, AND RULED OFF: a hint'),
-    ),
-  );
-  line(
-    'help off passes: a page with neither is NOT reported',
-    helpOffResult('x', { coach: false, hint: false }).findings.length === 0,
-  );
-  line(
-    'help off fires: a Settings row that offers the guidance again is reported',
-    guidanceRowResult(true).findings.some((f) => f.detail.startsWith('SHOWING, AND RULED OFF')),
-  );
-  line(
-    'help off passes: Settings without that row is NOT reported',
-    guidanceRowResult(false).findings.length === 0,
-  );
-  await page.evaluate(() => {
-    const planted = document.createElement('div');
-    planted.setAttribute('data-coach', '');
-    planted.setAttribute('data-control', 'coach');
-    document.body.append(planted);
-  });
-  const helpPlanted = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
-  await page.evaluate(() => document.querySelector('[data-control="coach"]')?.remove());
-  const helpClear = (await page.evaluate(HELP_PROBE)) as { coach: boolean; hint: boolean };
-  line('help off fires: the probe sees a coach planted on the page', helpPlanted.coach);
-  line(
-    'help off passes: the probe sees none once it is taken away',
-    !helpClear.coach && !helpClear.hint,
   );
 
   // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands

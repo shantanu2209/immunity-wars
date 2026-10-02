@@ -55,6 +55,7 @@ export function TitleScreen({
   save,
   onContinue,
   onNewGame,
+  onLearn = null,
   onTogether,
   rejoin = null,
   onRejoin = () => undefined,
@@ -66,6 +67,12 @@ export function TitleScreen({
   save: SaveSummary | null;
   onContinue: () => void;
   onNewGame: () => void;
+  /**
+   * THE GUIDED GAME (stage L6, ruled 2 October 2026): offered on a phone that has never finished
+   * a game, and null on every other. While it is offered it is the thing the title is for, so it
+   * is the coral button, unless a game is waiting to be continued.
+   */
+  onLearn?: (() => void) | null;
   /** Play together (P3.7, ruled 25 September 2026): beside New game, on the Title. */
   onTogether: () => void;
   /**
@@ -157,8 +164,24 @@ export function TitleScreen({
             </span>
           </KitButton>
         ) : null}
-        <KitButton kind={save ? 'rest' : 'main'} onPress={onNewGame} data-title="new" style={STACK}>
-          {save ? null : <ScreenIcon kind="play" />}
+        {onLearn ? (
+          <KitButton
+            kind={save ? 'rest' : 'main'}
+            onPress={onLearn}
+            data-title="learn"
+            style={STACK}
+          >
+            <ScreenIcon kind="learn" />
+            {t('title.learn')}
+          </KitButton>
+        ) : null}
+        <KitButton
+          kind={save || onLearn ? 'rest' : 'main'}
+          onPress={onNewGame}
+          data-title="new"
+          style={STACK}
+        >
+          {save || onLearn ? null : <ScreenIcon kind="play" />}
           {t('title.newGame')}
         </KitButton>
         <KitButton onPress={onTogether} data-title="together" style={STACK}>

@@ -5570,3 +5570,87 @@ listed. A test that reads a file outside its package and is not listed is as inv
 were, and this is the second time one was found by a person asking, not by a check. A check for it
 would have to read every test for the paths it opens. Not built; whether it is worth building is
 Shantanu's to say.
+
+## 113. A resident's Recall, a rule since queue Q6, had no button on the play screen: no player could use it — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the walk of the guided game (`docs/LOOK_PLAN.md` §19). The lesson's
+last turn leads the player to send the heart's resident out, engulf with it, and Recall it home.
+The walk presses only what the guide lights. At that step nothing was there to light.
+
+**What was wrong.** Queue Q6 (Kartik's rule, built on 30 September, `docs/DEVIATIONS.md` and the
+queue's record) gave a resident a Recall: back to its organ in one move, for 1 Action Point. The
+engine has it. The room and the session count it a move, so it can be undone. `offered.ts` offers
+it, as a button. And the play screen draws a button offer in one of two places: as a move button,
+if its action is on the screens' own list of moves, or as a row of the piece's actions, if it is in
+the piece's catalogue. Recall was added to the session's list of moves and not to the screens', and
+it is not a row. So it was offered, tested as offered, and drawn nowhere. **The rule has been in
+the app, and on the server, since the evening of 30 September, with no way for a player to use it.**
+
+**Why nothing said so.** Every test of it asks whether the offer exists and whether the engine
+accepts it. None asks whether it is on the screen, and the Gate 1 audit measures the screens that
+are there, not the controls that are not. How to play describes it; nobody reported that they
+could not find it.
+
+**It is the same shape as #94 and its test:** two lists of one fact, in two packages, drifting.
+
+**Fixed, in the same change, because the lesson cannot be built on a control that is not there:**
+Recall is on the screens' list of moves, and is drawn beside a resident's other buttons.
+`tests/session/src/guide.test.ts` holds the screens' list to the session's, exactly. Control
+`moves-are-one-list`: with Recall taken off the screens' list again, the test fails saying the two
+disagree.
+
+**Not checked, and said plainly:** whether any OTHER offer is drawn nowhere. The test added holds
+the two lists of moves together; it does not ask of every offer `offered.ts` can make whether the
+play screen has a place for it. The walk of the guided game leads through 36 steps and found one
+control missing; that is evidence about those steps.
+
+## 114. The Monocyte's engulf was worded "Chip" when it kills — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the same walk. The lesson says of a parasite on its last hit point,
+*"now it can be swallowed"*, and the button it lit said **Chip**.
+
+**What was wrong.** Ruled on 6 September: an action's row uses the word a player would use for what
+it does to this target, and the Monocyte does not swallow a fungus or a parasite, it wounds them,
+so its engulf on those is worded "Chip". That is right for a fungus with two hit points. On the
+target's LAST hit point the same action kills it, and the engine's own log says "engulfed". And the
+engine offers a parasite to the Monocyte only on its last hit point, so for a parasite the row
+always said Chip and always swallowed.
+
+**Fixed:** the word is Chip while the target will survive it, and Engulf when it will not. It is
+the ruling's own rule, applied to the case it did not name. `tests/session/src/engulf-word.test.ts`
+drives the engine to both positions and reads the word; control
+`engulf-is-chip-only-when-it-wounds`.
+
+**Left, and his or Kartik's to say:** coating a bacterium is worded **Tag** on its button and
+**Coat** in How to play, and coating a worm or a parasite is Coat in both. The buttons follow the
+engine's own log, which says "tagged" of a bacterium and "coated" of a worm. A newcomer meets two
+words for one thing. The lesson's sentences name each button as the screen words it, and say once
+that a tag coats.
+
+## 115. With two new cards at the largest text, the cards could be scrolled 2 px sideways while they were dealt — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's second run on the guided game's branch, in the
+game's own walk and not the lesson's: *"arrivals @200% font size: scrolls sideways inside itself:
+346 > 344"*.
+
+**What was wrong.** The play area's grid of new cards scrolls down when a draw has more cards than
+fit. Nothing said it must not scroll sideways, and a part that scrolls one way may scroll the other.
+A card is dealt with the kit's arrival, which swells about a tenth past its size as it lands. With
+one card, or at the standard text, there is room round it. With two cards at 200% text the columns
+fill the grid, and the second card's swell reaches 2 px past the grid's edge for a few frames.
+
+**Measured, not inferred:** the page itself sampled the grid on every frame through the lesson's
+first two turns at 200% text, 360 by 780, in a headless browser on the PC. One card: never past.
+Two cards: 2 px past at its worst.
+
+**Why the clean audits since L5 had not seen it.** The check is from L5, and so is the deal. It
+needs two cards on the audit's first turn, which Easy draws one time in six, and the audit's reading
+taken in the third of a second the arrival lasts. Which earlier runs drew two cards is not recorded. **The
+audit's game is not seeded, so what it measures on this screen differs from run to run**; that is
+left as it is, and said here.
+
+**Fixed:** the grid scrolls down and never sideways. The swell still reaches 2 px past the edge and
+is cut off there for those frames; a finger can no longer move the cards sideways. The same
+sampling after the change reads the grid as one that does not scroll sideways.
+
+**Product, not instrument:** the audit's reading was right.

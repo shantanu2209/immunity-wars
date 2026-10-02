@@ -12,13 +12,14 @@
  * finished game reaches RESULT. A save is a browser-local IndexedDB record — device +
  * browser profile + origin, no account, nothing leaves the device.
  */
-import { ORGANS } from '@immunity-wars/content';
+import { LESSON, ORGANS } from '@immunity-wars/content';
 import {
   LocalSession,
   IndexedDbStorage,
   RelayError,
   RelayRoom,
   asPlayerRef,
+  seededDice,
   type RelaySession,
 } from '@immunity-wars/session';
 import type { PlayerRef, ViewState } from '@immunity-wars/session';
@@ -70,9 +71,8 @@ import {
   type SoundSetting,
   type TextSize,
 } from './settings';
-import { clearHints, readHints, writeHints } from './hints';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
-import { clearPlayed, readPlayed, writePlayed } from './played';
+import { readPlayed, writePlayed } from './played';
 import {
   browserUpdates,
   startServiceWorker,
@@ -111,9 +111,6 @@ const refusalOfEntry = (e: unknown): Refusal => ({
 // to the root here, before the first paint, so the first frame is already at the chosen size.
 const prefStore = browserStore();
 const initialSettings = readSettings(prefStore);
-/** FIRST-ENCOUNTER HINTS: its own key, never a field on the settings object. `hints.ts` says why
- *  (adding one would reset every player's text size). Read once, like the settings. */
-const initialHintsSeen = readHints(prefStore).seen;
 const initialPlayed = readPlayed(prefStore).played;
 applyTextSize(initialSettings.textSize);
 applySound(initialSettings.sound, kitAudio);
@@ -142,18 +139,6 @@ type Screen =
   /** The room before its game starts. A base, like Play, and the back gesture there does nothing:
    *  leaving a room is a decision made with its own button, never a gesture made by accident. */
   | { name: 'lobby' };
-
-/**
- * THE FIRST-ENCOUNTER HINTS AND THE FIRST-GAME COACH ARE OFF (ruled by Shantanu, 1 October 2026;
- * docs/LOOK_PLAN.md §14, ruling 2). The guided game replaces both at stage L6, so they are not
- * redrawn in the new look: they were switched off when the board was, at L4. What they are made of
- * (the play screen's hint and coach parts, this shell's record of what has been seen) stays until
- * the guided game is built, and goes then.
- *
- * WHAT FOLLOWS FROM IT: until L6 a newcomer has no help in a first game, so the new look is not
- * deployed before L6.
- */
-const FIRST_GAME_HELP: boolean = false;
 
 function organDisplayName(o: string): string {
   return String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
@@ -200,29 +185,15 @@ function App({
   });
   /** The session said an autosave failed. Shown once and dismissable; see SaveFailedNotice. */
   const [saveFailed, setSaveFailed] = useState(false);
-  const [hintsSeen, setHintsSeen] = useState<readonly string[]>(initialHintsSeen);
-  // Whether this device has ever started a game: the difficulty screen's recommendation and the
-  // coach both ask it (piece 7 item 8, piece 8).
+  // Whether this device has ever finished a game or the guided game's lesson: the title's offer of
+  // the guided game and the difficulty screen's recommendation both ask it.
   const [played, setPlayed] = useState(initialPlayed);
   /**
    * One id per game, so a new game is a new play screen. Without it the screen is reused and its
-   * per-game memory — the view it last saw, what the coach was told to stop saying — carries into
+   * per-game memory — the view it last saw, where a guided game's player had got to — carries into
    * the next game (§21).
    */
   const [gameId, setGameId] = useState(0);
-  const rememberHints = (seen: readonly string[]): void => {
-    setHintsSeen(seen);
-    writeHints(prefStore, seen);
-  };
-  const resetHints = (): void => {
-    clearHints(prefStore);
-    setHintsSeen([]);
-    // ONE ROW, ONE QUESTION (item 3, 19 September 2026): "show the first-game guidance again"
-    // covers everything a first game shows and a later one does not, so the device is new again
-    // rather than partly new.
-    clearPlayed(prefStore);
-    setPlayed(false);
-  };
   const sessionRef = useRef<LocalSession | RelaySession | null>(null);
   const difficultyRef = useRef<string>('training');
 
@@ -316,6 +287,42 @@ function App({
     );
     setPaused(false);
     nav.reset({ name: 'play' });
+  };
+
+  /**
+   * THE GUIDED GAME (stage L6, `docs/LOOK_PLAN.md` §18 and §19): an Easy game handed the lesson's
+   * turns and its dice. While the rails last nothing is saved, so a lesson that is left starts
+   * again; when they end, the game is the player's own and is saved like any other.
+   */
+  const [guided, setGuided] = useState(false);
+  const startGuided = (): void => {
+    difficultyRef.current = LESSON.difficulty;
+    setGameId((n) => n + 1);
+    sessionRef.current = watchForSaveFailure(
+      LocalSession.createGame(
+        { difficulty: LESSON.difficulty, written: LESSON.turns.map((turn) => turn.arrive) },
+        { storage, saveId: SAVE_ID, rails: { dice: seededDice(LESSON.seed) } },
+      ),
+    );
+    setGuided(true);
+    setPaused(false);
+    nav.reset({ name: 'play' });
+  };
+  const endGuide = (how: 'finished' | 'left' | 'parted'): void => {
+    setGuided(false);
+    if (how === 'left') {
+      // Nothing of a lesson is saved, so leaving it is dropping it.
+      quitToTitle();
+      return;
+    }
+    // Finished, or the game went its own way: either way it is the player's own from here.
+    const s = sessionRef.current;
+    if (s instanceof LocalSession) void s.endRails().then(refreshSave);
+    if (how === 'finished') {
+      // The lesson has been played to its end on this phone: the title offers a new game first.
+      writePlayed(prefStore);
+      setPlayed(true);
+    }
   };
 
   const continueSave = (): void => {
@@ -487,8 +494,8 @@ function App({
 
   const onGameEnd = (finalView: ViewState): void => {
     // A FIRST GAME IS ONE YOU HAVE FINISHED (§21). Written here rather than at the start, so a
-    // player who quits mid-game and comes back is still coached, and so that a game resumed after a
-    // reload keeps its coach. Losing counts: Gate 1 says a loss is finishing.
+    // player who quits mid-game and comes back is still offered the guided game on the title.
+    // Losing counts: Gate 1 says a loss is finishing.
     writePlayed(prefStore);
     setPlayed(true);
     // RESULT is the one place the autosave is deleted: Continue never offers a finished game. A game
@@ -550,8 +557,12 @@ function App({
         )
       }
       deleteSaveBlock={overPlay ? 'inPlay' : save ? null : 'none'}
-      hintsSeenAny={hintsSeen.length > 0 || played}
-      onResetHints={FIRST_GAME_HELP ? resetHints : null}
+      // THE GUIDED GAME, to be played again: not from inside a game.
+      guide={{
+        block: overPlay ? 'inPlay' : null,
+        replacesSave: save !== null,
+        onStart: startGuided,
+      }}
       onDeleteSave={deleteSave}
     />
   );
@@ -609,6 +620,7 @@ function App({
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
+            onLearn={played ? null : startGuided}
             onTogether={openTogether}
             rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
             onRejoin={openRejoin}
@@ -740,9 +752,9 @@ function App({
           <PlayScreen
             key={gameId}
             session={session}
-            // THE COACH TEACHES A GAME PLAYED ALONE: its steps ("tap End turn") are the captain's in a
-            // game played together, so it is off there (P3.7 piece B).
-            coach={FIRST_GAME_HELP && !played && roomRef.current === null}
+            // THE GUIDED GAME: the lesson this game is. Not while the menu is up: the menu is the
+            // player's, and the light would stand between them and it.
+            guide={guided && !paused ? { lesson: LESSON, onEnd: endGuide } : null}
             // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
             table={roomRef.current !== null && lobby !== null ? lobby : null}
             // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.
@@ -751,9 +763,6 @@ function App({
             // THE TABLE'S FIXED MESSAGES (protocol v3): what has been said, and saying one.
             tableSaid={tableSaid}
             onSay={roomRef.current !== null ? (m) => roomRef.current?.say(m) : null}
-            // Leaving both out is what turns the hints off (PlayScreen's own rule).
-            hintsSeen={FIRST_GAME_HELP ? hintsSeen : undefined}
-            onHintsSeen={FIRST_GAME_HELP ? rememberHints : undefined}
             onGameEnd={onGameEnd}
             renderControls={() => (
               // THE MENU, an icon at the right of the play screen's top bar (piece 5 of the play

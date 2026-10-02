@@ -232,6 +232,12 @@ export function ArrivalsGrid({
         padding: 6,
         boxSizing: 'border-box',
         overflowY: 'auto',
+        // DOWN, AND NEVER SIDEWAYS. Left unsaid, a part that scrolls down may scroll sideways too.
+        // The cards cannot be wider than their columns, but a card being dealt swells a tenth past
+        // its size as it lands, and with two cards at the largest text that reached 2 px past the
+        // edge for a moment: the Gate 1 audit read it as a part that scrolls sideways (2 October
+        // 2026).
+        overflowX: 'hidden',
       }}
     >
       {arrivals.map((a, i) => (
