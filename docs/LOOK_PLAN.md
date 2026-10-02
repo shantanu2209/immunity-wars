@@ -3,7 +3,7 @@
 **Status: RULED by Shantanu, 1 October 2026**, every item in §10. It answers his direction of the
 same day: disregard low-end phones, give the game the look of the best modern mobile games before
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
-resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.1).
+resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.2).
 
 **Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
 board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
@@ -2053,3 +2053,157 @@ a test on three-megabyte gates and a control, `selftest-holds-a-long-gate`, whic
 - **It does not run on ordinary pushes or pull requests,** which he asked: every night, on demand,
   and on a pull request that changes the workflow's own file. It is not a required check. What
   every push does run is the four-case test of the output limit, about a second and a half.
+
+## 26. Ruled 2 October 2026, the tenth: the Android shell starts now
+
+He asked: *"is there any differnce in making the changes once the android app is done seeing as it
+is a common code base? Meaning do we need to wait to start the android app?"* Told that a change
+costs the same before and after, that only the public release has to wait for his approval, and
+that starting was recommended, he answered:
+
+> *"Yes lets start om with the stuff you flagged. The visual tests etc can all be done on Android
+> itslef right? Need not be on the web version? What all do you need to start?"*
+
+and then, to what was needed and to one choice put to him:
+
+> *"1. done 2. done (i think, see if you can check) 3. agree"*
+>
+> *"Yes let's keep it off."*
+
+| What it rules | |
+|---|---|
+| **The Android shell is built now,** before Gate 2 | The brief is v2.2 and says so. Until now Capacitor packaging was Phase 4's, after this phase |
+| **The public release still waits for Gate 2:** the store's listing, its screenshots, the release | Unchanged |
+| **His review and his visual approval may be done on the Android app** | The web version stays live for a phone with no app; the automated checks go on being run against it, on the same code |
+| **The app's id is `com.kartikchaudhary.immunitywars`** | Permanent once published. It carries Kartik's name publicly, as the game's address already does; he was told so |
+| **The name under the icon is "Immunity Wars"** | The title on the screens is still The Immunity Wars |
+| **Android keeps no backup of the saved game** | Left on, Android copies it into the Google account the phone is signed in to. No accounts and no personal data is a hard rule. A saved game does not follow a player to a new phone |
+
+**The order he agreed to.**
+
+1. **Now:** the shell on his own S25, installed from this PC. No store, no cost.
+2. **When he chooses to start Google's clock:** the Play account and its closed test. The roadmap
+   puts the account at about ₹2,000, once. That it costs money was said to him: his ruling that no
+   money is spent was about art.
+3. **After his visual approval:** screenshots, the listing, the public release.
+
+### Built: the shell, as a project (the first piece, its first half)
+
+**What the Android app is.** Capacitor wraps the app's own web build. The whole game is inside the
+app, so it plays with no connection. Nothing in the engine, the content, the protocol, the room or
+the relay is touched.
+
+| | |
+|---|---|
+| `packages/android` | New. Capacitor 8.5.2; its config; the native project it generated, committed; the script that builds the app and installs it on a connected phone |
+| The app's build made for the shell | `vite build --mode android`: the web build with **no service worker** and no developer's page but the measuring page. 207 files, 3.0 MB. The web build is unchanged |
+| Changed in the native project | No backup; portrait only; permission to vibrate, which the buzz that goes with a sound needs inside an app; the window is the kit's table while the app starts, so it opens dark |
+| Left as Capacitor made it | **The icon,** which is Capacitor's own. The game's icon and launch picture are a later piece |
+
+- **Why no service worker in the shell.** It exists so that a browser can play with no network.
+  Inside the shell every file is in the app, and a newer version comes from the store, not from
+  the game's server.
+- **The relay takes the shell as it takes a browser:** it checks no origin, read from its code.
+  Not yet seen happening.
+
+**The Java the build runs on.** Android Studio 2026.2 brings Java 25. Capacitor 8
+builds with Gradle 8.14, which runs on Java 21 to 24, and on 25 the build dies with *"Unsupported
+class file major version 69"*. The build script reads the Java first and refuses it by name.
+
+**Capacitor's own tool brought one advisory,** moderate, in the part of it that edits iOS projects
+(`uuid`, GHSA-w5hq-g745-h8pq). Pinned, so `pnpm audit` is clean
+([`SECURITY_NOTES.md`](SECURITY_NOTES.md)).
+
+**Controls added, each fired:** `shell-build-registers-no-worker`, `android-id-is-one-id`,
+`android-keeps-no-backup`, `android-ground-is-the-kits-table`, `android-java-is-checked-first`.
+`worker-leaves-developer-pages` was re-aimed: the build's settings moved, and the check that every
+control still changes its file said so.
+
+### Built and run on his S25, 2 October 2026 (the first piece, its second half)
+
+**Java 21 was added,** on his word and on the D: drive as he asked: Eclipse Temurin 21.0.12, the
+zip from Adoptium, its checksum checked, unzipped and not installed. Asked why not the Java 25
+already there, he was told: it is only the tool that builds the app on the PC and is not in the
+app; Capacitor's latest release builds with a Gradle that runs on Java 21 to 24; forcing a newer
+Gradle in would be a combination Capacitor has not tested. *"If it has to be 21 then please go
+ahead."*
+
+**The app builds:** a debug build of 5.8 MB, installed on the S25 over the cable (Android 16, its
+WebView Chrome 153). Read there through the WebView's own debugging socket:
+
+| Read on the phone, inside the shell | Found |
+|---|---|
+| It starts | The title, with no uncaught error and no request that failed |
+| The page | 360 by 697. His Chrome tab is 360 by 641: the shell has 56 px more height |
+| Service workers | None |
+| A game alone on Easy, to its first dialog | 42 pictures, none broken; the page one screen, 360 by 697 |
+| Playing together | A room was made on the game's server from inside the shell and left at once: its lobby came up with its code. The relay takes the shell as it takes a browser |
+| The system's bars | On the kit's table, with light icons, as the screens are |
+
+**Found on its first run: Android's back left the game.** As Capacitor has it, the back gesture
+never reaches the page. Back inside How to play put the phone on its home screen. The game's
+screens are steps in the page's history, so `MainActivity.java` now gives back to the page while
+the page has a step to go back, and on the title puts the app aside without closing it. Seen on
+the phone both ways: from How to play and from Settings back to the title; from the title, the app
+no longer in front and still running.
+
+**`pnpm android:check`** does this on the one phone on the cable: starts the app afresh, requires
+the title with no error and no service worker, and requires back to behave. It was seen to fail on
+the build before the fix. It needs a phone, so it is in no gate and the self-test has no control
+on it. **The check's own first version was wrong:** it opened the title with a navigation, which
+left the page before it in the history, and back on the title then went there. It says so in its
+header; it starts the app afresh now.
+
+### The frame rate inside the shell: a first reading
+
+The measuring page, run inside the shell on the S25, 2 October 2026, one run.
+
+| | In his Chrome tab, 1 October (§14) | Inside the shell |
+|---|---|---|
+| The screen refreshes every | 16.7 ms: 60 a second | **8.3 ms: 120 a second** |
+| Frames | 2,324 in 38.8 s | 4,645 in 38.8 s |
+| A frame: middle, 95th, 99th of a hundred, worst | | 8.3, 8.4, 8.5, 33.4 ms |
+| Frames of 20 ms or more | 6 | 3 |
+| Frames of 42 ms or more | 0 | 0 |
+| While the camera was moving or in, 20 ms or more | 4 | 2 of 1,479 |
+| Tasks over 50 ms | 0 | 0 |
+| What was played | 9 moves, 3 spreads, the camera in 6 times | The same |
+
+- **Inside the shell the game is drawn at 120 frames a second,** which the browser tab did not do,
+  and 99 frames in 100 came on time (8.5 ms or less).
+- **The meter cannot yet say how many frames missed one refresh at this rate.** Its line for a slow
+  frame is 20 ms, set when a refresh was 16.7. At 8.3 a frame that misses one refresh takes 16.7
+  and is under the line. From the slowest five it printed (33.4, 33.3, 25.1, 16.7, 16.6 ms), at
+  least five did; from the 99th of a hundred, no more than 46 of the 4,645. The line is to follow
+  the screen's own refresh before stage L7's measurement is taken.
+- **It is a first reading and not L7's:** one run, on the screens as they are before his review.
+  On it, locked decision #1 holds as it did: Capacitor, at twice the frame rate the plan asked for.
+
+### Found, put to him, and ruled: the app's text is the game's size, not the phone's
+
+His phone's own font size is set to 0.8 of standard. An Android shell follows that setting: one
+rem was 12.8 px inside the app, where it is 16 px in his Chrome tab, so every word, and everything
+sized by the text, was a fifth smaller than on the web version he has been looking at. The game
+has a text-size setting of its own, and the two multiply.
+
+Put to him with two ways and a recommendation, to fix the app at 100%, he ruled: *"Will go with
+your recommendation."*
+
+- **The app's text is fixed at 100% of what the game asks for.** It looks as the web version does,
+  and the game's own setting, in Settings, is the one control. It is what the screens were
+  designed and audited at, to 200%.
+- **What it gives up:** a player whose phone is set to large text does not get large text in the
+  game by itself. They choose it in the game's Settings.
+- **Held on the phone** by `pnpm android:check`: a word asked for at 100 px must be drawn at 100 px
+  whatever the phone's setting. It read 80 px on the build before, and failed; 100 px after.
+  **And in the project** by a test that the native code still says so, with control
+  `android-text-is-the-games-size`, which fires.
+
+**Not checked on the phone:** vibration and sound, which need a hand and an ear; the app with the
+phone's text set large; the lesson and a whole game, which the web build's walks cover on the same
+code; anything on a phone that is not this one.
+
+**Later pieces, none started** ([`TODO.md`](TODO.md)): the game's icon and launch picture; the
+build for the store and its signing key; what the app does when the game's server refuses an older
+version, which on the web offers Update now; a version stamp on saved games; text size, where the
+phone's own setting and the game's meet.

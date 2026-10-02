@@ -12,6 +12,11 @@ export default tseslint.config(
       '**/dist/**',
       // The version-check build (packages/server/deploy/old-build.sh), made in the working copy.
       '**/dist-old/**',
+      // The Android shell (packages/android): `android/` is the native project Capacitor
+      // generated, Gradle and Java and not this toolchain's to lint; `www/` is the app's web build
+      // made for the shell.
+      'packages/android/android/**',
+      'packages/android/www/**',
       '**/.turbo/**',
       '**/coverage/**',
       'tools/legacy/**',

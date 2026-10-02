@@ -913,4 +913,9 @@ if (el) {
 }
 // Offline capability, registered after load; a refusal is caught inside and leaves the app
 // running online (FINDINGS #69). Never under the dev server.
-startServiceWorker(import.meta.env.PROD);
+//
+// AND NEVER IN THE ANDROID SHELL (`vite build --mode android`): every file is in the app there, so
+// there is nothing for a worker to store, and that build writes none to register. Written as a
+// comparison the build can decide, so that in the shell's build the call is not there at all:
+// src/shell-build.test.ts reads the built scripts for it.
+if (import.meta.env.MODE !== 'android') startServiceWorker(import.meta.env.PROD);

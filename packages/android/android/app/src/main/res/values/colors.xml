@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The kit's table (packages/ui/src/kit/tokens.ts, COLOUR.table): the ground every screen
+      stands on. The window is this colour while the app starts, so that it opens dark and not
+      with a white flash. packages/android/src/ground.test.ts holds it to the kit's value.
+    -->
+    <color name="table">#0E2A30</color>
+</resources>

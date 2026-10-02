@@ -62,57 +62,80 @@ const CLAY_NOT_YET = [
 /** The pages that are a developer's: served, never stored, and never answered by the worker. */
 const DEVELOPER_PAGES = [/^\/kit\.html/, /^\/measure\.html/];
 
-export default defineConfig({
-  plugins: [
-    VitePWA({
-      registerType: 'autoUpdate',
-      // NOT injected (FINDINGS #69). The plugin's injected script called `register` and handled
-      // nothing, so a refused registration became an unhandled rejection and the error boundary
-      // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
-      // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
-      injectRegister: false,
-      // The art the screens use: the Clay
-      // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
-      includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*'],
-      manifest: {
-        name: 'The Immunity Wars',
-        short_name: 'Immunity Wars',
-        description: 'A cooperative immunology game, designed by Kartik Chaudhary',
-        display: 'standalone',
-        // The kit's table (COLOUR.table), since stage L5: an installed app opens on the ground
-        // its screens stand on. src/ground.test.ts holds these to the kit's value.
-        background_color: '#0e2a30',
-        theme_color: '#0e2a30',
-        icons: [],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,webp,woff2,json,txt}'],
-        globIgnores: CLAY_NOT_YET,
-        // The art at 1×/2×/3× plus the anatomy frame is a few MB; precache it all, on purpose.
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        navigateFallback: 'index.html',
-        // THE DEVELOPER'S PAGES ARE NOT THE APP'S TO ANSWER. With the fallback alone, a phone that
-        // had opened the app once got the app's title for `/kit.html` and `/measure.html` ever
-        // after: its worker answers every page it does not store with `index.html`, and it stores
-        // neither. Measured 1 October 2026, before the phone was sent to the measuring page. These
-        // two go to the network, so they open while the PC is serving them and not otherwise.
-        navigateFallbackDenylist: DEVELOPER_PAGES,
-      },
-      devOptions: { enabled: false },
-    }),
-  ],
+/**
+ * THE BUILD FOR THE ANDROID SHELL (`vite build --mode android`, ruled 2 October 2026;
+ * docs/LOOK_PLAN.md §26). The same app, with two things taken out:
+ *
+ *   - NO SERVICE WORKER. The worker exists so that a browser can play with no network. Inside the
+ *     shell every file is in the app itself, so there is nothing for it to store, and its other
+ *     job, taking a newer build from the server, is the store's there. `main.tsx` does not
+ *     register one in this mode, and this build writes none.
+ *   - NO DEVELOPER PAGES but the measuring page, which is how the frame rate is read inside the
+ *     shell. It is taken out too when a build is made for the store.
+ *
+ * Everything else is the web build's. `src/shell-build.test.ts` builds it and holds it to this.
+ */
+const SHELL_MODE = 'android';
+
+export default defineConfig(({ mode }) => ({
+  plugins: mode === SHELL_MODE ? [] : [webWorker()],
   build: {
     rollupOptions: {
-      input: {
-        main: resolve(HERE, 'index.html'),
-        dev: resolve(HERE, 'dev.html'),
-        // The Clay kit page (stage L3). Built with the other two so it cannot rot quietly. Its
-        // key names its script, and the worker's exclusion above depends on that name.
-        kitPage: resolve(HERE, 'kit.html'),
-        // The measuring page (stage L4): the play screen with a frame meter, for the S25. Named
-        // as the kit page is, and for the same reason.
-        measurePage: resolve(HERE, 'measure.html'),
-      },
+      input:
+        mode === SHELL_MODE
+          ? {
+              main: resolve(HERE, 'index.html'),
+              measurePage: resolve(HERE, 'measure.html'),
+            }
+          : {
+              main: resolve(HERE, 'index.html'),
+              dev: resolve(HERE, 'dev.html'),
+              // The Clay kit page (stage L3). Built with the other two so it cannot rot quietly.
+              // Its key names its script, and the worker's exclusion above depends on that name.
+              kitPage: resolve(HERE, 'kit.html'),
+              // The measuring page (stage L4): the play screen with a frame meter, for the S25.
+              // Named as the kit page is, and for the same reason.
+              measurePage: resolve(HERE, 'measure.html'),
+            },
     },
   },
-});
+}));
+
+function webWorker(): ReturnType<typeof VitePWA> {
+  return VitePWA({
+    registerType: 'autoUpdate',
+    // NOT injected (FINDINGS #69). The plugin's injected script called `register` and handled
+    // nothing, so a refused registration became an unhandled rejection and the error boundary
+    // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
+    // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
+    injectRegister: false,
+    // The art the screens use: the Clay
+    // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
+    includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*'],
+    manifest: {
+      name: 'The Immunity Wars',
+      short_name: 'Immunity Wars',
+      description: 'A cooperative immunology game, designed by Kartik Chaudhary',
+      display: 'standalone',
+      // The kit's table (COLOUR.table), since stage L5: an installed app opens on the ground
+      // its screens stand on. src/ground.test.ts holds these to the kit's value.
+      background_color: '#0e2a30',
+      theme_color: '#0e2a30',
+      icons: [],
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,webp,woff2,json,txt}'],
+      globIgnores: CLAY_NOT_YET,
+      // The art at 1×/2×/3× plus the anatomy frame is a few MB; precache it all, on purpose.
+      maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+      navigateFallback: 'index.html',
+      // THE DEVELOPER'S PAGES ARE NOT THE APP'S TO ANSWER. With the fallback alone, a phone that
+      // had opened the app once got the app's title for `/kit.html` and `/measure.html` ever
+      // after: its worker answers every page it does not store with `index.html`, and it stores
+      // neither. Measured 1 October 2026, before the phone was sent to the measuring page. These
+      // two go to the network, so they open while the PC is serving them and not otherwise.
+      navigateFallbackDenylist: DEVELOPER_PAGES,
+    },
+    devOptions: { enabled: false },
+  });
+}

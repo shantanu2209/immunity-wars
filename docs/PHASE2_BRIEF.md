@@ -1,10 +1,25 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.1 · 2 October 2026
+**Version:** 2.2 · 2 October 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.2 records
+
+v2.2 changes the order of one thing, by ruling (Shantanu, 2 October 2026;
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §26): *"Yes lets start om with the stuff you flagged."*
+
+- **The Android shell is started now, before Gate 2.** §7 put Capacitor packaging in Phase 4, after
+  this phase ends. The app is one codebase, and the Android app is that codebase inside a shell, so
+  a change to a screen costs the same before the shell exists and after it.
+- **What still waits for Gate 2 is the public release:** the store's listing, its screenshots and
+  the release itself.
+- **His review and his visual approval may be done on the Android app,** which is the thing that
+  ships. The web version stays live, and the automated checks go on being run against it.
+- **Locked decision #1** is confirmed by a measurement taken inside the shell, as the plan's last
+  stage already said. That is one more reason the shell cannot wait for the end.
 
 ## What v2.1 records
 
@@ -758,7 +773,8 @@ TypeScript 6.0.3 (Dependabot PR #2) remains deliberately deferred.
 ## 7. Out of scope
 
 No multiplayer, no relay, no accounts, no matchmaking — Phase 3.
-No Capacitor packaging or store work — Phase 4.
+No Capacitor packaging or store work — Phase 4. ⚠️ *v2.2, 2 October 2026:* the Capacitor shell is
+started in this phase, by ruling; the store work stays Phase 4's.
 **No competent reference bot** — Phase 3, with the seat-filling AI; see §6. It is an engine
 change and it breaks the corpus, which is not a thing to do during a rewrite.
 No AI tutor — deferred, tiered behind a `HelpProvider` that is not being built.

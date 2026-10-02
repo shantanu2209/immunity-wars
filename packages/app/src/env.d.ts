@@ -6,9 +6,13 @@
  *
  * `VITE_RELAY_URL` names a relay other than the deployed one, for a development relay (P3.7). Vite
  * puts a `VITE_` variable into the build only when it is set, so it is optional here.
+ *
+ * `MODE` is the build's mode: `production` for the web build, `android` for the build made for the
+ * Android shell (`vite.config.ts`), in which the service worker is not registered.
  */
 interface ImportMetaEnv {
   PROD: boolean;
+  MODE: string;
   readonly VITE_RELAY_URL?: string;
 }
 interface ImportMeta {

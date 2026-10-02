@@ -5,6 +5,9 @@ tools/legacy/
 node_modules/
 dist/
 dist-old/
+# The Android shell: the native project Capacitor generated, and the web build made for it.
+packages/android/android/
+packages/android/www/
 .turbo/
 coverage/
 pnpm-lock.yaml

@@ -10,7 +10,13 @@ When an item is done it leaves this list, and the record of it is wherever the w
 | 3 | **The printed A2 board aligned with the app's board** ([`FINDINGS.md`](FINDINGS.md) #49) | *"Don't know if the board will ever be orinted again so not a priority. If we do we will need to align with the app again."*, 2 October 2026 | Only if the board is printed again | Not started |
 | 4 | **The printed Diphtheria and Anthrax cards,** which are toxin cards where the game has bacteria (queue Q15). The rulebook carries a note on how to play them | Not ruled: it follows from Q15 | Only if the cards are printed again | Not started |
 | 5 | **The newcomer test:** a person who has never seen the game starts and finishes one unaided. Gate 1's one human-tested item, and what stage L6 was to end on | *"We don't need the newcomer test. Defer that indefinitely."*, 2 October 2026 | Deferred indefinitely | Not run. Its protocol, [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md), is written for the screens before the guided game and would need re-aiming first |
+| 6 | **The Play account and its closed test.** His to start, when he wants Google's clock running; about ₹2,000, once ([`ROADMAP.md`](../ROADMAP.md), Phase 4) | Agreed as the second step of three, 2 October 2026 ([`LOOK_PLAN.md`](LOOK_PLAN.md) §26) | When he chooses | Not started |
+| 7 | **The Android build for the store:** a signing key of its own, the game's icon and launch picture (the icon is still Capacitor's), the measuring page taken out, screenshots and the listing | Agreed as the third step: after his visual approval | After Gate 2 | Not started |
+| 8 | **What the Android app does when the game's server refuses an older version.** On the web it offers Update now, which reloads; an installed app updates from the store | Not ruled: it follows from the shell | Before the app is public | Not started |
+| 9 | **A version on saved games** (seam 7), ruled Phase 4's on 25 September 2026: an app that updates must know what a save it finds was written by | Ruled then | Before the app is public | Not started |
+| 11 | **The measuring page's line for a slow frame follows the screen's refresh.** It is 20 ms, set for a screen that refreshes every 16.7; inside the shell the S25 refreshes every 8.3, and a frame that misses one refresh is under the line | Not ruled: an instrument's limit, found on the shell's first reading | Before stage L7's measurement | Not started |
 
 **Done since this list began** (2 October 2026): Diphtheria as a bacterium that releases its toxin,
 with Anthrax (queue Q15); the engine's refusal that said "hidden virus" (Q16); how Pathogen X comes,
-organs recovering and the order of the Spread phase, in print and in How to play.
+organs recovering and the order of the Spread phase, in print and in How to play. Text size inside
+the Android app, ruled the game's own and built ([`LOOK_PLAN.md`](LOOK_PLAN.md) §26); it was row 10.
