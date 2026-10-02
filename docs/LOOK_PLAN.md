@@ -2016,3 +2016,23 @@ repositories. So it is added.
 - **Shown on the PC:** the step's own command line ends red when a control does not behave (one
   control's expected words changed on purpose: exit 1, the control named, the gate's lines
   printed) and green when it does.
+
+### Its first run on GitHub's runner found a fault in the self-test itself
+
+The workflow ran on the pull request that added it, as it was built to.
+
+| | |
+|---|---|
+| The browser step | Passed: the app builds and opens in headless Chrome on the runner |
+| The controls | **205 of 206 fired**, in 18 minutes for the whole job. The PC takes 30 |
+| The one that did not | `queue-q15-diphtheria-is-a-bacterium`: its gate failed, and its words were not in what the self-test had kept |
+
+**It was the self-test, not the control** ([`FINDINGS.md`](FINDINGS.md) #125). It kept one megabyte
+of each gate's output. That gate prints 975,464 characters on the PC, with the control's words at
+the very end; on the runner, where every path is longer, the end was cut off. The same limit would
+have called a long gate failed when it passed. The self-test now holds whatever a gate prints, with
+a test on three-megabyte gates and a control, `selftest-holds-a-long-gate`, which fires.
+
+- **So the run did what it was added for, on its first night's rehearsal:** a check that worked on
+  the PC and not elsewhere was seen at once.
+- **The run summary did its part:** the control was named, with the gate's last 40 lines.

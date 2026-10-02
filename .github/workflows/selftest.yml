@@ -2,8 +2,9 @@
 #
 # `pnpm ci:selftest` changes one file, runs one gate, requires it to FAIL WITH ITS OWN MESSAGE, and
 # puts the file back: once for every control in tools/ci/selftest.ts. It is what shows that a check
-# still works. It takes half an hour on the PC and longer here, so no push runs it: a push runs
-# `ci:selftest:inert`, which asks only that each control's change still changes its file.
+# still works. It takes half an hour on the PC and 18 minutes here (its first run), against a
+# per-push tier of five, so no push runs it: a push runs `ci:selftest:inert`, which asks only that
+# each control's change still changes its file.
 #
 # That left a gap, and two controls fell into it (docs/FINDINGS.md #122 and #123, 2 October 2026):
 # one had become a roll of the dice and one failed on a different line from the one it is aimed at.
@@ -55,7 +56,7 @@ jobs:
       CHROME_PATH: /usr/bin/google-chrome
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}

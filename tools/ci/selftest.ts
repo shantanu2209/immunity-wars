@@ -43,6 +43,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { GateOutputCut, runGate } from './run-gate.js';
 import { writeRetrying } from './write-retry.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -790,6 +791,14 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/server test',
     expect: 'THE RELAY ENDED A PHONE THAT ANSWERS',
+  },
+  {
+    id: 'selftest-holds-a-long-gate',
+    why: 'FINDINGS #125: the self-test judges a gate by words in its output, and kept one megabyte of it. A gate that printed more had its last words cut off, and a gate that passed was called failed. One control passed on the PC with 7% to spare and went red on GitHub’s runner, where the paths in a stack trace are longer. With the limit taken off the command again, the test of a three-megabyte gate must FAIL saying its output was cut.',
+    file: 'tools/ci/run-gate.ts',
+    mutate: (t) => t.replace('      maxBuffer: limit,\n', ''),
+    gate: 'npx vitest run --root tools/ci',
+    expect: 'ITS OUTPUT WAS CUT',
   },
   {
     id: 'bundle-recipe',
@@ -2230,16 +2239,6 @@ if (selected.length === 0) {
 }
 
 /** Run a gate. Returns combined output and whether it failed. */
-function runGate(gate: string): { failed: boolean; output: string } {
-  try {
-    const out = execSync(gate, { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
-    return { failed: false, output: out };
-  } catch (e) {
-    const err = e as { stdout?: string; stderr?: string };
-    return { failed: true, output: `${err.stdout ?? ''}\n${err.stderr ?? ''}` };
-  }
-}
-
 console.log('='.repeat(95));
 console.log('CI SELF-TEST — every gate made to fail on purpose, with the right diagnostic,');
 console.log('              and, where a rule also PERMITS something, made to stay green on that');
@@ -2268,10 +2267,16 @@ for (const control of selected) {
   }
 
   ran += 1;
-  let verdict: { failed: boolean; output: string };
+  let verdict: { failed: boolean; output: string } = { failed: false, output: '' };
+  let cut: GateOutputCut | null = null;
   try {
     writeRetrying(path, mutated);
-    verdict = runGate(control.gate);
+    verdict = runGate(control.gate, REPO);
+  } catch (e) {
+    // More output than is held is not a verdict either way (tools/ci/run-gate.ts). Said after the
+    // file is put back, below.
+    if (!(e instanceof GateOutputCut)) throw e;
+    cut = e;
   } finally {
     // Through a lock, and loudly if it never lifts (FINDINGS #106): dying here left the engine
     // mutated in the tree once, with nothing on the screen to say so.
@@ -2282,6 +2287,12 @@ for (const control of selected) {
       console.log(`    It is still MUTATED. Before anything else: git checkout -- ${control.file}`);
       process.exit(3);
     }
+  }
+
+  if (cut !== null) {
+    console.log(`✗ ${control.id.padEnd(28)} ${control.gate}`);
+    console.log(`    ${cut.message}`);
+    process.exit(2);
   }
 
   if (control.mustPass) {
