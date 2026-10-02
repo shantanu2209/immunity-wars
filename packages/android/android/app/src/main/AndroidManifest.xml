@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      WHAT IS CHANGED FROM CAPACITOR'S TEMPLATE, AND WHY (docs/LOOK_PLAN.md section 26):
+
+      allowBackup is false. Left on, Android copies the app's data, which is the saved game, into
+      the Google account the phone is signed in to. The game keeps no accounts and no personal
+      data, and its players are children: staying out of that is the rule. The cost is that a
+      saved game does not follow a player to a new phone. Unruled: Shantanu's to overrule.
+
+      screenOrientation is portrait: the game is portrait only, by ruling (section 10).
+
+      VIBRATE, below: the buzz that goes with a sound (packages/ui/src/kit/sound.ts) asks the
+      browser to vibrate, and inside an app the browser may only do so with this permission.
+    -->
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
+    </application>
+
+    <!-- Permissions -->
+
+    <!-- For playing together: the game's server is reached over the internet. Alone, it is not used. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+</manifest>

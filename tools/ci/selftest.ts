@@ -801,6 +801,55 @@ const CONTROLS: readonly Control[] = [
     expect: 'ITS OUTPUT WAS CUT',
   },
   {
+    id: 'shell-build-registers-no-worker',
+    why: 'The Android shell (docs/LOOK_PLAN.md §26): every file is inside the app, so a service worker there would store a second copy of the game and look for newer builds on a server the app’s updates do not come from. With the app registering its worker in every build again, the test of the shell’s build must FAIL naming the script that registers one.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        "if (import.meta.env.MODE !== 'android') startServiceWorker(import.meta.env.PROD);",
+        'startServiceWorker(import.meta.env.PROD);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/shell-build.test.ts',
+    expect: 'THE SHELL’S BUILD REGISTERS A SERVICE WORKER',
+  },
+  {
+    id: 'android-id-is-one-id',
+    why: 'The app’s id is ruled, is permanent once published, and is written in four files of the native project and in Capacitor’s config. With one of them saying something else, the shell’s test must FAIL saying the app has two ids.',
+    file: 'packages/android/android/app/build.gradle',
+    mutate: (t) =>
+      t.replace(
+        'applicationId "com.kartikchaudhary.immunitywars"',
+        'applicationId "com.example.somethingelse"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'THE APP HAS TWO IDS',
+  },
+  {
+    id: 'android-keeps-no-backup',
+    why: 'No accounts and no personal data is a hard rule. Left to itself Android copies an app’s data, here the saved game, into the Google account the phone is signed in to. With the backup allowed again, as Capacitor’s template has it, the shell’s test must FAIL saying so.',
+    file: 'packages/android/android/app/src/main/AndroidManifest.xml',
+    mutate: (t) => t.replace('android:allowBackup="false"', 'android:allowBackup="true"'),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'THE SHELL LETS ANDROID BACK THE SAVED GAME UP TO AN ACCOUNT',
+  },
+  {
+    id: 'android-ground-is-the-kits-table',
+    why: 'The window is the kit’s table while the app starts and behind the system’s bars, so that it opens dark and not with a white flash. The colour is written again in the native project, where the kit cannot be read. With that copy changed, the shell’s test must FAIL naming both colours.',
+    file: 'packages/android/android/app/src/main/res/values/colors.xml',
+    mutate: (t) =>
+      t.replace('<color name="table">#0E2A30</color>', '<color name="table">#FFFFFF</color>'),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'THE SHELL’S GROUND IS NOT THE KIT’S TABLE',
+  },
+  {
+    id: 'android-java-is-checked-first',
+    why: 'The Android build runs on Java 21 to 24. On the Java 25 that Android Studio 2026.2 brings it died with "Unsupported class file major version 69", which names nothing a person can act on. The version is read before Gradle starts and refused by name. With the newest Java allowed raised past it, the test must FAIL saying a Java the build cannot run on was let through.',
+    file: 'packages/android/src/java.ts',
+    mutate: (t) => t.replace('export const NEWEST = 24;', 'export const NEWEST = 99;'),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'A JAVA THE BUILD CANNOT RUN ON WAS LET THROUGH',
+  },
+  {
     id: 'bundle-recipe',
     why: 'P3.5 ruling 4: production runs ONE bundled file, and its one real risk is that the bundle is not the code the tests ran. A recipe that leaves a workspace package out builds without complaint and cannot start on the server.',
     file: 'packages/server/src/bundle.ts',
@@ -1043,7 +1092,7 @@ const CONTROLS: readonly Control[] = [
     id: 'worker-leaves-developer-pages',
     why: 'Stage L4, measured before the S25 was sent to the measuring page: a phone that had opened the app got the app’s title for /kit.html and /measure.html, because its worker answers every page it does not store with index.html. With the exception removed from the app build, the build test must FAIL saying the worker answers a developer’s page with the app.',
     file: 'packages/app/vite.config.ts',
-    mutate: (t) => t.replace('        navigateFallbackDenylist: DEVELOPER_PAGES,\n', ''),
+    mutate: (t) => t.replace('      navigateFallbackDenylist: DEVELOPER_PAGES,\n', ''),
     gate: 'pnpm --filter @immunity-wars/app test',
     expect: 'THE WORKER ANSWERS A DEVELOPER',
   },

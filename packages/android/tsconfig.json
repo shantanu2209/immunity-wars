@@ -1,0 +1,12 @@
+{
+  // Node types: the config is read by Capacitor's tool, and the tests read the native project's
+  // files off disk. DOM, because the test reads the kit's table colour and the kit is browser code.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["node"]
+  },
+  "include": ["*.ts", "src/**/*.ts"]
+}

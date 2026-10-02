@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.1). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.2). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -101,6 +101,14 @@ play screen draws and nothing of the kit page or the measuring page; motion, sou
 and touch are `kit/motion.ts` and `kit/sound.ts`, the sounds made in code with no sound file.
 **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
+**The Android shell is started, before Gate 2, by ruling** (2 October; plan §26, brief v2.2):
+`packages/android` is Capacitor round the app's own build made for it (`vite build --mode android`:
+no service worker, no developer's page but the measuring page); id
+`com.kartikchaudhary.immunitywars`, name "Immunity Wars", no Android backup, all ruled. His review
+and his visual approval may be done on the Android app; **the public release still waits for
+Gate 2.** `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
+repository.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
 [`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), **with nothing owing since 1 October**, when he
@@ -133,7 +141,8 @@ the rulebook, quick reference and study packet now say what the app does (`docs/
 
 **What Phase 2 owed when it paused** (20 September 2026, `docs/PHASE2_PAUSE.md`) is carried by the
 plan: the handset performance pass is measured on the S25, and still settles locked decision #1
-(Capacitor vs React Native) **before Phase 4, which must not start without it**; the newcomer test
+(Capacitor vs React Native) **before Phase 4's release, which must not happen without it** (the
+shell itself is started, by ruling of 2 October, and that measurement is taken inside it); the newcomer test
 was to be run on the guided game and is **deferred indefinitely by ruling** (2 October; deferred,
 not met); Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
 `docs/PHASE1_BRIEF.md` and `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not
@@ -182,6 +191,7 @@ packages/protocol/  Client↔server message types + Zod schemas.
 packages/ui/        React components.
 packages/app/       Vite app shell.
 packages/server/    Relay.
+packages/android/   The Android shell: Capacitor round the app's own build. No game logic.
 tools/legacy/       Original .js/.html. READ-ONLY reference. Never edit.
 ```
 

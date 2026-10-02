@@ -224,7 +224,18 @@ module.exports = {
       path: 'node_modules',
     },
     exclude: {
-      path: ['node_modules', 'dist', '\\.turbo', 'coverage', 'tools/legacy'],
+      // The last two are the Android shell's (packages/android): the native project Capacitor
+      // generated, which holds a copy of the built app, and the web build made for it. Neither is
+      // source of this workspace, and both are full of built scripts that import nothing.
+      path: [
+        'node_modules',
+        'dist',
+        '\\.turbo',
+        'coverage',
+        'tools/legacy',
+        'packages/android/android',
+        'packages/android/www',
+      ],
     },
     tsConfig: {
       fileName: 'tsconfig.base.json',

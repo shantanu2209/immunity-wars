@@ -79,7 +79,11 @@ like the best modern mobile games, on modern phones only, before Phase 4. It had
 September ([`docs/PHASE2_PAUSE.md`](docs/PHASE2_PAUSE.md)); the three items owed then, the handset
 measurement, the newcomer test and Gate 2, are carried by the plan's stages (the newcomer test
 deferred indefinitely by ruling on 2 October: deferred, not met). P2.1 to P2.6 closed;
-P2.7 (polish) stopped partway. **Phase 4 must not start before the plan's measurement on the S25.**
+P2.7 (polish) stopped partway. **Phase 4's release must not happen before the plan's measurement on the S25.** *Amended 2 October
+2026, by ruling:* this said Phase 4 must not start. The Android shell is started in this phase
+([`docs/LOOK_PLAN.md`](docs/LOOK_PLAN.md) §26), because that measurement is taken inside it and a
+screen costs the same to change before the shell exists and after; the store work and the public
+release still wait for his visual approval.
 *This line said "P2.1 complete" and "v1.1" until 6 September 2026; the documentation sweep
 checks only that the roadmap is not calling an earlier phase current, so the sub-phase and
 version here are a person's to keep true.*

@@ -70,6 +70,14 @@ overrides:
   # 2026 ("Please clear the advisory"), on the 4 Sep ruling's terms: one line, no behaviour change.
   # docs/SECURITY_NOTES.md. Drop when the lock resolves past it.
   'serialize-javascript@>=7.1.1 <7.1.2': '^7.1.2'
+  # uuid: GHSA-w5hq-g745-h8pq (moderate), no bounds check in v3/v5/v6 when a buffer is handed
+  # in. Dev-only, and came in with the Android shell (2 October 2026): @capacitor/cli > xcode >
+  # uuid 7.0.3. `xcode` edits an iOS project file, which nothing here has yet, and calls only
+  # `uuid.v4()`, with no buffer, so the faulty path is not reached; it is in no process that
+  # listens. 11.1.1 still answers `require('uuid').v4`, which is all xcode asks of it (loaded and
+  # called once to see). Pinned so that `pnpm audit` stays clean, on the 4 Sep ruling's terms: one
+  # line, no behaviour change. docs/SECURITY_NOTES.md. Drop when xcode asks for a patched uuid.
+  'uuid@<11.1.1': '^11.1.1'
 
 minimumReleaseAgeExclude:
   - '@vitest/coverage-v8@4.1.11'

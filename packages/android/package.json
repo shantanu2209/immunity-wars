@@ -1,0 +1,25 @@
+{
+  "name": "@immunity-wars/android",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Android shell: the app's own web build, wrapped by Capacitor.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "build": "echo \"no build output: pnpm android:apk builds the app\""
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2",
+    "@immunity-wars/ui": "workspace:*",
+    "@types/node": "^26.6.3",
+    "vitest": "^4.1.11"
+  },
+  "comment:what-this-is": "Ruled 2 October 2026 (docs/LOOK_PLAN.md section 26): the Android app is the same web app inside a Capacitor shell, with the whole game bundled so it plays with no connection. `android/` is the native project Capacitor generated, committed, and changed in the few places AndroidManifest.xml says. `www/` is the app's build made for the shell (`pnpm android:web`), built and never committed. Building the app itself needs Android Studio's Java and the Android SDK, named by JAVA_HOME and ANDROID_HOME: see README.md."
+}

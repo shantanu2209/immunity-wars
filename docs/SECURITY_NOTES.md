@@ -566,3 +566,30 @@ been red or cancelled on 11 of 16 nights (#124). Each is an instrument, so each 
 not filed: what is measured with a check that is wrong cannot be trusted until it is right.
 
 > ### The property, re-read 2 October 2026: no open advisory is in a process that listens, because no advisory is open.
+
+## Added 2 October 2026 — one moderate advisory arrived with the Android shell, and was pinned the same day
+
+**What arrived.** GHSA-w5hq-g745-h8pq, moderate: `uuid` before 11.1.1 does not check the bounds of
+a buffer handed to its v3, v5 and v6 functions. One path: `packages/android` > `@capacitor/cli` >
+`xcode` > `uuid` 7.0.3. It came in when Capacitor was added for the Android shell
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §26).
+
+**Why it does not reach anything here.** `xcode` edits an iOS project file, and there is no iOS
+project yet. It calls `uuid.v4()` and nothing else of `uuid`, with no buffer, read from its source:
+the faulty functions are not called. It is a build tool the maintainer runs, in no process that
+listens.
+
+**Pinned all the same,** so that `pnpm audit` stays clean and the next advisory is not read past:
+one override in `pnpm-workspace.yaml`, `uuid` below 11.1.1 to 11.1.1.
+
+| Checked | Found |
+|---|---|
+| `pnpm audit` | No known vulnerabilities |
+| `xcode` with the patched `uuid` | Loads, and generates an id of the form it expects: 11.1.1 still answers `require('uuid').v4`, which is all `xcode` asks of it |
+| Capacitor's tool with it, on the Android side | Copied the app into the Android project (`cap sync`). The project itself had been generated before the pin |
+
+**Not run:** the toolchain battery. This pin changes one package under a tool that is used for
+nothing yet (the iOS half of Capacitor's tool); the battery is run before the Android work is
+merged, on everything that work adds.
+
+> ### The property, re-read 2 October 2026, with the Android shell: no open advisory is in a process that listens, because no advisory is open. The shell adds no process that listens: it is an app on a phone.

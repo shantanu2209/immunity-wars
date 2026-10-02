@@ -3,7 +3,7 @@
 **Status: RULED by Shantanu, 1 October 2026**, every item in §10. It answers his direction of the
 same day: disregard low-end phones, give the game the look of the best modern mobile games before
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
-resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.1).
+resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.2).
 
 **Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
 board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
@@ -2053,3 +2053,77 @@ a test on three-megabyte gates and a control, `selftest-holds-a-long-gate`, whic
 - **It does not run on ordinary pushes or pull requests,** which he asked: every night, on demand,
   and on a pull request that changes the workflow's own file. It is not a required check. What
   every push does run is the four-case test of the output limit, about a second and a half.
+
+## 26. Ruled 2 October 2026, the tenth: the Android shell starts now
+
+He asked: *"is there any differnce in making the changes once the android app is done seeing as it
+is a common code base? Meaning do we need to wait to start the android app?"* Told that a change
+costs the same before and after, that only the public release has to wait for his approval, and
+that starting was recommended, he answered:
+
+> *"Yes lets start om with the stuff you flagged. The visual tests etc can all be done on Android
+> itslef right? Need not be on the web version? What all do you need to start?"*
+
+and then, to what was needed and to one choice put to him:
+
+> *"1. done 2. done (i think, see if you can check) 3. agree"*
+>
+> *"Yes let's keep it off."*
+
+| What it rules | |
+|---|---|
+| **The Android shell is built now,** before Gate 2 | The brief is v2.2 and says so. Until now Capacitor packaging was Phase 4's, after this phase |
+| **The public release still waits for Gate 2:** the store's listing, its screenshots, the release | Unchanged |
+| **His review and his visual approval may be done on the Android app** | The web version stays live for a phone with no app; the automated checks go on being run against it, on the same code |
+| **The app's id is `com.kartikchaudhary.immunitywars`** | Permanent once published. It carries Kartik's name publicly, as the game's address already does; he was told so |
+| **The name under the icon is "Immunity Wars"** | The title on the screens is still The Immunity Wars |
+| **Android keeps no backup of the saved game** | Left on, Android copies it into the Google account the phone is signed in to. No accounts and no personal data is a hard rule. A saved game does not follow a player to a new phone |
+
+**The order he agreed to.**
+
+1. **Now:** the shell on his own S25, installed from this PC. No store, no cost.
+2. **When he chooses to start Google's clock:** the Play account and its closed test. The roadmap
+   puts the account at about ₹2,000, once. That it costs money was said to him: his ruling that no
+   money is spent was about art.
+3. **After his visual approval:** screenshots, the listing, the public release.
+
+### Built: the shell, as a project (the first piece, its first half)
+
+**What the Android app is.** Capacitor wraps the app's own web build. The whole game is inside the
+app, so it plays with no connection. Nothing in the engine, the content, the protocol, the room or
+the relay is touched.
+
+| | |
+|---|---|
+| `packages/android` | New. Capacitor 8.5.2; its config; the native project it generated, committed; the script that builds the app and installs it on a connected phone |
+| The app's build made for the shell | `vite build --mode android`: the web build with **no service worker** and no developer's page but the measuring page. 207 files, 3.0 MB. The web build is unchanged |
+| Changed in the native project | No backup; portrait only; permission to vibrate, which the buzz that goes with a sound needs inside an app; the window is the kit's table while the app starts, so it opens dark |
+| Left as Capacitor made it | **The icon,** which is Capacitor's own. The game's icon and launch picture are a later piece |
+
+- **Why no service worker in the shell.** It exists so that a browser can play with no network.
+  Inside the shell every file is in the app, and a newer version comes from the store, not from
+  the game's server.
+- **The relay takes the shell as it takes a browser:** it checks no origin, read from its code.
+  Not yet seen happening.
+
+**What needed a decision the tools made for us.** Android Studio 2026.2 brings Java 25. Capacitor 8
+builds with Gradle 8.14, which runs on Java 21 to 24, and on 25 the build dies with *"Unsupported
+class file major version 69"*. The build script reads the Java first and refuses it by name.
+
+**Capacitor's own tool brought one advisory,** moderate, in the part of it that edits iOS projects
+(`uuid`, GHSA-w5hq-g745-h8pq). Pinned, so `pnpm audit` is clean
+([`SECURITY_NOTES.md`](SECURITY_NOTES.md)).
+
+**Controls added, each fired:** `shell-build-registers-no-worker`, `android-id-is-one-id`,
+`android-keeps-no-backup`, `android-ground-is-the-kits-table`, `android-java-is-checked-first`.
+`worker-leaves-developer-pages` was re-aimed: the build's settings moved, and the check that every
+control still changes its file said so.
+
+**NOT YET BUILT OR RUN: THE APP ITSELF.** No Java 21 is on the PC. Everything above is the project
+and its checks; that it compiles, starts, plays, and holds its frame rate inside the shell is not
+known, and nothing here claims it.
+
+**Later pieces, none started** ([`TODO.md`](TODO.md)): the game's icon and launch picture; the
+build for the store and its signing key; what the app does when the game's server refuses an older
+version, which on the web offers Update now; a version stamp on saved games; text size, where the
+phone's own setting and the game's meet.
