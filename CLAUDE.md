@@ -78,7 +78,10 @@ unseen. Reading the rulebook against the engine found five places where they dif
 rulebook is silent, which are Kartik's (`docs/FINDINGS.md` #118). **With that the guided game is built. Not read by him or
 Kartik:** its sentences. **Not played by a newcomer,** which is L6's gate.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
-result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
+result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling).
+**Nothing waits on Kartik** (ruled 2 October, plan §21): a question the records mark as the
+designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation,
+and he rules. The game, its rules and its science are still Kartik's work, and are said to be. **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
 is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
 asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the
@@ -106,7 +109,9 @@ the gentlest difficulty is called Easy in the engine's one message that names it
 (`docs/DEVIATIONS.md` #12); nothing plays differently. Q13, the same day, for the guided game: a
 game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still. Q14,
 the same day: an antibody coats, on the screens and in the engine's three sentences that said
-tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2, **not yet deployed**.
+tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2. **Deployed 2 October,
+10:30 IST:** the relay and the app together, from `main` at `0b401cd`, with the table of what
+changes (plan §21).
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

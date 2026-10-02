@@ -1685,3 +1685,43 @@ protocol 5, as it already ran), and the rules version on `main` had not moved.
   request, and go with the relay.
 - **Not checked on the live server:** playing together, which would mean making a room on it; and
   that a phone holding the older version takes this one on its title, which is his phone's to show.
+
+## 21. Ruled 2 October 2026, the fifth set: deployed; and nothing waits on Kartik
+
+After the pull request for Coat and the table, he wrote:
+
+> *"1. Merged 2. Please dpeloy for relay and app everything. Nothing should wait on Kartik show it
+> to ke here and I will rule. Read of lessons and findings will be done in my ui/ux review
+> today/tomorrow."*
+
+| What it rules | What follows |
+|---|---|
+| **Deploy the relay and the app** | Done, below |
+| **Nothing waits on Kartik.** What the records mark as the designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation, and he rules | The open ones were put to him the same day: the five places where the printed rulebook and the engine differ ([`FINDINGS.md`](FINDINGS.md) #118), the rulebook's "(tag)" and "untagged", Diphtheria toxin's producer (#23), the printed board's layout against `geometry.json` (#49), a shape for each disease, and the name "Hidden Virus" (§13). Not ruled when this was written |
+| **The lesson's sentences, the table's, and the findings are read in his review,** today or tomorrow | Nothing is changed for them until then |
+
+**What "the designer's" means from here.** The game, its rules and its science are still Kartik's
+work, and the records go on saying so. What changes is who is asked: a question about them is put
+to Shantanu, and his ruling is recorded as his.
+
+### Deployed, 2 October 2026, 10:30 IST: Coat, rules 4.1.2, and the table of what changes
+
+On his word, once he had merged it: the relay and then the app, from `main` at `0b401cd`.
+
+| | Version | Read back |
+|---|---|---|
+| The relay | `20261002-102938-0b401cd` | Its 41 tests passed. Nobody was connected; it was restarted at 10:29:43 and is running. From the server's own file: rules 4.1.2, protocol 5. It answers through the server |
+| The app | `20261002-103009-0b401cd` | The start check passed before anything was copied; the server serves this build. The build carries rules 4.1.2 |
+
+| Checked on the live app, from the PC, in a headless phone-sized browser, read only | Found |
+|---|---|
+| The lesson, walked by `pnpm guide:walk`, pressing only what is lit | 69 beats of 69, every one in order; handed over at turn 8 of 15; no error |
+| The difficulty screen's table | Fifteen rows, with the rulebook's words for where a worm starts |
+| A game alone on Easy, to the command stage, the B-Cell in hand | Its row says Coat. 42 pictures, none broken and none that is not Clay; seven cells; no error, and no request failed |
+| The words in the build | "tagged", as a player read it, is in none of its three sentences; "coated" and "uncoated" are |
+
+- **A phone still holding the build from before** is built to take the new version on its title by
+  itself, and to be offered Update now if the relay refuses it first, because the rules version
+  moved. Neither was checked on this deploy: it needs such a phone.
+- **Not checked on the live server:** playing together, which would mean making a room on it. The
+  audit walked it against a relay on the PC, on this code.
