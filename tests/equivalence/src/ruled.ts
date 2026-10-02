@@ -278,6 +278,30 @@ export const RULED: readonly RuledChange[] = [
     find: 'return err("On Training, immunity comes from SURVIVING an infection',
     replace: 'return err("On Easy, immunity comes from SURVIVING an infection',
   },
+  // Q14, AND IT CHANGES NO PLAY. Shantanu, 2 October 2026, asked whether "tag" and "coat" are
+  // different things for different pathogens: "If it is the same then I guess coat is better." It is
+  // the same. It is one action in both engines, on a bacterium, a worm or a parasite, and one thing
+  // an antibody does, opsonisation; the printed rulebook names the action Coat. The engine said
+  // "tagged" in three sentences and coat in six. The three, as in the port. docs/DEVIATIONS.md
+  // #14.
+  {
+    queue: 'Q14',
+    name: 'the refusal of a coat on nothing that can be coated says uncoated',
+    find: 'return err("Pick an untagged bacterium, worm or parasite.");',
+    replace: 'return err("Pick an uncoated bacterium, worm or parasite.");',
+  },
+  {
+    queue: 'Q14',
+    name: 'an antibody on a bacterium or a parasite is logged as having coated it',
+    find: ': `Antibody <b>tagged</b> ${iv.disease}.`, "good"); return ok(); }',
+    replace: ': `Antibody <b>coated</b> ${iv.disease}.`, "good"); return ok(); }',
+  },
+  {
+    queue: 'Q14',
+    name: 'a resident with nothing to engulf is told of a coated bacterium',
+    find: 'move it onto a virus or a tagged bacterium first.");',
+    replace: 'move it onto a virus or a coated bacterium first.");',
+  },
   // Q13, FOR THE GUIDED GAME, AND IT CHANGES NO GAME THAT IS NOT HANDED IT. Shantanu, 2 October 2026
   // (docs/LOOK_PLAN.md §18 and §19): the guided game scripts everything, so a game may be handed its
   // first turns, the diseases that arrive on each, by name. On a written turn the draw places exactly

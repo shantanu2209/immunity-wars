@@ -143,7 +143,10 @@ const pack = { ...parseRules(), ...parseBoard(), ...parseGuide() };
  * a venom is never remembered, and the help text states the queue's rules. Then rules 4.1.1 and
  * content 1.3.0 (2 October 2026, docs/DEVIATIONS.md #12): the gentlest difficulty is called Easy.
  * The rules play exactly as they did; the engine said Training in one message, and
- * that word changed, so the two ends of a game played together must be on the same wording.
+ * that word changed, so the two ends of a game played together must be on the same wording. Then
+ * rules 4.1.2 and content 1.4.0 (2 October 2026, docs/DEVIATIONS.md #14), for the same reason: the
+ * engine said "tagged" in three sentences, and they say coated. The guided game's written turns
+ * (queue Q13) did not move either version, by ruling.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;

@@ -1208,7 +1208,7 @@ const CONTROLS: readonly Control[] = [
     id: 'differences-worm-start-is-the-engines',
     why: 'Stage L6: the card of the main differences says where a worm starts on each difficulty, and that is a rule the engine has written in itself, so the screens keep a table of which sentence each difficulty gets. A second copy of a rule drifts. With Normal’s worm said to start at the far end of its branch, the test that plays a game on each difficulty must FAIL saying what the card says and where the engine put the worm.',
     file: 'packages/ui/src/screens/difficultyFacts.ts',
-    mutate: (t) => t.replace("  normal: 'near',", "  normal: 'far',"),
+    mutate: (t) => t.replace("  normal: 'half',", "  normal: 'far',"),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
     expect: 'THE CARD SAYS A WORM STARTS "far" ON normal',
   },
@@ -1236,6 +1236,104 @@ const CONTROLS: readonly Control[] = [
       t.replace('  const most = Math.max(...table);', '  const most = Math.max(...table) + 1;'),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
     expect: 'the most a turn brings',
+  },
+  {
+    id: 'differences-antivenom-is-the-engines',
+    why: 'Stage L6: the table of what changes says how many doses of antivenom a game starts with, which the engine has written in itself. With Normal said to start with 2, the test that asks a new game on each difficulty must FAIL saying what the table says and what the game starts with.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: 2,\n  normal: 1,\n  hard: 0,',
+        '  training: 2,\n  normal: 2,\n  hard: 0,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS 2 DOSES OF ANTIVENOM ON normal, AND THE GAME STARTS WITH 1',
+  },
+  {
+    id: 'differences-division-is-the-engines',
+    why: 'Stage L6: the table says on which rolls an uncoated bacterium divides. With Normal said to divide on 1 or 2, as Easy does, the test that runs a spread on each face of the die on each difficulty must FAIL saying what the table says and what the engine made.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        "  training: 2,\n  normal: 3,\n  hard: 'always',",
+        "  training: 2,\n  normal: 2,\n  hard: 'always',",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect:
+      'THE TABLE SAYS A BACTERIUM ON normal MAKES 1,1,0,0,0,0 COPIES ON THE SIX FACES, AND THE ENGINE MADE 1,1,1,0,0,0',
+  },
+  {
+    id: 'differences-organ-is-the-engines',
+    why: 'Stage L6: the table says a hurt organ never heals on Hard. With Hard said to heal, the test that hurts the lungs and lets the turns pass on each difficulty must FAIL saying what the table says and where the engine left the lungs.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: true,\n  normal: true,\n  hard: false,\n};\n\n/** Does an uncoated invader',
+        '  training: true,\n  normal: true,\n  hard: true,\n};\n\n/** Does an uncoated invader',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS A HURT ORGAN HEALS ON hard, AND THE ENGINE LEFT THE LUNGS AT 2 OF 3',
+  },
+  {
+    id: 'differences-lymph-is-the-engines',
+    why: 'Stage L6: the table says infections spread along the lymph on Hard alone. With Normal said to spread too, the test that puts a virus at a lymph node and runs a spread on each face on each difficulty must FAIL saying what the table says and what the engine did.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: null,\n  normal: null,\n  hard: 2,',
+        '  training: null,\n  normal: 2,\n  hard: 2,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect:
+      'THE TABLE SAYS AN INFECTION ON normal SPREADS BY THE LYMPH ON [true,true,false,false,false,false]',
+  },
+  {
+    id: 'differences-produce-is-the-engines',
+    why: 'Stage L6: the table says practice against one class adds an antibody on Easy alone, and that antigens presented raise what a Produce makes on Easy and Normal. With practice said to add on Normal too, the test that asks the engine what a Produce makes must FAIL saying what the table says.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: true,\n  normal: false,\n  hard: false,',
+        '  training: true,\n  normal: true,\n  hard: false,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS PRACTICE ADDS ON normal, AND THE ENGINE MADE 3 THEN 3',
+  },
+  {
+    id: 'differences-pathogen-x-is-the-engines',
+    why: 'Stage L6: the table says in how many games of ten Pathogen X is due. With Normal said to be 5 in 10, the test that starts 4,000 seeded games on each difficulty must FAIL on the share that had it.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: 2,\n  normal: 6,\n  hard: 10,',
+        '  training: 2,\n  normal: 5,\n  hard: 10,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'of 4000 games',
+  },
+  {
+    id: 'differences-range-is-the-engines',
+    why: 'Stage L6: the table says the Killer T-Cell’s range. With that row reading the antibody store’s table, the test that puts a hidden virus one to five steps out on each difficulty must FAIL on a step the engine does not reach.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        "row('range', (d): DifferenceCell => ({ n: SNIPE_RANGE_BY_DIFF[d] }))",
+        "row('range', (d): DifferenceCell => ({ n: AB_CAP_FAM_BY_DIFF[d] }))",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: '4 steps out',
+  },
+  {
+    id: 'differences-table-is-whole',
+    why: 'Stage L6, ruled 2 October 2026: the table of what changes holds every place the engine reads the difficulty, and a test counts those places in the engine’s source so that a new one cannot arrive unseen. With one more read of the difficulty written into the engine, changing nothing it does, the count must FAIL asking whether the new one is on the table.',
+    file: 'packages/engine/src/effects.ts',
+    mutate: (t) =>
+      t.replace(
+        "      g.difficulty === 'training' &&\n",
+        "      g.difficulty === 'training' &&\n      g.difficulty !== 'hard' &&\n",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE ENGINE READS THE DIFFICULTY SOMEWHERE THE TABLE WAS NOT WRITTEN FROM',
   },
   {
     id: 'result-says-what-changes-after-easy',
@@ -1765,8 +1863,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/engine/src/actions.ts',
     mutate: (t) =>
       t.replace(
-        "else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');",
-        "else {\n        const tagged = `Antibody <b>tagged</b> ${iv.disease}.`;\n        pushLog(g, tagged, 'good');\n      }",
+        "else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`, 'good');",
+        "else {\n        const coated = `Antibody <b>coated</b> ${iv.disease}.`;\n        pushLog(g, coated, 'good');\n      }",
       ),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/i18n-engine.test.ts',
     expect: 'a log line or rejection composed where the catalogue cannot see it',
@@ -1865,6 +1963,18 @@ const CONTROLS: readonly Control[] = [
       t.replace('    if (written) c = DECK_MASTER.find((x) => x.dz === written[k]);\n', ''),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
     expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
+  },
+  {
+    id: 'queue-q14-the-engine-says-coated',
+    why: 'Queue Q14 (Shantanu, 2 October 2026): what an antibody does to a bacterium, a worm or a parasite is one thing with one word, coat; the engine said tagged in three sentences. With the port logging a coated bacterium as tagged again, the queue’s test must FAIL saying the engine still says tagged (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        'else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`',
+        'else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS TAGGED',
   },
   {
     id: 'queue-q12-the-engine-says-easy',

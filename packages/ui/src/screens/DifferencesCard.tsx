@@ -1,12 +1,13 @@
 /**
- * THE CARD OF THE MAIN DIFFERENCES between Easy, Normal and Hard (`difficultyFacts.ts` has what it
- * says and where each line comes from). One tap away, behind a button that says what it opens, on
- * the difficulty screen and on the result of a game on Easy: the difficulty screen is for choosing,
- * and a newcomer chooses by the three rows.
+ * THE TABLE OF WHAT CHANGES between Easy, Normal and Hard (`difficultyFacts.ts` has what it says
+ * and where each line comes from), and the card that holds it one tap away: behind a button that
+ * says what it opens, on the difficulty screen and on the result of a game on Easy. The difficulty
+ * screen is for choosing, and a newcomer chooses by the three rows. How to play shows the table
+ * open, in its section on difficulty, as the printed rulebook does.
  *
- * SIX ROWS OF THREE. What a row is about is said once, over its three cells, and the three names
- * stand once at the head of the card, so a number is read under its difficulty's name. Each cell
- * also carries its difficulty's name for a reader that reads it alone.
+ * ROWS OF THREE. What a row is about is said once, over its three cells, and the three names stand
+ * once at the head of the table, so a number is read under its difficulty's name. Each cell also
+ * carries its difficulty's name for a reader that reads it alone.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -14,7 +15,7 @@ import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR, TYPE } from '../kit/tokens';
 
-import { CARD, SECTION, STACK } from './chrome';
+import { CARD, STACK } from './chrome';
 import { DIFFICULTIES, differenceRows, type DifferenceCell } from './difficultyFacts';
 
 const GRID: CSSProperties = {
@@ -32,6 +33,40 @@ const CELL: CSSProperties = {
 };
 
 const say = (c: DifferenceCell): string => ('n' in c ? String(c.n) : t(c.key, c.params));
+
+/** The table itself, for a card: the three names, then each row under them. */
+export function DifferencesTable(): ReactElement {
+  return (
+    <div data-differences-table="">
+      <div style={GRID} aria-hidden="true">
+        {DIFFICULTIES.map((d) => (
+          <span key={d} style={HEAD}>
+            {t(`difficulty.${d}`)}
+          </span>
+        ))}
+      </div>
+      {differenceRows().map((row) => (
+        <div key={row.id} data-difference={row.id}>
+          <p style={LABEL}>{t(row.labelKey)}</p>
+          <div style={GRID}>
+            {DIFFICULTIES.map((d) => {
+              const text = say(row.cells[d]);
+              return (
+                <span
+                  key={d}
+                  style={CELL}
+                  aria-label={t('differences.cell', { name: t(`difficulty.${d}`), text })}
+                >
+                  {text}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function DifferencesCard({
   toggleKey,
@@ -54,33 +89,7 @@ export function DifferencesCard({
       </KitButton>
       {open ? (
         <div data-differences-card="" style={{ ...CARD, textAlign: 'left' }}>
-          <h2 style={SECTION}>{t('differences.title')}</h2>
-          <div style={GRID} aria-hidden="true">
-            {DIFFICULTIES.map((d) => (
-              <span key={d} style={HEAD}>
-                {t(`difficulty.${d}`)}
-              </span>
-            ))}
-          </div>
-          {differenceRows().map((row) => (
-            <div key={row.id} data-difference={row.id}>
-              <p style={LABEL}>{t(row.labelKey)}</p>
-              <div style={GRID}>
-                {DIFFICULTIES.map((d) => {
-                  const text = say(row.cells[d]);
-                  return (
-                    <span
-                      key={d}
-                      style={CELL}
-                      aria-label={t('differences.cell', { name: t(`difficulty.${d}`), text })}
-                    >
-                      {text}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+          <DifferencesTable />
         </div>
       ) : null}
     </>

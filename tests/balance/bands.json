@@ -5,8 +5,8 @@
   "sigma": 3,
   "loudSigma": 6,
   "rule": "Compare the MEAN of one arm of 20x100 games against these bands. FAIL when two or more metrics are past ±3 sd(arm), OR when any one is past ±6. sd(arm) is MEASURED from 24 independent arms — do not recompute it as sd(batch)/sqrt(batches) (src/panel.ts) — and is never allowed below sd(one game)/sqrt(gamesPerArm), the analytic floor a mean of that many independent games cannot go under (src/metrics.ts). trunkKillPct is a ratio of sums, not a mean of a per-game value, so it has no floor and keeps its measured sd.",
-  "engineRev": "4459164",
-  "measuredAt": "2026-10-01T20:32:30.253Z",
+  "engineRev": "11aba72",
+  "measuredAt": "2026-10-02T04:10:55.108Z",
   "difficulties": {
     "training": {
       "provenance": {
@@ -19,8 +19,8 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.3.0",
-        "rulesVersion": "4.1.1"
+        "packVersion": "1.4.0",
+        "rulesVersion": "4.1.2"
       },
       "arms": 24,
       "samplingFloor": {
@@ -113,8 +113,8 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.3.0",
-        "rulesVersion": "4.1.1"
+        "packVersion": "1.4.0",
+        "rulesVersion": "4.1.2"
       },
       "arms": 24,
       "samplingFloor": {
@@ -207,8 +207,8 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.3.0",
-        "rulesVersion": "4.1.1"
+        "packVersion": "1.4.0",
+        "rulesVersion": "4.1.2"
       },
       "arms": 24,
       "samplingFloor": {

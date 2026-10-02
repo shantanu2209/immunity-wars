@@ -68,11 +68,14 @@ its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on
 never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
 app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
 had no button (`docs/FINDINGS.md` #113). **What changes between the difficulties is
-said in three places:** a line of the lesson, a card on the difficulty screen (*The main
-differences*, `packages/ui/src/screens/DifferencesCard.tsx`), and the result of a game on Easy. Its
-six rows are How to play's six; `tests/session/src/differences.test.ts` holds each to games the
-engine plays on each difficulty. The engine differs in more ways than six, and which a player is
-told is Kartik's (`docs/FINDINGS.md` #116). **With that the guided game is built. Not read by him or
+said in a line of the lesson and in one table** (`packages/ui/src/screens/difficultyFacts.ts`,
+drawn by `DifferencesCard.tsx`), shown on the difficulty screen, on the result of a game on Easy
+and in How to play. He ruled the call Claude's (2 October, plan §20): its first eleven rows are the
+printed rulebook's own table, and four more are what the engine also does by difficulty, so it is
+every place the engine reads the difficulty. `tests/session/src/differences.test.ts` holds each
+row to the engine on each difficulty and counts the engine's reads, so a new one cannot arrive
+unseen. Reading the rulebook against the engine found five places where they differ or the
+rulebook is silent, which are Kartik's (`docs/FINDINGS.md` #118). **With that the guided game is built. Not read by him or
 Kartik:** its sentences. **Not played by a newcomer,** which is L6's gate.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
@@ -101,7 +104,11 @@ changes, the rules version moved to 4.0.0, deployed that evening
 same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). Q12, 2 October:
 the gentlest difficulty is called Easy in the engine's one message that names it, rules 4.1.1
 (`docs/DEVIATIONS.md` #12); nothing plays differently. Q13, the same day, for the guided game: a
-game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still.
+game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still. Q14,
+the same day: an antibody coats, on the screens and in the engine's three sentences that said
+tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2, **not yet deployed**.
+**The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
+(plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
 every screen in Clay and Easy (plan §19). The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
