@@ -2036,3 +2036,20 @@ a test on three-megabyte gates and a control, `selftest-holds-a-long-gate`, whic
 - **So the run did what it was added for, on its first night's rehearsal:** a check that worked on
   the PC and not elsewhere was seen at once.
 - **The run summary did its part:** the control was named, with the gate's last 40 lines.
+
+### Its second run on the runner: 207 of 207
+
+| | |
+|---|---|
+| The fix's own test, on the runner | **Failed the first time it ran there.** Its test command wrote three megabytes and called `process.exit()` at once, which on Linux drops what is still waiting in the pipe; the PC finishes the write first. The command was wrong, not the fix. It sets the exit code and ends by itself now, and CI passed |
+| The full self-test, on the runner, with both changes | **207 controls of 207 fired**, in 22 minutes: every gate red where it must be and green where it must be |
+
+- **He merged the pull request a minute after that run ended green,** before it had been read to
+  him. It had passed; nothing was merged on a red or an unread failure.
+- **Two faults in two runs, each seen only off the PC.** That is what running it somewhere else
+  was for, and it is why the first scheduled runs are read and not assumed.
+- **Not yet seen:** a run started by the schedule and not by a pull request. The first is the
+  night after the merge.
+- **It does not run on ordinary pushes or pull requests,** which he asked: every night, on demand,
+  and on a pull request that changes the workflow's own file. It is not a required check. What
+  every push does run is the four-case test of the output limit, about a second and a half.

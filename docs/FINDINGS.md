@@ -6094,3 +6094,14 @@ output was cut).
 
 **What this says about running it on the PC only.** The self-test had been run in full there many
 times and never on Linux. Its first run anywhere else found a fault in the self-test itself.
+
+**And the fix's own test did the same thing a second time.** It passed on the PC and failed on the
+runner: *expected 2265729 to be greater than 3000000*. The command it ran wrote three megabytes
+and called `process.exit()` at once. On Linux a write to a pipe is not finished when it returns,
+and `process.exit()` drops what is still waiting; on Windows the write is finished first. The fault
+was in the test's command and not in what it tests. The commands now set `process.exitCode` and
+end by themselves, and the passing case is held to arriving whole as well.
+
+**Shown on the runner, 2 October 2026:** with both changes, the CI test job passed, and the full
+self-test fired **207 controls of 207**, in 22 minutes, this control and the new one among them.
+**Closed.**

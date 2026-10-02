@@ -173,7 +173,7 @@ from "you had edits already" gets deleted.
 03:30 UTC, on demand, and on a pull request that changes the workflow file itself. **The full
 self-test, every control.** Added 2 October 2026, by ruling.
 
-- **Why it is not per-push.** It takes half an hour on the PC and 18 minutes on the runner,
+- **Why it is not per-push.** It takes half an hour on the PC and about 20 minutes on the runner,
   against a per-push tier of five. A push runs `ci:selftest:inert` instead, which asks only that
   each control's change still changes its file.
 - **Its first run found a fault in the self-test itself:** it kept only a megabyte of a gate's
