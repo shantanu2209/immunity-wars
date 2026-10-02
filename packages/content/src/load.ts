@@ -131,7 +131,10 @@ const pack = { ...parseRules(), ...parseBoard() };
  * organ the fight is in. The content gained Pathogen X's declared tropism, six of the actions'
  * numbers and new sentences. The relay refuses any other rules version exactly, so a phone still
  * on 3.1.0 is told to update. Then rules 4.1.0 and content 1.2.0 (queue Q11, 30 September 2026):
- * a venom is never remembered, and the help text states the queue's rules.
+ * a venom is never remembered, and the help text states the queue's rules. Then rules 4.1.1 and
+ * content 1.3.0 (2 October 2026, docs/DEVIATIONS.md #12): the gentlest difficulty is called Easy.
+ * The rules play exactly as they did; the engine said Training in one message, and
+ * that word changed, so the two ends of a game played together must be on the same wording.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;

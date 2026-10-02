@@ -369,7 +369,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
       const dz = a.disease as string;
       if (g.difficulty === 'training') {
         return err(
-          'On Training, immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines come into play on Normal and Hard.',
+          'On Easy, immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines come into play on Normal and Hard.',
         );
       }
       if (!dz) return err('Pick a disease to develop a vaccine against.');

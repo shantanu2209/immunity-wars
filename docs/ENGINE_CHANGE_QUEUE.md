@@ -255,3 +255,22 @@ now asserts the strength that holds at its scale, with a control of its own.
 `20261001-002607-5994603`, its 41 tests passed, restarted with nobody connected, rules 4.1.0 and
 protocol 5 read back from the server; and the app `20261001-003357-5994603`, its start check passed,
 the live build carrying rules 4.1.0 and the new help for venom.
+
+### Q12, after the queue ran — 2 October 2026: the gentlest difficulty is called Easy
+
+Not one of the ten, and not a rule: a word. Shantanu ruled on 1 October that Training is renamed
+Easy, on the screens, in the engine's own messages and in the printed texts, in one change
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §1 and §6), and on 2 October that it is done now and does not wait
+for the guided game.
+
+- **One message of the engine's 196 said Training:** the refusal of a vaccine on the gentlest
+  difficulty. That message says Easy. Nothing plays differently, and the difficulty's key
+  is `training` everywhere, as it was.
+- **Made the queue's way:** in the port, and as one edit to the original applied in memory
+  (`tests/equivalence/src/ruled.ts`), with a test that shows the word in both and the untouched
+  original still saying Training, and a mutation control.
+- **The screens and the printed texts in the same change:** seven sentences and one cell label in
+  the catalogue; 9 places in the rulebook, 2 in the quick reference, 4 in the study packet.
+- **Rules 4.1.1, content 1.3.0.** The bands were measured again for the version, on 24 arms and
+  150,000 games, and no number in them moved: the rules play as they did.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #12.

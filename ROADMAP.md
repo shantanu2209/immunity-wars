@@ -125,7 +125,8 @@ phone checks still owed; they are waived, not met ([`docs/PHASE3_CLOSEOUT.md`](d
 
 **Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, which ran the
 same day, all ten changes, rules version 4.0.0 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
-FINDINGS #101), then Q11, rules 4.1.0; and the relay's half of #94, built on 1 October.
+FINDINGS #101), then Q11, rules 4.1.0; and the relay's half of #94, built on 1 October. Q12, on
+2 October, renamed Training to Easy in the engine's one message that names it, rules 4.1.1.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25

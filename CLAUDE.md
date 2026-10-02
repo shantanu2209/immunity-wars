@@ -48,6 +48,11 @@ the title from the picture he picked, with `tools/art-pipeline/clay/hero.py`; ev
 from `packages/ui/src/screens/chrome.ts`; the new cards and planning in Clay, the body drawn in code
 in `play/AnatomyView.tsx`). It was built without a proposal round, on his word that what could be
 built before the review would be reviewed with the rest, so **every choice in it is unruled**.
+**Training is called Easy** (2 October, ruled *"Now"*; plan §16, queue Q12): on the screens, in the
+printed texts, and in the one engine message that names a difficulty; the key in the code is still
+`training`; rules 4.1.1. **The guided game is not built:** his direction is a game scripted for the
+fewest turns that explain everything and then the player's to finish, and what it leaves open is
+put to him in the chat. **Nothing is sent to him as a file** (the same ruling).
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
@@ -66,7 +71,9 @@ governs the room and the relay. **The engine
 change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
 changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
-same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). The relay's half
+same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). Q12, 2 October:
+the gentlest difficulty is called Easy in the engine's one message that names it, rules 4.1.1
+(`docs/DEVIATIONS.md` #12); nothing plays differently. The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
 actions from anyone who does not hold it, and the body's from anyone but the captain. **What stands
 between here and Phase 4 is Phase 2**, above. **One thing the queue

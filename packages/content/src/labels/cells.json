@@ -23,7 +23,7 @@
     },
     "tcell": {
       "role": "The sniper. It kills infected cells, anything hiding inside one of your own cells, from a distance, and it never misses.",
-      "home": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell.",
+      "home": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Easy, 2 on Normal and Hard, +1 beside a primed Helper T-Cell.",
       "bestAgainst": "Hidden viruses and the protozoa that live inside cells: Toxoplasma, Chagas, liver-stage malaria, a parasite inside a resident macrophage. Useless against anything out in the open.",
       "deficiency": "Without killer T-cells, a virus that hides inside cells is never cleared, because the infected cell is never destroyed. Reactivating viruses like shingles are what a weakened T-cell system lets through.",
       "fact": "A killer T-cell recognises an infected cell by the fragments of virus that cell displays on its own surface. The cell reports its own infection."

@@ -559,6 +559,53 @@ vaccinated and remembered, as the control. Mutation controls `queue-q11-no-venom
 the offered-subset-of-accepted harness, which caught the offer on recorded Normal games before the
 fix.
 
+## 12. The gentlest difficulty is called Easy, in the one message where the engine names it (queue Q12)
+
+**Legacy behaviour.** A vaccine asked for on the gentlest difficulty is refused with: *"On Training,
+immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines
+come into play on Normal and Hard."*
+
+**Port behaviour.** The same refusal, on the same condition, at the same cost of nothing: *"On
+Easy, immunity comes from SURVIVING an infection — beat a disease and your body remembers it.
+Vaccines come into play on Normal and Hard."* **One word differs.** Nothing plays differently, and
+the difficulty's key is `training` in both engines, in the content pack, in a saved game and in a
+room, as it always was: only what a player reads has changed.
+
+**Why.** Shantanu ruled on 1 October 2026 that Training is renamed Easy
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §1, ruling 5, and §6: *"The word changes on the screens, in the
+engine's own messages, and in the printed rulebook, quick reference and study packet, in one change,
+so the table and the app keep agreeing"*), and on 2 October, asked whether it should wait for the
+guided game: *"Now"*. This is the engine's part of that one change. It is the only message of the
+engine's 196 that said Training. (*Corrected the same day:* this read "the only message that names
+a difficulty to a player". Two do; the other names Hard, in the refusal of a memory response for
+want of an Action Point, and is untouched.)
+
+**It is an engine text change, and CLAUDE.md says such a thing is refused as a matter of style and
+made only as a deliberate, isolated change measured against the corpus.** This is that: it was
+ruled, it is one string, and it was made the queue's way.
+
+**The oracle.** As for #10 and #11: made twice, in the port and as one edit to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory and the corpus compares. The
+original's file is not touched.
+
+**The rest of the one change, which is not the engine's:** the seven sentences of the screens'
+catalogue and the one cell label that said Training; and the printed texts, where the word was
+replaced 9 times in the rulebook, twice in the quick reference and 4 times in the study packet. The
+study packet's sentence about how T cells are trained (*"When that training fails in one
+direction you get autoimmune disease"*) is about the immune system and was left alone.
+
+**The rules version** moves from 4.1.0 to 4.1.1 with it, and the content from 1.2.0 to 1.3.0. The
+rules play as they did; the version moves because the two ends of a game played together must not
+be on different wordings without being told, and the relay refuses any other version exactly. The
+balance bands were measured again for the new version, on 24 arms and 150,000 games: every number
+in the file is what it was, to the last digit, and only the versions, the commit and the time
+differ.
+
+**Decided by:** Shantanu, 1 and 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q12 cases: *"a vaccine is refused there
+by name, as Easy, in the port and the original as ruled"*, with the untouched original, which still
+says Training, as the control. Mutation control `queue-q12-the-engine-says-easy`.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

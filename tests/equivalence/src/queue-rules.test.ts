@@ -345,3 +345,37 @@ describe('Q11 (Shantanu, FINDINGS #55): a venom is never remembered', () => {
     }
   });
 });
+
+describe('Q12 (Shantanu, 1 and 2 October 2026): the gentlest difficulty is called Easy', () => {
+  // The engine says this difficulty's name to a player in one message: the refusal of a vaccine on
+  // it. The rule is the same in all three engines, a vaccine is refused there; only the word is the
+  // change, so the control is the untouched original, which must still say Training.
+  const DISEASE = 'Measles';
+  const lab = (_E: Engine, g: Game): void => {
+    (g['seen'] as Raw)[DISEASE] = true;
+    g['phase'] = 'command';
+    g['ap'] = 5;
+  };
+  const vaccinate = (): Raw[] => [{ action: 'vaccinate', disease: DISEASE, ap: 2 }];
+  const SAYS = (word: string): string =>
+    `On ${word}, immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines come into play on Normal and Hard.`;
+
+  it('a vaccine is refused there by name, as Easy, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'training', lab, vaccinate);
+      expect(results[0], `${name}: THE ENGINE DOES NOT CALL IT EASY`).toEqual({
+        ok: false,
+        error: SAYS('Easy'),
+      });
+      expect(g['ap'], name).toBe(5);
+      // The word changed and nothing else: the difficulty's key is what it was.
+      expect(g['difficulty'], name).toBe('training');
+    }
+  });
+
+  it('CONTROL: the original, untouched, refuses the same vaccine and still says Training', () => {
+    const { g, results } = run(ORIGINAL, 1, 'training', lab, vaccinate);
+    expect(results[0]).toEqual({ ok: false, error: SAYS('Training') });
+    expect(g['ap']).toBe(5);
+  });
+});
