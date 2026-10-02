@@ -274,3 +274,21 @@ for the guided game.
 - **Rules 4.1.1, content 1.3.0.** The bands were measured again for the version, on 24 arms and
   150,000 games, and no number in them moved: the rules play as they did.
 - [`DEVIATIONS.md`](DEVIATIONS.md) #12.
+
+### Q13, after the queue ran — 2 October 2026: a game may be handed its first turns, written
+
+Not one of the ten, and not a rule: a way to start a game, for the guided game. Shantanu ruled on
+2 October that the guided game scripts everything ([`LOOK_PLAN.md`](LOOK_PLAN.md) §18), then that
+its seven turns are as listed and that the rules version does not move (§19).
+
+- **What it is:** a new game may be handed the diseases that arrive on its first turns, by name. On
+  a written turn exactly those arrive, and the draw rolls nothing. The draw that places the last of
+  them removes the writing, and the game is an ordinary one from there.
+- **What it leaves alone:** every game not handed the writing, which is every game the corpus
+  holds and every game played together. Their states and their dice are what they were.
+- **Made the queue's way:** in the port, and as five edits to the original applied in memory, with
+  tests that show both doing it alike, the whole game compared after every action, and the
+  untouched original as the control. Two mutation controls.
+- **Rules 4.1.1, as it was.** The balance bands are not measured again: they are tied to the rules
+  version, and no game the panel plays is handed the writing.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #13.

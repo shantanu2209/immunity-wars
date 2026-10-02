@@ -819,7 +819,13 @@ function actionDraw(g: GameState, a: Action): ActionResult {
     return err('Only the captain draws the next infection.');
   if (g.phase !== 'infection' || g.drawn) return err('Not ready to draw.');
 
-  let nSpawn = spawnCount(g);
+  // THE TURN'S ARRIVALS, WRITTEN (queue Q13, Shantanu, 2 October 2026; docs/DEVIATIONS.md #13).
+  // A game may be handed its first turns: on such a turn exactly the diseases written for it
+  // arrive, in their order. No die is rolled for how many, none for a disease met before, the deck
+  // is not touched, and the worm cap swaps nothing: a written turn is exact. Everything after the
+  // placing is the draw's own. A game with nothing written never reaches any of this.
+  const written = g.written ? g.written[g.turn - 1] : undefined;
+  let nSpawn = written ? written.length : spawnCount(g);
   if (g.turn > g.maxTurn) nSpawn = 0; // after the onslaught window, no NEW infections arrive
 
   // POST-WINDOW: if the body is already clear that is a win right now. Otherwise mark the draw
@@ -857,7 +863,7 @@ function actionDraw(g: GameState, a: Action): ActionResult {
 
   for (let k = 0; k < nSpawn; k += 1) {
     let c: Card | null | undefined;
-    const known = Object.keys(g.seen);
+    const known = written ? [] : Object.keys(g.seen);
     if (g.turn <= g.maxTurn && known.length && Math.random() < REINFECT_PC) {
       const pool = known.filter((dz) => dz !== 'Pathogen X');
       if (pool.length) {
@@ -865,12 +871,13 @@ function actionDraw(g: GameState, a: Action): ActionResult {
         c = DECK_MASTER.find((x) => x.dz === dz) || null;
       }
     }
+    if (written) c = DECK_MASTER.find((x) => x.dz === written[k]);
     if (!c) {
       if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));
       c = g.deck.pop() as unknown as Card | undefined;
       if (c) g.discard.push(c as never);
     }
-    c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game
+    if (!written) c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game
     if (!c) continue; // capped and nothing else to send: a quiet slot
 
     const iv = makeInvader(g, c);
@@ -913,6 +920,8 @@ function actionDraw(g: GameState, a: Action): ActionResult {
     }
   }
 
+  // The last written turn has been placed: the game is an ordinary one from here, state and all.
+  if (written && g.written && g.turn >= g.written.length) delete g.written;
   // Every slot may have been skipped by the worm cap — the turn must still be playable.
   if (!g.drawn) g.drawn = { dz: '(no new infection)', __sentinel: true };
   return ok();

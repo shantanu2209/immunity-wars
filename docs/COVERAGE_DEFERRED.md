@@ -72,8 +72,8 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:656` `if (!iv) return err('No such pathogen.');`
 - `actions.ts:661` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
 - `actions.ts:664` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
-- `construct.ts:163` `default:`
-- `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
+- `construct.ts:170` `default:`
+- `construct.ts:132` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
 - `queries.ts:250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
 - `queries.ts:278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`

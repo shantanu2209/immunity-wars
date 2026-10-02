@@ -47,6 +47,13 @@ export interface NewGameConfig {
   players?: string[];
   captain?: string | null;
   owner?: Record<string, string>;
+  /**
+   * THE GAME'S FIRST TURNS, WRITTEN (queue Q13, ruled by Shantanu on 2 October 2026 for the guided
+   * game; docs/DEVIATIONS.md #13): the diseases that arrive on turn 1, on turn 2, and so on, by
+   * name. On a written turn the draw places exactly these and rolls nothing. Absent, a game is
+   * dealt as it always was.
+   */
+  written?: readonly (readonly string[])[];
 }
 
 /** Most recent first, capped at 60. */
@@ -433,6 +440,20 @@ export function newGame(cfg: NewGameConfig): GameState {
     if (Math.random() < chance) {
       g.novelTurn = 2 + Math.floor(Math.random() * Math.max(1, Math.floor(g.maxTurn * 0.5)));
     }
+  }
+
+  // THE FIRST TURNS, WRITTEN (queue Q13). The field exists only in a game that was handed them, so
+  // every other game's state is what it always was, key for key. A name no card carries is refused
+  // here, loudly: a lesson that silently dropped an arrival would point a newcomer at nothing.
+  if (cfg.written) {
+    g.written = cfg.written.map((turn) =>
+      turn.map((dz) => {
+        if (!DECK_MASTER.some((c) => c.dz === dz)) {
+          throw new Error(`newGame: no card is named "${dz}"`);
+        }
+        return dz;
+      }),
+    );
   }
 
   pushLog(

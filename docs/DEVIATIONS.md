@@ -606,6 +606,54 @@ differ.
 by name, as Easy, in the port and the original as ruled"*, with the untouched original, which still
 says Training, as the control. Mutation control `queue-q12-the-engine-says-easy`.
 
+## 13. A game may be handed its first turns, written (queue Q13)
+
+**Legacy behaviour.** Every turn's arrivals are dealt. A die says how many. For each, a roll says
+whether it is a disease the body has met before; if not, it is the top card of the shuffled deck. A
+worm past its cap is swapped for the next card that is not one.
+
+**Port behaviour.** The same, for every game that is handed nothing. A game may instead be handed
+`written`: the diseases that arrive on its first turns, turn by turn, by name. On such a turn
+**exactly those arrive, in their order: no die for how many, none for a disease met before, the
+deck not touched, the worm cap swapping nothing.** The draw that places the last written turn
+removes the field, and from the next turn the game is dealt as ever. A name no card carries is
+refused when the game is made.
+
+**Why.** Shantanu ruled on 2 October 2026 that the guided game scripts everything
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §18), and the same day ruled its seven turns as listed (§19). A real
+game cannot be made to show them: measured on 800 seeded Easy games, all nine kinds of invader
+arrive in one game in 1 of 100, and in none by turn 12.
+
+**What it does not change.**
+
+- **No rule.** What an arrival does, once it has arrived, is what it always did. Pathogen X still
+  breaks in on its own turn, on top; a remembered disease is still marked; a written worm still
+  counts toward the game's cap.
+- **No game that is not handed the writing.** Its state is what it was, key for key, and it draws
+  the same random numbers in the same order. The corpus hands no game the writing, so it is
+  unchanged and still compares the two engines byte for byte.
+- **No game played together.** A room makes its game from a message that carries a difficulty and
+  nothing else, so a room cannot hand a game the writing.
+- **The rules version: it stays 4.1.1,** by ruling the same day (*"Agree"*). No rule changed, and
+  nothing two phones send each other changed.
+
+**The dice are not part of it.** The guided game fixes them with a seed, outside the engine, as the
+measuring page does.
+
+**The oracle.** As for #10 to #12: made twice, in the port and as five edits to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory. The original's file is not
+touched.
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q13 cases: a written turn brings exactly
+what is written and rolls nothing, in the port and the original as ruled; the two hold the same game
+after every action of it, compared as the corpus compares; the last written turn's draw removes the
+writing and the next is dealt by the dice; a written turn is exact where the worm cap would swap; a
+name no card carries is refused in the same words; a game handed nothing carries no writing and
+rolls as it always did; and the untouched original, handed the same turns, deals by the dice all
+the same, which is the control. Mutation controls `queue-q13-a-written-turn-rolls-nothing` and
+`queue-q13-a-written-turn-brings-what-is-written`.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

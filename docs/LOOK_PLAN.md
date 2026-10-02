@@ -9,7 +9,9 @@ resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIE
 board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
 which holds 60 frames a second on his S25 (§14). **He ruled it deployed that night, as a mix of two
 looks, with his review of the whole the next day** (§14, the last heading). **L5, the other screens,
-is built for that review and not yet ruled on** (§15).
+is built for that review and not yet ruled on** (§15); **it was deployed on 2 October, with Easy**
+(§19). **L6 is under way:** Easy is done (§16), and the guided game is ruled to script everything,
+its seven turns ruled as listed, and the engine's part of it built (§18, §19).
 
 ## 1. What is decided already
 
@@ -110,7 +112,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its lesson and its engine change are put to him before they are built* |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed and the engine's part is built (§19); the lesson itself is not yet* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -1195,3 +1197,104 @@ measured on, was already known to be false: those figures are from 6 July and a 
 ([`FINDINGS.md`](FINDINGS.md) #2). The other, that deleting the evidence of a drift is how the
 drift happens again, is met by the history and by the records that name it. He was told both when
 the removal was reported.
+
+## 19. Ruled 2 October 2026, the third set: the lesson's seven turns; and the deploy of L5 and Easy
+
+Put to him in the chat with the lesson played through the real engine in a model, he answered:
+*"1. 147 merged, please deploy 2. As listed. 3. Agree"*.
+
+| # | What was put | His ruling |
+|---|---|---|
+| 1 | Merge the removal, and say when to deploy | **Merged, and deploy** |
+| 2 | The guided game's seven turns, as listed | **As listed** |
+| 3 | The rules version does not move for the engine's part of it | **Agreed** |
+
+### The lesson, as ruled
+
+| Turn | Arrives | The player is led to |
+|---|---|---|
+| 1 | Whooping cough, a bacterium | Make antibodies, coat it, walk the Monocyte out four steps |
+| 2 | Hepatitis B and Hepatitis C, hidden viruses | Engulf the bacterium, free. The Killer T-Cell snipes one; the NK Cell moves and strikes the other, on a die. Recall the Monocyte |
+| 3 | Influenza, a virus; Candida, a fungus | Make antibodies and neutralise the virus. Run the Neutrophil out and cast its NET |
+| 4 | A crisis, Passive antibodies. Endocarditis, a bacterium; Amoebiasis, a parasite | Coat both. Walk the Monocyte out to meet the parasite |
+| 5 | Diphtheria, a toxin; Snake venom | Strike, then engulf the parasite. Antitoxin, 2 Action Points. Antivenom, 3 |
+| 6 | Roundworm; and Whooping cough again | Tap the memory ring, free. The Eosinophil onto the worm, coat, strike twice |
+| 7 | Malaria | The heart's resident steps out, engulfs the Endocarditis that got through, and returns. Neutralise the malaria |
+
+Then the rails end, and turn 8 of 15 is the player's.
+
+- **Shown:** the nine kinds of invader, the seven cells, a resident, memory, a crisis.
+- **The Helper T-Cell has no tap of its own:** the lesson points at it when it is primed, on turn 2,
+  and at what it does for the B-Cell, on turn 3.
+- **Told and not shown:** malaria's three stages; degranulate; what neglect does, which is bacteria
+  dividing, viruses hiding and organs hurt.
+- **Not in it:** Pathogen X; vaccines, which Easy does not have; the lymph shortcut.
+- **Its sentences come from How to play,** so no new claim about the science is made. He and Kartik
+  read them in the app.
+
+### What the model measured, before anything was built
+
+The lesson was played against the real engine, every step through the engine's own `applyAction`.
+Only the written arrivals were modelled, since the engine could not take them yet.
+
+| Measured | Found |
+|---|---|
+| Length | **Seven turns** of an Easy game's fifteen; 36 led taps in the command stages; 12 arrivals. The estimate he chose on was nine or ten |
+| Every step | Accepted by the engine, and no organ hurt, in **309 of 5,000 seeds** |
+| Why the others do not play it | 4,479: turn 4's crisis is not Passive antibodies. 118: the NK Cell's roll misses. 94: Pathogen X is due during the lesson |
+| A first draft of eight turns | Played too, in 188 of 3,000 seeds; it ran into turn 8's crisis, which on Easy is always a bad one when turn 4's is good |
+| What the player is handed at turn 8, in one seed that plays it | Every organ whole; ten diseases remembered; each antibody store holding 2 to 5 of its 5; a bad crisis, of which turn 7 warned |
+
+- **A fact about Easy the model turned up:** its three crises always fall on turns 4, 8 and 11, two
+  bad and one good, in an order the dice choose. So a lesson of seven turns ends the turn before a
+  bad one whenever its own crisis is the good one.
+- **Not measured: how long it takes a person.** A guess is twelve to fifteen minutes. The newcomer
+  test is what measures it.
+
+### Built: the engine's part (queue Q13)
+
+A new game may be handed the diseases that arrive on its first turns, by name. On a written turn
+exactly those arrive and the draw rolls nothing; the draw that places the last of them removes the
+writing, and the game is an ordinary one from there.
+
+- **Made the queue's way:** in the port and as five edits to the original applied in memory;
+  [`DEVIATIONS.md`](DEVIATIONS.md) #13 says what it changes and, at more length, what it does not.
+- **The corpus is untouched:** it hands no game the writing, and such a game's state and dice are
+  what they were.
+- **The rules version stays 4.1.1,** as ruled. A room cannot hand a game the writing: it makes its
+  game from a message that carries a difficulty and nothing else.
+- **The dice are not the engine's part.** The lesson fixes them with a seed, outside the engine.
+- **Controls added, each fired:** `queue-q13-a-written-turn-rolls-nothing` and
+  `queue-q13-a-written-turn-brings-what-is-written`.
+
+**Not built yet:** the lesson itself, the light that leads the player through it, the way in from
+the title, and the three places the difficulties are explained. The hints and the coach go when it
+arrives.
+
+### Deployed, 2 October 2026, 06:08 IST: every screen in Clay, and Easy
+
+On his word, once the removal had merged: the relay and the app together, from `main` at `98382f2`,
+because the rules version had moved to 4.1.1.
+
+| | Version | Read back |
+|---|---|---|
+| The relay | `20261002-060819-98382f2` | From the server's own file: rules 4.1.1, protocol 5. Nobody was connected; it was restarted and is running; it answers through the server |
+| The app | `20261002-060851-98382f2` | The start check passed before anything was copied; the server serves this build |
+
+| Checked on the live app, from the PC, in a headless phone-sized browser, read only | Found |
+|---|---|
+| The title | The Clay picture; New game, Play together, How to play, Settings, About |
+| The difficulty screen | Easy, Normal, Hard |
+| A game alone on Easy, to the command stage | The Clay board, 43 pictures, none broken and none that is not Clay; seven cells |
+| The word Training, on the screens walked | Not there |
+| The service worker | Active. No error, and no request failed |
+
+- **The relay was deployed twice, a minute apart.** The first was labelled `-dirty`: a folder of
+  generated files left on the PC by the two viewers the removal took out made the working folder
+  count as changed. Nothing in it is part of the relay. The folder was deleted and the relay
+  deployed again so that its label is true. The first copy is one of the three versions the server
+  keeps; it is the same code.
+- **A phone that has the app** takes the new version on its title, by itself, the next time it is
+  opened there.
+- **Not checked on the live server:** playing together, which would mean making a room on it. The
+  audit walked it against a relay on the PC, on this code (§17).

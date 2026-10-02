@@ -53,8 +53,12 @@ printed texts, and in the one engine message that names a difficulty; the key in
 `training`; rules 4.1.1. **The guided game is not built.** His direction is a game scripted for the
 fewest turns that explain everything and then the player's to finish, and on 2 October he ruled
 that the script covers **everything** (plan §18): the nine kinds of invader, the seven cells, the
-residents, memory, a crisis. That needs the engine to accept a written order of cards, an engine
-change to be made the queue's way; the lesson and the change are put to him before they are built.
+residents, memory, a crisis. That needs the engine to accept a written order of cards. **He ruled the
+lesson's seven turns as listed, and the engine's part is built** (plan §19; queue Q13,
+`docs/DEVIATIONS.md` #13): a new game may be handed the diseases that arrive on its first turns, by
+name (`written`), and on such a turn the draw places exactly those and rolls nothing. No rule
+changed and the rules version stays 4.1.1, by ruling. The lesson itself, its dice (a seed, outside
+the engine) and the light that leads the player are not built yet.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
@@ -81,7 +85,10 @@ changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
 same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). Q12, 2 October:
 the gentlest difficulty is called Easy in the engine's one message that names it, rules 4.1.1
-(`docs/DEVIATIONS.md` #12); nothing plays differently. The relay's half
+(`docs/DEVIATIONS.md` #12); nothing plays differently. Q13, the same day, for the guided game: a
+game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still.
+**Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
+every screen in Clay and Easy (plan §19). The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
 actions from anyone who does not hold it, and the body's from anyone but the captain. **What stands
 between here and Phase 4 is Phase 2**, above. **One thing the queue
