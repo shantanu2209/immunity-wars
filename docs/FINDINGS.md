@@ -1034,6 +1034,10 @@ table entries, and nowhere else. There is no card, no rare event, and no emissio
 
 So the row is inert. Nothing reads it, nothing writes it, and no game can contain it.
 
+**CLOSED 2 October 2026 by queue Q15** (`docs/DEVIATIONS.md` #15): Shantanu ruled that Diphtheria
+is a bacterium that releases this toxin, as Tetanus, Cholera and Gas gangrene release theirs, and
+it does. What follows is the record as it stood until then.
+
 **Ruled 8 September 2026 (Kartik, at the library), and now READ by something.** The record is
 kept, and the disease library shows it under the toxins with the exact label "readable, but
 nothing in the game releases it": it has a full record and is readable; what it lacks is a
@@ -5772,6 +5776,10 @@ designer's:
 
 **So 1, 3 and 5 are closed. 2 and 4 are open.**
 
+**2 and 4 ruled the same day** (`docs/LOOK_PLAN.md` §23): the game is right, and the rulebook and
+everything else are brought to it. Organs recovering and how Pathogen X comes are printed, and are
+in How to play. **All five are closed.**
+
 ## 119. The rulebook's Spread phase advances the invaders first and the engine advances them last; and a damaged Spleen does nothing on Hard — OPEN
 
 **Found 2 October 2026**, while the rules for dividing and for the lymph were being printed
@@ -5812,6 +5820,11 @@ right is a ruling. Put to Shantanu the same day.
 
 **Not checked:** the study packet's account of the phase; whether any other numbered list in the
 rulebook claims an order the engine does not keep.
+
+**Ruled 2 October 2026** (`docs/LOOK_PLAN.md` §23): print the game's order, and it is printed, in
+the rulebook's list and its one-line summary; How to play says it in a sentence. A hurt Spleen gets
+no penalty of its own on Hard for now, and the question is on `docs/TODO.md`. **Closed,** but for
+that.
 
 ## 120. One relay test timed out once inside `pnpm verify`, and never again: unexplained
 

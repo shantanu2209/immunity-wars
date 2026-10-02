@@ -1898,7 +1898,7 @@ const CONTROLS: readonly Control[] = [
     id: 'reachability-report-whole',
     why: "FINDINGS #104: the reachability report's currency check sampled two numbers, so when queue Q3 declared Pathogen X's tropism the report went on saying it had none, and the check passed. It compares the whole report now.",
     file: 'docs/CONTENT_REACHABILITY.md',
-    mutate: (t) => t.replace('TROPISM: **107 entries**', 'TROPISM: **106 entries**'),
+    mutate: (t) => t.replace('TROPISM: **108 entries**', 'TROPISM: **107 entries**'),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
     expect: 'is up to date with the content it describes',
   },
@@ -1979,6 +1979,59 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) => t.replace('"n": "Fungus",', '"n": "Fungi",'),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
     expect: 'UI_ — same values, same key order',
+  },
+  {
+    id: 'queue-q15-diphtheria-is-a-bacterium',
+    why: 'Queue Q15 (Shantanu, 2 October 2026): Diphtheria is a bacterium that releases its toxin, where it was a toxin card whose toxin nothing released. With the pack’s Diphtheria card a toxin again, the queue’s test must FAIL saying the card is not a bacterium (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/content/src/rules/deck.json',
+    mutate: (t) =>
+      t.replace(
+        '"dz": "Diphtheria",\n      "type": "bacteria",',
+        '"dz": "Diphtheria",\n      "type": "toxin",',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE DIPHTHERIA CARD IS NOT A BACTERIUM',
+  },
+  {
+    id: 'queue-q15-anthrax-releases-its-toxin',
+    why: 'Queue Q15: Anthrax goes with Diphtheria, a bacterium that releases Anthrax toxin. With Anthrax taken off the pack’s list of toxin makers, the queue’s test must FAIL saying Anthrax did not release its toxin.',
+    file: 'packages/content/src/rules/invaders.json',
+    mutate: (t) =>
+      t.replace(
+        '"Diphtheria": "Diphtheria toxin",\n    "Anthrax": "Anthrax toxin"',
+        '"Diphtheria": "Diphtheria toxin"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'ANTHRAX DID NOT RELEASE ITS TOXIN',
+  },
+  {
+    id: 'queue-q16-the-engine-says-hidden-pathogen',
+    why: 'Queue Q16 (Shantanu, 2 October 2026): the kind that holds two protozoa is named Hidden Pathogen, and the Killer T-Cell’s refusal for want of a target said hidden virus. With the port saying virus again, the queue’s test must FAIL saying the engine still says hidden virus.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace("err('No hidden pathogen in range.')", "err('No hidden virus in range.')"),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS HIDDEN VIRUS',
+  },
+  {
+    id: 'reachability-finds-the-row-nothing-produces',
+    why: 'FINDINGS #23 and queue Q15: the reachability report had to find Diphtheria toxin, the one record nothing produced, without being told. The content has no such record now, so the answer is demanded with Diphtheria taken out of the toxin makers the generator is handed. With the generator counting every FAMILY entry as producible, its test must FAIL saying the report did not find the row nothing produces.',
+    file: 'tests/equivalence/reachability-report.ts',
+    mutate: (t) =>
+      t.replace(
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d)),',
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d) && false),',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
+    expect: 'THE REPORT DID NOT FIND THE ROW NOTHING PRODUCES',
+  },
+  {
+    id: 'ruled-record-is-in-the-pack',
+    why: 'Queue Q15: Anthrax toxin is a record the original interface does not have, and the labels’ pin takes it out before comparing. With the record gone from the pack, the pin must FAIL saying a ruled record is not in the pack, so that the allowance cannot outlive what it allows.',
+    file: 'packages/content/src/diseases/diseases.json',
+    mutate: (t) => t.replace('    "Anthrax toxin": [1, 5, 5, 2, "Rare"],\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED RECORD IS NOT IN THE PACK',
   },
   {
     id: 'queue-q14-the-engine-says-coated',

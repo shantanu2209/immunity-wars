@@ -16,15 +16,12 @@ describe('DERIVED covers exactly the disease records that are not deck cards', (
     expect([...Object.keys(DERIVED)].sort()).toEqual([...notCards].sort());
   });
 
-  it('every parent is a deck card, except the one record nothing produces', () => {
+  it('every parent is a deck card: no record is without one', () => {
+    // Until queue Q15 (2 October 2026) one record had none: Diphtheria toxin, which nothing
+    // released (docs/FINDINGS.md #23). Diphtheria is a bacterium that releases it now.
     for (const [dz, d] of Object.entries(DERIVED)) {
-      if (d.via === 'none') {
-        expect(d.from).toBeNull();
-        expect(dz).toBe('Diphtheria toxin');
-      } else {
-        expect(d.from).not.toBeNull();
-        expect(deck.has(d.from ?? '')).toBe(true);
-      }
+      if (!deck.has(d.from))
+        throw new Error(`A DERIVED RECORD HAS NO PARENT IN THE DECK: ${dz} from ${d.from}`);
     }
   });
 

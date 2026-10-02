@@ -16,9 +16,14 @@
       "via": "toxin"
     },
     "Diphtheria toxin": {
-      "from": null,
+      "from": "Diphtheria",
       "type": "toxin",
-      "via": "none"
+      "via": "toxin"
+    },
+    "Anthrax toxin": {
+      "from": "Anthrax",
+      "type": "toxin",
+      "via": "toxin"
     },
     "Malaria (blood)": {
       "from": "Malaria",

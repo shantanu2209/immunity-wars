@@ -50,11 +50,11 @@
         ]
       },
       {
-        "arrive": ["Diphtheria", "Snake venom"],
+        "arrive": ["Botulism", "Snake venom"],
         "steps": [
           { "id": "t5.strike", "do": "strike", "cell": "macrophage", "disease": "Amoebiasis" },
           { "id": "t5.engulf", "do": "engulf", "disease": "Amoebiasis" },
-          { "id": "t5.antitoxin", "do": "neutralise", "disease": "Diphtheria" },
+          { "id": "t5.antitoxin", "do": "neutralise", "disease": "Botulism" },
           { "id": "t5.antivenom", "do": "antivenom", "disease": "Snake venom" }
         ]
       },

@@ -12,6 +12,7 @@ import { t } from '../i18n';
 import {
   DIFFICULTIES,
   MEMORY_FROM,
+  PATHOGEN_X_IN_TEN,
   cardsATurn,
   differenceRows,
   differenceSummary,
@@ -110,5 +111,16 @@ describe('the table of what changes', () => {
     // "On both, only a vaccine makes the body remember a disease."
     if (MEMORY_FROM.normal === 'beating' || MEMORY_FROM.hard === 'beating')
       throw new Error('THE RESULT SAYS ONLY A VACCINE GIVES MEMORY ON NORMAL AND HARD');
+  });
+
+  it('How to play’s sentence on Pathogen X says only what the table says', () => {
+    // "in {easy} games of 10 on Easy, {normal} on Normal, and every game on Hard"
+    expect(PATHOGEN_X_IN_TEN.hard).toBe(10);
+    expect(PATHOGEN_X_IN_TEN.training).toBeLessThan(PATHOGEN_X_IN_TEN.normal);
+    const said = t('help.s7.x.arrives', {
+      easy: PATHOGEN_X_IN_TEN.training,
+      normal: PATHOGEN_X_IN_TEN.normal,
+    });
+    expect(said).not.toMatch(/[{}⟪⟫]/);
   });
 });

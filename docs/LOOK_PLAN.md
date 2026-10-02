@@ -1781,3 +1781,99 @@ fired. The medical review is regenerated: its heading for the kind moved.
 **Found while printing 3 and 5, and not settled** ([`FINDINGS.md`](FINDINGS.md) #119): the
 rulebook's Spread phase is a numbered list that advances the invaders first, and the engine
 advances them last; and a damaged Spleen does nothing on Hard.
+
+## 23. Ruled 2 October 2026, the seventh set: the game is right, and the rest is brought to it
+
+Put the detail he had asked for, a recommendation where one had been missing, the proposal for
+Diphtheria and the question of the Spread phase's order, he answered:
+
+> *"2. The game behaves correctly. The rulebook and everything else must be updated accordingly 4.
+> Never ask a qeustion without a recommendation. What the rulebook says currently is probably for
+> the physical game and does not work for the digital game. I think how the game does it currently
+> is already correct it just needs to reglect in the rulebook and wherever else required
+> accordingly. 8. Agree with everything. Wherever any doubt in this take your own call for
+> whatever works best. For the spread stuff etc. As well I will go with your recommendation. No
+> additional penalty for now on hars but out it on the to do list to be evaluated later."*
+
+| What | Ruled | Done |
+|---|---|---|
+| A hurt organ recovering (§22, 2) | The game is right; the rulebook and everything else say so | Below |
+| How Pathogen X comes (§22, 4) | The game is right; the rulebook and wherever else say so | Below |
+| Diphtheria (§22, 8) | As proposed, and any doubt is Claude's to settle | Queue Q15 |
+| The order of the Spread phase ([`FINDINGS.md`](FINDINGS.md) #119) | Print the game's order | Below |
+| A hurt Spleen on Hard | No penalty of its own for now; to be weighed later | On [`TODO.md`](TODO.md) |
+
+**Two standing rules come with it.** A question is never put to him without a recommendation.
+And where the app and the printed rulebook differ, the game as it plays is taken to be right,
+because the rulebook was written for the table: the rulebook is brought to the game.
+
+### Built: Diphtheria and Anthrax as bacteria that release their toxins (queue Q15)
+
+| | Was | Is |
+|---|---|---|
+| Diphtheria | A toxin card, class TOX, by the nose, for the heart | A bacterium, class EXB, by the nose, for the lungs. Uncoated for 3 turns, it releases Diphtheria toxin, which heads for the heart |
+| Anthrax | A toxin card, class TOX, by a wound, for the lungs | A bacterium, class EXB, by a wound, for the lungs, still 2 steps a turn. Uncoated for 3 turns, it releases Anthrax toxin, which heads for the heart or the liver |
+| Diphtheria toxin | A record nothing released | Released by Diphtheria |
+| Anthrax toxin | Not in the pack | A record, a class, a target and a card's five sentences |
+| Botulism, Shiga toxin | Toxin cards | The same |
+
+- **Tables, not code.** The engine's rules for a toxin maker are what they were; two more bacteria
+  are on its list. Made the queue's way, in the pack and as eight edits to the original applied in
+  memory ([`DEVIATIONS.md`](DEVIATIONS.md) #15).
+- **The guided game's fifth turn brings Botulism,** where it brought Diphtheria as its toxin. Its
+  seed, 37, still plays the lesson whole.
+- **With the same version of the rules, one word of the engine's** (queue Q16, DEVIATIONS #16): the
+  Killer T-Cell with nothing in range is told of a hidden pathogen.
+- **The disease library** no longer has a record nothing produces, and the pack no longer allows
+  one.
+- **The reachability report's known answer is kept.** It had to find Diphtheria toxin without
+  being told. The content has no such row now, so the test hands the generator the toxin makers
+  without Diphtheria and requires it to find that row, and only that one.
+
+### Built: the printed texts and How to play, brought to the game
+
+**The Spread phase, in the order the game plays it.** The rulebook's numbered list advanced the
+invaders first; the game advances them after everything already in the body has acted.
+
+| | The rulebook now, as the game |
+|---|---|
+| 1 | Bacteria divide |
+| 2 | Hidden pathogens may burst |
+| 3 | Free viruses may hide |
+| 4 | Toxin-makers release toxins: Tetanus, Cholera, Gas gangrene, Diphtheria or Anthrax |
+| 5 | Lodged worms chew |
+| 6 | On Hard only, infections spread along the lymph |
+| 7 | Every invader advances; what reaches an organ attacks it |
+| 8 | Organs recover |
+| 9 | Spent cells recover |
+| 10 | Advance the turn marker |
+
+**Organs recover.** Driven in the engine before it was written: lungs hit on a turn are whole again
+at the end of the next, on Easy and Normal, if their branch stays empty.
+
+- Each organ with no invader on its branch counts a clear turn, and the turn it was hurt counts.
+- On Easy and Normal, an organ below full integrity gets 1 back at 2 clear turns in a row.
+- On Hard it never does. After 2 clear turns in a row its penalty stops, until an invader enters
+  its branch again.
+- **Every organ, the Brain too.** The rulebook's own note says neurons cannot be replaced; the
+  ruling is that the game is right, and the word everywhere is *recovers*, not heals.
+
+**Pathogen X.** The rulebook said what it is and nothing of when it comes. It now says: the card is
+set aside and is never in the deck; at setup a die, rolled again on a 6, puts it in the game on a 1
+on Easy, on 1 to 3 on Normal, always on Hard, which is the game's 2, 6 and 10 in 10; and it breaks
+in once, on a turn from 2 to 8, 2 to 11 or 2 to 16. Those turns are the engine's, and a test
+requires every one of them and no other in 4,000 games.
+
+| Where | What changed |
+|---|---|
+| The rulebook | The Spread phase's list and its one-line summary; organs recovering; Pathogen X at setup and in its own section; two rows more in the table of what changes; what the TOX and EXB classes cover; a note on the printed Diphtheria and Anthrax cards |
+| The study packet | One sentence: an organ recovers |
+| The quick reference | What the TOX class covers |
+| How to play, in the app | The order of the Spread phase in a sentence; organs recovering; how Pathogen X comes |
+| The table of what changes | *A hurt organ recovers* |
+
+**The printed Diphtheria and Anthrax cards cannot change.** The rulebook's note says how to play
+them.
+
+**Not done, and on the list:** whether a hurt Spleen should cost something on Hard, where bacteria
+already always divide.

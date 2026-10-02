@@ -251,12 +251,12 @@ export interface WhyEntry {
   readonly text: string;
 }
 
-/** A disease record that is not a deck card: the parent it arises from (null for the one
- *  record nothing produces), the invader type the engine gives it, and how it arises. */
+/** A disease record that is not a deck card: the parent it arises from, the invader type the
+ *  engine gives it, and how it arises. Every one has a parent (queue Q15, 2 October 2026). */
 export interface DerivedEntry {
-  readonly from: string | null;
+  readonly from: string;
   readonly type: InvaderType;
-  readonly via: 'toxin' | 'stage' | 'rare' | 'none';
+  readonly via: 'toxin' | 'stage' | 'rare';
   readonly rare?: string;
 }
 

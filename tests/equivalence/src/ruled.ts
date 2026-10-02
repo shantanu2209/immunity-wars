@@ -302,6 +302,74 @@ export const RULED: readonly RuledChange[] = [
     find: 'move it onto a virus or a tagged bacterium first.");',
     replace: 'move it onto a virus or a coated bacterium first.");',
   },
+  // Q15, A CHANGE TO THE DECK. Shantanu, 2 October 2026, on FINDINGS #23: "this must be corrected
+  // asap, it should be a bacterium thay releases toxins", and of the proposal that followed,
+  // "Agree with everything". Diphtheria was a toxin card, and the record of its toxin had nothing that
+  // released it. It is a bacterium that releases Diphtheria toxin, as Tetanus, Cholera and Gas
+  // gangrene release theirs. Anthrax is the same case and goes with it: a bacterium, as fast as it
+  // was (the original's own note says it was left off the fast list only because a toxin already
+  // moved at 2), which releases Anthrax toxin. No line of the engine's rules changes: these are its
+  // tables. docs/DEVIATIONS.md #15.
+  {
+    queue: 'Q15',
+    name: 'the Diphtheria card is a bacterium',
+    find: '{dz:"Diphtheria",type:"toxin",lane:"nose"},',
+    replace: '{dz:"Diphtheria",type:"bacteria",lane:"nose"},',
+  },
+  {
+    queue: 'Q15',
+    name: 'the Anthrax card is a bacterium',
+    find: '{dz:"Anthrax",type:"toxin",lane:"wound"},',
+    replace: '{dz:"Anthrax",type:"bacteria",lane:"wound"},',
+  },
+  {
+    queue: 'Q15',
+    name: 'the Diphtheria bacterium heads for the lungs; its toxin, as before, for the heart',
+    find: '"Diphtheria":["heart"],"Mucormycosis"',
+    replace: '"Diphtheria":["lungs"],"Mucormycosis"',
+  },
+  {
+    queue: 'Q15',
+    name: 'Anthrax toxin heads for the heart or the liver',
+    find: '"Diphtheria toxin":["heart"],',
+    replace: '"Diphtheria toxin":["heart"],"Anthrax toxin":["heart","liver"],',
+  },
+  {
+    queue: 'Q15',
+    name: 'both bacteria are met by antibodies of the extracellular bacteria',
+    find: '"Diphtheria":"TOX","Anthrax":"TOX","Botulism":"TOX"',
+    replace: '"Diphtheria":"EXB","Anthrax":"EXB","Botulism":"TOX"',
+  },
+  {
+    queue: 'Q15',
+    name: 'Anthrax toxin is met by antitoxin',
+    find: '"Clostridial toxin":"TOX","Diphtheria toxin":"TOX",',
+    replace: '"Clostridial toxin":"TOX","Diphtheria toxin":"TOX","Anthrax toxin":"TOX",',
+  },
+  {
+    queue: 'Q15',
+    name: 'Anthrax keeps the speed it had as a toxin',
+    find: '  // Anthrax is a toxin and is already speed 2.',
+    replace:
+      '  "Anthrax":2,         // it was a toxin, which moves at 2; as a bacterium it keeps that speed',
+  },
+  {
+    queue: 'Q15',
+    name: 'Diphtheria and Anthrax release their toxins',
+    find: '"Gas gangrene":"Clostridial toxin" };',
+    replace:
+      '"Gas gangrene":"Clostridial toxin", "Diphtheria":"Diphtheria toxin", "Anthrax":"Anthrax toxin" };',
+  },
+  // Q16, AND IT CHANGES NO PLAY. The kind the screens called "Hidden Virus" holds two protozoa, and
+  // is named Hidden Pathogen by ruling (2 October 2026, docs/LOOK_PLAN.md §22). The Killer T-Cell's
+  // refusal for want of a target said "hidden virus", and its target may be one of those protozoa.
+  // docs/DEVIATIONS.md #16.
+  {
+    queue: 'Q16',
+    name: 'the Killer T-Cell with nothing in range is told of a hidden pathogen',
+    find: 'return err("No hidden virus in range.");',
+    replace: 'return err("No hidden pathogen in range.");',
+  },
   // Q13, FOR THE GUIDED GAME, AND IT CHANGES NO GAME THAT IS NOT HANDED IT. Shantanu, 2 October 2026
   // (docs/LOOK_PLAN.md §18 and §19): the guided game scripts everything, so a game may be handed its
   // first turns, the diseases that arrive on each, by name. On a written turn the draw places exactly

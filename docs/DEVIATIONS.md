@@ -729,6 +729,81 @@ was, to the last digit, and only the versions, the commit and the time differ.
 coated and both refusals, in the port and the original as ruled, with the untouched original, which
 still says tagged, as the control. Mutation control `queue-q14-the-engine-says-coated`.
 
+## 15. Diphtheria and Anthrax are bacteria that release their toxins (queue Q15)
+
+**Legacy behaviour.** The deck's Diphtheria and Anthrax cards are toxins: not alive, 2 steps a
+turn, stopped only by antitoxin. The tables also carry a record for *Diphtheria toxin*, with a
+class and a target, that nothing in the game can produce ([`FINDINGS.md`](FINDINGS.md) #23). Three
+bacteria release a toxin if left uncoated for 3 turns: Tetanus, Cholera and Gas gangrene.
+
+**Port behaviour.** Five do. **Diphtheria** is a bacterium of the extracellular class, entering by
+the nose and heading for the lungs; left uncoated for 3 turns it releases Diphtheria toxin, which
+heads for the heart, as that record always said. **Anthrax** is a bacterium of the same class,
+entering by a wound and heading for the lungs as before, at the 2 steps a turn it moved as a
+toxin; left uncoated for 3 turns it releases Anthrax toxin, which heads for the heart or the liver.
+Botulism and Shiga toxin stay toxin cards.
+
+**Why.** Diphtheria is an infection: a bacterium growing in the throat, whose toxin does the
+killing. The card called it a toxin and its text said the toxin "is pre-formed", which is not
+true of diphtheria. Shantanu, 2 October 2026: *"this must be corrected asap, it should be a
+bacterium thay releases toxins"*, and of the proposal that followed, *"Agree with everything.
+Wherever any doubt in this take your own call for whatever works best."* The proposal:
+
+| Put to him | Built |
+|---|---|
+| Diphtheria: a bacterium, extracellular class, by the nose, for the lungs; its toxin, after 3 turns uncoated, for the heart | So |
+| Its card text, which said the toxin is pre-formed, reworded | "Left alone, the bacteria release a TOXIN that attacks the heart", and how to beat it |
+| Anthrax is the same case and goes with it | So. Its toxin is new to the pack |
+| The guided game's fifth turn used Diphtheria as its toxin: Botulism instead | So. Its seed still plays it |
+
+**Taken as Claude's own call, on his word:**
+
+- **Anthrax keeps its speed.** The original's list of fast diseases has a note where Anthrax would
+  be: *"Anthrax is a toxin and is already speed 2."* So it was meant to be fast, and as a
+  bacterium it is on that list at 2.
+- **Where Anthrax toxin heads: the heart or the liver.** The toxin's lethal part acts on the heart
+  and the blood vessels and its other part on the liver; the pack had no record, so one was
+  written, with five short sentences for its card.
+- **Botulism stays a toxin.** What makes a person ill from food is toxin already made in the food,
+  with no infection. **Shiga toxin** is a card named for the toxin itself, and stays.
+
+**It is a change to the deck, not to a rule's working.** No line of the engine's code changed:
+what changed is five of its tables, in the content pack and, as eight ruled edits, in the
+original. The schema, the pack's own test and the library no longer allow a record with no
+parent, since there is none.
+
+**The oracle.** As for #10 to #14. The queue's tests show a Diphtheria and an Anthrax that arrive
+as bacteria of the extracellular class and, left for three spreads, release their toxins, in the
+port and the original as ruled, the two in the same state to the last field; and the untouched
+original, where each is a toxin card and no such toxin appears, as the control.
+
+**What it does to the printed game.** The rulebook, the quick reference and the lists of what each
+class covers say so. **The printed cards for the two cannot change:** the rulebook now carries a
+note telling a player how to play them.
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q15 cases. Mutation controls
+`queue-q15-diphtheria-is-a-bacterium` and `queue-q15-anthrax-releases-its-toxin`.
+
+## 16. The Killer T-Cell is told of a hidden pathogen, not a hidden virus (queue Q16)
+
+**Legacy behaviour.** A snipe with nothing in range is refused with *"No hidden virus in range."*
+
+**Port behaviour.** The same refusal, on the same condition: *"No hidden pathogen in range."*
+**One word.** Nothing plays differently.
+
+**Why.** What the Killer T-Cell snipes is anything hiding inside one of your cells, and two of the
+thirteen diseases of that kind are protozoa, Toxoplasmosis and Chagas disease. The kind's name on
+the screens was "Hidden Virus" and is "Hidden Pathogen" by ruling (2 October 2026,
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §22), and this sentence was held for the next version of the rules,
+which queue Q15 is.
+
+**The oracle.** Made twice, as #12 and #14 were. Test: the Q16 cases, with the untouched original,
+which still says virus, as the control. Mutation control
+`queue-q16-the-engine-says-hidden-pathogen`.
+
+**Decided by:** Shantanu, 2 October 2026.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

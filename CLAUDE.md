@@ -82,8 +82,10 @@ result, and in one line when memory first happens (the same ruling). **Nothing i
 **Nothing waits on Kartik** (ruled 2 October, plan §21): a question the records mark as the
 designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation,
 and he rules. The game, its rules and its science are still Kartik's work, and are said to be.
-**What is ruled and not yet built is listed in `docs/TODO.md`** (first on it: Diphtheria as a
-bacterium that releases its toxin, ruled "asap"). **What was no longer needed is removed**
+**A question is never put to him without a recommendation, and where the app and the printed
+rulebook differ the game as it plays is taken to be right** (ruled the same day, plan §23): the
+rulebook was written for the table, and is brought to the game. **What is ruled and not yet built
+is listed in `docs/TODO.md`.** **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
 is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
 asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the

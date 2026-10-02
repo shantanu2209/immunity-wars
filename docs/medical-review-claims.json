@@ -5,7 +5,7 @@
     "packVersion": "1.4.0",
     "rulesVersion": "4.1.2"
   },
-  "total": 804,
+  "total": 810,
   "parts": [
     {
       "key": "diseases",
@@ -790,7 +790,7 @@
           "id": "DISEASE/Diphtheria/Causes",
           "subject": "Diphtheria",
           "label": "Causes",
-          "text": "A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed. It poisons you directly."
+          "text": "A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart."
         },
         {
           "id": "DISEASE/Diphtheria/Found",
@@ -808,13 +808,13 @@
           "id": "DISEASE/Diphtheria/Treat",
           "subject": "Diphtheria",
           "label": "Treat",
-          "text": "ANTITOXIN. Antibodies. No cell can eat a toxin."
+          "text": "Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it."
         },
         {
           "id": "DISEASE/Diphtheria/CanInfect",
           "subject": "Diphtheria",
           "label": "Can infect (game simplification)",
-          "text": "In the game, this disease can damage only: Heart."
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Mucormycosis/Discovered",
@@ -3827,6 +3827,42 @@
           "subject": "Diphtheria toxin",
           "label": "Can infect (game simplification)",
           "text": "In the game, this disease can damage only: Heart."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Discovered",
+          "subject": "Anthrax toxin",
+          "label": "Discovered",
+          "text": "Three proteins that work together: one carries the other two into your cells."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Causes",
+          "subject": "Anthrax toxin",
+          "label": "Causes",
+          "text": "Not alive. Stops the heart and blood vessels working, and floods the tissues with fluid."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Found",
+          "subject": "Anthrax toxin",
+          "label": "Found",
+          "text": "Released by anthrax bacteria as they multiply."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Prevent",
+          "subject": "Anthrax toxin",
+          "label": "Prevent",
+          "text": "The anthrax vaccine trains you to make antibodies against the carrier protein."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Treat",
+          "subject": "Anthrax toxin",
+          "label": "Treat",
+          "text": "Antitoxin with antibiotics. Killing the bacteria does not remove toxin already made."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/CanInfect",
+          "subject": "Anthrax toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Liver."
         },
         {
           "id": "DISEASE/Shingles/Discovered",

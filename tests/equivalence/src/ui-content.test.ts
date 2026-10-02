@@ -81,13 +81,46 @@ const PROSE_TABLES = new Set(['FACT', 'DZINFO', 'BEAT_BY_TYPE']);
  * - `UI_.hidden.n`: the kind's name was "Hidden Virus", and two of its thirteen diseases are
  *   protozoa (Toxoplasmosis and Chagas disease). The printed rulebook already tells a player to
  *   read the board's "Hidden virus" as "Hidden". Shantanu, 2 October 2026 (docs/LOOK_PLAN.md §22).
+ * - `DZINFO.Diphtheria.c` and `.r`: the card said its toxin "is pre-formed" and that only antitoxin
+ *   helps. Diphtheria is a bacterium that releases its toxin since queue Q15 (the same day,
+ *   docs/DEVIATIONS.md #15), and the card says so.
+ *
+ * AND A RECORD ADDED BY RULING, which legacy does not have at all: `Anthrax toxin`, which the
+ * Anthrax bacterium releases since the same change. It is taken out before its table is compared,
+ * and required to be in the pack and absent from legacy.
  */
 const RULED_VALUES: readonly {
   table: string;
   path: readonly string[];
   legacy: string;
   ruled: string;
-}[] = [{ table: 'UI_', path: ['hidden', 'n'], legacy: 'Hidden Virus', ruled: 'Hidden Pathogen' }];
+}[] = [
+  { table: 'UI_', path: ['hidden', 'n'], legacy: 'Hidden Virus', ruled: 'Hidden Pathogen' },
+  {
+    table: 'DZINFO',
+    path: ['Diphtheria', 'c'],
+    legacy:
+      'A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed — it poisons you directly.',
+    ruled:
+      'A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Diphtheria', 'r'],
+    legacy: 'ANTITOXIN — antibodies. No cell can eat a toxin.',
+    ruled: 'Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it.',
+  },
+];
+const RULED_ADDED: readonly { table: string; key: string }[] = [
+  { table: 'DZINFO', key: 'Anthrax toxin' },
+  { table: 'DZSTATS', key: 'Anthrax toxin' },
+];
+/** A copy of a table without one of its keys. */
+function without(table: unknown, key: string): unknown {
+  const copy = JSON.parse(JSON.stringify(table)) as Record<string, unknown>;
+  delete copy[key];
+  return copy;
+}
 
 /** The value at a path of keys, and a copy of a table with that value replaced. */
 const valueAt = (table: unknown, path: readonly string[]): unknown =>
@@ -106,9 +139,13 @@ describe('C3: extracted UI content matches v2_ui.html (exactly, or up to punctua
     it(`${ours} — same values, same key order${loose ? ', up to punctuation' : ''}`, () => {
       // A value changed by ruling is put back to legacy's for the comparison, so that the rest of
       // its table is still held exactly; the ruled value itself is held by the test below.
+      const kept = RULED_ADDED.filter((r) => r.table === ours).reduce<unknown>(
+        (table, r) => without(table, r.key),
+        at(ours),
+      );
       const asLegacy = RULED_VALUES.filter((r) => r.table === ours).reduce<unknown>(
         (table, r) => withValue(table, r.path, r.legacy),
-        at(ours),
+        kept,
       );
       const mine = loose ? upToPunctuation(asLegacy) : asLegacy;
       const legacy = loose ? upToPunctuation(legacyUiTable(theirs)) : legacyUiTable(theirs);
@@ -124,6 +161,13 @@ describe('C3: extracted UI content matches v2_ui.html (exactly, or up to punctua
           `A RULED LABEL IS NOT WHAT WAS RULED: ${r.table}.${r.path.join('.')} is "${String(ours)}", ruled "${r.ruled}"`,
         );
       expect(valueAt(legacyUiTable(TABLES[r.table] ?? r.table), r.path)).toBe(r.legacy);
+    });
+  }
+
+  for (const r of RULED_ADDED) {
+    it(`${r.table}.${r.key} — added by ruling, and not in legacy`, () => {
+      expect(valueAt(at(r.table), [r.key]), 'A RULED RECORD IS NOT IN THE PACK').toBeDefined();
+      expect(valueAt(legacyUiTable(TABLES[r.table] ?? r.table), [r.key])).toBeUndefined();
     });
   }
 });

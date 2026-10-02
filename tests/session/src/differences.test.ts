@@ -426,11 +426,25 @@ describe('Pathogen X', () => {
     const real = Math.random;
     Math.random = seededDice(7);
     let due = 0;
+    const turns = new Set<number>();
     try {
-      for (let i = 0; i < GAMES; i += 1) if (fresh(d).novelTurn !== undefined) due += 1;
+      for (let i = 0; i < GAMES; i += 1) {
+        const turn = fresh(d).novelTurn;
+        if (turn === undefined) continue;
+        due += 1;
+        turns.add(turn);
+      }
     } finally {
       Math.random = real;
     }
+    // WHEN IT COMES: the rulebook says a turn from 2 to 8 on Easy, 2 to 11 on Normal, 2 to 16 on
+    // Hard, and How to play says the first half of the window. Every one of those turns, and no
+    // other, in 4,000 games.
+    const last = 1 + Math.floor(DIFF[d].turns / 2);
+    expect([...turns].sort((a, b) => a - b)).toEqual(
+      Array.from({ length: last - 1 }, (_, i) => i + 2),
+    );
+    expect(last).toBe({ training: 8, normal: 11, hard: 16 }[d]);
     const said = PATHOGEN_X_IN_TEN[d] / 10;
     // 4,000 games: at 6 in 10 one standard deviation is 0.008, so 0.03 is nearly four of them.
     expect(Math.abs(due / GAMES - said), `${String(due)} of ${String(GAMES)} games`).toBeLessThan(
