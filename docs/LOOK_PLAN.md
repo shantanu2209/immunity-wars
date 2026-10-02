@@ -110,7 +110,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16); the guided game waits on his rulings* |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its lesson and its engine change are put to him before they are built* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -1144,3 +1144,54 @@ finding, and is his to weigh.
 | **Two older measuring scripts**, `tools/perf/measure.ts` and `tools/perf/measure-full.ts`, and the developer page they drive | Written for the screens before Clay. Not run against the new ones, so whether they still measure anything is not known. For L7, where the measurement is re-aimed |
 | **124 names `packages/ui` offers that the app never asks for** | Its own tests use them. Harmless |
 | **Branches already merged**, here and on GitHub | Not part of the repository's files; his to say |
+
+## 18. Ruled 2 October 2026, the second set: the guided game scripts everything
+
+Four things were put to him in the chat that morning, each with what it leads to and a
+recommendation. He answered: *"1. merged 2. B 3. Agreed 4. all good will go with your
+recommendations"*.
+
+| # | What was put | His ruling | What follows |
+|---|---|---|---|
+| 1 | Merge the Easy pull request, then this one, and say when to deploy | **Merged.** No word on deploying | Nothing is deployed. The relay and the app go together when he says |
+| 2 | The guided game: (A) script the loop and then explain each new thing once, the first time it is met; (B) script everything; (C) script the loop and stop. A was recommended | **B: script everything** | Below |
+| 3 | Where the differences between difficulties are explained: on the difficulty screen, each difficulty opening to what changes; on the result of a guided game, one card; in play, one line when memory first happens | **Agreed**, all three | Built with the guided game |
+| 4 | What was looked at and left (§17) | **As recommended**, each | Below |
+
+### What B is, and what it was said to cost when he chose it
+
+- **The lesson shows everything on rails:** the nine kinds of invader, the seven cells, the
+  residents, memory, a crisis. When the rails end, the same Easy game is the player's to finish
+  (§16, row 2).
+- **It needs the engine to accept a written order of cards,** which is an engine change, made and
+  proven the way the queue's were. A real game cannot be made to show it: measured on 800 seeded
+  Easy games, all nine kinds arrive in one game in 1 of 100, and in none by turn 12.
+- **How long it is was an estimate when he chose:** nine or ten turns of an Easy game's fifteen.
+  It is to be measured before anything is built, by playing the lesson against the real engine in
+  a model.
+- **Claude had recommended A,** for being shorter and leaving the engine alone. The choice is his.
+- **Not built by this ruling.** The lesson turn by turn, and the engine change as it would be
+  made, are put to him before either is built.
+
+### What the smaller choices were, and that they stand
+
+Put to him as "taken unless you say otherwise", and not objected to: on a phone that has never
+played, the title's main button is the guided game; Settings gains a way to play it again; leaving
+during the rails starts them again; a game played together is never guided.
+
+### What was left for his word in §17, now ruled
+
+| What | Ruled | Done |
+|---|---|---|
+| The hints and the first-game coach | Removed with the guided game | Not yet: L6 |
+| The two briefs the old art was generated from | Kept | Nothing to do |
+| `tools/legacy/stale/` | **Removed.** "Never edit `tools/legacy`" is lifted for this folder alone | In this change. In the history, last at `f302f79` |
+| The two older measuring scripts and their page | Decided at L7 | Nothing yet |
+| Branches already merged | Deleted, here and on GitHub | Done the same day: 6 on GitHub and 90 on the PC, each wholly inside `main`. Left on GitHub: the two Dependabot branches whose pull requests are open, and `results-data`, which the dashboard's nightly run writes to |
+
+**What the folder's own note said, which he had not been shown.** Its README gave two reasons the
+two builds were kept. One, that they are the only record of the game the old win rates were
+measured on, was already known to be false: those figures are from 6 July and a much simpler game
+([`FINDINGS.md`](FINDINGS.md) #2). The other, that deleting the evidence of a drift is how the
+drift happens again, is met by the history and by the records that name it. He was told both when
+the removal was reported.

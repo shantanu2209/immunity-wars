@@ -187,6 +187,12 @@ Report what you measure, including if it is uncomfortable.
 `tools/legacy/stale/` with a README. Do not delete them; do not build from them; do not cite
 their behaviour as current.
 
+> *Superseded 2 October 2026, by ruling ([`LOOK_PLAN.md`](LOOK_PLAN.md) §18):* they are removed.
+> Of the two reasons their README gave for keeping them, one was already known to be false: the
+> old win rates were not measured on these builds ([`FINDINGS.md`](FINDINGS.md) #2). The other,
+> that deleting evidence of a drift invites the drift again, is met by the repository's history
+> and by this record.
+
 ## 5. Task order
 
 **Task A — Scaffold.** pnpm workspaces, Turborepo, TypeScript strict mode, Vite, Vitest,

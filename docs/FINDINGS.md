@@ -476,7 +476,8 @@ the pre-brain-fix builds were quarantined, so the path no longer resolves.
 **Leave it broken and do not repoint it.** If it were repointed at
 `stale/spectator.html` it would assert against a `branch:4` build — rules that no longer
 exist. It is unusable as a port oracle either way, because it tests DOM rendering with the
-engine faked out. Noted in `tools/legacy/stale/README.md`.
+engine faked out. Noted in the README of `tools/legacy/stale/`. (*That folder was removed on
+2 October 2026, by ruling: `LOOK_PLAN.md` §18. The suite still cannot run.*)
 
 ---
 

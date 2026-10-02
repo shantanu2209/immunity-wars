@@ -414,7 +414,7 @@ Making them per-game is a Phase 2 conversation, not a port decision.
 | NaN stats | Port bug-for-bug. Fix **after** equivalence is proven, as an isolated commit with the corpus re-run showing exactly what changed. Confirmed before Task E that `simulate()` does not read those counters — see [`FINDINGS.md`](FINDINGS.md) #2 |
 | Antigenic variation dead | Port dead. Design conversation with Kartik, logged in [`FINDINGS.md`](FINDINGS.md) #4 |
 | Dead knobs / flags / code | Port as-is, listed in [`FINDINGS.md`](FINDINGS.md) #7, #8, #11 |
-| `spec_test.js` broken | Leave broken, do not repoint. Noted in `tools/legacy/stale/README.md` |
+| `spec_test.js` broken | Leave broken, do not repoint. Noted in the README of `tools/legacy/stale/` (*removed 2 October 2026, by ruling*) |
 | Stale assertion label | Do not edit `tools/legacy`. Name it correctly when porting, with a comment recording that the label was wrong, not the assertion |
 | No balance-sim harness | Accepted. Task E reports "win rate under this specific bot", never "the win rate" — caveat recorded in [`FINDINGS.md`](FINDINGS.md) #6 so it survives to the grant write-up |
 | **Human ground truth** | Shantanu and Kartik win essentially every Normal game and ~7/10 on Hard. Authoritative; **the game is not broken.** Recorded as [`FINDINGS.md`](FINDINGS.md) §0 |
