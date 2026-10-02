@@ -345,6 +345,38 @@ describe('L1: each predicate fires on a violation and stays silent on a near mis
     expect(ok.checked).toBe(1);
   });
 
+  it('memory-on-kill holds an antivenom kill the other way round, on Training too', () => {
+    // Queue Q4: antivenom teaches the body nothing. So on Training, where every other kill of the
+    // last of a disease must record memory, an antivenom kill must NOT.
+    const base = { ap: 4, cells: {}, turn: 3, invaders: [] } as unknown as GameState;
+    const pre = { diseases: ['Snake venom'], memory: {} };
+    const dose: Action = { action: 'antivenom', invaderId: 'x' };
+
+    // Memory appeared across an antivenom kill: the violation.
+    const learned = {
+      ...base,
+      difficulty: 'training',
+      memory: { 'Snake venom': true },
+    } as unknown as GameState;
+    const bad = probe(MEMORY_ON_KILL, learned, dose, { ok: true }, pre);
+    expect(bad.violations).toHaveLength(1);
+    expect(bad.violations[0]).toContain('antivenom is borrowed antibodies');
+
+    // NEAR MISS: nothing recorded, which is the rule. This is the case the invariant reported as a
+    // violation until 2 October 2026, and the nightly run was red on it for two nights.
+    const taughtNothing = { ...base, difficulty: 'training', memory: {} } as unknown as GameState;
+    const ok = probe(MEMORY_ON_KILL, taughtNothing, dose, { ok: true }, pre);
+    expect(ok.violations).toEqual([]);
+    expect(ok.checked).toBe(1);
+
+    // NEAR MISS the other way: the same empty memory after any OTHER kill on Training is still a
+    // violation, so the exception is the antivenom's and nobody else's.
+    const engulf: Action = { action: 'engulf', cell: 'macrophage', invaderId: 'x' };
+    expect(probe(MEMORY_ON_KILL, taughtNothing, engulf, { ok: true }, pre).violations).toHaveLength(
+      1,
+    );
+  });
+
   it('memory-on-kill sees memory being un-set', () => {
     const g = {
       ap: 4,
@@ -686,6 +718,35 @@ describe('L3: an invariant fires against a genuinely wrong engine, not only a sa
       'an engine that grants memory for surviving a disease on Normal went unreported. That ' +
         'is a deliberate design decision of the game, not an implementation detail.',
     ).toBeGreaterThan(0);
+  });
+
+  it('memory recorded by an antivenom kill on Training is caught by memory-on-kill', () => {
+    /**
+     * QUEUE Q4, BROKEN ON PURPOSE: the antivenom clause taken out of the original as ruled, so an
+     * antivenom kill on Training teaches memory again, as it did before the ruling. The game is the
+     * one the 10,000-game tier reaches fourth (seed 810003, Training), where antivenom kills the
+     * last Snake venom on turn 10.
+     *
+     * AND THE SAME GAME ON THE ENGINE AS RULED MUST PASS, with the invariant having had something
+     * to look at: that is the half that was missing. Until 2 October 2026 the invariant reported
+     * the RULED engine on this game, and the nightly run stopped there.
+     */
+    const mutant = loadMutatedLegacy({
+      name: 'an antivenom kill teaches memory on Training',
+      find: 'if(g.difficulty==="training" && by!=="antivenom" && g.memory && !g.memory[iv.disease]',
+      replace: 'if(g.difficulty==="training" && g.memory && !g.memory[iv.disease]',
+    }) as unknown as Engine;
+    const game = { seed: 810003, difficulty: 'training', maxTurns: 18 };
+
+    const wrong = runGame({ ...game, engine: mutant, invariants: [MEMORY_ON_KILL] });
+    expect(
+      wrong.violations.map((v) => v.detail).join(' | '),
+      'an engine whose antivenom teaches memory went unreported',
+    ).toContain('antivenom killed the last Snake venom on Training and recorded memory');
+
+    const ruled = runGame({ ...game, invariants: [MEMORY_ON_KILL] });
+    expect(ruled.violations).toEqual([]);
+    expect(ruled.checks['memory-on-kill'] ?? 0).toBeGreaterThan(0);
   });
 });
 

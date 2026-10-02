@@ -445,7 +445,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'room-ids-across-rooms',
-    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test.",
+    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test. ON SEEDED DICE since 2 October 2026 (FINDINGS #122): on the page's own dice this control was measured to go unnoticed in 63 games of 1,000, and it came back red in a full self-test for that reason and no other.",
     file: 'packages/engine/src/primitives.ts',
     mutate: (t) =>
       t.replace(
@@ -770,7 +770,19 @@ const CONTROLS: readonly Control[] = [
         '      if (answered.get(socket) === false) {\n        continue;\n      }',
       ),
     gate: 'pnpm --filter @immunity-wars/server test',
-    expect: 'is marked away within a few heartbeats',
+    expect: 'the silent member is shown away',
+  },
+  {
+    id: 'node-heartbeat-spares-who-answers',
+    why: 'The other half of the heartbeat, which had no control until 2 October 2026 (FINDINGS #120): a phone that ANSWERS its pings stays. The test read the host’s presence from the host’s own picture of the room, which goes on saying "present" after the host has been ended, so a relay that ended everybody would have been reported as a silent member never shown away. With the answer to a ping no longer recorded, the test must FAIL saying a phone that answers was ended.',
+    file: 'packages/server/src/node.ts',
+    mutate: (t) =>
+      t.replace(
+        "    socket.on('pong', () => {\n      answered.set(socket, true);\n    });",
+        "    socket.on('pong', () => undefined);",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'THE RELAY ENDED A PHONE THAT ANSWERS',
   },
   {
     id: 'bundle-recipe',

@@ -76,7 +76,14 @@ describe('both entries build', { timeout: 180_000 }, () => {
     // Read the instrument that reports coverage: a list that matched nothing would pass the last
     // line. It did, on this test's first run: the pattern knew only the production spelling and
     // read 0 entries, and this line is what said so.
-    expect(stored.length, 'THE WORKER LIST WAS NOT READ').toBeGreaterThan(100);
+    //
+    // IT ASKS WHETHER THE LIST WAS READ, NOT HOW LONG IT IS (FINDINGS #123, 2 October 2026). It
+    // asked for more than 100 entries. When the art before Clay was removed the list fell from 224
+    // to 133, and with the board's 39 pictures left out, which is this test's own control, to 94:
+    // so the control failed on THIS line, saying the list was not read, and never reached the line
+    // it is aimed at. A list that was read has the pages, their scripts and the typefaces in it
+    // whatever else is missing.
+    expect(stored.length, 'THE WORKER LIST WAS NOT READ').toBeGreaterThan(20);
     // What the play screen draws: the board's own picture at every size; each piece, organ and
     // way in at the one size the board and the panels name (`@3x`); and each piece as a card shows
     // it, at every size. Listed from the build, not from memory.

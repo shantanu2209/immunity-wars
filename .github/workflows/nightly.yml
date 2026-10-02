@@ -1,8 +1,14 @@
 # The nightly tier, and the only workflow that publishes.
 #
 # Everything the per-push tier is too slow to run: the full corpus (2,000 games, ~13 min), the
-# property suite at 10,002 games (~14 min), the state-size measurement, and coverage for the trend.
-# The long legs run in parallel, so the tier costs ~15 minutes rather than the sum.
+# property suite at 10,002 games, the state-size measurement, and coverage for the trend. The long
+# legs run in parallel, so the tier costs as long as its longest leg rather than the sum.
+#
+# THE PROPERTY LEG TAKES 28 TO 40 MINUTES WHEN IT FINISHES, AND OFTEN LONGER (measured from this
+# workflow's own runs, 17 September to 2 October 2026; this header said ~14 min). The limit below
+# was 45, so the leg was cancelled at the limit on 9 of those 16 nights and finished on 5: the
+# 10,000-game tier was a tier that usually did not run. The limit is for a job that has hung, not
+# for one that is slow. docs/FINDINGS.md #124.
 #
 # IT RUNS EVERY SUITE, not only the slow ones, and that is load-bearing rather than thorough: THIS
 # WORKFLOW PUBLISHES THE DASHBOARD, which renders one row per manifest suite with a missing result
@@ -55,7 +61,7 @@ jobs:
   suites:
     needs: plan
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}

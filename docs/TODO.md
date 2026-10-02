@@ -9,6 +9,7 @@ When an item is done it leaves this list, and the record of it is wherever the w
 | 2 | **A shape for each disease's piece.** Every bacterium is a rod today, though some diseases are caused by round bacteria | *"Leave for now. Can be in the to-do list but is not urgent/pressing."*, 2 October 2026 | Low | Not started |
 | 3 | **The printed A2 board aligned with the app's board** ([`FINDINGS.md`](FINDINGS.md) #49) | *"Don't know if the board will ever be orinted again so not a priority. If we do we will need to align with the app again."*, 2 October 2026 | Only if the board is printed again | Not started |
 | 4 | **The printed Diphtheria and Anthrax cards,** which are toxin cards where the game has bacteria (queue Q15). The rulebook carries a note on how to play them | Not ruled: it follows from Q15 | Only if the cards are printed again | Not started |
+| 5 | **The newcomer test:** a person who has never seen the game starts and finishes one unaided. Gate 1's one human-tested item, and what stage L6 was to end on | *"We don't need the newcomer test. Defer that indefinitely."*, 2 October 2026 | Deferred indefinitely | Not run. Its protocol, [`NEWCOMER_TEST.md`](NEWCOMER_TEST.md), is written for the screens before the guided game and would need re-aiming first |
 
 **Done since this list began** (2 October 2026): Diphtheria as a bacterium that releases its toxin,
 with Anthrax (queue Q15); the engine's refusal that said "hidden virus" (Q16); how Pathogen X comes,
