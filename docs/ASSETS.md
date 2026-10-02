@@ -38,15 +38,24 @@ For every asset, we need:
 
 ## Asset register
 
+> **REMOVED, 2 October 2026: the 30 files in the rows below, and the 91 files built from them.**
+> Every screen is drawn in Clay since stage L5 (`LOOK_PLAN.md` §15), nothing in the app drew
+> these, and Shantanu ruled that what is no longer needed is removed. Gone with them: the
+> generated originals under `tools/art-pipeline/raw/`, the 90 WebP files and the manifest under
+> `packages/app/public/art/` (everything there that was not `clay/`), and the pipeline that built
+> them. They are in the repository's history, last at commit `86216ff`. **The rows stay,
+> as the record of where that art came from.** Nothing the app ships now was made by an image
+> tool: see the Clay rows below.
+>
 > **Status: COMPLETE for the P2.4 set, 20 Aug 2026.** Every file in `tools/art-pipeline/raw/`
-> has a full row. Any future asset gets its row at generation time, before it lands.
+> had a full row. Any future asset gets its row at generation time, before it lands.
 >
 > **Batch note — the provenance shared by all 29 rows (checked by Shantanu, 20 Aug 2026):**
 > tool **Google Flow**, account tier **Pro**, generated **20 Aug 2026**. Terms as of that
 > date: **Google does not claim ownership of generated content; commercial use is permitted
 > on all tiers.** A dated copy of the terms is saved locally by Shantanu — *path to be
-> filled in here by him*. The machine copy of this row travels in the pipeline manifest
-> (`packages/app/public/art/manifest.json`).
+> filled in here by him*. The machine copy of this row travelled in the pipeline's manifest,
+> beside the built files, until both were removed.
 
 | Asset | Origin | Date | Account/plan | Prompt or source | ToS checked | Redistribution |
 |---|---|---|---|---|---|---|
@@ -97,8 +106,9 @@ terms to check. The rows are grouped, because every file in a group has the same
 | The title's picture, `tools/art-pipeline/clay/renders/scene/title.webp`, and what is built from it under `packages/app/public/art/clay/scene/` (stage L5) | Blender 5.2.1, Cycles: `tools/art-pipeline/clay/hero.py`, which arranges the seven cell models `clay/pieces.py` builds on a disc of the board's colours. Written with Claude under Shantanu’s direction | 1 Oct 2026 | as above | The script itself. A picture of the pieces for a screen that is not the board: the pipeline holds it to its edge and not to contrast, and says so | Not applicable | as above |
 
 **What these are.** A prototype's art, three reference pictures, and the Clay set. **From stage L4
-the play screen's board is drawn with the Clay set**, so those pictures are in the app; every other
-screen still uses the 89 files in the rows above this section, until L5.
+the play screen's board is drawn with the Clay set, and from stage L5 every other screen is.** The
+files in the rows above this section were removed on 2 October 2026; the Clay set is all the art
+the app has.
 
 **Sound has no row, because there is no sound asset.** The kit's ten sounds (stage L3) are lists of
 notes in `packages/ui/src/kit/sound.ts`, played by the browser's own audio engine. No recording,
@@ -116,10 +126,11 @@ not exhaustive — confirm against the repository before concluding.
 - `tools/legacy/public/body.png` — board body illustration
 - `tools/legacy/body_crop.png` — cropped variant
 - `ORGAN_ART` in `tools/legacy/v2_ui.html` — inline organ artwork
-- `packages/app/public/art/` — the P2.4 pipeline's emitted WebP (1×/2×/3×) and
-  `manifest.json`, which carries a machine copy of each asset's register row plus its
-  MEASURED contrast; regenerate with `pnpm art:build` (the gate re-measures — it never
-  trusts this register), controls via `--control`, determinism via `--verify`
+- `packages/app/public/art/clay/` — the Clay pipeline's emitted WebP (1×/2×/3×) and its
+  manifest, which records each picture's origin and its MEASURED contrast; rebuilt with
+  `pnpm art:clay` (the gate re-measures; it never trusts this register), controls via
+  `--control`, and `pnpm art:clay:check` on every `pnpm verify`. *Until 2 October 2026 this
+  folder also held the P2.4 pipeline's output, removed with the art before Clay.*
 - `tools/geometry-from-a2/Immunity_Wars_BOARD_A2.pdf` — the printed A2 board (CLASSIC), located
   20 Aug 2026. Vector, script-generated (the script is lost; the PDF is the surviving record and
   now the input to `tools/geometry-from-a2/`). **Its 16 embedded rasters** — the print's organ
@@ -167,3 +178,15 @@ Google Flow ToS check; this closes the question the register was opened for.**
   foreclosed is third-party redistribution of modified artwork — which nobody has asked for.
 - Revisit only if that becomes a real need, and then **as a question for a lawyer, not for
   us.**
+
+**2 Oct 2026 — the generated art is removed; the decision above is not changed by that.**
+
+- Since stage L5 every picture the app ships is modelled in Blender or drawn in code here, and
+  the 30 generated originals and what was built from them are out of the repository's current
+  files (register, above).
+- So the question the decision of 20 Aug sidestepped, whether anyone holds a copyright in
+  AI-generated images, **no longer applies to anything the app ships.** It still applies to what
+  is kept for reference and never shipped: the icon art in `tools/legacy/`, and the 16 rasters
+  embedded in the printed A2 board.
+- **No licence is declared for content, as before.** Whether to declare one now is Shantanu's to
+  decide, and nothing here decides it.

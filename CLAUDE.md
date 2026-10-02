@@ -50,9 +50,17 @@ in `play/AnatomyView.tsx`). It was built without a proposal round, on his word t
 built before the review would be reviewed with the rest, so **every choice in it is unruled**.
 **Training is called Easy** (2 October, ruled *"Now"*; plan §16, queue Q12): on the screens, in the
 printed texts, and in the one engine message that names a difficulty; the key in the code is still
-`training`; rules 4.1.1. **The guided game is not built:** his direction is a game scripted for the
-fewest turns that explain everything and then the player's to finish, and what it leaves open is
-put to him in the chat. **Nothing is sent to him as a file** (the same ruling).
+`training`; rules 4.1.1. **The guided game is not built.** His direction is a game scripted for the
+fewest turns that explain everything and then the player's to finish, and on 2 October he ruled
+that the script covers **everything** (plan §18): the nine kinds of invader, the seven cells, the
+residents, memory, a crisis. That needs the engine to accept a written order of cards, an engine
+change to be made the queue's way; the lesson and the change are put to him before they are built.
+The differences between difficulties are explained on the difficulty screen, on the guided game's
+result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
+(the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
+is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
+asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach are still in
+the code, switched off, and go with the guided game.
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
@@ -365,9 +373,12 @@ contract Task B was measured against.
   --force`), because turbo cancels queued tasks on first failure and a single red suite is a
   lower bound, not a census.
 
-- **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
-  before the Brain fix. They still contain `branch:4` and contradict the current rules.
-  Reference only — never build from them, never cite their behaviour.
+- **Stale builds: REMOVED, 2 October 2026.** `tools/legacy/stale/` held `index.html` and
+  `spectator.html`, built on 20 July before the Brain fix; they contained `branch:4` and
+  contradicted the rules. Shantanu ruled them removed with the rest of what is no longer needed
+  (`docs/LOOK_PLAN.md` §18), lifting "never edit `tools/legacy`" for that folder alone. They are
+  in the repository's history, last at commit `f302f79`. `tools/legacy/spec_test.js` read one of them
+  and has not run since they were set aside in Phase 1; it still cannot, and is left as it is.
 
 ## Balance targets
 

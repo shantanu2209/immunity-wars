@@ -110,7 +110,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16); the guided game waits on his rulings* |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its lesson and its engine change are put to him before they are built* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -977,6 +977,7 @@ request failed; 53 controls of the audit's own, each firing or passing as it mus
 - **The old pictures are still in the build, and nothing draws them:** the 89 files of the old art
   and the body's old outline. Taking them out retires the open question about their licence and
   0.41 MB of the 2.50 MB a phone stores (measured from the build's own list). It is its own change.
+  *Done, 2 October 2026 (§17).*
 - **The Clay title has no "THE" set small above the name,** as his L1 picture had: the name is one
   entry in the catalogue, and cutting an article off it in code would not survive the Hindi edition.
 - **A lone picture on a new card is small** beside the card: the card view's pictures leave room
@@ -1052,3 +1053,145 @@ every room, and renaming it changes what is stored for no player's benefit. The 
 comments still say Training where they mean that key. The Gate 1 audit
 presses the difficulty by the word a player reads, so it presses Easy now; it was not run again
 for this change, and is before anything is deployed.
+
+## 17. Removed, 2 October 2026: what is no longer needed
+
+Ruled the same day (§16, row 5): *"yes unnecessary things should be removed"*, whatever is wrong,
+redundant, stale or duplicate.
+
+### What went
+
+| What | How much | Why it was no longer needed |
+|---|---|---|
+| The art before Clay, as built | 90 WebP files, the body's outline among them, and their manifest, under `packages/app/public/art/` | Nothing has drawn them since L5. A phone still stored all of them |
+| The pictures it was built from | 30 generated originals and a note beside them, under `tools/art-pipeline/` | Inputs to a pipeline with no output left |
+| The pipeline that built it, and its two viewers | Three scripts and their three commands: `art:build`, `art:showcase`, `art:anatomy` | The Clay pipeline is the only one. The viewers drew the old board and the old outline |
+| The test that held the outline's picture to the content pack's frame | One file, four tests | The outline is drawn in code; `AnatomyView`'s own test holds every placed organ and way in inside it |
+| The picture's name in the content pack | One field of `FRAME` | It named a file that is gone. The frame is a size now, and a test refuses a name put back |
+| Sentences no screen asks for | 22 of the catalogue's 614 | Left behind as screens were replaced. A Hindi translator would have been handed each |
+
+**They are in the repository's history,** last at commit `86216ff`. [`ASSETS.md`](ASSETS.md) keeps
+the rows that say where the old art came from, marked removed.
+
+**What a phone stores to play offline, measured from the build's own list and the files:** 133 files,
+2.09 MB. Before: 224 files, 2.50 MB.
+
+**What it does to the licence question.** Every picture the app ships is now modelled in Blender or
+drawn in code here. The question of 20 August, whether anyone holds a copyright in generated
+images, no longer applies to anything the app ships. It still applies to what is kept for
+reference: the icon art in `tools/legacy/`, and the 16 rasters in the printed A2 board. **No
+licence is declared for content, as before;** whether to declare one is his.
+
+**The Gate 1 audit was not run before this change was committed, and was run after it,** on this
+change and Easy together, alone and with others (2 October, on the PC, against a build pointed at a
+relay on the same machine):
+
+| Read | Found |
+|---|---|
+| Screens in each of the four passes | 82, 82, 82 and 84 |
+| Not reached | **One, in one pass:** a row of actions with several targets, with the page zoomed to 200%. No piece had such a row in that walk or in 14 idle turns. It depends on what the game deals, and has gone unreached this way before; the other three passes reached it |
+| Controls measured, and runs of text | 1,045 and 2,122 |
+| Touch targets, contrast, text that scales, layout, things covering each other | 0 findings in every one |
+| The ways back out of each screen | 38 paths, none wrong |
+| With no network | The app came back and a turn was played: New game, **Easy**, Begin, to the end of a turn, each step done; 45 pictures, none broken |
+| The audit's own controls | 53, each fired. Among them the one this change touched: a Clay picture the build stores is not counted broken with the network cut |
+
+It presses the difficulty by the word a player reads, so this is also the first run in which it
+pressed Easy.
+
+### A check added, so that the sentences do not come back
+
+`packages/app/src/catalogue.test.ts` reads the screens' sources and the catalogue, both ways: every
+sentence is asked for by a screen, and every key a screen asks for by name is there. On its first
+run, before anything was removed, it failed naming the same 22 that a search by hand had found.
+
+- **What it cannot see:** whether a sentence that is asked for is ever reached. The sentences of the
+  hints and the coach are asked for by code that is switched off, and count as used.
+- **Controls, each fired:** on planted sources, a sentence nothing asks for is reported and only
+  that one; a named key, a built key and a grown key each count as used; a key named only in a
+  comment does not. On the real catalogue, `catalogue-no-sentence-left-behind` (a sentence added
+  that nothing asks for: the test fails naming it).
+- **One assertion was taken out and not replaced.** The build test counted more than 80 pieces of
+  old art in the worker's list. "No art that is not Clay is stored" could not be made to fail
+  without such art, and a check that cannot fail is not kept.
+
+### Found on the way: the test cache could not see three files the board's test reads
+
+Writing that test raised a question about the ones already there, and the answer was no
+([`FINDINGS.md`](FINDINGS.md) #112). The board's test in `packages/ui` holds the page to numbers
+written in Blender's two scripts and to the Clay manifest, all outside `packages/ui`, so since
+stage L4 a change to one of them alone would have had `pnpm verify` replay a cached pass. It is the
+same blind spot as #108, found a second time by asking. **Fixed here, because it is the
+instrument:** the three files are declared, the guard requires each in the hash, and control
+`turbo-board-test-reads-hashed` takes one out and sees the guard fail. The catalogue test lives in
+`packages/app` for the same reason. **Nothing finds the next such read;** that is said in the
+finding, and is his to weigh.
+
+### How "not needed" was found, and what the search did not cover
+
+- **Files:** a walk of imports from the app's four pages reaches all 80 source files of
+  `packages/ui`, and from its entries all 13 of `packages/app`. No whole file is dead.
+- **Not searched:** dead code inside a file that is reached; the engine, the content's tables, the
+  room and the relay, which this stage does not touch; the documents, which are records.
+
+### Looked at and left, for his word
+
+| What | Why it was not simply removed |
+|---|---|
+| **The hints and the first-game coach**, switched off since L4 | The guided game replaces them, and may reuse the part that says a thing once, the first time it is met. They go with L6 |
+| **`docs/ART_BRIEF.md` and `docs/ANATOMY_FRAME_BRIEF.md`**, the prompts the old art was generated from | The asset register's rows cite them. They are the record of where removed art came from |
+| **`tools/legacy/stale/`**, two builds from before the Brain fix that contradict the rules | `tools/legacy/` is never edited: that is a hard rule of this repository, and his to lift |
+| **Two older measuring scripts**, `tools/perf/measure.ts` and `tools/perf/measure-full.ts`, and the developer page they drive | Written for the screens before Clay. Not run against the new ones, so whether they still measure anything is not known. For L7, where the measurement is re-aimed |
+| **124 names `packages/ui` offers that the app never asks for** | Its own tests use them. Harmless |
+| **Branches already merged**, here and on GitHub | Not part of the repository's files; his to say |
+
+## 18. Ruled 2 October 2026, the second set: the guided game scripts everything
+
+Four things were put to him in the chat that morning, each with what it leads to and a
+recommendation. He answered: *"1. merged 2. B 3. Agreed 4. all good will go with your
+recommendations"*.
+
+| # | What was put | His ruling | What follows |
+|---|---|---|---|
+| 1 | Merge the Easy pull request, then this one, and say when to deploy | **Merged.** No word on deploying | Nothing is deployed. The relay and the app go together when he says |
+| 2 | The guided game: (A) script the loop and then explain each new thing once, the first time it is met; (B) script everything; (C) script the loop and stop. A was recommended | **B: script everything** | Below |
+| 3 | Where the differences between difficulties are explained: on the difficulty screen, each difficulty opening to what changes; on the result of a guided game, one card; in play, one line when memory first happens | **Agreed**, all three | Built with the guided game |
+| 4 | What was looked at and left (§17) | **As recommended**, each | Below |
+
+### What B is, and what it was said to cost when he chose it
+
+- **The lesson shows everything on rails:** the nine kinds of invader, the seven cells, the
+  residents, memory, a crisis. When the rails end, the same Easy game is the player's to finish
+  (§16, row 2).
+- **It needs the engine to accept a written order of cards,** which is an engine change, made and
+  proven the way the queue's were. A real game cannot be made to show it: measured on 800 seeded
+  Easy games, all nine kinds arrive in one game in 1 of 100, and in none by turn 12.
+- **How long it is was an estimate when he chose:** nine or ten turns of an Easy game's fifteen.
+  It is to be measured before anything is built, by playing the lesson against the real engine in
+  a model.
+- **Claude had recommended A,** for being shorter and leaving the engine alone. The choice is his.
+- **Not built by this ruling.** The lesson turn by turn, and the engine change as it would be
+  made, are put to him before either is built.
+
+### What the smaller choices were, and that they stand
+
+Put to him as "taken unless you say otherwise", and not objected to: on a phone that has never
+played, the title's main button is the guided game; Settings gains a way to play it again; leaving
+during the rails starts them again; a game played together is never guided.
+
+### What was left for his word in §17, now ruled
+
+| What | Ruled | Done |
+|---|---|---|
+| The hints and the first-game coach | Removed with the guided game | Not yet: L6 |
+| The two briefs the old art was generated from | Kept | Nothing to do |
+| `tools/legacy/stale/` | **Removed.** "Never edit `tools/legacy`" is lifted for this folder alone | In this change. In the history, last at `f302f79` |
+| The two older measuring scripts and their page | Decided at L7 | Nothing yet |
+| Branches already merged | Deleted, here and on GitHub | Done the same day: 6 on GitHub and 90 on the PC, each wholly inside `main`. Left on GitHub: the two Dependabot branches whose pull requests are open, and `results-data`, which the dashboard's nightly run writes to |
+
+**What the folder's own note said, which he had not been shown.** Its README gave two reasons the
+two builds were kept. One, that they are the only record of the game the old win rates were
+measured on, was already known to be false: those figures are from 6 July and a much simpler game
+([`FINDINGS.md`](FINDINGS.md) #2). The other, that deleting the evidence of a drift is how the
+drift happens again, is met by the history and by the records that name it. He was told both when
+the removal was reported.

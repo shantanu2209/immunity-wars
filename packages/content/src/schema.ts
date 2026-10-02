@@ -446,17 +446,17 @@ export const RegionsS = z.strictObject({
  * of the same seven organs, beside the board geometry for the same reason `geometry.json`
  * exists: positions that live in a component drift; positions in content are checked.
  *
- * `FRAME` names the keyed frame asset and its 1× pixel size — the space `ANATOMY_POS` is
- * authored in. That size is MEASURED, not judged: `packages/app`'s anatomy-frame test requires
- * it to equal the art manifest's emitted size, so a regenerated frame cannot silently move
- * every organ. The positions are anatomical (brain in the head, liver under the patient's
- * RIGHT ribs — the viewer's left on a front-facing figure — spleen on the patient's left,
- * kidneys lower and posterior, marrow in the pelvis); Kartik checks them against the picture
- * `pnpm art:anatomy` renders.
+ * `FRAME` is the size of the space `ANATOMY_POS` is authored in. It was measured off the body
+ * outline's picture when the positions were placed (5 September 2026). That picture left with the
+ * rest of the art before Clay (2 October 2026); the outline is drawn in code now, in this same
+ * space, and `packages/ui`'s AnatomyView test holds every placed organ and way in inside it. So
+ * `FRAME` names no picture: a name for a file that does not exist is a claim nothing can check.
+ * The positions are anatomical (brain in the head, liver under the patient's RIGHT ribs — the
+ * viewer's left on a front-facing figure — spleen on the patient's left, kidneys lower and
+ * posterior, marrow in the pelvis); Kartik checks them on the planning screen.
  */
 export const AnatomyS = z.strictObject({
   FRAME: z.strictObject({
-    asset: z.string().regex(/^frame\/[a-z][a-z0-9-]*$/, 'a frame asset key is frame/<name>'),
     w: z.number().int().positive(),
     h: z.number().int().positive(),
   }),

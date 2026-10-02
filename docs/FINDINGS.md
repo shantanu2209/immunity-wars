@@ -476,7 +476,8 @@ the pre-brain-fix builds were quarantined, so the path no longer resolves.
 **Leave it broken and do not repoint it.** If it were repointed at
 `stale/spectator.html` it would assert against a `branch:4` build — rules that no longer
 exist. It is unusable as a port oracle either way, because it tests DOM rendering with the
-engine faked out. Noted in `tools/legacy/stale/README.md`.
+engine faked out. Noted in the README of `tools/legacy/stale/`. (*That folder was removed on
+2 October 2026, by ruling: `LOOK_PLAN.md` §18. The suite still cannot run.*)
 
 ---
 
@@ -5531,3 +5532,41 @@ used to measure the row's confirmation as a screen, now records in every pass th
 there; a unit test holds the screen, and control `settings-no-guidance-row-when-off` draws the row
 regardless and sees the test fail. **To decide at L6:** whether the row comes back as the way into
 the guided game.
+
+## 112. The board's test read three files the test cache could not see, since stage L4; and a new test was about to do the same — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, while writing a test that holds the screens' catalogue to the screens
+(`docs/LOOK_PLAN.md` §17). That test reads the sources of two packages. Asking whether the test
+cache would notice a change in the second one led to asking the same of the tests already there.
+
+**It is #108 again, in another package.** Turbo hashes a test task over its own package's files and
+its dependencies' test tasks. `packages/ui/src/board/clay.test.ts`, written at stage L4, holds the
+page to four numbers written in Blender's scripts (`tools/art-pipeline/clay/board.py` and
+`pieces.py`) and to the Clay manifest (`packages/app/public/art/clay/manifest.json`). All three are
+outside `packages/ui`, and none was in its hash. So from 1 October, a script or a manifest changed
+on its own would have had `pnpm verify` replay a cached green for the test that exists to catch
+exactly that.
+
+**What kept it from being noticed.** The control for that test, `clay-page-and-blender-agree`, runs
+the suite directly, not through the cache, so it fired every time. A control that goes round the
+cache says nothing about the cache. And `pnpm art:clay:check`, beside it in `pnpm verify`, is not
+cached and re-measures the manifest itself, so the manifest's own numbers were never unguarded;
+the page's agreement with them was.
+
+**No wrong result is known to have been replayed, and the history was not searched for one.** Run
+directly, with no cache, the test passes today, so the page and Blender agree now. Whether a stale
+green was ever replayed between two runs on the way here is not known.
+
+**Fixed, in the same change, because it is the instrument:**
+
+- The three files are declared in `packages/ui/turbo.json` and listed in `tools/ci/turbo-check.ts`,
+  which requires each in the task's hash. Control `turbo-board-test-reads-hashed`: with one taken
+  out, the guard fails naming it.
+- The new catalogue test lives in `packages/app`, which depends on both packages it reads, so
+  nothing it reads is outside its hash.
+
+**Not fixed, and said plainly: nothing finds the NEXT one.** The guard holds the reads that are
+listed. A test that reads a file outside its package and is not listed is as invisible as these
+were, and this is the second time one was found by a person asking, not by a check. A check for it
+would have to read every test for the paths it opens. Not built; whether it is worth building is
+Shantanu's to say.

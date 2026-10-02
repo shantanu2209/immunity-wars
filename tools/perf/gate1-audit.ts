@@ -2693,7 +2693,7 @@ async function controls(page: Page): Promise<string[]> {
   };
   const artBase = await artWith(null);
   const artMissing = await artWith('/art/control-art-does-not-exist.webp');
-  const artPrecached = served === null ? null : await artWith('/art/path-virus@3x.webp');
+  const artPrecached = served === null ? null : await artWith('/art/clay/board/bcell@3x.webp');
   await page.setOfflineMode(false);
   line('offline fires: a fresh URL fails with the network cut', failed);
   line(

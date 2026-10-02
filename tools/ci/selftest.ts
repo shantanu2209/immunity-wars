@@ -1100,6 +1100,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A PLACE IS NOT ON THE BODY: the way in: wound',
   },
   {
+    id: 'catalogue-no-sentence-left-behind',
+    why: '2 October 2026, when what is no longer needed was removed: 22 sentences of the screens’ catalogue were asked for by no screen, left behind as screens were replaced, and a Hindi translator would have been handed every one. With a sentence added that nothing asks for, the catalogue’s test must FAIL naming it. Its own planted controls hold the other half: a named, a built and a grown key each count as used.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        '  "title.newGame":',
+        '  "title.leftBehind": "Nobody asks for this",\n  "title.newGame":',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/catalogue.test.ts',
+    expect: 'NO SCREEN ASKS FOR: title.leftBehind',
+  },
+  {
     id: 'title-one-main-button',
     why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
@@ -1737,6 +1749,14 @@ const CONTROLS: readonly Control[] = [
     why: "FINDINGS #108: the equivalence suite reads the rulebook document, the reachability report and the original engine from outside its package, and turbo's hash did not see them, so a changed rulebook replayed a cached green for the test that pins the why boxes to it.",
     file: 'tests/equivalence/turbo.json',
     mutate: (t) => t.replace('        "$TURBO_ROOT$/docs/Immunity_Wars_Rulebook_v3_1.docx",\n', ''),
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
+  },
+  {
+    id: 'turbo-board-test-reads-hashed',
+    why: 'FINDINGS #112, the same blind spot as #108, found a second time: the board’s test in packages/ui holds the page to two numbers written in Blender’s scripts and to the Clay manifest, all three outside packages/ui, so a changed script or manifest replayed a cached green on every verify since stage L4. They are declared in packages/ui/turbo.json; with one taken out, the turbo guard must FAIL naming it.',
+    file: 'packages/ui/turbo.json',
+    mutate: (t) => t.replace('        "$TURBO_ROOT$/tools/art-pipeline/clay/board.py",\n', ''),
     gate: 'pnpm turbo:check',
     expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
   },
