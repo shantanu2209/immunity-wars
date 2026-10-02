@@ -16,21 +16,89 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.0). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.1). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
-board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2, the
-measured prototype, is built** (`tools/look-prototype/`: Clay drawn three ways, with a frame timer;
-plan §12) **and measured on the S25** (1 October: all three hold 60 frames a second;
-`docs/LOOK_L2_MEASUREMENT.md`). **Stage L2 is done: he ruled the board is drawn as pictures on the
-page**, Blender's renders moved as page elements, with no GPU canvas and no live 3D; 60 frames a
-second is the target (120 is unmeasured) and the phone's tap test was waived, not met. On this
-measurement Capacitor holds, to be confirmed at L7. `tools/look-prototype/` stays until L4 and is
-then removed with `pixi.js` and `three`. **L3, the kit, is under way** (plan §13, ruled 1 October):
+board modelled in Blender; the plan's §11 has the pictures and what they do not settle). **L2 is done:** a
+prototype drew Clay three ways and was measured on the S25 (`docs/LOOK_L2_MEASUREMENT.md`), and **he
+ruled the board is drawn as pictures on the page**, Blender's renders moved as page elements, with no
+GPU canvas and no live 3D; 60 frames a second is the target (120 is unmeasured) and the phone's tap
+test was waived, not met. On that measurement Capacitor holds, to be confirmed at L7. The prototype
+and its two libraries were removed once the play screen had been measured in its place.
+**Stage L3 is done: he approved the kit on his phone on 1 October** (*"Tested. It's perfect."*; plan
+§13). **Stage L4, the play screen, is done** (plan §14): played on his phone, the Gate 1 audit
+re-aimed at it and clean, and **measured on the S25 at 60 frames a second**
+(`docs/LOOK_L4_MEASUREMENT.md`: 6 frames of 2,324 missed one refresh; measured from `/measure.html`,
+`packages/app/src/measure.tsx`, which `pnpm look:frames` opens on the PC).
+The board is drawn in Clay (`packages/ui/src/board/ClayBoard.tsx`, laid out by `board/clay.ts` and
+`board/clayLayout.ts`, over the same model in `board/Board.tsx`), from a picture
+`tools/art-pipeline/clay/board.py` renders; the frame round it (`play/Frame.tsx`) and everything the
+play screen opens are drawn from the kit, and a redrawn file may name no colour of its own
+(`play/clayColours.test.ts`); the new cards and planning stand on a sheet of the old paper
+(`OldPaper`) until L5. The board plays what changed between one picture and the next, with one sound
+for it (`board/changes.ts`), and the camera moves in on it (`board/camera.ts`: the board drawn
+larger, one transform). **The hints and the first-game coach are removed** (2 October): the guided
+game replaced them. **He ruled the look deployed on the night of 1 October, as a mix of two
+looks** (the play screen in Clay, every other screen as it was), replacing the earlier ruling that
+kept it off the server until L6, **and it was deployed on 2 October** (the app only, from `main` at
+`3299bfe`; the relay untouched); **his review of the whole app follows**, and the
+improvements are his to name then. **L5, the other screens, is built for that review** (plan §15:
+the title from the picture he picked, with `tools/art-pipeline/clay/hero.py`; every other screen
+from `packages/ui/src/screens/chrome.ts`; the new cards and planning in Clay, the body drawn in code
+in `play/AnatomyView.tsx`). It was built without a proposal round, on his word that what could be
+built before the review would be reviewed with the rest, so **every choice in it is unruled**.
+**Training is called Easy** (2 October, ruled *"Now"*; plan §16, queue Q12): on the screens, in the
+printed texts, and in the one engine message that names a difficulty; the key in the code is still
+`training`; rules 4.1.1. **The guided game is not built.** His direction is a game scripted for the
+fewest turns that explain everything and then the player's to finish, and on 2 October he ruled
+that the script covers **everything** (plan §18): the nine kinds of invader, the seven cells, the
+residents, memory, a crisis. That needs the engine to accept a written order of cards. **He ruled the
+lesson's seven turns as listed, and the engine's part is built** (plan §19; queue Q13,
+`docs/DEVIATIONS.md` #13): a new game may be handed the diseases that arrive on its first turns, by
+name (`written`), and on such a turn the draw places exactly those and rolls nothing. No rule
+changed and the rules version stays 4.1.1, by ruling. **The lesson is a file held to the engine**
+(`packages/content/src/guide/lesson.json`): `tests/session/src/lesson.test.ts` plays it whole
+through the session against the real engine, with its seed for dice, and `pnpm guide:seed` finds a
+seed when a change breaks it. Its dice are swapped in round each engine call and nowhere else
+(`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. **The light that leads the
+player is built** (`packages/ui/src/guide/`: `model.ts` says the one sentence and the one control
+for where the player is; `Spotlight.tsx` dims the rest and hands a press to the real control), with
+its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on a phone that has
+never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
+app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
+had no button (`docs/FINDINGS.md` #113). **What changes between the difficulties is
+said in a line of the lesson and in one table** (`packages/ui/src/screens/difficultyFacts.ts`,
+drawn by `DifferencesCard.tsx`), shown on the difficulty screen, on the result of a game on Easy
+and in How to play. He ruled the call Claude's (2 October, plan §20): its first eleven rows are the
+printed rulebook's own table, and four more are what the engine also does by difficulty, so it is
+every place the engine reads the difficulty. `tests/session/src/differences.test.ts` holds each
+row to the engine on each difficulty and counts the engine's reads, so a new one cannot arrive
+unseen. Reading the rulebook against the engine found five places where they differ or the
+rulebook is silent, which are Kartik's (`docs/FINDINGS.md` #118). **With that the guided game is built. Not read by him or
+Kartik:** its sentences. **The newcomer test, L6's gate, is deferred indefinitely** (ruled
+2 October, plan §24; brief v2.1): deferred, not met.
+The differences between difficulties are explained on the difficulty screen, on the guided game's
+result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling).
+**Nothing waits on Kartik** (ruled 2 October, plan §21): a question the records mark as the
+designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation,
+and he rules. The game, its rules and its science are still Kartik's work, and are said to be.
+**A question is never put to him without a recommendation, and where the app and the printed
+rulebook differ the game as it plays is taken to be right** (ruled the same day, plan §23): the
+rulebook was written for the table, and is brought to the game. **What is ruled and not yet built
+is listed in `docs/TODO.md`.** **What was no longer needed is removed**
+(the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
+is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
+asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the
+guided game (2 October): their code, tests and sentences are removed.
+What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
-lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; colours, type and
-components with the kit page come next, then motion and sound, and he approves the kit on his phone.
+lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
+and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`; the play screen is
+drawn from it, and the kit page, `/kit.html`, shows it), held to the contrast bounds by the kit's
+own test; the Clay art is served from `packages/app/public/art/clay/`, and a phone stores what the
+play screen draws and nothing of the kit page or the measuring page; motion, sound
+and touch are `kit/motion.ts` and `kit/sound.ts`, the sounds made in code with no sound file.
 **Modern phones only: the Samsung Galaxy S25 is the one device measured.** One
 codebase and Capacitor stay; the engine, content, protocol, room and relay are not touched by it.
 
@@ -41,7 +109,22 @@ governs the room and the relay. **The engine
 change queue ran on 30 September 2026**, ruled that morning (*"Now"*; `docs/FINDINGS.md` #101): all ten
 changes, the rules version moved to 4.0.0, deployed that evening
 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md), "How it ran"). Q11 followed, ruled the
-same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). The relay's half
+same evening: a venom is never remembered, rules 4.1.0 (`docs/DEVIATIONS.md` #11). Q12, 2 October:
+the gentlest difficulty is called Easy in the engine's one message that names it, rules 4.1.1
+(`docs/DEVIATIONS.md` #12); nothing plays differently. Q13, the same day, for the guided game: a
+game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still. Q14,
+the same day: an antibody coats, on the screens and in the engine's three sentences that said
+tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2. **Deployed 2 October,
+10:30 IST:** the relay and the app together, from `main` at `0b401cd`, with the table of what
+changes (plan §21). Q15 and Q16, the same day (plan §23): Diphtheria and Anthrax are bacteria that
+release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), and the Killer
+T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
+the bands measured again and moved. **Deployed 2 October, 13:09 IST:** the relay and the app
+together, from `main` at `8c7f887` (plan §23).
+**The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
+(plan §20); the lesson was walked on the live app, 69 beats of 69.
+**Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
+every screen in Clay and Easy (plan §19). The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
 actions from anyone who does not hold it, and the body's from anyone but the captain. **What stands
 between here and Phase 4 is Phase 2**, above. **One thing the queue
@@ -51,7 +134,8 @@ the rulebook, quick reference and study packet now say what the app does (`docs/
 **What Phase 2 owed when it paused** (20 September 2026, `docs/PHASE2_PAUSE.md`) is carried by the
 plan: the handset performance pass is measured on the S25, and still settles locked decision #1
 (Capacitor vs React Native) **before Phase 4, which must not start without it**; the newcomer test
-is run on the guided game; Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
+was to be run on the guided game and is **deferred indefinitely by ruling** (2 October; deferred,
+not met); Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
 `docs/PHASE1_BRIEF.md` and `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not
 proven.
 
@@ -312,7 +396,8 @@ contract Task B was measured against.
   bump, none of it in a process that listens (`docs/SECURITY_NOTES.md`). *It lapsed again on
   1 October 2026:* one low advisory, `serialize-javascript` through the service worker's build
   tools, in no process that listens, seen while the look prototype's libraries were installed and
-  not caused by them; recorded in `docs/SECURITY_NOTES.md` and **not yet cleared**. **The old acceptance sentence — "this
+  not caused by them; recorded in `docs/SECURITY_NOTES.md`, and **cleared on 2 October 2026** by a
+  pin, on his word, so `pnpm audit` is clean again. **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
@@ -331,11 +416,18 @@ contract Task B was measured against.
   own line, not the exit code · `pnpm test:manifest-controls` · `rm -rf coverage && pnpm
   coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
   --force`), because turbo cancels queued tasks on first failure and a single red suite is a
-  lower bound, not a census.
+  lower bound, not a census. *2 October 2026:* run for the `serialize-javascript` pin, it found
+  four defects in the checks and none in the pin (`docs/FINDINGS.md` #120, #122 to #124). **The
+  full self-test runs nowhere but here; every push runs only `ci:selftest:inert`.** And **read the
+  nightly run** (`gh run list --workflow Nightly`): its 10,000-game tier had been red or cancelled
+  on 11 of 16 nights, unread.
 
-- **Stale builds.** `tools/legacy/stale/` contains `index.html` and `spectator.html`, built
-  before the Brain fix. They still contain `branch:4` and contradict the current rules.
-  Reference only — never build from them, never cite their behaviour.
+- **Stale builds: REMOVED, 2 October 2026.** `tools/legacy/stale/` held `index.html` and
+  `spectator.html`, built on 20 July before the Brain fix; they contained `branch:4` and
+  contradicted the rules. Shantanu ruled them removed with the rest of what is no longer needed
+  (`docs/LOOK_PLAN.md` §18), lifting "never edit `tools/legacy`" for that folder alone. They are
+  in the repository's history, last at commit `f302f79`. `tools/legacy/spec_test.js` read one of them
+  and has not run since they were set aside in Phase 1; it still cannot, and is left as it is.
 
 ## Balance targets
 

@@ -1,5 +1,12 @@
 # Gate 1 hygiene — the headless audit (6 September 2026)
 
+> **Re-aimed at the Clay play screen, 1 October 2026** (stage L4 of
+> [`LOOK_PLAN.md`](LOOK_PLAN.md)). The board is pictures on the page and no longer an SVG; the coach
+> and the first-encounter hints are off by ruling and are now a check that they do not show; the
+> inspect sheet is tried until it opens. The run on the new screen, and the nine things it found,
+> are in [`LOOK_L4_MEASUREMENT.md`](LOOK_L4_MEASUREMENT.md). What follows is the record as it stood,
+> and describes the screens before the look.
+
 > ⚠️ **Corrected the same evening (FINDINGS #61).** The scaling pass below sets the root font
 > size to 200% by an inline style. That models the browser DEFAULT-FONT-SIZE preference
 > (desktop Chrome, Firefox), which the `rem` sweep made the app follow; it does not model

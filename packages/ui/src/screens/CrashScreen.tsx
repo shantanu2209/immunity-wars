@@ -51,6 +51,10 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { kitButtonStyle } from '../kit/Button';
+import { COLOUR, TOUCH, TYPE } from '../kit/tokens';
+
+import { BODY, CARD, PAGE, TITLE } from './chrome';
 
 /**
  * What the shell found when it read the autosave, and nothing else. Deliberately not a session,
@@ -66,24 +70,16 @@ import { t } from '../i18n';
  */
 export type CrashCase = 'playing' | 'safe' | 'none' | 'unreadable' | 'together';
 
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 48,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 12,
-  padding: '8px 14px',
-};
-const P: CSSProperties = {
-  fontSize: '0.9375rem',
-  lineHeight: 1.45,
-  color: '#2E2A28',
-  margin: '10px 0',
-};
+/**
+ * DRAWN IN CLAY (stage L5), AND WITH AS LITTLE OF THE KIT AS DRAWS IT. This screen is what a player
+ * sees when something has thrown, and the something may be the kit. So its buttons are plain
+ * buttons wearing the kit's button STYLE, a function of two words that cannot throw, and not the
+ * kit's button component, which has state and plays a sound. They do not move when pressed and they
+ * are silent; they work.
+ */
+const BTN: CSSProperties = { ...kitButtonStyle('rest', 'resting'), marginTop: 12 };
+const MAIN: CSSProperties = { ...kitButtonStyle('main', 'resting'), marginTop: 12 };
+const P: CSSProperties = { ...BODY, margin: '0 0 6px' };
 
 export function CrashScreen({
   which,
@@ -108,63 +104,64 @@ export function CrashScreen({
   const [open, setOpen] = useState(false);
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: '48px 16px' }} data-crash={which}>
-      <h1 style={{ fontSize: '1.5rem', color: '#B03A2E' }}>{t('crash.title')}</h1>
+    <div style={{ ...PAGE, paddingTop: 36 }} data-crash={which}>
+      <h1 style={{ ...TITLE, color: COLOUR.coralLit }}>{t('crash.title')}</h1>
 
-      {which === 'playing' ? (
-        <p style={P}>
-          {t('crash.saved')} {t('crash.resumeAt')} {turn ?? 1}
-          {t('help.stop')}
-        </p>
-      ) : null}
-      {which === 'safe' ? <p style={P}>{t('crash.safe')}</p> : null}
-      {which === 'none' ? <p style={P}>{t('crash.none')}</p> : null}
-      {which === 'unreadable' ? <p style={P}>{t('crash.unreadable')}</p> : null}
-      {which === 'together' ? <p style={P}>{t('crash.together')}</p> : null}
+      <div style={CARD}>
+        {which === 'playing' ? (
+          <p style={P}>
+            {t('crash.saved')} {t('crash.resumeAt')} {turn ?? 1}
+            {t('help.stop')}
+          </p>
+        ) : null}
+        {which === 'safe' ? <p style={P}>{t('crash.safe')}</p> : null}
+        {which === 'none' ? <p style={P}>{t('crash.none')}</p> : null}
+        {which === 'unreadable' ? <p style={P}>{t('crash.unreadable')}</p> : null}
+        {which === 'together' ? <p style={P}>{t('crash.together')}</p> : null}
 
-      {which === 'playing' ? (
+        {which === 'playing' ? (
+          <button type="button" style={MAIN} onClick={onContinue} data-crash-continue="">
+            {t('crash.continue')}
+          </button>
+        ) : null}
+        {which === 'unreadable' ? (
+          <button type="button" style={BTN} onClick={onNewGame}>
+            {t('crash.newGame')}
+          </button>
+        ) : null}
+        <button type="button" style={BTN} onClick={onTitle}>
+          {t('crash.title.back')}
+        </button>
+
         <button
-          style={{ ...BTN, borderColor: '#B03A2E' }}
-          onClick={onContinue}
-          data-crash-continue=""
+          type="button"
+          style={{ ...BTN, minHeight: TOUCH.min, ...TYPE.body, color: COLOUR.inkSoft }}
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          data-crash-details=""
         >
-          {t('crash.continue')}
+          {open ? t('crash.hideDetails') : t('crash.showDetails')}
         </button>
-      ) : null}
-      {which === 'unreadable' ? (
-        <button style={BTN} onClick={onNewGame}>
-          {t('crash.newGame')}
-        </button>
-      ) : null}
-      <button style={{ ...BTN, borderColor: '#C48377' }} onClick={onTitle}>
-        {t('crash.title.back')}
-      </button>
-
-      <button
-        style={{ ...BTN, minHeight: 44, fontSize: '0.8125rem', color: '#78665D' }}
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        data-crash-details=""
-      >
-        {open ? t('crash.hideDetails') : t('crash.showDetails')}
-      </button>
-      {open ? (
-        <pre
-          style={{
-            ...P,
-            fontSize: '0.75rem',
-            whiteSpace: 'pre-wrap',
-            overflowX: 'auto',
-            background: '#F6F1EC',
-            border: '1px solid #C9BBAE',
-            borderRadius: 8,
-            padding: 10,
-          }}
-          data-crash-detail-text=""
-        >
-          {detail}
-        </pre>
-      ) : null}
+        {open ? (
+          <pre
+            style={{
+              ...P,
+              fontSize: '0.75rem',
+              whiteSpace: 'pre-wrap',
+              // A stack trace is one unbreakable word after another: each breaks where it must, so
+              // the details are read without scrolling sideways (the audit, stage L5).
+              overflowWrap: 'anywhere',
+              background: COLOUR.creamSunk,
+              borderRadius: 10,
+              padding: 10,
+              margin: '14px 0 0',
+            }}
+            data-crash-detail-text=""
+          >
+            {detail}
+          </pre>
+        ) : null}
+      </div>
     </div>
   );
 }

@@ -19,6 +19,7 @@
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
 import { residentSeat, type Seat } from '@immunity-wars/protocol';
+import type { Lesson } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
   useEffect,
@@ -30,13 +31,9 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 
-import type { ArtMetrics, BoardTap, BoardTarget, InspectInfo } from '../board/Board';
-import {
-  Board,
-  inspectInfoForCell,
-  inspectInfoForInvader,
-  inspectInfoForResident,
-} from '../board/Board';
+import type { BoardTap, BoardTarget, InspectInfo } from '../board/Board';
+import { inspectInfoForCell, inspectInfoForInvader, inspectInfoForResident } from '../board/Board';
+import { ClayBoard } from '../board/ClayBoard';
 import { engineText } from '../engineText';
 import {
   CLONE_TARGET,
@@ -59,6 +56,8 @@ import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
 import { LogPanel } from '../panels/LogPanel';
 import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { kitAudio } from '../kit/sound';
+import { COLOUR } from '../kit/tokens';
 
 import { DialogHost, useDialogQueue } from '../dialogs/DialogQueue';
 import { FLOAT_RESERVE, useNavLayer, useNavState } from '../nav/NavHost';
@@ -69,13 +68,14 @@ import { AntibodyPanel, type FamilyDetail, type FamilyRow } from '../panels/Anti
 import { ApTerms } from '../panels/ApTerms';
 import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
+import { SAY, TONE, pieceArt } from '../panels/onCard';
 import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
-import { CoachLine } from '../panels/CoachLine';
-import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
+  MiddleCard,
   PlayArea,
+  SlotClose,
   SpreadView,
   TabRow,
   Toast,
@@ -83,20 +83,6 @@ import {
   type MiddleTab,
 } from './Frame';
 import { InspectSheet } from '../panels/InspectSheet';
-import { HintLine } from '../panels/HintLine';
-import {
-  ANTIBODY_SUBJECT,
-  RESIDENT_SUBJECT,
-  cellSubject,
-  contact,
-  dismiss,
-  hintKey,
-  hintPlace,
-  initialHintState,
-  invaderSubject,
-  type HintState,
-  type HintSubject,
-} from '../hints/controller';
 import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
 import { CellCard, type CellCardSubject } from '../panels/CellCard';
 import { unavailableText } from '../panels/InspectSheet';
@@ -105,6 +91,17 @@ import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, residentDisplayName } from '../names';
 import { TableView } from '../panels/TableView';
+import {
+  GUIDE_START,
+  afterAccepted,
+  afterTold,
+  guideBeat,
+  lessonOver,
+  progress,
+  type GuidePos,
+  type GuideStage,
+} from '../guide/model';
+import { Spotlight } from '../guide/Spotlight';
 import { TableMessages, sayText, type TableLine } from '../panels/TableMessages';
 import { refusalText } from '../together/model';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
@@ -184,8 +181,7 @@ export interface PlayControlsCtx {
 
 export function PlayScreen({
   session,
-  artMetrics,
-  coach = false,
+  guide = null,
   skipBursts = false,
   onCheck,
   onFrame,
@@ -193,8 +189,6 @@ export function PlayScreen({
   onTransition,
   onGameEnd,
   renderControls,
-  hintsSeen = [],
-  onHintsSeen,
   table = null,
   onAssignSeat = null,
   tableRefusal = null,
@@ -202,6 +196,13 @@ export function PlayScreen({
   onSay = null,
 }: {
   session: PlaySessionLike;
+  /**
+   * THE GUIDED GAME (stage L6, `guide/model.ts`): the lesson this game is, or null for every
+   * other game. The screen leads the player through it one lit control at a time, and tells the
+   * shell when it is over: finished, left by the player, or parted from by the game. The shell
+   * made the game for the lesson and ends its rails; this screen holds neither.
+   */
+  guide?: { lesson: Lesson; onEnd: (how: 'finished' | 'left' | 'parted') => void } | null;
   /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
   onAssignSeat?: ((seat: Seat, to: number) => void) | null;
   /** The room's last refusal of something done at the table (a handover), said in the toast. */
@@ -218,19 +219,6 @@ export function PlayScreen({
    * captain and what to call people (`table.ts`); nothing about the rules.
    */
   table?: Table | null;
-  /**
-   * FIRST-ENCOUNTER HINTS. The seen set is the shell's to persist — this screen decides WHEN a
-   * hint fires and never touches storage, the same division as everywhere else here.
-   * Omitting both props turns hints off entirely, which is what the dev shell does.
-   */
-  hintsSeen?: readonly HintSubject[];
-  onHintsSeen?: (seen: readonly HintSubject[]) => void;
-  artMetrics?: ArtMetrics;
-  /**
-   * THE COACH (piece 8, §20): on for a first game only. The shell decides, because whether this
-   * device has played before is a preference, and the play screen holds no preferences.
-   */
-  coach?: boolean;
   /** Ignore bursts, render authoritative views only — the reconnection rehearsal. */
   skipBursts?: boolean;
   /** Tail-assertion and skip reports; both shells receive them, the dev shell displays them. */
@@ -266,7 +254,9 @@ export function PlayScreen({
   // THE LAYERS ON THE NAVIGATION STACK (docs/for-P2.7.md §9, rulings 8 and 9). Each registers
   // while it shows, in the order it opened, so the one floating close and the back gesture reach
   // the top one: a card opened from the inspect sheet closes back to the sheet.
-  useNavLayer('inspect', inspect !== null, () => setInspect(null));
+  // THE MIDDLE'S VIEWS CLOSE IN THE SLOT (stage L4; `LayerClose` in nav/stack.ts): the close is
+  // drawn where the stage's one button is, beside the three tiles, so it never covers them.
+  useNavLayer('inspect', inspect !== null, () => setInspect(null), 'slot');
   useNavLayer('pathogen-card', card !== null, () => setCard(null));
   useNavLayer('cell-card', cellCard !== null, () => setCellCard(null));
   // THE MIDDLE'S VIEWS (piece 5 of the play screen, docs/for-P2.7.md §19): a row's several targets,
@@ -276,11 +266,16 @@ export function PlayScreen({
   const [targetsFor, setTargetsFor] = useState<DockRow | null>(null);
   const [apSheet, setApSheet] = useState(false);
   const [effectsOpen, setEffectsOpen] = useState(false);
-  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null));
-  useNavLayer('ap-terms', apSheet, () => setApSheet(false));
-  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false));
+  useNavLayer('dock-targets', targetsFor !== null, () => setTargetsFor(null), 'slot');
+  useNavLayer('ap-terms', apSheet, () => setApSheet(false), 'slot');
+  useNavLayer('effects', effectsOpen, () => setEffectsOpen(false), 'slot');
   const [drawer, setDrawer] = useState<DrawerKind | null>(null);
-  useNavLayer('drawer', drawer !== null, () => setDrawer(null));
+  // Two layers for the one piece of state: the messages and the table are drawn over the whole
+  // screen, and their close floats over them; the Cells, Antibodies and Body views open in the
+  // middle, and theirs is in the slot.
+  const overAll = drawer === 'log' || drawer === 'table';
+  useNavLayer('drawer', overAll, () => setDrawer(null));
+  useNavLayer('middle-view', drawer !== null && !overAll, () => setDrawer(null), 'slot');
   // PLANNING'S FILTER: a tap on a place on the figure lists that place's pathogens; a tap anywhere
   // else on the body lists them all (§19).
   const [planFocus, setPlanFocus] = useState<string | null>(null);
@@ -297,9 +292,6 @@ export function PlayScreen({
   const navState = useNavState();
   // THE TOAST: a greyed button's reason, said over the play area and gone (refusals ride it too).
   const [said, setSaid] = useState<string | null>(null);
-  // The coach's own state: the step the player has waved away, and whether they ended it.
-  const [coachDone, setCoachDone] = useState<string | null>(null);
-  const [coachOff, setCoachOff] = useState(false);
 
   // THE ARRIVALS STAGE (piece 6, §20): this draw's cards, the turn's event, and what the spread
   // did, shown as a stage of the frame rather than a dialog over it. Null when no draw is waiting
@@ -429,6 +421,8 @@ export function PlayScreen({
     const g = authView.game;
     if (!endedRef.current && (g['won'] === true || Boolean(g['lost']))) {
       endedRef.current = true;
+      // The game's last sound: the body is clear, or it has fallen.
+      kitAudio.answer(g['won'] === true ? 'win' : 'loss');
       onGameEndRef.current?.(g);
     }
   }, [authView]);
@@ -501,10 +495,35 @@ export function PlayScreen({
     setArrivals({ list: arrivals, crisis: revealCrisis(g, effectChips(authView)) });
   }, [authView]);
 
+  // THE GUIDED GAME's place in its lesson. A ref beside the state, because an action is answered
+  // after the render that sent it, and must move the place the player is at THEN.
+  const [guidePos, setGuidePos] = useState<GuidePos>(GUIDE_START);
+  const guidePosRef = useRef(guidePos);
+  guidePosRef.current = guidePos;
+  const guideRef = useRef(guide);
+  guideRef.current = guide;
+  const moveGuide = (pos: GuidePos): void => {
+    guidePosRef.current = pos;
+    setGuidePos(pos);
+  };
+
   const send = (action: Record<string, unknown>): void => {
     setLastError(null);
+    // The game as it stands BEFORE the action: a step names a disease, and the invader carrying
+    // it may be gone once the action is done.
+    const before = session.getView();
     void session.sendAction(action).then((r) => {
-      if (!r.ok) setLastError(r.error ?? null);
+      if (!r.ok) {
+        setLastError(r.error ?? null);
+        return;
+      }
+      const g = guideRef.current;
+      if (!g) return;
+      const move = afterAccepted(g.lesson, guidePosRef.current, before, action);
+      if (move.kind === 'to') moveGuide(move.pos);
+      // The engine accepted something the lesson did not ask for. The guide never points at a step
+      // the game is no longer at: it lets go.
+      else if (move.kind === 'parted') g.onEnd('parted');
     });
   };
 
@@ -518,7 +537,9 @@ export function PlayScreen({
         game: authView.game,
         playing,
         dialogPending: dialogs.hasPending(),
-        covered: navState.depth > 0,
+        // The lesson's last word is up: the next turn is the player's own, on the page's dice, and
+        // is not drawn until the shell has ended the rails.
+        covered: navState.depth > 0 || (guide !== null && lessonOver(guide.lesson, guidePos)),
         sentForTurn: sentDrawRef.current,
         mayDraw: p.captain,
       })
@@ -527,7 +548,7 @@ export function PlayScreen({
     sentDrawRef.current = Number(authView.game['turn']);
     send({ action: 'draw' });
     // `send` is rebuilt every render and does not decide anything; what decides is listed.
-  }, [authView, playing, dialogs.current, navState.depth, p.captain]);
+  }, [authView, playing, dialogs.current, navState.depth, p.captain, guide, guidePos]);
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
@@ -604,50 +625,7 @@ export function PlayScreen({
     }));
   const selectedFamily = authView.selection.family;
 
-  /**
-   * FIRST CONTACT, derived from what is SELECTED rather than intercepted at each tap handler.
-   *
-   * The two are the same moment — a tap sets the selection — and deriving it means the four tap
-   * paths (the strip, the board, the sheet, deselection) cannot drift apart, and a fifth added
-   * later is covered without anyone remembering. `null` is a real answer: it means the player
-   * moved to something with no hint, which CONSUMES whatever was showing (see the controller).
-   *
-   * Order matters where two are true at once. The sheet is checked first because opening it is
-   * the more recent tap, and most recent wins (ruling 3).
-   */
-  const hintSubject: HintSubject | null = inspect?.invaders?.[0]
-    ? invaderSubject(inspect.invaders[0].type)
-    : selectedCell
-      ? cellSubject(selectedCell)
-      : selectedResident
-        ? RESIDENT_SUBJECT
-        : selectedFamily
-          ? ANTIBODY_SUBJECT
-          : null;
   const turnNow = Number(game['turn'] ?? 0);
-  const hintsRef = useRef<HintState>(initialHintState(hintsSeen, turnNow));
-  const [hintShown, setHintShown] = useState<HintSubject | null>(null);
-  const applyHints = (next: HintState): void => {
-    const grew = next.seen.length !== hintsRef.current.seen.length;
-    hintsRef.current = next;
-    setHintShown(next.shown);
-    // Persisting is the shell's, and only when the set actually grew: a write per render would
-    // be a write per frame of a spread.
-    if (grew) onHintsSeen?.(next.seen);
-  };
-  useEffect(() => {
-    applyHints(contact(hintsRef.current, hintSubject, turnNow));
-    // The inputs are the subject and the turn, deliberately. `applyHints` reads the current
-    // state through a ref rather than closing over it, so re-running on anything else would
-    // re-contact the same subject and cost a spurious consumption.
-  }, [hintSubject, turnNow]);
-  const hintFor = (place: 'pieces' | 'inspect' | 'antibodies'): ReactElement | null =>
-    hintShown && hintPlace(hintShown) === place ? (
-      <HintLine
-        text={t(hintKey(hintShown))}
-        onDismiss={() => applyHints(dismiss(hintsRef.current))}
-      />
-    ) : null;
   const rawDetail = authView.scoped.productionDetail as Record<string, unknown> | null;
   const familyDetail: FamilyDetail | null = rawDetail
     ? {
@@ -950,7 +928,8 @@ export function PlayScreen({
         if (!target || !from) continue;
         const to = target.getBoundingClientRect();
         const ghost = document.createElement('img');
-        ghost.src = `/art/organ-${organ}@3x.webp`;
+        // The organ's coin, the one picture both stages draw (stage L5): it lands on itself.
+        ghost.src = pieceArt(`organ-${organ}`);
         ghost.alt = '';
         ghost.setAttribute('data-flight-ghost', organ);
         Object.assign(ghost.style, {
@@ -1123,47 +1102,27 @@ export function PlayScreen({
       setDrawer(null);
   }, [drawer, mayAntibodies, mayBody]);
 
-  /**
-   * THE COACH'S LINE (piece 8, §20), or null. Everything it reads is already on this render: the
-   * stage the frame is showing, the turn, the points left, whether a piece is selected, and how
-   * many actions `offered.ts` is offering. It is never told a rule of its own.
-   */
-  // ONE TEACHER AT A TIME (§21, the same rule as the prompt line): a first-encounter hint is
-  // about the thing just tapped and is the more specific of the two, so the coach stands down
-  // while one is on screen. Seen on the build: the hint over the top of the board and the coach
-  // over the bottom of it, together covering most of the board.
-  const coachNow =
-    coach && !coachOff && !playing && hintShown === null
-      ? coachStep({
-          stage:
-            dialogs.current !== null
-              ? 'waiting'
-              : arrivalsNow !== null
-                ? 'arrivals'
-                : plan !== null
-                  ? 'planning'
-                  : playing
-                    ? 'spread'
-                    : // Before the draw the player is not being asked for anything either: the app
-                      // is about to send it (§12 ruling 2), and the board is not theirs to act on.
-                      phase === 'command'
-                      ? 'command'
-                      : 'waiting',
-          turn: Number(game['turn'] ?? 0),
-          ap: Number(game['ap'] ?? 0),
-          selected: selectedCell !== null || selectedResident !== null,
-          offeredCount: rows.length + moveButtons.length,
-          canProduce: Object.keys(produceByFamily).length > 0,
-        })
-      : null;
-  const coachLine =
-    coachNow !== null && coachNow.id !== coachDone ? (
-      <CoachLine
-        text={t(coachNow.key)}
-        onNext={() => setCoachDone(coachNow.id)}
-        onStop={() => setCoachOff(true)}
-      />
-    ) : null;
+  // THE GUIDED GAME'S BEAT: what to say and what to light, from where the player is in the lesson
+  // and what this screen is showing. Null for every other game, and for a moment nothing is asked.
+  const guideStage: GuideStage =
+    dialogs.current !== null
+      ? 'waiting'
+      : playing
+        ? 'spread'
+        : arrivalsNow !== null
+          ? 'arrivals'
+          : plan !== null
+            ? 'planning'
+            : phase === 'command'
+              ? 'command'
+              : 'waiting';
+  const beat = guide !== null ? guideBeat(guide.lesson, guidePos, guideStage, authView) : null;
+  // A ring on the board that is the body's own, not a piece's, shows only with nothing in hand.
+  const putDown =
+    beat?.nothingInHand === true && (selectedCell !== null || selectedResident !== null);
+  useEffect(() => {
+    if (putDown) deselect();
+  }, [putDown]);
 
   /** WHAT THE MIDDLE SHOWS (§19), the first that applies: a spread, a view opened over the stage's
    *  own content, then the stage's own content. */
@@ -1171,182 +1130,201 @@ export function PlayScreen({
     if (playing) return <SpreadView store={frameStore} />;
     if (apSheet)
       return (
-        <div data-middle-view="ap">
-          <ApTerms
-            terms={apTerms}
-            // Together, the terms add up to the table's points and the bar shows this player's own,
-            // so the sheet names both, and what every player has left (P3.7).
-            total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
-            yours={p.together && plan === null ? apShown : null}
-            players={p.together && plan === null ? budgetsOf(authView, p) : []}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="ap">
+            <ApTerms
+              terms={apTerms}
+              // Together, the terms add up to the table's points and the bar shows this player's own,
+              // so the sheet names both, and what every player has left (P3.7).
+              total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
+              yours={p.together && plan === null ? apShown : null}
+              players={p.together && plan === null ? budgetsOf(authView, p) : []}
+            />
+          </div>
+        </MiddleCard>
       );
     if (effectsOpen)
       return (
-        <div data-middle-view="effects">
-          <EffectsStrip chips={chips} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="effects">
+            <EffectsStrip chips={chips} />
+          </div>
+        </MiddleCard>
       );
+    // The new cards' notes and planning's list are on the middle's card, as every view is (L5).
     if (arrivalsNow !== null)
-      return <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />;
+      return (
+        <MiddleCard>
+          <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
+        </MiddleCard>
+      );
     if (plan !== null)
       return (
-        <div data-middle-view="planning">
-          {spentCells !== null ? (
-            <div
-              data-planning-cell-facts="1"
-              style={{ fontSize: '0.8125rem', color: '#7A5600', marginBottom: 2 }}
-            >
-              {spentCells}
-            </div>
-          ) : null}
-          <PathogenList
-            model={plan}
-            focus={planFocus}
-            disabled={playing}
-            onPathogenCard={openPathogenCard}
-          />
-          {plan.allocation ? (
-            <AllocationBlock
-              slot={plan.allocation}
-              nameOf={p.nameOf}
-              control={
-                p.together && p.captain && captainPid !== null
-                  ? {
-                      draft,
-                      onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
-                      onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
-                      disabled: playing || confirming,
-                    }
-                  : null
-              }
+        <MiddleCard>
+          <div data-middle-view="planning">
+            {spentCells !== null ? (
+              <div
+                data-planning-cell-facts="1"
+                style={{ ...SAY.quiet, color: TONE.note, marginBottom: 2 }}
+              >
+                {spentCells}
+              </div>
+            ) : null}
+            <PathogenList
+              model={plan}
+              focus={planFocus}
+              disabled={playing}
+              onPathogenCard={openPathogenCard}
             />
-          ) : null}
-        </div>
+            {plan.allocation ? (
+              <AllocationBlock
+                slot={plan.allocation}
+                nameOf={p.nameOf}
+                control={
+                  p.together && p.captain && captainPid !== null
+                    ? {
+                        draft,
+                        onAdd: (pid) => setDraft((d) => addPoint(d, budgets, captainPid, pid)),
+                        onRemove: (pid) => setDraft((d) => removePoint(d, budgets, pid)),
+                        disabled: playing || confirming,
+                      }
+                    : null
+                }
+              />
+            ) : null}
+          </div>
+        </MiddleCard>
       );
     if (inspect)
       return (
-        <InspectSheet
-          hint={hintFor('inspect')}
-          info={inspect}
-          selectedCell={selectedCell}
-          disabled={playing}
-          offers={sheetOffers}
-          onOffer={(id) => {
-            setInspect(null);
-            sendOffer(id);
-          }}
-          onSelectCell={(ck) => {
-            tapCell(ck);
-            setInspect(null);
-          }}
-          selectedResident={selectedResident}
-          onSelectResident={(organ) => {
-            tapResident(organ);
-            setInspect(null);
-          }}
-          // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
-          // for cells as for pathogens.
-          onCellCard={(ck) =>
-            setCellCard({
-              cell: ck,
-              now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
-            })
-          }
-          onCard={(invaderId) => {
-            const iv = inspect.invaders.find((x) => x.id === invaderId);
-            if (!iv || iv.novel) return;
-            const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
-            setCard({
-              disease: iv.disease,
-              type: iv.type,
-              remembered: memory[iv.disease] === true,
-              now: invaderNowLine(iv),
-            });
-          }}
-        />
+        <MiddleCard>
+          <InspectSheet
+            info={inspect}
+            selectedCell={selectedCell}
+            disabled={playing}
+            offers={sheetOffers}
+            onOffer={(id) => {
+              setInspect(null);
+              sendOffer(id);
+            }}
+            onSelectCell={(ck) => {
+              tapCell(ck);
+              setInspect(null);
+            }}
+            selectedResident={selectedResident}
+            onSelectResident={(organ) => {
+              tapResident(organ);
+              setInspect(null);
+            }}
+            // THE CELL CARD's entry point (S25 second pass): the node view is "tell me about this",
+            // for cells as for pathogens.
+            onCellCard={(ck) =>
+              setCellCard({
+                cell: ck,
+                now: unavailableByCell[ck] ? unavailableText(unavailableByCell[ck]) : null,
+              })
+            }
+            onCard={(invaderId) => {
+              const iv = inspect.invaders.find((x) => x.id === invaderId);
+              if (!iv || iv.novel) return;
+              const memory = (game['memory'] as Record<string, unknown> | undefined) ?? {};
+              setCard({
+                disease: iv.disease,
+                type: iv.type,
+                remembered: memory[iv.disease] === true,
+                now: invaderNowLine(iv),
+              });
+            }}
+          />
+        </MiddleCard>
       );
     if (targetsFor !== null)
       return (
-        <div
-          data-middle-view="targets"
-          style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-        >
-          <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#2E2A28' }}>
-            {t(`action.${targetsFor.action}`)}
+        <MiddleCard>
+          <div
+            data-middle-view="targets"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+          >
+            <div style={{ fontSize: '0.9375rem', fontWeight: 900, color: COLOUR.ink }}>
+              {t(`action.${targetsFor.action}`)}
+            </div>
+            <TargetList
+              targets={targetsFor.targets}
+              disabled={playing}
+              onOffer={(id) => {
+                setTargetsFor(null);
+                sendOffer(id);
+              }}
+            />
           </div>
-          <TargetList
-            targets={targetsFor.targets}
-            disabled={playing}
-            onOffer={(id) => {
-              setTargetsFor(null);
-              sendOffer(id);
-            }}
-          />
-        </div>
+        </MiddleCard>
       );
     if (drawer === 'pieces')
       return (
-        <div data-middle-view="cells">
-          <PieceStrip
-            // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
-            // the live server): the Cells view is where a player picks what to move, and another's
-            // piece cannot be moved. Another's piece is still read by tapping it on the board, and
-            // the Table says who plays what.
-            pieces={
-              p.together
-                ? pieces.filter((pc) =>
-                    p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
-                  )
-                : pieces
-            }
-            emptyText={p.together ? t('pieces.noneYours') : null}
-            selectedCell={selectedCell}
-            selectedResident={selectedResident}
-            why={why}
-            disabled={playing}
-            // Picking a piece closes the view and selects it on the board (ruling 3).
-            onSelectCell={(ck) => {
-              tapCell(ck);
-              setDrawer(null);
-            }}
-            onSelectResident={(organ) => {
-              tapResident(organ);
-              setDrawer(null);
-            }}
-            onDeselect={() => {
-              deselect();
-              setDrawer(null);
-            }}
-          />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="cells">
+            <PieceStrip
+              // PLAYED TOGETHER, ONLY YOUR OWN PIECES (ruled 25 September 2026, after the first game on
+              // the live server): the Cells view is where a player picks what to move, and another's
+              // piece cannot be moved. Another's piece is still read by tapping it on the board, and
+              // the Table says who plays what.
+              pieces={
+                p.together
+                  ? pieces.filter((pc) =>
+                      p.seats.mine(pc.kind === 'cell' ? pc.key : residentSeat(pc.key)),
+                    )
+                  : pieces
+              }
+              emptyText={p.together ? t('pieces.noneYours') : null}
+              selectedCell={selectedCell}
+              selectedResident={selectedResident}
+              why={why}
+              disabled={playing}
+              // Picking a piece closes the view and selects it on the board (ruling 3).
+              onSelectCell={(ck) => {
+                tapCell(ck);
+                setDrawer(null);
+              }}
+              onSelectResident={(organ) => {
+                tapResident(organ);
+                setDrawer(null);
+              }}
+              onDeselect={() => {
+                deselect();
+                setDrawer(null);
+              }}
+            />
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'antibodies' && mayAntibodies)
       return (
-        <div data-middle-view="antibodies">
-          <AntibodyPanel
-            rows={familyRows}
-            selectedFamily={selectedFamily}
-            detail={familyDetail}
-            produce={
-              playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
-            }
-            disabled={playing}
-            onSelectFamily={(family) =>
-              session.setSelection({ cell: selectedCell, family, resident: selectedResident })
-            }
-            onProduce={sendOffer}
-            onSay={setSaid}
-          />
-          {hintFor('antibodies')}
-        </div>
+        <MiddleCard>
+          <div data-middle-view="antibodies">
+            <AntibodyPanel
+              rows={familyRows}
+              selectedFamily={selectedFamily}
+              detail={familyDetail}
+              produce={
+                playing ? { offer: null, reason: null } : produceFor(view, selectedFamily, p.seats)
+              }
+              disabled={playing}
+              onSelectFamily={(family) =>
+                session.setSelection({ cell: selectedCell, family, resident: selectedResident })
+              }
+              onProduce={sendOffer}
+              onSay={setSaid}
+            />
+          </div>
+        </MiddleCard>
       );
     if (drawer === 'body' && mayBody)
       return (
-        <div data-middle-view="body">
-          <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
-        </div>
+        <MiddleCard>
+          <div data-middle-view="body">
+            <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
+          </div>
+        </MiddleCard>
       );
     return (
       <ActionsView
@@ -1364,6 +1342,15 @@ export function PlayScreen({
               ? residentDisplayName(selectedResident)
               : null
         }
+        // The piece in hand, as the board draws it: a resident is one of the body's own macrophages.
+        piece={
+          selectedCell || selectedResident
+            ? {
+                src: `/art/clay/board/${selectedCell ?? 'macrophage'}@3x.webp`,
+                base: '/art/clay/board/base@3x.webp',
+              }
+            : null
+        }
         onCard={
           selectedCell
             ? () =>
@@ -1376,9 +1363,7 @@ export function PlayScreen({
             : null
         }
         cardLabel={selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null}
-        // ONE INSTRUCTION AT A TIME (§21 C): the coach and this line were saying the same
-        // thing, in 90px of a 126px middle.
-        prompt={coachLine !== null ? null : message}
+        prompt={message}
         promptTone={messageTone}
         undo={authView.undo}
         inCommand={phase === 'command'}
@@ -1418,19 +1403,28 @@ export function PlayScreen({
         display: 'flex',
         flexDirection: 'column',
         gap: 6,
-        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must. The 16px is
-        // the body's margin, above and below.
-        height: 'calc(100dvh - 16px)',
+        // THE TABLE (stage L4): the frame is drawn on the kit's dark ground, out to the screen's
+        // edges. The page has a margin of 8px all round, in the old paper; the frame is pulled out
+        // over it and given the same 8px back as its own padding, so nothing inside it moves.
+        background: COLOUR.table,
+        color: COLOUR.onDark,
+        margin: -8,
+        padding: 8,
+        boxSizing: 'border-box',
+        // ONE SCREEN TALL (§19): the page never scrolls; the middle does, when it must.
+        height: '100dvh',
         // While the floating close shows, NavHost appends its spacer below the page. The frame keeps
         // its size (nothing moves, §12 ruling 1) and lets the spacer overlap its own bottom, where
         // the hidden advance button keeps its slot, so the page does not scroll by the spacer.
-        marginBottom: navState.floating ? `calc(-1 * ${FLOAT_RESERVE})` : undefined,
+        marginBottom: navState.floating ? `calc(-8px - ${FLOAT_RESERVE})` : -8,
       }}
     >
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
         apText={`${t('commandBar.ap')} ${String(apShown)}`}
+        // The pips: what is left, of what the engine says this turn began with.
+        ap={{ have: apShown, of: authView.queries.ap.total }}
         apAvailable={apTerms.length > 0 && !playing}
         onAp={() => {
           closeMiddle();
@@ -1463,7 +1457,6 @@ export function PlayScreen({
         }
       />
       <PlayArea
-        coach={coachLine}
         stage={
           arrivalsNow !== null
             ? 'arrivals'
@@ -1515,39 +1508,52 @@ export function PlayScreen({
             selectedCell={selectedCell}
             selectedResident={selectedResident}
             readyTurn={authView.queries.readyTurn}
-            artMetrics={artMetrics}
             targets={boardTargets}
+            // While a spread plays the player is watching, and the camera moves in on each beat.
+            watching={playing}
             onTap={playing ? undefined : handleBoardTap}
           />
-          {hintFor('pieces') !== null ? (
-            // A piece's first-encounter hint, over the top of the board (piece 3, §15).
-            <div
-              data-hint-over-board=""
-              style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 3 }}
-            >
-              {hintFor('pieces')}
-            </div>
-          ) : null}
         </div>
         {toastText !== null ? <Toast text={toastText} /> : null}
       </PlayArea>
       <div
         data-middle=""
-        style={{ flex: '1 1 0', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
+        // Its floor is in rem, so it grows with the text it has to hold; the play area shrinks to
+        // leave it (Frame.tsx).
+        style={{ flex: '1 0 5rem', minHeight: 0, overflowY: 'auto', overflowWrap: 'anywhere' }}
       >
         {middle()}
       </div>
       <div
         data-bottom=""
-        style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', gap: 6 }}
+        // ONE ROW (stage L4, as in the picture picked at L1): the three views' tiles and, beside
+        // them, the stage's one button. It wraps when the words are too wide for one row, as they
+        // are with the phone's text at 200%.
+        style={{
+          flex: '0 0 auto',
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'stretch',
+          gap: 6,
+          paddingBottom: 6,
+        }}
       >
-        {plan === null && arrivalsNow === null ? (
+        {/* Not while a spread plays: the tiles could not be pressed then, and the one button's
+            words ("Tap to continue") want the whole row. */}
+        {plan === null && arrivalsNow === null && !playing ? (
           <TabRow active={tabOpen} disabled={playing} shown={drawersFor(p.seats)} onTab={openTab} />
         ) : null}
         {/* THE CAPTAIN'S STEPS (P3.7 piece B): beginning command, the allocation and ending the turn
             are the captain's alone, as the draw is (above); the engine refuses them from anyone else.
             Every other player's button says who they are waiting for. */}
+        {navState.slotClose !== null ? (
+          <SlotClose label={navState.slotClose.label} onClose={navState.slotClose.close} />
+        ) : null}
         <AdvanceButton
+          // While a view's close has the slot, the stage's own button is not there at all. When it
+          // comes back it is a new button, and its guard counts no tap for half a second: a second
+          // tap meant for Close cannot end the turn.
+          gone={navState.slotClose !== null}
           keyName={
             playing
               ? 'spread'
@@ -1619,12 +1625,13 @@ export function PlayScreen({
                   style={{
                     minHeight: 44,
                     padding: '6px 8px',
+                    fontFamily: 'inherit',
                     fontSize: '0.8125rem',
-                    fontWeight: 700,
-                    color: '#2E2A28',
+                    fontWeight: 800,
+                    color: COLOUR.ink,
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: on ? '2px solid #B03A2E' : '2px solid transparent',
+                    borderBottom: on ? `3px solid ${COLOUR.coralEdge}` : '3px solid transparent',
                     cursor: 'pointer',
                   }}
                 >
@@ -1658,6 +1665,22 @@ export function PlayScreen({
           data-tap-advance="1"
           style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
           onPointerDown={advanceFrame}
+        />
+      ) : null}
+      {guide !== null && beat !== null ? (
+        <Spotlight
+          beatId={beat.id}
+          text={t(beat.sayKey)}
+          stops={beat.stops}
+          tell={beat.tell}
+          last={beat.last}
+          watch={guideStage === 'spread'}
+          count={t('guide.count', progress(guide.lesson, guidePos))}
+          onNext={() => {
+            if (beat.last) guide.onEnd('finished');
+            else moveGuide(afterTold(guidePos));
+          }}
+          onLeave={() => guide.onEnd('left')}
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />
@@ -1695,7 +1718,7 @@ function LiveControls({
   );
 }
 
-type BoardProps = Parameters<typeof Board>[0];
+type BoardProps = Parameters<typeof ClayBoard>[0];
 
 function LiveBoard({
   store,
@@ -1703,7 +1726,7 @@ function LiveBoard({
   ...rest
 }: Omit<BoardProps, 'view'> & { store: FrameStore; game: ViewState }): ReactElement {
   const frame = useFrame(store);
-  return <Board view={frame ? frame.view : game} {...rest} />;
+  return <ClayBoard view={frame ? frame.view : game} {...rest} />;
 }
 
 function LiveLog({ store, game }: { store: FrameStore; game: ViewState }): ReactElement {

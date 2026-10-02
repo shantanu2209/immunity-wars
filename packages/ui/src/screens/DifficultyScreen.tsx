@@ -2,24 +2,33 @@
  * DIFFICULTY SELECT (docs/APP_FLOW.md §4). Choose first; when a save exists, the
  * overwrite confirm appears AFTER the choice and BEFORE the old game is destroyed.
  * Phase 3's mode select inserts between Title and this screen.
+ *
+ * DRAWN IN CLAY (stage L5): three rows on the table, each a resting button with its name and what
+ * it is. On a device that has never started a game the one recommended is mint, the kit's colour
+ * for what is allowed, and says in words that it is recommended: the colour repeats the words and
+ * does not replace them.
+ *
+ * WHAT CHANGES BETWEEN THEM (stage L6, ruled 2 October 2026) is one tap away, under the three rows:
+ * `DifferencesCard.tsx`. The rows are for choosing, and a newcomer chooses by them.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
+import { KitButton } from '../kit/Button';
+import { COLOUR, TYPE } from '../kit/tokens';
+import { useNavLayer } from '../nav/NavHost';
 
-const BTN: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 56,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 12,
+import { BODY, DIALOG, LEAD, PAGE, SCRIM, STACK, TITLE } from './chrome';
+import { DifferencesCard } from './DifferencesCard';
+
+/** A row of three lines: the name, a note, what it is. */
+const CHOICE: CSSProperties = {
+  ...STACK,
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 2,
   textAlign: 'left',
-  padding: '8px 14px',
+  padding: '0.7em 1em',
 };
 
 const DIFFS = ['training', 'normal', 'hard'] as const;
@@ -50,8 +59,8 @@ export function DifficultyScreen({
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: '0 auto', padding: `32px 16px ${FLOAT_RESERVE}` }}>
-      <h2 style={{ fontSize: '1.375rem', color: '#2E2A28' }}>{t('difficulty.heading')}</h2>
+    <div style={PAGE}>
+      <h1 style={TITLE}>{t('difficulty.heading')}</h1>
       {/*
         THE GOAL, said once before the game starts (Shantanu's ruling, 9 September 2026).
         Ruled here rather than as a first-encounter hint, and the distinction is the point: this
@@ -62,63 +71,44 @@ export function DifficultyScreen({
         a newcomer who loses on turn 8 was never told at all. This is the moment the
         misconception forms, which is earlier than any contact.
       */}
-      <p style={{ fontSize: '0.8125rem', lineHeight: 1.45, color: '#78665D', margin: '4px 0 0' }}>
-        {t('difficulty.goal')}
-      </p>
-      {DIFFS.map((d) => (
-        <button
-          key={d}
-          style={d === 'training' ? { ...BTN, borderColor: '#1F6F8B' } : BTN}
-          onClick={() => pick(d)}
-          data-new-game={d}
-        >
-          <span style={{ fontWeight: 700 }}>{t(`difficulty.${d}`)}</span>
-          {d === 'training' && firstGame ? (
-            // The interface carries the first-game guidance, not the newcomer-test script —
-            // Shantanu's ruling, 30 Aug 2026 (docs/NEWCOMER_TEST.md): whether a newcomer can
-            // tell where to start is part of what the test measures.
-            <span
-              style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#1F6F8B' }}
-            >
-              {t('difficulty.trainingRecommended')}
-            </span>
-          ) : null}
-          <span style={{ display: 'block', fontSize: '0.8125rem', color: '#78665D' }}>
-            {t(`difficulty.${d}Desc`)}
-          </span>
-        </button>
-      ))}
-      {pendingDiff !== null ? (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(46,42,40,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 20,
-          }}
-        >
-          <div
-            style={{
-              width: 'min(88vw, 360px)',
-              background: '#FFFDF9',
-              border: '2px solid #B03A2E',
-              borderRadius: 12,
-              padding: 16,
-            }}
+      <p style={LEAD}>{t('difficulty.goal')}</p>
+      {DIFFS.map((d) => {
+        const recommended = d === 'training' && firstGame;
+        const quiet = recommended ? COLOUR.mintInk : COLOUR.inkSoft;
+        return (
+          <KitButton
+            key={d}
+            kind={recommended ? 'go' : 'rest'}
+            style={CHOICE}
+            onPress={() => pick(d)}
+            data-new-game={d}
           >
-            <p style={{ fontSize: '0.9375rem' }}>{t('difficulty.overwriteWarning')}</p>
-            <button
-              style={{ ...BTN, textAlign: 'center', borderColor: '#B03A2E' }}
-              onClick={() => onStart(pendingDiff)}
-            >
+            <span style={{ ...TYPE.action, fontSize: '1.0625rem', fontWeight: 900 }}>
+              {t(`difficulty.${d}`)}
+            </span>
+            {recommended ? (
+              // The interface carries the first-game guidance, not the newcomer-test script —
+              // Shantanu's ruling, 30 Aug 2026 (docs/NEWCOMER_TEST.md): whether a newcomer can
+              // tell where to start is part of what the test measures.
+              <span style={{ ...TYPE.body, fontWeight: 900 }}>
+                {t('difficulty.trainingRecommended')}
+              </span>
+            ) : null}
+            <span style={{ ...TYPE.body, color: quiet }}>{t(`difficulty.${d}Desc`)}</span>
+          </KitButton>
+        );
+      })}
+      <DifferencesCard toggleKey="differences.toggle" marginTop={6} />
+      {pendingDiff !== null ? (
+        <div style={SCRIM}>
+          <div style={DIALOG}>
+            <p style={{ ...BODY, marginTop: 0 }}>{t('difficulty.overwriteWarning')}</p>
+            <KitButton kind="main" style={STACK} onPress={() => onStart(pendingDiff)}>
               {t('difficulty.overwriteConfirm')}
-            </button>
-            <button style={{ ...BTN, textAlign: 'center' }} onClick={() => setPendingDiff(null)}>
+            </KitButton>
+            <KitButton style={STACK} onPress={() => setPendingDiff(null)}>
               {t('difficulty.overwriteCancel')}
-            </button>
+            </KitButton>
           </div>
         </div>
       ) : null}

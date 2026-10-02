@@ -11,8 +11,8 @@
  * for the existing pathogen card, which opens over the index so the index keeps its place.
  *
  * The records that are not deck cards (the pack's DERIVED table) sit indented under the parent
- * they arise from; the one record nothing produces is labelled as readable but never produced
- * (Kartik's ruling; FINDINGS #23). Pathogen X has no entry, and the index says so in one line
+ * they arise from. Every one has a parent: the one that had none, Diphtheria toxin, is released
+ * by the Diphtheria bacterium since queue Q15 (FINDINGS #23). Pathogen X has no entry, and the index says so in one line
  * (Shantanu's ruling: it teaches the mechanic in passing, and a player who counts will wonder).
  *
  * The rulebook's fifteen "why it works this way" boxes are their own section: Kartik's text,
@@ -43,52 +43,70 @@ import {
 } from '@immunity-wars/content';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
+import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR, RADIUS, SHADOW, TOUCH, TYPE } from '../kit/tokens';
 import { typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
+
+import { BODY as P, CARD, FIELD, ITEM, LEAD, PAGE, ROW as ROW_BTN, SECTION, TITLE } from './chrome';
 import type { HelpSectionKey } from './HelpScreen';
-import { BODY as P, ITEM, PAGE, ROW_BTN, TITLE } from './chrome';
 
 export type LibraryView =
   { kind: 'index' } | { kind: 'card'; disease: string } | { kind: 'why'; entry: string | null };
 
+/**
+ * A way to jump down the page: a well pressed into the table, as the play screen's tiles are. It
+ * goes somewhere on this page and opens nothing, so it is not a standing button.
+ */
 const CHIP: CSSProperties = {
-  minHeight: 44,
-  fontSize: '0.8125rem',
-  borderRadius: 22,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
+  minHeight: TOUCH.min,
+  padding: '0.3em 0.9em',
+  border: 0,
+  borderRadius: RADIUS.pill,
+  background: COLOUR.well,
+  boxShadow: SHADOW.sunk,
+  color: COLOUR.onDark,
+  fontFamily: TYPE.family,
+  ...TYPE.body,
+  fontWeight: 800,
   cursor: 'pointer',
-  padding: '6px 12px',
 };
+/** A disease's row: its picture, its name, and its antigen class pushed to the end. */
 const ROW: CSSProperties = {
   ...ROW_BTN,
   marginTop: 6,
-  display: 'flex',
+  gap: 10,
+  padding: '0.3em 0.8em',
+  // At 200% page zoom a row is 164 px: the class goes under the name, and a long name may break,
+  // or the row is wider than the page (the audit's finding on this screen's first run in Clay).
   flexWrap: 'wrap',
-  alignItems: 'center',
-  gap: 8,
 };
-const MUTED: CSSProperties = { fontSize: '0.8125rem', color: '#78665D' };
-const INPUT: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 44,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  padding: '8px 12px',
-  boxSizing: 'border-box',
-  marginTop: 12,
-};
+const MUTED: CSSProperties = { ...LEAD, margin: 0 };
+const INPUT: CSSProperties = { ...FIELD, marginTop: 12 };
+
+/** The Clay piece that stands for a disease on the board, small, beside its name. */
+function RowArt({ disease, type }: { disease: string; type: string }): ReactElement {
+  const { piece } = pieceFor(type, classOf(disease, false), false);
+  return (
+    <img
+      alt=""
+      aria-hidden="true"
+      loading="lazy"
+      // As a card shows it, at an angle: the board's own picture is mostly its shadow at this size.
+      src={`/art/clay/card/${piece}@1x.webp`}
+      srcSet={`/art/clay/card/${piece}@1x.webp 1x, /art/clay/card/${piece}@2x.webp 2x, /art/clay/card/${piece}@3x.webp 3x`}
+      style={{ width: 40, height: 40, flex: '0 0 auto', margin: '-2px 0' }}
+    />
+  );
+}
 
 interface Entry {
   disease: string;
   type: string;
-  /** For a derived record: the parent it arises from, or null for the one nothing produces. */
+  /** For a derived record: the parent it arises from. Null for a deck card. */
   from: string | null;
-  neverProduced: boolean;
 }
 
 /** The index: every deck card that is not the masked novel pathogen, by type in the pack's
@@ -105,13 +123,10 @@ function buildIndex(): { type: string; entries: Entry[] }[] {
   };
   const sorted = [...cards].sort((a, b) => a.dz.localeCompare(b.dz));
   for (const c of sorted) {
-    push({ disease: c.dz, type: c.type, from: null, neverProduced: false });
+    push({ disease: c.dz, type: c.type, from: null });
     for (const [dz, d] of derived) {
-      if (d.from === c.dz) push({ disease: dz, type: c.type, from: c.dz, neverProduced: false });
+      if (d.from === c.dz) push({ disease: dz, type: c.type, from: c.dz });
     }
-  }
-  for (const [dz, d] of derived) {
-    if (d.from === null) push({ disease: dz, type: d.type, from: null, neverProduced: true });
   }
   return [...byType.entries()].map(([type, entries]) => ({ type, entries }));
 }
@@ -125,20 +140,31 @@ function classBadge(disease: string): ReactElement | null {
   // The class colour is a mark beside the code, not the code's background: the pack's six
   // class colours sit between 2.4:1 and 3.7:1 against the app's cream, and the audit's first
   // run over this screen flagged 212 badges of cream text on them. The code carries the
-  // meaning in dark text; the colour is the print board's, kept as a bar for recognition.
+  // meaning in dark text; the colour is the content pack's, the one the pieces of that class wear,
+  // kept as a dot for recognition (stage L5: as the antibody panel marks a class).
   return (
     <span
       style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 5,
         fontSize: '0.75rem',
-        fontWeight: 700,
-        color: '#2E2A28',
-        background: '#F6F1EC',
-        borderLeft: `4px solid ${fam.col ?? '#8E6E53'}`,
-        borderRadius: 4,
-        padding: '2px 6px',
+        fontWeight: 900,
+        color: COLOUR.ink,
+        flex: '0 0 auto',
       }}
       data-library-class={cls}
     >
+      <span
+        aria-hidden="true"
+        style={{
+          width: 12,
+          height: 12,
+          borderRadius: '50%',
+          background: fam.col ?? COLOUR.inkSoft,
+          boxShadow: `0 0 0 1.5px ${COLOUR.ink}`,
+        }}
+      />
       {fam.short ?? cls}
     </span>
   );
@@ -233,18 +259,24 @@ export function LibraryScreen({
             ref={(el) => {
               whyRefs.current[w.key] = el;
             }}
-            style={{ marginTop: 22 }}
+            style={{ ...CARD, marginTop: 14 }}
             data-library-why={w.key}
           >
-            <h2 style={ITEM}>{t(`library.why.${w.key}.title`)}</h2>
+            <h2 style={SECTION}>{t(`library.why.${w.key}.title`)}</h2>
             <p style={P}>{w.text}</p>
-            <button
-              style={{ ...ROW_BTN, marginTop: 0, minHeight: 44, fontSize: '0.8125rem' }}
-              onClick={() => onHelp(w.help)}
+            <KitButton
+              style={{
+                ...ROW_BTN,
+                marginTop: 4,
+                minHeight: TOUCH.min,
+                ...TYPE.body,
+                fontWeight: 800,
+              }}
+              onPress={() => onHelp(w.help)}
               data-library-in-help={w.key}
             >
               {t('library.why.inHelp', { section: t(`help.${w.help}.title`) })}
-            </button>
+            </KitButton>
           </section>
         ))}
       </div>
@@ -287,7 +319,9 @@ export function LibraryScreen({
           </button>
         ))}
       </div>
-      {filtered.length === 0 ? <p style={P}>{t('library.filterNone')}</p> : null}
+      {filtered.length === 0 ? (
+        <p style={{ ...LEAD, marginTop: 14, color: COLOUR.onDark }}>{t('library.filterNone')}</p>
+      ) : null}
       {filtered.map((g) => (
         <section
           key={g.type}
@@ -302,31 +336,37 @@ export function LibraryScreen({
             {(BEAT_BY_TYPE as Record<string, string | undefined>)[g.type] ?? ''}
           </p>
           {g.entries.map((e) => (
-            <button
+            <KitButton
               key={e.disease}
               style={{
                 ...ROW,
                 marginLeft: e.from !== null ? 18 : 0,
                 width: e.from !== null ? 'calc(100% - 18px)' : '100%',
               }}
-              onClick={() => onView({ kind: 'card', disease: e.disease })}
+              onPress={() => onView({ kind: 'card', disease: e.disease })}
               data-library-row={e.disease}
             >
               {/* ONE SHAPE FOR EVERY ROW (item 5, 19 September 2026): the name, then the class
                   pushed to the end. The organs, the parent it arises from and "nothing produces
-                  it" are in the card this row opens. */}
-              <span style={{ fontWeight: 700, flex: '1 1 auto', minWidth: 0 }}>{e.disease}</span>
+                  it" are in the card this row opens. Its piece stands beside its name since
+                  stage L5: the picture a player has seen on the board. */}
+              <RowArt disease={e.disease} type={e.type} />
+              <span style={{ flex: '1 1 4rem', minWidth: 0, overflowWrap: 'anywhere' }}>
+                {e.disease}
+              </span>
               {classBadge(e.disease)}
-            </button>
+            </KitButton>
           ))}
         </section>
       ))}
-      <p style={{ ...P, marginTop: 22 }} data-library-x="">
-        {t('library.pathogenX')}
-      </p>
-      <button style={ROW_BTN} onClick={() => onView({ kind: 'why', entry: null })}>
+      <div style={{ ...CARD, marginTop: 22 }}>
+        <p style={{ ...P, margin: 0 }} data-library-x="">
+          {t('library.pathogenX')}
+        </p>
+      </div>
+      <KitButton style={ROW_BTN} onPress={() => onView({ kind: 'why', entry: null })}>
         {t('library.whyLink')}
-      </button>
+      </KitButton>
       {view.kind === 'card' ? (
         <PathogenCard
           subject={{

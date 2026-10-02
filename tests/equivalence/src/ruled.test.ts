@@ -43,7 +43,11 @@ describe('the original, as ruled', () => {
   });
 
   it('names every edit by its place in the queue', () => {
-    // Q1 to Q10, the queue as ruled on 5 and 6 September 2026, and Q11, venom, ruled after it ran.
-    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|1[01])$/);
+    // Q1 to Q10, the queue as ruled on 5 and 6 September 2026; Q11, venom, ruled after it ran;
+    // Q12, the gentlest difficulty called Easy, ruled on 1 and 2 October; Q13, a game's first
+    // turns written, for the guided game, ruled on 2 October; Q14, coat as the one word for
+    // what an antibody does to a bacterium, a worm or a parasite, ruled the same day; Q15,
+    // Diphtheria and Anthrax as bacteria that release their toxins; and Q16, a hidden pathogen.
+    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|1[0-6])$/);
   });
 });

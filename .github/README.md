@@ -86,7 +86,10 @@ Two things about reading these numbers:
 
 02:00 UTC and on demand. **Runs every suite**, not only the slow ones: the full corpus at 2,000
 games and the property suite at 10,002 run in parallel with the balance panel and the content
-schema, so the tier costs ~15 minutes rather than the sum. Also measures coverage and serialised
+schema, so the tier costs as long as its longest leg rather than the sum. *Corrected 2 October
+2026:* this said ~15 minutes. The property leg takes 28 to 40 minutes when it finishes, was
+cancelled at its 45-minute limit on 9 of the 16 nights to 2 October, and the limit is now 120
+([`docs/FINDINGS.md`](../docs/FINDINGS.md) #124). Also measures coverage and serialised
 state size for the trends, appends one history record to the `results-data` branch, and publishes
 the dashboard.
 

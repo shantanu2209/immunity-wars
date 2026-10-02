@@ -1,17 +1,17 @@
 /**
  * @immunity-wars/ui
  *
- * React components. First real occupant: the P2.2 board — an SVG derived at render time from
+ * React components. First real occupant: the board, laid out at render time from
  * `geometry.json` through content's validated loader, taking a plain `ViewState` so the same
- * component renders authoritative views and burst frames alike.
+ * component renders authoritative views and burst frames alike. Since stage L4 of the look it is
+ * drawn in Clay, as pictures on the page (`board/ClayBoard.tsx`).
  */
 
 export const PACKAGE_NAME = '@immunity-wars/ui';
 
+export { ClayBoard } from './board/ClayBoard';
 export {
-  Board,
   buildNodeModel,
-  type ArtMetrics,
   type InspectInfo,
   type InspectInvader,
   type DisplayToken,
@@ -98,6 +98,27 @@ export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
+export {
+  ANTIVENOM_AT_START,
+  DIFFICULTIES,
+  DIVIDES_ON,
+  DIVIDES_TWICE_ON,
+  LYMPH_SPREADS_ON,
+  MEMORY_FROM,
+  ORGAN_HEALS,
+  PATHOGEN_X_IN_TEN,
+  PRACTICE_ADDS,
+  PRESENTATION_RAISES,
+  WORM_START,
+  cardsATurn,
+  differenceRows,
+  differenceSummary,
+  type DifferenceId,
+  type DifferenceRow,
+  type DifficultyKey,
+  type MemoryFrom,
+  type WormStart,
+} from './screens/difficultyFacts';
 export { TogetherScreen } from './screens/TogetherScreen';
 export { LobbyScreen } from './screens/LobbyScreen';
 export { ConnectionLost } from './panels/ConnectionLost';
@@ -149,3 +170,25 @@ export {
 export { diseaseLabel, CLONE_TARGET } from './play/offered';
 export { LogPanel, RichText, type LogLine } from './panels/LogPanel';
 export { engineText, engineLogText, type LogText } from './engineText';
+// THE GUIDED GAME (stage L6): the rules of where a player is in the lesson, for the tests that hold
+// them to the engine. The light itself is the play screen's own, and is not offered here.
+export {
+  GUIDE_START,
+  afterAccepted,
+  afterTold,
+  guideBeat,
+  lessonOver,
+  progress as guideProgress,
+  sameAction,
+  stepAt,
+  stopsFor,
+  type GuideBeat,
+  type GuideMove,
+  type GuidePos,
+  type GuideStage,
+} from './guide/model';
+
+// THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13) is NOT exported from here. It has its own entry,
+// `@immunity-wars/ui/kit`, so that only the kit page pulls it in: exported from this file it rode
+// along in the chunk every player downloads (measured in the first build: the shared chunk carried
+// the kit's colours). It joins this file when the screens are built from it, at L4.

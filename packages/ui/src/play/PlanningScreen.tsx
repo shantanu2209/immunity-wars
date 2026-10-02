@@ -20,15 +20,26 @@
  *       carries an allocation phase, which single-player never does.
  *
  * Dumb by design: `planningModel` decided everything; every string is the catalogue's.
+ *
+ * DRAWN IN CLAY (stage L5): the figure stands on the table as the board does, and the list is on
+ * the middle's cream card. A pathogen's row carries the Clay piece a player sees on the board. Depth
+ * is said in words and repeated in the card's three inks: mint for a way in, gold for the
+ * bloodstream, coral for an organ's branch, the same three the panels use for good news, a note and
+ * a warning, each measured on cream.
  */
 import type { CSSProperties, ReactElement } from 'react';
 import { Fragment, useState } from 'react';
 
 import type { Unavailable } from '../board/Board';
+import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR, TOUCH } from '../kit/tokens';
 import { cellDisplayName, typeDisplayName } from '../names';
 import { CardIcon } from '../panels/CardIcon';
 import { organEffect, unavailableText } from '../panels/InspectSheet';
+import { SAY, TONE, pieceArt } from '../panels/onCard';
+
 import { AnatomyView } from './AnatomyView';
 import { planned, poolLeft, type Budgets, type Draft } from './table';
 import {
@@ -45,26 +56,21 @@ export interface PlanningCell {
   unavailable: Unavailable | null;
 }
 
-/** Depth colours — each ≥5.9:1 on the paper, and each paired with its word, never colour alone. */
+/** Depth, in the card's three inks, each paired with its word, never colour alone. */
 const DEPTH_COLOUR: Record<Depth, string> = {
-  entry: '#2F6B4A',
-  blood: '#7A5600',
-  organ: '#B03A2E',
+  entry: TONE.good,
+  blood: TONE.note,
+  organ: TONE.bad,
 };
 
-const TITLE: CSSProperties = {
-  fontSize: '0.75rem',
-  color: '#78665D',
-  fontWeight: 700,
-  marginBottom: 2,
-};
+const TITLE: CSSProperties = { ...SAY.label, marginBottom: 2 };
+/** A block set into the card: the allocation. */
 const PANEL: CSSProperties = {
   marginTop: 6,
   padding: '6px 8px',
-  border: '1.5px solid #C48377',
-  borderRadius: 10,
-  background: '#FFFDF9',
-  fontSize: '0.8125rem',
+  borderRadius: 12,
+  background: COLOUR.creamSunk,
+  ...SAY.body,
 };
 const ROW_BUTTON: CSSProperties = {
   display: 'flex',
@@ -73,30 +79,24 @@ const ROW_BUTTON: CSSProperties = {
   // shrink and a long place text pushed it 6 px past a 180 px viewport.
   flexWrap: 'wrap',
   gap: 8,
-  minHeight: 44,
+  minHeight: TOUCH.min,
   width: '100%',
   background: 'transparent',
   border: 'none',
-  borderTop: '1px solid #EADFD5',
+  borderTop: `1px solid ${COLOUR.creamEdge}`,
   cursor: 'pointer',
   textAlign: 'left',
   font: 'inherit',
+  color: COLOUR.ink,
   padding: '4px 0',
 };
 /** The card icon's button (for-P2.7.md §14, ruling 5): 44px square, in place of "Card". */
 const CARD_BUTTON: CSSProperties = {
-  minHeight: 44,
-  width: 44,
-  minWidth: 44,
+  minHeight: TOUCH.min,
+  width: TOUCH.min,
+  minWidth: TOUCH.min,
   padding: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#8E6E53',
-  borderRadius: 8,
-  border: '1.5px solid #B03A2E',
-  background: '#FFFDF9',
-  cursor: 'pointer',
+  flex: '0 0 auto',
 };
 
 function GroupRow({
@@ -122,12 +122,20 @@ function GroupRow({
   const content = (
     <>
       <span style={{ position: 'relative', flex: '0 0 auto', width: 24, height: 24 }}>
+        {/* The piece this group is on the board: its kind in its antigen class's colour, coated
+            when it is coated, and the pale unknown for one the game is hiding. */}
         <img
-          src={`/art/path-${group.novel ? 'virus' : group.type}@3x.webp`}
-          width={24}
-          height={24}
+          src={pieceArt(
+            pieceFor(
+              group.type,
+              classOf(group.members[0]?.disease ?? '', group.novel),
+              group.coated,
+            ).piece,
+          )}
+          width={30}
+          height={30}
           alt=""
-          style={group.novel ? { filter: 'brightness(0.2)' } : undefined}
+          style={{ margin: -3 }}
         />
         {group.count >= 2 ? (
           <span
@@ -139,8 +147,8 @@ function GroupRow({
               minWidth: 18,
               height: 18,
               borderRadius: 9,
-              background: '#2E2A28',
-              color: '#FFFDF9',
+              background: COLOUR.ink,
+              color: COLOUR.cream,
               fontSize: '0.6875rem',
               fontWeight: 700,
               textAlign: 'center',
@@ -159,25 +167,25 @@ function GroupRow({
               ? t('inspect.unknown')
               : typeDisplayName(group.type)}
           {group.count >= 2 ? (
-            <span style={{ color: '#78665D', fontWeight: 400 }}>
+            <span style={{ color: COLOUR.inkSoft, fontWeight: 600 }}>
               {' '}
               {t('planning.times', { n: group.count })}
             </span>
           ) : null}
         </span>
         {group.coated ? (
-          <span style={{ color: '#7A5600', fontWeight: 700 }}>
+          <span style={{ color: TONE.note, fontWeight: 700 }}>
             {' '}
             {t('inspect.sep')} {t('inspect.coated')}
           </span>
         ) : null}
         {group.hiddenIn ? (
-          <span style={{ color: '#7A5600', fontWeight: 700 }}>
+          <span style={{ color: TONE.note, fontWeight: 700 }}>
             {' '}
             {t('inspect.sep')} {t('planning.hidden')}
           </span>
         ) : null}
-        <span style={{ color: '#4A423E' }}>
+        <span style={{ color: COLOUR.inkSoft }}>
           {' '}
           {t('inspect.sep')}{' '}
           {only !== undefined && !only.novel
@@ -189,7 +197,7 @@ function GroupRow({
         {t(DEPTH_LABEL[group.depth])}
       </span>
       {opensCard ? (
-        <span style={{ color: '#8E6E53', flex: '0 0 auto', display: 'inline-flex' }}>
+        <span style={{ color: COLOUR.inkSoft, flex: '0 0 auto', display: 'inline-flex' }}>
           <CardIcon />
         </span>
       ) : null}
@@ -226,20 +234,20 @@ function GroupRow({
             >
               <span style={{ fontSize: '0.875rem', flex: '1 1 auto' }}>
                 {iv.novel ? t('inspect.unknown') : iv.disease}
-                <span style={{ color: '#78665D' }}>
+                <span style={{ color: COLOUR.inkSoft }}>
                   {' '}
                   {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
                 </span>
               </span>
               {!iv.novel ? (
-                <button
+                <KitButton
                   style={CARD_BUTTON}
                   aria-label={t('card.about', { name: iv.disease })}
                   disabled={disabled}
-                  onClick={() => onPathogenCard(iv.id)}
+                  onPress={() => onPathogenCard(iv.id)}
                 >
                   <CardIcon />
-                </button>
+                </KitButton>
               ) : null}
             </div>
           ))
@@ -250,15 +258,11 @@ function GroupRow({
 
 /** BLOCK D — Phase 3's allocation, read from the view; no controls until Phase 3 builds them. */
 const STEP_BTN: CSSProperties = {
-  minWidth: 44,
-  minHeight: 44,
-  borderRadius: 8,
-  border: '1.5px solid #8E6E53',
-  background: '#FFFDF9',
-  color: '#2E2A28',
-  fontSize: '0.9375rem',
-  fontWeight: 700,
-  cursor: 'pointer',
+  width: TOUCH.min,
+  minWidth: TOUCH.min,
+  minHeight: TOUCH.min,
+  padding: 0,
+  flex: '0 0 auto',
 };
 
 /**
@@ -292,7 +296,7 @@ export function AllocationBlock({
       <div data-allocation-left={String(left)}>
         {control ? t('allocation.left', { n: left }) : t('planning.pool', { n: slot.pool })}
       </div>
-      <div style={{ color: '#78665D' }}>{t('planning.allocationNote')}</div>
+      <div style={{ color: COLOUR.inkSoft }}>{t('planning.allocationNote')}</div>
       {slot.budgets.map((b) => {
         const isCaptain = b.pid === slot.captain;
         const shown = isCaptain ? left : planned(draft, budgets, b.pid);
@@ -303,10 +307,10 @@ export function AllocationBlock({
             data-allocation-row={b.pid}
             style={{ minHeight: 44, display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <span style={{ fontWeight: isCaptain ? 700 : 400, flex: '1 1 auto' }}>
+            <span style={{ fontWeight: isCaptain ? 800 : 600, flex: '1 1 auto' }}>
               {name}
               {isCaptain ? (
-                <span style={{ color: '#78665D', fontWeight: 400 }}>
+                <span style={{ color: COLOUR.inkSoft, fontWeight: 600 }}>
                   {' '}
                   {t('inspect.sep')} {t('allocation.keeps')}
                 </span>
@@ -317,24 +321,24 @@ export function AllocationBlock({
             </span>
             {control && !isCaptain ? (
               <>
-                <button
+                <KitButton
                   data-allocation-remove={b.pid}
                   aria-label={t('allocation.removeLabel', { name })}
                   style={STEP_BTN}
-                  disabled={control.disabled || shown <= b.ap}
-                  onClick={() => control.onRemove(b.pid)}
+                  unavailable={control.disabled || shown <= b.ap}
+                  onPress={() => control.onRemove(b.pid)}
                 >
                   {t('allocation.remove')}
-                </button>
-                <button
+                </KitButton>
+                <KitButton
                   data-allocation-add={b.pid}
                   aria-label={t('allocation.addLabel', { name })}
                   style={STEP_BTN}
-                  disabled={control.disabled || left <= 0}
-                  onClick={() => control.onAdd(b.pid)}
+                  unavailable={control.disabled || left <= 0}
+                  onPress={() => control.onAdd(b.pid)}
                 >
                   {t('allocation.add')}
-                </button>
+                </KitButton>
               </>
             ) : null}
           </div>
@@ -400,10 +404,10 @@ function PlaceRow({
         aria-expanded={open}
         onClick={onToggle}
       >
-        <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 700, fontSize: '0.8125rem' }}>
+        <span style={{ flex: '1 1 auto', minWidth: 0, fontWeight: 800, fontSize: '0.875rem' }}>
           {placeName(place)}
         </span>
-        <span style={{ color: '#78665D' }}>{t('planning.herePathogens', { n: count })}</span>
+        <span style={{ color: COLOUR.inkSoft }}>{t('planning.herePathogens', { n: count })}</span>
         <span style={{ color: colour, fontWeight: 700, fontSize: '0.75rem', flex: '0 0 auto' }}>
           {t(DEPTH_LABEL[first.depth])}
         </span>
@@ -458,25 +462,29 @@ export function PathogenList({
     focus === null ? undefined : model.places.find((p) => p.place === focus && p.kind === 'organ');
   const effect = focus === null ? null : organEffect(focus);
   return (
-    <section data-block="pathogens" style={{ fontSize: '0.8125rem' }}>
+    <section data-block="pathogens" style={SAY.body}>
       {focus !== null ? (
         <div data-planning-showing={focus} style={{ marginBottom: 2 }}>
-          <span style={{ fontWeight: 700, color: '#2E2A28' }}>
+          <span style={{ fontWeight: 800, color: COLOUR.ink }}>
             {t('planning.showing', { place: placeName(focus) })}
           </span>
           {organ?.hp && organ.hp.hp < organ.hp.max && effect !== null ? (
-            <span data-planning-organ-effect={focus} style={{ color: '#B03A2E' }}>
+            <span data-planning-organ-effect={focus} style={{ color: TONE.bad }}>
               {' '}
               {t('inspect.sep')} {t('effects.organEffect', { effect })}
             </span>
           ) : null}
-          <span style={{ display: 'block', color: '#78665D' }}>{t('planning.tapBodyForAll')}</span>
+          <span style={{ display: 'block', color: COLOUR.inkSoft }}>
+            {t('planning.tapBodyForAll')}
+          </span>
         </div>
       ) : null}
       {model.total === 0 ? (
-        <div style={{ color: '#78665D' }}>{t('planning.noPathogens')}</div>
+        <div style={{ color: COLOUR.inkSoft }}>{t('planning.noPathogens')}</div>
       ) : rows.length === 0 ? (
-        <div style={{ color: '#78665D', minHeight: 44, display: 'flex', alignItems: 'center' }}>
+        <div
+          style={{ color: COLOUR.inkSoft, minHeight: 44, display: 'flex', alignItems: 'center' }}
+        >
           {t('planning.emptyPlace')}
         </div>
       ) : (

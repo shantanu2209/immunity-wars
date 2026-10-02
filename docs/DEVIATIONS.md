@@ -559,6 +559,273 @@ vaccinated and remembered, as the control. Mutation controls `queue-q11-no-venom
 the offered-subset-of-accepted harness, which caught the offer on recorded Normal games before the
 fix.
 
+## 12. The gentlest difficulty is called Easy, in the one message where the engine names it (queue Q12)
+
+**Legacy behaviour.** A vaccine asked for on the gentlest difficulty is refused with: *"On Training,
+immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines
+come into play on Normal and Hard."*
+
+**Port behaviour.** The same refusal, on the same condition, at the same cost of nothing: *"On
+Easy, immunity comes from SURVIVING an infection — beat a disease and your body remembers it.
+Vaccines come into play on Normal and Hard."* **One word differs.** Nothing plays differently, and
+the difficulty's key is `training` in both engines, in the content pack, in a saved game and in a
+room, as it always was: only what a player reads has changed.
+
+**Why.** Shantanu ruled on 1 October 2026 that Training is renamed Easy
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §1, ruling 5, and §6: *"The word changes on the screens, in the
+engine's own messages, and in the printed rulebook, quick reference and study packet, in one change,
+so the table and the app keep agreeing"*), and on 2 October, asked whether it should wait for the
+guided game: *"Now"*. This is the engine's part of that one change. It is the only message of the
+engine's 196 that said Training. (*Corrected the same day:* this read "the only message that names
+a difficulty to a player". Two do; the other names Hard, in the refusal of a memory response for
+want of an Action Point, and is untouched.)
+
+**It is an engine text change, and CLAUDE.md says such a thing is refused as a matter of style and
+made only as a deliberate, isolated change measured against the corpus.** This is that: it was
+ruled, it is one string, and it was made the queue's way.
+
+**The oracle.** As for #10 and #11: made twice, in the port and as one edit to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory and the corpus compares. The
+original's file is not touched.
+
+**The rest of the one change, which is not the engine's:** the seven sentences of the screens'
+catalogue and the one cell label that said Training; and the printed texts, where the word was
+replaced 9 times in the rulebook, twice in the quick reference and 4 times in the study packet. The
+study packet's sentence about how T cells are trained (*"When that training fails in one
+direction you get autoimmune disease"*) is about the immune system and was left alone.
+
+**The rules version** moves from 4.1.0 to 4.1.1 with it, and the content from 1.2.0 to 1.3.0. The
+rules play as they did; the version moves because the two ends of a game played together must not
+be on different wordings without being told, and the relay refuses any other version exactly. The
+balance bands were measured again for the new version, on 24 arms and 150,000 games: every number
+in the file is what it was, to the last digit, and only the versions, the commit and the time
+differ.
+
+**Decided by:** Shantanu, 1 and 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q12 cases: *"a vaccine is refused there
+by name, as Easy, in the port and the original as ruled"*, with the untouched original, which still
+says Training, as the control. Mutation control `queue-q12-the-engine-says-easy`.
+
+## 13. A game may be handed its first turns, written (queue Q13)
+
+**Legacy behaviour.** Every turn's arrivals are dealt. A die says how many. For each, a roll says
+whether it is a disease the body has met before; if not, it is the top card of the shuffled deck. A
+worm past its cap is swapped for the next card that is not one.
+
+**Port behaviour.** The same, for every game that is handed nothing. A game may instead be handed
+`written`: the diseases that arrive on its first turns, turn by turn, by name. On such a turn
+**exactly those arrive, in their order: no die for how many, none for a disease met before, the
+deck not touched, the worm cap swapping nothing.** The draw that places the last written turn
+removes the field, and from the next turn the game is dealt as ever. A name no card carries is
+refused when the game is made.
+
+**Why.** Shantanu ruled on 2 October 2026 that the guided game scripts everything
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §18), and the same day ruled its seven turns as listed (§19). A real
+game cannot be made to show them: measured on 800 seeded Easy games, all nine kinds of invader
+arrive in one game in 1 of 100, and in none by turn 12.
+
+**What it does not change.**
+
+- **No rule.** What an arrival does, once it has arrived, is what it always did. Pathogen X still
+  breaks in on its own turn, on top; a remembered disease is still marked; a written worm still
+  counts toward the game's cap.
+- **No game that is not handed the writing.** Its state is what it was, key for key, and it draws
+  the same random numbers in the same order. The corpus hands no game the writing, so it is
+  unchanged and still compares the two engines byte for byte.
+- **No game played together.** A room makes its game from a message that carries a difficulty and
+  nothing else, so a room cannot hand a game the writing.
+- **The rules version: it stays 4.1.1,** by ruling the same day (*"Agree"*). No rule changed, and
+  nothing two phones send each other changed.
+
+**The dice are not part of it.** The guided game fixes them with a seed, outside the engine, as the
+measuring page does.
+
+**The oracle.** As for #10 to #12: made twice, in the port and as five edits to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory. The original's file is not
+touched.
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q13 cases: a written turn brings exactly
+what is written and rolls nothing, in the port and the original as ruled; the two hold the same game
+after every action of it, compared as the corpus compares; the last written turn's draw removes the
+writing and the next is dealt by the dice; a written turn is exact where the worm cap would swap; a
+name no card carries is refused in the same words; a game handed nothing carries no writing and
+rolls as it always did; and the untouched original, handed the same turns, deals by the dice all
+the same, which is the control. Mutation controls `queue-q13-a-written-turn-rolls-nothing` and
+`queue-q13-a-written-turn-brings-what-is-written`.
+
+## 14. An antibody coats: the engine no longer says "tagged" (queue Q14)
+
+**Legacy behaviour.** One action, `tag`, spends an antibody on a bacterium, a worm or a parasite and
+marks it. Three of the engine's sentences call that "tagged":
+
+- the log, for a bacterium or a parasite: *"Antibody **tagged** Whooping cough."*
+- the refusal of the action on anything else: *"Pick an untagged bacterium, worm or parasite."*
+- a resident with nothing to eat: *"Nothing to engulf where it stands — move it onto a virus or a
+  tagged bacterium first."*
+
+Six others call the same thing a coat: *"Coat it with an antibody first"* (twice), *"Antibodies
+**coated** the Roundworm"*, *"Memory antibodies coated …"*, *"Complement coated …"*, *"Coat it,
+then the Eosinophil strikes"*.
+
+**Port behaviour.** The same action, on the same things, at the same cost, with the same mark. The
+three sentences say *coated*, *uncoated* and *a coated bacterium*. **Three words differ.** Nothing
+plays differently.
+
+**Why.** The screens had followed the log: a bacterium's button said Tag, a worm's and a
+parasite's said Coat, and How to play and the printed rulebook said Coat of all three. A newcomer
+met two words for one thing, and the guided game had to say that a tag coats. Asked which it should
+be, Shantanu asked back on 2 October 2026: *"Which all pathogens does this apply to? Bacteria and
+worms? Anythibg else? Is it scientifically differnt for different pathogens? If it is then keep the
+name what makes sense scientifically for those pathogens. If it is the same then I guess coat is
+better."*
+
+**It is the same, so it is coat.**
+
+- **What it applies to:** a bacterium, a worm and a parasite, and nothing else. A virus, a toxin
+  and malaria in the blood are neutralised, which is a different act: there the antibody alone
+  stops the thing. A fungus cannot be coated in this game, and a virus hiding in a cell cannot be
+  reached.
+- **What the antibody does is one thing.** Its arms bind the pathogen's surface and its stem is
+  left pointing outward, for a cell's receptors to hold. That is what the Clay piece of a coated
+  microbe shows.
+- **What differs is what a cell then does, and that has its own word already.** A phagocyte
+  swallows a coated bacterium: opsonisation in the strict sense, and the game's Engulf. A worm is
+  too large to swallow, so the eosinophil holds on by the antibodies and empties its granules
+  against it: the game's Strike and Degranulate.
+- **The printed rulebook names the action "Coat (tag)"** and says of all three: *"Spend one
+  antibody cube of the matching class to coat a bacterium, worm or parasite"*.
+- **A limit, said plainly:** against worms the body mostly uses another class of antibody than
+  against bacteria. The game's antibody classes follow the antigen and not that, and this change
+  claims nothing about it either way.
+
+**It is an engine text change,** refused as a matter of style and made only as a deliberate,
+isolated change measured against the corpus. This is that: it was ruled, it is three sentences, and
+it was made the queue's way.
+
+**The oracle.** As for #10 to #13: made twice, in the port and as three edits to the original in
+`tests/equivalence/src/ruled.ts`, which the rig applies in memory and the corpus compares. The
+original's file is not touched.
+
+**The rest of the one change, which is not the engine's:** the row's word for the action is Coat
+on every target, where it was Tag on a bacterium; two sentences about what a resident eats say
+coated; and the lesson's two sentences that said "then Tag" say "then Coat". **The printed texts
+are not changed:** they say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*,
+once in the rulebook and once in the study packet, are Kartik's to keep or change. *(Corrected the
+same day: "untagged" was four times in the rulebook and once in the study packet. Shantanu ruled
+them changed, and they are: `LOOK_PLAN.md` §22.)*
+
+**The engine's own names are not changed:** the action is still `tag` and the mark still
+`tagged`, in both engines, in a saved game and in a room. Only what a player reads has changed.
+
+**The rules version** moves from 4.1.1 to 4.1.2 with it, and the content from 1.3.0 to 1.4.0, for
+the reason #12 gives: the rules play as they did, and the two ends of a game played together must
+not be on different wordings without being told. The balance bands were measured again for the new
+version, at commit `11aba72`, on 24 arms and 150,000 games: every number in the file is what it
+was, to the last digit, and only the versions, the commit and the time differ.
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q14 cases: a coated bacterium logged as
+coated and both refusals, in the port and the original as ruled, with the untouched original, which
+still says tagged, as the control. Mutation control `queue-q14-the-engine-says-coated`.
+
+## 15. Diphtheria and Anthrax are bacteria that release their toxins (queue Q15)
+
+**Legacy behaviour.** The deck's Diphtheria and Anthrax cards are toxins: not alive, 2 steps a
+turn, stopped only by antitoxin. The tables also carry a record for *Diphtheria toxin*, with a
+class and a target, that nothing in the game can produce ([`FINDINGS.md`](FINDINGS.md) #23). Three
+bacteria release a toxin if left uncoated for 3 turns: Tetanus, Cholera and Gas gangrene.
+
+**Port behaviour.** Five do. **Diphtheria** is a bacterium of the extracellular class, entering by
+the nose and heading for the lungs; left uncoated for 3 turns it releases Diphtheria toxin, which
+heads for the heart, as that record always said. **Anthrax** is a bacterium of the same class,
+entering by a wound and heading for the lungs as before, at the 2 steps a turn it moved as a
+toxin; left uncoated for 3 turns it releases Anthrax toxin, which heads for the heart or the liver.
+Botulism and Shiga toxin stay toxin cards.
+
+**Why.** Diphtheria is an infection: a bacterium growing in the throat, whose toxin does the
+killing. The card called it a toxin and its text said the toxin "is pre-formed", which is not
+true of diphtheria. Shantanu, 2 October 2026: *"this must be corrected asap, it should be a
+bacterium thay releases toxins"*, and of the proposal that followed, *"Agree with everything.
+Wherever any doubt in this take your own call for whatever works best."* The proposal:
+
+| Put to him | Built |
+|---|---|
+| Diphtheria: a bacterium, extracellular class, by the nose, for the lungs; its toxin, after 3 turns uncoated, for the heart | So |
+| Its card text, which said the toxin is pre-formed, reworded | "Left alone, the bacteria release a TOXIN that attacks the heart", and how to beat it |
+| Anthrax is the same case and goes with it | So. Its toxin is new to the pack |
+| The guided game's fifth turn used Diphtheria as its toxin: Botulism instead | So. Its seed still plays it |
+
+**Taken as Claude's own call, on his word:**
+
+- **Anthrax keeps its speed.** The original's list of fast diseases has a note where Anthrax would
+  be: *"Anthrax is a toxin and is already speed 2."* So it was meant to be fast, and as a
+  bacterium it is on that list at 2.
+- **Where Anthrax toxin heads: the heart or the liver.** The toxin's lethal part acts on the heart
+  and the blood vessels and its other part on the liver; the pack had no record, so one was
+  written, with five short sentences for its card.
+- **Botulism stays a toxin.** What makes a person ill from food is toxin already made in the food,
+  with no infection. **Shiga toxin** is a card named for the toxin itself, and stays.
+
+**It is a change to the deck, not to a rule's working.** No line of the engine's code changed:
+what changed is five of its tables, in the content pack and, as eight ruled edits, in the
+original. The schema, the pack's own test and the library no longer allow a record with no
+parent, since there is none.
+
+**The oracle.** As for #10 to #14. The queue's tests show a Diphtheria and an Anthrax that arrive
+as bacteria of the extracellular class and, left for three spreads, release their toxins, in the
+port and the original as ruled, the two in the same state to the last field; and the untouched
+original, where each is a toxin card and no such toxin appears, as the control.
+
+**What it does to the printed game.** The rulebook, the quick reference and the lists of what each
+class covers say so. **The printed cards for the two cannot change:** the rulebook now carries a
+note telling a player how to play them.
+
+**The rules version** moves from 4.1.2 to 4.2.0 and the content from 1.4.0 to 1.5.0: the deck
+plays differently, so this is a step of the middle number, where the wording changes before it
+were steps of the last. The relay refuses any other version exactly. **The balance bands were
+measured again** at commit `f3f0ce7`, on 24 arms and 150,000 games, and this time they moved, as a
+changed deck should make them:
+
+| The reference bot's games, 24 arms of 2,000 | Before | On the new deck |
+|---|---|---|
+| Normal: turns survived | 11.04 | 10.79 |
+| Normal: antibodies made | 19.48 | 19.18 |
+| Hard: turns survived | 8.85 | 8.63 |
+| Hard: antibodies made | 15.09 | 14.82 |
+| Easy: every metric | | within 1.3 band widths of where it was |
+
+Two cards that an antibody used to stop outright are now bacteria that divide and release a toxin,
+and the reference bot's games on Normal and Hard end a little sooner. **That is the bot's games
+changing, not a measure of how hard the game is:** the bot plays about six of the game's fourteen
+seats. The win rate under the reference bot v1, at 48,000 games per difficulty, reported and not
+gated: Easy 54.5% to 52.0%, Normal 0.30% to 0.15%. A held-out arm passes the new bands on all
+three difficulties. One of the panel's own fast controls lost its verdict at its small scale and
+was narrowed to what holds ([`FINDINGS.md`](FINDINGS.md) #121).
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q15 cases. Mutation controls
+`queue-q15-diphtheria-is-a-bacterium` and `queue-q15-anthrax-releases-its-toxin`.
+
+## 16. The Killer T-Cell is told of a hidden pathogen, not a hidden virus (queue Q16)
+
+**Legacy behaviour.** A snipe with nothing in range is refused with *"No hidden virus in range."*
+
+**Port behaviour.** The same refusal, on the same condition: *"No hidden pathogen in range."*
+**One word.** Nothing plays differently.
+
+**Why.** What the Killer T-Cell snipes is anything hiding inside one of your cells, and two of the
+thirteen diseases of that kind are protozoa, Toxoplasmosis and Chagas disease. The kind's name on
+the screens was "Hidden Virus" and is "Hidden Pathogen" by ruling (2 October 2026,
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §22), and this sentence was held for the next version of the rules,
+which queue Q15 is.
+
+**The oracle.** Made twice, as #12 and #14 were. Test: the Q16 cases, with the untouched original,
+which still says virus, as the control. Mutation control
+`queue-q16-the-engine-says-hidden-pathogen`.
+
+**Decided by:** Shantanu, 2 October 2026.
+
 ---
 
 *Entries are appended as they are decided, never retroactively edited — if a decision is

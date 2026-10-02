@@ -27,11 +27,6 @@ packages:
   # the dev shell and collects the page's own __iwMetrics. A workspace member so typecheck and
   # lint reach it — an instrument nobody typechecks is the known failure shape.
   - 'tools/perf'
-  # Stage L2 of the look (docs/LOOK_PLAN.md): the Clay play screen drawn three ways, with the
-  # frame timer that measures them on the S25. A workspace member for the same reason as
-  # tools/perf, and the only home of pixi.js and three (ruled 1 October 2026). Nothing in
-  # packages/ may import it; it is removed when L2's ruling has been built into the app.
-  - 'tools/look-prototype'
 
 # pnpm blocks dependency install scripts unless they are allow-listed, because a
 # postinstall script is arbitrary code execution at install time. esbuild is allowed
@@ -67,6 +62,14 @@ overrides:
   # pnpm keeps the locked 2.1.4 otherwise. Taken on the 4 Sep ruling's terms (one line, no
   # behaviour change). docs/SECURITY_NOTES.md, 30 Sep 2026. Drop when the lock resolves past it.
   'brace-expansion@>=2.0.0 <2.1.7': '^2.1.7'
+  # serialize-javascript: GHSA-gfhx-hw2g-v5hg (low), a </script> left unescaped in a serialised
+  # function. Dev-only: vite-plugin-pwa > workbox-build > @rollup/plugin-terser, which uses it to
+  # hand its own options to a worker when a build minifies the service worker. Nothing of ours is
+  # serialised into a page by it, and it is in no process that listens. 7.1.2 is inside the
+  # plugin's own ^7.0.3 range; pnpm keeps the locked 7.1.1 otherwise. Taken by ruling, 2 October
+  # 2026 ("Please clear the advisory"), on the 4 Sep ruling's terms: one line, no behaviour change.
+  # docs/SECURITY_NOTES.md. Drop when the lock resolves past it.
+  'serialize-javascript@>=7.1.1 <7.1.2': '^7.1.2'
 
 minimumReleaseAgeExclude:
   - '@vitest/coverage-v8@4.1.11'

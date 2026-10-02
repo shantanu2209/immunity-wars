@@ -476,7 +476,8 @@ the pre-brain-fix builds were quarantined, so the path no longer resolves.
 **Leave it broken and do not repoint it.** If it were repointed at
 `stale/spectator.html` it would assert against a `branch:4` build — rules that no longer
 exist. It is unusable as a port oracle either way, because it tests DOM rendering with the
-engine faked out. Noted in `tools/legacy/stale/README.md`.
+engine faked out. Noted in the README of `tools/legacy/stale/`. (*That folder was removed on
+2 October 2026, by ruling: `LOOK_PLAN.md` §18. The suite still cannot run.*)
 
 ---
 
@@ -1032,6 +1033,10 @@ table entries, and nowhere else. There is no card, no rare event, and no emissio
 | Injected by a rare event | The four injecting rare events create bacteria, hidden viruses and malaria. None creates a toxin |
 
 So the row is inert. Nothing reads it, nothing writes it, and no game can contain it.
+
+**CLOSED 2 October 2026 by queue Q15** (`docs/DEVIATIONS.md` #15): Shantanu ruled that Diphtheria
+is a bacterium that releases this toxin, as Tetanus, Cholera and Gas gangrene release theirs, and
+it does. What follows is the record as it stood until then.
 
 **Ruled 8 September 2026 (Kartik, at the library), and now READ by something.** The record is
 kept, and the disease library shows it under the toxins with the exact label "readable, but
@@ -5452,3 +5457,596 @@ out. Nothing was lost to it: the why-box test was run directly on each change to
 now moves with each of them, measured. `pnpm turbo:check`, inside `verify`, asserts they are in the
 hash, and control `turbo-outside-reads-hashed` removes one and sees the check fail. **An instrument
 defect, fixed inline.**
+
+## 109. Drawn from the kit, the play screen needed a script the phone did not store: with no network the app came back blank, and the build test passed — FIXED inline 1 October 2026
+
+**Found 1 October 2026 by the Gate 1 audit's offline pass**, on its first run against the Clay play
+screen (stage L4): with the network cut, a turn was played, the page was reloaded, and *the page
+loaded but the app did not render*. The one request that failed was `assets/kit-….js`.
+
+**What happened.** At stage L3 the kit page was kept off a player's phone by three exclusions in
+`packages/app/vite.config.ts`, one of them `assets/kit-*`, which then matched one file: the kit
+page's own script. At stage L4 the play screen's frame was drawn from the kit's components. The
+build puts what two pages share into a script of its own and names it after what is in it: the
+kit's components became `assets/kit-….js`, which the app's page needs, and the exclusion matched
+that too. The app started while the network was there, and could not start without it.
+
+**Why nothing said so.** `entries-build.test.ts` held the exclusion with "nothing of the kit is
+stored", read as "nothing in the worker's list has `kit` in its name". It had a control, which
+fired: with the exclusion removed the test failed. It had nothing that required the list to hold
+what the app needs. **"Forbid X" is half a specification** (CLAUDE.md, the rule P2.1 earned): the
+rule forbade more than it should, and forbidding more only makes a must-fail control pass harder.
+The pictures had their must-pass half ("every picture the board draws is stored") and the scripts
+did not.
+
+**How far it reached.** The branch with the board alone (`look/l4-board`) was built and read: its
+page needs four scripts and all four are stored. It starts with the frame's branch
+(`look/l4-frame`), and is fixed on that branch, before its pull request was opened. It was never on
+`main` and never deployed.
+
+**Fixed.**
+
+- The kit page's key in the build's `input` is `kitPage`, so its own script is `assets/kitPage-….js`,
+  and the exclusion names that. A shared script is stored whatever the build calls it.
+- `entries-build.test.ts` reads the app's page from the build, follows each script to the scripts it
+  imports until nothing new is found, and requires every one of them in the worker's list. It
+  refuses to pass on a page it read no script from.
+- Control `app-scripts-in-the-worker` puts the old exclusion back and sees the test fail, naming
+  the script. `clay-not-in-the-worker` and `clay-board-art-in-the-worker` still fire.
+
+**An instrument defect and a product defect together; both fixed inline,** because the instrument
+was passing a build that could not start offline, which Gate 1 requires. What caught it was the
+check that plays the built app with the network cut, not the one that reads a list of names.
+
+## 110. In a fresh checkout on Windows a self-test control did nothing, because Python files were checked out with Windows line ends — FIXED inline 1 October 2026
+
+**Found 1 October 2026** by `pnpm ci:selftest:inert`, inside `pnpm verify`, the first time verify was
+run in a second, fresh checkout of the repository on the Windows PC (made to fix #109 on its own
+branch): *1 of 158 controls are inert*, `clay-board-read-where-geometry-says`.
+
+The control changes `PAD = 24` in `tools/art-pipeline/clay/board.py` by matching the line with its
+line ends. `.gitattributes` pins `.ts`, `.json`, `.md` and the rest to Unix line ends and said
+nothing of `.py`, so a fresh Windows checkout wrote `board.py` with Windows ones and the match found
+nothing. In the working checkout the file had been written by hand with Unix line ends, and on CI's
+Linux it always has them, so the control fired everywhere it had been run.
+
+**Fixed:** `*.py text eol=lf` in `.gitattributes`. The control fires in the fresh checkout. **An
+instrument defect, fixed inline**, and a control that does nothing is what the inert check was put
+into every verify to find (#100).
+
+## 111. With the coach and the hints off, Settings still offered to show them again, and said they would appear — FIXED 1 October 2026, before the look was deployed
+
+**Found 1 October 2026**, while the Gate 1 audit was re-aimed at the Clay play screen. Ruling 2 of
+stage L4 (`docs/LOOK_PLAN.md` §14) switched the coach and the first-encounter hints off until the
+guided game replaces them at L6. Settings still has the row *First game guidance*, *Show it again*,
+and its confirmation says that the coach and the short lines will appear again. They will not.
+The row still does one thing: it brings back the difficulty screen's *Recommended for your first
+game*.
+
+**Filed, and then fixed the same evening,** because what made it safe to leave was gone. It was
+left on the ground that nothing reached a player before L6. That evening Shantanu ruled the look
+deployed now (`docs/LOOK_PLAN.md` §14), so a player would have read a row that says something
+false.
+
+**Fixed:** the row is not drawn while there is no guidance to show. The shell hands the Settings
+screen no way to show it again, and the screen draws the row only when it is handed one. The
+difficulty screen's *Recommended for your first game*, which the row also brought back, can no
+longer be brought back on a device that has played; nothing else is lost. The Gate 1 audit, which
+used to measure the row's confirmation as a screen, now records in every pass that the row is not
+there; a unit test holds the screen, and control `settings-no-guidance-row-when-off` draws the row
+regardless and sees the test fail. **To decide at L6:** whether the row comes back as the way into
+the guided game.
+
+## 112. The board's test read three files the test cache could not see, since stage L4; and a new test was about to do the same — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, while writing a test that holds the screens' catalogue to the screens
+(`docs/LOOK_PLAN.md` §17). That test reads the sources of two packages. Asking whether the test
+cache would notice a change in the second one led to asking the same of the tests already there.
+
+**It is #108 again, in another package.** Turbo hashes a test task over its own package's files and
+its dependencies' test tasks. `packages/ui/src/board/clay.test.ts`, written at stage L4, holds the
+page to four numbers written in Blender's scripts (`tools/art-pipeline/clay/board.py` and
+`pieces.py`) and to the Clay manifest (`packages/app/public/art/clay/manifest.json`). All three are
+outside `packages/ui`, and none was in its hash. So from 1 October, a script or a manifest changed
+on its own would have had `pnpm verify` replay a cached green for the test that exists to catch
+exactly that.
+
+**What kept it from being noticed.** The control for that test, `clay-page-and-blender-agree`, runs
+the suite directly, not through the cache, so it fired every time. A control that goes round the
+cache says nothing about the cache. And `pnpm art:clay:check`, beside it in `pnpm verify`, is not
+cached and re-measures the manifest itself, so the manifest's own numbers were never unguarded;
+the page's agreement with them was.
+
+**No wrong result is known to have been replayed, and the history was not searched for one.** Run
+directly, with no cache, the test passes today, so the page and Blender agree now. Whether a stale
+green was ever replayed between two runs on the way here is not known.
+
+**Fixed, in the same change, because it is the instrument:**
+
+- The three files are declared in `packages/ui/turbo.json` and listed in `tools/ci/turbo-check.ts`,
+  which requires each in the task's hash. Control `turbo-board-test-reads-hashed`: with one taken
+  out, the guard fails naming it.
+- The new catalogue test lives in `packages/app`, which depends on both packages it reads, so
+  nothing it reads is outside its hash.
+
+**Not fixed, and said plainly: nothing finds the NEXT one.** The guard holds the reads that are
+listed. A test that reads a file outside its package and is not listed is as invisible as these
+were, and this is the second time one was found by a person asking, not by a check. A check for it
+would have to read every test for the paths it opens. Not built; whether it is worth building is
+Shantanu's to say.
+
+## 113. A resident's Recall, a rule since queue Q6, had no button on the play screen: no player could use it — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the walk of the guided game (`docs/LOOK_PLAN.md` §19). The lesson's
+last turn leads the player to send the heart's resident out, engulf with it, and Recall it home.
+The walk presses only what the guide lights. At that step nothing was there to light.
+
+**What was wrong.** Queue Q6 (Kartik's rule, built on 30 September, `docs/DEVIATIONS.md` and the
+queue's record) gave a resident a Recall: back to its organ in one move, for 1 Action Point. The
+engine has it. The room and the session count it a move, so it can be undone. `offered.ts` offers
+it, as a button. And the play screen draws a button offer in one of two places: as a move button,
+if its action is on the screens' own list of moves, or as a row of the piece's actions, if it is in
+the piece's catalogue. Recall was added to the session's list of moves and not to the screens', and
+it is not a row. So it was offered, tested as offered, and drawn nowhere. **The rule has been in
+the app, and on the server, since the evening of 30 September, with no way for a player to use it.**
+
+**Why nothing said so.** Every test of it asks whether the offer exists and whether the engine
+accepts it. None asks whether it is on the screen, and the Gate 1 audit measures the screens that
+are there, not the controls that are not. How to play describes it; nobody reported that they
+could not find it.
+
+**It is the same shape as #94 and its test:** two lists of one fact, in two packages, drifting.
+
+**Fixed, in the same change, because the lesson cannot be built on a control that is not there:**
+Recall is on the screens' list of moves, and is drawn beside a resident's other buttons.
+`tests/session/src/guide.test.ts` holds the screens' list to the session's, exactly. Control
+`moves-are-one-list`: with Recall taken off the screens' list again, the test fails saying the two
+disagree.
+
+**Not checked, and said plainly:** whether any OTHER offer is drawn nowhere. The test added holds
+the two lists of moves together; it does not ask of every offer `offered.ts` can make whether the
+play screen has a place for it. The walk of the guided game leads through 36 steps and found one
+control missing; that is evidence about those steps.
+
+## 114. The Monocyte's engulf was worded "Chip" when it kills — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the same walk. The lesson says of a parasite on its last hit point,
+*"now it can be swallowed"*, and the button it lit said **Chip**.
+
+**What was wrong.** Ruled on 6 September: an action's row uses the word a player would use for what
+it does to this target, and the Monocyte does not swallow a fungus or a parasite, it wounds them,
+so its engulf on those is worded "Chip". That is right for a fungus with two hit points. On the
+target's LAST hit point the same action kills it, and the engine's own log says "engulfed". And the
+engine offers a parasite to the Monocyte only on its last hit point, so for a parasite the row
+always said Chip and always swallowed.
+
+**Fixed:** the word is Chip while the target will survive it, and Engulf when it will not. It is
+the ruling's own rule, applied to the case it did not name. `tests/session/src/engulf-word.test.ts`
+drives the engine to both positions and reads the word; control
+`engulf-is-chip-only-when-it-wounds`.
+
+**Left, and his or Kartik's to say:** coating a bacterium is worded **Tag** on its button and
+**Coat** in How to play, and coating a worm or a parasite is Coat in both. The buttons follow the
+engine's own log, which says "tagged" of a bacterium and "coated" of a worm. A newcomer meets two
+words for one thing. The lesson's sentences name each button as the screen words it, and say once
+that a tag coats.
+
+**Ruled the same day, and done:** it is one thing, so the word is Coat on every target, on the
+screens and in the engine's three sentences that said tagged (queue Q14, `docs/DEVIATIONS.md` #14).
+
+## 115. With two new cards at the largest text, the cards could be scrolled 2 px sideways while they were dealt — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's second run on the guided game's branch, in the
+game's own walk and not the lesson's: *"arrivals @200% font size: scrolls sideways inside itself:
+346 > 344"*.
+
+**What was wrong.** The play area's grid of new cards scrolls down when a draw has more cards than
+fit. Nothing said it must not scroll sideways, and a part that scrolls one way may scroll the other.
+A card is dealt with the kit's arrival, which swells about a tenth past its size as it lands. With
+one card, or at the standard text, there is room round it. With two cards at 200% text the columns
+fill the grid, and the second card's swell reaches 2 px past the grid's edge for a few frames.
+
+**Measured, not inferred:** the page itself sampled the grid on every frame through the lesson's
+first two turns at 200% text, 360 by 780, in a headless browser on the PC. One card: never past.
+Two cards: 2 px past at its worst.
+
+**Why the clean audits since L5 had not seen it.** The check is from L5, and so is the deal. It
+needs two cards on the audit's first turn, which Easy draws one time in six, and the audit's reading
+taken in the third of a second the arrival lasts. Which earlier runs drew two cards is not recorded. **The
+audit's game is not seeded, so what it measures on this screen differs from run to run**; that is
+left as it is, and said here.
+
+**Fixed:** the grid scrolls down and never sideways. The swell still reaches 2 px past the edge and
+is cut off there for those frames; a finger can no longer move the cards sideways. The same
+sampling after the change reads the grid as one that does not scroll sideways.
+
+**Product, not instrument:** the audit's reading was right.
+
+## 116. How to play names six differences between the difficulties; the engine has more, and some are said nowhere in the app — OPEN, the designer's
+
+**Found 2 October 2026**, while the card of the main differences was built (`docs/LOOK_PLAN.md`
+§19). The card shows the six that How to play's section 10 names. Before heading it, every place
+the engine reads the difficulty was read.
+
+**The six section 10 names:** Action Points a turn, how long infections keep coming, how many cards
+a turn can bring, how many antibodies a store holds, where a worm starts, and what gives memory.
+
+**What else the engine does differently,** each read from `packages/engine/src`:
+
+| | Easy | Normal | Hard | Said in How to play? |
+|---|---|---|---|---|
+| The Killer T-Cell's range | 3 | 2 | 2 | Yes, on the cell |
+| Using memory of a disease | free | free | 1 Action Point | Yes, section 8 |
+| A bacterium divides on a roll of | 1 or 2 | 1 to 3 | always, and a second on 1 to 3 | Not by difficulty |
+| Antibodies made at once | 1 to 3, the more reached sooner | 1 to 3 | 1, or 2 with the Helper T-Cell | Not by difficulty |
+| Four made of one class brings one more each time after | yes | no | no | Not by difficulty |
+| Doses of antivenom in stock | 2 | 1 | 0 | Not by difficulty |
+| Chance that Pathogen X is in the game | 2 in 10 | 6 in 10 | certain | Not by difficulty |
+| Pathogens hop along the lymph | no | no | yes | Not by difficulty |
+| A hurt organ regrows | yes | yes | no: only its penalty lifts | Not by difficulty |
+
+"Not by difficulty" means that no sentence of How to play that names Easy, Normal or Hard says it.
+Five sentences name a difficulty: the window, the Action Points, the Killer T-Cell's range, and two
+on memory. **Not checked:** the printed rulebook, quick reference and study packet, and whether
+How to play says any of these without naming a difficulty.
+
+**Why it is filed and not fixed.** What a player is told about the rules, and where, is the
+designer's. The card is headed *The main differences* so that it does not claim to be all of them.
+Section 10 begins "What changes:" and lists six.
+
+**For Kartik:** whether any of these belongs among the main differences, on the card and in
+section 10; and whether Hard's description on the difficulty screen, "Faster spread, tighter caps",
+should say more.
+
+**Ruled 2 October 2026, and built:** asked which of these a player should be told, Shantanu
+answered *"Make the call yourself please."* The call: all of them. The printed rulebook has a table
+of what changes, eleven rows, which this finding had not read when it said "Not checked". Six of
+the nine rows above are in the rulebook, whole or in part; three are in neither (#118). The app's
+card is now the rulebook's table with four rows more for what the engine also does, shown on the
+difficulty screen, on an Easy game's result and in How to play in place of section 10's sentence
+(`docs/LOOK_PLAN.md` §20). **Hard's description on the difficulty screen is left as it is:**
+"Faster spread, tighter caps" is true of what the table shows.
+
+
+## 117. At 200% zoom a long disease name in the log ran past its sheet, and the result's log scrolled sideways — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's run on the card of the main differences, in a
+screen that card does not touch: *"result, what happened @200% page zoom: scrolls sideways inside
+itself: 156 > 148"*.
+
+**What was wrong.** A line of the log is a row: the turn's tag, then the line's words. A part of a
+row is never narrower than its longest word unless it is told it may be, and the words were not
+told. At 200% zoom the screen is 180 px wide and a line's words have about 84 px. A long disease
+name in bold is wider than that, so the line ran past the sheet, and the result's log, which
+scrolls down, could be pulled sideways. The same component is the game's Messages.
+
+**Why the audits before had not seen it.** The log shows a game's last eight messages, and which
+diseases those name is the dice's. Of ten games idled to their result on the same build, at 180 px
+wide, one overflowed as played, by the audit's own 8 px, and nine did not. **Shown by putting a
+long name into a line** of a game that had not overflowed: before the change the line's right edge
+was 2 px past the sheet's; after it, inside.
+
+**Fixed:** a line's words may break where they must.
+
+**The third time in one day** that what the audit finds on a screen has depended on what its game
+happened to deal (#115, and a row's several targets not reached at one zoom). The audit's game is
+not seeded. Whether to seed it, as the measuring page's game is, is his to weigh: a seeded walk
+measures the same screens every time and would have missed both of these, and an unseeded one
+finds them only some of the time.
+
+## 118. Five places where the printed rulebook and the engine differ, or the rulebook is silent — OPEN, the designer's
+
+**Found 2 October 2026**, when the rulebook's table of what changes between the difficulties was
+read against the engine, row by row, to build the app's (#116). The app's table says what the
+engine does. **The printed board and the app must agree,** and in these they do not, or cannot be
+checked to:
+
+| | The engine, and so the app | The printed rulebook |
+|---|---|---|
+| 1 | On Easy, practice adds 1 antibody AFTER the cap: a Produce can make 4 | "The total is then capped: 3 per action on Easy and Normal" |
+| 2 | A hurt organ gets 1 integrity back after 2 turns with its branch clear, on Easy and Normal. On Hard it never does, but its penalty lifts | Says nothing of an organ healing, or of a penalty lifting |
+| 3 | On Hard, an uncoated invader at a lymph node copies itself to a linked route on a roll of 1 or 2 | The lymph is a shortcut for cells. Nothing of pathogens using it |
+| 4 | Pathogen X is in 2 games of 10 on Easy, 6 on Normal, every game on Hard, and comes in the first half | Says what Pathogen X is. Nothing of when, or how often |
+| 5 | A bacterium divides on a roll of 1 or 2 on Easy, 1 to 3 on Normal; on Hard always, and twice on 1 to 3 | "guaranteed on Hard, on a die roll otherwise", with no numbers and no second copy |
+
+**1 is a disagreement.** The engine's own comment says the order is the original's and was kept on
+purpose in the port: the cap is applied before the practice bonus. Either the rulebook's sentence
+or the engine's order is the intended one.
+
+**2 to 5 are silences.** A table game played from the rulebook has no rule for them, so it plays
+differently from the app: organs do not heal at the table, and Hard is gentler there than in the
+app.
+
+**Not checked:** the quick reference and the study packet for the same five; the rest of the
+rulebook against the engine. This was one table read against one list.
+
+**Why it is filed and not fixed.** The rules are Kartik's, and so are the printed words. Which side
+is right in 1, and whether 2 to 5 are printed, is his.
+
+**Ruled 2 October 2026** (`docs/LOOK_PLAN.md` §22), by Shantanu, who rules what was marked as the
+designer's:
+
+| | Ruled | Done |
+|---|---|---|
+| 1 | Keep the engine; change the print | The rulebook says the cap comes before the practice bonus, and that on Easy a practised class can make 4 |
+| 2 | He asked for more detail | Open |
+| 3 | Print it | Printed |
+| 4 | He took a recommendation that had not been made | Open: one was put to him the same day |
+| 5 | Print the numbers | Printed |
+
+**So 1, 3 and 5 are closed. 2 and 4 are open.**
+
+**2 and 4 ruled the same day** (`docs/LOOK_PLAN.md` §23): the game is right, and the rulebook and
+everything else are brought to it. Organs recovering and how Pathogen X comes are printed, and are
+in How to play. **All five are closed.**
+
+## 119. The rulebook's Spread phase advances the invaders first and the engine advances them last; and a damaged Spleen does nothing on Hard — OPEN
+
+**Found 2 October 2026**, while the rules for dividing and for the lymph were being printed
+(#118, rulings 3 and 5): to say WHEN the lymph rule happens, the two orders had to be read side by
+side.
+
+**1. The order of the Spread phase.** The rulebook's is a numbered list, and so claims an order:
+
+| | The rulebook | The engine |
+|---|---|---|
+| 1 | Every invader advances; what reaches an organ attacks it | Bacteria divide |
+| 2 | Bacteria divide | Hidden pathogens burst |
+| 3 | Hidden pathogens may burst | Free viruses hide |
+| 4 | Free viruses may hide | Toxin-makers release |
+| 5 | Lodged worms chew | Lodged worms chew |
+| 6 | Toxin-makers release | On Hard, the lymph |
+| 7 | Spent cells recover | **Every invader advances; what reaches an organ attacks it** |
+| 8 | Advance the turn marker | Worms lodge; organs recover; spent cells recover; the next turn |
+
+**It changes games.** An uncoated bacterium one step from an organ: at the table it advances,
+strikes and is gone, and nothing is left to divide. In the app it may divide first, and then both
+advance and both reach the organ. So the app is the harsher of the two there. The rulebook's own
+one-line summary of the phase is in the same order as its list. How to play says only that invaders
+advance, and claims no order.
+
+**The paragraph printed for the lymph says "before any invader advances",** which is true of the
+app whichever way this is ruled, and it stands outside the numbered list for that reason.
+
+**2. The Spleen on Hard.** The rulebook's table of organs says a damaged Spleen makes bacteria
+divide more aggressively. In the engine it raises the roll a bacterium divides on by one, on Easy
+and Normal. On Hard a bacterium always divides, the roll is not used, and a damaged Spleen changes
+nothing at all. The printed sentence for dividing now says "on Easy and Normal", which is what the
+app does.
+
+**Why it is filed and not fixed.** Changing the engine's order is a change to the rules, and to
+every game the corpus holds; changing the rulebook's is a change to what the table plays. Which is
+right is a ruling. Put to Shantanu the same day.
+
+**Not checked:** the study packet's account of the phase; whether any other numbered list in the
+rulebook claims an order the engine does not keep.
+
+**Ruled 2 October 2026** (`docs/LOOK_PLAN.md` §23): print the game's order, and it is printed, in
+the rulebook's list and its one-line summary; How to play says it in a sentence. A hurt Spleen gets
+no penalty of its own on Hard for now, and the question is on `docs/TODO.md`. **Closed,** but for
+that.
+
+## 120. One relay test timed out once inside `pnpm verify`: seen three times, explained, and the test rewritten, 2 October 2026
+
+**Seen 2 October 2026**, on the first `pnpm verify` of the change that printed the rulings of §22.
+`packages/server/src/node.test.ts`, *"a phone that goes silent is marked away within a few
+heartbeats, while a phone that answers stays present"*, failed with *"timed out waiting for: the
+silent member is in"*, after its 3 seconds. Nothing the relay runs had changed: the change was a
+label in the content pack, the printed texts and documents.
+
+**Not reproduced.** The test alone, three times: passed. Four times with sixteen processes
+spinning beside it: passed. The whole `pnpm verify` again: passed, 41 of the relay's 41.
+
+**A guess, not a finding.** The test joins a client that never answers a ping, with a heartbeat of
+50 ms, and waits to see that member present before it waits to see it away. If the test's own
+process were held up for longer than the few heartbeats that member is present, it would look
+after the member had already been marked away and never see it present. That would need the
+process stalled for a tenth of a second or more, and the load that was tried did not do it.
+
+**Left as it is.** Changing a test on a guess is how a real fault gets explained away. It is the
+same shape as #83. If it is seen again, what else was running is the thing to write down.
+
+**Seen again, twice, and explained: 2 October 2026**, at the battery for the
+`serialize-javascript` pin. Three sightings in two days, with three different messages:
+
+| When | Where | What the test said |
+|---|---|---|
+| 1 October | GitHub's runner, on Dependabot's pull request #136 | `RelayError: closed`, close code 1006, 258 ms in |
+| 2 October | `pnpm verify` on the PC, the sighting above | timed out waiting for: the silent member is in |
+| 2 October | The battery's first forced run, 13 test tasks at once on the PC | timed out waiting for: the silent member is shown away |
+
+**One cause fits all three, and it is not the guess above: the relay ended the host, the phone
+that answers.** Measured with a probe, run once and removed. A relay on the test's 50 ms
+heartbeat, phones that answer every ping, and the process held on purpose:
+
+| Heartbeat | The process held | Phones that answer, ended by the relay |
+|---|---|---|
+| 50 ms | not at all | 0 of 20 |
+| 50 ms | 120 ms, at no particular moment | 2 of 20 |
+| 50 ms | 120 ms, just after a ping went out | **20 of 20**, close code 1006 |
+| 50 ms | 30 ms, just after a ping | 0 of 20 |
+| 300 ms | 120 ms, just after a ping | 0 of 10 |
+| 300 ms | 330 ms, just after a ping | 10 of 10 |
+
+- **Why.** The relay pings on a timer and ends whoever has not answered by the next tick. A process
+  that has been held runs the timers that fell due before it reads what is waiting on its
+  connections. So if it is held past the next tick, the tick runs first and ends the connection
+  with the answer to its ping still unread.
+- **Each message is the host ended at a different moment:** while entering (closed, 1006); before
+  the silent member joined (never seen in); after (never seen away, because the host had stopped
+  hearing).
+- **Shown:** that a stall of one heartbeat ends a phone that answers, with the close code CI
+  reported. **Not shown:** that this is what happened each of the three times. The stalls
+  themselves were not recorded, and with the whole suite forced beside the probe, 150 phones that
+  answer were watched on a 50 ms heartbeat and none was ended: load alone did not reproduce it in
+  that run, as the first attempt above did not.
+
+**Not a fault in the relay as it runs.** Its heartbeat is 20 seconds. The same thing there would
+need the process stopped for 20 seconds, and would end every connection it has. Nothing in the
+relay is changed, and nothing is deployed for this.
+
+**The test is changed, because it was measuring how busy the machine was.** It beats the relay's
+heart itself: the relay's interval is on a clock the test moves, and each beat is given only when
+the relay has read the answer to the one before. The sockets, and everything else on a timer, are
+real. With the process held 150 ms after every ping, six stalls a run, the stall that ended 20 of
+20 before: 12 runs of 12 pass. It takes 0.2 seconds where it took 2.
+
+**And the half that could not fail now can.** "A phone that answers stays present" was read from
+the host's own picture of the room, which goes on saying "present" after the host has been ended.
+A relay that ended everybody would have been reported as a silent member never shown away. The
+test now asks the relay for a seat after the last beat, and fails naming a phone that answers.
+Controls, each fired: `node-heartbeat-spares-who-answers` (the answer to a ping no longer
+recorded: *THE RELAY ENDED A PHONE THAT ANSWERS*), and `node-heartbeat`, narrowed to its own
+message (*the silent member is shown away*).
+
+**Closed.** Dependabot's pull request #136 is red on this test and on nothing else.
+
+## 121. Under queue Q15's deck, the fast panel control's verdict on the Brain at integrity 1 became a coin flip — the control now asserts its strength, 2 October 2026
+
+**Found building queue Q15** (Diphtheria and Anthrax as bacteria that release their toxins), when
+`metrics-control.test.ts`'s *"the Brain at integrity 1 instead of 2 fails the panel, on more than
+one metric"* went red, and stayed red against the bands measured again on the new deck. It is the
+same thing as #107, on the other control, and it was handled the same way.
+
+**Measured before changing anything**, each control at five fast-scale sizes on the original as
+ruled, under Q15's deck (the four shifts in σ: turns survived, trunk kill share, antibodies made,
+organs damaged):
+
+| Arms × batches × games | Brain at 1, Normal | Brain at 1, Hard | One AP fewer, Normal | One AP fewer, Hard | Brain lane 3 → 4 |
+|---|---|---|---|---|---|
+| 4 × 8 × 50 (the control's) | pass: −4.1 1.1 −1.3 −2.4 | FAIL | pass | FAIL | pass, both |
+| 4 × 8 × 60 | pass: −3.3 0.7 −1.8 −3.0 | FAIL | FAIL | FAIL | pass, both |
+| 4 × 8 × 70 | FAIL: −4.6 0.6 −1.2 −3.3 | FAIL | FAIL | FAIL | pass, both |
+| 8 × 8 × 50 | FAIL: −3.8 −3.4 −1.3 −1.0 | FAIL | pass | FAIL | pass, both |
+| 8 × 8 × 70 | FAIL: −4.2 −0.1 −0.2 −3.5 | pass: −4.9 0.3 −2.8 −2.3 | FAIL | FAIL | pass, both |
+
+**On Normal the Brain's verdict at this scale is a coin flip** (3 of 5 sizes). What holds at every
+size: turns survived falls 3.3σ to 4.6σ. The second metric past 3σ comes and goes, and is a
+different one each time.
+
+**The shipped panel, measured against the bands of queue Q15** (24 arms, at the check's own arm of
+20 × 100 games, each mutant on the original as ruled):
+
+| | Normal | Hard |
+|---|---|---|
+| Unmutated | pass: 0.4 0.5 0.7 −0.7 | pass: −0.4 −1.5 −0.8 0.8 |
+| Brain at 1 | **FAIL**: −6.3 0.8 −2.8 −5.8 | **FAIL**: −6.5 −0.3 −4.6 −5.2 |
+| One AP fewer | **FAIL**: −4.1 3.4 −14.1 −1.3 | **FAIL**: −2.8 −2.8 −31.8 −1.7 |
+| Brain lane 3 → 4 | pass: 2.8 0.2 1.6 0.1 | pass: 1.4 −1.3 0.0 0.1 |
+
+So at the scale that ships, the panel still fails both changes it should on both difficulties, and
+the blind spot is where #17 and #34 put it. **The fast control's Normal verdict was the marginal
+thing, not the panel.**
+
+**So the control asserts what holds:** the Brain at integrity 1 must move turns survived past 3σ,
+downward, on Normal. A control makes it fail on purpose (`balance-normal-brain-strength`: the
+mutant keeps the Brain's two points, and the test goes red). An instrument's claim re-measured and
+narrowed to the measurement, fixed inline. The probe that measured this was run once and removed.
+
+**Also in the table, and left:** one fast-scale size (8 × 8 × 50) read the UNMUTATED original at
+−4.0σ on trunk kill share on Normal. One metric, under the 6σ that fails alone, so it passed. It is
+the noise of a small calibration, and why these controls do not assert more than they do.
+
+## 122. The control on invader ids across two rooms fired 15 times in 16 — its test now plays seeded games, 2 October 2026
+
+**Found by the full self-test**, in the battery for the `serialize-javascript` pin:
+`room-ids-across-rooms` came back *THE GATE PASSED*. Run again by hand it fired 5 times of 6.
+
+**Measured**, with the two-rooms test's own game played 1,000 times on the page's dice:
+
+| | Held | Caught |
+|---|---|---|
+| The engine as it is | 1,000 | 0 |
+| With the control's change: one counter shared between rooms, restarted by any new game | **63** | 937 |
+
+- **56 of the 63:** the first table, on Hard with nobody playing, lost its game on the very turn
+  the second table began. The shared counter is restarted when the second table's first pathogen
+  arrives, which was after the first table's last draw. Nothing was left to hand an id to.
+- **The other 7:** every id handed out again was one whose first holder had already gone.
+- **The test never failed falsely:** 1,000 of 1,000 on the engine as it is.
+
+So the control's verdict was a roll of the dice. Whether that was so from 30 September, when it was
+re-aimed for queue Q5, was not measured on the earlier form.
+
+**The test now plays eight seeded pairs of games** (the dice are replaced inside the test and
+nowhere else), the same on every run. The second table's pathogens arrive before the first
+table's next ones, and an id the first table has not held before must be higher than every id it
+has ever held. With the control's change, 7 of the 8 games catch it, on every run; in the eighth
+the second table's first turn hands out enough ids to pass the first table's highest. The control
+fired 3 of 3. An instrument, fixed inline.
+
+## 123. The control on the board's art in the service worker failed on a different line since the old art was removed, 2 October 2026
+
+**Found by the same full self-test:** `clay-board-art-in-the-worker` failed *without* the message
+it is aimed at.
+
+The build test opens with a guard, *THE WORKER LIST WAS NOT READ*, which asked for more than 100
+entries. When the art before Clay was removed (commit `6796ea2`), the list fell from 224 entries to
+133. The control leaves the board's 39 pictures out, which leaves 94, so the test failed on the
+guard and never reached the line that names the board's art. The gate was still red; it was red
+for the wrong reason, which is what the self-test is there to tell apart.
+
+**The guard now asks whether the list was read, not how long it is** (more than 20). All four
+controls on that test fire with their own messages again. An instrument, fixed inline.
+
+**Why it went unseen for the rest of that day.** What runs on every `pnpm verify` and in CI is
+`ci:selftest:inert`, which asks only that each control's change still changes its file. The full
+self-test, which runs every gate against every change, takes half an hour (30 minutes in this
+battery) and is run by hand. When it was last run in full before this is not recorded. #122 and
+this are what it found.
+
+## 124. The 10,000-game property tier had been red or cancelled on 11 of 16 nights, and nobody had read it — 2 October 2026
+
+**Found while reading why Dependabot's pull request was red:** the list of runs showed the nightly
+workflow failed on `main` on 1 and 2 October.
+
+| The nightly property leg, 17 September to 2 October | Nights |
+|---|---|
+| Finished, green (28 to 40 minutes) | 5 |
+| Cancelled at its 45-minute limit | 9 |
+| Failed | 2 |
+
+**The two failures are one stale invariant.** Queue Q4, on 30 September, made an antivenom kill
+teach no memory, in the engine and in the original as ruled. The property suite's `memory-on-kill`
+was not brought level: it still required every kill of the last of a disease on Training to record
+memory. The 10,000-game tier reaches such a kill in its fourth game (seed 810003, Training, turn
+10: antivenom on the last Snake venom) and stops at the first violation. So on both nights 4 games
+of 10,002 were played, and the engine was right each time.
+
+- **The 120-game tier that runs on every push stayed green:** none of its games gives the last
+  venom antivenom on Training.
+- **The invariant now holds an antivenom kill the other way round:** on Training, memory that
+  appears across one is the violation. Two controls, each seen to fail against the invariant as it
+  was: the invariant's two directions on a hand-built state, and a wrong engine (the antivenom
+  clause taken out of the original as ruled) on the nightly's own game, beside the ruled engine on
+  the same game, which must pass with something checked.
+
+**The nine cancellations are the limit, not the suite.** The leg takes 28 to 40 minutes when it
+finishes, and the job's limit was 45. The workflow's own header said the leg took about 14. The
+limit is now 120 minutes: it is there for a job that has hung.
+
+**The tier's 10,002 games, played on the PC with the invariant fixed: no violation. In two runs,
+not one.**
+
+| Run | Games | Found |
+|---|---|---|
+| `tests/property/full-run.ts`, stopped at the 60-minute limit Claude had given it, not by a failure | 7,000 reported: all 3,334 on Easy, all 3,334 on Normal, the first 332 on Hard; 824,805 states | No violation, where it had stopped at 4 |
+| The 3,334 games on Hard by themselves, with the tier's own seeds and options, from a script that is not kept | 3,334; 220,876 states, in 21 minutes | No violation. Every one of the ten invariants had something to look at: the fewest, `memory-on-kill`, 10,628 times |
+
+- **What the two runs are not.** The tier's own last lines, which say how often each invariant was
+  checked over the whole run and fail it if one checked nothing, were never printed: the first run
+  was stopped before them. Those counts are known for Hard alone.
+- **On this PC the tier is slower than on GitHub's runner:** an hour for its first 7,000 games,
+  with other work running beside it for part of that. Its own run on the nightly, with the new
+  limit, is what shows it green there, and that has not happened yet.
+
+**What this says about the instrument, plainly.** For the sixteen nights to 2 October the
+10,000-game tier finished five times, the last of them on 29 September. The queue's sixteen
+changes to the engine, Q1 to Q16, all came after that, and the tier has checked none of them
+beyond its first four games. The nightly recorded the suite as failed on both nights, and the
+dashboard is built from that record. Nobody read it, and that includes Claude at the start of each
+session.
+
+**Not built here, and put to Shantanu:** the full self-test as a nightly job, so that a control
+that stops firing is seen the next morning and not at the next battery; and reading the nightly
+run's result at the start of every session.

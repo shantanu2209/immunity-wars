@@ -322,7 +322,7 @@ const BIO_WORDS =
   /antibod|antigen|immun|infect|patho|bacteri|virus|viral|macrophage|neutrophil|lymph|marrow|spleen|fever|vaccin|toxin|venom|worm|malaria|complement|phagocyt|inflamm|nerve|mucos|spike|protozoa|fung|parasit|strain|clone|plasma|receptor|memory cell|T-Cell|B-Cell|NK Cell|eosinophil/i;
 /** Sentences whose subject is the RULES, not the body. Excluded by the ruling on scope. */
 const GAME_ONLY =
-  /Action Point|\bAP\b|\bTap\b|\btap\b|button|the app|the board|the game|Training|Normal|Hard|per turn|this turn|next turn|each turn|\bturns?\b|\bsteps?\b|\bspaces?\b|\bdie\b|dice|\broll\b|\brange\b|\bcapped?\b|\bstore\b|Undo|saved game|\bcard\b|\bdeck\b|\bpanel\b|in reach|\bstock\b/i;
+  /Action Point|\bAP\b|\bTap\b|\btap\b|button|the app|the board|the game|Easy|Training|Normal|Hard|per turn|this turn|next turn|each turn|\bturns?\b|\bsteps?\b|\bspaces?\b|\bdie\b|dice|\broll\b|\brange\b|\bcapped?\b|\bstore\b|Undo|saved game|\bcard\b|\bdeck\b|\bpanel\b|in reach|\bstock\b/i;
 /**
  * Only How to play is swept. Everything else shown during a game is a status message about the
  * rules ("No antibody you hold matches a virus in reach"), and the biology inside those lines is

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tools/art-pipeline/clay/board.py",
+        "$TURBO_ROOT$/tools/art-pipeline/clay/pieces.py",
+        "$TURBO_ROOT$/packages/app/public/art/clay/manifest.json"
+      ]
+    }
+  }
+}

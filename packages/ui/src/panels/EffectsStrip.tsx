@@ -6,50 +6,62 @@
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { COLOUR, RADIUS } from '../kit/tokens';
 import type { EffectChip } from '../play/effects';
 import { RichText } from './LogPanel';
+import { SAY, TONE } from './onCard';
 
-const COLOUR: Record<EffectChip['kind'], { border: string; text: string; bg: string }> = {
-  bad: { border: '#B03A2E', text: '#B03A2E', bg: '#FBEAE5' },
-  good: { border: '#2F6B4A', text: '#2F6B4A', bg: '#EAF3EC' },
-  info: { border: '#1F6F8B', text: '#1F6F8B', bg: '#E6F2F7' },
+/**
+ * What kind of news each is: said by the bar at its left edge and by the colour of its words. Bad
+ * news in the warning's coral, good in the mint that means healthy, anything else in plain ink.
+ */
+const KIND: Record<EffectChip['kind'], { edge: string; text: string; bg: string }> = {
+  bad: { edge: COLOUR.coral, text: TONE.bad, bg: COLOUR.creamSunk },
+  good: { edge: COLOUR.mintEdge, text: TONE.good, bg: COLOUR.mintSoft },
+  info: { edge: COLOUR.creamSunkEdge, text: COLOUR.ink, bg: COLOUR.creamSunk },
 };
 
 const CHIP: CSSProperties = {
-  borderRadius: 8,
-  padding: '4px 8px',
+  borderRadius: RADIUS.control / 2,
+  padding: '5px 9px',
   fontSize: '0.8125rem',
-  lineHeight: 1.25,
-  border: '1.5px solid',
+  fontWeight: 700,
+  lineHeight: 1.3,
 };
 
 export function EffectsStrip({ chips }: { chips: EffectChip[] }): ReactElement | null {
   if (chips.length === 0) return null;
   return (
-    <div data-panel="effects" style={{ marginBottom: 6 }}>
-      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700, marginBottom: 2 }}>
-        {t('effects.title')}
-      </div>
+    <div data-panel="effects">
+      <div style={{ ...SAY.label, marginBottom: 4 }}>{t('effects.title')}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {chips.map((c) => {
-          const col = COLOUR[c.kind];
+          const col = KIND[c.kind];
           return (
             <div
               key={c.id}
               data-effect={c.id}
               data-effect-kind={c.kind}
-              style={{ ...CHIP, borderColor: col.border, color: col.text, background: col.bg }}
+              style={{
+                ...CHIP,
+                borderLeft: `5px solid ${col.edge}`,
+                color: col.text,
+                background: col.bg,
+              }}
             >
               <span>{c.text}</span>
               {c.duration !== null ? (
-                <span style={{ color: '#78665D' }}>
+                <span style={{ color: COLOUR.inkSoft, fontWeight: 600 }}>
                   {' '}
                   {t('inspect.sep')} {c.duration}
                 </span>
               ) : null}
               {c.detail ? (
                 // An event's why is content prose carrying the engine's <b> emphasis.
-                <span data-effect-detail="1" style={{ display: 'block', color: '#78665D' }}>
+                <span
+                  data-effect-detail="1"
+                  style={{ display: 'block', color: COLOUR.inkSoft, fontWeight: 600 }}
+                >
                   <RichText text={c.detail} />
                 </span>
               ) : null}

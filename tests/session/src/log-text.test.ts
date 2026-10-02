@@ -37,8 +37,8 @@ const FORMERLY_COMPOSED: { site: string; shape: RegExp; keys: string[] }[] = [
   },
   {
     site: 'actions.ts tag',
-    shape: /^Antibod(ies|y) <b>(coated|tagged)<\/b> .+/,
-    keys: ['actions.antibodiesCoatedTheCellsCanNow', 'actions.antibodyTagged'],
+    shape: /^Antibod(ies|y) <b>coated<\/b> .+/,
+    keys: ['actions.antibodiesCoatedTheCellsCanNow', 'actions.antibodyCoated'],
   },
   {
     site: 'actions.ts engulf',

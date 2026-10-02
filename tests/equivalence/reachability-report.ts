@@ -18,6 +18,12 @@
  * generator is wrong and the rest of its output cannot be trusted — fix the generator, never the
  * report. `reachability.test.ts` asserts exactly that.
  *
+ * SINCE QUEUE Q15 (2 October 2026) THE CONTENT HAS NO SUCH ROW: Diphtheria is a bacterium that
+ * releases Diphtheria toxin. A generator that found nothing in content that has nothing would
+ * pass whether it worked or not, so the known answer is kept another way: `unproducible` takes
+ * the table of toxin makers, and the test hands it that table WITHOUT Diphtheria and requires it
+ * to find Diphtheria toxin, and nothing else, as it did.
+ *
  *   npx tsx tests/equivalence/reachability-report.ts          # write docs/CONTENT_REACHABILITY.md
  *   npx tsx tests/equivalence/reachability-report.ts --check  # fail if it would change
  */
@@ -77,19 +83,31 @@ const ENGINE_MINTED: Record<string, string> = {
   'Pneumococcal pneumonia': 'the postFluPneumonia rare event',
 };
 
+/**
+ * §3's finding: the disease names with a FAMILY or a TROPISM entry that nothing can create. Not a
+ * card, not released by a toxin maker, not minted by the engine. The toxin makers are a parameter
+ * so that the test can ask what would be found without one of them (see the header).
+ */
+export function unproducible(toxinMakers: Record<string, string> = content.TOXIN_MAKERS): {
+  family: string[];
+  tropism: string[];
+} {
+  const producible = new Set<string>([
+    ...content.DECK_MASTER.map((c) => c.dz),
+    ...Object.values(toxinMakers),
+    ...Object.keys(ENGINE_MINTED),
+  ]);
+  return {
+    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d)),
+    tropism: Object.keys(content.TROPISM).filter((d) => !producible.has(d)),
+  };
+}
+
 /** The report as the content makes it today. Exported for the test that compares it (#104). */
 export function report(): string {
   const deck = new Set(content.DECK_MASTER.map((c) => c.dz));
-  const emittedToxins = new Map(Object.entries(content.TOXIN_MAKERS).map(([b, t]) => [t, b]));
-
   /* --- §3: content nothing can produce --- */
-  const producible = new Set<string>([
-    ...deck,
-    ...emittedToxins.keys(),
-    ...Object.keys(ENGINE_MINTED),
-  ]);
-  const orphanFamily = Object.keys(content.FAMILY).filter((d) => !producible.has(d));
-  const orphanTropism = Object.keys(content.TROPISM).filter((d) => !producible.has(d));
+  const { family: orphanFamily, tropism: orphanTropism } = unproducible();
 
   const L: string[] = [
     '# Content reachability',
@@ -162,8 +180,8 @@ export function report(): string {
     }
     L.push(
       '',
-      'See [`FINDINGS.md`](FINDINGS.md) #23. Report only — whether such a row should be deleted,',
-      'or given a producer, is a design question for Kartik.',
+      'See [`FINDINGS.md`](FINDINGS.md) #23, where the one such row was given a producer by ruling.',
+      'A row here is a disease the game can never show: give it a producer or take it out.',
     );
   }
 

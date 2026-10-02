@@ -14,6 +14,8 @@
 import type { ReactElement, ReactNode } from 'react';
 
 import { t } from '../i18n';
+import { kitCardStyle } from '../kit/Surface';
+import { RADIUS } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 
 /** The middle's three views and the messages: the play screen holds one of these, or none. */
@@ -53,7 +55,7 @@ export function Drawer({
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(46,42,40,0.28)',
+          background: 'rgba(4, 18, 22, 0.6)',
           zIndex: 11,
         }}
       />
@@ -72,11 +74,9 @@ export function Drawer({
           bottom: FLOAT_RESERVE,
           overflowY: 'auto',
           overflowWrap: 'anywhere',
-          background: '#FFFDF9',
-          border: '1.5px solid #8E6E53',
-          borderRadius: 14,
-          boxShadow: '0 -6px 24px rgba(46,42,40,0.25)',
-          padding: '6px 4px 10px',
+          ...kitCardStyle,
+          borderRadius: RADIUS.sheet,
+          padding: '10px 10px 14px',
           zIndex: 12,
         }}
       >

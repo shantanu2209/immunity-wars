@@ -16,7 +16,7 @@ The equivalence corpus is single-player by scope, so the allocation phase and th
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
 
 
-## Deferred until a competent bot exists (18 arms)
+## Deferred until a competent bot exists (20 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
 emits 9 of 29 actions (docs/FINDINGS.md §1; 8 of 27 at the audit), so these heuristics are
@@ -50,17 +50,19 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:258` `if (!target) return false;`
 - `simulate.ts:278` `else if (goTo('nk', hidden)) moved = true;`
 - `simulate.ts:316` `else if (g.lost) {`
+- `simulate.ts:332` `avgLossTurn: lossTurns.length ? lossTurns.reduce((a, b) => a + b, 0) / lossTurns.length : null,`
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
+- `simulate.ts:335` `cascadePct: lossTurns.length ? cascade / lossTurns.length : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
 ## Uncategorised — still open (27 arms)
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `schema.ts:599` `if (!carded.includes(c)) {`
-- `schema.ts:608` `if (!cells.includes(c)) {`
-- `schema.ts:624` `if (!placed.includes(o)) {`
-- `schema.ts:656` `if (!placedRoutes.includes(r)) {`
+- `schema.ts:606` `if (!carded.includes(c)) {`
+- `schema.ts:615` `if (!cells.includes(c)) {`
+- `schema.ts:631` `if (!placed.includes(o)) {`
+- `schema.ts:663` `if (!placedRoutes.includes(r)) {`
 - `actions.ts:200` `if (g.phase !== 'command') return err('Not in command.');`
 - `actions.ts:271` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:301` `if (!c) return err('B-Cell is stationary.');`
@@ -72,8 +74,8 @@ Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 - `actions.ts:656` `if (!iv) return err('No such pathogen.');`
 - `actions.ts:661` `if (!attackable(iv)) return err('Cannot reach it in the bloodstream yet.');`
 - `actions.ts:664` `if (apNow(g) < MEMORY_RESPONSE_AP_HARD)`
-- `construct.ts:163` `default:`
-- `construct.ts:125` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
+- `construct.ts:170` `default:`
+- `construct.ts:132` `if (!g.deck.length) g.deck = shuffle(g.discard.splice(0));`
 - `effects.ts:65` `if (/Cellulitis/.test(iv.disease) && by === 'antibody') s2.strepKilledByAntibody = true;`
 - `queries.ts:250` `const mod = g.fx ? (g.fx.apMod ?? 0) : 0;`
 - `queries.ts:278` `return [...FAM_KEYS, 'X'].reduce((n, f) => n + (g.ab[f] ?? 0), 0);`

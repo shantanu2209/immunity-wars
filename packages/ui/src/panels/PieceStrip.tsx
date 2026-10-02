@@ -7,12 +7,17 @@
  * ambiguity behind the S25's dimmed Neutrophil was not knowing which cell a tap acted for.
  *
  * Dumb by design: the shell says which pieces exist and which is selected; names are content.
+ *
+ * DRAWN IN CLAY since stage L4 of the look (docs/LOOK_PLAN.md §14): each chip is the kit's button
+ * with the piece's own picture on its base, and the selected one is pressed in and ringed.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
+import { SAY, TONE, pieceArt } from './onCard';
 
 export interface PieceChip {
   kind: 'cell' | 'resident';
@@ -29,17 +34,20 @@ export interface PieceChip {
 const CHIP: CSSProperties = {
   minHeight: 44,
   minWidth: 0,
-  padding: '3px 4px',
-  borderRadius: 10,
-  border: '1.5px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
+  padding: '3px 6px',
+  justifyContent: 'flex-start',
   gap: 4,
   fontSize: '0.75rem',
   lineHeight: 1.15,
   textAlign: 'left',
+};
+/** The base and the piece, one over the other, filling the picture's square. */
+const PICTURE: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: '100%',
+  height: '100%',
 };
 const CLIP: CSSProperties = {
   display: 'block',
@@ -89,9 +97,9 @@ export function PieceStrip({
   const shown = [...ready, ...waiting, ...(showResidents ? residents : [])];
   return (
     // NO TITLE since piece 5 (§19): the Cells tab that opened this view already says what it is.
-    <div data-panel="pieces" style={{ marginTop: 6 }}>
+    <div data-panel="pieces">
       {pieces.length === 0 && emptyText !== null ? (
-        <div data-pieces-none="" style={{ fontSize: '0.8125rem', color: '#78665D' }}>
+        <div data-pieces-none="" style={SAY.quiet}>
           {emptyText}
         </div>
       ) : null}
@@ -99,79 +107,69 @@ export function PieceStrip({
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(7rem, 1fr))',
-          gap: 6,
-          paddingBottom: 4,
+          gap: '10px 6px',
+          paddingBottom: 6,
         }}
       >
         {shown.map((p) => {
           const selected = p.kind === 'cell' ? p.key === selectedCell : p.key === selectedResident;
-          const art = p.kind === 'cell' ? `cell-${p.key}` : 'cell-macrophage';
+          // A resident is one of the body's own macrophages, under its tissue's name.
+          const art = pieceArt(p.kind === 'cell' ? p.key : 'macrophage');
           const name = p.kind === 'cell' ? cellDisplayName(p.key) : residentDisplayName(p.key);
           return (
-            <button
+            <KitButton
               key={`${p.kind}-${p.key}`}
               data-piece={`${p.kind}:${p.key}`}
               data-selected={selected ? '1' : undefined}
               disabled={disabled}
-              onClick={() => {
+              // THE RING IS THE KIT'S, AND TAKES NO ROOM (FINDINGS #73): a wider border took 3px
+              // from the name, which then clipped at a 180px layout (200% page zoom).
+              selected={selected}
+              onPress={() => {
                 if (selected) onDeselect();
                 else if (p.kind === 'cell') onSelectCell(p.key);
                 else onSelectResident(p.key);
               }}
-              style={{
-                ...CHIP,
-                borderColor: selected ? '#DE7800' : p.kind === 'resident' ? '#8E6E53' : '#C48377',
-                // THE RING IS A SHADOW, NOT A WIDER BORDER (FINDINGS #73): a 3px border took 3px
-                // from the name, which then clipped at a 180px layout (200% page zoom). An inset
-                // shadow draws the same ring and takes no room, so the boxes stay equal.
-                borderWidth: 1.5,
-                boxShadow: selected ? 'inset 0 0 0 1.5px #DE7800' : undefined,
-                borderStyle: p.kind === 'resident' ? 'double' : 'solid',
-                background: selected ? '#FBEAE5' : '#FFFDF9',
-                opacity: p.unavailable ? 0.55 : 1,
-              }}
+              style={CHIP}
             >
-              <img
-                src={`/art/${art}@3x.webp`}
-                width={26}
-                height={26}
-                alt=""
-                style={{ flex: '0 0 auto', ...(p.unavailable ? { filter: 'grayscale(1)' } : {}) }}
-              />
-              <span style={{ minWidth: 0, flex: '1 1 auto' }}>
-                <span style={{ ...CLIP, fontWeight: 700 }}>{name}</span>
-                <span style={{ ...CLIP, color: '#78665D' }}>{badgeText(p)}</span>
+              <span
+                aria-hidden="true"
+                style={{
+                  position: 'relative',
+                  width: 34,
+                  height: 34,
+                  flex: '0 0 auto',
+                  // A piece that cannot act is the picture that changes, as on the board.
+                  ...(p.unavailable ? { filter: 'grayscale(1)', opacity: 0.5 } : {}),
+                }}
+              >
+                <img alt="" src={pieceArt('base')} style={PICTURE} />
+                <img alt="" src={art} style={PICTURE} />
               </span>
-            </button>
+              <span style={{ minWidth: 0, flex: '1 1 auto' }}>
+                <span style={{ ...CLIP, fontWeight: 800 }}>{name}</span>
+                <span style={{ ...CLIP, fontWeight: 600, opacity: 0.8 }}>{badgeText(p)}</span>
+              </span>
+            </KitButton>
           );
         })}
       </div>
       {residents.length > 0 ? (
-        <button
+        <KitButton
           data-pieces-residents={showResidents ? 'open' : 'closed'}
           aria-expanded={showResidents}
-          onClick={() => setShowResidents((v) => !v)}
-          style={{
-            minHeight: 44,
-            width: '100%',
-            marginTop: 4,
-            fontSize: '0.8125rem',
-            borderRadius: 8,
-            border: '1.5px solid #8E6E53',
-            background: '#F6F1EC',
-            color: '#2E2A28',
-            cursor: 'pointer',
-          }}
+          onPress={() => setShowResidents((v) => !v)}
+          style={{ minHeight: 44, marginTop: 4, fontSize: '0.8125rem' }}
         >
           {showResidents
             ? t('pieces.hideResidents')
             : t('pieces.showResidents', { n: residents.length })}
-        </button>
+        </KitButton>
       ) : null}
       {selectedCell !== null && why[selectedCell] !== undefined ? (
         <div
           data-piece-why={selectedCell}
-          style={{ fontSize: '0.75rem', color: '#7A5600', marginTop: 4 }}
+          style={{ ...SAY.quiet, fontSize: '0.75rem', color: TONE.note, marginTop: 8 }}
         >
           {why[selectedCell]}
         </div>

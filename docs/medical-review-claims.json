@@ -1,11 +1,11 @@
 {
-  "generated": "2026-09-30",
+  "generated": "2026-10-02",
   "pack": {
     "packId": "immunity-wars-core",
-    "packVersion": "1.2.0",
-    "rulesVersion": "4.1.0"
+    "packVersion": "1.5.0",
+    "rulesVersion": "4.2.0"
   },
-  "total": 804,
+  "total": 810,
   "parts": [
     {
       "key": "diseases",
@@ -790,7 +790,7 @@
           "id": "DISEASE/Diphtheria/Causes",
           "subject": "Diphtheria",
           "label": "Causes",
-          "text": "A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed. It poisons you directly."
+          "text": "A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart."
         },
         {
           "id": "DISEASE/Diphtheria/Found",
@@ -808,13 +808,13 @@
           "id": "DISEASE/Diphtheria/Treat",
           "subject": "Diphtheria",
           "label": "Treat",
-          "text": "ANTITOXIN. Antibodies. No cell can eat a toxin."
+          "text": "Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it."
         },
         {
           "id": "DISEASE/Diphtheria/CanInfect",
           "subject": "Diphtheria",
           "label": "Can infect (game simplification)",
-          "text": "In the game, this disease can damage only: Heart."
+          "text": "In the game, this disease can damage only: Lungs."
         },
         {
           "id": "DISEASE/Mucormycosis/Discovered",
@@ -3829,6 +3829,42 @@
           "text": "In the game, this disease can damage only: Heart."
         },
         {
+          "id": "DISEASE/Anthrax toxin/Discovered",
+          "subject": "Anthrax toxin",
+          "label": "Discovered",
+          "text": "Three proteins that work together: one carries the other two into your cells."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Causes",
+          "subject": "Anthrax toxin",
+          "label": "Causes",
+          "text": "Not alive. Stops the heart and blood vessels working, and floods the tissues with fluid."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Found",
+          "subject": "Anthrax toxin",
+          "label": "Found",
+          "text": "Released by anthrax bacteria as they multiply."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Prevent",
+          "subject": "Anthrax toxin",
+          "label": "Prevent",
+          "text": "The anthrax vaccine trains you to make antibodies against the carrier protein."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/Treat",
+          "subject": "Anthrax toxin",
+          "label": "Treat",
+          "text": "Antitoxin with antibiotics. Killing the bacteria does not remove toxin already made."
+        },
+        {
+          "id": "DISEASE/Anthrax toxin/CanInfect",
+          "subject": "Anthrax toxin",
+          "label": "Can infect (game simplification)",
+          "text": "In the game, this disease can damage only: Heart, Liver."
+        },
+        {
           "id": "DISEASE/Shingles/Discovered",
           "subject": "Shingles",
           "label": "Discovered",
@@ -4035,19 +4071,19 @@
         },
         {
           "id": "TYPE/hidden/beat",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "How it is beaten",
           "text": "It is INSIDE one of your cells. Antibodies cannot reach it there. Killer T-Cell (never misses) or NK Cell (d6 3+). Not all of these are viruses: Toxoplasmosis and Chagas disease are PROTOZOA that live inside your cells, which is why a Killer T-Cell is the answer for them too."
         },
         {
           "id": "TYPE/hidden/hint",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "In How to play",
           "text": "It is inside one of your own cells, where antibodies cannot go. Killer T-Cell (never misses) or NK Cell (3 or more)."
         },
         {
           "id": "TYPE/hidden/rest",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "In How to play",
           "text": "Not all are viruses: Toxoplasmosis and Chagas are protozoa that live inside cells."
         },
@@ -4332,7 +4368,7 @@
           "id": "CELL/tcell/home",
           "subject": "Killer T-Cell",
           "label": "Where it comes from",
-          "text": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell."
+          "text": "Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Easy, 2 on Normal and Hard, +1 beside a primed Helper T-Cell."
         },
         {
           "id": "CELL/tcell/bestAgainst",
@@ -4362,7 +4398,7 @@
           "id": "CELL/tcell/rest",
           "subject": "Killer T-Cell",
           "label": "In How to play",
-          "text": "Range 3 on Training, 2 on Normal and Hard, +1 while a primed Helper stands with it."
+          "text": "Range 3 on Easy, 2 on Normal and Hard, +1 while a primed Helper stands with it."
         },
         {
           "id": "CELL/helper/Name",

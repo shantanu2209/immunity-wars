@@ -1,35 +1,35 @@
 /**
- * The shared chrome of the four Title slots — How to play, the disease library, Settings and
- * About (docs/APP_FLOW.md §4). One module, because the alternative is what was actually there.
+ * THE SHARED CHROME OF EVERY SCREEN THAT IS NOT THE PLAY SCREEN, drawn from the kit (stage L5 of
+ * docs/LOOK_PLAN.md): the title, the difficulty, playing together and its lobby, the result, How to
+ * play, the disease library, Settings, About, and the screen shown after a crash.
  *
- * WHAT THIS REPLACED, measured 9 September 2026 at the start of P2.7. The four screens were
- * built in sequence over four days with no shared pass, and had drifted: three of the four
- * agreed closely and **About differed on seven axes** — page padding (24px against 32px), the
- * page title's element, size and colour (`h1` 1.5rem accent red against `h2` 1.375rem
- * charcoal), the button size and rhythm (1rem / 16px against 0.9375rem / 10px), and body
- * paragraph spacing (8px against 10px). None of it was visible in a check: every value passed
- * Gate 1 on its own screen, because drift between screens is not a property any one screen has.
+ * WHAT IT WAS, and why it is still one module. It was written on 9 September 2026, at the start of
+ * P2.7, when four screens built in sequence over four days were found to have drifted on seven
+ * axes with every value passing Gate 1 on its own screen: drift between screens is not a property
+ * any one screen has. The values went into one place so that a reaction is one line and not four.
+ * That reason has not changed; the values have. Every one below is the kit's
+ * (`packages/ui/src/kit/tokens.ts`), and none is a colour of this file's own:
+ * `play/clayColours.test.ts` fails on the first `#rrggbb` written here or in a screen.
  *
- * WHY A MODULE RATHER THAN A CORRECTION. Making About match would have fixed this instance and
- * left the class: a fifth screen drifts on the day it is written, and P2.7 is a sub-phase whose
- * whole shape is "propose, look, react, adjust". With the values in one place a reaction is one
- * line rather than four, which is the difference between iterating and re-editing. It is the
- * P2.6 closeout's lesson one level up: *a pin exists because two things could drift; where the
- * second thing can be removed instead, remove it.*
+ * THE SHAPE OF A SCREEN.
  *
- * THE THREE BUTTON ROLES ARE REAL, and were preserved rather than flattened. A list row is
- * left-aligned because its text is an item; a control is centred because its text is a verb;
- * the way back is a control that is never the primary action. Collapsing them into one base
- * would have "unified" two things that were correctly different — the failure mode of a
- * consistency pass, and the reason each role is named here rather than spelled inline.
+ *   the table          the page's ground, dark, out to the screen's edges. A screen's own name and
+ *                      the line under it are written straight onto it, in cream.
+ *   a card             cream clay standing on the table. PROSE GOES ON A CARD: a paragraph in cream
+ *                      on the dark table passes its contrast bound and is still tiring to read at
+ *                      length, and the help, the library and About are read at length.
+ *   a row              a full-width resting button: a list item that opens something. Left-aligned,
+ *                      because its text is an item and not a verb.
+ *   the main button    coral, and one to a screen: the thing the screen is for.
  *
- * WHAT IS NOT HERE. No colour is introduced and none is retired: every value below already
- * appeared in at least one of the four screens. Palette work is out of scope for Phase 2
- * (PHASE2_BRIEF.md §1, "What is explicitly NOT in either gate") and this module is not a
- * back door to it.
+ * THE THREE BUTTON ROLES ARE STILL REAL (the note of 9 September): a row is left-aligned, a control
+ * is centred, and the way back is a control that is never the main one. They are drawn with the
+ * kit's button now, so the roles are props and a layout, and what is exported here is the layout.
  */
 import type { CSSProperties } from 'react';
 
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 
 /**
@@ -39,76 +39,107 @@ import { FLOAT_RESERVE } from '../nav/NavHost';
 export const PAGE: CSSProperties = {
   maxWidth: 420,
   margin: '0 auto',
-  padding: `32px 16px ${FLOAT_RESERVE}`,
+  padding: `20px 8px ${FLOAT_RESERVE}`,
+  fontFamily: TYPE.family,
+  color: COLOUR.onDark,
 };
 
-/**
- * The screen's own name, once per screen, at the top.
- *
- * `h1` because each slot is a whole screen rather than a section of one, and three of the four
- * opened at `h2` under no `h1` at all. The margin is explicit BECAUSE of that change: a UA
- * gives `h1` 0.67em and `h2` 0.83em, so leaving it unset would have moved the spacing as a
- * side effect of the element. Setting it to zero also drops ~18px of dead space that used to
- * sit between the wrapper's padding and the title on every one of these screens.
- */
-export const TITLE: CSSProperties = { fontSize: '1.375rem', color: '#2E2A28', margin: '0 0 8px' };
+/** The screen's own name, once per screen, at the top, on the table. */
+export const TITLE: CSSProperties = { ...TYPE.title, color: COLOUR.onDark, margin: '0 0 6px' };
 
 /** A quiet line under the title saying what the screen is for. */
-export const LEAD: CSSProperties = { fontSize: '0.875rem', color: '#78665D', margin: '0 0 4px' };
+export const LEAD: CSSProperties = { ...TYPE.body, color: COLOUR.onDarkSoft, margin: '0 0 6px' };
 
-/** The label OVER a set of rows. Not a row's own title, and not a heading over prose. */
-export const GROUP: CSSProperties = { fontSize: '0.875rem', color: '#78665D', margin: '0 0 4px' };
+/** The label OVER a set of rows, on the table. Not a row's own title, and not a heading over prose. */
+export const GROUP: CSSProperties = {
+  ...TYPE.label,
+  color: COLOUR.onDarkSoft,
+  margin: '18px 0 2px',
+};
+
+/** A card: where prose and a set of settings are read. */
+export const CARD: CSSProperties = {
+  ...kitCardStyle,
+  padding: '0.875em 1em 1em',
+  marginTop: 12,
+};
+
+/** A heading over prose, on a card. Distinct from GROUP, which labels rows on the table. */
+export const SECTION: CSSProperties = { ...TYPE.heading, color: COLOUR.ink, margin: '0 0 4px' };
 
 /**
- * A heading over prose, within a screen. Distinct from GROUP, which labels rows.
- *
- * Only About has these today. Its size is kept — four sections on one scrolling page need to be
- * findable by thumb — and only its colour moved, from the accent red to the charcoal every
- * other heading in the app uses. Red is the app's attention colour, carried by the primary
- * button border and the Title's name; four static section headings are not attention.
+ * A heading that has to be FINDABLE while scrolling, rather than read in order: the library's, on
+ * the table. It is deliberately not merged into GROUP. GROUP's reader has stopped and is choosing
+ * among a few things; ITEM's reader is moving through a hundred and needs a landmark.
  */
-export const SECTION: CSSProperties = {
+export const ITEM: CSSProperties = {
+  ...TYPE.action,
   fontSize: '1.0625rem',
-  color: '#2E2A28',
-  margin: '22px 0 6px',
+  color: COLOUR.onDark,
+  margin: 0,
 };
+
+/** Body prose, on a card. */
+export const BODY: CSSProperties = { ...TYPE.body, color: COLOUR.ink, margin: '8px 0' };
+
+/** Quiet prose on a card: a note, a reason, what a row is. */
+export const NOTE: CSSProperties = { ...TYPE.body, color: COLOUR.inkSoft, margin: '4px 0 0' };
+
+/** The space a full-width control keeps above itself in a column of them. */
+export const STACK: CSSProperties = { marginTop: 12 };
+
+/** A row in a list: the kit's resting button, its words to the left and free to take two lines. */
+export const ROW: CSSProperties = {
+  ...STACK,
+  justifyContent: 'flex-start',
+  textAlign: 'left',
+};
+
+/** A warning said on the table: a refusal, a lost connection. */
+export const WARN: CSSProperties = { ...TYPE.body, color: COLOUR.coralLit, margin: '10px 0 0' };
+
+/** Words on the table that are not the lead: a note, a status. */
+export const SAY: CSSProperties = { ...TYPE.body, color: COLOUR.onDark, margin: '10px 0 0' };
 
 /**
- * A heading that has to be FINDABLE while scrolling, rather than read in order.
- *
- * The second heading role, and it is deliberately not merged into GROUP. Both label a set of
- * rows, but they answer different questions: GROUP's reader has already stopped and is choosing
- * among four things, ITEM's reader is moving through 106 and needs a landmark. The library is
- * navigable at 106 rows on a phone (Shantanu's S25 pass, 9 September 2026) and a quiet 0.875rem
- * label is exactly what would have taken that away, so the pass that unified these screens
- * stopped here on purpose.
+ * A box to type in: cream, pressed into the table. It is told from the table by its own colour, so
+ * it has no border to measure, and what is typed is the card's ink.
  */
-export const ITEM: CSSProperties = { fontSize: '1rem', color: '#2E2A28', margin: 0 };
-
-/** Body prose. */
-export const BODY: CSSProperties = {
-  fontSize: '0.9375rem',
-  lineHeight: 1.45,
-  color: '#2E2A28',
-  margin: '10px 0',
-};
-
-/** A full-width control. Centred, because a control's text is a verb. */
-export const BTN: CSSProperties = {
+export const FIELD: CSSProperties = {
   display: 'block',
   width: '100%',
+  boxSizing: 'border-box',
   minHeight: 48,
-  fontSize: '0.9375rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-  marginTop: 10,
-  padding: '8px 14px',
+  marginTop: 6,
+  padding: '0.5em 0.75em',
+  border: 0,
+  borderRadius: 14,
+  background: COLOUR.creamLit,
+  boxShadow: 'inset 0 2px 5px rgba(90, 70, 40, 0.35)',
+  color: COLOUR.ink,
+  fontFamily: TYPE.family,
+  fontSize: '1.0625rem',
+  fontWeight: 700,
+  letterSpacing: 'normal',
+  textTransform: 'none',
 };
 
-/** A full-width row in a list. Left-aligned, because its text is an item and not a verb. */
-export const ROW_BTN: CSSProperties = { ...BTN, textAlign: 'left' };
+/** A modal's scrim: the table, dimmed. A dialog is answered by its own buttons. */
+export const SCRIM: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(4, 18, 22, 0.72)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 20,
+  padding: 12,
+};
 
-/** The way back, last on the page. Never the primary action, so never the primary border. */
-export const BACK: CSSProperties = { ...BTN, textAlign: 'center', borderColor: '#C48377' };
+/** The card a dialog is. */
+export const DIALOG: CSSProperties = {
+  ...kitCardStyle,
+  width: 'min(100%, 360px)',
+  boxSizing: 'border-box',
+  padding: '1em',
+};

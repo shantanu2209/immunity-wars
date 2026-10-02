@@ -68,7 +68,22 @@ const VENOMS: ReadonlySet<string> = new Set(
  * reason line is about ATTACKS: a cell that can only move, recall or patrol still gets told
  * what it cannot do here, so these do not count as "something was offered".
  */
-export const MOVE_LIKE: ReadonlySet<string> = new Set(['move', 'hop', 'recall', 'resmove']);
+/**
+ * The actions that reposition a piece. The play screen draws a button offer of one of these as a
+ * move button beside the piece's rows; any other button offer is a row of its catalogue.
+ *
+ * `resrecall` WAS MISSING FROM THIS LIST from queue Q6 (30 September 2026) until 2 October: the
+ * rule was built, offered and tested, the session counted it a move, and the play screen drew no
+ * button for it, so no player could use it (docs/FINDINGS.md #113). It is held to the session's
+ * own list of moves by `tests/session/src/moves-agree.test.ts`.
+ */
+export const MOVE_LIKE: ReadonlySet<string> = new Set([
+  'move',
+  'hop',
+  'recall',
+  'resmove',
+  'resrecall',
+]);
 
 export interface BoardOffer {
   id: string;
@@ -190,27 +205,41 @@ interface Target {
   id: string;
   disease: string;
   type: string;
+  /** Its hit points now, where the view carries them: what decides a wound from a kill. */
+  hp: number | null;
 }
 const ids = (xs: unknown): Target[] =>
   Array.isArray(xs)
-    ? (xs as Invaderish[]).map((iv) => ({
+    ? (xs as (Invaderish & { hp?: unknown })[]).map((iv) => ({
         id: String(iv.id ?? ''),
         disease: String(iv.disease ?? ''),
         type: String(iv.type ?? ''),
+        hp: typeof iv.hp === 'number' ? iv.hp : null,
       }))
     : [];
 
 /**
  * THE VERB NAMED FOR ITS TARGET (ruled 6 September 2026): every action row uses the name a
- * player would use for what it does to THIS target, not the engine's internal verb. `tag` on a
- * worm or parasite is "Coat" (the engine's own log says "coated"; the Eosinophil "strikes a
- * coated worm"); `engulf` on a fungus or a parasite is "Chip" (the engine's log: "chipped the
- * Candida — 1/2 left"), because the Monocyte does not swallow those, it wounds them. The
- * engine action and the params are unchanged; only the word changes.
+ * player would use for what it does to THIS target, not the engine's internal verb. `engulf` on
+ * a fungus or a parasite is "Chip" (the engine's log: "chipped the Candida — 1/2 left"), because
+ * the Monocyte does not swallow those, it wounds them. The engine action and the params are
+ * unchanged; only the word changes.
+ *
+ * `tag` IS "Coat" ON EVERYTHING IT CAN BE DONE TO (ruled 2 October 2026, queue Q14). Until then a
+ * bacterium was "tagged" and a worm or a parasite "coated", after the engine's log. It is one
+ * action on all three and one thing an antibody does, opsonisation: it binds to the surface, and
+ * what differs is what a cell then does, which has its own word, Engulf or Strike. The printed
+ * rulebook names the action Coat. So the catalogue's word for `tag` is Coat, and no case is needed.
+ *
+ * AND WHEN THE WOUND IS THE LAST ONE IT IS "Engulf" (2 October 2026, docs/FINDINGS.md #114): on
+ * its last hit point the target dies, and the engine's own log says "engulfed". A parasite is
+ * only ever offered on its last hit point, so for a parasite the word was always wrong: the row
+ * said Chip and the Monocyte swallowed it. Found when the guided game's sentence, "now it can be
+ * swallowed", stood beside a button that said Chip.
  */
-function verbFor(action: string, type: string): string {
-  if (action === 'tag' && (type === 'worm' || type === 'parasite')) return t('action.coat');
-  if (action === 'engulf' && (type === 'fungus' || type === 'parasite')) return t('action.chip');
+function verbFor(action: string, type: string, hp: number | null): string {
+  if (action === 'engulf' && (type === 'fungus' || type === 'parasite') && (hp === null || hp > 1))
+    return t('action.chip');
   return t(`action.${action}`);
 }
 
@@ -551,8 +580,8 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
         action,
         cell,
         invaderId: iv.id,
-        label: `${verbFor(action, iv.type)} ${iv.disease}`,
-        verb: verbFor(action, iv.type),
+        label: `${verbFor(action, iv.type, iv.hp)} ${iv.disease}`,
+        verb: verbFor(action, iv.type, iv.hp),
         target: iv.disease,
         cost,
         detail,
@@ -619,6 +648,7 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
             id: String(iv.id ?? ''),
             disease: String(iv.disease ?? ''),
             type: String(iv.type ?? ''),
+            hp: null,
           };
           if (canTag[i] === true) attack('tag', [target], null);
           if (canNeut[i] === true) {

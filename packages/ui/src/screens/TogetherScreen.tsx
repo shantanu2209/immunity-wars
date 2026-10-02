@@ -5,9 +5,10 @@
  * THE NAME IS TYPED EVERY TIME (ruled 25 September 2026). Nothing about a player is kept on the
  * device between rooms: the name lives in the room and dies with it, and the box starts empty.
  */
-import { useState, type CSSProperties, type ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
 import { UpdateNow } from '../panels/UpdateNow';
 import {
   codeComplete,
@@ -16,20 +17,7 @@ import {
   offersUpdate,
   refusalText,
 } from '../together/model';
-import { BODY, BTN, GROUP, LEAD, PAGE, TITLE } from './chrome';
-
-const FIELD: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  boxSizing: 'border-box',
-  minHeight: 48,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  padding: '8px 12px',
-  marginTop: 6,
-};
+import { FIELD, GROUP, LEAD, PAGE, SAY, TITLE, WARN } from './chrome';
 
 export function TogetherScreen({
   busy,
@@ -77,24 +65,26 @@ export function TogetherScreen({
       <p style={LEAD}>{t('together.nameNote')}</p>
 
       {rejoinCode ? (
-        <button
+        <KitButton
+          kind="main"
           data-together="rejoin"
-          style={{ ...BTN, borderColor: '#B03A2E', marginTop: 18 }}
-          disabled={busy || !named}
-          onClick={() => onJoin(name.trim(), rejoinCode)}
+          style={{ marginTop: 18 }}
+          unavailable={busy || !named}
+          onPress={() => onJoin(name.trim(), rejoinCode)}
         >
           {t('together.rejoin')}
-        </button>
+        </KitButton>
       ) : (
         <>
-          <button
+          <KitButton
+            kind="main"
             data-together="create"
-            style={{ ...BTN, borderColor: '#B03A2E', marginTop: 18 }}
-            disabled={busy || !named}
-            onClick={() => onCreate(name.trim())}
+            style={{ marginTop: 18 }}
+            unavailable={busy || !named}
+            onPress={() => onCreate(name.trim())}
           >
             {t('together.create')}
-          </button>
+          </KitButton>
 
           <label style={{ ...GROUP, display: 'block', marginTop: 24 }}>
             {t('together.codeLabel')}
@@ -108,24 +98,24 @@ export function TogetherScreen({
               onChange={(e) => setCode(normaliseCode(e.target.value))}
             />
           </label>
-          <button
+          <KitButton
             data-together="join"
-            style={BTN}
-            disabled={busy || !named || !codeComplete(code)}
-            onClick={() => onJoin(name.trim(), code)}
+            style={{ marginTop: 12 }}
+            unavailable={busy || !named || !codeComplete(code)}
+            onPress={() => onJoin(name.trim(), code)}
           >
             {t('together.join')}
-          </button>
+          </KitButton>
         </>
       )}
 
       {busy ? (
-        <p style={BODY} data-together="busy">
+        <p style={SAY} data-together="busy">
           {t('together.connecting')}
         </p>
       ) : null}
       {refusal ? (
-        <p style={{ ...BODY, color: '#B03A2E' }} data-together="refusal" role="alert">
+        <p style={WARN} data-together="refusal" role="alert">
           {refusalText(refusal.code, refusal.detail)}
         </p>
       ) : null}

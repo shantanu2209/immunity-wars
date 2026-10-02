@@ -261,6 +261,11 @@ export interface GameState {
   /** Set the first time anything infects the body. The win check requires it. */
   everInfected?: boolean;
   novelTurn?: number;
+  /**
+   * The arrivals written for the game's first turns (queue Q13): present only in a game that was
+   * handed them, and removed by the draw that places the last of them.
+   */
+  written?: string[][];
   drawnList?: unknown[];
   rareBanner?: RareBanner | null;
   lastRoll?: { cell: string; face: number; hit: boolean };

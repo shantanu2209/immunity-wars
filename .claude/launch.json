@@ -26,12 +26,6 @@
       "runtimeArgs": ["--filter", "@immunity-wars/app", "dev", "--port", "5174", "--strictPort"],
       "env": { "VITE_RELAY_URL": "ws://127.0.0.1:8787" },
       "port": 5174
-    },
-    {
-      "name": "look-prototype",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@immunity-wars/look-prototype", "preview"],
-      "port": 4180
     }
   ]
 }

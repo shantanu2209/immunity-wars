@@ -17,6 +17,10 @@
  * "Right now" is the one line that is about THIS invader rather than the disease: the malaria
  * stage, or a parasite hiding inside a resident macrophage — the two invader states the
  * board-state sweep deferred to the card, because the card is what explains them.
+ *
+ * DRAWN IN CLAY since stage L4 of the look (docs/LOOK_PLAN.md §14): a card of the kit's cream on
+ * the table, with the pathogen's own piece at its head, seen at an angle as a card sees it, in the
+ * colour of its antigen class.
  */
 import {
   BEAT_BY_TYPE,
@@ -30,9 +34,15 @@ import {
 } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
+import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { KitPiece } from '../kit/Piece';
+import { KitChip, KitMeter, kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
 import { typeDisplayName } from '../names';
+import { SAY, TONE } from './onCard';
 
 export interface PathogenCardSubject {
   disease: string;
@@ -43,46 +53,13 @@ export interface PathogenCardSubject {
   now: string | null;
 }
 
-const LABEL: CSSProperties = { fontSize: '0.75rem', color: '#78665D', fontWeight: 700 };
+const LABEL: CSSProperties = SAY.label;
 const ROW: CSSProperties = {
   display: 'flex',
   gap: 10,
   padding: '6px 0',
-  borderTop: '1px solid #EADFD5',
+  borderTop: `1.5px solid ${COLOUR.creamEdge}`,
 };
-const CLOSE: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  minHeight: 44,
-  fontSize: '1rem',
-  borderRadius: 10,
-  border: '2px solid #8E6E53',
-  background: '#FFFDF9',
-  cursor: 'pointer',
-};
-
-function StatBar({ label, value }: { label: string; value: number }): ReactElement {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 24 }}>
-      <span style={{ ...LABEL, width: 86 }}>{label}</span>
-      <span style={{ display: 'flex', gap: 3 }}>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <i
-            key={i}
-            style={{
-              display: 'inline-block',
-              width: 14,
-              height: 8,
-              borderRadius: 2,
-              background: i < value ? '#B03A2E' : '#EADFD5',
-            }}
-          />
-        ))}
-      </span>
-      <span style={{ fontSize: '0.8125rem', color: '#2E2A28' }}>{value}</span>
-    </div>
-  );
-}
 
 export function PathogenCard({
   subject,
@@ -123,6 +100,11 @@ export function PathogenCard({
   // teaches the link between "Enveloped virus" and the ENV the antibody panel's chips carry,
   // at the point of use, instead of a permanent legend. Both halves are content's.
   const famLine = fam?.name ? `${fam.name} (${String(famKey)})` : null;
+  const famColour = famKey
+    ? (FAMILIES as Record<string, { col?: string } | undefined>)[famKey]?.col
+    : undefined;
+  // The piece the board draws this disease with: its kind, in its class's colour.
+  const piece = pieceFor(type, classOf(disease, false), false).piece;
   const organName = (o: string): string =>
     String((ORGANS as Record<string, { name?: string } | undefined>)[o]?.name ?? o);
 
@@ -136,38 +118,43 @@ export function PathogenCard({
         // of the floating close that closes it (for-P2.7.md §9, ruling 8).
         position: 'fixed',
         inset: 0,
-        background: '#FFFDF9',
+        background: COLOUR.table,
         overflowY: 'auto',
         zIndex: 40,
-        padding: `14px 14px ${FLOAT_RESERVE}`,
+        padding: `14px 12px ${FLOAT_RESERVE}`,
         boxSizing: 'border-box',
       }}
     >
-      <div style={{ maxWidth: 560, margin: '0 auto', fontSize: '0.875rem', color: '#2E2A28' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src={`/art/path-${type}@3x.webp`} width={48} height={48} alt="" />
-          <div style={{ flex: '1 1 auto' }}>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#B03A2E' }}>{disease}</div>
-            <div style={{ fontSize: '0.8125rem', color: '#78665D' }}>
-              {typeDisplayName(type)}
-              {famLine !== null ? (
-                <>
-                  {' '}
-                  {t('inspect.sep')} {famLine}
-                </>
-              ) : null}
+      <div
+        style={{
+          ...kitCardStyle,
+          ...SAY.body,
+          maxWidth: 560,
+          margin: '0 auto 10px',
+          padding: '12px 14px 16px',
+        }}
+      >
+        {/* The name goes under the picture when there is not room for it beside: at 200% page
+            zoom it had 34 px, and broke two letters to a line (seen at stage L5). */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <KitPiece name={piece} view="card" size={84} label="" style={{ flex: '0 0 auto' }} />
+          <div style={{ flex: '1 1 9rem', minWidth: 0 }}>
+            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>{disease}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+              <KitChip>{typeDisplayName(type)}</KitChip>
+              {famLine !== null ? <KitChip dot={famColour}>{famLine}</KitChip> : null}
             </div>
           </div>
         </div>
         {subject.remembered ? (
-          <div style={{ marginTop: 8, fontSize: '0.8125rem', color: '#1F6F8B', fontWeight: 700 }}>
+          <div style={{ marginTop: 8, fontSize: '0.8125rem', color: TONE.good, fontWeight: 800 }}>
             {t('card.memory')}
           </div>
         ) : null}
         {subject.now !== null ? (
           <div style={{ marginTop: 8 }}>
             <div style={LABEL}>{t('card.nowLabel')}</div>
-            <div style={{ color: '#7A5600', fontWeight: 700 }}>{subject.now}</div>
+            <div style={{ color: TONE.note, fontWeight: 800 }}>{subject.now}</div>
           </div>
         ) : null}
         {fam?.bio ? (
@@ -180,51 +167,46 @@ export function PathogenCard({
           <div style={LABEL}>{t('card.canInfect')}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
             {tropism === 'any' ? (
-              <span
-                style={{
-                  border: '1.5px solid #B03A2E',
-                  color: '#B03A2E',
-                  borderRadius: 8,
-                  padding: '2px 8px',
-                }}
-              >
-                {t('card.anyOrgan')}
-              </span>
+              <KitChip tone="now">{t('card.anyOrgan')}</KitChip>
             ) : (
-              (tropism ?? []).map((o) => (
-                <span
-                  key={o}
-                  style={{
-                    border: '1.5px solid #8E6E53',
-                    color: '#8E6E53',
-                    borderRadius: 8,
-                    padding: '2px 8px',
-                  }}
-                >
-                  {organName(o)}
-                </span>
-              ))
+              (tropism ?? []).map((o) => <KitChip key={o}>{organName(o)}</KitChip>)
             )}
           </div>
         </div>
         {fact ? (
-          <div style={{ marginTop: 8, fontStyle: 'italic', color: '#78665D' }}>{fact}</div>
+          <div style={{ marginTop: 8, fontStyle: 'italic', color: COLOUR.inkSoft }}>{fact}</div>
         ) : null}
         {beat ? (
-          <div style={{ marginTop: 8 }}>
-            <div style={LABEL}>{t('card.beatIt')}</div>
-            <div>{beat}</div>
+          <div
+            style={{
+              marginTop: 10,
+              padding: '8px 10px',
+              borderRadius: 12,
+              background: COLOUR.mintSoft,
+              color: COLOUR.mintInk,
+            }}
+          >
+            <div style={{ ...TYPE.label, color: COLOUR.mintInk }}>{t('card.beatIt')}</div>
+            <div style={{ fontWeight: 700 }}>{beat}</div>
           </div>
         ) : null}
         {stats ? (
           <div style={{ marginTop: 10 }}>
-            <div style={{ ...LABEL, marginBottom: 4 }}>
+            <div style={{ ...LABEL, marginBottom: 6 }}>
               {t('card.tier')} {t('inspect.sep')} {stats[4]}
             </div>
-            <StatBar label={t('card.contagion')} value={stats[0]} />
-            <StatBar label={t('card.severity')} value={stats[1]} />
-            <StatBar label={t('card.speed')} value={stats[2]} />
-            <StatBar label={t('card.cunning')} value={stats[3]} />
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(6.5rem, 1fr))',
+                gap: '8px 12px',
+              }}
+            >
+              <KitMeter label={t('card.contagion')} value={stats[0]} />
+              <KitMeter label={t('card.severity')} value={stats[1]} />
+              <KitMeter label={t('card.speed')} value={stats[2]} />
+              <KitMeter label={t('card.cunning')} value={stats[3]} />
+            </div>
           </div>
         ) : null}
         {info ? (
@@ -239,9 +221,10 @@ export function PathogenCard({
               ] as const
             ).map(([key, text]) =>
               text ? (
-                <div key={key} style={ROW}>
-                  <span style={{ ...LABEL, width: 86, flex: '0 0 auto' }}>{t(key)}</span>
-                  <span>{text}</span>
+                // The fact goes under its label when there is not room beside it (200% page zoom).
+                <div key={key} style={{ ...ROW, flexWrap: 'wrap' }}>
+                  <span style={{ ...LABEL, flex: '0 0 6em' }}>{t(key)}</span>
+                  <span style={{ flex: '1 1 9rem', minWidth: 0 }}>{text}</span>
                 </div>
               ) : null,
             )}
@@ -249,14 +232,14 @@ export function PathogenCard({
         ) : null}
         {onWhy && whyBoxes && whyBoxes.length > 0
           ? whyBoxes.map((key) => (
-              <button
+              <KitButton
                 key={key}
-                style={{ ...CLOSE, marginTop: 12, textAlign: 'left', fontSize: '0.9375rem' }}
-                onClick={() => onWhy(key)}
+                style={{ marginTop: 14, justifyContent: 'flex-start', textAlign: 'left' }}
+                onPress={() => onWhy(key)}
                 data-card-why={key}
               >
                 {t(`library.why.${key}.title`)}
-              </button>
+              </KitButton>
             ))
           : null}
       </div>

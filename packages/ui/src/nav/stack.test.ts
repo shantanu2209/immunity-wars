@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   closeLabel,
+  closePlace,
   closeLayer,
   currentScreen,
   depthOf,
@@ -157,6 +158,31 @@ describe('the label on the floating button', () => {
     expect(
       closeLabel(openLayer(stackOf<Screen>('play'), 'dialog:reveal', false), isMain),
     ).toBeNull();
+  });
+});
+
+describe('where the close is drawn', () => {
+  it('nowhere at the base, and nowhere while a dialog is on top', () => {
+    expect(closePlace(stackOf<Screen>('play'))).toBeNull();
+    expect(closePlace(openLayer(stackOf<Screen>('play'), 'dialog:reveal', false))).toBeNull();
+  });
+
+  it('floating over a screen, and over a layer that asks for it', () => {
+    expect(closePlace(pushScreen(stackOf<Screen>('title'), 'help:index'))).toBe('float');
+    expect(closePlace(openLayer(stackOf<Screen>('play'), 'pathogen-card', true))).toBe('float');
+  });
+
+  it('in the screen’s own slot for a layer that asks for that, with the same word on it', () => {
+    const cells = openLayer(stackOf<Screen>('play'), 'middle-view', 'slot');
+    expect(closePlace(cells)).toBe('slot');
+    expect(closeLabel(cells, isMain)).toBe('close');
+  });
+
+  it('a card opened over a view in the slot floats, and closing it gives the slot back', () => {
+    const card = openLayer(openLayer(stackOf<Screen>('play'), 'inspect', 'slot'), 'card', true);
+    expect(closePlace(card)).toBe('float');
+    expect(closeLabel(card, isMain)).toBe('back');
+    expect(closePlace(popTop(card))).toBe('slot');
   });
 });
 

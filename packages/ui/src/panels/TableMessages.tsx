@@ -12,6 +12,9 @@ import { SAY_MESSAGES } from '@immunity-wars/protocol';
 import { useEffect, useState, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR } from '../kit/tokens';
+import { SAY } from './onCard';
 
 /** One line of the table's record: a message someone said, or something that happened. */
 export interface TableLine {
@@ -41,50 +44,40 @@ export function TableMessages({
     return () => window.clearTimeout(id);
   }, [resting]);
   return (
-    <div data-table-messages="" style={{ fontSize: '0.875rem', color: '#2E2A28' }}>
-      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78665D', margin: '4px 4px' }}>
-        {t('chat.say')}
-      </div>
+    <div data-table-messages="" style={SAY.body}>
+      <div style={{ ...SAY.label, margin: '4px 4px' }}>{t('chat.say')}</div>
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(9rem, 1fr))',
-          gap: 6,
-          padding: '0 4px',
+          gap: '10px 6px',
+          padding: '0 4px 6px',
         }}
       >
         {SAY_MESSAGES.map((id) => (
-          <button
+          <KitButton
             key={id}
             data-say={id}
             disabled={resting}
-            onClick={() => {
+            onPress={() => {
               setResting(true);
               onSay(id);
             }}
             style={{
               minHeight: 44,
-              padding: '4px 8px',
-              borderRadius: 8,
-              border: '1.5px solid #8E6E53',
-              background: '#FFFDF9',
-              color: '#2E2A28',
+              padding: '4px 10px',
               fontSize: '0.8125rem',
+              justifyContent: 'flex-start',
               textAlign: 'left',
-              cursor: 'pointer',
             }}
           >
             {sayText(id)}
-          </button>
+          </KitButton>
         ))}
       </div>
-      <div
-        style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78665D', margin: '12px 4px 4px' }}
-      >
-        {t('chat.log')}
-      </div>
+      <div style={{ ...SAY.label, margin: '12px 4px 4px' }}>{t('chat.log')}</div>
       {lines.length === 0 ? (
-        <div style={{ color: '#78665D', padding: '0 4px' }}>{t('chat.nothing')}</div>
+        <div style={{ color: COLOUR.inkSoft, padding: '0 4px' }}>{t('chat.nothing')}</div>
       ) : (
         <ul data-table-log="" style={{ listStyle: 'none', margin: 0, padding: '0 4px' }}>
           {[...lines]
@@ -94,8 +87,8 @@ export function TableMessages({
                 key={`${String(l.at)}-${String(i)}`}
                 style={{
                   padding: '4px 0',
-                  borderTop: '1px solid #EADFD5',
-                  fontWeight: l.mine ? 700 : 400,
+                  borderTop: `1.5px solid ${COLOUR.creamEdge}`,
+                  fontWeight: l.mine ? 800 : 600,
                 }}
               >
                 {l.text}

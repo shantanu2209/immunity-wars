@@ -3,6 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      NO ICON YET, SAID SO, so the browser does not go looking for /favicon.ico, which does not
+      exist. Asked for with no network, that is a request that fails, and from stage L4 the browser
+      asks again in the middle of play (measured: at the first press that makes a sound), so the
+      Gate 1 audit's offline pass counted a failed request in a build that plays offline. The app's
+      real icon is Phase 4's packaging.
+    -->
+    <link rel="icon" href="data:," />
+    <style>
+      /* THE TABLE (stage L5): the page's own ground is the kit's table, from the first paint, so a
+         screen that is loading is dark and not a white flash. The colour is the kit's
+         (packages/ui/src/kit/tokens.ts, COLOUR.table); src/ground.test.ts holds the two together. */
+      html,
+      body {
+        background: #0e2a30;
+      }
+    </style>
     <title>The Immunity Wars</title>
     <!--
       THE APP (docs/APP_FLOW.md): Title -> Difficulty -> Play -> Result. The instrumented

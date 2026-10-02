@@ -21,9 +21,17 @@
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { COLOUR, TYPE } from '../kit/tokens';
 import { useNavLayer } from '../nav/NavHost';
-import { BTN, GROUP, PAGE, TITLE } from './chrome';
 
+import { BODY, CARD, DIALOG, GROUP, NOTE, PAGE, SCRIM, STACK, TITLE } from './chrome';
+
+/**
+ * A row, on its group's card (stage L5): what it is on the left, its value or its choices on the
+ * right, and the two on a line each when they do not fit one. Rows after the first are parted by
+ * space, not by a rule: a hairline on cream would be one more colour to measure and says nothing.
+ */
 const ROW: CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
@@ -31,15 +39,14 @@ const ROW: CSSProperties = {
   justifyContent: 'space-between',
   gap: 8,
   minHeight: 48,
-  padding: '8px 0',
-  borderBottom: '1px solid #E5D9CF',
+  padding: '6px 0',
 };
 
 /** Why the delete row cannot act right now; null when it can. */
 export type DeleteSaveBlock = 'none' | 'inPlay' | null;
 
 /** The choice rows the shell knows how to store; a new choice row is a new member here. */
-export type ChoiceRow = 'textSize' | 'language';
+export type ChoiceRow = 'textSize' | 'language' | 'sound';
 
 /** A row of the settings table: a choice among options, or an action with a confirm. */
 type Row =
@@ -61,6 +68,8 @@ type Row =
        *  renderer, which is exactly the shape the rows table exists to avoid. */
       confirmKey: string;
       confirmYesKey: string;
+      /** The word on the button that says no. "Keep" for a delete; another word where that is odd. */
+      confirmNoKey?: string;
       onAct: () => void;
     };
 
@@ -74,11 +83,12 @@ export function SettingsScreen({
   textSizes,
   language,
   languages,
+  sound,
+  sounds,
   onChoose,
   deleteSaveBlock,
   onDeleteSave,
-  hintsSeenAny,
-  onResetHints,
+  guide,
 }: {
   /** The text size in force and the sizes offered (percentages of the browser default). */
   textSize: string;
@@ -86,14 +96,23 @@ export function SettingsScreen({
   /** The active locale code, and every locale the catalogue offers (one today). */
   language: string;
   languages: readonly string[];
+  /**
+   * Sound and touch, on or off (stage L5; ruled at L3: on by default, with a mute here). One switch
+   * for the sounds and the buzz together.
+   */
+  sound: string;
+  sounds: readonly string[];
   /** A choice made on a row; never called for a row with one option (it renders no control). */
   onChoose: (row: ChoiceRow, value: string) => void;
   /** Why the delete row is disabled, or null when a save exists and is not being played. */
   deleteSaveBlock: DeleteSaveBlock;
   onDeleteSave: () => void;
-  /** True when this device has seen at least one hint; the row is disabled otherwise. */
-  hintsSeenAny: boolean;
-  onResetHints: () => void;
+  /**
+   * THE GUIDED GAME, to be played again (stage L6, ruled 2 October 2026). Not while a game is
+   * being played: the row then says why. Its confirm says, when a game is saved, that the lesson's
+   * end replaces it.
+   */
+  guide: { block: 'inPlay' | null; replacesSave: boolean; onStart: () => void };
 }): ReactElement {
   const [confirming, setConfirming] = useState<string | null>(null);
   // The confirm is a dialog on the navigation stack: the back gesture cancels it, and the floating
@@ -121,6 +140,18 @@ export function SettingsScreen({
       ],
     },
     {
+      labelKey: 'settings.groupSound',
+      rows: [
+        {
+          kind: 'choice',
+          key: 'sound',
+          labelKey: 'settings.sound',
+          options: sounds,
+          value: sound,
+        },
+      ],
+    },
+    {
       labelKey: 'settings.groupProgress',
       rows: [
         {
@@ -139,12 +170,13 @@ export function SettingsScreen({
         },
         {
           kind: 'action',
-          key: 'resetHints',
-          labelKey: 'settings.hintsShow',
-          blockedKey: hintsSeenAny ? null : 'settings.hintsReason',
-          confirmKey: 'settings.hintsConfirmBody',
-          confirmYesKey: 'settings.hintsConfirmYes',
-          onAct: onResetHints,
+          key: 'guide',
+          labelKey: 'settings.guide',
+          blockedKey: guide.block === 'inPlay' ? 'settings.guideInPlay' : null,
+          confirmKey: guide.replacesSave ? 'settings.guideConfirmSave' : 'settings.guideConfirm',
+          confirmYesKey: 'settings.guideYes',
+          confirmNoKey: 'settings.guideNo',
+          onAct: guide.onStart,
         },
       ],
     },
@@ -156,28 +188,25 @@ export function SettingsScreen({
       const single = row.options.length <= 1;
       return (
         <div key={row.key} style={ROW} data-settings-row={row.key}>
-          <span style={{ fontSize: '0.9375rem', color: '#2E2A28' }}>{t(row.labelKey)}</span>
+          <span style={{ ...TYPE.action, color: COLOUR.ink }}>{t(row.labelKey)}</span>
           {single ? (
-            <span style={{ fontSize: '0.9375rem', color: '#78665D' }}>
+            <span style={{ ...TYPE.body, color: COLOUR.inkSoft }}>
               {t(`${row.labelKey}.${row.value}`)}
             </span>
           ) : (
-            <span style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <span style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {row.options.map((o) => (
-                <button
+                // The one in force is pressed in and ringed: told by its shape, not only its colour.
+                <KitButton
                   key={o}
-                  style={{
-                    ...BTN,
-                    width: 'auto',
-                    marginTop: 0,
-                    borderColor: o === row.value ? '#DE7800' : '#8E6E53',
-                  }}
+                  style={{ width: 'auto', flex: '1 0 auto' }}
+                  selected={o === row.value}
                   aria-pressed={o === row.value}
                   data-settings-option={o}
-                  onClick={() => onChoose(row.key, o)}
+                  onPress={() => onChoose(row.key, o)}
                 >
                   {t(`${row.labelKey}.${o}`)}
-                </button>
+                </KitButton>
               ))}
             </span>
           )}
@@ -187,18 +216,10 @@ export function SettingsScreen({
     const blocked = row.blockedKey !== null;
     return (
       <div key={row.key} style={{ ...ROW, display: 'block' }} data-settings-row={row.key}>
-        <button
-          style={{ ...BTN, marginTop: 0, borderColor: blocked ? '#94847A' : '#B03A2E' }}
-          disabled={blocked}
-          onClick={() => setConfirming(row.key)}
-        >
+        <KitButton unavailable={blocked} onPress={() => setConfirming(row.key)}>
           {t(row.labelKey)}
-        </button>
-        {row.blockedKey ? (
-          <p style={{ fontSize: '0.8125rem', color: '#78665D', margin: '6px 0 0' }}>
-            {t(row.blockedKey)}
-          </p>
-        ) : null}
+        </KitButton>
+        {row.blockedKey ? <p style={NOTE}>{t(row.blockedKey)}</p> : null}
       </div>
     );
   };
@@ -214,47 +235,29 @@ export function SettingsScreen({
     <div style={PAGE} data-screen="settings">
       <h1 style={TITLE}>{t('settings.title')}</h1>
       {groups.map((g) => (
-        <section key={g.labelKey} style={{ marginTop: 20 }}>
+        <section key={g.labelKey}>
           <h2 style={GROUP}>{t(g.labelKey)}</h2>
-          {g.rows.map(renderRow)}
+          <div style={{ ...CARD, marginTop: 6 }}>{g.rows.map(renderRow)}</div>
         </section>
       ))}
       {confirming ? (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(46,42,40,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 20,
-          }}
-        >
-          <div
-            style={{
-              width: 'min(88vw, 360px)',
-              background: '#FFFDF9',
-              border: '2px solid #B03A2E',
-              borderRadius: 12,
-              padding: 16,
-              boxSizing: 'border-box',
-            }}
-          >
-            <p style={{ fontSize: '0.9375rem' }}>{t(confirmRow?.confirmKey ?? '')}</p>
-            <button
-              style={{ ...BTN, borderColor: '#B03A2E' }}
-              onClick={() => {
+        <div style={SCRIM}>
+          <div style={DIALOG}>
+            <p style={{ ...BODY, marginTop: 0 }}>{t(confirmRow?.confirmKey ?? '')}</p>
+            <KitButton
+              kind="main"
+              style={STACK}
+              onPress={() => {
                 setConfirming(null);
                 confirmRow?.onAct();
               }}
               data-settings-confirm=""
             >
               {t(confirmRow?.confirmYesKey ?? '')}
-            </button>
-            <button style={BTN} onClick={() => setConfirming(null)}>
-              {t('settings.deleteSaveKeep')}
-            </button>
+            </KitButton>
+            <KitButton style={STACK} onPress={() => setConfirming(null)}>
+              {t(confirmRow?.confirmNoKey ?? 'settings.deleteSaveKeep')}
+            </KitButton>
           </div>
         </div>
       ) : null}

@@ -125,14 +125,71 @@ export interface Point {
 }
 
 /**
- * The planning screen's anatomical frame (P2.5 item 12): the keyed asset's key and its 1×
- * pixel size — the space `ANATOMY_POS` is authored in. Measured off the art manifest, never typed
- * from memory: `packages/app`'s anatomy-frame test holds the two equal.
+ * The planning screen's anatomical frame (P2.5 item 12): the size of the space `ANATOMY_POS` is
+ * authored in. It names no picture; the outline is drawn in code, in this space.
  */
 export interface FrameDef {
-  readonly asset: string;
   readonly w: number;
   readonly h: number;
+}
+
+/**
+ * THE GUIDED GAME'S LESSON (`guide/lesson.json`; `docs/LOOK_PLAN.md` §19). One step is one action
+ * the player is led to, named the way a person would say it: a disease by its name, a place by
+ * its route or its organ. Whoever plays it turns a name into the game's own id for that invader.
+ */
+export type LessonStep =
+  | {
+      readonly id: string;
+      readonly do: 'produce';
+      readonly family: FamilyKey;
+      readonly for: string;
+    }
+  | {
+      readonly id: string;
+      readonly do: 'coat' | 'neutralise' | 'engulf' | 'snipe' | 'nk' | 'antivenom' | 'memory';
+      readonly disease: string;
+    }
+  | {
+      readonly id: string;
+      readonly do: 'move';
+      readonly cell: CellKey;
+      readonly route?: RouteKey;
+      readonly organ?: OrganKey;
+      readonly step: number;
+    }
+  | { readonly id: string; readonly do: 'recall'; readonly cell: CellKey }
+  | { readonly id: string; readonly do: 'net' }
+  /** Said, not done: it asks the engine for nothing. `cell` is what it points at, if anything. */
+  | { readonly id: string; readonly do: 'tell'; readonly cell?: CellKey }
+  | {
+      readonly id: string;
+      readonly do: 'strike';
+      readonly cell: 'macrophage' | 'eosinophil';
+      readonly disease: string;
+    }
+  | { readonly id: string; readonly do: 'resMove'; readonly organ: OrganKey; readonly step: number }
+  | {
+      readonly id: string;
+      readonly do: 'resEngulf';
+      readonly organ: OrganKey;
+      readonly disease: string;
+    }
+  | { readonly id: string; readonly do: 'resRecall'; readonly organ: OrganKey };
+
+export interface LessonTurn {
+  /** The diseases that arrive this turn, by name: what the engine is handed as `written`. */
+  readonly arrive: readonly string[];
+  readonly steps: readonly LessonStep[];
+}
+
+export interface Lesson {
+  /** The dice: the seed that makes the engine's random numbers fall the lesson's way. */
+  readonly seed: number;
+  readonly difficulty: Difficulty;
+  /** The crisis the lesson is written round, and its turn. */
+  readonly crisis: { readonly turn: number; readonly event: string };
+  readonly turns: readonly LessonTurn[];
 }
 
 /**
@@ -194,12 +251,12 @@ export interface WhyEntry {
   readonly text: string;
 }
 
-/** A disease record that is not a deck card: the parent it arises from (null for the one
- *  record nothing produces), the invader type the engine gives it, and how it arises. */
+/** A disease record that is not a deck card: the parent it arises from, the invader type the
+ *  engine gives it, and how it arises. Every one has a parent (queue Q15, 2 October 2026). */
 export interface DerivedEntry {
-  readonly from: string | null;
+  readonly from: string;
   readonly type: InvaderType;
-  readonly via: 'toxin' | 'stage' | 'rare' | 'none';
+  readonly via: 'toxin' | 'stage' | 'rare';
   readonly rare?: string;
 }
 

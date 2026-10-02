@@ -38,11 +38,16 @@
 import type { CSSProperties, ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { KitButton } from '../kit/Button';
+import { kitCardStyle } from '../kit/Surface';
+import { COLOUR, TYPE } from '../kit/tokens';
 
+import { SMALL } from './onCard';
+
+/** A card of the kit's cream (stage L5), with a coral bar down its side: it is a warning. */
 const WRAP: CSSProperties = {
-  border: '2px solid #B03A2E',
-  background: '#FFF4F1',
-  borderRadius: 10,
+  ...kitCardStyle,
+  borderLeft: `6px solid ${COLOUR.coral}`,
   padding: '10px 12px',
   margin: '10px 0',
 };
@@ -50,23 +55,10 @@ const WRAP: CSSProperties = {
 export function SaveFailedNotice({ onDismiss }: { onDismiss: () => void }): ReactElement {
   return (
     <div style={WRAP} role="status" data-save-failed="">
-      <p style={{ fontSize: '0.9375rem', lineHeight: 1.45, color: '#2E2A28', margin: '0 0 8px' }}>
-        {t('save.failed')}
-      </p>
-      <button
-        style={{
-          minHeight: 44,
-          fontSize: '0.875rem',
-          borderRadius: 8,
-          border: '2px solid #8E6E53',
-          background: '#FFFDF9',
-          cursor: 'pointer',
-          padding: '6px 14px',
-        }}
-        onClick={onDismiss}
-      >
+      <p style={{ ...TYPE.body, color: COLOUR.ink, margin: '0 0 8px' }}>{t('save.failed')}</p>
+      <KitButton style={SMALL} onPress={onDismiss}>
         {t('save.failedDismiss')}
-      </button>
+      </KitButton>
     </div>
   );
 }

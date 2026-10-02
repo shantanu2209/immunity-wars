@@ -21,6 +21,47 @@ const HERE = dirname(fileURLToPath(import.meta.url));
  * must see the network); `vite preview` of a build does, and `pnpm gate1:audit` against the
  * preview is the check: a reload with the network cut must render and play.
  */
+/**
+ * THE CLAY ART, AND WHAT OF IT A PLAYER'S PHONE STORES (docs/LOOK_PLAN.md §13 and §14). The
+ * offline rule above stores everything the game needs at the first visit, and only that.
+ *
+ * FROM STAGE L4 THE PLAY SCREEN IS DRAWN IN CLAY, so its pictures are part of "everything the
+ * game needs" (`CLAY_ON_THE_BOARD`): the board itself; each piece, organ and way in at the one size
+ * the board and the panels draw them; and each piece as a card shows it, at every size, because a
+ * card picks the size the phone's screen wants. Leaving them out would break play with no network.
+ *
+ * WHAT IS STILL NOT STORED: the kit page and the measuring page, which are a developer's, and the
+ * smaller sizes of the board's pictures, which only the kit page shows.
+ *
+ * THE KIT PAGE'S OWN SCRIPT IS NAMED `kitPage`, NOT `kit`, AND THAT IS LOAD-BEARING. The build names
+ * a page's script after its key in `input`, and names a script two pages share after what is in it.
+ * Once the play screen was drawn from the kit, the kit's components became a shared script named
+ * `kit-…js`, and the exclusion written at L3 for the kit page, `assets/kit-*`, matched it: the app
+ * needed a script the phone did not store, and with no network it came back as a blank page. Every
+ * test passed, because the build test asserted that nothing named `kit` was stored. The Gate 1
+ * audit's offline pass found it, on the first run against the Clay play screen.
+ *
+ * `entries-build.test.ts` holds it three ways: every script the app's page needs is in the worker's
+ * list; every picture the board draws is; and nothing that only the kit page uses is.
+ */
+const CLAY_ON_THE_BOARD = [
+  'art/clay/board/*@3x.webp',
+  'art/clay/table/*',
+  'art/clay/card/*',
+  // The title's picture (stage L5), at every size: a phone picks the one its screen wants.
+  'art/clay/scene/*',
+];
+const CLAY_NOT_YET = [
+  '**/art/clay/**',
+  'kit.html',
+  'assets/kitPage-*',
+  'measure.html',
+  'assets/measurePage-*',
+];
+
+/** The pages that are a developer's: served, never stored, and never answered by the worker. */
+const DEVELOPER_PAGES = [/^\/kit\.html/, /^\/measure\.html/];
+
 export default defineConfig({
   plugins: [
     VitePWA({
@@ -30,21 +71,32 @@ export default defineConfig({
       // showed a crash screen whose only exit reloaded into the same refusal. Both shells now
       // register through `src/serviceWorker.ts`, which catches the refusal where it happens.
       injectRegister: false,
-      includeAssets: ['art/**/*', 'fonts/**/*'],
+      // The art the screens use: the Clay
+      // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
+      includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*'],
       manifest: {
         name: 'The Immunity Wars',
         short_name: 'Immunity Wars',
         description: 'A cooperative immunology game, designed by Kartik Chaudhary',
         display: 'standalone',
-        background_color: '#FFFDF9',
-        theme_color: '#B03A2E',
+        // The kit's table (COLOUR.table), since stage L5: an installed app opens on the ground
+        // its screens stand on. src/ground.test.ts holds these to the kit's value.
+        background_color: '#0e2a30',
+        theme_color: '#0e2a30',
         icons: [],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,webp,woff2,json,txt}'],
+        globIgnores: CLAY_NOT_YET,
         // The art at 1×/2×/3× plus the anatomy frame is a few MB; precache it all, on purpose.
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         navigateFallback: 'index.html',
+        // THE DEVELOPER'S PAGES ARE NOT THE APP'S TO ANSWER. With the fallback alone, a phone that
+        // had opened the app once got the app's title for `/kit.html` and `/measure.html` ever
+        // after: its worker answers every page it does not store with `index.html`, and it stores
+        // neither. Measured 1 October 2026, before the phone was sent to the measuring page. These
+        // two go to the network, so they open while the PC is serving them and not otherwise.
+        navigateFallbackDenylist: DEVELOPER_PAGES,
       },
       devOptions: { enabled: false },
     }),
@@ -54,6 +106,12 @@ export default defineConfig({
       input: {
         main: resolve(HERE, 'index.html'),
         dev: resolve(HERE, 'dev.html'),
+        // The Clay kit page (stage L3). Built with the other two so it cannot rot quietly. Its
+        // key names its script, and the worker's exclusion above depends on that name.
+        kitPage: resolve(HERE, 'kit.html'),
+        // The measuring page (stage L4): the play screen with a frame meter, for the S25. Named
+        // as the kit page is, and for the same reason.
+        measurePage: resolve(HERE, 'measure.html'),
       },
     },
   },

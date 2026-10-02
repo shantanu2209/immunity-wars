@@ -40,6 +40,7 @@ import type {
   FamilyKey,
   Flags,
   FrameDef,
+  Lesson,
   InvaderLabel,
   InvaderType,
   OrganDef,
@@ -53,7 +54,7 @@ import type {
   RouteKey,
 } from './types.js';
 
-import { BoardPackS, RulesPackS } from './schema.js';
+import { BoardPackS, GuidePackS, RulesPackS } from './schema.js';
 
 import engineI18nEnJson from './i18n/en/engine.json';
 import uiI18nEnJson from './i18n/en/ui.json';
@@ -74,6 +75,7 @@ import whyJson from './diseases/why.json';
 import derivedJson from './rules/derived.json';
 import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
+import lessonJson from './guide/lesson.json';
 
 /**
  * Assembled, validated, and returned UNCHANGED.
@@ -116,7 +118,14 @@ function parseBoard(): Record<string, unknown> {
   return raw;
 }
 
-const pack = { ...parseRules(), ...parseBoard() };
+/** The guided game's lesson: validated against the cards and the board, returned as it is. */
+function parseGuide(): Record<string, unknown> {
+  const raw: Record<string, unknown> = { ...lessonJson };
+  GuidePackS.parse(raw);
+  return raw;
+}
+
+const pack = { ...parseRules(), ...parseBoard(), ...parseGuide() };
 
 /**
  * The pack stamp. **Every network message carries `RULES_VERSION`** (P3.2: stamped by the
@@ -131,7 +140,15 @@ const pack = { ...parseRules(), ...parseBoard() };
  * organ the fight is in. The content gained Pathogen X's declared tropism, six of the actions'
  * numbers and new sentences. The relay refuses any other rules version exactly, so a phone still
  * on 3.1.0 is told to update. Then rules 4.1.0 and content 1.2.0 (queue Q11, 30 September 2026):
- * a venom is never remembered, and the help text states the queue's rules.
+ * a venom is never remembered, and the help text states the queue's rules. Then rules 4.1.1 and
+ * content 1.3.0 (2 October 2026, docs/DEVIATIONS.md #12): the gentlest difficulty is called Easy.
+ * The rules play exactly as they did; the engine said Training in one message, and
+ * that word changed, so the two ends of a game played together must be on the same wording. Then
+ * rules 4.1.2 and content 1.4.0 (2 October 2026, docs/DEVIATIONS.md #14), for the same reason: the
+ * engine said "tagged" in three sentences, and they say coated. The guided game's written turns
+ * (queue Q13) did not move either version, by ruling. Then rules 4.2.0 and content 1.5.0 (queue
+ * Q15, 2 October 2026, docs/DEVIATIONS.md #15): the deck plays differently. Diphtheria and Anthrax
+ * are bacteria that release their toxins, where they were toxin cards.
  */
 export const PACK_ID = pack['packId'] as string;
 export const PACK_VERSION = pack['packVersion'] as string;
@@ -282,6 +299,10 @@ export const ANATOMY_POS = pack['ANATOMY_POS'] as Record<OrganKey, Point>;
 /** Entry chips on the outline at the point of entry, and the bloodstream at the great vessels. */
 export const ANATOMY_ENTRY = pack['ANATOMY_ENTRY'] as Record<RouteKey, Point>;
 export const ANATOMY_HUB = pack['ANATOMY_HUB'] as Point;
+
+/* --- the guided game --- */
+/** The lesson's turns, written (`docs/LOOK_PLAN.md` §19): what arrives, and what the player is led to. */
+export const LESSON = pack['LESSON'] as Lesson;
 
 /* --- regions (the phone-size zoom targets) --- */
 export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;

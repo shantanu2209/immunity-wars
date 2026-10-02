@@ -43,6 +43,16 @@
 #   hidden         one of your own cells with the pathogen showing through it, tinted by class
 #   toxin          not alive: a binding part carrying a smaller active part
 #   venom          not alive: a drop of liquid carrying several different toxins
+#   unknown        a pathogen new to the body ("Pathogen X"), and anything the game is hiding: a
+#                  pale soft lump marked with a question mark. It is soft because it is alive. It
+#                  wears NONE of the six class colours, because its antigen matches none of the
+#                  six: that is what "new" means here. It claims nothing else.
+#
+# AND THE COINS (stage L4), which are not pieces: nothing moves them.
+#   organ-*        a coloured coin with a cream pictogram: the seven organs
+#   entry-*        a cream coin with a dark pictogram: the six ways in
+#   The pictograms are drawn in code (pictograms.ts beside this file) and laid on as a picture;
+#   `pnpm art:clay --pictograms` writes them where this script reads them.
 import bpy, bmesh, json, math, os, random
 from mathutils import Vector
 
@@ -516,6 +526,87 @@ def swatch():
     cyl("swatch", (0, 0, -0.05), 6.0, 0.05, mat(BOARD, rough=0.85, sss=0.0, spec=0.12), coll, bevel=0.0)
 
 
+# ── a pathogen nobody has identified, and the coins ──────────────────────────
+TEX = os.path.join(PNG, "tex")
+RULES = json.load(open(os.path.join(ROOT, "packages", "content", "src", "rules", "board.json")))
+INK = "#3B2A4A"
+PAPER = "#FFF6EA"
+UNKNOWN = "#D5D0DC"
+# A coin's radius and the half-width of the square its pictogram is drawn in, in model units.
+# clay.ts reads the same four numbers to find the pictogram in the finished picture.
+ORGAN_R, ORGAN_PIC = 1.3, 0.95
+ENTRY_R, ENTRY_PIC = 1.087, 0.826
+MARK_PIC = 0.88
+# An organ's coin has to be dark enough for a cream pictogram to read on it at 3:1 (measured by
+# the gate). The brain, the lungs and the marrow were lighter in the L1 picture and failed.
+ORGAN_COL = {"brain": "#A9567F", "lungs": "#B4524D", "heart": "#C8463C", "liver": "#A85A3E", "spleen": "#8A4C78", "kidneys": "#B4573F", "marrow": "#966719"}
+
+
+def decal(name, z, half, tex, col, coll):
+    """A pictogram laid flat on a coin: a square that is the pictogram's colour where the
+    pictogram is, and nothing where it is not."""
+    path = os.path.join(TEX, tex + ".png")
+    if not os.path.exists(path):
+        raise RuntimeError("no pictogram at " + path + ": run  pnpm art:clay --pictograms  first")
+    bm = bmesh.new()
+    bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=half)
+    uv = bm.loops.layers.uv.new("uv")
+    for face in bm.faces:
+        for loop in face.loops:
+            loop[uv].uv = ((loop.vert.co.x / half + 1) / 2, (loop.vert.co.y / half + 1) / 2)
+    m = bpy.data.materials.new(P + "decal_" + name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes.get("Principled BSDF")
+    b.inputs["Base Color"].default_value = lin(col)
+    b.inputs["Roughness"].default_value = 0.5
+    t = nt.nodes.new("ShaderNodeTexImage")
+    t.image = bpy.data.images.load(path, check_existing=False)
+    nt.links.new(t.outputs["Alpha"], b.inputs["Alpha"])
+    if hasattr(m, "blend_method"):
+        m.blend_method = "BLEND"
+    ob = mesh_obj("decal_" + name, bm, m, coll, smooth=False)
+    ob.location = (0, 0, z)
+    ob.visible_shadow = False
+    return ob
+
+
+def organ(key):
+    name = "organ-" + key
+    coll = new(name)
+    cyl(name + "_coin", (0, 0, 0), ORGAN_R, 0.39, mat(ORGAN_COL[key], rough=0.5, sss=0.2), coll, bevel=0.08)
+    decal(name, 0.396, ORGAN_PIC, name, PAPER, coll)
+
+
+def entry(lane):
+    name = "entry-" + lane
+    coll = new(name)
+    cyl(name + "_coin", (0, 0, 0), ENTRY_R, 0.26, mat(CREAM, rough=0.55), coll, bevel=0.06)
+    decal(name, 0.266, ENTRY_PIC, name, INK, coll)
+
+
+def _cubic(p0, p1, p2, p3, n=12):
+    out = []
+    for i in range(n + 1):
+        t = i / n
+        a, b, c, d = (1 - t) ** 3, 3 * (1 - t) ** 2 * t, 3 * (1 - t) * t * t, t ** 3
+        out.append((a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]))
+    return out
+
+
+def unknown():
+    """The question mark is the one in pictograms.ts, built as clay: the same two curves and the
+    same dot, so the gate can find it in the picture with the same shape."""
+    coll = new("unknown")
+    body("unknown", UNKNOWN, coll, R=1.0, lumpy=0.05, seed=2.1)
+    k = MARK_PIC / 40.0  # the pictogram's box is 80 units wide; y runs downward in it
+    ink = mat(INK, rough=0.5, sss=0.05)
+    flat = _cubic((-13, -12), (-13, -30), (15, -30), (15, -11)) + _cubic((15, -11), (15, 2), (1, 0), (1, 13))[1:]
+    pts = [(x * k, -y * k, top(x * k, -y * k) + 0.03) for x, y in flat]
+    tube("unknown_q", pts, 4.5 * k, ink, coll, bez=False)
+    sphere("unknown_dot", (1 * k, -27 * k, top(1 * k, -27 * k) + 0.03), (5.6 * k, 5.6 * k, 4.0 * k), ink, coll, seg=20)
+
+
 build_cells()
 for cls in ("EXB", "ICB"):
     bacterium(cls)
@@ -532,9 +623,15 @@ for cls in ("ENV", "NAK", "EUK"):
     hidden(cls)
 toxin()
 venom()
+unknown()
+for _o in RULES["ALL_ORGANS"]:
+    organ(_o)
+for _l in RULES["ROUTE_KEYS"]:
+    entry(_l)
 base()
 swatch()
-PIECES = [n for n in MODELS if n not in ("base", "swatch-board")]
+COINS = [n for n in MODELS if n.startswith(("organ-", "entry-"))]
+PIECES = [n for n in MODELS if n not in ("base", "swatch-board") and n not in COINS]
 WIDE = {n for n in MODELS if n.startswith(("bacteria", "worm", "parasite", "venom"))}
 
 
@@ -597,7 +694,7 @@ def catcher(name, z, size, coll):
 
 
 # ── THE BOARD VIEW: seen from straight above, under the board's own lamps ─────
-# The lamps stand where the board picture's do (tools/look-prototype/blender/clay.py), so a
+# The lamps stand where the board picture's do (the L2 prototype's, since removed), so a
 # piece's picture carries the light and the soft shadow it has on the board.
 bv = bpy.data.scenes.new(P + "board_view")
 setup_render(bv, 128)
@@ -664,4 +761,4 @@ def render_all(only=None):
     return done
 
 
-result = {"pieces": PIECES, "others": ["base", "swatch-board"]}
+result = {"pieces": PIECES, "coins": COINS, "others": ["base", "swatch-board"]}

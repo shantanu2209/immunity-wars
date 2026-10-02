@@ -405,10 +405,19 @@ export const UNDO_ROUND_TRIPS: Invariant = {
  * Scope, stated because it is a real limit: only command-phase kill actions are examined. During
  * `endCommand` an invader can also leave `g.invaders` by ARRIVING at an organ, which is not a
  * kill and correctly records nothing — checking there would report false violations.
+ *
+ * AND NEVER BY ANTIVENOM, AT ANY DIFFICULTY (queue Q4, ruled 30 September 2026; FINDINGS #55):
+ * antivenom is borrowed antibodies, made in horses, and the body learns nothing from it. So on
+ * Training an antivenom kill is held the way a Normal kill is: memory that appears across it is the
+ * violation. *Brought level on 2 October 2026 (FINDINGS #124).* The engine took the ruling on
+ * 30 September and this invariant did not, so the 10,000-game tier, which reaches an antivenom
+ * kill on Training in its fourth game, was red on the nightly run of 1 and of 2 October and stopped
+ * there both nights; the 120-game tier that runs on every push never gives the last venom antivenom
+ * on Training, and stayed green.
  */
 export const MEMORY_ON_KILL: Invariant = {
   id: 'memory-on-kill',
-  title: 'a kill records memory on Training, and never on Normal or Hard',
+  title: 'a kill records memory on Training, never by antivenom, and never on Normal or Hard',
   before(ctx, g, a) {
     if (!KILL_ACTIONS.has(a.action)) return null;
     return {
@@ -427,9 +436,16 @@ export const MEMORY_ON_KILL: Invariant = {
       report.checked();
       const had = Boolean(p.memory[dz]);
       const has = Boolean(g.memory[dz]);
-      if (g.difficulty === 'training') {
+      if (g.difficulty === 'training' && a.action !== 'antivenom') {
         if (!has) {
           report.violate(`${a.action} killed the last ${dz} on Training and recorded no memory`);
+        }
+      } else if (g.difficulty === 'training') {
+        if (has && !had) {
+          report.violate(
+            `antivenom killed the last ${dz} on Training and recorded memory — antivenom is ` +
+              'borrowed antibodies and teaches the body nothing (queue Q4, docs/DEVIATIONS.md)',
+          );
         }
       } else if (has && !had) {
         report.violate(

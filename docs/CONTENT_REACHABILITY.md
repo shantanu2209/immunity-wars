@@ -7,8 +7,8 @@ What the content can actually produce, and what it declares but cannot. This exi
 guarding against states the content cannot produce, and the content declaring pathogens the
 engine cannot produce — and because neither side ever wrote its assumptions down.
 
-Deck: **97 cards**. FAMILY: **106 entries**.
-TROPISM: **107 entries**.
+Deck: **97 cards**. FAMILY: **107 entries**.
+TROPISM: **108 entries**.
 
 ---
 
@@ -58,12 +58,7 @@ Q1 antibodies may attempt a trypanosome, and it can. `hidesInMac` appears only o
 Disease names carrying a `FAMILY` or `TROPISM` entry that nothing can ever create: not a
 card, not emitted by a `TOXIN_MAKERS` bacterium, not minted by a rare event.
 
-| disease | in FAMILY | in TROPISM |
-|---|---|---|
-| **Diphtheria toxin** | `TOX` | yes |
-
-See [`FINDINGS.md`](FINDINGS.md) #23. Report only — whether such a row should be deleted,
-or given a producer, is a design question for Kartik.
+_None. Every declared disease has a producer._
 
 ## 4. Cards missing a FAMILY or TROPISM entry
 
@@ -96,6 +91,8 @@ _No card is missing a class without a declared reason._
 | Tetanus | Tetanus toxin |
 | Cholera | Cholera toxin |
 | Gas gangrene | Clostridial toxin |
+| Diphtheria | Diphtheria toxin |
+| Anthrax | Anthrax toxin |
 
 ## 6. Disease names the engine mints directly
 

@@ -18,6 +18,9 @@
 *.md     text eol=lf
 *.yml    text eol=lf
 *.yaml   text eol=lf
+# Python is read by the art pipeline's gate and matched by a self-test control, both as text with
+# Unix line ends; checked out natively on Windows, the control matched nothing (1 October 2026).
+*.py     text eol=lf
 *.html   text eol=lf
 *.css    text eol=lf
 *.svg    text eol=lf

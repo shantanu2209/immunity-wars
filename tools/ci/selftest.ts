@@ -445,7 +445,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'room-ids-across-rooms',
-    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test.",
+    why: "FINDINGS #56 on a relay: until queue Q5 the engine handed out invader ids from one counter per process, and a new game in ANY room reset it, so a game starting at one table made another hand one id to two pathogens. Re-aimed 30 September 2026, when Q5 made the counter the game's own and the room's workaround went: a counter shared again, and reset by any new game, must fail the room's two-rooms test. ON SEEDED DICE since 2 October 2026 (FINDINGS #122): on the page's own dice this control was measured to go unnoticed in 63 games of 1,000, and it came back red in a full self-test for that reason and no other.",
     file: 'packages/engine/src/primitives.ts',
     mutate: (t) =>
       t.replace(
@@ -770,7 +770,19 @@ const CONTROLS: readonly Control[] = [
         '      if (answered.get(socket) === false) {\n        continue;\n      }',
       ),
     gate: 'pnpm --filter @immunity-wars/server test',
-    expect: 'is marked away within a few heartbeats',
+    expect: 'the silent member is shown away',
+  },
+  {
+    id: 'node-heartbeat-spares-who-answers',
+    why: 'The other half of the heartbeat, which had no control until 2 October 2026 (FINDINGS #120): a phone that ANSWERS its pings stays. The test read the host’s presence from the host’s own picture of the room, which goes on saying "present" after the host has been ended, so a relay that ended everybody would have been reported as a silent member never shown away. With the answer to a ping no longer recorded, the test must FAIL saying a phone that answers was ended.',
+    file: 'packages/server/src/node.ts',
+    mutate: (t) =>
+      t.replace(
+        "    socket.on('pong', () => {\n      answered.set(socket, true);\n    });",
+        "    socket.on('pong', () => undefined);",
+      ),
+    gate: 'pnpm --filter @immunity-wars/server test',
+    expect: 'THE RELAY ENDED A PHONE THAT ANSWERS',
   },
   {
     id: 'bundle-recipe',
@@ -970,7 +982,7 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-manifest-not-measured',
     why: 'The manifest is the contract the app reads, and it must record what was measured, never what was hoped. A measured ratio edited by hand in the manifest, with the render untouched, must turn the check red.',
-    file: 'tools/art-pipeline/clay/built/manifest.json',
+    file: 'packages/app/public/art/clay/manifest.json',
     mutate: (t) => t.replace(/"board": \d+\.?\d*/, '"board": 9.99'),
     gate: 'pnpm art:clay:check',
     expect: 'MANIFEST RECORDS WHAT WAS NOT MEASURED',
@@ -978,10 +990,438 @@ const CONTROLS: readonly Control[] = [
   {
     id: 'clay-output-not-recorded',
     why: 'An output picture that is not the one the manifest records (rebuilt by hand, edited, or left behind by an older run) must turn the check red: the app would be showing a picture the gate never saw.',
-    file: 'tools/art-pipeline/clay/built/manifest.json',
+    file: 'packages/app/public/art/clay/manifest.json',
     mutate: (t) => t.replace(/"sha256": "[0-9a-f]{8}/g, '"sha256": "00000000'),
     gate: 'pnpm art:clay:check',
     expect: 'OUTPUT IS NOT WHAT THE MANIFEST RECORDS',
+  },
+  {
+    id: 'clay-kit-colour-is-measured',
+    why: 'The kit writes down the lit colour of the board and of the well so the page can match the board. They are measurements, read from the renders by the art pipeline; a value typed in by hand, or left behind when the board is re-rendered, must turn the check red.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/board: '#[0-9a-fA-F]{6}'/, "board: '#123456'"),
+    gate: 'pnpm art:clay:check',
+    expect: "THE KIT'S COLOUR IS NOT THE MEASURED ONE",
+  },
+  {
+    id: 'kit-contrast-reads-the-tokens',
+    why: 'Stage L3: every pairing of the kit colours that carries words or marks a control is held to Gate 1 bounds by the kit test. A test that passed whatever the tokens said would pass a card nobody can read. With the quiet ink turned pale, the real pairings must FAIL, by name.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/inkSoft: '#[0-9a-fA-F]{6}'/, "inkSoft: '#B7AAB2'"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT CONTRAST: quiet words on a card',
+  },
+  {
+    id: 'clay-not-in-the-worker',
+    why: 'Stage L3: the Clay art and the kit page are served but must not be stored on a player phone until a screen uses them (L4). With the exclusion removed from the app build, the build test must FAIL naming what the worker stores.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t.replace(
+        "const CLAY_NOT_YET = [\n  '**/art/clay/**',\n  'kit.html',\n  'assets/kitPage-*',\n  'measure.html',\n  'assets/measurePage-*',\n];",
+        'const CLAY_NOT_YET: string[] = [];',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER STORES THE CLAY KIT',
+  },
+  {
+    id: 'worker-leaves-developer-pages',
+    why: 'Stage L4, measured before the S25 was sent to the measuring page: a phone that had opened the app got the app’s title for /kit.html and /measure.html, because its worker answers every page it does not store with index.html. With the exception removed from the app build, the build test must FAIL saying the worker answers a developer’s page with the app.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace('        navigateFallbackDenylist: DEVELOPER_PAGES,\n', ''),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER ANSWERS A DEVELOPER',
+  },
+  {
+    id: 'app-scripts-in-the-worker',
+    why: 'Stage L4, found by the Gate 1 audit’s offline pass: the exclusion written for the kit page, `assets/kit-*`, also matched the script the build made of the kit’s components once the play screen used them, so the app needed a script the phone did not store and came back blank with no network, while the build test (which forbade anything named `kit`) passed. With that exclusion put back, the build test must FAIL naming the script the worker does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace("'assets/kitPage-*'", "'assets/kit*'"),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER DOES NOT STORE A SCRIPT THE APP NEEDS: assets/kit-',
+  },
+  {
+    id: 'kit-motion-less-motion-is-still',
+    why: 'Stage L3: when a phone asks for less motion, nothing in the kit may travel; a piece that moved is simply in its new place. A test that looked only at its own made-up plans would pass a kit that ignored the request. With the less-motion branch switched off in the real plans, the kit test must FAIL, naming the motion.',
+    file: 'packages/ui/src/kit/motion.ts',
+    mutate: (t) => t.replace('  if (reduced) {', '  if (reduced && dx > 1e9) {'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT MOTION: with less motion asked for, move still travels',
+  },
+  {
+    id: 'kit-sound-mute-is-obeyed',
+    why: 'Stage L3, ruled 1 October 2026: sound is on by default with a mute. A mute that the audio does not obey is a setting that lies. With the mute no longer read before a sound is played, the kit test must FAIL saying a muted kit made a sound.',
+    file: 'packages/ui/src/kit/sound.ts',
+    mutate: (t) => t.replace('    if (this.muted) return false;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'KIT SOUND: a muted kit made a sound',
+  },
+  {
+    id: 'frame-flat-action-still-answers',
+    why: 'Stage L4: the play screen’s frame is built from the kit. An action that cannot be used is drawn flat, and a press on it is how the player asks why; the kit’s own unavailable button takes no press. With the frame’s actions made unavailable the kit’s plain way, the frame test must FAIL saying a flat action cannot be pressed.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '              unavailable={!row.available}\n              explains\n',
+        '              unavailable={!row.available}\n',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A FLAT ACTION CANNOT BE PRESSED',
+  },
+  {
+    id: 'camera-keeps-the-board-in-view',
+    why: 'Stage L4: the camera is the board drawn larger and shifted. Moved in on an organ at the rim and centred on it, the board would be pushed past the play area and the empty table shown beside it. The part shown is kept inside the picture. With that keeping-in taken off one axis, the camera test must FAIL naming an organ.',
+    file: 'packages/ui/src/board/camera.ts',
+    mutate: (t) =>
+      t.replace(
+        'x: within((x0 + x1) / 2, CLAY_VIEW.x + halfW, CLAY_VIEW.x + CLAY_VIEW.w - halfW),',
+        'x: (x0 + x1) / 2,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE CAMERA SHOWS WHAT IS NOT BOARD: moved in on the',
+  },
+  {
+    id: 'board-motion-follows-the-invaders',
+    why: 'Stage L4: the board moves a piece by knowing it is the one that stood elsewhere a moment ago. A piece that stands for invaders has its step in its key, so compared by key a group that walks a step is one piece gone and another come, and the board would fade and pop where it should walk. With the comparison made by key, the test must FAIL saying what the walk came out as.',
+    file: 'packages/ui/src/board/changes.ts',
+    mutate: (t) =>
+      t.replace(
+        'const from = p.ids.map((id) => wasIn.get(id)).find((old) => old !== undefined);',
+        'const from = was.get(p.key);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'BOARD MOTION: a group that walked a step came out as',
+  },
+  {
+    id: 'play-screen-colours-are-the-kits',
+    why: 'Stage L4: every pairing of the kit’s colours that carries words is measured against Gate 1’s bound. A colour written straight into a screen is outside that, measured by nothing, and is how the old screens’ colours would come back one line at a time. With one old colour written into a redrawn panel, the test must FAIL naming the file and the colour.',
+    file: 'packages/ui/src/panels/PieceStrip.tsx',
+    mutate: (t) =>
+      t.replace(
+        'data-pieces-none="" style={SAY.quiet}',
+        'data-pieces-none="" style={{ color: \'#78665D\' }}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A COLOUR OUTSIDE THE KIT: panels/PieceStrip.tsx names #78665D',
+  },
+  {
+    id: 'body-outline-holds-every-place',
+    why: 'Stage L5: the body in planning is drawn in code, and the organs and ways in hung on it are the content pack’s. Nothing else says the two still agree. With one leg of the outline cut short, the figure’s test must FAIL naming the way in that is left off the body.',
+    file: 'packages/ui/src/play/AnatomyView.tsx',
+    mutate: (t) => t.replace("  'L 171 366',\n", "  'L 171 300',\n"),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'A PLACE IS NOT ON THE BODY: the way in: wound',
+  },
+  {
+    id: 'catalogue-no-sentence-left-behind',
+    why: '2 October 2026, when what is no longer needed was removed: 22 sentences of the screens’ catalogue were asked for by no screen, left behind as screens were replaced, and a Hindi translator would have been handed every one. With a sentence added that nothing asks for, the catalogue’s test must FAIL naming it. Its own planted controls hold the other half: a named, a built and a grown key each count as used.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        '  "title.newGame":',
+        '  "title.leftBehind": "Nobody asks for this",\n  "title.newGame":',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/catalogue.test.ts',
+    expect: 'NO SCREEN ASKS FOR: title.leftBehind',
+  },
+  {
+    id: 'title-one-main-button',
+    why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) => t.replace("kind={save || onLearn ? 'rest' : 'main'}", 'kind="main"'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE TITLE HAS TWO MAIN BUTTONS',
+  },
+  {
+    id: 'settings-old-record-is-kept',
+    why: 'Stage L5: the sound setting was added to a record players already have. Without a default, a record stored before it fails the schema and reads as the defaults, and a player’s text size is reset by an update. With the default taken off the new field, the settings test must FAIL saying an old record was read as the defaults.',
+    file: 'packages/app/src/settings.ts',
+    mutate: (t) =>
+      t.replace("sound: z.enum(SOUND_SETTINGS).default('on'),", 'sound: z.enum(SOUND_SETTINGS),'),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'AN OLD RECORD WAS READ AS THE DEFAULTS',
+  },
+  {
+    id: 'page-ground-is-the-kits-table',
+    why: 'Stage L5: the app’s pages paint the table’s colour before any script runs, as text, and the kit names it in its tokens: copies of one value drift. With the app’s page painted white, the app’s test must FAIL naming the page.',
+    file: 'packages/app/index.html',
+    mutate: (t) => t.replace('background: #0e2a30;', 'background: #ffffff;'),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE PAGE’S GROUND IS NOT THE KIT’S TABLE: index.html',
+  },
+  {
+    id: 'settings-guide-row-says-what-it-costs',
+    why: 'Stage L6: the guided game can be played again from Settings, but not from inside a game, and the row must say so: a button that does nothing and says nothing is a dead end. With the reason no longer given to the row, the screen’s test must FAIL saying the row does not say why it is unavailable.',
+    file: 'packages/ui/src/screens/SettingsScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        "blockedKey: guide.block === 'inPlay' ? 'settings.guideInPlay' : null,",
+        'blockedKey: null,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE GUIDED GAME’S ROW DOES NOT SAY WHY IT IS UNAVAILABLE',
+  },
+  {
+    id: 'title-guided-game-leads-a-new-phone',
+    why: 'Stage L6, ruled 2 October 2026: on a phone that has never played, the title’s main button is the guided game. With the guided game drawn as a resting button there, a newcomer’s title has New game resting too and no main button at all, and the title’s test must FAIL saying the guided game is not the main button of a new phone’s title.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) => t.replace("kind={save ? 'rest' : 'main'}", 'kind="rest"'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
+  },
+  {
+    id: 'guide-walk-names-a-stuck-beat',
+    why: 'Stage L6: the guided game is walked in the built app by pressing only what the guide lights. A beat whose control is not on the page lights nothing, and a player would be left looking at a sentence with nothing to tap. With the hook for the Neutrophil’s NET misnamed, the walk must FAIL naming that beat and saying nothing is lit, and not run on to a time limit.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "return byCell(view, 'neutrophil', 'net', '');",
+        "return byCell(view, 'neutrophil', 'nett', '');",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'STUCK at t3.net: nothing on the page is lit',
+  },
+  {
+    id: 'engulf-is-chip-only-when-it-wounds',
+    why: 'FINDINGS #114: the Monocyte’s engulf is worded Chip on a fungus or a parasite, because it wounds them; but on the target’s last hit point it kills, the engine’s log says engulfed, and a parasite is only ever offered on its last hit point. With the word chosen by the kind of target alone again, the test must FAIL saying the row says Chip for a kill.',
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) => t.replace(' && (hp === null || hp > 1))', ')'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engulf-word.test.ts',
+    expect: 'THE ROW SAYS CHIP FOR A KILL',
+  },
+  {
+    id: 'guide-lets-go-when-the-game-parts',
+    why: 'Stage L6: the guide moves on only when the engine has accepted exactly the step the lesson asked for. When it accepts something else the player and the lesson have parted, and a guide that stayed would light a step the game is no longer at. With the guide staying where it is on an action it did not ask for, its test must FAIL saying the guide did not let go.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "  if (!expected || !sameAction(expected, sent)) return { kind: 'parted' };",
+        "  if (!expected || !sameAction(expected, sent)) return { kind: 'stay' };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'THE GUIDE DID NOT LET GO',
+  },
+  {
+    id: 'guide-every-beat-has-its-sentence',
+    why: 'Stage L6: a beat’s sentence is found by a key built from the step’s name, which no compiler checks, so a step renamed in the lesson would show its key in brackets to a newcomer. With one sentence’s key changed, the guide’s test must FAIL naming the beat that has none.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) => t.replace('"guide.t3.net":', '"guide.t3.nett":'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A BEAT OF THE LESSON HAS NO SENTENCE: guide.t3.net',
+  },
+  {
+    id: 'guide-light-is-on-what-is-seen',
+    why: 'Stage L6: the guide rings what can be seen of the control it lights. A row of actions cut off by the middle, which scrolls, has a rectangle that runs on over the tiles below, and ringed whole the light stood over a tile it did not light: at 200% text the Gate 1 audit could not tell which was lit. With the light put round the control’s whole rectangle again, its test must FAIL saying the light stands over a control it does not light.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) => t.replace('  const r = seenPart(own, clips) ?? own;', '  const r = own;'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE LIGHT STANDS OVER A CONTROL IT DOES NOT LIGHT',
+  },
+  {
+    id: 'differences-worm-start-is-the-engines',
+    why: 'Stage L6: the card of the main differences says where a worm starts on each difficulty, and that is a rule the engine has written in itself, so the screens keep a table of which sentence each difficulty gets. A second copy of a rule drifts. With Normal’s worm said to start at the far end of its branch, the test that plays a game on each difficulty must FAIL saying what the card says and where the engine put the worm.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) => t.replace("  normal: 'half',", "  normal: 'far',"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE CARD SAYS A WORM STARTS "far" ON normal',
+  },
+  {
+    id: 'differences-memory-is-the-engines',
+    why: 'Stage L6: the card says what makes the body remember a disease on each difficulty, and on Hard that using the memory costs an Action Point. With Hard said to be as Normal, where using it is free, the test that vaccinates and then uses the memory on each difficulty must FAIL saying what the card says and what the engine did.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) => t.replace("  hard: 'vaccineCosts',", "  hard: 'vaccine',"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE CARD SAYS MEMORY COMES FROM "vaccine" ON hard, AND THE ENGINE DOES: vaccineCosts',
+  },
+  {
+    id: 'differences-numbers-are-the-engines',
+    why: 'Stage L6: four rows of the card are numbers read from the content pack’s tables. A row that read the wrong table would show a number, and a wrong one. With the store’s row reading the Action Points’ table, the test that asks the engine for a store’s cap on each difficulty must FAIL on that row.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) => t.replace('({ n: AB_CAP_FAM_BY_DIFF[d] })', '({ n: DIFF[d].ap })'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'the most one store holds',
+  },
+  {
+    id: 'differences-cards-are-the-dies',
+    why: 'Stage L6: the card says how many new infections a turn brings, read off the die’s table. With the most read one too high, the test that draws a turn on each face of the die on each difficulty must FAIL on the most a turn brings.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace('  const most = Math.max(...table);', '  const most = Math.max(...table) + 1;'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'the most a turn brings',
+  },
+  {
+    id: 'differences-antivenom-is-the-engines',
+    why: 'Stage L6: the table of what changes says how many doses of antivenom a game starts with, which the engine has written in itself. With Normal said to start with 2, the test that asks a new game on each difficulty must FAIL saying what the table says and what the game starts with.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: 2,\n  normal: 1,\n  hard: 0,',
+        '  training: 2,\n  normal: 2,\n  hard: 0,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS 2 DOSES OF ANTIVENOM ON normal, AND THE GAME STARTS WITH 1',
+  },
+  {
+    id: 'differences-division-is-the-engines',
+    why: 'Stage L6: the table says on which rolls an uncoated bacterium divides. With Normal said to divide on 1 or 2, as Easy does, the test that runs a spread on each face of the die on each difficulty must FAIL saying what the table says and what the engine made.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        "  training: 2,\n  normal: 3,\n  hard: 'always',",
+        "  training: 2,\n  normal: 2,\n  hard: 'always',",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect:
+      'THE TABLE SAYS A BACTERIUM ON normal MAKES 1,1,0,0,0,0 COPIES ON THE SIX FACES, AND THE ENGINE MADE 1,1,1,0,0,0',
+  },
+  {
+    id: 'differences-organ-is-the-engines',
+    why: 'Stage L6: the table says a hurt organ never heals on Hard. With Hard said to heal, the test that hurts the lungs and lets the turns pass on each difficulty must FAIL saying what the table says and where the engine left the lungs.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: true,\n  normal: true,\n  hard: false,\n};\n\n/** Does an uncoated invader',
+        '  training: true,\n  normal: true,\n  hard: true,\n};\n\n/** Does an uncoated invader',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS A HURT ORGAN HEALS ON hard, AND THE ENGINE LEFT THE LUNGS AT 2 OF 3',
+  },
+  {
+    id: 'differences-lymph-is-the-engines',
+    why: 'Stage L6: the table says infections spread along the lymph on Hard alone. With Normal said to spread too, the test that puts a virus at a lymph node and runs a spread on each face on each difficulty must FAIL saying what the table says and what the engine did.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: null,\n  normal: null,\n  hard: 2,',
+        '  training: null,\n  normal: 2,\n  hard: 2,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect:
+      'THE TABLE SAYS AN INFECTION ON normal SPREADS BY THE LYMPH ON [true,true,false,false,false,false]',
+  },
+  {
+    id: 'differences-produce-is-the-engines',
+    why: 'Stage L6: the table says practice against one class adds an antibody on Easy alone, and that antigens presented raise what a Produce makes on Easy and Normal. With practice said to add on Normal too, the test that asks the engine what a Produce makes must FAIL saying what the table says.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: true,\n  normal: false,\n  hard: false,',
+        '  training: true,\n  normal: true,\n  hard: false,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE TABLE SAYS PRACTICE ADDS ON normal, AND THE ENGINE MADE 3 THEN 3',
+  },
+  {
+    id: 'differences-pathogen-x-is-the-engines',
+    why: 'Stage L6: the table says in how many games of ten Pathogen X is due. With Normal said to be 5 in 10, the test that starts 4,000 seeded games on each difficulty must FAIL on the share that had it.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        '  training: 2,\n  normal: 6,\n  hard: 10,',
+        '  training: 2,\n  normal: 5,\n  hard: 10,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'of 4000 games',
+  },
+  {
+    id: 'differences-range-is-the-engines',
+    why: 'Stage L6: the table says the Killer T-Cell’s range. With that row reading the antibody store’s table, the test that puts a hidden virus one to five steps out on each difficulty must FAIL on a step the engine does not reach.',
+    file: 'packages/ui/src/screens/difficultyFacts.ts',
+    mutate: (t) =>
+      t.replace(
+        "row('range', (d): DifferenceCell => ({ n: SNIPE_RANGE_BY_DIFF[d] }))",
+        "row('range', (d): DifferenceCell => ({ n: AB_CAP_FAM_BY_DIFF[d] }))",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: '4 steps out',
+  },
+  {
+    id: 'differences-table-is-whole',
+    why: 'Stage L6, ruled 2 October 2026: the table of what changes holds every place the engine reads the difficulty, and a test counts those places in the engine’s source so that a new one cannot arrive unseen. With one more read of the difficulty written into the engine, changing nothing it does, the count must FAIL asking whether the new one is on the table.',
+    file: 'packages/engine/src/effects.ts',
+    mutate: (t) =>
+      t.replace(
+        "      g.difficulty === 'training' &&\n",
+        "      g.difficulty === 'training' &&\n      g.difficulty !== 'hard' &&\n",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/differences.test.ts',
+    expect: 'THE ENGINE READS THE DIFFICULTY SOMEWHERE THE TABLE WAS NOT WRITTEN FROM',
+  },
+  {
+    id: 'result-says-what-changes-after-easy',
+    why: 'Stage L6, ruled 2 October 2026: the guided game ends as a game on Easy, and the result of a game on Easy is where its player is told that Normal and Hard differ. With the card shown after a game on Hard and not on Easy, the result’s test must FAIL saying the result of a game on Easy does not say what changes.',
+    file: 'packages/ui/src/screens/ResultScreen.tsx',
+    mutate: (t) => t.replace("{difficulty === 'training' ? (", "{difficulty === 'hard' ? ("),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ResultScreen.test.ts',
+    expect: 'THE RESULT OF A GAME ON EASY DOES NOT SAY WHAT CHANGES',
+  },
+  {
+    id: 'moves-are-one-list',
+    why: 'FINDINGS #113: a resident’s Recall, a rule since queue Q6, had no button on the play screen, because the screens’ own list of moves was not the session’s, and a button offer that is not on it is drawn nowhere. The two lists are held together. With Recall taken off the screens’ list again, the test must FAIL saying they disagree.',
+    file: 'packages/ui/src/play/offered.ts',
+    mutate: (t) => t.replace("  'resmove',\n  'resrecall',\n]);", "  'resmove',\n]);"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'THE SCREENS AND THE SESSION DISAGREE ABOUT WHAT A MOVE IS',
+  },
+  {
+    id: 'frame-banner-has-room',
+    why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace('  if (banner) return 0;\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE BANNER HAS NO ROOM',
+  },
+  {
+    id: 'frame-pips-show-what-is-left',
+    why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) =>
+      t.replace(
+        '<KitPips have={ap.have} of={of} label="" />',
+        '<KitPips have={of} of={of} label="" />',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE PIPS DO NOT SHOW WHAT IS LEFT',
+  },
+  {
+    id: 'clay-page-and-blender-agree',
+    why: 'Stage L4: the board is a picture Blender rendered with a margin round it, and the page lays every piece over that picture with the same margin. If the two numbers drift, every piece stands beside its step, and nothing else would say so. With the page given another margin, the board test must FAIL naming the number.',
+    file: 'packages/ui/src/board/clay.ts',
+    mutate: (t) => t.replace('export const CLAY_PAD = 24;', 'export const CLAY_PAD = 15;'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE PAGE AND BLENDER DISAGREE: CLAY_PAD',
+  },
+  {
+    id: 'clay-every-disease-has-a-picture',
+    why: 'Stage L4: a piece is drawn by its kind and its antigen class. A disease whose pair has no picture would be drawn as the unknown piece, which is a quiet falsehood. With one picture taken out of the list, the test must FAIL naming a disease that lost its picture.',
+    file: 'packages/ui/src/board/clay.ts',
+    mutate: (t) => t.replace("  'fungus-EUK',\n", ''),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'CLAY PIECE: Mucormycosis',
+  },
+  {
+    id: 'clay-no-words-on-the-board',
+    why: 'Stage L4, ruled 1 October 2026: no words on the board; a name is its picture’s label and is said on the card. A test that only looked at an empty board would pass any board. With a word written beside a count, the test must FAIL quoting what is written.',
+    file: 'packages/ui/src/board/ClayBoard.tsx',
+    mutate: (t) => t.replace('          {t.count}\n', '          {t.count} here\n'),
+    gate: 'pnpm --filter @immunity-wars/ui test',
+    expect: 'THE BOARD HAS WORDS ON IT',
+  },
+  {
+    id: 'clay-board-art-in-the-worker',
+    why: 'Stage L4: the board is drawn in Clay, so its pictures are part of what the game needs with no network. If the service worker did not store them, the game would open offline to a board with nothing on it. With the board’s pictures left out of the worker’s list, the build test must FAIL naming one.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace("  'art/clay/board/*@3x.webp',\n", "  'art/clay/nothing/*',\n"),
+    gate: 'pnpm --filter @immunity-wars/app test',
+    expect: 'THE WORKER DOES NOT STORE THE BOARD',
+  },
+  {
+    id: 'clay-board-read-where-geometry-says',
+    why: 'Stage L4: the gate holds the board’s routes, branches and steps to 3:1 by reading the picture at the places geometry.json gives, with the margin Blender drew. A gate that read the wrong places would be measuring bare board and calling it a route, or passing a board with no routes. With the margin changed, the places are wrong and the check must FAIL.',
+    file: 'tools/art-pipeline/clay/board.py',
+    mutate: (t) => t.replace('\nPAD = 24\n', '\nPAD = 60\n'),
+    gate: 'pnpm art:clay:check',
+    expect: 'table/board',
   },
   {
     id: 'start-check-refuses',
@@ -1435,8 +1875,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/engine/src/actions.ts',
     mutate: (t) =>
       t.replace(
-        "else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`, 'good');",
-        "else {\n        const tagged = `Antibody <b>tagged</b> ${iv.disease}.`;\n        pushLog(g, tagged, 'good');\n      }",
+        "else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`, 'good');",
+        "else {\n        const coated = `Antibody <b>coated</b> ${iv.disease}.`;\n        pushLog(g, coated, 'good');\n      }",
       ),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/i18n-engine.test.ts',
     expect: 'a log line or rejection composed where the catalogue cannot see it',
@@ -1470,9 +1910,164 @@ const CONTROLS: readonly Control[] = [
     id: 'reachability-report-whole',
     why: "FINDINGS #104: the reachability report's currency check sampled two numbers, so when queue Q3 declared Pathogen X's tropism the report went on saying it had none, and the check passed. It compares the whole report now.",
     file: 'docs/CONTENT_REACHABILITY.md',
-    mutate: (t) => t.replace('TROPISM: **107 entries**', 'TROPISM: **106 entries**'),
+    mutate: (t) => t.replace('TROPISM: **108 entries**', 'TROPISM: **107 entries**'),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
     expect: 'is up to date with the content it describes',
+  },
+  {
+    id: 'lesson-seed-plays-the-lesson',
+    why: 'Stage L6: the guided game’s lesson is a file, and what makes it a lesson is that the real engine, handed its arrivals and its dice, accepts every step. The dice are a seed in that file. With the seed changed to its neighbour, the lesson’s test must FAIL saying the seed does not play it, which is also what a change to the rules that breaks the lesson would look like.',
+    file: 'packages/content/src/guide/lesson.json',
+    mutate: (t) => t.replace('"seed": 37,', '"seed": 38,'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'THE LESSON’S SEED DOES NOT PLAY IT',
+  },
+  {
+    id: 'lesson-dice-are-put-back',
+    why: 'Stage L6: the lesson’s dice are swapped in round each call to the engine and put back before anything else runs. With the putting back taken out, the lesson still plays, because the engine goes on drawing from its own dice; what is wrong is that the page is left drawing from them too. The test that reads the page’s random source after every call must FAIL saying so.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) =>
+      t.replace(
+        '  } finally {\n    Math.random = pages;\n  }\n}',
+        '  } finally {\n    void pages;\n  }\n}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'THE PAGE WAS LEFT ON THE LESSON’S DICE',
+  },
+  {
+    id: 'lesson-not-saved-on-rails',
+    why: 'Stage L6, ruled 2 October 2026: a lesson that is left starts again, so a game on rails is not saved. A saved game could not carry the lesson’s dice in any case. With the session saving it all the same, the test must FAIL saying a game on rails was saved.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) =>
+      t.replace(
+        '    if (this.dice !== null) return;\n    await this.storage.put',
+        '    await this.storage.put',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'A GAME ON RAILS WAS SAVED',
+  },
+  {
+    id: 'lesson-file-held-to-the-cards',
+    why: 'Stage L6: the lesson’s file is held to the rules’ own tables when the pack loads, so that a disease no card carries is refused there and not found by a player led to it. With that one check switched off, the file’s test must FAIL at the case that plants such a name.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) =>
+      t.replace('        if (!cards.includes(dz)) {', '        if (cards.length < 0) {'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'rejects an arrival no card carries',
+  },
+  {
+    id: 'queue-q13-a-written-turn-rolls-nothing',
+    why: 'Queue Q13 (Shantanu, 2 October 2026): the guided game hands a game its first turns, written. A written turn rolls nothing, which is what makes the lesson the same every time. With the port rolling the die for how many arrive and then ignoring it, the arrivals are still the written ones, and only the count of numbers drawn shows it: the queue’s test must FAIL saying a written draw rolled a die.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        'let nSpawn = written ? written.length : spawnCount(g);',
+        'const rolledAnyway = spawnCount(g);\n  let nSpawn = written ? written.length : rolledAnyway;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'A WRITTEN DRAW ROLLED A DIE',
+  },
+  {
+    id: 'queue-q13-a-written-turn-brings-what-is-written',
+    why: 'Queue Q13: on a written turn the card is taken by its name and the deck is left alone. With the port no longer taking it by name, as many arrive as were written but they come off the deck: the queue’s test must FAIL saying a written turn did not bring what was written.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace('    if (written) c = DECK_MASTER.find((x) => x.dz === written[k]);\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
+  },
+  {
+    id: 'ruled-label-is-as-ruled',
+    why: 'Ruled 2 October 2026: the kind named Hidden Virus is named Hidden Pathogen, because two of its diseases are protozoa. The labels are pinned to the original interface’s, value for value, and a ruled value is the one exception, held to being what was ruled. With the label put back to Hidden Virus, the pin must FAIL saying a ruled label is not what was ruled.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Hidden Pathogen",', '"n": "Hidden Virus",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED LABEL IS NOT WHAT WAS RULED',
+  },
+  {
+    id: 'ruled-label-leaves-the-rest-pinned',
+    why: 'The other half of the ruled label: allowing one value to differ from the original must not loosen the table it is in. With another kind’s name changed in the same table, the pin must still FAIL on that table.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Fungus",', '"n": "Fungi",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'UI_ — same values, same key order',
+  },
+  {
+    id: 'queue-q15-diphtheria-is-a-bacterium',
+    why: 'Queue Q15 (Shantanu, 2 October 2026): Diphtheria is a bacterium that releases its toxin, where it was a toxin card whose toxin nothing released. With the pack’s Diphtheria card a toxin again, the queue’s test must FAIL saying the card is not a bacterium (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/content/src/rules/deck.json',
+    mutate: (t) =>
+      t.replace(
+        '"dz": "Diphtheria",\n      "type": "bacteria",',
+        '"dz": "Diphtheria",\n      "type": "toxin",',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE DIPHTHERIA CARD IS NOT A BACTERIUM',
+  },
+  {
+    id: 'queue-q15-anthrax-releases-its-toxin',
+    why: 'Queue Q15: Anthrax goes with Diphtheria, a bacterium that releases Anthrax toxin. With Anthrax taken off the pack’s list of toxin makers, the queue’s test must FAIL saying Anthrax did not release its toxin.',
+    file: 'packages/content/src/rules/invaders.json',
+    mutate: (t) =>
+      t.replace(
+        '"Diphtheria": "Diphtheria toxin",\n    "Anthrax": "Anthrax toxin"',
+        '"Diphtheria": "Diphtheria toxin"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'ANTHRAX DID NOT RELEASE ITS TOXIN',
+  },
+  {
+    id: 'queue-q16-the-engine-says-hidden-pathogen',
+    why: 'Queue Q16 (Shantanu, 2 October 2026): the kind that holds two protozoa is named Hidden Pathogen, and the Killer T-Cell’s refusal for want of a target said hidden virus. With the port saying virus again, the queue’s test must FAIL saying the engine still says hidden virus.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace("err('No hidden pathogen in range.')", "err('No hidden virus in range.')"),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS HIDDEN VIRUS',
+  },
+  {
+    id: 'reachability-finds-the-row-nothing-produces',
+    why: 'FINDINGS #23 and queue Q15: the reachability report had to find Diphtheria toxin, the one record nothing produced, without being told. The content has no such record now, so the answer is demanded with Diphtheria taken out of the toxin makers the generator is handed. With the generator counting every FAMILY entry as producible, its test must FAIL saying the report did not find the row nothing produces.',
+    file: 'tests/equivalence/reachability-report.ts',
+    mutate: (t) =>
+      t.replace(
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d)),',
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d) && false),',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
+    expect: 'THE REPORT DID NOT FIND THE ROW NOTHING PRODUCES',
+  },
+  {
+    id: 'ruled-record-is-in-the-pack',
+    why: 'Queue Q15: Anthrax toxin is a record the original interface does not have, and the labels’ pin takes it out before comparing. With the record gone from the pack, the pin must FAIL saying a ruled record is not in the pack, so that the allowance cannot outlive what it allows.',
+    file: 'packages/content/src/diseases/diseases.json',
+    mutate: (t) => t.replace('    "Anthrax toxin": [1, 5, 5, 2, "Rare"],\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED RECORD IS NOT IN THE PACK',
+  },
+  {
+    id: 'queue-q14-the-engine-says-coated',
+    why: 'Queue Q14 (Shantanu, 2 October 2026): what an antibody does to a bacterium, a worm or a parasite is one thing with one word, coat; the engine said tagged in three sentences. With the port logging a coated bacterium as tagged again, the queue’s test must FAIL saying the engine still says tagged (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        'else pushLog(g, `Antibody <b>coated</b> ${iv.disease}.`',
+        'else pushLog(g, `Antibody <b>tagged</b> ${iv.disease}.`',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS TAGGED',
+  },
+  {
+    id: 'queue-q12-the-engine-says-easy',
+    why: 'Queue Q12 (Shantanu, 1 and 2 October 2026): Training is renamed Easy, on the screens, in the printed texts and in the engine’s own messages. The engine named that difficulty in one message. With the port saying Training again, the queue’s test must FAIL saying the engine does not call it Easy (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        "'On Easy, immunity comes from SURVIVING",
+        "'On Training, immunity comes from SURVIVING",
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE DOES NOT CALL IT EASY',
   },
   {
     id: 'queue-q11-no-venom-vaccine',
@@ -1508,10 +2103,30 @@ const CONTROLS: readonly Control[] = [
     expect: 'the panel barely moved for a whole Action Point',
   },
   {
+    id: 'balance-normal-brain-strength',
+    why: "FINDINGS #121: on Normal the fast panel control asserts the STRENGTH of the Brain at integrity 1, since queue Q15's deck left its verdict a coin flip at that scale. A strength assertion must still fail when the change is not there: here the mutant keeps the Brain's two points.",
+    file: 'tests/balance/src/metrics-control.test.ts',
+    mutate: (t) =>
+      t.replace(
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:1, branch:3,\',',
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:2,  branch:3,\',',
+      ),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
+    expect: "the panel barely moved for half the Brain's integrity",
+  },
+  {
     id: 'turbo-outside-reads-hashed',
     why: "FINDINGS #108: the equivalence suite reads the rulebook document, the reachability report and the original engine from outside its package, and turbo's hash did not see them, so a changed rulebook replayed a cached green for the test that pins the why boxes to it.",
     file: 'tests/equivalence/turbo.json',
     mutate: (t) => t.replace('        "$TURBO_ROOT$/docs/Immunity_Wars_Rulebook_v3_1.docx",\n', ''),
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
+  },
+  {
+    id: 'turbo-board-test-reads-hashed',
+    why: 'FINDINGS #112, the same blind spot as #108, found a second time: the board’s test in packages/ui holds the page to two numbers written in Blender’s scripts and to the Clay manifest, all three outside packages/ui, so a changed script or manifest replayed a cached green on every verify since stage L4. They are declared in packages/ui/turbo.json; with one taken out, the turbo guard must FAIL naming it.',
+    file: 'packages/ui/turbo.json',
+    mutate: (t) => t.replace('        "$TURBO_ROOT$/tools/art-pipeline/clay/board.py",\n', ''),
     gate: 'pnpm turbo:check',
     expect: 'TURBO TEST HASH BLIND TO A FILE IT READS',
   },

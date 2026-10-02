@@ -8,8 +8,11 @@
  *
  * So it is held to answers established BY HAND, before the generator existed:
  *
- *   #23  `Diphtheria toxin` has a FAMILY and a TROPISM entry and NOTHING can produce it.
- *        Found by grepping legacy: it appears exactly twice, both table entries.
+ *   #23  `Diphtheria toxin` had a FAMILY and a TROPISM entry and NOTHING could produce it.
+ *        Found by grepping legacy: it appeared exactly twice, both table entries. Since queue Q15
+ *        (2 October 2026) Diphtheria is a bacterium that releases it, so the content has no such
+ *        row; the answer is still demanded of the generator, with Diphtheria taken out of the
+ *        toxin makers it is handed.
  *   #21  the only `novel` card is a VIRUS, which is why `tag`'s refusal can never fire
  *   #4   the only `variant` card is a PARASITE, which is why the coat-change roll never fired in
  *        the original, whose `neutralise` refused parasites (reachable since queue Q1)
@@ -27,7 +30,7 @@ import { describe, expect, it } from 'vitest';
 
 import * as content from '@immunity-wars/content';
 
-import { report } from '../reachability-report.js';
+import { report, unproducible } from '../reachability-report.js';
 
 // Resolved from THIS file, not from the working directory — vitest's cwd differs depending on
 // whether the suite runs from the package root or the repo root.
@@ -37,19 +40,25 @@ const REPORT = readFileSync(
 );
 
 describe('the reachability report finds what was found by hand', () => {
-  it('names Diphtheria toxin as content nothing can produce — FINDINGS #23', () => {
-    const section = REPORT.split('## 3. Content the engine cannot produce')[1]?.split('## 4.')[0];
-    expect(section, 'section 3 is missing from the report').toBeDefined();
-    expect(section).toContain('Diphtheria toxin');
+  it('finds Diphtheria toxin, and nothing else, when nothing releases it — FINDINGS #23', () => {
+    // The hand analysis found exactly one such row, without being told where to look. A generator
+    // that flagged half the content would also "contain Diphtheria toxin" and would be useless:
+    // the count is the part that says it is discriminating.
+    const { Diphtheria: _released, ...others } = content.TOXIN_MAKERS as Record<string, string>;
+    expect(_released).toBe('Diphtheria toxin');
+    const found = unproducible(others);
+    if (found.family.join() !== 'Diphtheria toxin' || found.tropism.join() !== 'Diphtheria toxin')
+      throw new Error(
+        `THE REPORT DID NOT FIND THE ROW NOTHING PRODUCES: family [${found.family.join(', ')}], tropism [${found.tropism.join(', ')}]`,
+      );
   });
 
-  it('names it and nothing else — the hand analysis found exactly one', () => {
-    // A generator that flagged half the content would also "contain Diphtheria toxin" and would
-    // be useless. The count is the part that says it is discriminating.
+  it('finds nothing in the content as it is: every declared disease has a producer', () => {
+    expect(unproducible()).toEqual({ family: [], tropism: [] });
     const section =
       REPORT.split('## 3. Content the engine cannot produce')[1]?.split('## 4.')[0] ?? '';
-    const rows = section.split('\n').filter((l) => /^\| \*\*/.test(l));
-    expect(rows).toHaveLength(1);
+    expect(section).toContain('_None. Every declared disease has a producer._');
+    expect(section.split('\n').filter((l) => /^\| \*\*/.test(l))).toHaveLength(0);
   });
 
   it('names Pathogen X as the only card with no FAMILY entry — FINDINGS #13', () => {
@@ -94,11 +103,12 @@ describe('the underlying facts, checked against the content directly', () => {
     expect(flagged('hidesInMac')).toEqual([{ dz: 'Kala-azar', type: 'parasite' }]);
   });
 
-  it('Diphtheria toxin is declared but has no producer', () => {
+  it('Diphtheria toxin is declared, is no card, and is released by the Diphtheria bacterium', () => {
     const dz = 'Diphtheria toxin';
     expect(content.FAMILY[dz]).toBe('TOX');
     expect(dz in content.TROPISM).toBe(true);
     expect(content.DECK_MASTER.some((c) => c.dz === dz)).toBe(false);
-    expect(Object.values(content.TOXIN_MAKERS)).not.toContain(dz);
+    expect((content.TOXIN_MAKERS as Record<string, string>)['Diphtheria']).toBe(dz);
+    expect(content.DECK_MASTER.find((c) => c.dz === 'Diphtheria')?.type).toBe('bacteria');
   });
 });

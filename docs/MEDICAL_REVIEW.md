@@ -6,9 +6,9 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-09-30 from `packages/content/src` — pack `immunity-wars-core`, content `1.2.0`, rules `4.1.0`.
+Generated 2026-10-02 from `packages/content/src` — pack `immunity-wars-core`, content `1.5.0`, rules `4.2.0`.
 
-**804 claims.** Game mechanics are deliberately excluded: how a disease behaves on
+**810 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
 design decisions rather than medical claims, and are not here to be reviewed. **One exception:**
 each card's "Can infect" line is included, labelled as a game simplification, so that a case
@@ -258,11 +258,11 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | Claim id | Field | What the app says |
 |---|---|---|
 | `DISEASE/Diphtheria/Discovered` | Discovered | Antitoxin by von Behring, 1890. Winning the FIRST Nobel Prize in Medicine. |
-| `DISEASE/Diphtheria/Causes` | Causes | A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed. It poisons you directly. |
+| `DISEASE/Diphtheria/Causes` | Causes | A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart. |
 | `DISEASE/Diphtheria/Found` | Found | Worldwide where vaccination lapses; outbreaks still occur in India. |
 | `DISEASE/Diphtheria/Prevent` | Prevent | DPT vaccine. |
-| `DISEASE/Diphtheria/Treat` | Treat | ANTITOXIN. Antibodies. No cell can eat a toxin. |
-| `DISEASE/Diphtheria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
+| `DISEASE/Diphtheria/Treat` | Treat | Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it. |
+| `DISEASE/Diphtheria/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs. |
 
 ### Mucormycosis
 
@@ -1166,6 +1166,17 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Diphtheria toxin/Treat` | Treat | Antitoxin. Antibodies, urgently. |
 | `DISEASE/Diphtheria toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart. |
 
+### Anthrax toxin
+
+| Claim id | Field | What the app says |
+|---|---|---|
+| `DISEASE/Anthrax toxin/Discovered` | Discovered | Three proteins that work together: one carries the other two into your cells. |
+| `DISEASE/Anthrax toxin/Causes` | Causes | Not alive. Stops the heart and blood vessels working, and floods the tissues with fluid. |
+| `DISEASE/Anthrax toxin/Found` | Found | Released by anthrax bacteria as they multiply. |
+| `DISEASE/Anthrax toxin/Prevent` | Prevent | The anthrax vaccine trains you to make antibodies against the carrier protein. |
+| `DISEASE/Anthrax toxin/Treat` | Treat | Antitoxin with antibiotics. Killing the bacteria does not remove toxin already made. |
+| `DISEASE/Anthrax toxin/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Heart, Liver. |
+
 ### Shingles
 
 | Claim id | Field | What the app says |
@@ -1234,7 +1245,7 @@ What the app tells a player about each kind of invader, and how it is beaten. Th
 | `TYPE/virus/hint` | In How to play | Neutralise with a matching antibody, or the Monocyte engulfs it. |
 | `TYPE/virus/rest` | In How to play | If it hides inside a cell, only the Killer T-Cell or NK Cell can reach it. |
 
-### Hidden Virus
+### Hidden Pathogen
 
 | Claim id | Field | What the app says |
 |---|---|---|
@@ -1346,12 +1357,12 @@ Seven cells a player commands, each with a card, and seven resident macrophages 
 |---|---|---|
 | `CELL/tcell/Name` | The name we use | The app calls this piece the Killer T-Cell, for the real-world tcell. |
 | `CELL/tcell/role` | What it does | The sniper. It kills infected cells, anything hiding inside one of your own cells, from a distance, and it never misses. |
-| `CELL/tcell/home` | Where it comes from | Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Training, 2 on Normal and Hard, +1 beside a primed Helper T-Cell. |
+| `CELL/tcell/home` | Where it comes from | Matured in the thymus (the T), then circulating. In the game it starts in the Bloodstream and strikes along its own route or branch within its range: 3 on Easy, 2 on Normal and Hard, +1 beside a primed Helper T-Cell. |
 | `CELL/tcell/bestAgainst` | What it is best against | Hidden viruses and the protozoa that live inside cells: Toxoplasma, Chagas, liver-stage malaria, a parasite inside a resident macrophage. Useless against anything out in the open. |
 | `CELL/tcell/deficiency` | What happens without it | Without killer T-cells, a virus that hides inside cells is never cleared, because the infected cell is never destroyed. Reactivating viruses like shingles are what a weakened T-cell system lets through. |
 | `CELL/tcell/fact` | Card fact | A killer T-cell recognises an infected cell by the fragments of virus that cell displays on its own surface. The cell reports its own infection. |
 | `CELL/tcell/hint` | In How to play | Snipe: destroys a pathogen hiding inside one of your cells. Never misses. |
-| `CELL/tcell/rest` | In How to play | Range 3 on Training, 2 on Normal and Hard, +1 while a primed Helper stands with it. |
+| `CELL/tcell/rest` | In How to play | Range 3 on Easy, 2 on Normal and Hard, +1 while a primed Helper stands with it. |
 
 ### Helper T-Cell
 
@@ -1741,4 +1752,4 @@ Sentences from How to play that explain immunology in general rather than descri
 
 ---
 
-*804 claims: 666 diseases, 25 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 4 elsewhere.*
+*810 claims: 672 diseases, 25 types, 65 cells, 6 classes, 7 organs, 16 events, 15 why, 4 elsewhere.*

@@ -255,3 +255,81 @@ now asserts the strength that holds at its scale, with a control of its own.
 `20261001-002607-5994603`, its 41 tests passed, restarted with nobody connected, rules 4.1.0 and
 protocol 5 read back from the server; and the app `20261001-003357-5994603`, its start check passed,
 the live build carrying rules 4.1.0 and the new help for venom.
+
+### Q12, after the queue ran — 2 October 2026: the gentlest difficulty is called Easy
+
+Not one of the ten, and not a rule: a word. Shantanu ruled on 1 October that Training is renamed
+Easy, on the screens, in the engine's own messages and in the printed texts, in one change
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §1 and §6), and on 2 October that it is done now and does not wait
+for the guided game.
+
+- **One message of the engine's 196 said Training:** the refusal of a vaccine on the gentlest
+  difficulty. That message says Easy. Nothing plays differently, and the difficulty's key
+  is `training` everywhere, as it was.
+- **Made the queue's way:** in the port, and as one edit to the original applied in memory
+  (`tests/equivalence/src/ruled.ts`), with a test that shows the word in both and the untouched
+  original still saying Training, and a mutation control.
+- **The screens and the printed texts in the same change:** seven sentences and one cell label in
+  the catalogue; 9 places in the rulebook, 2 in the quick reference, 4 in the study packet.
+- **Rules 4.1.1, content 1.3.0.** The bands were measured again for the version, on 24 arms and
+  150,000 games, and no number in them moved: the rules play as they did.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #12.
+
+### Q13, after the queue ran — 2 October 2026: a game may be handed its first turns, written
+
+Not one of the ten, and not a rule: a way to start a game, for the guided game. Shantanu ruled on
+2 October that the guided game scripts everything ([`LOOK_PLAN.md`](LOOK_PLAN.md) §18), then that
+its seven turns are as listed and that the rules version does not move (§19).
+
+- **What it is:** a new game may be handed the diseases that arrive on its first turns, by name. On
+  a written turn exactly those arrive, and the draw rolls nothing. The draw that places the last of
+  them removes the writing, and the game is an ordinary one from there.
+- **What it leaves alone:** every game not handed the writing, which is every game the corpus
+  holds and every game played together. Their states and their dice are what they were.
+- **Made the queue's way:** in the port, and as five edits to the original applied in memory, with
+  tests that show both doing it alike, the whole game compared after every action, and the
+  untouched original as the control. Two mutation controls.
+- **Rules 4.1.1, as it was.** The balance bands are not measured again: they are tied to the rules
+  version, and no game the panel plays is handed the writing.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #13.
+
+### Q14, after the queue ran — 2 October 2026: an antibody coats
+
+Not one of the ten, and not a rule: a word. The engine called one action "tagged" in three
+sentences and a coat in six, and the screens had followed it, so a bacterium was tagged and a worm
+coated. Shantanu ruled on 2 October that if the two are the same thing the word is coat. They are:
+one action in the engine, one thing an antibody does, and one name in the printed rulebook.
+
+- **Three sentences of the engine's 196 said tagged:** the log line for a bacterium or a parasite,
+  the refusal of a coat on something that cannot take one, and a resident's refusal with nothing to
+  eat. They say coated and uncoated. Nothing plays differently, and the action's own name is `tag`
+  everywhere, as it was.
+- **Made the queue's way:** in the port, and as three edits to the original applied in memory, with
+  tests that show the words in both and the untouched original still saying tagged, and a mutation
+  control.
+- **The screens in the same change:** the row's word, two sentences about residents, two of the
+  lesson's. The printed texts already said Coat.
+- **Rules 4.1.2, content 1.4.0.** The bands were measured again for the version, on 24 arms and
+  150,000 games, and no number in them moved: the rules play as they did.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #14.
+
+### Q15, after the queue ran — 2 October 2026: Diphtheria and Anthrax are bacteria that release their toxins
+
+The first change since the queue to what is in the deck. Shantanu ruled it on FINDINGS #23, the
+toxin nothing released: *"it should be a bacterium thay releases toxins"*.
+
+- **Diphtheria** is a bacterium that releases Diphtheria toxin, and **Anthrax** one that releases
+  Anthrax toxin, each after 3 turns uncoated, as Tetanus, Cholera and Gas gangrene do. Anthrax
+  keeps the 2 steps a turn it had.
+- **Tables, not code:** the deck, the classes, the targets, the fast diseases and the toxin
+  makers, in the pack and as eight edits to the original applied in memory.
+- **The guided game's fifth turn** brings Botulism where it brought Diphtheria.
+- **Rules 4.2.0, content 1.5.0.** The bands were measured again on the new deck, on 24 arms and
+  150,000 games, and they moved: under the reference bot, Normal's games run 11.04 turns to 10.79
+  and Hard's 8.85 to 8.63. A held-out arm passes them.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #15.
+
+### Q16, after the queue ran — 2 October 2026: a hidden pathogen
+
+One word of one refusal: the Killer T-Cell with nothing in range is told of a hidden pathogen,
+since two of that kind are protozoa. [`DEVIATIONS.md`](DEVIATIONS.md) #16.

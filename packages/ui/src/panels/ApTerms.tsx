@@ -11,6 +11,8 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { COLOUR } from '../kit/tokens';
+import { SAY, TONE } from './onCard';
 
 export function ApTerms({
   terms,
@@ -29,19 +31,8 @@ export function ApTerms({
   players?: readonly { name: string; ap: number }[];
 }): ReactElement {
   return (
-    <div
-      data-ap-terms="1"
-      style={{
-        marginTop: 4,
-        padding: '6px 10px',
-        borderRadius: 8,
-        border: '1.5px solid #C8B8AE',
-        background: '#FFFDF9',
-        fontSize: '0.8125rem',
-        color: '#2E2A28',
-      }}
-    >
-      <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700 }}>{t('ap.title')}</div>
+    <div data-ap-terms="1" style={{ ...SAY.body, fontSize: '0.8125rem' }}>
+      <div style={SAY.label}>{t('ap.title')}</div>
       {terms.map((term, i) => (
         <div
           key={String(i)}
@@ -51,8 +42,8 @@ export function ApTerms({
           <span>{term.text}</span>
           <span
             style={{
-              fontWeight: 700,
-              color: term.delta < 0 ? '#B03A2E' : i === 0 ? '#2E2A28' : '#2F6B4A',
+              fontWeight: 800,
+              color: term.delta < 0 ? TONE.bad : i === 0 ? COLOUR.ink : TONE.good,
             }}
           >
             {term.delta < 0 || i === 0 ? String(term.delta) : `+${String(term.delta)}`}
@@ -64,10 +55,10 @@ export function ApTerms({
           display: 'flex',
           justifyContent: 'space-between',
           gap: 8,
-          borderTop: '1px solid #EADFD5',
+          borderTop: `1.5px solid ${COLOUR.creamEdge}`,
           marginTop: 2,
           paddingTop: 4,
-          fontWeight: 700,
+          fontWeight: 800,
         }}
       >
         <span>{t('ap.total')}</span>
@@ -79,14 +70,12 @@ export function ApTerms({
           style={{ display: 'flex', justifyContent: 'space-between', gap: 8, paddingTop: 4 }}
         >
           <span>{t('ap.yours')}</span>
-          <span style={{ fontWeight: 700 }}>{yours}</span>
+          <span style={{ fontWeight: 800 }}>{yours}</span>
         </div>
       ) : null}
       {players.length > 0 ? (
         <div data-ap-players="1" style={{ marginTop: 6 }}>
-          <div style={{ fontSize: '0.75rem', color: '#78665D', fontWeight: 700 }}>
-            {t('ap.players')}
-          </div>
+          <div style={SAY.label}>{t('ap.players')}</div>
           {players.map((p, i) => (
             <div
               key={String(i)}

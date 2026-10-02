@@ -16,7 +16,8 @@ import { describe, expect, it } from 'vitest';
 import * as port from '@immunity-wars/engine';
 
 import { loadLegacy, loadOriginalLegacy } from './engine.js';
-import { installRng, restoreRng } from './rng.js';
+import { normalise } from './rig.js';
+import { drawCount, installRng, restoreRng } from './rng.js';
 import type { Engine, GameState } from './types.js';
 
 type Raw = Record<string, unknown>;
@@ -343,5 +344,355 @@ describe('Q11 (Shantanu, FINDINGS #55): a venom is never remembered', () => {
       expect(venoms(g).length).toBeGreaterThan(0);
       expect(venoms(g).every((v) => v['remembered'] === true)).toBe(true);
     }
+  });
+});
+
+describe('Q12 (Shantanu, 1 and 2 October 2026): the gentlest difficulty is called Easy', () => {
+  // The engine says this difficulty's name to a player in one message: the refusal of a vaccine on
+  // it. The rule is the same in all three engines, a vaccine is refused there; only the word is the
+  // change, so the control is the untouched original, which must still say Training.
+  const DISEASE = 'Measles';
+  const lab = (_E: Engine, g: Game): void => {
+    (g['seen'] as Raw)[DISEASE] = true;
+    g['phase'] = 'command';
+    g['ap'] = 5;
+  };
+  const vaccinate = (): Raw[] => [{ action: 'vaccinate', disease: DISEASE, ap: 2 }];
+  const SAYS = (word: string): string =>
+    `On ${word}, immunity comes from SURVIVING an infection — beat a disease and your body remembers it. Vaccines come into play on Normal and Hard.`;
+
+  it('a vaccine is refused there by name, as Easy, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'training', lab, vaccinate);
+      expect(results[0], `${name}: THE ENGINE DOES NOT CALL IT EASY`).toEqual({
+        ok: false,
+        error: SAYS('Easy'),
+      });
+      expect(g['ap'], name).toBe(5);
+      // The word changed and nothing else: the difficulty's key is what it was.
+      expect(g['difficulty'], name).toBe('training');
+    }
+  });
+
+  it('CONTROL: the original, untouched, refuses the same vaccine and still says Training', () => {
+    const { g, results } = run(ORIGINAL, 1, 'training', lab, vaccinate);
+    expect(results[0]).toEqual({ ok: false, error: SAYS('Training') });
+    expect(g['ap']).toBe(5);
+  });
+});
+
+describe('Q14 (Shantanu, 2 October 2026): an antibody coats; the engine no longer says tagged', () => {
+  // One action in every engine, `tag`, on a bacterium, a worm or a parasite. What it does is the
+  // same in all three engines here; only three sentences changed their word, so the control is the
+  // untouched original, which must still say tagged.
+  const BACTERIUM = 'Whooping cough';
+  const lab = (E: Engine, g: Game): void => {
+    E.forceInjectCard(g, BACTERIUM);
+    g['phase'] = 'command';
+    g['ap'] = 5;
+    const ab = g['ab'] as Record<string, number>;
+    for (const f of Object.keys(ab)) ab[f] = 1;
+  };
+  const idOf = (g: Game): unknown =>
+    (g['invaders'] as unknown as Raw[]).find((x) => x['disease'] === BACTERIUM)?.['id'];
+  const coat = (g: Game): Raw[] => [{ action: 'tag', invaderId: idOf(g) }];
+  const logged = (g: Game): string[] =>
+    (g['log'] as { msg: string }[]).map((l) => l.msg).filter((m) => m.startsWith('Antibody <b>'));
+
+  it('a coated bacterium is logged as coated, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'normal', lab, coat);
+      expect(results[0], name).toEqual({ ok: true });
+      expect(logged(g), `${name}: THE ENGINE STILL SAYS TAGGED`).toEqual([
+        `Antibody <b>coated</b> ${BACTERIUM}.`,
+      ]);
+      // The word changed and nothing else: the bacterium is marked as it was, and the cube is spent.
+      const b = (g['invaders'] as unknown as Raw[]).find((x) => x['disease'] === BACTERIUM);
+      expect(b?.['tagged'], name).toBe(true);
+    }
+  });
+
+  it('the two refusals say coated and uncoated, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const nothing = run(E, 1, 'normal', lab, () => [{ action: 'tag', invaderId: 'nothing' }]);
+      expect(nothing.results[0], name).toEqual({
+        ok: false,
+        error: 'Pick an uncoated bacterium, worm or parasite.',
+      });
+      const resident = run(E, 1, 'normal', lab, () => [{ action: 'resengulf', organ: 'heart' }]);
+      expect(resident.results[0], name).toEqual({
+        ok: false,
+        error:
+          'Nothing to engulf where it stands — move it onto a virus or a coated bacterium first.',
+      });
+    }
+  });
+
+  it('CONTROL: the original, untouched, does the same things and still says tagged', () => {
+    const { g, results } = run(ORIGINAL, 1, 'normal', lab, coat);
+    expect(results[0]).toEqual({ ok: true });
+    expect(logged(g)).toEqual([`Antibody <b>tagged</b> ${BACTERIUM}.`]);
+    const nothing = run(ORIGINAL, 1, 'normal', lab, () => [
+      { action: 'tag', invaderId: 'nothing' },
+    ]);
+    expect(nothing.results[0]).toEqual({
+      ok: false,
+      error: 'Pick an untagged bacterium, worm or parasite.',
+    });
+    const resident = run(ORIGINAL, 1, 'normal', lab, () => [
+      { action: 'resengulf', organ: 'heart' },
+    ]);
+    expect(resident.results[0]).toEqual({
+      ok: false,
+      error:
+        'Nothing to engulf where it stands — move it onto a virus or a tagged bacterium first.',
+    });
+  });
+});
+
+describe('Q13 (Shantanu, 2 October 2026): a game may be handed its first turns, written', () => {
+  // The guided game's seven turns, as he ruled them (docs/LOOK_PLAN.md §19). What is shown here is
+  // the engine's part only: that a written turn brings exactly what is written and rolls nothing,
+  // that both engines do it alike, and that a game handed nothing is dealt as it always was.
+  const WRITTEN: readonly (readonly string[])[] = [
+    ['Whooping cough'],
+    ['Hepatitis B', 'Hepatitis C'],
+    ['Influenza', 'Candida'],
+    ['Endocarditis', 'Amoebiasis'],
+    ['Diphtheria', 'Snake venom'],
+    ['Roundworm', 'Whooping cough'],
+    ['Malaria'],
+  ];
+  type Inv = { id: string; disease: string; novel?: boolean };
+  interface Played {
+    /** What each turn's draw brought, in order, Pathogen X aside (it breaks in on top, as ever). */
+    arrived: string[][];
+    /** How many random numbers each turn's draw consumed. */
+    rolled: number[];
+    /** Whether the game still carried the writing after each turn's draw. */
+    carried: boolean[];
+    /**
+     * The whole game after every action, as text, as the corpus compares it: with the two arrival
+     * statistics docs/DEVIATIONS.md #3 sets aside left out, and nothing else.
+     */
+    states: string[];
+  }
+  /** `n` turns in one engine on one seed: each drawn, begun and ended, with nothing done in it. */
+  function play(E: Engine, seed: number, cfg: Raw, n: number): Played {
+    const out: Played = { arrived: [], rolled: [], carried: [], states: [] };
+    installRng(seed);
+    try {
+      const g = E.newGame({ difficulty: 'training', ...cfg }) as Game;
+      const whole = (): string => JSON.stringify(normalise(g));
+      out.states.push(whole());
+      for (let t = 0; t < n && !g['lost']; t += 1) {
+        const before = new Set((g['invaders'] as Inv[]).map((x) => x.id));
+        const rolls = drawCount();
+        expect(E.applyAction(g, { action: 'draw' } as never)).toMatchObject({ ok: true });
+        out.rolled.push(drawCount() - rolls);
+        out.arrived.push(
+          (g['invaders'] as Inv[])
+            .filter((x) => !before.has(x.id) && !x.novel)
+            .map((x) => x.disease),
+        );
+        out.carried.push('written' in g);
+        out.states.push(whole());
+        for (const action of ['beginCommand', 'endCommand']) {
+          expect(E.applyAction(g, { action } as never)).toMatchObject({ ok: true });
+          out.states.push(whole());
+        }
+      }
+      return out;
+    } finally {
+      restoreRng();
+    }
+  }
+  const HANDED = { written: WRITTEN };
+
+  it('a written turn brings exactly what is written and rolls nothing, in the port and the original as ruled', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of ENGINES) {
+        const p = play(E, seed, HANDED, WRITTEN.length);
+        expect(
+          p.arrived,
+          `${name}, seed ${String(seed)}: A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN`,
+        ).toEqual(WRITTEN);
+        expect(p.rolled, `${name}, seed ${String(seed)}: A WRITTEN DRAW ROLLED A DIE`).toEqual(
+          WRITTEN.map(() => 0),
+        );
+      }
+  });
+
+  it('the two engines hold the same game after every action of it, byte for byte', () => {
+    for (const seed of SEEDS) {
+      const [a, b] = ENGINES.map(([, E]) => play(E, seed, HANDED, WRITTEN.length + 2));
+      // Read the coverage, not the verdict: two empty lists are equal too.
+      expect(a?.states.length).toBeGreaterThan(3 * WRITTEN.length);
+      expect(a?.states, `seed ${String(seed)}`).toEqual(b?.states);
+    }
+  });
+
+  it('the draw that places the last written turn removes the writing, and the next turn is dealt by the dice', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of ENGINES) {
+        const p = play(E, seed, HANDED, WRITTEN.length + 1);
+        if (p.carried.length <= WRITTEN.length) continue; // the body was lost first: nothing to read
+        expect(p.carried.slice(0, WRITTEN.length), name).toEqual([
+          ...WRITTEN.slice(1).map(() => true),
+          false,
+        ]);
+        expect(p.rolled[WRITTEN.length], `${name}, seed ${String(seed)}`).toBeGreaterThan(0);
+      }
+  });
+
+  it('a written turn is exact: two worms written for one turn both arrive, where the cap allows one', () => {
+    for (const [name, E] of ENGINES) {
+      const p = play(E, 1, { written: [['Roundworm', 'Hookworm']] }, 1);
+      expect(p.arrived[0], name).toEqual(['Roundworm', 'Hookworm']);
+    }
+  });
+
+  it('a name no card carries is refused when the game is made, in the same words', () => {
+    for (const [name, E] of ENGINES) {
+      expect(
+        () =>
+          E.newGame({ difficulty: 'training', written: [['Whooping cough'], ['No such disease']] }),
+        name,
+      ).toThrow('newGame: no card is named "No such disease"');
+    }
+  });
+
+  it('a game handed nothing carries no writing and rolls for its first turn, as it always did', () => {
+    for (const seed of SEEDS)
+      for (const [name, E] of ENGINES) {
+        const p = play(E, seed, {}, 1);
+        expect(p.carried[0], name).toBe(false);
+        expect(p.states[0]?.includes('"written"'), name).toBe(false);
+        expect(p.rolled[0], name).toBeGreaterThan(0);
+      }
+  });
+
+  it('CONTROL: the original, untouched, is handed the same turns and deals by the dice all the same', () => {
+    for (const seed of SEEDS) {
+      const p = play(ORIGINAL, seed, HANDED, 3);
+      // It rolls for how many arrive, on every turn, which a written turn never does.
+      expect(
+        p.rolled.every((n) => n > 0),
+        `seed ${String(seed)}`,
+      ).toBe(true);
+      expect(p.carried.every((c) => !c)).toBe(true);
+    }
+    // And over the five seeds its first three turns are not the written ones.
+    const dealt = SEEDS.map((seed) => JSON.stringify(play(ORIGINAL, seed, HANDED, 3).arrived));
+    expect(dealt.every((d) => d !== JSON.stringify(WRITTEN.slice(0, 3)))).toBe(true);
+  });
+});
+
+describe('Q15 (Shantanu, 2 October 2026): Diphtheria and Anthrax are bacteria that release their toxins', () => {
+  // The change is to the deck and the tables beside it, in the pack and, as ruled edits, in the
+  // original. The control is the untouched original, where each is still a toxin card and nothing
+  // releases a toxin of that name.
+  type Inv = { id: string; disease: string; type: string };
+  const invs = (g: Game): Inv[] => g['invaders'] as unknown as Inv[];
+  const arrive =
+    (disease: string) =>
+    (E: Engine, g: Game): void => {
+      E.forceInjectCard(g, disease);
+      g['phase'] = 'command';
+    };
+  /** Three turns left alone: three spreads, with the seed's dice. */
+  const threeSpreads = (E: Engine, seed: number, disease: string): Game => {
+    installRng(seed);
+    try {
+      const g = E.newGame({ difficulty: 'training' }) as Game;
+      arrive(disease)(E, g);
+      for (let turn = 0; turn < 3; turn += 1) E.resolveSpread(g);
+      return g;
+    } finally {
+      restoreRng();
+    }
+  };
+
+  for (const [disease, toxin] of [
+    ['Diphtheria', 'Diphtheria toxin'],
+    ['Anthrax', 'Anthrax toxin'],
+  ] as const) {
+    it(`${disease} arrives as a bacterium of the extracellular class, in the port and the original as ruled`, () => {
+      for (const [name, E] of ENGINES) {
+        const { g } = run(E, 1, 'normal', arrive(disease), () => []);
+        const iv = invs(g).find((x) => x.disease === disease);
+        if (iv?.type !== 'bacteria')
+          throw new Error(`${name}: THE ${disease.toUpperCase()} CARD IS NOT A BACTERIUM`);
+        expect(E.famOf(iv as never), name).toBe('EXB');
+      }
+    });
+
+    it(`${disease}, left uncoated for three turns, releases ${toxin}, in both`, () => {
+      for (const seed of SEEDS) {
+        const [a, b] = ENGINES.map(([, E]) => threeSpreads(E, seed, disease)) as [Game, Game];
+        for (const [name, g] of [
+          ['the port', a],
+          ['the original as ruled', b],
+        ] as const) {
+          const released = invs(g).filter((x) => x.disease === toxin);
+          if (released.length === 0)
+            throw new Error(
+              `${name}, seed ${String(seed)}: ${disease.toUpperCase()} DID NOT RELEASE ITS TOXIN`,
+            );
+          expect(
+            released.every((x) => x.type === 'toxin'),
+            name,
+          ).toBe(true);
+        }
+        // And the two engines are in the same state, to the last field.
+        expect(normalise(a)).toEqual(normalise(b));
+      }
+    });
+
+    it(`CONTROL: in the original, untouched, ${disease} is a toxin card and nothing releases ${toxin}`, () => {
+      const { g } = run(ORIGINAL, 1, 'normal', arrive(disease), () => []);
+      expect(invs(g).find((x) => x.disease === disease)?.type).toBe('toxin');
+      for (const seed of SEEDS) {
+        const after = threeSpreads(ORIGINAL, seed, disease);
+        expect(invs(after).some((x) => x.disease === toxin)).toBe(false);
+      }
+    });
+  }
+
+  it('Anthrax moves as fast as it did as a toxin: two steps a turn, in both', () => {
+    for (const [name, E] of ENGINES) {
+      const { g } = run(E, 1, 'normal', arrive('Anthrax'), () => []);
+      const iv = invs(g).find((x) => x.disease === 'Anthrax');
+      expect(
+        (E as unknown as { invSpeed(g: Game, iv: unknown): number }).invSpeed(g, iv),
+        name,
+      ).toBe(2);
+    }
+  });
+});
+
+describe('Q16 (Shantanu, 2 October 2026): the Killer T-Cell is told of a hidden pathogen', () => {
+  // The kind holds two protozoa, and the screens call it Hidden Pathogen. One refusal changed its
+  // word; the control is the untouched original, which still says virus.
+  const lab = (_E: Engine, g: Game): void => {
+    g['phase'] = 'command';
+    g['ap'] = 5;
+  };
+  const snipe = (): Raw[] => [{ action: 'snipe', cell: 'tcell', invaderId: 'nothing' }];
+
+  it('with nothing in range it says pathogen, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'normal', lab, snipe);
+      expect(results[0], `${name}: THE ENGINE STILL SAYS HIDDEN VIRUS`).toEqual({
+        ok: false,
+        error: 'No hidden pathogen in range.',
+      });
+      expect(g['ap'], name).toBe(5);
+    }
+  });
+
+  it('CONTROL: the original, untouched, refuses the same and still says virus', () => {
+    const { results } = run(ORIGINAL, 1, 'normal', lab, snipe);
+    expect(results[0]).toEqual({ ok: false, error: 'No hidden virus in range.' });
   });
 });

@@ -1,10 +1,21 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.0 · 1 October 2026
+**Version:** 2.1 · 2 October 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.1 records
+
+v2.1 changes one thing of v2.0, by ruling (Shantanu, 2 October 2026; [`LOOK_PLAN.md`](LOOK_PLAN.md)
+§24): *"We don't need the newcomer test. Defer that indefinitely."*
+
+- **The newcomer test is deferred indefinitely.** It was Gate 1's one human-tested item (§1), and
+  v2.0 had it run on the new guided game. **Deferred, not met:** nobody who has never seen the game
+  has been watched starting and finishing one unaided, and nothing here claims they could.
+- **Gate 1's other items stand,** and are measured by the audit. **Gate 2 is still the gate this
+  ends on.**
 
 ## What v2.0 records
 

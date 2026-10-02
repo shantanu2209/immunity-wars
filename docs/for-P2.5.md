@@ -973,8 +973,9 @@ position inside the frame; and — the addition — an explicit set comparison a
 organs, so a rules organ with no position and a placed organ the rules do not know each fail
 by name (the key enum alone rejects strangers but does not say which organ is missing). Five
 controls in `load.test.ts` make each rule fire. **The frame size is measured, not judged:**
-`packages/app/src/anatomy-frame.test.ts` holds `FRAME.w × h` equal to the manifest's emitted
-1× size, with two controls (one pixel off; an asset the manifest lacks) — content cannot read
+`anatomy-frame.test.ts` in `packages/app/src/` (*removed on 2 October 2026 with the art before
+Clay: the outline is drawn in code now, and `FRAME` is a size that names no picture*) holds
+`FRAME.w × h` equal to the manifest's emitted 1× size, with two controls (one pixel off; an asset the manifest lacks) — content cannot read
 the manifest and the pipeline does not read content, so the join lives in the one package that
 sees both. A regenerated frame therefore fails a test instead of silently moving every organ.
 

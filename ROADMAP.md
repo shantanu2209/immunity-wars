@@ -73,11 +73,12 @@ keeps being pushed out of phases rather than squeezed into them.
 ## Phase 2 — The app people see
 
 **Goal:** stop being a browser page and become an application.
-**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v2.0. **Status: RESUMED on 1 October 2026 as
+**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v2.1. **Status: RESUMED on 1 October 2026 as
 "the look"** ([`docs/LOOK_PLAN.md`](docs/LOOK_PLAN.md)): the screens are replaced so the game looks
 like the best modern mobile games, on modern phones only, before Phase 4. It had been paused on 20
 September ([`docs/PHASE2_PAUSE.md`](docs/PHASE2_PAUSE.md)); the three items owed then, the handset
-measurement, the newcomer test and Gate 2, are carried by the plan's stages. P2.1 to P2.6 closed;
+measurement, the newcomer test and Gate 2, are carried by the plan's stages (the newcomer test
+deferred indefinitely by ruling on 2 October: deferred, not met). P2.1 to P2.6 closed;
 P2.7 (polish) stopped partway. **Phase 4 must not start before the plan's measurement on the S25.**
 *This line said "P2.1 complete" and "v1.1" until 6 September 2026; the documentation sweep
 checks only that the roadmap is not calling an earlier phase current, so the sub-phase and
@@ -125,7 +126,11 @@ phone checks still owed; they are waived, not met ([`docs/PHASE3_CLOSEOUT.md`](d
 
 **Between Phase 3 and Phase 4, ruled 30 September 2026:** the engine change queue, which ran the
 same day, all ten changes, rules version 4.0.0 ([`docs/ENGINE_CHANGE_QUEUE.md`](docs/ENGINE_CHANGE_QUEUE.md),
-FINDINGS #101), then Q11, rules 4.1.0; and the relay's half of #94, built on 1 October.
+FINDINGS #101), then Q11, rules 4.1.0; and the relay's half of #94, built on 1 October. Q12, on
+2 October, renamed Training to Easy in the engine's one message that names it, rules 4.1.1. Q14,
+the same day, made coat the one word for what an antibody does, in the engine's three sentences
+that said tagged, rules 4.1.2. Q15, the same day, made Diphtheria and Anthrax bacteria that release
+their toxins, rules 4.2.0.
 
 - Multi-room relay replacing the single-room LAN server. **On a Google Cloud server in Mumbai, paid
   (about ₹1,000 a month after the trial credit), one Node process holding every room** — ruled 25
