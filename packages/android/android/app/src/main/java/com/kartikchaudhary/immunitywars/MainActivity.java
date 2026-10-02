@@ -7,6 +7,30 @@ import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        keepTheGamesOwnTextSize();
+        giveBackToTheGameFirst();
+    }
+
+    /**
+     * THE GAME'S TEXT IS THE SIZE THE GAME SETS, NOT THE PHONE'S (ruled by Shantanu, 2 October
+     * 2026; docs/LOOK_PLAN.md section 26).
+     *
+     * An Android web view scales every word by the phone's own font-size setting. Measured on the
+     * S25, whose setting is 0.8: one rem was 12.8 px inside the app and 16 px in the browser, so
+     * the app was a fifth smaller than the web version of the same screens. The game has a
+     * text-size setting of its own, in Settings, and the screens are measured at its sizes, to
+     * 200%. The two would multiply, past anything that has been measured.
+     *
+     * So the web view is told 100: the app looks as the web version does, and the game's own
+     * setting is the one control.
+     */
+    private void keepTheGamesOwnTextSize() {
+        getBridge().getWebView().getSettings().setTextZoom(100);
+    }
+
     /**
      * THE BACK GESTURE GOES TO THE GAME FIRST (docs/LOOK_PLAN.md section 26).
      *
@@ -19,9 +43,7 @@ public class MainActivity extends BridgeActivity {
      * the title, the app steps aside as Home would, and is not closed: a game in hand is still
      * there when the player comes back.
      */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private void giveBackToTheGameFirst() {
         getOnBackPressedDispatcher()
             .addCallback(
                 this,

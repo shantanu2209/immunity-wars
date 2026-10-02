@@ -5,7 +5,7 @@
  * file. They are held together here, read from the files themselves.
  *
  * Controls: pnpm ci:selftest android-id-is-one-id, android-keeps-no-backup,
- * android-ground-is-the-kits-table.
+ * android-ground-is-the-kits-table, android-text-is-the-games-size.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -75,6 +75,19 @@ describe('what the shell is allowed and told', () => {
       'android.permission.INTERNET',
       'android.permission.VIBRATE',
     ]);
+  });
+});
+
+describe('the size of the text', () => {
+  it('is the game’s own, not the phone’s', () => {
+    // Ruled 2 October 2026. An Android web view scales every word by the phone's font size unless
+    // it is told 100. That it IS 100 on a phone is `pnpm android:check`'s to see; this holds that
+    // the native code still says so, which a regenerated MainActivity would not.
+    const activity = read(`${MAIN}/java/${RULED_ID.split('.').join('/')}/MainActivity.java`);
+    expect(
+      /getSettings\(\)\s*\.setTextZoom\(100\)/.test(activity),
+      'THE SHELL LEAVES THE TEXT TO THE PHONE’S FONT SIZE',
+    ).toBe(true);
   });
 });
 

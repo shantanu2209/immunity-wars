@@ -12,6 +12,9 @@
  *
  *   - it starts: the title, with no uncaught error and no request that failed;
  *   - no service worker is registered in it;
+ *   - THE TEXT IS THE GAME'S SIZE, NOT THE PHONE'S (ruled 2 October 2026). A word asked for at
+ *     100 px must be drawn at 100 px whatever the phone's own font size is set to. On the S25,
+ *     set to 0.8, it was drawn at 80 until `MainActivity.java` told the web view otherwise;
  *   - ANDROID'S BACK GOES TO THE GAME FIRST. Back inside a screen returns to the title, and back
  *     on the title puts the app aside without closing it. Found on its first run on the S25, 2
  *     October 2026: as Capacitor has it, back inside How to play put the phone on its home screen.
@@ -121,12 +124,30 @@ try {
     workers: 'serviceWorker' in navigator ? (await navigator.serviceWorker.getRegistrations()).length : 0,
     platform: typeof window.Capacitor === 'object' && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : 'not a shell',
     size: innerWidth + ' by ' + innerHeight,
-    rootFont: getComputedStyle(document.documentElement).fontSize,
-  }))()`)) as { workers: number; platform: string; size: string; rootFont: string };
+    zoom: (() => {
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position:fixed;visibility:hidden;font-size:100px';
+      probe.textContent = 'x';
+      document.body.appendChild(probe);
+      const drawn = parseFloat(getComputedStyle(probe).fontSize);
+      probe.remove();
+      return drawn;
+    })(),
+  }))()`)) as { workers: number; platform: string; size: string; zoom: number };
   if (read.platform !== 'android') refuse(`this is not the Android shell: ${read.platform}`);
   if (read.workers !== 0)
     refuse(`${String(read.workers)} service worker(s) registered in the shell.`);
-  done.push(`started: ${read.size}, text at ${read.rootFont} to the rem, no service worker`);
+  const phoneScale = adb('shell', 'settings', 'get', 'system', 'font_scale');
+  if (Math.abs(read.zoom - 100) > 0.5) {
+    refuse(
+      `THE TEXT FOLLOWS THE PHONE'S FONT SIZE: a word asked for at 100 px is drawn at ` +
+        `${String(read.zoom)} px (the phone's setting is ${phoneScale}).`,
+    );
+  }
+  done.push(
+    `started: ${read.size}, no service worker, text at the game's own size ` +
+      `(the phone's font size is set to ${phoneScale})`,
+  );
 
   // 2. Back goes to the game first.
   await press('[data-title="settings"]');

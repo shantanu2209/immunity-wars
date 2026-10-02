@@ -2179,13 +2179,25 @@ The measuring page, run inside the shell on the S25, 2 October 2026, one run.
 - **It is a first reading and not L7's:** one run, on the screens as they are before his review.
   On it, locked decision #1 holds as it did: Capacitor, at twice the frame rate the plan asked for.
 
-### Found, and put to him: the text is smaller inside the shell on his phone
+### Found, put to him, and ruled: the app's text is the game's size, not the phone's
 
 His phone's own font size is set to 0.8 of standard. An Android shell follows that setting: one
-rem is 12.8 px inside the app, where it is 16 px in his Chrome tab, so every word, and everything
-sized by the text, is a fifth smaller than on the web version he has been looking at. The game
-has a text-size setting of its own, and the two multiply. Nothing was changed: which of them the
-app obeys is his ([`TODO.md`](TODO.md), row 10).
+rem was 12.8 px inside the app, where it is 16 px in his Chrome tab, so every word, and everything
+sized by the text, was a fifth smaller than on the web version he has been looking at. The game
+has a text-size setting of its own, and the two multiply.
+
+Put to him with two ways and a recommendation, to fix the app at 100%, he ruled: *"Will go with
+your recommendation."*
+
+- **The app's text is fixed at 100% of what the game asks for.** It looks as the web version does,
+  and the game's own setting, in Settings, is the one control. It is what the screens were
+  designed and audited at, to 200%.
+- **What it gives up:** a player whose phone is set to large text does not get large text in the
+  game by itself. They choose it in the game's Settings.
+- **Held on the phone** by `pnpm android:check`: a word asked for at 100 px must be drawn at 100 px
+  whatever the phone's setting. It read 80 px on the build before, and failed; 100 px after.
+  **And in the project** by a test that the native code still says so, with control
+  `android-text-is-the-games-size`, which fires.
 
 **Not checked on the phone:** vibration and sound, which need a hand and an ear; the app with the
 phone's text set large; the lesson and a whole game, which the web build's walks cover on the same

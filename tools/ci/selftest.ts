@@ -842,6 +842,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE SHELL’S GROUND IS NOT THE KIT’S TABLE',
   },
   {
+    id: 'android-text-is-the-games-size',
+    why: 'Ruled 2 October 2026: the Android app’s text is the size the game sets, not the phone’s. An Android web view scales every word by the phone’s own font size unless it is told 100; on the S25, set to 0.8, the app was a fifth smaller than the web version. With the native code no longer telling it, as a regenerated MainActivity would not, the shell’s test must FAIL saying the text is left to the phone.',
+    file: 'packages/android/android/app/src/main/java/com/kartikchaudhary/immunitywars/MainActivity.java',
+    mutate: (t) => t.replace('setTextZoom(100)', 'setTextZoom(120)'),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'THE SHELL LEAVES THE TEXT TO THE PHONE’S FONT SIZE',
+  },
+  {
     id: 'android-java-is-checked-first',
     why: 'The Android build runs on Java 21 to 24. On the Java 25 that Android Studio 2026.2 brings it died with "Unsupported class file major version 69", which names nothing a person can act on. The version is read before Gradle starts and refused by name. With the newest Java allowed raised past it, the test must FAIL saying a Java the build cannot run on was let through.',
     file: 'packages/android/src/java.ts',
