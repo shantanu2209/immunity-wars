@@ -1664,3 +1664,24 @@ difficulty written into the engine, changing nothing it does: the count fails as
 new one is on the table). The five from before fire still.
 
 **Not read by him or Kartik:** the table's sentences. **Not played on a phone.**
+
+### Deployed, 2 October 2026, 10:14 IST: the guided game
+
+On his word (*"6. Yes please"*, and then *"Merged"*): the app, from `main` at `3dc62e4`, as version
+`20261002-101440-3dc62e4`. The app only: the relay was not touched or restarted (rules 4.1.1 and
+protocol 5, as it already ran), and the rules version on `main` had not moved.
+
+| Checked | Found |
+|---|---|
+| The deploy script's own checks | The build talks to the server's relay; it starts, in a headless browser, with no error; the server serves this build |
+| The lesson, walked on the live app by `pnpm guide:walk`, pressing only what is lit. It is a game alone: nothing of it goes to the relay | 69 beats of 69, every one in order; the game handed over at turn 8 of 15; no error |
+| The live title, on a profile that has never played | Learn to play, New game, Play together, How to play, Settings, About |
+| The difficulty screen | *What changes between them* opens the card, with its six rows |
+| A game alone on Easy, to the command stage | 42 pictures, none broken and none that is not Clay; seven cells; no light of the lesson over it; no error, and no request failed |
+
+- **A resident's Recall has its button on the live app from this deploy** ([`FINDINGS.md`](FINDINGS.md)
+  #113). It had none from 30 September.
+- **Not in it:** Coat as the one word, and the table of fifteen rows. They are the next pull
+  request, and go with the relay.
+- **Not checked on the live server:** playing together, which would mean making a room on it; and
+  that a phone holding the older version takes this one on its title, which is his phone's to show.

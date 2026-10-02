@@ -107,6 +107,8 @@ the gentlest difficulty is called Easy in the engine's one message that names it
 game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.1.1 still. Q14,
 the same day: an antibody coats, on the screens and in the engine's three sentences that said
 tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2, **not yet deployed**.
+**The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
+(plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
 every screen in Clay and Easy (plan §19). The relay's half
 of #94, ruled to be built before Phase 4 ships, is built (1 October): the room refuses a piece's
