@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.0). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.1). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -76,7 +76,8 @@ every place the engine reads the difficulty. `tests/session/src/differences.test
 row to the engine on each difficulty and counts the engine's reads, so a new one cannot arrive
 unseen. Reading the rulebook against the engine found five places where they differ or the
 rulebook is silent, which are Kartik's (`docs/FINDINGS.md` #118). **With that the guided game is built. Not read by him or
-Kartik:** its sentences. **Not played by a newcomer,** which is L6's gate.
+Kartik:** its sentences. **The newcomer test, L6's gate, is deferred indefinitely** (ruled
+2 October, plan §24; brief v2.1): deferred, not met.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling).
 **Nothing waits on Kartik** (ruled 2 October, plan §21): a question the records mark as the
@@ -133,7 +134,8 @@ the rulebook, quick reference and study packet now say what the app does (`docs/
 **What Phase 2 owed when it paused** (20 September 2026, `docs/PHASE2_PAUSE.md`) is carried by the
 plan: the handset performance pass is measured on the S25, and still settles locked decision #1
 (Capacitor vs React Native) **before Phase 4, which must not start without it**; the newcomer test
-is run on the guided game; Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
+was to be run on the guided game and is **deferred indefinitely by ruling** (2 October; deferred,
+not met); Gate 2 is the plan's last gate. Phase 1 is closed; its spec and closeout are
 `docs/PHASE1_BRIEF.md` and `docs/PHASE1_CLOSEOUT.md`, kept as the record of what was and was not
 proven.
 
@@ -394,7 +396,8 @@ contract Task B was measured against.
   bump, none of it in a process that listens (`docs/SECURITY_NOTES.md`). *It lapsed again on
   1 October 2026:* one low advisory, `serialize-javascript` through the service worker's build
   tools, in no process that listens, seen while the look prototype's libraries were installed and
-  not caused by them; recorded in `docs/SECURITY_NOTES.md` and **not yet cleared**. **The old acceptance sentence — "this
+  not caused by them; recorded in `docs/SECURITY_NOTES.md`, and **cleared on 2 October 2026** by a
+  pin, on his word, so `pnpm audit` is clean again. **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
@@ -413,7 +416,11 @@ contract Task B was measured against.
   own line, not the exit code · `pnpm test:manifest-controls` · `rm -rf coverage && pnpm
   coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
   --force`), because turbo cancels queued tasks on first failure and a single red suite is a
-  lower bound, not a census.
+  lower bound, not a census. *2 October 2026:* run for the `serialize-javascript` pin, it found
+  four defects in the checks and none in the pin (`docs/FINDINGS.md` #120, #122 to #124). **The
+  full self-test runs nowhere but here; every push runs only `ci:selftest:inert`.** And **read the
+  nightly run** (`gh run list --workflow Nightly`): its 10,000-game tier had been red or cancelled
+  on 11 of 16 nights, unread.
 
 - **Stale builds: REMOVED, 2 October 2026.** `tools/legacy/stale/` held `index.html` and
   `spectator.html`, built on 20 July before the Brain fix; they contained `branch:4` and

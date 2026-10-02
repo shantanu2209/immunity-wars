@@ -528,3 +528,41 @@ change, and a toolchain pin wants its own battery. It is recorded so that the li
 "no advisory is open", is not left standing as true.
 
 > ### The property, re-read 1 October 2026: no open advisory is in a process that listens. One low advisory is open, in a build-time tool.
+
+## Added 2 October 2026 — the one low advisory, cleared by a pin
+
+**What was open.** GHSA-gfhx-hw2g-v5hg, low: `serialize-javascript` 7.1.1 leaves a `</script>`
+unescaped inside a serialised function. Reached by one path: `packages/app` > `vite-plugin-pwa` >
+`workbox-build` > `@rollup/plugin-terser`, which uses it to hand its own options to a worker when a
+build minifies the service worker. Nothing of ours is serialised into a page by it, and it is in no
+process that listens. Recorded on 1 October and left for a change of its own.
+
+**Ruled.** Shantanu, 2 October 2026: *"Pleaee clear the advisory and then I will merge the
+dependabot PRs."*
+
+**What was done.** One override in `pnpm-workspace.yaml`, as for `fast-uri` and `brace-expansion`:
+`serialize-javascript` at 7.1.1 resolves to 7.1.2, which is inside the plugin's own `^7.0.3` range;
+pnpm keeps the locked 7.1.1 otherwise. One package in the lockfile changed, and nothing else.
+`pnpm audit`: no known vulnerabilities.
+
+**What was checked that the build is what it was.**
+
+| Checked | Found |
+|---|---|
+| The service worker built without the pin and with it | With their lists of stored files put in one order, the two are the same: 134 entries, every revision the same, and every other byte the same |
+| The same file from one build to the next, with the pin | Not always the same bytes: **the order of that list varies from build to build**, with the pin and without it: two builds without it gave two orders, and three with it gave two. It changes nothing a phone does; it is said here because "the file is byte for byte what it was" was the first thing looked for, and it is not true of this file even with nothing changed |
+| The built app starts | `pnpm start:check`: started |
+| A phone takes a newer build | `pnpm update:check`: on the title by itself; in a game not until the title; Update now under a version refusal |
+| `pnpm verify` | Exit 0. 205 controls, every mutation changes its file |
+| The full self-test, every control's own line read | **203 of 205 fired. Two did not**, and neither is the pin: [`FINDINGS.md`](FINDINGS.md) #122 and #123. Both fixed in the same change, and both fire |
+| The manifest's controls | 7 run, each fired on what it targets; the manifest restored byte for byte |
+| The coverage gate, from a deleted `coverage/` | Passes: 97.45% of 1,846 coverable arms, as before the pin |
+| Two forced test runs, no cache | **The first failed**, on the relay's heartbeat test and nothing else, 36 seconds in: [`FINDINGS.md`](FINDINGS.md) #120, a test of how busy the machine was, now rewritten. The second: 17 tasks of 17, none cached |
+
+**The battery found four defects in the checks and none in the pin.** A stale control and a
+control that was a roll of the dice (#122, #123), a test that failed on a busy machine (#120), and,
+found from the list of CI runs while reading why Dependabot's #136 was red, a nightly tier that had
+been red or cancelled on 11 of 16 nights (#124). Each is an instrument, so each was fixed here and
+not filed: what is measured with a check that is wrong cannot be trusted until it is right.
+
+> ### The property, re-read 2 October 2026: no open advisory is in a process that listens, because no advisory is open.

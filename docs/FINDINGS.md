@@ -5826,7 +5826,7 @@ the rulebook's list and its one-line summary; How to play says it in a sentence.
 no penalty of its own on Hard for now, and the question is on `docs/TODO.md`. **Closed,** but for
 that.
 
-## 120. One relay test timed out once inside `pnpm verify`, and never again: unexplained
+## 120. One relay test timed out once inside `pnpm verify`: seen three times, explained, and the test rewritten, 2 October 2026
 
 **Seen 2 October 2026**, on the first `pnpm verify` of the change that printed the rulings of §22.
 `packages/server/src/node.test.ts`, *"a phone that goes silent is marked away within a few
@@ -5845,6 +5845,61 @@ process stalled for a tenth of a second or more, and the load that was tried did
 
 **Left as it is.** Changing a test on a guess is how a real fault gets explained away. It is the
 same shape as #83. If it is seen again, what else was running is the thing to write down.
+
+**Seen again, twice, and explained: 2 October 2026**, at the battery for the
+`serialize-javascript` pin. Three sightings in two days, with three different messages:
+
+| When | Where | What the test said |
+|---|---|---|
+| 1 October | GitHub's runner, on Dependabot's pull request #136 | `RelayError: closed`, close code 1006, 258 ms in |
+| 2 October | `pnpm verify` on the PC, the sighting above | timed out waiting for: the silent member is in |
+| 2 October | The battery's first forced run, 13 test tasks at once on the PC | timed out waiting for: the silent member is shown away |
+
+**One cause fits all three, and it is not the guess above: the relay ended the host, the phone
+that answers.** Measured with a probe, run once and removed. A relay on the test's 50 ms
+heartbeat, phones that answer every ping, and the process held on purpose:
+
+| Heartbeat | The process held | Phones that answer, ended by the relay |
+|---|---|---|
+| 50 ms | not at all | 0 of 20 |
+| 50 ms | 120 ms, at no particular moment | 2 of 20 |
+| 50 ms | 120 ms, just after a ping went out | **20 of 20**, close code 1006 |
+| 50 ms | 30 ms, just after a ping | 0 of 20 |
+| 300 ms | 120 ms, just after a ping | 0 of 10 |
+| 300 ms | 330 ms, just after a ping | 10 of 10 |
+
+- **Why.** The relay pings on a timer and ends whoever has not answered by the next tick. A process
+  that has been held runs the timers that fell due before it reads what is waiting on its
+  connections. So if it is held past the next tick, the tick runs first and ends the connection
+  with the answer to its ping still unread.
+- **Each message is the host ended at a different moment:** while entering (closed, 1006); before
+  the silent member joined (never seen in); after (never seen away, because the host had stopped
+  hearing).
+- **Shown:** that a stall of one heartbeat ends a phone that answers, with the close code CI
+  reported. **Not shown:** that this is what happened each of the three times. The stalls
+  themselves were not recorded, and with the whole suite forced beside the probe, 150 phones that
+  answer were watched on a 50 ms heartbeat and none was ended: load alone did not reproduce it in
+  that run, as the first attempt above did not.
+
+**Not a fault in the relay as it runs.** Its heartbeat is 20 seconds. The same thing there would
+need the process stopped for 20 seconds, and would end every connection it has. Nothing in the
+relay is changed, and nothing is deployed for this.
+
+**The test is changed, because it was measuring how busy the machine was.** It beats the relay's
+heart itself: the relay's interval is on a clock the test moves, and each beat is given only when
+the relay has read the answer to the one before. The sockets, and everything else on a timer, are
+real. With the process held 150 ms after every ping, six stalls a run, the stall that ended 20 of
+20 before: 12 runs of 12 pass. It takes 0.2 seconds where it took 2.
+
+**And the half that could not fail now can.** "A phone that answers stays present" was read from
+the host's own picture of the room, which goes on saying "present" after the host has been ended.
+A relay that ended everybody would have been reported as a silent member never shown away. The
+test now asks the relay for a seat after the last beat, and fails naming a phone that answers.
+Controls, each fired: `node-heartbeat-spares-who-answers` (the answer to a ping no longer
+recorded: *THE RELAY ENDED A PHONE THAT ANSWERS*), and `node-heartbeat`, narrowed to its own
+message (*the silent member is shown away*).
+
+**Closed.** Dependabot's pull request #136 is red on this test and on nothing else.
 
 ## 121. Under queue Q15's deck, the fast panel control's verdict on the Brain at integrity 1 became a coin flip — the control now asserts its strength, 2 October 2026
 
@@ -5891,3 +5946,96 @@ narrowed to the measurement, fixed inline. The probe that measured this was run 
 **Also in the table, and left:** one fast-scale size (8 × 8 × 50) read the UNMUTATED original at
 −4.0σ on trunk kill share on Normal. One metric, under the 6σ that fails alone, so it passed. It is
 the noise of a small calibration, and why these controls do not assert more than they do.
+
+## 122. The control on invader ids across two rooms fired 15 times in 16 — its test now plays seeded games, 2 October 2026
+
+**Found by the full self-test**, in the battery for the `serialize-javascript` pin:
+`room-ids-across-rooms` came back *THE GATE PASSED*. Run again by hand it fired 5 times of 6.
+
+**Measured**, with the two-rooms test's own game played 1,000 times on the page's dice:
+
+| | Held | Caught |
+|---|---|---|
+| The engine as it is | 1,000 | 0 |
+| With the control's change: one counter shared between rooms, restarted by any new game | **63** | 937 |
+
+- **56 of the 63:** the first table, on Hard with nobody playing, lost its game on the very turn
+  the second table began. The shared counter is restarted when the second table's first pathogen
+  arrives, which was after the first table's last draw. Nothing was left to hand an id to.
+- **The other 7:** every id handed out again was one whose first holder had already gone.
+- **The test never failed falsely:** 1,000 of 1,000 on the engine as it is.
+
+So the control's verdict was a roll of the dice. Whether that was so from 30 September, when it was
+re-aimed for queue Q5, was not measured on the earlier form.
+
+**The test now plays eight seeded pairs of games** (the dice are replaced inside the test and
+nowhere else), the same on every run. The second table's pathogens arrive before the first
+table's next ones, and an id the first table has not held before must be higher than every id it
+has ever held. With the control's change, 7 of the 8 games catch it, on every run; in the eighth
+the second table's first turn hands out enough ids to pass the first table's highest. The control
+fired 3 of 3. An instrument, fixed inline.
+
+## 123. The control on the board's art in the service worker failed on a different line since the old art was removed, 2 October 2026
+
+**Found by the same full self-test:** `clay-board-art-in-the-worker` failed *without* the message
+it is aimed at.
+
+The build test opens with a guard, *THE WORKER LIST WAS NOT READ*, which asked for more than 100
+entries. When the art before Clay was removed (commit `6796ea2`), the list fell from 224 entries to
+133. The control leaves the board's 39 pictures out, which leaves 94, so the test failed on the
+guard and never reached the line that names the board's art. The gate was still red; it was red
+for the wrong reason, which is what the self-test is there to tell apart.
+
+**The guard now asks whether the list was read, not how long it is** (more than 20). All four
+controls on that test fire with their own messages again. An instrument, fixed inline.
+
+**Why it went unseen for the rest of that day.** What runs on every `pnpm verify` and in CI is
+`ci:selftest:inert`, which asks only that each control's change still changes its file. The full
+self-test, which runs every gate against every change, takes half an hour (30 minutes in this
+battery) and is run by hand. When it was last run in full before this is not recorded. #122 and
+this are what it found.
+
+## 124. The 10,000-game property tier had been red or cancelled on 11 of 16 nights, and nobody had read it — 2 October 2026
+
+**Found while reading why Dependabot's pull request was red:** the list of runs showed the nightly
+workflow failed on `main` on 1 and 2 October.
+
+| The nightly property leg, 17 September to 2 October | Nights |
+|---|---|
+| Finished, green (28 to 40 minutes) | 5 |
+| Cancelled at its 45-minute limit | 9 |
+| Failed | 2 |
+
+**The two failures are one stale invariant.** Queue Q4, on 30 September, made an antivenom kill
+teach no memory, in the engine and in the original as ruled. The property suite's `memory-on-kill`
+was not brought level: it still required every kill of the last of a disease on Training to record
+memory. The 10,000-game tier reaches such a kill in its fourth game (seed 810003, Training, turn
+10: antivenom on the last Snake venom) and stops at the first violation. So on both nights 4 games
+of 10,002 were played, and the engine was right each time.
+
+- **The 120-game tier that runs on every push stayed green:** none of its games gives the last
+  venom antivenom on Training.
+- **The invariant now holds an antivenom kill the other way round:** on Training, memory that
+  appears across one is the violation. Two controls, each seen to fail against the invariant as it
+  was: the invariant's two directions on a hand-built state, and a wrong engine (the antivenom
+  clause taken out of the original as ruled) on the nightly's own game, beside the ruled engine on
+  the same game, which must pass with something checked.
+
+**The nine cancellations are the limit, not the suite.** The leg takes 28 to 40 minutes when it
+finishes, and the job's limit was 45. The workflow's own header said the leg took about 14. The
+limit is now 120 minutes: it is there for a job that has hung.
+
+**The tier, run in full on the PC with the invariant fixed: under way when this was committed.**
+2,000 games and 280,510 states without a violation, where it had stopped at 4. What it finds by
+its end is recorded here when it ends.
+
+**What this says about the instrument, plainly.** For the sixteen nights to 2 October the
+10,000-game tier finished five times, the last of them on 29 September. The queue's sixteen
+changes to the engine, Q1 to Q16, all came after that, and the tier has checked none of them
+beyond its first four games. The nightly recorded the suite as failed on both nights, and the
+dashboard is built from that record. Nobody read it, and that includes Claude at the start of each
+session.
+
+**Not built here, and put to Shantanu:** the full self-test as a nightly job, so that a control
+that stops firing is seen the next morning and not at the next battery; and reading the nightly
+run's result at the start of every session.

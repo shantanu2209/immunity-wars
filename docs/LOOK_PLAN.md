@@ -3,7 +3,7 @@
 **Status: RULED by Shantanu, 1 October 2026**, every item in §10. It answers his direction of the
 same day: disregard low-end phones, give the game the look of the best modern mobile games before
 Phase 4, rename Training to Easy, and add a guided game that teaches by playing. **This is Phase 2
-resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.0).
+resumed**, and the spec its stages are built to ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) v2.1).
 
 **Stages L1 to L4 are done, all on 1 October 2026:** he picked the Clay direction (§11), ruled the
 board is drawn as pictures on the page (§12), approved the kit (§13), and played the play screen,
@@ -13,7 +13,8 @@ is built for that review and not yet ruled on** (§15); **it was deployed on 2 O
 (§19). **L6 is under way:** Easy is done (§16), and the guided game is ruled to script everything,
 its seven turns ruled as listed, and built: the engine's part, the lesson, and the light that leads
 the player, and what changes between the difficulties (§18, §19). The hints and the coach are
-removed. What it wants now is his review and a newcomer.
+removed. What it wants now is his review. **The newcomer test is deferred indefinitely, by
+ruling** (§24): deferred, not met.
 
 ## 1. What is decided already
 
@@ -114,8 +115,8 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed, and the engine's part, the lesson and the light that leads the player are built (§19); and so are the difficulties' explanations. A newcomer has not yet played it* |
-| **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed, and the engine's part, the lesson and the light that leads the player are built (§19); and so are the difficulties' explanations. **The newcomer test, this stage's gate, is deferred indefinitely by ruling (§24): deferred, not met*** |
+| **L7 Finish** | Polish, the audit re-aimed, the newcomer test (*deferred indefinitely, §24*), the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
 and Hindi).
@@ -125,7 +126,7 @@ and Hindi).
 | Owed from Phase 2 | Becomes |
 |---|---|
 | The handset performance pass | Measured on the S25, at L2 and again at L7. It still settles the app shell, Capacitor against React Native, before Phase 4 |
-| The newcomer test | Run on the guided game, at L6 |
+| The newcomer test | Run on the guided game, at L6. *Deferred indefinitely by ruling, 2 October 2026 (§24): deferred, not met* |
 | Gate 2 | The approval at L7 |
 | The shorter How to play | Superseded by the guided game |
 
@@ -1938,3 +1939,52 @@ On his word (*"Merged. Please deploy."*): the relay and then the app, from `main
 - **Not checked on the live server:** playing together; a Diphtheria or an Anthrax releasing its
   toxin in a live game, which the queue's tests show in the engine and nobody has yet played; a
   phone holding the older build taking this one.
+
+## 24. Ruled 2 October 2026, the eighth: no newcomer test; and the advisory cleared
+
+After the deploy of rules 4.2.0 he was given the list he asked for of what to try on his phone, and
+answered:
+
+> *"We don't need the newcomer test. Defer that indefinitely. Pleaee clear the advisory and then I
+> will merge the dependabot PRs."*
+
+| What it rules | What follows |
+|---|---|
+| **The newcomer test is deferred indefinitely** | Stage L6 has no gate left to wait on. The brief is v2.1 and says so. **Deferred, not met:** Gate 1's one human-tested item is not claimed, here or anywhere |
+| **The open advisory is cleared** | Done, below |
+| **The two Dependabot pull requests are his to merge after it** | Not touched |
+
+**What the deferral leaves unknown, said once and plainly.** Whether a person who has never seen the
+game can get through the guided game unaided has not been observed. What has been measured is that
+the lesson plays, that every control it lights is the right one, and that it fits the screens. How
+long it takes a person, and how it reads to one, are not known.
+
+### Cleared: the one open advisory
+
+`serialize-javascript` 7.1.1, low (GHSA-gfhx-hw2g-v5hg), reached only through the tools that write
+the service worker when the app is built. Pinned to 7.1.2, which is inside the range the tool that
+uses it already allows. `pnpm audit` is clean. [`SECURITY_NOTES.md`](SECURITY_NOTES.md) has what
+was checked.
+
+### What the battery found: four defects in the checks, none in the pin
+
+A toolchain pin is followed by the full battery (`CLAUDE.md`, "Known issues"). This one:
+
+| Part | Result |
+|---|---|
+| `pnpm verify` | Passed |
+| The full self-test | 203 controls of 205 fired; two did not |
+| The manifest's controls, the coverage gate | Passed |
+| Two forced test runs | The first failed on one relay test; the second passed |
+
+| Found | What it was | [`FINDINGS.md`](FINDINGS.md) |
+|---|---|---|
+| The relay's heartbeat test failed in the first forced run | A test of how busy the machine was: a stall of one 50 ms heartbeat makes the relay end a phone that answered. The third sighting in two days, and what turned Dependabot's #136 red. The test now gives each heartbeat itself | #120 |
+| The control on ids across two tables did not fire | Its verdict was a roll of the dice, right 15 times in 16. The test plays seeded games now | #122 |
+| The control on the board's art in the service worker failed on the wrong line | A guard that counted entries tripped first, since the old art was removed | #123 |
+| The nightly 10,000-game tier, read from CI's own list | Red for two nights on an invariant never brought level with the antivenom ruling, and cancelled at its time limit on nine nights of the fourteen before | #124 |
+
+- **None of the four is in the game or in the relay as it runs.** Each is in a check, so each was
+  fixed in this change: a wrong check poisons what is measured with it.
+- **Nothing is deployed for any of it.** The pin is in build tools; the other four are tests, a
+  control and a workflow.
