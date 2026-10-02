@@ -168,6 +168,26 @@ under it) and verifies the tree matches its state **before** the run — not tha
 uncommitted work is the normal case and a check that cannot tell "I failed to restore your files"
 from "you had edits already" gets deleted.
 
+### Every night — [`selftest.yml`](workflows/selftest.yml)
+
+03:30 UTC, on demand, and on a pull request that changes the workflow file itself. **The full
+self-test, every control.** Added 2 October 2026, by ruling.
+
+- **Why it is not per-push.** It takes half an hour on the PC. A push runs `ci:selftest:inert`
+  instead, which asks only that each control's change still changes its file.
+- **Why that was not enough.** Two controls changed their files and had still stopped doing their
+  job: one's verdict had become a roll of the dice, and one failed on a different line from the one
+  it is aimed at ([`docs/FINDINGS.md`](../docs/FINDINGS.md) #122 and #123). Nothing ran the full
+  self-test until somebody did by hand.
+- **A red run is a check that did not behave, not a broken build.** The run's summary names each
+  control that did not fire, with the last 40 lines its gate printed. Then run that one on the PC:
+  `pnpm exec tsx tools/ci/selftest.ts <id>`.
+- **Its first step is a gate that must PASS:** the app is built and opened in the browser,
+  unchanged. Three of the gates need the browser, and without it every control on them would
+  "fail" for a reason that is not its own.
+- **It costs nothing:** the repository is public, and GitHub's standard runners are free for
+  public repositories.
+
 ---
 
 ## Secrets and permissions

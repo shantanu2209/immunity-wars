@@ -1988,3 +1988,31 @@ A toolchain pin is followed by the full battery (`CLAUDE.md`, "Known issues"). T
   fixed in this change: a wrong check poisons what is measured with it.
 - **Nothing is deployed for any of it.** The pin is in build tools; the other four are tests, a
   control and a workflow.
+
+## 25. Ruled 2 October 2026, the ninth: the full self-test runs every night
+
+Asked whether the full self-test should run as a nightly job ([`FINDINGS.md`](FINDINGS.md) #124),
+with a recommendation that it should, he answered:
+
+> *"Will it cost me anything? If not then add the nightly thing."*
+
+**It costs nothing.** The repository is public, and GitHub's standard runners are free for public
+repositories. So it is added.
+
+| What | |
+|---|---|
+| Where | `.github/workflows/selftest.yml`, a workflow of its own |
+| When | 03:30 UTC every night, after the nightly; on demand; and on a pull request that changes the workflow file |
+| What it runs | `pnpm ci:selftest`: every control, each gate made to fail on purpose and required to say why |
+| Before that | The app built and opened in the browser, unchanged, which must pass: three of the gates need the browser, and this says so in a minute and not an hour in |
+| When a control does not behave | The run is red; its summary names the control and shows the last 40 lines its gate printed. On the PC the self-test still prints three |
+| Its limit | 240 minutes: a limit for a job that has hung |
+
+- **Why its own workflow and not a job of the nightly.** The nightly publishes the dashboard and
+  is never cancelled part-way. And a workflow of its own runs on the pull request that adds it, so
+  it is seen to work before it is relied on.
+- **What it is for.** Every push runs only the check that each control's change still changes its
+  file. Two controls passed that and had still stopped doing their job (#122, #123).
+- **Shown on the PC:** the step's own command line ends red when a control does not behave (one
+  control's expected words changed on purpose: exit 1, the control named, the gate's lines
+  printed) and green when it does.

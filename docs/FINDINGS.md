@@ -6050,3 +6050,7 @@ session.
 **Not built here, and put to Shantanu:** the full self-test as a nightly job, so that a control
 that stops firing is seen the next morning and not at the next battery; and reading the nightly
 run's result at the start of every session.
+
+**Ruled the same day, and built:** *"Will it cost me anything? If not then add the nightly
+thing."* It costs nothing on a public repository. The full self-test runs every night from
+`.github/workflows/selftest.yml` ([`LOOK_PLAN.md`](LOOK_PLAN.md) §25).

@@ -48,6 +48,13 @@ import { writeRetrying } from './write-retry.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, '..', '..');
 
+/**
+ * How many of a gate's last lines are printed when a control does not behave. Three is enough on
+ * the PC, where the gate can be run again by hand. The nightly run sets more
+ * (`SELFTEST_OUTPUT_LINES`, .github/workflows/selftest.yml): there the log is all there is.
+ */
+const TAIL = Math.max(3, Number(process.env['SELFTEST_OUTPUT_LINES'] ?? 3) || 3);
+
 interface Control {
   readonly id: string;
   /** Why this gate exists at all — read by whoever sees this control go wrong. */
@@ -2285,7 +2292,7 @@ for (const control of selected) {
       console.log('    stayed green on a PERMITTED edge, as it must');
     } else {
       console.log(`    THE GATE WENT RED on something it is supposed to allow: ${control.why}`);
-      console.log(`    ${verdict.output.split('\n').filter(Boolean).slice(-3).join('\n    ')}`);
+      console.log(`    ${verdict.output.split('\n').filter(Boolean).slice(-TAIL).join('\n    ')}`);
       problems += 1;
     }
     continue;
@@ -2303,7 +2310,7 @@ for (const control of selected) {
     console.log(
       `    failed, but WITHOUT "${control.expect}" — it may be failing for another reason`,
     );
-    console.log(`    ${verdict.output.split('\n').filter(Boolean).slice(-3).join('\n    ')}`);
+    console.log(`    ${verdict.output.split('\n').filter(Boolean).slice(-TAIL).join('\n    ')}`);
     problems += 1;
   }
 }

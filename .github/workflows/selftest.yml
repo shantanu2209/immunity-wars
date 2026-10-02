@@ -1,0 +1,110 @@
+# The full self-test, every night.
+#
+# `pnpm ci:selftest` changes one file, runs one gate, requires it to FAIL WITH ITS OWN MESSAGE, and
+# puts the file back: once for every control in tools/ci/selftest.ts. It is what shows that a check
+# still works. It takes half an hour on the PC and longer here, so no push runs it: a push runs
+# `ci:selftest:inert`, which asks only that each control's change still changes its file.
+#
+# That left a gap, and two controls fell into it (docs/FINDINGS.md #122 and #123, 2 October 2026):
+# one had become a roll of the dice and one failed on a different line from the one it is aimed at.
+# Both changed their files, so the inert check passed them, and nothing ran the full self-test
+# until a toolchain battery did, by hand. Ruled the same day (Shantanu: "If not then add the nightly
+# thing", after asking whether it costs anything; it does not, on a public repository): the full
+# self-test runs here every night, so a control that stops firing is seen the next morning.
+#
+# ITS OWN WORKFLOW, NOT A JOB OF THE NIGHTLY. The nightly publishes the dashboard and may never be
+# cancelled part-way; this publishes nothing. And a workflow of its own can run on the pull request
+# that changes it (the `pull_request` trigger below), so it is seen to work before it is relied on,
+# which a new job inside a scheduled workflow cannot be.
+#
+# A RED RUN HERE IS A CHECK THAT DID NOT BEHAVE, not a broken build: read the summary for the
+# control's name, then run it alone on the PC (`pnpm exec tsx tools/ci/selftest.ts <id>`).
+
+name: Self-test
+
+on:
+  schedule:
+    # 03:30 UTC, after the nightly (02:00). GitHub queues scheduled runs: the time is approximate.
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+  # Only when this file changes: the run that shows the workflow itself works.
+  pull_request:
+    paths:
+      - '.github/workflows/selftest.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: selftest-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  selftest:
+    name: every control
+    runs-on: ubuntu-latest
+    # A limit for a job that has hung, not for one that is slow (the nightly's property leg was
+    # cancelled at a limit set at its own duration on 9 nights of 16: docs/FINDINGS.md #124).
+    timeout-minutes: 240
+    env:
+      # Three of the gates open the built app in headless Chrome, and look for it where the PC has
+      # it unless told otherwise. This is where the runner's image has it.
+      CHROME_PATH: /usr/bin/google-chrome
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Unchanged, the gate that needs the most of this machine must PASS: it builds the app and
+      # opens it in the browser. If it cannot, every control on a browser gate would "fail" below
+      # for a reason that is not its own, an hour in. Said here, in a minute, by name.
+      - name: The browser gates can run here at all
+        run: pnpm start:check --build
+
+      - name: Every gate, made to fail on purpose
+        env:
+          # How much of a gate's output is kept when a control does not behave. Three lines is
+          # enough on the PC, where the gate can be run again; here the log is all there is.
+          SELFTEST_OUTPUT_LINES: '40'
+        run: |
+          set -euo pipefail
+          pnpm ci:selftest 2>&1 | tee selftest.txt
+
+      - name: What fired and what did not
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ ! -f selftest.txt ]; then
+            echo 'The self-test did not run: see the steps above.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          FIRED="$(grep -c '^✓' selftest.txt || true)"
+          NOT="$(grep -c '^✗' selftest.txt || true)"
+          {
+            echo "## The full self-test"
+            echo
+            echo "- Controls that behaved as specified: **${FIRED}**"
+            echo "- Controls that did not: **${NOT}**"
+            if [ "${NOT}" != "0" ]; then
+              echo
+              echo '### Did not behave'
+              echo
+              echo '```'
+              grep -A 44 '^✗' selftest.txt | head -400
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: selftest
+          path: selftest.txt
+          retention-days: 14
