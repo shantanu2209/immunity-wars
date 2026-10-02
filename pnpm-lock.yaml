@@ -364,6 +364,9 @@ importers:
 
   tools/perf:
     dependencies:
+      '@immunity-wars/content':
+        specifier: workspace:*
+        version: link:../../packages/content
       '@immunity-wars/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol

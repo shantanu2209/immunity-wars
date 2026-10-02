@@ -7,6 +7,9 @@
  * it is. On a device that has never started a game the one recommended is mint, the kit's colour
  * for what is allowed, and says in words that it is recommended: the colour repeats the words and
  * does not replace them.
+ *
+ * WHAT CHANGES BETWEEN THEM (stage L6, ruled 2 October 2026) is one tap away, under the three rows:
+ * `DifferencesCard.tsx`. The rows are for choosing, and a newcomer chooses by them.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -16,6 +19,7 @@ import { COLOUR, TYPE } from '../kit/tokens';
 import { useNavLayer } from '../nav/NavHost';
 
 import { BODY, DIALOG, LEAD, PAGE, SCRIM, STACK, TITLE } from './chrome';
+import { DifferencesCard } from './DifferencesCard';
 
 /** A row of three lines: the name, a note, what it is. */
 const CHOICE: CSSProperties = {
@@ -94,6 +98,7 @@ export function DifficultyScreen({
           </KitButton>
         );
       })}
+      <DifferencesCard toggleKey="differences.toggle" marginTop={6} />
       {pendingDiff !== null ? (
         <div style={SCRIM}>
           <div style={DIALOG}>

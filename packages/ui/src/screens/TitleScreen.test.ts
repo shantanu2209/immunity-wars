@@ -3,7 +3,10 @@
  * thing a screen is for, one to a screen. On the title that is Continue when a game is waiting and
  * New game when none is; a room to rejoin is offered beside either and is not coral. Two coral
  * buttons would say two things are the main thing, which is saying nothing.
- * Control: pnpm ci:selftest title-one-main-button.
+ *
+ * ON A PHONE THAT HAS NEVER PLAYED IT IS THE GUIDED GAME (stage L6, ruled 2 October 2026): the
+ * way in for a newcomer is the thing that title is for. With a game waiting it is still Continue.
+ * Controls: pnpm ci:selftest title-one-main-button, title-guided-game-leads-a-new-phone.
  */
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -13,13 +16,18 @@ import { kitButtonStyle } from '../kit/Button';
 
 import { TitleScreen, type SaveSummary } from './TitleScreen';
 
-const title = (save: SaveSummary | null, rejoin: { code: string } | null = null): string =>
+const title = (
+  save: SaveSummary | null,
+  rejoin: { code: string } | null = null,
+  neverPlayed = false,
+): string =>
   renderToStaticMarkup(
     createElement(TitleScreen, {
       save,
       rejoin,
       onContinue: () => undefined,
       onNewGame: () => undefined,
+      onLearn: neverPlayed ? () => undefined : null,
       onTogether: () => undefined,
       onRejoin: () => undefined,
       onSettings: () => undefined,
@@ -64,6 +72,25 @@ describe('the title’s main button', () => {
     expect(mains(title(null, { code: 'ABC123' }))).toEqual(['new']);
     expect(mains(title(saved, { code: 'ABC123' }))).toEqual(['continue']);
     expect(title(saved, { code: 'ABC123' })).toContain('data-title="rejoin"');
+  });
+
+  it('on a phone that has never played, the guided game is the one main button', () => {
+    expect(
+      mains(title(null, null, true)),
+      'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
+    ).toEqual(['learn']);
+    // New game is still there, beside it.
+    expect(title(null, null, true)).toContain('data-title="new"');
+  });
+
+  it('with a game waiting it is offered beside Continue, which is still the main one', () => {
+    expect(mains(title(saved, null, true))).toEqual(['continue']);
+    expect(title(saved, null, true)).toContain('data-title="learn"');
+  });
+
+  it('on a phone that has played it is not on the title', () => {
+    expect(title(null)).not.toContain('data-title="learn"');
+    expect(title(saved)).not.toContain('data-title="learn"');
   });
 
   it('keeps the hooks the instruments find it by, and says what it resumes', () => {

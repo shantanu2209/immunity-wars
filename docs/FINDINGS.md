@@ -5570,3 +5570,149 @@ listed. A test that reads a file outside its package and is not listed is as inv
 were, and this is the second time one was found by a person asking, not by a check. A check for it
 would have to read every test for the paths it opens. Not built; whether it is worth building is
 Shantanu's to say.
+
+## 113. A resident's Recall, a rule since queue Q6, had no button on the play screen: no player could use it — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the walk of the guided game (`docs/LOOK_PLAN.md` §19). The lesson's
+last turn leads the player to send the heart's resident out, engulf with it, and Recall it home.
+The walk presses only what the guide lights. At that step nothing was there to light.
+
+**What was wrong.** Queue Q6 (Kartik's rule, built on 30 September, `docs/DEVIATIONS.md` and the
+queue's record) gave a resident a Recall: back to its organ in one move, for 1 Action Point. The
+engine has it. The room and the session count it a move, so it can be undone. `offered.ts` offers
+it, as a button. And the play screen draws a button offer in one of two places: as a move button,
+if its action is on the screens' own list of moves, or as a row of the piece's actions, if it is in
+the piece's catalogue. Recall was added to the session's list of moves and not to the screens', and
+it is not a row. So it was offered, tested as offered, and drawn nowhere. **The rule has been in
+the app, and on the server, since the evening of 30 September, with no way for a player to use it.**
+
+**Why nothing said so.** Every test of it asks whether the offer exists and whether the engine
+accepts it. None asks whether it is on the screen, and the Gate 1 audit measures the screens that
+are there, not the controls that are not. How to play describes it; nobody reported that they
+could not find it.
+
+**It is the same shape as #94 and its test:** two lists of one fact, in two packages, drifting.
+
+**Fixed, in the same change, because the lesson cannot be built on a control that is not there:**
+Recall is on the screens' list of moves, and is drawn beside a resident's other buttons.
+`tests/session/src/guide.test.ts` holds the screens' list to the session's, exactly. Control
+`moves-are-one-list`: with Recall taken off the screens' list again, the test fails saying the two
+disagree.
+
+**Not checked, and said plainly:** whether any OTHER offer is drawn nowhere. The test added holds
+the two lists of moves together; it does not ask of every offer `offered.ts` can make whether the
+play screen has a place for it. The walk of the guided game leads through 36 steps and found one
+control missing; that is evidence about those steps.
+
+## 114. The Monocyte's engulf was worded "Chip" when it kills — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the same walk. The lesson says of a parasite on its last hit point,
+*"now it can be swallowed"*, and the button it lit said **Chip**.
+
+**What was wrong.** Ruled on 6 September: an action's row uses the word a player would use for what
+it does to this target, and the Monocyte does not swallow a fungus or a parasite, it wounds them,
+so its engulf on those is worded "Chip". That is right for a fungus with two hit points. On the
+target's LAST hit point the same action kills it, and the engine's own log says "engulfed". And the
+engine offers a parasite to the Monocyte only on its last hit point, so for a parasite the row
+always said Chip and always swallowed.
+
+**Fixed:** the word is Chip while the target will survive it, and Engulf when it will not. It is
+the ruling's own rule, applied to the case it did not name. `tests/session/src/engulf-word.test.ts`
+drives the engine to both positions and reads the word; control
+`engulf-is-chip-only-when-it-wounds`.
+
+**Left, and his or Kartik's to say:** coating a bacterium is worded **Tag** on its button and
+**Coat** in How to play, and coating a worm or a parasite is Coat in both. The buttons follow the
+engine's own log, which says "tagged" of a bacterium and "coated" of a worm. A newcomer meets two
+words for one thing. The lesson's sentences name each button as the screen words it, and say once
+that a tag coats.
+
+## 115. With two new cards at the largest text, the cards could be scrolled 2 px sideways while they were dealt — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's second run on the guided game's branch, in the
+game's own walk and not the lesson's: *"arrivals @200% font size: scrolls sideways inside itself:
+346 > 344"*.
+
+**What was wrong.** The play area's grid of new cards scrolls down when a draw has more cards than
+fit. Nothing said it must not scroll sideways, and a part that scrolls one way may scroll the other.
+A card is dealt with the kit's arrival, which swells about a tenth past its size as it lands. With
+one card, or at the standard text, there is room round it. With two cards at 200% text the columns
+fill the grid, and the second card's swell reaches 2 px past the grid's edge for a few frames.
+
+**Measured, not inferred:** the page itself sampled the grid on every frame through the lesson's
+first two turns at 200% text, 360 by 780, in a headless browser on the PC. One card: never past.
+Two cards: 2 px past at its worst.
+
+**Why the clean audits since L5 had not seen it.** The check is from L5, and so is the deal. It
+needs two cards on the audit's first turn, which Easy draws one time in six, and the audit's reading
+taken in the third of a second the arrival lasts. Which earlier runs drew two cards is not recorded. **The
+audit's game is not seeded, so what it measures on this screen differs from run to run**; that is
+left as it is, and said here.
+
+**Fixed:** the grid scrolls down and never sideways. The swell still reaches 2 px past the edge and
+is cut off there for those frames; a finger can no longer move the cards sideways. The same
+sampling after the change reads the grid as one that does not scroll sideways.
+
+**Product, not instrument:** the audit's reading was right.
+
+## 116. How to play names six differences between the difficulties; the engine has more, and some are said nowhere in the app — OPEN, the designer's
+
+**Found 2 October 2026**, while the card of the main differences was built (`docs/LOOK_PLAN.md`
+§19). The card shows the six that How to play's section 10 names. Before heading it, every place
+the engine reads the difficulty was read.
+
+**The six section 10 names:** Action Points a turn, how long infections keep coming, how many cards
+a turn can bring, how many antibodies a store holds, where a worm starts, and what gives memory.
+
+**What else the engine does differently,** each read from `packages/engine/src`:
+
+| | Easy | Normal | Hard | Said in How to play? |
+|---|---|---|---|---|
+| The Killer T-Cell's range | 3 | 2 | 2 | Yes, on the cell |
+| Using memory of a disease | free | free | 1 Action Point | Yes, section 8 |
+| A bacterium divides on a roll of | 1 or 2 | 1 to 3 | always, and a second on 1 to 3 | Not by difficulty |
+| Antibodies made at once | 1 to 3, the more reached sooner | 1 to 3 | 1, or 2 with the Helper T-Cell | Not by difficulty |
+| Four made of one class brings one more each time after | yes | no | no | Not by difficulty |
+| Doses of antivenom in stock | 2 | 1 | 0 | Not by difficulty |
+| Chance that Pathogen X is in the game | 2 in 10 | 6 in 10 | certain | Not by difficulty |
+| Pathogens hop along the lymph | no | no | yes | Not by difficulty |
+| A hurt organ regrows | yes | yes | no: only its penalty lifts | Not by difficulty |
+
+"Not by difficulty" means that no sentence of How to play that names Easy, Normal or Hard says it.
+Five sentences name a difficulty: the window, the Action Points, the Killer T-Cell's range, and two
+on memory. **Not checked:** the printed rulebook, quick reference and study packet, and whether
+How to play says any of these without naming a difficulty.
+
+**Why it is filed and not fixed.** What a player is told about the rules, and where, is the
+designer's. The card is headed *The main differences* so that it does not claim to be all of them.
+Section 10 begins "What changes:" and lists six.
+
+**For Kartik:** whether any of these belongs among the main differences, on the card and in
+section 10; and whether Hard's description on the difficulty screen, "Faster spread, tighter caps",
+should say more.
+
+## 117. At 200% zoom a long disease name in the log ran past its sheet, and the result's log scrolled sideways — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's run on the card of the main differences, in a
+screen that card does not touch: *"result, what happened @200% page zoom: scrolls sideways inside
+itself: 156 > 148"*.
+
+**What was wrong.** A line of the log is a row: the turn's tag, then the line's words. A part of a
+row is never narrower than its longest word unless it is told it may be, and the words were not
+told. At 200% zoom the screen is 180 px wide and a line's words have about 84 px. A long disease
+name in bold is wider than that, so the line ran past the sheet, and the result's log, which
+scrolls down, could be pulled sideways. The same component is the game's Messages.
+
+**Why the audits before had not seen it.** The log shows a game's last eight messages, and which
+diseases those name is the dice's. Of ten games idled to their result on the same build, at 180 px
+wide, one overflowed as played, by the audit's own 8 px, and nine did not. **Shown by putting a
+long name into a line** of a game that had not overflowed: before the change the line's right edge
+was 2 px past the sheet's; after it, inside.
+
+**Fixed:** a line's words may break where they must.
+
+**The third time in one day** that what the audit finds on a screen has depended on what its game
+happened to deal (#115, and a row's several targets not reached at one zoom). The audit's game is
+not seeded. Whether to seed it, as the measuring page's game is, is his to weigh: a seeded walk
+measures the same screens every time and would have missed both of these, and an unseeded one
+finds them only some of the time.

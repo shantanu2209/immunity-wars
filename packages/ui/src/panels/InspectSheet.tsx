@@ -120,7 +120,6 @@ export function unavailableText(u: Unavailable): string {
 }
 
 export function InspectSheet({
-  hint,
   info,
   selectedCell,
   disabled = false,
@@ -146,17 +145,12 @@ export function InspectSheet({
   /** CP3: the resident row selects the organ's resident, exactly like a cell row. */
   onSelectResident?: (organ: string) => void;
   selectedResident?: string | null;
-  /** A first-encounter hint for the invader here, rendered inside the sheet rather than over
-   *  the board. The sheet is already laid out and already audited; a floating callout would
-   *  need placing against board geometry and re-placing at 200% text. */
-  hint?: ReactElement | null;
 }): ReactElement {
   return (
     // IN THE MIDDLE, not over the board (piece 5, docs/for-P2.7.md §19): what stands on a tapped node
     // shows below the play area, so the board stays in view, and the floating close returns to the
     // actions.
     <div data-inspect-sheet="" data-middle-view="node" style={SAY.body}>
-      {hint}
       {info.invaders.map((iv, i) => (
         <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
           {/* The same picture the board draws it with: its kind, in its antigen class's colour. */}

@@ -19,6 +19,7 @@
  * - Input is disabled during a burst; control enablement reads only the authoritative view.
  */
 import { residentSeat, type Seat } from '@immunity-wars/protocol';
+import type { Lesson } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 import {
   useEffect,
@@ -69,8 +70,6 @@ import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
 import { SAY, TONE, pieceArt } from '../panels/onCard';
 import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
-import { CoachLine } from '../panels/CoachLine';
-import { coachStep } from './coach';
 import {
   ActionsView,
   AdvanceButton,
@@ -84,20 +83,6 @@ import {
   type MiddleTab,
 } from './Frame';
 import { InspectSheet } from '../panels/InspectSheet';
-import { HintLine } from '../panels/HintLine';
-import {
-  ANTIBODY_SUBJECT,
-  RESIDENT_SUBJECT,
-  cellSubject,
-  contact,
-  dismiss,
-  hintKey,
-  hintPlace,
-  initialHintState,
-  invaderSubject,
-  type HintState,
-  type HintSubject,
-} from '../hints/controller';
 import { PathogenCard, type PathogenCardSubject } from '../panels/PathogenCard';
 import { CellCard, type CellCardSubject } from '../panels/CellCard';
 import { unavailableText } from '../panels/InspectSheet';
@@ -106,6 +91,17 @@ import { planningModel } from './planning';
 import { invaderNowLine } from '../panels/invaderNow';
 import { cellDisplayName, residentDisplayName } from '../names';
 import { TableView } from '../panels/TableView';
+import {
+  GUIDE_START,
+  afterAccepted,
+  afterTold,
+  guideBeat,
+  lessonOver,
+  progress,
+  type GuidePos,
+  type GuideStage,
+} from '../guide/model';
+import { Spotlight } from '../guide/Spotlight';
 import { TableMessages, sayText, type TableLine } from '../panels/TableMessages';
 import { refusalText } from '../together/model';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
@@ -185,7 +181,7 @@ export interface PlayControlsCtx {
 
 export function PlayScreen({
   session,
-  coach = false,
+  guide = null,
   skipBursts = false,
   onCheck,
   onFrame,
@@ -193,8 +189,6 @@ export function PlayScreen({
   onTransition,
   onGameEnd,
   renderControls,
-  hintsSeen = [],
-  onHintsSeen,
   table = null,
   onAssignSeat = null,
   tableRefusal = null,
@@ -202,6 +196,13 @@ export function PlayScreen({
   onSay = null,
 }: {
   session: PlaySessionLike;
+  /**
+   * THE GUIDED GAME (stage L6, `guide/model.ts`): the lesson this game is, or null for every
+   * other game. The screen leads the player through it one lit control at a time, and tells the
+   * shell when it is over: finished, left by the player, or parted from by the game. The shell
+   * made the game for the lesson and ends its rails; this screen holds neither.
+   */
+  guide?: { lesson: Lesson; onEnd: (how: 'finished' | 'left' | 'parted') => void } | null;
   /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
   onAssignSeat?: ((seat: Seat, to: number) => void) | null;
   /** The room's last refusal of something done at the table (a handover), said in the toast. */
@@ -218,18 +219,6 @@ export function PlayScreen({
    * captain and what to call people (`table.ts`); nothing about the rules.
    */
   table?: Table | null;
-  /**
-   * FIRST-ENCOUNTER HINTS. The seen set is the shell's to persist — this screen decides WHEN a
-   * hint fires and never touches storage, the same division as everywhere else here.
-   * Omitting both props turns hints off entirely, which is what the dev shell does.
-   */
-  hintsSeen?: readonly HintSubject[];
-  onHintsSeen?: (seen: readonly HintSubject[]) => void;
-  /**
-   * THE COACH (piece 8, §20): on for a first game only. The shell decides, because whether this
-   * device has played before is a preference, and the play screen holds no preferences.
-   */
-  coach?: boolean;
   /** Ignore bursts, render authoritative views only — the reconnection rehearsal. */
   skipBursts?: boolean;
   /** Tail-assertion and skip reports; both shells receive them, the dev shell displays them. */
@@ -303,9 +292,6 @@ export function PlayScreen({
   const navState = useNavState();
   // THE TOAST: a greyed button's reason, said over the play area and gone (refusals ride it too).
   const [said, setSaid] = useState<string | null>(null);
-  // The coach's own state: the step the player has waved away, and whether they ended it.
-  const [coachDone, setCoachDone] = useState<string | null>(null);
-  const [coachOff, setCoachOff] = useState(false);
 
   // THE ARRIVALS STAGE (piece 6, §20): this draw's cards, the turn's event, and what the spread
   // did, shown as a stage of the frame rather than a dialog over it. Null when no draw is waiting
@@ -509,10 +495,35 @@ export function PlayScreen({
     setArrivals({ list: arrivals, crisis: revealCrisis(g, effectChips(authView)) });
   }, [authView]);
 
+  // THE GUIDED GAME's place in its lesson. A ref beside the state, because an action is answered
+  // after the render that sent it, and must move the place the player is at THEN.
+  const [guidePos, setGuidePos] = useState<GuidePos>(GUIDE_START);
+  const guidePosRef = useRef(guidePos);
+  guidePosRef.current = guidePos;
+  const guideRef = useRef(guide);
+  guideRef.current = guide;
+  const moveGuide = (pos: GuidePos): void => {
+    guidePosRef.current = pos;
+    setGuidePos(pos);
+  };
+
   const send = (action: Record<string, unknown>): void => {
     setLastError(null);
+    // The game as it stands BEFORE the action: a step names a disease, and the invader carrying
+    // it may be gone once the action is done.
+    const before = session.getView();
     void session.sendAction(action).then((r) => {
-      if (!r.ok) setLastError(r.error ?? null);
+      if (!r.ok) {
+        setLastError(r.error ?? null);
+        return;
+      }
+      const g = guideRef.current;
+      if (!g) return;
+      const move = afterAccepted(g.lesson, guidePosRef.current, before, action);
+      if (move.kind === 'to') moveGuide(move.pos);
+      // The engine accepted something the lesson did not ask for. The guide never points at a step
+      // the game is no longer at: it lets go.
+      else if (move.kind === 'parted') g.onEnd('parted');
     });
   };
 
@@ -526,7 +537,9 @@ export function PlayScreen({
         game: authView.game,
         playing,
         dialogPending: dialogs.hasPending(),
-        covered: navState.depth > 0,
+        // The lesson's last word is up: the next turn is the player's own, on the page's dice, and
+        // is not drawn until the shell has ended the rails.
+        covered: navState.depth > 0 || (guide !== null && lessonOver(guide.lesson, guidePos)),
         sentForTurn: sentDrawRef.current,
         mayDraw: p.captain,
       })
@@ -535,7 +548,7 @@ export function PlayScreen({
     sentDrawRef.current = Number(authView.game['turn']);
     send({ action: 'draw' });
     // `send` is rebuilt every render and does not decide anything; what decides is listed.
-  }, [authView, playing, dialogs.current, navState.depth, p.captain]);
+  }, [authView, playing, dialogs.current, navState.depth, p.captain, guide, guidePos]);
 
   const tapCell = (cell: string): void => {
     const from = performance.now();
@@ -612,56 +625,7 @@ export function PlayScreen({
     }));
   const selectedFamily = authView.selection.family;
 
-  /**
-   * FIRST CONTACT, derived from what is SELECTED rather than intercepted at each tap handler.
-   *
-   * The two are the same moment — a tap sets the selection — and deriving it means the four tap
-   * paths (the strip, the board, the sheet, deselection) cannot drift apart, and a fifth added
-   * later is covered without anyone remembering. `null` is a real answer: it means the player
-   * moved to something with no hint, which CONSUMES whatever was showing (see the controller).
-   *
-   * Order matters where two are true at once. The sheet is checked first because opening it is
-   * the more recent tap, and most recent wins (ruling 3).
-   */
-  const hintSubject: HintSubject | null = inspect?.invaders?.[0]
-    ? invaderSubject(inspect.invaders[0].type)
-    : selectedCell
-      ? cellSubject(selectedCell)
-      : selectedResident
-        ? RESIDENT_SUBJECT
-        : selectedFamily
-          ? ANTIBODY_SUBJECT
-          : null;
   const turnNow = Number(game['turn'] ?? 0);
-  const hintsRef = useRef<HintState>(initialHintState(hintsSeen, turnNow));
-  const [hintShown, setHintShown] = useState<HintSubject | null>(null);
-  const applyHints = (next: HintState): void => {
-    const grew = next.seen.length !== hintsRef.current.seen.length;
-    hintsRef.current = next;
-    setHintShown(next.shown);
-    // Persisting is the shell's, and only when the set actually grew: a write per render would
-    // be a write per frame of a spread.
-    if (grew) onHintsSeen?.(next.seen);
-  };
-  useEffect(() => {
-    applyHints(contact(hintsRef.current, hintSubject, turnNow));
-    // The inputs are the subject and the turn, deliberately. `applyHints` reads the current
-    // state through a ref rather than closing over it, so re-running on anything else would
-    // re-contact the same subject and cost a spurious consumption.
-  }, [hintSubject, turnNow]);
-  // HINTS ARE ON ONLY WHEN THE SHELL TAKES WHAT HAS BEEN SEEN. The note on the two props said that
-  // leaving both out turned hints off. It did not: with nothing given the list of what had been
-  // seen was empty, so every hint showed, to a shell that could not remember any of them. Found
-  // on 1 October 2026 by a walk whose list of buttons still had a hint's in it, after the shell had
-  // been told to switch them off (docs/LOOK_PLAN.md §14).
-  const hintsOn = onHintsSeen !== undefined;
-  const hintFor = (place: 'pieces' | 'inspect' | 'antibodies'): ReactElement | null =>
-    hintsOn && hintShown && hintPlace(hintShown) === place ? (
-      <HintLine
-        text={t(hintKey(hintShown))}
-        onDismiss={() => applyHints(dismiss(hintsRef.current))}
-      />
-    ) : null;
   const rawDetail = authView.scoped.productionDetail as Record<string, unknown> | null;
   const familyDetail: FamilyDetail | null = rawDetail
     ? {
@@ -1138,47 +1102,27 @@ export function PlayScreen({
       setDrawer(null);
   }, [drawer, mayAntibodies, mayBody]);
 
-  /**
-   * THE COACH'S LINE (piece 8, §20), or null. Everything it reads is already on this render: the
-   * stage the frame is showing, the turn, the points left, whether a piece is selected, and how
-   * many actions `offered.ts` is offering. It is never told a rule of its own.
-   */
-  // ONE TEACHER AT A TIME (§21, the same rule as the prompt line): a first-encounter hint is
-  // about the thing just tapped and is the more specific of the two, so the coach stands down
-  // while one is on screen. Seen on the build: the hint over the top of the board and the coach
-  // over the bottom of it, together covering most of the board.
-  const coachNow =
-    coach && !coachOff && !playing && hintShown === null
-      ? coachStep({
-          stage:
-            dialogs.current !== null
-              ? 'waiting'
-              : arrivalsNow !== null
-                ? 'arrivals'
-                : plan !== null
-                  ? 'planning'
-                  : playing
-                    ? 'spread'
-                    : // Before the draw the player is not being asked for anything either: the app
-                      // is about to send it (§12 ruling 2), and the board is not theirs to act on.
-                      phase === 'command'
-                      ? 'command'
-                      : 'waiting',
-          turn: Number(game['turn'] ?? 0),
-          ap: Number(game['ap'] ?? 0),
-          selected: selectedCell !== null || selectedResident !== null,
-          offeredCount: rows.length + moveButtons.length,
-          canProduce: Object.keys(produceByFamily).length > 0,
-        })
-      : null;
-  const coachLine =
-    coachNow !== null && coachNow.id !== coachDone ? (
-      <CoachLine
-        text={t(coachNow.key)}
-        onNext={() => setCoachDone(coachNow.id)}
-        onStop={() => setCoachOff(true)}
-      />
-    ) : null;
+  // THE GUIDED GAME'S BEAT: what to say and what to light, from where the player is in the lesson
+  // and what this screen is showing. Null for every other game, and for a moment nothing is asked.
+  const guideStage: GuideStage =
+    dialogs.current !== null
+      ? 'waiting'
+      : playing
+        ? 'spread'
+        : arrivalsNow !== null
+          ? 'arrivals'
+          : plan !== null
+            ? 'planning'
+            : phase === 'command'
+              ? 'command'
+              : 'waiting';
+  const beat = guide !== null ? guideBeat(guide.lesson, guidePos, guideStage, authView) : null;
+  // A ring on the board that is the body's own, not a piece's, shows only with nothing in hand.
+  const putDown =
+    beat?.nothingInHand === true && (selectedCell !== null || selectedResident !== null);
+  useEffect(() => {
+    if (putDown) deselect();
+  }, [putDown]);
 
   /** WHAT THE MIDDLE SHOWS (§19), the first that applies: a spread, a view opened over the stage's
    *  own content, then the stage's own content. */
@@ -1255,7 +1199,6 @@ export function PlayScreen({
       return (
         <MiddleCard>
           <InspectSheet
-            hint={hintFor('inspect')}
             info={inspect}
             selectedCell={selectedCell}
             disabled={playing}
@@ -1372,7 +1315,6 @@ export function PlayScreen({
               onProduce={sendOffer}
               onSay={setSaid}
             />
-            {hintFor('antibodies')}
           </div>
         </MiddleCard>
       );
@@ -1421,9 +1363,7 @@ export function PlayScreen({
             : null
         }
         cardLabel={selectedCell ? t('card.about', { name: cellDisplayName(selectedCell) }) : null}
-        // ONE INSTRUCTION AT A TIME (§21 C): the coach and this line were saying the same
-        // thing, in 90px of a 126px middle.
-        prompt={coachLine !== null ? null : message}
+        prompt={message}
         promptTone={messageTone}
         undo={authView.undo}
         inCommand={phase === 'command'}
@@ -1517,7 +1457,6 @@ export function PlayScreen({
         }
       />
       <PlayArea
-        coach={coachLine}
         stage={
           arrivalsNow !== null
             ? 'arrivals'
@@ -1574,15 +1513,6 @@ export function PlayScreen({
             watching={playing}
             onTap={playing ? undefined : handleBoardTap}
           />
-          {hintFor('pieces') !== null ? (
-            // A piece's first-encounter hint, over the top of the board (piece 3, §15).
-            <div
-              data-hint-over-board=""
-              style={{ position: 'absolute', left: 0, right: 0, top: 0, zIndex: 3 }}
-            >
-              {hintFor('pieces')}
-            </div>
-          ) : null}
         </div>
         {toastText !== null ? <Toast text={toastText} /> : null}
       </PlayArea>
@@ -1735,6 +1665,22 @@ export function PlayScreen({
           data-tap-advance="1"
           style={{ position: 'fixed', inset: 0, zIndex: 25, cursor: 'pointer' }}
           onPointerDown={advanceFrame}
+        />
+      ) : null}
+      {guide !== null && beat !== null ? (
+        <Spotlight
+          beatId={beat.id}
+          text={t(beat.sayKey)}
+          stops={beat.stops}
+          tell={beat.tell}
+          last={beat.last}
+          watch={guideStage === 'spread'}
+          count={t('guide.count', progress(guide.lesson, guidePos))}
+          onNext={() => {
+            if (beat.last) guide.onEnd('finished');
+            else moveGuide(afterTold(guidePos));
+          }}
+          onLeave={() => guide.onEnd('left')}
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />

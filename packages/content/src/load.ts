@@ -40,6 +40,7 @@ import type {
   FamilyKey,
   Flags,
   FrameDef,
+  Lesson,
   InvaderLabel,
   InvaderType,
   OrganDef,
@@ -53,7 +54,7 @@ import type {
   RouteKey,
 } from './types.js';
 
-import { BoardPackS, RulesPackS } from './schema.js';
+import { BoardPackS, GuidePackS, RulesPackS } from './schema.js';
 
 import engineI18nEnJson from './i18n/en/engine.json';
 import uiI18nEnJson from './i18n/en/ui.json';
@@ -74,6 +75,7 @@ import whyJson from './diseases/why.json';
 import derivedJson from './rules/derived.json';
 import cellsJson from './labels/cells.json';
 import labelsJson from './labels/labels.json';
+import lessonJson from './guide/lesson.json';
 
 /**
  * Assembled, validated, and returned UNCHANGED.
@@ -116,7 +118,14 @@ function parseBoard(): Record<string, unknown> {
   return raw;
 }
 
-const pack = { ...parseRules(), ...parseBoard() };
+/** The guided game's lesson: validated against the cards and the board, returned as it is. */
+function parseGuide(): Record<string, unknown> {
+  const raw: Record<string, unknown> = { ...lessonJson };
+  GuidePackS.parse(raw);
+  return raw;
+}
+
+const pack = { ...parseRules(), ...parseBoard(), ...parseGuide() };
 
 /**
  * The pack stamp. **Every network message carries `RULES_VERSION`** (P3.2: stamped by the
@@ -285,6 +294,10 @@ export const ANATOMY_POS = pack['ANATOMY_POS'] as Record<OrganKey, Point>;
 /** Entry chips on the outline at the point of entry, and the bloodstream at the great vessels. */
 export const ANATOMY_ENTRY = pack['ANATOMY_ENTRY'] as Record<RouteKey, Point>;
 export const ANATOMY_HUB = pack['ANATOMY_HUB'] as Point;
+
+/* --- the guided game --- */
+/** The lesson's turns, written (`docs/LOOK_PLAN.md` §19): what arrives, and what the player is led to. */
+export const LESSON = pack['LESSON'] as Lesson;
 
 /* --- regions (the phone-size zoom targets) --- */
 export const REGIONS = pack['REGIONS'] as Record<RegionKey, Region>;

@@ -134,6 +134,65 @@ export interface FrameDef {
 }
 
 /**
+ * THE GUIDED GAME'S LESSON (`guide/lesson.json`; `docs/LOOK_PLAN.md` §19). One step is one action
+ * the player is led to, named the way a person would say it: a disease by its name, a place by
+ * its route or its organ. Whoever plays it turns a name into the game's own id for that invader.
+ */
+export type LessonStep =
+  | {
+      readonly id: string;
+      readonly do: 'produce';
+      readonly family: FamilyKey;
+      readonly for: string;
+    }
+  | {
+      readonly id: string;
+      readonly do: 'coat' | 'neutralise' | 'engulf' | 'snipe' | 'nk' | 'antivenom' | 'memory';
+      readonly disease: string;
+    }
+  | {
+      readonly id: string;
+      readonly do: 'move';
+      readonly cell: CellKey;
+      readonly route?: RouteKey;
+      readonly organ?: OrganKey;
+      readonly step: number;
+    }
+  | { readonly id: string; readonly do: 'recall'; readonly cell: CellKey }
+  | { readonly id: string; readonly do: 'net' }
+  /** Said, not done: it asks the engine for nothing. `cell` is what it points at, if anything. */
+  | { readonly id: string; readonly do: 'tell'; readonly cell?: CellKey }
+  | {
+      readonly id: string;
+      readonly do: 'strike';
+      readonly cell: 'macrophage' | 'eosinophil';
+      readonly disease: string;
+    }
+  | { readonly id: string; readonly do: 'resMove'; readonly organ: OrganKey; readonly step: number }
+  | {
+      readonly id: string;
+      readonly do: 'resEngulf';
+      readonly organ: OrganKey;
+      readonly disease: string;
+    }
+  | { readonly id: string; readonly do: 'resRecall'; readonly organ: OrganKey };
+
+export interface LessonTurn {
+  /** The diseases that arrive this turn, by name: what the engine is handed as `written`. */
+  readonly arrive: readonly string[];
+  readonly steps: readonly LessonStep[];
+}
+
+export interface Lesson {
+  /** The dice: the seed that makes the engine's random numbers fall the lesson's way. */
+  readonly seed: number;
+  readonly difficulty: Difficulty;
+  /** The crisis the lesson is written round, and its turn. */
+  readonly crisis: { readonly turn: number; readonly event: string };
+  readonly turns: readonly LessonTurn[];
+}
+
+/**
  * A cell card's fields (P2.5 item 12, block c) — every one optional; the card renders nothing
  * for a missing field. Kartik's science.
  */

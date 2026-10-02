@@ -98,6 +98,18 @@ export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
+export {
+  DIFFICULTIES,
+  MEMORY_FROM,
+  WORM_START,
+  cardsATurn,
+  differenceRows,
+  differenceSummary,
+  type DifferenceRow,
+  type DifficultyKey,
+  type MemoryFrom,
+  type WormStart,
+} from './screens/difficultyFacts';
 export { TogetherScreen } from './screens/TogetherScreen';
 export { LobbyScreen } from './screens/LobbyScreen';
 export { ConnectionLost } from './panels/ConnectionLost';
@@ -149,6 +161,23 @@ export {
 export { diseaseLabel, CLONE_TARGET } from './play/offered';
 export { LogPanel, RichText, type LogLine } from './panels/LogPanel';
 export { engineText, engineLogText, type LogText } from './engineText';
+// THE GUIDED GAME (stage L6): the rules of where a player is in the lesson, for the tests that hold
+// them to the engine. The light itself is the play screen's own, and is not offered here.
+export {
+  GUIDE_START,
+  afterAccepted,
+  afterTold,
+  guideBeat,
+  lessonOver,
+  progress as guideProgress,
+  sameAction,
+  stepAt,
+  stopsFor,
+  type GuideBeat,
+  type GuideMove,
+  type GuidePos,
+  type GuideStage,
+} from './guide/model';
 
 // THE CLAY KIT (stage L3, docs/LOOK_PLAN.md §13) is NOT exported from here. It has its own entry,
 // `@immunity-wars/ui/kit`, so that only the kit page pulls it in: exported from this file it rode

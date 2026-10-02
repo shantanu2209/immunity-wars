@@ -1,0 +1,95 @@
+{
+  "LESSON": {
+    "seed": 37,
+    "difficulty": "training",
+    "crisis": { "turn": 4, "event": "passiveAntibodies" },
+    "turns": [
+      {
+        "arrive": ["Whooping cough"],
+        "steps": [
+          { "id": "t1.produce", "do": "produce", "family": "EXB", "for": "Whooping cough" },
+          { "id": "t1.coat", "do": "coat", "disease": "Whooping cough" },
+          { "id": "t1.walk1", "do": "move", "cell": "macrophage", "route": "nose", "step": 1 },
+          { "id": "t1.walk2", "do": "move", "cell": "macrophage", "route": "nose", "step": 2 },
+          { "id": "t1.walk3", "do": "move", "cell": "macrophage", "route": "nose", "step": 3 },
+          { "id": "t1.walk4", "do": "move", "cell": "macrophage", "route": "nose", "step": 4 }
+        ]
+      },
+      {
+        "arrive": ["Hepatitis B", "Hepatitis C"],
+        "steps": [
+          { "id": "t2.engulf", "do": "engulf", "disease": "Whooping cough" },
+          { "id": "t2.memory", "do": "tell" },
+          { "id": "t2.helper", "do": "tell", "cell": "helper" },
+          { "id": "t2.snipe", "do": "snipe", "disease": "Hepatitis B" },
+          { "id": "t2.nkMove", "do": "move", "cell": "nk", "route": "blood", "step": 2 },
+          { "id": "t2.nkStrike", "do": "nk", "disease": "Hepatitis C" },
+          { "id": "t2.recall", "do": "recall", "cell": "macrophage" }
+        ]
+      },
+      {
+        "arrive": ["Influenza", "Candida"],
+        "steps": [
+          { "id": "t3.produce", "do": "produce", "family": "ENV", "for": "Influenza" },
+          { "id": "t3.neutralise", "do": "neutralise", "disease": "Influenza" },
+          { "id": "t3.run1", "do": "move", "cell": "neutrophil", "route": "gut", "step": 2 },
+          { "id": "t3.run2", "do": "move", "cell": "neutrophil", "route": "gut", "step": 4 },
+          { "id": "t3.run3", "do": "move", "cell": "neutrophil", "route": "gut", "step": 5 },
+          { "id": "t3.net", "do": "net" }
+        ]
+      },
+      {
+        "arrive": ["Endocarditis", "Amoebiasis"],
+        "steps": [
+          { "id": "t4.coatBacterium", "do": "coat", "disease": "Endocarditis" },
+          { "id": "t4.coatParasite", "do": "coat", "disease": "Amoebiasis" },
+          { "id": "t4.walk1", "do": "move", "cell": "macrophage", "route": "gut", "step": 1 },
+          { "id": "t4.walk2", "do": "move", "cell": "macrophage", "route": "gut", "step": 2 },
+          { "id": "t4.walk3", "do": "move", "cell": "macrophage", "route": "gut", "step": 3 },
+          { "id": "t4.walk4", "do": "move", "cell": "macrophage", "route": "gut", "step": 4 }
+        ]
+      },
+      {
+        "arrive": ["Diphtheria", "Snake venom"],
+        "steps": [
+          { "id": "t5.strike", "do": "strike", "cell": "macrophage", "disease": "Amoebiasis" },
+          { "id": "t5.engulf", "do": "engulf", "disease": "Amoebiasis" },
+          { "id": "t5.antitoxin", "do": "neutralise", "disease": "Diphtheria" },
+          { "id": "t5.antivenom", "do": "antivenom", "disease": "Snake venom" }
+        ]
+      },
+      {
+        "arrive": ["Roundworm", "Whooping cough"],
+        "steps": [
+          { "id": "t6.memory", "do": "memory", "disease": "Whooping cough" },
+          {
+            "id": "t6.eosinophil",
+            "do": "move",
+            "cell": "eosinophil",
+            "organ": "liver",
+            "step": 3
+          },
+          { "id": "t6.coat", "do": "coat", "disease": "Roundworm" },
+          { "id": "t6.strike1", "do": "strike", "cell": "eosinophil", "disease": "Roundworm" },
+          { "id": "t6.strike2", "do": "strike", "cell": "eosinophil", "disease": "Roundworm" },
+          { "id": "t6.degranulate", "do": "tell", "cell": "eosinophil" }
+        ]
+      },
+      {
+        "arrive": ["Malaria"],
+        "steps": [
+          { "id": "t7.residentOut", "do": "resMove", "organ": "heart", "step": 1 },
+          {
+            "id": "t7.residentEngulf",
+            "do": "resEngulf",
+            "organ": "heart",
+            "disease": "Endocarditis"
+          },
+          { "id": "t7.residentHome", "do": "resRecall", "organ": "heart" },
+          { "id": "t7.neutralise", "do": "neutralise", "disease": "Malaria" },
+          { "id": "t7.neglect", "do": "tell" }
+        ]
+      }
+    ]
+  }
+}
