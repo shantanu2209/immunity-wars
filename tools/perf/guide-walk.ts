@@ -22,11 +22,11 @@
  * A walk that could not run refuses: it never passes by default.
  */
 import { execSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
+import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { LESSON } from '@immunity-wars/content';
@@ -101,6 +101,22 @@ const click = (sel: string): string => `document.querySelector(${JSON.stringify(
 const TAP_ON = `document.querySelector('[data-tap-advance]')?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))`;
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * Every file of a build, by the path it is served at. The server answers these and nothing else, so
+ * no part of a request is ever joined into a path on disk: the same way `update-check.ts` serves
+ * its builds, and for the same reason (CodeQL's js/path-injection, which a check that the joined
+ * path stays inside the folder did not satisfy, here either: four alerts on this file's first
+ * pull request).
+ */
+function filesOf(dir: string): Map<string, string> {
+  const files = new Map<string, string>();
+  for (const rel of readdirSync(dir, { recursive: true, encoding: 'utf8' })) {
+    const file = join(dir, rel);
+    if (statSync(file).isFile()) files.set(`/${rel.split(sep).join('/')}`, file);
+  }
+  return files;
+}
+
 let temporary: string | null = null;
 let server: Server | null = null;
 try {
@@ -116,15 +132,11 @@ try {
       env,
     });
     if (!existsSync(join(dir, 'index.html'))) refuse(`the build made no index.html in ${dir}`);
+    const files = filesOf(dir);
     server = createServer((req, res) => {
-      const path = decodeURIComponent((req.url ?? '/').split('?')[0] ?? '/');
-      let file = normalize(join(dir, path));
-      if (file !== dir && !file.startsWith(dir + sep)) {
-        res.writeHead(404).end();
-        return;
-      }
-      if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
-      if (!existsSync(file)) {
+      const path = (req.url ?? '/').split('?')[0] ?? '/';
+      const file = files.get(path === '/' ? '/index.html' : path);
+      if (file === undefined) {
         res.writeHead(404).end();
         return;
       }
