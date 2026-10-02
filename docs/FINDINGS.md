@@ -6025,9 +6025,20 @@ of 10,002 were played, and the engine was right each time.
 finishes, and the job's limit was 45. The workflow's own header said the leg took about 14. The
 limit is now 120 minutes: it is there for a job that has hung.
 
-**The tier, run in full on the PC with the invariant fixed: under way when this was committed.**
-2,000 games and 280,510 states without a violation, where it had stopped at 4. What it finds by
-its end is recorded here when it ends.
+**The tier's 10,002 games, played on the PC with the invariant fixed: no violation. In two runs,
+not one.**
+
+| Run | Games | Found |
+|---|---|---|
+| `tests/property/full-run.ts`, stopped at the 60-minute limit Claude had given it, not by a failure | 7,000 reported: all 3,334 on Easy, all 3,334 on Normal, the first 332 on Hard; 824,805 states | No violation, where it had stopped at 4 |
+| The 3,334 games on Hard by themselves, with the tier's own seeds and options, from a script that is not kept | 3,334; 220,876 states, in 21 minutes | No violation. Every one of the ten invariants had something to look at: the fewest, `memory-on-kill`, 10,628 times |
+
+- **What the two runs are not.** The tier's own last lines, which say how often each invariant was
+  checked over the whole run and fail it if one checked nothing, were never printed: the first run
+  was stopped before them. Those counts are known for Hard alone.
+- **On this PC the tier is slower than on GitHub's runner:** an hour for its first 7,000 games,
+  with other work running beside it for part of that. Its own run on the nightly, with the new
+  limit, is what shows it green there, and that has not happened yet.
 
 **What this says about the instrument, plainly.** For the sixteen nights to 2 October the
 10,000-game tier finished five times, the last of them on 29 September. The queue's sixteen
