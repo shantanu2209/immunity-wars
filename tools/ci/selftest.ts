@@ -2091,6 +2091,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'the panel barely moved for a whole Action Point',
   },
   {
+    id: 'balance-normal-brain-strength',
+    why: "FINDINGS #121: on Normal the fast panel control asserts the STRENGTH of the Brain at integrity 1, since queue Q15's deck left its verdict a coin flip at that scale. A strength assertion must still fail when the change is not there: here the mutant keeps the Brain's two points.",
+    file: 'tests/balance/src/metrics-control.test.ts',
+    mutate: (t) =>
+      t.replace(
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:1, branch:3,\',',
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:2,  branch:3,\',',
+      ),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
+    expect: "the panel barely moved for half the Brain's integrity",
+  },
+  {
     id: 'turbo-outside-reads-hashed',
     why: "FINDINGS #108: the equivalence suite reads the rulebook document, the reachability report and the original engine from outside its package, and turbo's hash did not see them, so a changed rulebook replayed a cached green for the test that pins the why boxes to it.",
     file: 'tests/equivalence/turbo.json',

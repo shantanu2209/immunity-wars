@@ -5,8 +5,8 @@
   "sigma": 3,
   "loudSigma": 6,
   "rule": "Compare the MEAN of one arm of 20x100 games against these bands. FAIL when two or more metrics are past ±3 sd(arm), OR when any one is past ±6. sd(arm) is MEASURED from 24 independent arms — do not recompute it as sd(batch)/sqrt(batches) (src/panel.ts) — and is never allowed below sd(one game)/sqrt(gamesPerArm), the analytic floor a mean of that many independent games cannot go under (src/metrics.ts). trunkKillPct is a ratio of sums, not a mean of a per-game value, so it has no floor and keeps its measured sd.",
-  "engineRev": "11aba72",
-  "measuredAt": "2026-10-02T04:10:55.108Z",
+  "engineRev": "f3f0ce7",
+  "measuredAt": "2026-10-02T06:31:46.516Z",
   "difficulties": {
     "training": {
       "provenance": {
@@ -19,20 +19,20 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.4.0",
-        "rulesVersion": "4.1.2"
+        "packVersion": "1.5.0",
+        "rulesVersion": "4.2.0"
       },
       "arms": 24,
       "samplingFloor": {
         "floors": {
-          "avgTurnsSurvived": 0.07575167191355814,
-          "avgAntibodiesMade": 0.13238387398498677,
-          "avgOrgansDamaged": 0.025887533990398084
+          "avgTurnsSurvived": 0.0772768945391014,
+          "avgAntibodiesMade": 0.13084898113461194,
+          "avgOrgansDamaged": 0.0264772947406675
         },
         "perGameSd": {
-          "avgTurnsSurvived": 3.3877177561595513,
-          "avgAntibodiesMade": 5.920386827103928,
-          "avgOrgansDamaged": 1.1577257154473302
+          "avgTurnsSurvived": 3.4559277855902604,
+          "avgAntibodiesMade": 5.851744332071598,
+          "avgOrgansDamaged": 1.184100618008604
         },
         "games": 4000,
         "perArm": 2000,
@@ -42,63 +42,63 @@
       "bands": [
         {
           "metric": "avgTurnsSurvived",
-          "mean": 15.748604166666667,
-          "sdArm": 0.07575167191355814,
-          "sdMeasured": 0.0756046609971416,
-          "sdFloor": 0.07575167191355814,
+          "mean": 15.661833333333334,
+          "sdArm": 0.0772768945391014,
+          "sdMeasured": 0.07029884448717424,
+          "sdFloor": 0.0772768945391014,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 15.521349150925992,
-          "hi": 15.97585918240734,
-          "rsd": 0.004810056250819571
+          "lo": 15.43000264971603,
+          "hi": 15.893664016950638,
+          "rsd": 0.004934089955780064
         },
         {
           "metric": "trunkKillPct",
-          "mean": 0.8970280966863123,
-          "sdArm": 0.002989452940918654,
-          "sdMeasured": 0.002989452940918654,
+          "mean": 0.8932286630587777,
+          "sdArm": 0.002900694761119085,
+          "sdMeasured": 0.002900694761119085,
           "sdFloor": null,
           "floorApplied": false,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 0.8880597378635564,
-          "hi": 0.9059964555090683,
-          "rsd": 0.003332619069527379
+          "lo": 0.8845265787754204,
+          "hi": 0.901930747342135,
+          "rsd": 0.003247426869605738
         },
         {
           "metric": "avgAntibodiesMade",
-          "mean": 20.60764583333334,
-          "sdArm": 0.13238387398498677,
-          "sdMeasured": 0.11420704683644292,
-          "sdFloor": 0.13238387398498677,
+          "mean": 20.60616666666667,
+          "sdArm": 0.13084898113461194,
+          "sdMeasured": 0.12516429782200325,
+          "sdFloor": 0.13084898113461194,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 20.21049421137838,
-          "hi": 21.0047974552883,
-          "rsd": 0.006424017331026372
+          "lo": 20.213619723262834,
+          "hi": 20.998713610070507,
+          "rsd": 0.006349991400694545
         },
         {
           "metric": "avgOrgansDamaged",
-          "mean": 0.9891458333333335,
-          "sdArm": 0.03012383108562662,
-          "sdMeasured": 0.03012383108562662,
-          "sdFloor": 0.025887533990398084,
-          "floorApplied": false,
+          "mean": 1.0266875000000002,
+          "sdArm": 0.0264772947406675,
+          "sdMeasured": 0.025132610246969674,
+          "sdFloor": 0.0264772947406675,
+          "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 0.8987743400764536,
-          "hi": 1.0795173265902134,
-          "rsd": 0.030454388089683388
+          "lo": 0.9472556157779977,
+          "hi": 1.1061193842220027,
+          "rsd": 0.025789049482600593
         }
       ],
       "reportedNotGated": {
-        "winRateUnderReferenceBot": 0.5445,
+        "winRateUnderReferenceBot": 0.5199999999999999,
         "unfinishedGames": 0
       }
     },
@@ -113,20 +113,20 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.4.0",
-        "rulesVersion": "4.1.2"
+        "packVersion": "1.5.0",
+        "rulesVersion": "4.2.0"
       },
       "arms": 24,
       "samplingFloor": {
         "floors": {
-          "avgTurnsSurvived": 0.07138788606142564,
-          "avgAntibodiesMade": 0.10648675187943055,
-          "avgOrgansDamaged": 0.022099645185598597
+          "avgTurnsSurvived": 0.06893948891624495,
+          "avgAntibodiesMade": 0.10408436608740025,
+          "avgOrgansDamaged": 0.02267881350832821
         },
         "perGameSd": {
-          "avgTurnsSurvived": 3.1925633200671495,
-          "avgAntibodiesMade": 4.762232318111204,
-          "avgOrgansDamaged": 0.9883261782724884
+          "avgTurnsSurvived": 3.0830676710163405,
+          "avgAntibodiesMade": 4.654794359328016,
+          "avgOrgansDamaged": 1.0142273730732474
         },
         "games": 4000,
         "perArm": 2000,
@@ -136,63 +136,63 @@
       "bands": [
         {
           "metric": "avgTurnsSurvived",
-          "mean": 11.043041666666666,
-          "sdArm": 0.07138788606142564,
-          "sdMeasured": 0.06532825420215531,
-          "sdFloor": 0.07138788606142564,
+          "mean": 10.79047916666667,
+          "sdArm": 0.06893948891624495,
+          "sdMeasured": 0.06202602524723756,
+          "sdFloor": 0.06893948891624495,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 10.82887800848239,
-          "hi": 11.257205324850942,
-          "rsd": 0.0064645129680991256
+          "lo": 10.583660699917935,
+          "hi": 10.997297633415403,
+          "rsd": 0.00638891821683034
         },
         {
           "metric": "trunkKillPct",
-          "mean": 0.9681381570619406,
-          "sdArm": 0.0022027601931044936,
-          "sdMeasured": 0.0022027601931044936,
+          "mean": 0.9632373086147709,
+          "sdArm": 0.002052601424548008,
+          "sdMeasured": 0.002052601424548008,
           "sdFloor": null,
           "floorApplied": false,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 0.9615298764826271,
-          "hi": 0.9747464376412541,
-          "rsd": 0.0022752539779955835
+          "lo": 0.9570795043411269,
+          "hi": 0.9693951128884148,
+          "rsd": 0.002130940533750555
         },
         {
           "metric": "avgAntibodiesMade",
-          "mean": 19.476770833333337,
-          "sdArm": 0.10648675187943055,
-          "sdMeasured": 0.09470514645199012,
-          "sdFloor": 0.10648675187943055,
+          "mean": 19.180979166666667,
+          "sdArm": 0.10408436608740025,
+          "sdMeasured": 0.09762689392102265,
+          "sdFloor": 0.10408436608740025,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 19.157310577695046,
-          "hi": 19.796231088971627,
-          "rsd": 0.005467372019245859
+          "lo": 18.868726068404467,
+          "hi": 19.493232264928867,
+          "rsd": 0.005426436532931617
         },
         {
           "metric": "avgOrgansDamaged",
-          "mean": 2.0882916666666667,
-          "sdArm": 0.022099645185598597,
-          "sdMeasured": 0.02198760355620706,
-          "sdFloor": 0.022099645185598597,
+          "mean": 2.1217916666666667,
+          "sdArm": 0.02267881350832821,
+          "sdMeasured": 0.021311823961822497,
+          "sdFloor": 0.02267881350832821,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 2.021992731109871,
-          "hi": 2.1545906022234624,
-          "rsd": 0.010582642998750301
+          "lo": 2.053755226141682,
+          "hi": 2.1898281071916514,
+          "rsd": 0.01068852039746042
         }
       ],
       "reportedNotGated": {
-        "winRateUnderReferenceBot": 0.003,
+        "winRateUnderReferenceBot": 0.0015,
         "unfinishedGames": 0
       }
     },
@@ -207,20 +207,20 @@
         "seedIndexTo": 47999,
         "seedSchedule": "splitmix32(index) — NOT an arithmetic step; see FINDINGS #33",
         "packId": "immunity-wars-core",
-        "packVersion": "1.4.0",
-        "rulesVersion": "4.1.2"
+        "packVersion": "1.5.0",
+        "rulesVersion": "4.2.0"
       },
       "arms": 24,
       "samplingFloor": {
         "floors": {
-          "avgTurnsSurvived": 0.05232778198951295,
-          "avgAntibodiesMade": 0.0783684351104156,
-          "avgOrgansDamaged": 0.025237169585398934
+          "avgTurnsSurvived": 0.05146130528353655,
+          "avgAntibodiesMade": 0.07700398953041863,
+          "avgOrgansDamaged": 0.02545802236478086
         },
         "perGameSd": {
-          "avgTurnsSurvived": 2.340169552806803,
-          "avgAntibodiesMade": 3.5047429639434102,
-          "avgOrgansDamaged": 1.1286405350528441
+          "avgTurnsSurvived": 2.301419536497136,
+          "avgAntibodiesMade": 3.4437231025739634,
+          "avgOrgansDamaged": 1.138517371607199
         },
         "games": 4000,
         "perArm": 2000,
@@ -230,59 +230,59 @@
       "bands": [
         {
           "metric": "avgTurnsSurvived",
-          "mean": 8.846916666666667,
-          "sdArm": 0.05232778198951295,
-          "sdMeasured": 0.04077501010760596,
-          "sdFloor": 0.05232778198951295,
+          "mean": 8.630583333333336,
+          "sdArm": 0.05146130528353655,
+          "sdMeasured": 0.040192111130189,
+          "sdFloor": 0.05146130528353655,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 8.689933320698128,
-          "hi": 9.003900012635206,
-          "rsd": 0.0059148044410402435
+          "lo": 8.476199417482727,
+          "hi": 8.784967249183945,
+          "rsd": 0.005962668257286958
         },
         {
           "metric": "trunkKillPct",
-          "mean": 0.9677301133310915,
-          "sdArm": 0.0018043428330686508,
-          "sdMeasured": 0.0018043428330686508,
+          "mean": 0.9664715096431573,
+          "sdArm": 0.0017511242043791685,
+          "sdMeasured": 0.0017511242043791685,
           "sdFloor": null,
           "floorApplied": false,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 0.9623170848318855,
-          "hi": 0.9731431418302975,
-          "rsd": 0.0018645103714482916
+          "lo": 0.9612181370300198,
+          "hi": 0.9717248822562948,
+          "rsd": 0.0018118735905890515
         },
         {
           "metric": "avgAntibodiesMade",
-          "mean": 15.087354166666666,
-          "sdArm": 0.0783684351104156,
-          "sdMeasured": 0.06618805211481564,
-          "sdFloor": 0.0783684351104156,
+          "mean": 14.815666666666665,
+          "sdArm": 0.07700398953041863,
+          "sdMeasured": 0.06914267961923008,
+          "sdFloor": 0.07700398953041863,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 14.852248861335418,
-          "hi": 15.322459471997913,
-          "rsd": 0.005194312683635369
+          "lo": 14.58465469807541,
+          "hi": 15.046678635257921,
+          "rsd": 0.00519747043875303
         },
         {
           "metric": "avgOrgansDamaged",
-          "mean": 2.3039791666666676,
-          "sdArm": 0.025237169585398934,
-          "sdMeasured": 0.020687887217795704,
-          "sdFloor": 0.025237169585398934,
+          "mean": 2.316874999999999,
+          "sdArm": 0.02545802236478086,
+          "sdMeasured": 0.02171467646346691,
+          "sdFloor": 0.02545802236478086,
           "floorApplied": true,
           "arms": 24,
           "batches": 20,
           "gamesPerBatch": 100,
-          "lo": 2.2282676579104708,
-          "hi": 2.3796906754228644,
-          "rsd": 0.010953731678881178
+          "lo": 2.2405009329056567,
+          "hi": 2.3932490670943416,
+          "rsd": 0.010988086264809654
         }
       ],
       "reportedNotGated": {

@@ -16,7 +16,7 @@ The equivalence corpus is single-player by scope, so the allocation phase and th
 AP plumbing are barely exercised. Phase 3 builds the new relay and must cover these.
 
 
-## Deferred until a competent bot exists (18 arms)
+## Deferred until a competent bot exists (20 arms)
 
 Inside `simulate()`'s inlined bot. The current reference bot plays ~6 of 14 seats and never
 emits 9 of 29 actions (docs/FINDINGS.md §1; 8 of 27 at the audit), so these heuristics are
@@ -50,7 +50,9 @@ because it is an engine change that deliberately re-baselines the corpus.
 - `simulate.ts:258` `if (!target) return false;`
 - `simulate.ts:278` `else if (goTo('nk', hidden)) moved = true;`
 - `simulate.ts:316` `else if (g.lost) {`
+- `simulate.ts:332` `avgLossTurn: lossTurns.length ? lossTurns.reduce((a, b) => a + b, 0) / lossTurns.length : null,`
 - `simulate.ts:333` `trunkKillPct: kt ? killTrunk / kt : 0,`
+- `simulate.ts:335` `cascadePct: lossTurns.length ? cascade / lossTurns.length : 0,`
 - `simulate.ts:368` `if (!n) return [];`
 
 ## Uncategorised — still open (27 arms)

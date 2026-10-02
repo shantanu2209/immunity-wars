@@ -5845,3 +5845,49 @@ process stalled for a tenth of a second or more, and the load that was tried did
 
 **Left as it is.** Changing a test on a guess is how a real fault gets explained away. It is the
 same shape as #83. If it is seen again, what else was running is the thing to write down.
+
+## 121. Under queue Q15's deck, the fast panel control's verdict on the Brain at integrity 1 became a coin flip — the control now asserts its strength, 2 October 2026
+
+**Found building queue Q15** (Diphtheria and Anthrax as bacteria that release their toxins), when
+`metrics-control.test.ts`'s *"the Brain at integrity 1 instead of 2 fails the panel, on more than
+one metric"* went red, and stayed red against the bands measured again on the new deck. It is the
+same thing as #107, on the other control, and it was handled the same way.
+
+**Measured before changing anything**, each control at five fast-scale sizes on the original as
+ruled, under Q15's deck (the four shifts in σ: turns survived, trunk kill share, antibodies made,
+organs damaged):
+
+| Arms × batches × games | Brain at 1, Normal | Brain at 1, Hard | One AP fewer, Normal | One AP fewer, Hard | Brain lane 3 → 4 |
+|---|---|---|---|---|---|
+| 4 × 8 × 50 (the control's) | pass: −4.1 1.1 −1.3 −2.4 | FAIL | pass | FAIL | pass, both |
+| 4 × 8 × 60 | pass: −3.3 0.7 −1.8 −3.0 | FAIL | FAIL | FAIL | pass, both |
+| 4 × 8 × 70 | FAIL: −4.6 0.6 −1.2 −3.3 | FAIL | FAIL | FAIL | pass, both |
+| 8 × 8 × 50 | FAIL: −3.8 −3.4 −1.3 −1.0 | FAIL | pass | FAIL | pass, both |
+| 8 × 8 × 70 | FAIL: −4.2 −0.1 −0.2 −3.5 | pass: −4.9 0.3 −2.8 −2.3 | FAIL | FAIL | pass, both |
+
+**On Normal the Brain's verdict at this scale is a coin flip** (3 of 5 sizes). What holds at every
+size: turns survived falls 3.3σ to 4.6σ. The second metric past 3σ comes and goes, and is a
+different one each time.
+
+**The shipped panel, measured against the bands of queue Q15** (24 arms, at the check's own arm of
+20 × 100 games, each mutant on the original as ruled):
+
+| | Normal | Hard |
+|---|---|---|
+| Unmutated | pass: 0.4 0.5 0.7 −0.7 | pass: −0.4 −1.5 −0.8 0.8 |
+| Brain at 1 | **FAIL**: −6.3 0.8 −2.8 −5.8 | **FAIL**: −6.5 −0.3 −4.6 −5.2 |
+| One AP fewer | **FAIL**: −4.1 3.4 −14.1 −1.3 | **FAIL**: −2.8 −2.8 −31.8 −1.7 |
+| Brain lane 3 → 4 | pass: 2.8 0.2 1.6 0.1 | pass: 1.4 −1.3 0.0 0.1 |
+
+So at the scale that ships, the panel still fails both changes it should on both difficulties, and
+the blind spot is where #17 and #34 put it. **The fast control's Normal verdict was the marginal
+thing, not the panel.**
+
+**So the control asserts what holds:** the Brain at integrity 1 must move turns survived past 3σ,
+downward, on Normal. A control makes it fail on purpose (`balance-normal-brain-strength`: the
+mutant keeps the Brain's two points, and the test goes red). An instrument's claim re-measured and
+narrowed to the measurement, fixed inline. The probe that measured this was run once and removed.
+
+**Also in the table, and left:** one fast-scale size (8 × 8 × 50) read the UNMUTATED original at
+−4.0σ on trunk kill share on Normal. One metric, under the 6σ that fails alone, so it passed. It is
+the noise of a small calibration, and why these controls do not assert more than they do.

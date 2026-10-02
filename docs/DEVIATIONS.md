@@ -781,6 +781,28 @@ original, where each is a toxin card and no such toxin appears, as the control.
 class covers say so. **The printed cards for the two cannot change:** the rulebook now carries a
 note telling a player how to play them.
 
+**The rules version** moves from 4.1.2 to 4.2.0 and the content from 1.4.0 to 1.5.0: the deck
+plays differently, so this is a step of the middle number, where the wording changes before it
+were steps of the last. The relay refuses any other version exactly. **The balance bands were
+measured again** at commit `f3f0ce7`, on 24 arms and 150,000 games, and this time they moved, as a
+changed deck should make them:
+
+| The reference bot's games, 24 arms of 2,000 | Before | On the new deck |
+|---|---|---|
+| Normal: turns survived | 11.04 | 10.79 |
+| Normal: antibodies made | 19.48 | 19.18 |
+| Hard: turns survived | 8.85 | 8.63 |
+| Hard: antibodies made | 15.09 | 14.82 |
+| Easy: every metric | | within 1.3 band widths of where it was |
+
+Two cards that an antibody used to stop outright are now bacteria that divide and release a toxin,
+and the reference bot's games on Normal and Hard end a little sooner. **That is the bot's games
+changing, not a measure of how hard the game is:** the bot plays about six of the game's fourteen
+seats. The win rate under the reference bot v1, at 48,000 games per difficulty, reported and not
+gated: Easy 54.5% to 52.0%, Normal 0.30% to 0.15%. A held-out arm passes the new bands on all
+three difficulties. One of the panel's own fast controls lost its verdict at its small scale and
+was narrowed to what holds ([`FINDINGS.md`](FINDINGS.md) #121).
+
 **Decided by:** Shantanu, 2 October 2026.
 **Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q15 cases. Mutation controls
 `queue-q15-diphtheria-is-a-bacterium` and `queue-q15-anthrax-releases-its-toxin`.

@@ -1877,3 +1877,45 @@ them.
 
 **Not done, and on the list:** whether a hurt Spleen should cost something on Hard, where bacteria
 already always divide.
+
+### The version, and the bands on the new deck
+
+**Rules 4.2.0, content 1.5.0.** A step of the middle number, where Easy and Coat were steps of the
+last: the deck plays differently. The balance bands were measured again at the change's own
+commit, `f3f0ce7`, on 24 arms and 150,000 games.
+
+| The reference bot's games, 24 arms of 2,000 | Before | On the new deck |
+|---|---|---|
+| Normal: turns survived | 11.04 | 10.79 |
+| Normal: antibodies made | 19.48 | 19.18 |
+| Hard: turns survived | 8.85 | 8.63 |
+| Hard: antibodies made | 15.09 | 14.82 |
+| Easy: every metric | | within 1.3 band widths of where it was |
+
+- **They moved, and should have.** Two cards an antibody stopped outright are now bacteria that
+  divide and release a toxin.
+- **It is the reference bot's games that changed. It is not a measure of difficulty:** the bot
+  plays about six of the game's fourteen seats. Win rate under the reference bot v1, at 48,000
+  games per difficulty, reported and not gated: Easy 54.5% to 52.0%, Normal 0.30% to 0.15%.
+- **A held-out arm passes the new bands** on all three difficulties.
+- **One of the panel's own controls was narrowed** ([`FINDINGS.md`](FINDINGS.md) #121): at its small
+  scale, whether the Brain at integrity 1 fails the panel on Normal became a coin flip, 3 sizes of
+  5. Against the bands that ship it fails on Normal and on Hard, as it should. The control asserts
+  what holds at every size.
+
+- **The coverage record moved by two arms.** Two "no game was lost" arms of the simulator's
+  averages are no longer reached by the recorded runs on this deck, and joined the list deferred
+  until a competent bot exists (20 arms, from 18). Coverable coverage 97.45%; the gate passes.
+
+**What it means for the server.** The relay and the app go together, because the rules version
+moved, and the relay's restart ends any game being played together at that moment. Not deployed by
+merging.
+
+### Measured on the build with all of it
+
+| | |
+|---|---|
+| The lesson, walked on the build by `pnpm guide:walk`, with Botulism on its fifth turn | 69 beats of 69, every one in order; handed over at turn 8 of 15; no error |
+| The Gate 1 audit, alone and together | 88 screens in each of the four passes (90 in one); every check at zero over 1,136 controls and 2,444 text runs; 38 close paths, none wrong; offline met, with no request failed; 47 controls of the audit's own. **One screen was not reached in one pass:** a row's several targets at 200% text, which that pass's dice did not deal. The other three passes reached it, and nothing that draws it changed |
+
+**Not read by him:** the new sentences, in the app and in print. **Not played on a phone.**

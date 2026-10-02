@@ -115,7 +115,10 @@ game may be handed its first turns, written (`docs/DEVIATIONS.md` #13); rules 4.
 the same day: an antibody coats, on the screens and in the engine's three sentences that said
 tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2. **Deployed 2 October,
 10:30 IST:** the relay and the app together, from `main` at `0b401cd`, with the table of what
-changes (plan §21).
+changes (plan §21). Q15 and Q16, the same day (plan §23): Diphtheria and Anthrax are bacteria that
+release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), and the Killer
+T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
+the bands measured again and moved; **not yet deployed**.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
