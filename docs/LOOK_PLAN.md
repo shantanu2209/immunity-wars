@@ -1919,3 +1919,22 @@ merging.
 | The Gate 1 audit, alone and together | 88 screens in each of the four passes (90 in one); every check at zero over 1,136 controls and 2,444 text runs; 38 close paths, none wrong; offline met, with no request failed; 47 controls of the audit's own. **One screen was not reached in one pass:** a row's several targets at 200% text, which that pass's dice did not deal. The other three passes reached it, and nothing that draws it changed |
 
 **Not read by him:** the new sentences, in the app and in print. **Not played on a phone.**
+
+### Deployed, 2 October 2026, 13:09 IST: rules 4.2.0
+
+On his word (*"Merged. Please deploy."*): the relay and then the app, from `main` at `8c7f887`.
+
+| | Version | Read back |
+|---|---|---|
+| The relay | `20261002-130838-8c7f887` | Its 41 tests passed. Nobody was connected; it was restarted at 13:08:43 and is running. From the server's own file: rules 4.2.0, protocol 5. It answers through the server |
+| The app | `20261002-130913-8c7f887` | The start check passed before anything was copied; the server serves this build, and the build carries rules 4.2.0 |
+
+| Checked on the live app, from the PC, in a headless phone-sized browser, read only | Found |
+|---|---|
+| The lesson, walked by `pnpm guide:walk`, pressing only what is lit | 69 beats of 69, every one in order; handed over at turn 8 of 15; no error |
+| The title, the table of what changes, a game alone on Easy to the command stage | As they should be: fifteen rows; the B-Cell's row says Coat; 42 pictures, none broken; no error, and no request failed |
+| The words in the live build | It has "No hidden pathogen in range", "Hidden Pathogen", Anthrax toxin's record, "Organs recover" and how Pathogen X comes. It has none of "No hidden virus in range", "Hidden Virus" or "The toxin is pre-formed" |
+
+- **Not checked on the live server:** playing together; a Diphtheria or an Anthrax releasing its
+  toxin in a live game, which the queue's tests show in the engine and nobody has yet played; a
+  phone holding the older build taking this one.

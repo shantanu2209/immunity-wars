@@ -118,7 +118,8 @@ tagged (`docs/DEVIATIONS.md` #14); nothing plays differently; rules 4.1.2. **Dep
 changes (plan §21). Q15 and Q16, the same day (plan §23): Diphtheria and Anthrax are bacteria that
 release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), and the Killer
 T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
-the bands measured again and moved; **not yet deployed**.
+the bands measured again and moved. **Deployed 2 October, 13:09 IST:** the relay and the app
+together, from `main` at `8c7f887` (plan §23).
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
