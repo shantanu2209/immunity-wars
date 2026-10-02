@@ -108,7 +108,11 @@ no service worker, no developer's page but the measuring page); id
 and his visual approval may be done on the Android app; **the public release still waits for
 Gate 2.** `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
-repository.
+repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
+120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected
+phone, that it starts and that Android's back goes to the game first (it did not, as Capacitor has
+it). **Open, his to rule:** the app's text follows the phone's font size, which on his phone makes
+it a fifth smaller than the web version.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
 [`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), **with nothing owing since 1 October**, when he

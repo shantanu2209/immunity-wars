@@ -54,8 +54,10 @@ run(
 );
 run('pnpm exec cap sync android', HERE);
 
-const gradlew = process.platform === 'win32' ? 'gradlew.bat' : './gradlew';
-run(`${gradlew} assembleDebug --console=plain`, NATIVE);
+// By its whole path: a Windows shell does not always look in the folder it is started in, and
+// this one did not ("'gradlew.bat' is not recognized", 2 October 2026).
+const gradlew = join(NATIVE, process.platform === 'win32' ? 'gradlew.bat' : 'gradlew');
+run(`"${gradlew}" assembleDebug --console=plain`, NATIVE);
 
 if (!existsSync(APK)) stop('Gradle finished and wrote no app.');
 console.log(`\nBuilt: ${(statSync(APK).size / (1024 * 1024)).toFixed(1)} MB, a debug build.`);

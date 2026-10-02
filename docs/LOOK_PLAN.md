@@ -2106,7 +2106,7 @@ the relay is touched.
 - **The relay takes the shell as it takes a browser:** it checks no origin, read from its code.
   Not yet seen happening.
 
-**What needed a decision the tools made for us.** Android Studio 2026.2 brings Java 25. Capacitor 8
+**The Java the build runs on.** Android Studio 2026.2 brings Java 25. Capacitor 8
 builds with Gradle 8.14, which runs on Java 21 to 24, and on 25 the build dies with *"Unsupported
 class file major version 69"*. The build script reads the Java first and refuses it by name.
 
@@ -2119,9 +2119,77 @@ class file major version 69"*. The build script reads the Java first and refuses
 `worker-leaves-developer-pages` was re-aimed: the build's settings moved, and the check that every
 control still changes its file said so.
 
-**NOT YET BUILT OR RUN: THE APP ITSELF.** No Java 21 is on the PC. Everything above is the project
-and its checks; that it compiles, starts, plays, and holds its frame rate inside the shell is not
-known, and nothing here claims it.
+### Built and run on his S25, 2 October 2026 (the first piece, its second half)
+
+**Java 21 was added,** on his word and on the D: drive as he asked: Eclipse Temurin 21.0.12, the
+zip from Adoptium, its checksum checked, unzipped and not installed. Asked why not the Java 25
+already there, he was told: it is only the tool that builds the app on the PC and is not in the
+app; Capacitor's latest release builds with a Gradle that runs on Java 21 to 24; forcing a newer
+Gradle in would be a combination Capacitor has not tested. *"If it has to be 21 then please go
+ahead."*
+
+**The app builds:** a debug build of 5.8 MB, installed on the S25 over the cable (Android 16, its
+WebView Chrome 153). Read there through the WebView's own debugging socket:
+
+| Read on the phone, inside the shell | Found |
+|---|---|
+| It starts | The title, with no uncaught error and no request that failed |
+| The page | 360 by 697. His Chrome tab is 360 by 641: the shell has 56 px more height |
+| Service workers | None |
+| A game alone on Easy, to its first dialog | 42 pictures, none broken; the page one screen, 360 by 697 |
+| Playing together | A room was made on the game's server from inside the shell and left at once: its lobby came up with its code. The relay takes the shell as it takes a browser |
+| The system's bars | On the kit's table, with light icons, as the screens are |
+
+**Found on its first run: Android's back left the game.** As Capacitor has it, the back gesture
+never reaches the page. Back inside How to play put the phone on its home screen. The game's
+screens are steps in the page's history, so `MainActivity.java` now gives back to the page while
+the page has a step to go back, and on the title puts the app aside without closing it. Seen on
+the phone both ways: from How to play and from Settings back to the title; from the title, the app
+no longer in front and still running.
+
+**`pnpm android:check`** does this on the one phone on the cable: starts the app afresh, requires
+the title with no error and no service worker, and requires back to behave. It was seen to fail on
+the build before the fix. It needs a phone, so it is in no gate and the self-test has no control
+on it. **The check's own first version was wrong:** it opened the title with a navigation, which
+left the page before it in the history, and back on the title then went there. It says so in its
+header; it starts the app afresh now.
+
+### The frame rate inside the shell: a first reading
+
+The measuring page, run inside the shell on the S25, 2 October 2026, one run.
+
+| | In his Chrome tab, 1 October (§14) | Inside the shell |
+|---|---|---|
+| The screen refreshes every | 16.7 ms: 60 a second | **8.3 ms: 120 a second** |
+| Frames | 2,324 in 38.8 s | 4,645 in 38.8 s |
+| A frame: middle, 95th, 99th of a hundred, worst | | 8.3, 8.4, 8.5, 33.4 ms |
+| Frames of 20 ms or more | 6 | 3 |
+| Frames of 42 ms or more | 0 | 0 |
+| While the camera was moving or in, 20 ms or more | 4 | 2 of 1,479 |
+| Tasks over 50 ms | 0 | 0 |
+| What was played | 9 moves, 3 spreads, the camera in 6 times | The same |
+
+- **Inside the shell the game is drawn at 120 frames a second,** which the browser tab did not do,
+  and 99 frames in 100 came on time (8.5 ms or less).
+- **The meter cannot yet say how many frames missed one refresh at this rate.** Its line for a slow
+  frame is 20 ms, set when a refresh was 16.7. At 8.3 a frame that misses one refresh takes 16.7
+  and is under the line. From the slowest five it printed (33.4, 33.3, 25.1, 16.7, 16.6 ms), at
+  least five did; from the 99th of a hundred, no more than 46 of the 4,645. The line is to follow
+  the screen's own refresh before stage L7's measurement is taken.
+- **It is a first reading and not L7's:** one run, on the screens as they are before his review.
+  On it, locked decision #1 holds as it did: Capacitor, at twice the frame rate the plan asked for.
+
+### Found, and put to him: the text is smaller inside the shell on his phone
+
+His phone's own font size is set to 0.8 of standard. An Android shell follows that setting: one
+rem is 12.8 px inside the app, where it is 16 px in his Chrome tab, so every word, and everything
+sized by the text, is a fifth smaller than on the web version he has been looking at. The game
+has a text-size setting of its own, and the two multiply. Nothing was changed: which of them the
+app obeys is his ([`TODO.md`](TODO.md), row 10).
+
+**Not checked on the phone:** vibration and sound, which need a hand and an ear; the app with the
+phone's text set large; the lesson and a whole game, which the web build's walks cover on the same
+code; anything on a phone that is not this one.
 
 **Later pieces, none started** ([`TODO.md`](TODO.md)): the game's icon and launch picture; the
 build for the store and its signing key; what the app does when the game's server refuses an older
