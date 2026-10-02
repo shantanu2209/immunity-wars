@@ -5758,3 +5758,77 @@ rulebook against the engine. This was one table read against one list.
 
 **Why it is filed and not fixed.** The rules are Kartik's, and so are the printed words. Which side
 is right in 1, and whether 2 to 5 are printed, is his.
+
+**Ruled 2 October 2026** (`docs/LOOK_PLAN.md` §22), by Shantanu, who rules what was marked as the
+designer's:
+
+| | Ruled | Done |
+|---|---|---|
+| 1 | Keep the engine; change the print | The rulebook says the cap comes before the practice bonus, and that on Easy a practised class can make 4 |
+| 2 | He asked for more detail | Open |
+| 3 | Print it | Printed |
+| 4 | He took a recommendation that had not been made | Open: one was put to him the same day |
+| 5 | Print the numbers | Printed |
+
+**So 1, 3 and 5 are closed. 2 and 4 are open.**
+
+## 119. The rulebook's Spread phase advances the invaders first and the engine advances them last; and a damaged Spleen does nothing on Hard — OPEN
+
+**Found 2 October 2026**, while the rules for dividing and for the lymph were being printed
+(#118, rulings 3 and 5): to say WHEN the lymph rule happens, the two orders had to be read side by
+side.
+
+**1. The order of the Spread phase.** The rulebook's is a numbered list, and so claims an order:
+
+| | The rulebook | The engine |
+|---|---|---|
+| 1 | Every invader advances; what reaches an organ attacks it | Bacteria divide |
+| 2 | Bacteria divide | Hidden pathogens burst |
+| 3 | Hidden pathogens may burst | Free viruses hide |
+| 4 | Free viruses may hide | Toxin-makers release |
+| 5 | Lodged worms chew | Lodged worms chew |
+| 6 | Toxin-makers release | On Hard, the lymph |
+| 7 | Spent cells recover | **Every invader advances; what reaches an organ attacks it** |
+| 8 | Advance the turn marker | Worms lodge; organs recover; spent cells recover; the next turn |
+
+**It changes games.** An uncoated bacterium one step from an organ: at the table it advances,
+strikes and is gone, and nothing is left to divide. In the app it may divide first, and then both
+advance and both reach the organ. So the app is the harsher of the two there. The rulebook's own
+one-line summary of the phase is in the same order as its list. How to play says only that invaders
+advance, and claims no order.
+
+**The paragraph printed for the lymph says "before any invader advances",** which is true of the
+app whichever way this is ruled, and it stands outside the numbered list for that reason.
+
+**2. The Spleen on Hard.** The rulebook's table of organs says a damaged Spleen makes bacteria
+divide more aggressively. In the engine it raises the roll a bacterium divides on by one, on Easy
+and Normal. On Hard a bacterium always divides, the roll is not used, and a damaged Spleen changes
+nothing at all. The printed sentence for dividing now says "on Easy and Normal", which is what the
+app does.
+
+**Why it is filed and not fixed.** Changing the engine's order is a change to the rules, and to
+every game the corpus holds; changing the rulebook's is a change to what the table plays. Which is
+right is a ruling. Put to Shantanu the same day.
+
+**Not checked:** the study packet's account of the phase; whether any other numbered list in the
+rulebook claims an order the engine does not keep.
+
+## 120. One relay test timed out once inside `pnpm verify`, and never again: unexplained
+
+**Seen 2 October 2026**, on the first `pnpm verify` of the change that printed the rulings of §22.
+`packages/server/src/node.test.ts`, *"a phone that goes silent is marked away within a few
+heartbeats, while a phone that answers stays present"*, failed with *"timed out waiting for: the
+silent member is in"*, after its 3 seconds. Nothing the relay runs had changed: the change was a
+label in the content pack, the printed texts and documents.
+
+**Not reproduced.** The test alone, three times: passed. Four times with sixteen processes
+spinning beside it: passed. The whole `pnpm verify` again: passed, 41 of the relay's 41.
+
+**A guess, not a finding.** The test joins a client that never answers a ping, with a heartbeat of
+50 ms, and waits to see that member present before it waits to see it away. If the test's own
+process were held up for longer than the few heartbeats that member is present, it would look
+after the member had already been marked away and never see it present. That would need the
+process stalled for a tenth of a second or more, and the load that was tried did not do it.
+
+**Left as it is.** Changing a test on a guess is how a real fault gets explained away. It is the
+same shape as #83. If it is seen again, what else was running is the thing to write down.

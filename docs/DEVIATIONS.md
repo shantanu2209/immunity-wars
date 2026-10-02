@@ -711,7 +711,9 @@ original's file is not touched.
 on every target, where it was Tag on a bacterium; two sentences about what a resident eats say
 coated; and the lesson's two sentences that said "then Tag" say "then Coat". **The printed texts
 are not changed:** they say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*,
-once in the rulebook and once in the study packet, are Kartik's to keep or change.
+once in the rulebook and once in the study packet, are Kartik's to keep or change. *(Corrected the
+same day: "untagged" was four times in the rulebook and once in the study packet. Shantanu ruled
+them changed, and they are: `LOOK_PLAN.md` §22.)*
 
 **The engine's own names are not changed:** the action is still `tag` and the mark still
 `tagged`, in both engines, in a saved game and in a room. Only what a player reads has changed.

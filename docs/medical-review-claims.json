@@ -4035,19 +4035,19 @@
         },
         {
           "id": "TYPE/hidden/beat",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "How it is beaten",
           "text": "It is INSIDE one of your cells. Antibodies cannot reach it there. Killer T-Cell (never misses) or NK Cell (d6 3+). Not all of these are viruses: Toxoplasmosis and Chagas disease are PROTOZOA that live inside your cells, which is why a Killer T-Cell is the answer for them too."
         },
         {
           "id": "TYPE/hidden/hint",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "In How to play",
           "text": "It is inside one of your own cells, where antibodies cannot go. Killer T-Cell (never misses) or NK Cell (3 or more)."
         },
         {
           "id": "TYPE/hidden/rest",
-          "subject": "Hidden Virus",
+          "subject": "Hidden Pathogen",
           "label": "In How to play",
           "text": "Not all are viruses: Toxoplasmosis and Chagas are protozoa that live inside cells."
         },

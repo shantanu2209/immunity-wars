@@ -1965,6 +1965,22 @@ const CONTROLS: readonly Control[] = [
     expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
   },
   {
+    id: 'ruled-label-is-as-ruled',
+    why: 'Ruled 2 October 2026: the kind named Hidden Virus is named Hidden Pathogen, because two of its diseases are protozoa. The labels are pinned to the original interface’s, value for value, and a ruled value is the one exception, held to being what was ruled. With the label put back to Hidden Virus, the pin must FAIL saying a ruled label is not what was ruled.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Hidden Pathogen",', '"n": "Hidden Virus",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED LABEL IS NOT WHAT WAS RULED',
+  },
+  {
+    id: 'ruled-label-leaves-the-rest-pinned',
+    why: 'The other half of the ruled label: allowing one value to differ from the original must not loosen the table it is in. With another kind’s name changed in the same table, the pin must still FAIL on that table.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Fungus",', '"n": "Fungi",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'UI_ — same values, same key order',
+  },
+  {
     id: 'queue-q14-the-engine-says-coated',
     why: 'Queue Q14 (Shantanu, 2 October 2026): what an antibody does to a bacterium, a worm or a parasite is one thing with one word, coat; the engine said tagged in three sentences. With the port logging a coated bacterium as tagged again, the queue’s test must FAIL saying the engine still says tagged (and the corpus, which compares the port with the original as ruled, fails with it).',
     file: 'packages/engine/src/actions.ts',

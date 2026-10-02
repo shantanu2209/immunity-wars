@@ -81,7 +81,9 @@ The differences between difficulties are explained on the difficulty screen, on 
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling).
 **Nothing waits on Kartik** (ruled 2 October, plan §21): a question the records mark as the
 designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation,
-and he rules. The game, its rules and its science are still Kartik's work, and are said to be. **What was no longer needed is removed**
+and he rules. The game, its rules and its science are still Kartik's work, and are said to be.
+**What is ruled and not yet built is listed in `docs/TODO.md`** (first on it: Diphtheria as a
+bacterium that releases its toxin, ruled "asap"). **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
 is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
 asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the

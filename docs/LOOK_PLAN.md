@@ -1568,7 +1568,7 @@ Six things were put to him in the chat when the guided game was built. He answer
 | The row of the B-Cell's action | Coat on every target. It said Tag on a bacterium |
 | The engine | Three of its 196 sentences said tagged: a log line and two refusals. They say coated and uncoated. **Three words. Nothing plays differently** |
 | The screens' other sentences | Two about what a resident eats; the lesson's two that said "then Tag", one of which no longer has to explain that a tag coats |
-| The printed texts | **Nothing.** They say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*, twice in print, are Kartik's |
+| The printed texts | **Nothing.** They say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*, twice in print, are Kartik's. *(Corrected in §22: five times, not twice; and changed there, by ruling.)* |
 | The code | **Nothing.** The action is `tag` and the mark `tagged`, as they were |
 
 - **Made the queue's way,** as Easy was (§16): in the port, and as three edits to the original
@@ -1725,3 +1725,59 @@ On his word, once he had merged it: the relay and then the app, from `main` at `
   moved. Neither was checked on this deploy: it needs such a phone.
 - **Not checked on the live server:** playing together, which would mean making a room on it. The
   audit walked it against a relay on the PC, on this code.
+
+## 22. Ruled 2 October 2026, the sixth set: the designer's questions
+
+Ten questions the records had marked as Kartik's were put to him in the chat (§21). He answered:
+
+> *"1, 3, 4 and 5 I will go with your recommendations. For 2 I need more details, what exactly is
+> happening in the actual game vs the rulebook vs the table. 6 and 7 as per your recommendations.
+> 8. Yes out it in the things to do list but this must be corrected asap, it should be a bacterium
+> thay releases toxins. 9. Don't know if the board will ever be orinted again so not a priority.
+> If we do we will need to align with the app again. 10. Leave for now. Can be in the to-do list
+> but is not urgent/pressing."*
+
+| # | The question | Ruled | Done |
+|---|---|---|---|
+| 1 | On Easy the app adds the practice bonus after the cap, so a Produce can make 4; the rulebook capped the total at 3 | **Keep the app, change the print** | The rulebook's two steps change places and say so; its table says *up to 3, or 4 with practice* |
+| 2 | A hurt organ recovers in the app, and the rulebook is silent | **More detail asked for** | Given in the chat. Not ruled |
+| 3 | On Hard, infections spread along the lymph; the rulebook is silent | **Print it** | A paragraph after the Spread phase's list, and a row in the rulebook's table |
+| 4 | How often Pathogen X comes, and how it arrives at a table | **"Your recommendation"**, and none had been made: a question had been put | Not changed. A recommendation was put to him the same day |
+| 5 | The rolls a bacterium divides on | **Print the numbers** | In the Spread phase's list, with what a damaged Spleen does, and a row in the rulebook's table |
+| 6 | The rulebook's "(tag)" and "untagged" | **Coat and uncoated** | The heading, and "untagged" in four places of the rulebook and one of the study packet |
+| 7 | The kind named "Hidden Virus" covers two protozoa | **"Hidden Pathogen"** | The kind's name in the app. The engine's one refusal that says "hidden virus" waits for the next version of the rules ([`TODO.md`](TODO.md)) |
+| 8 | Diphtheria toxin has nothing that releases it | **Correct it as soon as possible: a bacterium that releases its toxin** | On the list, first. What it means was put to him the same day |
+| 9 | The printed A2 board against the app's board | **Not a priority; align with the app if it is ever printed again** | On the list |
+| 10 | A shape for each disease | **Leave for now; not pressing** | On the list |
+
+**The list** is [`TODO.md`](TODO.md), new with this change: what is ruled and not yet built or not
+yet settled.
+
+**What the printed texts now say, each read from the engine before it was written.**
+
+| Where in the rulebook | It said | It says |
+|---|---|---|
+| The Spread phase, bacteria | "guaranteed on Hard, on a die roll otherwise" | Easy on a roll of 1 or 2, Normal on 1 to 3; Hard always, and a second on 1 to 3. With a damaged Spleen the roll needed on Easy and Normal is one higher |
+| After the Spread phase's list | Nothing | On Hard only, before any invader advances: each uncoated invader on a step-3 circle with a lymphatic link rolls, and on a 1 or 2 a copy is placed on a linked route's step-3 circle. Malaria never does |
+| How antibody production is worked out | The practice bonus, then the cap | The cap, then the practice bonus on top of it: on Easy a practised class can make 4 |
+| The table of what changes | *up to 3* on Easy; no row for dividing or the lymph | *up to 3, or 4 with practice*; a row for each |
+| The B-Cell's action | "Coat (tag)" | "Coat" |
+| Four sentences, and one in the study packet | untagged | uncoated |
+
+- **Each edit is found exactly once in the document or nothing is written,** and the documents
+  were opened again afterwards and read: both are sound, and the rulebook has one paragraph and
+  two table rows more than it had.
+- **The quick reference is not changed:** it has none of these sentences.
+- **Corrected here:** §20 and [`DEVIATIONS.md`](DEVIATIONS.md) #14 said "untagged" was twice in
+  print. It was five times: four in the rulebook and one in the study packet. The search that
+  counted it looked only at paragraphs that also said coat.
+
+**The kind's name.** The labels are held, value for value, to the original interface's table. A
+value changed by ruling is now the one exception that table's test allows, and it is held both
+ways: the pack must carry what was ruled, and everything else in the table must still be the
+original's. Controls `ruled-label-is-as-ruled` and `ruled-label-leaves-the-rest-pinned`, each
+fired. The medical review is regenerated: its heading for the kind moved.
+
+**Found while printing 3 and 5, and not settled** ([`FINDINGS.md`](FINDINGS.md) #119): the
+rulebook's Spread phase is a numbered list that advances the invaders first, and the engine
+advances them last; and a damaged Spleen does nothing on Hard.

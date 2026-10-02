@@ -1234,7 +1234,7 @@ What the app tells a player about each kind of invader, and how it is beaten. Th
 | `TYPE/virus/hint` | In How to play | Neutralise with a matching antibody, or the Monocyte engulfs it. |
 | `TYPE/virus/rest` | In How to play | If it hides inside a cell, only the Killer T-Cell or NK Cell can reach it. |
 
-### Hidden Virus
+### Hidden Pathogen
 
 | Claim id | Field | What the app says |
 |---|---|---|
