@@ -6,7 +6,7 @@ Every branch arm excluded from the coverage denominator, with the rule that excl
 This list exists because a percentage cannot be reviewed and a list can.
 
 **It is a liability, not a convenience.** Everything here is a place the gate has stopped
-looking. It stays short; growth is a warning. The gate fails if it exceeds 181 entries (9.4% of the 1934 raw arms — a ratio, so a
+looking. It stays short; growth is a warning. The gate fails if it exceeds 183 entries (9.4% of the 1953 raw arms — a ratio, so a
 provider changing the arm universe moves the number visibly), or if any entry stops matching,
 or if an excluded arm turns out to be covered after all — which would mean it was never dead.
 
@@ -34,7 +34,7 @@ weaker than a demonstration and is labelled so deliberately.
 - `440` `const held = g.ab[f] ?? 0;`
 - `501` `const put = Math.max(1, Math.min((a.ap as number) || 1, apNow(g)));`
 - `612` `const heldForTag = g.ab[f] ?? 0;`
-- `873` `c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
+- `880` `if (!written) c = respectWormCap(g, c ?? undefined); // at most 1 worm a turn, 2 a game`
 
 ### ap.ts
 
@@ -42,16 +42,16 @@ weaker than a demonstration and is labelled so deliberately.
 
 ### construct.ts
 
-- `109` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `113` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
-- `118` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
-- `205` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
-- `210` `return (alt ?? null) as Card | null;`
-- `219` `return (alt ?? null) as Card | null;`
-- `243` `hp: INV_HP[c.type] || 1,`
-- `244` `maxhp: INV_HP[c.type] || 1,`
-- `292` `DECK_MASTER.find((c) => c.type === type) ??`
-- `307` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
+- `116` `Object.assign(g.cells.neutrophil ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `120` `Object.assign(g.cells.tcell ?? {}, { zone: 'hub', lane: null, organ: null, step: 0 });`
+- `125` `if ((g.ab[f] ?? 0) > 2) g.ab[f] = 2;`
+- `212` `if (!c || c.type !== 'worm' || wormAllowed(g)) return c ?? null;`
+- `217` `return (alt ?? null) as Card | null;`
+- `226` `return (alt ?? null) as Card | null;`
+- `250` `hp: INV_HP[c.type] || 1,`
+- `251` `maxhp: INV_HP[c.type] || 1,`
+- `299` `DECK_MASTER.find((c) => c.type === type) ??`
+- `314` `const card = (g.deck || []).find((c) => c.dz === dz) ?? DECK_MASTER.find((c) => c.dz === dz);`
 
 ### effects.ts
 
@@ -274,7 +274,7 @@ the || fallback is dead by data: RESIDENT_NAME is total over OrganKey (Recall's 
 
 the || fallback is dead by data: RESIDENT_NAME is total over OrganKey. Demonstrated by data scan
 
-### actions.ts:843
+### actions.ts:849
 
 ```
 if (c) {
@@ -282,7 +282,7 @@ if (c) {
 
 the novel-injection find always succeeds: DECK_MASTER contains exactly one novel card. Demonstrated by data scan
 
-### actions.ts:863
+### actions.ts:869
 
 ```
 if (pool.length) {
@@ -290,7 +290,7 @@ if (pool.length) {
 
 pool is empty only when Pathogen X is the ONLY disease ever seen, and turn 1's spawn precedes novelTurn, so a non-X disease is always seen first. Demonstrated over 300 games
 
-### actions.ts:865
+### actions.ts:871
 
 ```
 c = DECK_MASTER.find((x) => x.dz === dz) || null;
@@ -298,7 +298,7 @@ c = DECK_MASTER.find((x) => x.dz === dz) || null;
 
 the || null arm is unreachable: g.seen is only ever written from a drawn card, so every key resolves. Demonstrated over 200 games x 25 turns with no unresolvable key
 
-### actions.ts:871
+### actions.ts:878
 
 ```
 if (c) g.discard.push(c as never);
@@ -306,7 +306,7 @@ if (c) g.discard.push(c as never);
 
 conservation: every drawn card is pushed to discard at draw time, so deck and discard cannot both be empty while cards remain drawable — the pop after reshuffle always yields. Demonstrated over 300 games
 
-### actions.ts:883
+### actions.ts:890
 
 ```
 if (c.novel) {
@@ -314,7 +314,7 @@ if (c.novel) {
 
 unreachable inside the spawn loop: newGame filters novel cards out of the deck entirely (measured: 0 in deck); the novel pathogen is injected on novelTurn instead
 
-### construct.ts:83
+### construct.ts:90
 
 ```
 if (pick !== undefined) g.events[t] = pick;
@@ -322,7 +322,7 @@ if (pick !== undefined) g.events[t] = pick;
 
 picks and slots both have length 3 by construction — two slices of 2 and 1 concatenated, indexed by a forEach over 3 slots
 
-### construct.ts:101
+### construct.ts:108
 
 ```
 if (!e) return;
@@ -330,7 +330,7 @@ if (!e) return;
 
 every caller passes keys drawn from the pools that built g.events, and both pools are subsets of EVENTS. Demonstrated by data scan
 
-### construct.ts:127
+### construct.ts:134
 
 ```
 if (c) g.discard.push(c);
@@ -338,7 +338,7 @@ if (c) g.discard.push(c);
 
 same conservation as the spawn path: deck and discard cannot both be empty at a coInfection. Demonstrated over 300 games
 
-### construct.ts:139
+### construct.ts:146
 
 ```
 if ((c as unknown as Card).novel) {
@@ -346,7 +346,7 @@ if ((c as unknown as Card).novel) {
 
 the novel card never enters deck or discard — newGame filters it out and the injection path bypasses cards entirely (same argument as the spawn-loop entry above). Demonstrated over 300 games
 
-### construct.ts:209
+### construct.ts:216
 
 ```
 if (alt) g.discard.push(alt);
@@ -354,7 +354,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:218
+### construct.ts:225
 
 ```
 if (alt) g.discard.push(alt);
@@ -362,7 +362,7 @@ if (alt) g.discard.push(alt);
 
 both sites: splice at an index findIndex just returned as >= 0 always yields an element
 
-### construct.ts:293
+### construct.ts:300
 
 ```
 ({ dz: type, type: type as InvaderType, lane: 'bite' as RouteKey } as Card);
@@ -370,7 +370,7 @@ both sites: splice at an index findIndex just returned as >= 0 always yields an 
 
 testing-hook fallback: every real invader type appears in DECK_MASTER, so the literal card is constructible only by calling forceInjectType with a nonsense type. Demonstrated by data scan
 
-### construct.ts:298
+### construct.ts:305
 
 ```
 if ((card as Card).novel) {
@@ -378,7 +378,7 @@ if ((card as Card).novel) {
 
 testing hook: forceInjectType('virus') finds the first virus in DECK_MASTER, which is not the novel card, and the novel card is never in the deck
 
-### construct.ts:308
+### construct.ts:315
 
 ```
 if (!card) return null;

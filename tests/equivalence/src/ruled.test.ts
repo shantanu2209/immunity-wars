@@ -43,8 +43,9 @@ describe('the original, as ruled', () => {
   });
 
   it('names every edit by its place in the queue', () => {
-    // Q1 to Q10, the queue as ruled on 5 and 6 September 2026; Q11, venom, ruled after it ran; and
-    // Q12, the gentlest difficulty called Easy, ruled on 1 and 2 October.
-    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|1[0-2])$/);
+    // Q1 to Q10, the queue as ruled on 5 and 6 September 2026; Q11, venom, ruled after it ran;
+    // Q12, the gentlest difficulty called Easy, ruled on 1 and 2 October; and Q13, a game's first
+    // turns written, for the guided game, ruled on 2 October.
+    for (const r of RULED) expect(r.queue, r.name).toMatch(/^Q([1-9]|1[0-3])$/);
   });
 });

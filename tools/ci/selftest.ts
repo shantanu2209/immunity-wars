@@ -1700,6 +1700,27 @@ const CONTROLS: readonly Control[] = [
     expect: 'is up to date with the content it describes',
   },
   {
+    id: 'queue-q13-a-written-turn-rolls-nothing',
+    why: 'Queue Q13 (Shantanu, 2 October 2026): the guided game hands a game its first turns, written. A written turn rolls nothing, which is what makes the lesson the same every time. With the port rolling the die for how many arrive and then ignoring it, the arrivals are still the written ones, and only the count of numbers drawn shows it: the queue’s test must FAIL saying a written draw rolled a die.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace(
+        'let nSpawn = written ? written.length : spawnCount(g);',
+        'const rolledAnyway = spawnCount(g);\n  let nSpawn = written ? written.length : rolledAnyway;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'A WRITTEN DRAW ROLLED A DIE',
+  },
+  {
+    id: 'queue-q13-a-written-turn-brings-what-is-written',
+    why: 'Queue Q13: on a written turn the card is taken by its name and the deck is left alone. With the port no longer taking it by name, as many arrive as were written but they come off the deck: the queue’s test must FAIL saying a written turn did not bring what was written.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace('    if (written) c = DECK_MASTER.find((x) => x.dz === written[k]);\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
+  },
+  {
     id: 'queue-q12-the-engine-says-easy',
     why: 'Queue Q12 (Shantanu, 1 and 2 October 2026): Training is renamed Easy, on the screens, in the printed texts and in the engine’s own messages. The engine named that difficulty in one message. With the port saying Training again, the queue’s test must FAIL saying the engine does not call it Easy (and the corpus, which compares the port with the original as ruled, fails with it).',
     file: 'packages/engine/src/actions.ts',

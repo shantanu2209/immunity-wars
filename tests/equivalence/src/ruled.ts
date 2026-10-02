@@ -21,7 +21,7 @@
  * publishes and the rig pins byte for byte.
  */
 export interface RuledChange {
-  /** The queue's number for it, `Q1` to `Q12`. */
+  /** The queue's number for it, `Q1` to `Q13`. */
   readonly queue: string;
   /** What the edit does, in words, for a report that names it. */
   readonly name: string;
@@ -277,5 +277,45 @@ export const RULED: readonly RuledChange[] = [
     name: 'the gentlest difficulty is called Easy in the one message that names it',
     find: 'return err("On Training, immunity comes from SURVIVING an infection',
     replace: 'return err("On Easy, immunity comes from SURVIVING an infection',
+  },
+  // Q13, FOR THE GUIDED GAME, AND IT CHANGES NO GAME THAT IS NOT HANDED IT. Shantanu, 2 October 2026
+  // (docs/LOOK_PLAN.md §18 and §19): the guided game scripts everything, so a game may be handed its
+  // first turns, the diseases that arrive on each, by name. On a written turn the draw places exactly
+  // those: no die for how many, none for a disease met before, the deck untouched, the worm cap
+  // swapping nothing. The draw that places the last of them removes the field, and the game is an
+  // ordinary one from there. Five places in the original, as in the port. docs/DEVIATIONS.md #13.
+  {
+    queue: 'Q13',
+    name: 'a new game may be handed its first turns, written, and refuses a name no card carries',
+    find: '  pushLog(g,`Game start · ',
+    replace:
+      "  if(cfg.written){ g.written=cfg.written.map(turn=>turn.map(dz=>{ if(!DECK_MASTER.some(c=>c.dz===dz)) throw new Error('newGame: no card is named \"'+dz+'\"'); return dz; })); }\n  pushLog(g,`Game start · ",
+  },
+  {
+    queue: 'Q13',
+    name: 'a written turn brings as many as are written, and rolls no die for it',
+    find: '      let nSpawn=spawnCount(g);',
+    replace:
+      '      const written=g.written?g.written[g.turn-1]:undefined;\n      let nSpawn=written?written.length:spawnCount(g);',
+  },
+  {
+    queue: 'Q13',
+    name: 'a written turn rolls no die for a disease met before',
+    find: '        const known=Object.keys(g.seen);',
+    replace: '        const known=written?[]:Object.keys(g.seen);',
+  },
+  {
+    queue: 'Q13',
+    name: 'a written turn takes its card by name and leaves the deck alone',
+    find: '        if(!c){ if(!g.deck.length) g.deck=shuffle(g.discard.splice(0));\n          c=g.deck.pop(); g.discard.push(c); }\n        c=respectWormCap(g, c);',
+    replace:
+      '        if(written) c=DECK_MASTER.find(x=>x.dz===written[k]);\n        if(!c){ if(!g.deck.length) g.deck=shuffle(g.discard.splice(0));\n          c=g.deck.pop(); g.discard.push(c); }\n        if(!written) c=respectWormCap(g, c);',
+  },
+  {
+    queue: 'Q13',
+    name: 'the draw that places the last written turn removes the field',
+    find: '      if(!g.drawn) g.drawn={dz:"(no new infection)",__sentinel:true};',
+    replace:
+      '      if(written && g.written && g.turn>=g.written.length) delete g.written;\n      if(!g.drawn) g.drawn={dz:"(no new infection)",__sentinel:true};',
   },
 ];
