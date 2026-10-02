@@ -312,3 +312,24 @@ one action in the engine, one thing an antibody does, and one name in the printe
 - **Rules 4.1.2, content 1.4.0.** The bands were measured again for the version, on 24 arms and
   150,000 games, and no number in them moved: the rules play as they did.
 - [`DEVIATIONS.md`](DEVIATIONS.md) #14.
+
+### Q15, after the queue ran — 2 October 2026: Diphtheria and Anthrax are bacteria that release their toxins
+
+The first change since the queue to what is in the deck. Shantanu ruled it on FINDINGS #23, the
+toxin nothing released: *"it should be a bacterium thay releases toxins"*.
+
+- **Diphtheria** is a bacterium that releases Diphtheria toxin, and **Anthrax** one that releases
+  Anthrax toxin, each after 3 turns uncoated, as Tetanus, Cholera and Gas gangrene do. Anthrax
+  keeps the 2 steps a turn it had.
+- **Tables, not code:** the deck, the classes, the targets, the fast diseases and the toxin
+  makers, in the pack and as eight edits to the original applied in memory.
+- **The guided game's fifth turn** brings Botulism where it brought Diphtheria.
+- **Rules 4.2.0, content 1.5.0.** The bands were measured again on the new deck, on 24 arms and
+  150,000 games, and they moved: under the reference bot, Normal's games run 11.04 turns to 10.79
+  and Hard's 8.85 to 8.63. A held-out arm passes them.
+- [`DEVIATIONS.md`](DEVIATIONS.md) #15.
+
+### Q16, after the queue ran — 2 October 2026: a hidden pathogen
+
+One word of one refusal: the Killer T-Cell with nothing in range is told of a hidden pathogen,
+since two of that kind are protozoa. [`DEVIATIONS.md`](DEVIATIONS.md) #16.

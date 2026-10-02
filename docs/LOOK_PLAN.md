@@ -1568,7 +1568,7 @@ Six things were put to him in the chat when the guided game was built. He answer
 | The row of the B-Cell's action | Coat on every target. It said Tag on a bacterium |
 | The engine | Three of its 196 sentences said tagged: a log line and two refusals. They say coated and uncoated. **Three words. Nothing plays differently** |
 | The screens' other sentences | Two about what a resident eats; the lesson's two that said "then Tag", one of which no longer has to explain that a tag coats |
-| The printed texts | **Nothing.** They say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*, twice in print, are Kartik's |
+| The printed texts | **Nothing.** They say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*, twice in print, are Kartik's. *(Corrected in §22: five times, not twice; and changed there, by ruling.)* |
 | The code | **Nothing.** The action is `tag` and the mark `tagged`, as they were |
 
 - **Made the queue's way,** as Easy was (§16): in the port, and as three edits to the original
@@ -1685,3 +1685,237 @@ protocol 5, as it already ran), and the rules version on `main` had not moved.
   request, and go with the relay.
 - **Not checked on the live server:** playing together, which would mean making a room on it; and
   that a phone holding the older version takes this one on its title, which is his phone's to show.
+
+## 21. Ruled 2 October 2026, the fifth set: deployed; and nothing waits on Kartik
+
+After the pull request for Coat and the table, he wrote:
+
+> *"1. Merged 2. Please dpeloy for relay and app everything. Nothing should wait on Kartik show it
+> to ke here and I will rule. Read of lessons and findings will be done in my ui/ux review
+> today/tomorrow."*
+
+| What it rules | What follows |
+|---|---|
+| **Deploy the relay and the app** | Done, below |
+| **Nothing waits on Kartik.** What the records mark as the designer's is put to Shantanu in the chat, with what each choice leads to and a recommendation, and he rules | The open ones were put to him the same day: the five places where the printed rulebook and the engine differ ([`FINDINGS.md`](FINDINGS.md) #118), the rulebook's "(tag)" and "untagged", Diphtheria toxin's producer (#23), the printed board's layout against `geometry.json` (#49), a shape for each disease, and the name "Hidden Virus" (§13). Not ruled when this was written |
+| **The lesson's sentences, the table's, and the findings are read in his review,** today or tomorrow | Nothing is changed for them until then |
+
+**What "the designer's" means from here.** The game, its rules and its science are still Kartik's
+work, and the records go on saying so. What changes is who is asked: a question about them is put
+to Shantanu, and his ruling is recorded as his.
+
+### Deployed, 2 October 2026, 10:30 IST: Coat, rules 4.1.2, and the table of what changes
+
+On his word, once he had merged it: the relay and then the app, from `main` at `0b401cd`.
+
+| | Version | Read back |
+|---|---|---|
+| The relay | `20261002-102938-0b401cd` | Its 41 tests passed. Nobody was connected; it was restarted at 10:29:43 and is running. From the server's own file: rules 4.1.2, protocol 5. It answers through the server |
+| The app | `20261002-103009-0b401cd` | The start check passed before anything was copied; the server serves this build. The build carries rules 4.1.2 |
+
+| Checked on the live app, from the PC, in a headless phone-sized browser, read only | Found |
+|---|---|
+| The lesson, walked by `pnpm guide:walk`, pressing only what is lit | 69 beats of 69, every one in order; handed over at turn 8 of 15; no error |
+| The difficulty screen's table | Fifteen rows, with the rulebook's words for where a worm starts |
+| A game alone on Easy, to the command stage, the B-Cell in hand | Its row says Coat. 42 pictures, none broken and none that is not Clay; seven cells; no error, and no request failed |
+| The words in the build | "tagged", as a player read it, is in none of its three sentences; "coated" and "uncoated" are |
+
+- **A phone still holding the build from before** is built to take the new version on its title by
+  itself, and to be offered Update now if the relay refuses it first, because the rules version
+  moved. Neither was checked on this deploy: it needs such a phone.
+- **Not checked on the live server:** playing together, which would mean making a room on it. The
+  audit walked it against a relay on the PC, on this code.
+
+## 22. Ruled 2 October 2026, the sixth set: the designer's questions
+
+Ten questions the records had marked as Kartik's were put to him in the chat (§21). He answered:
+
+> *"1, 3, 4 and 5 I will go with your recommendations. For 2 I need more details, what exactly is
+> happening in the actual game vs the rulebook vs the table. 6 and 7 as per your recommendations.
+> 8. Yes out it in the things to do list but this must be corrected asap, it should be a bacterium
+> thay releases toxins. 9. Don't know if the board will ever be orinted again so not a priority.
+> If we do we will need to align with the app again. 10. Leave for now. Can be in the to-do list
+> but is not urgent/pressing."*
+
+| # | The question | Ruled | Done |
+|---|---|---|---|
+| 1 | On Easy the app adds the practice bonus after the cap, so a Produce can make 4; the rulebook capped the total at 3 | **Keep the app, change the print** | The rulebook's two steps change places and say so; its table says *up to 3, or 4 with practice* |
+| 2 | A hurt organ recovers in the app, and the rulebook is silent | **More detail asked for** | Given in the chat. Not ruled |
+| 3 | On Hard, infections spread along the lymph; the rulebook is silent | **Print it** | A paragraph after the Spread phase's list, and a row in the rulebook's table |
+| 4 | How often Pathogen X comes, and how it arrives at a table | **"Your recommendation"**, and none had been made: a question had been put | Not changed. A recommendation was put to him the same day |
+| 5 | The rolls a bacterium divides on | **Print the numbers** | In the Spread phase's list, with what a damaged Spleen does, and a row in the rulebook's table |
+| 6 | The rulebook's "(tag)" and "untagged" | **Coat and uncoated** | The heading, and "untagged" in four places of the rulebook and one of the study packet |
+| 7 | The kind named "Hidden Virus" covers two protozoa | **"Hidden Pathogen"** | The kind's name in the app. The engine's one refusal that says "hidden virus" waits for the next version of the rules ([`TODO.md`](TODO.md)) |
+| 8 | Diphtheria toxin has nothing that releases it | **Correct it as soon as possible: a bacterium that releases its toxin** | On the list, first. What it means was put to him the same day |
+| 9 | The printed A2 board against the app's board | **Not a priority; align with the app if it is ever printed again** | On the list |
+| 10 | A shape for each disease | **Leave for now; not pressing** | On the list |
+
+**The list** is [`TODO.md`](TODO.md), new with this change: what is ruled and not yet built or not
+yet settled.
+
+**What the printed texts now say, each read from the engine before it was written.**
+
+| Where in the rulebook | It said | It says |
+|---|---|---|
+| The Spread phase, bacteria | "guaranteed on Hard, on a die roll otherwise" | Easy on a roll of 1 or 2, Normal on 1 to 3; Hard always, and a second on 1 to 3. With a damaged Spleen the roll needed on Easy and Normal is one higher |
+| After the Spread phase's list | Nothing | On Hard only, before any invader advances: each uncoated invader on a step-3 circle with a lymphatic link rolls, and on a 1 or 2 a copy is placed on a linked route's step-3 circle. Malaria never does |
+| How antibody production is worked out | The practice bonus, then the cap | The cap, then the practice bonus on top of it: on Easy a practised class can make 4 |
+| The table of what changes | *up to 3* on Easy; no row for dividing or the lymph | *up to 3, or 4 with practice*; a row for each |
+| The B-Cell's action | "Coat (tag)" | "Coat" |
+| Four sentences, and one in the study packet | untagged | uncoated |
+
+- **Each edit is found exactly once in the document or nothing is written,** and the documents
+  were opened again afterwards and read: both are sound, and the rulebook has one paragraph and
+  two table rows more than it had.
+- **The quick reference is not changed:** it has none of these sentences.
+- **Corrected here:** §20 and [`DEVIATIONS.md`](DEVIATIONS.md) #14 said "untagged" was twice in
+  print. It was five times: four in the rulebook and one in the study packet. The search that
+  counted it looked only at paragraphs that also said coat.
+
+**The kind's name.** The labels are held, value for value, to the original interface's table. A
+value changed by ruling is now the one exception that table's test allows, and it is held both
+ways: the pack must carry what was ruled, and everything else in the table must still be the
+original's. Controls `ruled-label-is-as-ruled` and `ruled-label-leaves-the-rest-pinned`, each
+fired. The medical review is regenerated: its heading for the kind moved.
+
+**Found while printing 3 and 5, and not settled** ([`FINDINGS.md`](FINDINGS.md) #119): the
+rulebook's Spread phase is a numbered list that advances the invaders first, and the engine
+advances them last; and a damaged Spleen does nothing on Hard.
+
+## 23. Ruled 2 October 2026, the seventh set: the game is right, and the rest is brought to it
+
+Put the detail he had asked for, a recommendation where one had been missing, the proposal for
+Diphtheria and the question of the Spread phase's order, he answered:
+
+> *"2. The game behaves correctly. The rulebook and everything else must be updated accordingly 4.
+> Never ask a qeustion without a recommendation. What the rulebook says currently is probably for
+> the physical game and does not work for the digital game. I think how the game does it currently
+> is already correct it just needs to reglect in the rulebook and wherever else required
+> accordingly. 8. Agree with everything. Wherever any doubt in this take your own call for
+> whatever works best. For the spread stuff etc. As well I will go with your recommendation. No
+> additional penalty for now on hars but out it on the to do list to be evaluated later."*
+
+| What | Ruled | Done |
+|---|---|---|
+| A hurt organ recovering (§22, 2) | The game is right; the rulebook and everything else say so | Below |
+| How Pathogen X comes (§22, 4) | The game is right; the rulebook and wherever else say so | Below |
+| Diphtheria (§22, 8) | As proposed, and any doubt is Claude's to settle | Queue Q15 |
+| The order of the Spread phase ([`FINDINGS.md`](FINDINGS.md) #119) | Print the game's order | Below |
+| A hurt Spleen on Hard | No penalty of its own for now; to be weighed later | On [`TODO.md`](TODO.md) |
+
+**Two standing rules come with it.** A question is never put to him without a recommendation.
+And where the app and the printed rulebook differ, the game as it plays is taken to be right,
+because the rulebook was written for the table: the rulebook is brought to the game.
+
+### Built: Diphtheria and Anthrax as bacteria that release their toxins (queue Q15)
+
+| | Was | Is |
+|---|---|---|
+| Diphtheria | A toxin card, class TOX, by the nose, for the heart | A bacterium, class EXB, by the nose, for the lungs. Uncoated for 3 turns, it releases Diphtheria toxin, which heads for the heart |
+| Anthrax | A toxin card, class TOX, by a wound, for the lungs | A bacterium, class EXB, by a wound, for the lungs, still 2 steps a turn. Uncoated for 3 turns, it releases Anthrax toxin, which heads for the heart or the liver |
+| Diphtheria toxin | A record nothing released | Released by Diphtheria |
+| Anthrax toxin | Not in the pack | A record, a class, a target and a card's five sentences |
+| Botulism, Shiga toxin | Toxin cards | The same |
+
+- **Tables, not code.** The engine's rules for a toxin maker are what they were; two more bacteria
+  are on its list. Made the queue's way, in the pack and as eight edits to the original applied in
+  memory ([`DEVIATIONS.md`](DEVIATIONS.md) #15).
+- **The guided game's fifth turn brings Botulism,** where it brought Diphtheria as its toxin. Its
+  seed, 37, still plays the lesson whole.
+- **With the same version of the rules, one word of the engine's** (queue Q16, DEVIATIONS #16): the
+  Killer T-Cell with nothing in range is told of a hidden pathogen.
+- **The disease library** no longer has a record nothing produces, and the pack no longer allows
+  one.
+- **The reachability report's known answer is kept.** It had to find Diphtheria toxin without
+  being told. The content has no such row now, so the test hands the generator the toxin makers
+  without Diphtheria and requires it to find that row, and only that one.
+
+### Built: the printed texts and How to play, brought to the game
+
+**The Spread phase, in the order the game plays it.** The rulebook's numbered list advanced the
+invaders first; the game advances them after everything already in the body has acted.
+
+| | The rulebook now, as the game |
+|---|---|
+| 1 | Bacteria divide |
+| 2 | Hidden pathogens may burst |
+| 3 | Free viruses may hide |
+| 4 | Toxin-makers release toxins: Tetanus, Cholera, Gas gangrene, Diphtheria or Anthrax |
+| 5 | Lodged worms chew |
+| 6 | On Hard only, infections spread along the lymph |
+| 7 | Every invader advances; what reaches an organ attacks it |
+| 8 | Organs recover |
+| 9 | Spent cells recover |
+| 10 | Advance the turn marker |
+
+**Organs recover.** Driven in the engine before it was written: lungs hit on a turn are whole again
+at the end of the next, on Easy and Normal, if their branch stays empty.
+
+- Each organ with no invader on its branch counts a clear turn, and the turn it was hurt counts.
+- On Easy and Normal, an organ below full integrity gets 1 back at 2 clear turns in a row.
+- On Hard it never does. After 2 clear turns in a row its penalty stops, until an invader enters
+  its branch again.
+- **Every organ, the Brain too.** The rulebook's own note says neurons cannot be replaced; the
+  ruling is that the game is right, and the word everywhere is *recovers*, not heals.
+
+**Pathogen X.** The rulebook said what it is and nothing of when it comes. It now says: the card is
+set aside and is never in the deck; at setup a die, rolled again on a 6, puts it in the game on a 1
+on Easy, on 1 to 3 on Normal, always on Hard, which is the game's 2, 6 and 10 in 10; and it breaks
+in once, on a turn from 2 to 8, 2 to 11 or 2 to 16. Those turns are the engine's, and a test
+requires every one of them and no other in 4,000 games.
+
+| Where | What changed |
+|---|---|
+| The rulebook | The Spread phase's list and its one-line summary; organs recovering; Pathogen X at setup and in its own section; two rows more in the table of what changes; what the TOX and EXB classes cover; a note on the printed Diphtheria and Anthrax cards |
+| The study packet | One sentence: an organ recovers |
+| The quick reference | What the TOX class covers |
+| How to play, in the app | The order of the Spread phase in a sentence; organs recovering; how Pathogen X comes |
+| The table of what changes | *A hurt organ recovers* |
+
+**The printed Diphtheria and Anthrax cards cannot change.** The rulebook's note says how to play
+them.
+
+**Not done, and on the list:** whether a hurt Spleen should cost something on Hard, where bacteria
+already always divide.
+
+### The version, and the bands on the new deck
+
+**Rules 4.2.0, content 1.5.0.** A step of the middle number, where Easy and Coat were steps of the
+last: the deck plays differently. The balance bands were measured again at the change's own
+commit, `f3f0ce7`, on 24 arms and 150,000 games.
+
+| The reference bot's games, 24 arms of 2,000 | Before | On the new deck |
+|---|---|---|
+| Normal: turns survived | 11.04 | 10.79 |
+| Normal: antibodies made | 19.48 | 19.18 |
+| Hard: turns survived | 8.85 | 8.63 |
+| Hard: antibodies made | 15.09 | 14.82 |
+| Easy: every metric | | within 1.3 band widths of where it was |
+
+- **They moved, and should have.** Two cards an antibody stopped outright are now bacteria that
+  divide and release a toxin.
+- **It is the reference bot's games that changed. It is not a measure of difficulty:** the bot
+  plays about six of the game's fourteen seats. Win rate under the reference bot v1, at 48,000
+  games per difficulty, reported and not gated: Easy 54.5% to 52.0%, Normal 0.30% to 0.15%.
+- **A held-out arm passes the new bands** on all three difficulties.
+- **One of the panel's own controls was narrowed** ([`FINDINGS.md`](FINDINGS.md) #121): at its small
+  scale, whether the Brain at integrity 1 fails the panel on Normal became a coin flip, 3 sizes of
+  5. Against the bands that ship it fails on Normal and on Hard, as it should. The control asserts
+  what holds at every size.
+
+- **The coverage record moved by two arms.** Two "no game was lost" arms of the simulator's
+  averages are no longer reached by the recorded runs on this deck, and joined the list deferred
+  until a competent bot exists (20 arms, from 18). Coverable coverage 97.45%; the gate passes.
+
+**What it means for the server.** The relay and the app go together, because the rules version
+moved, and the relay's restart ends any game being played together at that moment. Not deployed by
+merging.
+
+### Measured on the build with all of it
+
+| | |
+|---|---|
+| The lesson, walked on the build by `pnpm guide:walk`, with Botulism on its fifth turn | 69 beats of 69, every one in order; handed over at turn 8 of 15; no error |
+| The Gate 1 audit, alone and together | 88 screens in each of the four passes (90 in one); every check at zero over 1,136 controls and 2,444 text runs; 38 close paths, none wrong; offline met, with no request failed; 47 controls of the audit's own. **One screen was not reached in one pass:** a row's several targets at 200% text, which that pass's dice did not deal. The other three passes reached it, and nothing that draws it changed |
+
+**Not read by him:** the new sentences, in the app and in print. **Not played on a phone.**

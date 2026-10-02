@@ -85,7 +85,7 @@
   "actions.noActionPoints": "No Action Points.",
   "actions.noAntibodiesCanBeMadeThis": "No antibodies can be made this turn (immunosuppression).",
   "actions.noAntivenomLeft": "No antivenom left.",
-  "actions.noHiddenVirusInRange": "No hidden virus in range.",
+  "actions.noHiddenPathogenInRange": "No hidden pathogen in range.",
   "actions.noInfectedCellWithinNkRange": "No infected cell within NK range.",
   "actions.noLymphaticLinkFromThisRoute": "No lymphatic link from this route.",
   "actions.noSuchOrgan": "No such organ.",

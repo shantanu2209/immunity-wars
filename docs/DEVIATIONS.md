@@ -711,7 +711,9 @@ original's file is not touched.
 on every target, where it was Tag on a bacterium; two sentences about what a resident eats say
 coated; and the lesson's two sentences that said "then Tag" say "then Coat". **The printed texts
 are not changed:** they say Coat. The rulebook's heading *"Coat (tag)"* and the word *untagged*,
-once in the rulebook and once in the study packet, are Kartik's to keep or change.
+once in the rulebook and once in the study packet, are Kartik's to keep or change. *(Corrected the
+same day: "untagged" was four times in the rulebook and once in the study packet. Shantanu ruled
+them changed, and they are: `LOOK_PLAN.md` §22.)*
 
 **The engine's own names are not changed:** the action is still `tag` and the mark still
 `tagged`, in both engines, in a saved game and in a room. Only what a player reads has changed.
@@ -726,6 +728,103 @@ was, to the last digit, and only the versions, the commit and the time differ.
 **Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q14 cases: a coated bacterium logged as
 coated and both refusals, in the port and the original as ruled, with the untouched original, which
 still says tagged, as the control. Mutation control `queue-q14-the-engine-says-coated`.
+
+## 15. Diphtheria and Anthrax are bacteria that release their toxins (queue Q15)
+
+**Legacy behaviour.** The deck's Diphtheria and Anthrax cards are toxins: not alive, 2 steps a
+turn, stopped only by antitoxin. The tables also carry a record for *Diphtheria toxin*, with a
+class and a target, that nothing in the game can produce ([`FINDINGS.md`](FINDINGS.md) #23). Three
+bacteria release a toxin if left uncoated for 3 turns: Tetanus, Cholera and Gas gangrene.
+
+**Port behaviour.** Five do. **Diphtheria** is a bacterium of the extracellular class, entering by
+the nose and heading for the lungs; left uncoated for 3 turns it releases Diphtheria toxin, which
+heads for the heart, as that record always said. **Anthrax** is a bacterium of the same class,
+entering by a wound and heading for the lungs as before, at the 2 steps a turn it moved as a
+toxin; left uncoated for 3 turns it releases Anthrax toxin, which heads for the heart or the liver.
+Botulism and Shiga toxin stay toxin cards.
+
+**Why.** Diphtheria is an infection: a bacterium growing in the throat, whose toxin does the
+killing. The card called it a toxin and its text said the toxin "is pre-formed", which is not
+true of diphtheria. Shantanu, 2 October 2026: *"this must be corrected asap, it should be a
+bacterium thay releases toxins"*, and of the proposal that followed, *"Agree with everything.
+Wherever any doubt in this take your own call for whatever works best."* The proposal:
+
+| Put to him | Built |
+|---|---|
+| Diphtheria: a bacterium, extracellular class, by the nose, for the lungs; its toxin, after 3 turns uncoated, for the heart | So |
+| Its card text, which said the toxin is pre-formed, reworded | "Left alone, the bacteria release a TOXIN that attacks the heart", and how to beat it |
+| Anthrax is the same case and goes with it | So. Its toxin is new to the pack |
+| The guided game's fifth turn used Diphtheria as its toxin: Botulism instead | So. Its seed still plays it |
+
+**Taken as Claude's own call, on his word:**
+
+- **Anthrax keeps its speed.** The original's list of fast diseases has a note where Anthrax would
+  be: *"Anthrax is a toxin and is already speed 2."* So it was meant to be fast, and as a
+  bacterium it is on that list at 2.
+- **Where Anthrax toxin heads: the heart or the liver.** The toxin's lethal part acts on the heart
+  and the blood vessels and its other part on the liver; the pack had no record, so one was
+  written, with five short sentences for its card.
+- **Botulism stays a toxin.** What makes a person ill from food is toxin already made in the food,
+  with no infection. **Shiga toxin** is a card named for the toxin itself, and stays.
+
+**It is a change to the deck, not to a rule's working.** No line of the engine's code changed:
+what changed is five of its tables, in the content pack and, as eight ruled edits, in the
+original. The schema, the pack's own test and the library no longer allow a record with no
+parent, since there is none.
+
+**The oracle.** As for #10 to #14. The queue's tests show a Diphtheria and an Anthrax that arrive
+as bacteria of the extracellular class and, left for three spreads, release their toxins, in the
+port and the original as ruled, the two in the same state to the last field; and the untouched
+original, where each is a toxin card and no such toxin appears, as the control.
+
+**What it does to the printed game.** The rulebook, the quick reference and the lists of what each
+class covers say so. **The printed cards for the two cannot change:** the rulebook now carries a
+note telling a player how to play them.
+
+**The rules version** moves from 4.1.2 to 4.2.0 and the content from 1.4.0 to 1.5.0: the deck
+plays differently, so this is a step of the middle number, where the wording changes before it
+were steps of the last. The relay refuses any other version exactly. **The balance bands were
+measured again** at commit `f3f0ce7`, on 24 arms and 150,000 games, and this time they moved, as a
+changed deck should make them:
+
+| The reference bot's games, 24 arms of 2,000 | Before | On the new deck |
+|---|---|---|
+| Normal: turns survived | 11.04 | 10.79 |
+| Normal: antibodies made | 19.48 | 19.18 |
+| Hard: turns survived | 8.85 | 8.63 |
+| Hard: antibodies made | 15.09 | 14.82 |
+| Easy: every metric | | within 1.3 band widths of where it was |
+
+Two cards that an antibody used to stop outright are now bacteria that divide and release a toxin,
+and the reference bot's games on Normal and Hard end a little sooner. **That is the bot's games
+changing, not a measure of how hard the game is:** the bot plays about six of the game's fourteen
+seats. The win rate under the reference bot v1, at 48,000 games per difficulty, reported and not
+gated: Easy 54.5% to 52.0%, Normal 0.30% to 0.15%. A held-out arm passes the new bands on all
+three difficulties. One of the panel's own fast controls lost its verdict at its small scale and
+was narrowed to what holds ([`FINDINGS.md`](FINDINGS.md) #121).
+
+**Decided by:** Shantanu, 2 October 2026.
+**Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q15 cases. Mutation controls
+`queue-q15-diphtheria-is-a-bacterium` and `queue-q15-anthrax-releases-its-toxin`.
+
+## 16. The Killer T-Cell is told of a hidden pathogen, not a hidden virus (queue Q16)
+
+**Legacy behaviour.** A snipe with nothing in range is refused with *"No hidden virus in range."*
+
+**Port behaviour.** The same refusal, on the same condition: *"No hidden pathogen in range."*
+**One word.** Nothing plays differently.
+
+**Why.** What the Killer T-Cell snipes is anything hiding inside one of your cells, and two of the
+thirteen diseases of that kind are protozoa, Toxoplasmosis and Chagas disease. The kind's name on
+the screens was "Hidden Virus" and is "Hidden Pathogen" by ruling (2 October 2026,
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §22), and this sentence was held for the next version of the rules,
+which queue Q15 is.
+
+**The oracle.** Made twice, as #12 and #14 were. Test: the Q16 cases, with the untouched original,
+which still says virus, as the control. Mutation control
+`queue-q16-the-engine-says-hidden-pathogen`.
+
+**Decided by:** Shantanu, 2 October 2026.
 
 ---
 

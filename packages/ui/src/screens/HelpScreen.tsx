@@ -28,6 +28,7 @@ import {
   DIFF,
   EVENTS,
   GRACE_CLEAR,
+  HEAL_AFTER,
   INV_HP,
   ORGANS,
   SPEED,
@@ -43,6 +44,7 @@ import { RichText } from '../panels/LogPanel';
 
 import { BODY as P, CARD, GROUP, LEAD, PAGE, ROW, STACK, TITLE } from './chrome';
 import { DifferencesTable } from './DifferencesCard';
+import { PATHOGEN_X_IN_TEN } from './difficultyFacts';
 import { ScreenIcon } from './icons';
 
 const NAME: CSSProperties = { fontWeight: 900 };
@@ -196,6 +198,10 @@ function sectionBody(key: HelpSectionKey): ReactElement {
             })}
             {effect ? <> {t('effects.organEffect', { effect })}</> : null}
           </p>
+          <p style={P}>
+            <Lead text={t('help.s3.recover.name')} />
+            {t('help.s3.recover.text', { n: HEAL_AFTER })}
+          </p>
           <Named nameKey="help.s3.brain.name" textKey="help.s3.brain.text" />
           <p style={P}>{t('help.s3.tap')}</p>
         </>
@@ -244,6 +250,12 @@ function sectionBody(key: HelpSectionKey): ReactElement {
           <p style={P}>{t('help.s7.p3')}</p>
           <p style={P}>{t('help.s7.p4')}</p>
           <Named nameKey="help.s7.x.name" textKey="help.s7.x.text" />
+          <p style={P}>
+            {t('help.s7.x.arrives', {
+              easy: PATHOGEN_X_IN_TEN.training,
+              normal: PATHOGEN_X_IN_TEN.normal,
+            })}
+          </p>
         </>
       );
     case 's8':

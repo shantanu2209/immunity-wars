@@ -541,15 +541,15 @@ export const DiseasesS = z.strictObject({
    * The disease records that are not deck cards, and where each arises from (P2.6, the
    * library). `type` is the invader type the engine gives it; pinned to the deck, the disease
    * records, the toxin makers and the engine's rare events by `derived.test.ts` and the
-   * equivalence suite. `from: null` with `via: 'none'` is the one record nothing produces
-   * (docs/FINDINGS.md #23), kept by ruling and labelled as such.
+   * equivalence suite. Every record has a parent. Until queue Q15 one had none, Diphtheria toxin,
+   * which nothing released (docs/FINDINGS.md #23).
    */
   DERIVED: z.record(
     z.string(),
     z.strictObject({
-      from: z.string().nullable(),
+      from: z.string(),
       type: InvaderTypeS,
-      via: z.enum(['toxin', 'stage', 'rare', 'none']),
+      via: z.enum(['toxin', 'stage', 'rare']),
       rare: z.string().optional(),
     }),
   ),

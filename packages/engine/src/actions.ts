@@ -677,7 +677,7 @@ export function applyAction(g: GameState, a: Action): ActionResult {
     }
     case 'snipe': {
       const iv = snipeTargets(g).find((x) => x.id === a.invaderId);
-      if (!iv) return err('No hidden virus in range.');
+      if (!iv) return err('No hidden pathogen in range.');
       killInvader(g, iv, 'tcell');
       spend(g, 'tcell');
       pushLog(g, `<b>Killer T-Cell</b> sniped hidden ${iv.disease}.`, 'good');

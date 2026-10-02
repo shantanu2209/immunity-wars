@@ -175,11 +175,25 @@ describe('E2 control: the panel detects changes it should', () => {
     ).toBeLessThan(-3);
   });
 
-  /** A content change rather than a tuning one — the panel should not only notice DIFF. */
-  it('the Brain at integrity 1 instead of 2 fails the panel, on more than one metric', () => {
+  /**
+   * A content change rather than a tuning one — the panel should not only notice DIFF.
+   *
+   * AT THIS SCALE THE STRENGTH IS ASSERTED AND NOT THE VERDICT (docs/FINDINGS.md #121), as for the
+   * Action Point above. This asserted that the Brain at integrity 1 FAILS this small panel on
+   * Normal, on more than one metric. With queue Q15's deck (2 October 2026) it fails it at three
+   * of five fast-scale sizes measured and passes at two, this test's own among them: turns
+   * survived falls 3.3σ to 4.6σ at every one, and the second metric comes and goes. Against the
+   * shipped bands it fails on Normal and on Hard, by more than 6σ on turns survived (#121). So
+   * what is asserted here is what holds at every size: games get shorter, past 3σ.
+   */
+  it('the Brain at integrity 1 instead of 2 moves the panel on Normal, past 3σ and the right way', () => {
     const v = judge(MUT_BRAIN_HP, 'normal');
-    expect(v.failed).toBe(true);
-    expect(v.twoBreached, `only ${v.breaches.length} metric(s) breached: ${v.reason}`).toBe(true);
+    const detail = v.shifts.map((s) => `${s.metric} ${s.sigmas.toFixed(1)}σ`).join(', ');
+    const turns = v.shifts.find((s) => s.metric === 'avgTurnsSurvived');
+    expect(
+      turns?.sigmas ?? 0,
+      `the panel barely moved for half the Brain's integrity: ${detail}`,
+    ).toBeLessThan(-3);
   });
 });
 

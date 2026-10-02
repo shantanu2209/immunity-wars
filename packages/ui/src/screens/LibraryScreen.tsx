@@ -11,8 +11,8 @@
  * for the existing pathogen card, which opens over the index so the index keeps its place.
  *
  * The records that are not deck cards (the pack's DERIVED table) sit indented under the parent
- * they arise from; the one record nothing produces is labelled as readable but never produced
- * (Kartik's ruling; FINDINGS #23). Pathogen X has no entry, and the index says so in one line
+ * they arise from. Every one has a parent: the one that had none, Diphtheria toxin, is released
+ * by the Diphtheria bacterium since queue Q15 (FINDINGS #23). Pathogen X has no entry, and the index says so in one line
  * (Shantanu's ruling: it teaches the mechanic in passing, and a player who counts will wonder).
  *
  * The rulebook's fifteen "why it works this way" boxes are their own section: Kartik's text,
@@ -105,9 +105,8 @@ function RowArt({ disease, type }: { disease: string; type: string }): ReactElem
 interface Entry {
   disease: string;
   type: string;
-  /** For a derived record: the parent it arises from, or null for the one nothing produces. */
+  /** For a derived record: the parent it arises from. Null for a deck card. */
   from: string | null;
-  neverProduced: boolean;
 }
 
 /** The index: every deck card that is not the masked novel pathogen, by type in the pack's
@@ -124,13 +123,10 @@ function buildIndex(): { type: string; entries: Entry[] }[] {
   };
   const sorted = [...cards].sort((a, b) => a.dz.localeCompare(b.dz));
   for (const c of sorted) {
-    push({ disease: c.dz, type: c.type, from: null, neverProduced: false });
+    push({ disease: c.dz, type: c.type, from: null });
     for (const [dz, d] of derived) {
-      if (d.from === c.dz) push({ disease: dz, type: c.type, from: c.dz, neverProduced: false });
+      if (d.from === c.dz) push({ disease: dz, type: c.type, from: c.dz });
     }
-  }
-  for (const [dz, d] of derived) {
-    if (d.from === null) push({ disease: dz, type: d.type, from: null, neverProduced: true });
   }
   return [...byType.entries()].map(([type, entries]) => ({ type, entries }));
 }

@@ -103,7 +103,7 @@
     },
     {
       "dz": "Diphtheria",
-      "type": "toxin",
+      "type": "bacteria",
       "lane": "nose"
     },
     {
@@ -261,7 +261,7 @@
     },
     {
       "dz": "Anthrax",
-      "type": "toxin",
+      "type": "bacteria",
       "lane": "wound"
     },
     {

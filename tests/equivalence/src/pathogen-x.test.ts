@@ -58,7 +58,8 @@ describe('#13 FIXED: the antibody pool no longer depends on the novel flag survi
     expect(content.NOVEL_ANTIGENS.has('Pathogen X')).toBe(true);
     // And FAMILY is untouched, so the 22-table equivalence with legacy still holds.
     expect('Pathogen X' in content.FAMILY).toBe(false);
-    expect(Object.keys(content.FAMILY)).toHaveLength(106);
+    // 106 until queue Q15 (2 October 2026), which added Anthrax toxin.
+    expect(Object.keys(content.FAMILY)).toHaveLength(107);
   });
 
   it('every OTHER card is unaffected — the deviation is one card wide', () => {

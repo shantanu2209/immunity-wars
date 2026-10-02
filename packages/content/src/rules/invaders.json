@@ -28,12 +28,15 @@
     "Plague": 2,
     "Ebola": 2,
     "Catheter sepsis": 2,
-    "Endocarditis": 2
+    "Endocarditis": 2,
+    "Anthrax": 2
   },
   "NOT_ALIVE": ["toxin", "venom"],
   "TOXIN_MAKERS": {
     "Tetanus": "Tetanus toxin",
     "Cholera": "Cholera toxin",
-    "Gas gangrene": "Clostridial toxin"
+    "Gas gangrene": "Clostridial toxin",
+    "Diphtheria": "Diphtheria toxin",
+    "Anthrax": "Anthrax toxin"
   }
 }

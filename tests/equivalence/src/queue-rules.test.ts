@@ -587,3 +587,112 @@ describe('Q13 (Shantanu, 2 October 2026): a game may be handed its first turns, 
     expect(dealt.every((d) => d !== JSON.stringify(WRITTEN.slice(0, 3)))).toBe(true);
   });
 });
+
+describe('Q15 (Shantanu, 2 October 2026): Diphtheria and Anthrax are bacteria that release their toxins', () => {
+  // The change is to the deck and the tables beside it, in the pack and, as ruled edits, in the
+  // original. The control is the untouched original, where each is still a toxin card and nothing
+  // releases a toxin of that name.
+  type Inv = { id: string; disease: string; type: string };
+  const invs = (g: Game): Inv[] => g['invaders'] as unknown as Inv[];
+  const arrive =
+    (disease: string) =>
+    (E: Engine, g: Game): void => {
+      E.forceInjectCard(g, disease);
+      g['phase'] = 'command';
+    };
+  /** Three turns left alone: three spreads, with the seed's dice. */
+  const threeSpreads = (E: Engine, seed: number, disease: string): Game => {
+    installRng(seed);
+    try {
+      const g = E.newGame({ difficulty: 'training' }) as Game;
+      arrive(disease)(E, g);
+      for (let turn = 0; turn < 3; turn += 1) E.resolveSpread(g);
+      return g;
+    } finally {
+      restoreRng();
+    }
+  };
+
+  for (const [disease, toxin] of [
+    ['Diphtheria', 'Diphtheria toxin'],
+    ['Anthrax', 'Anthrax toxin'],
+  ] as const) {
+    it(`${disease} arrives as a bacterium of the extracellular class, in the port and the original as ruled`, () => {
+      for (const [name, E] of ENGINES) {
+        const { g } = run(E, 1, 'normal', arrive(disease), () => []);
+        const iv = invs(g).find((x) => x.disease === disease);
+        if (iv?.type !== 'bacteria')
+          throw new Error(`${name}: THE ${disease.toUpperCase()} CARD IS NOT A BACTERIUM`);
+        expect(E.famOf(iv as never), name).toBe('EXB');
+      }
+    });
+
+    it(`${disease}, left uncoated for three turns, releases ${toxin}, in both`, () => {
+      for (const seed of SEEDS) {
+        const [a, b] = ENGINES.map(([, E]) => threeSpreads(E, seed, disease)) as [Game, Game];
+        for (const [name, g] of [
+          ['the port', a],
+          ['the original as ruled', b],
+        ] as const) {
+          const released = invs(g).filter((x) => x.disease === toxin);
+          if (released.length === 0)
+            throw new Error(
+              `${name}, seed ${String(seed)}: ${disease.toUpperCase()} DID NOT RELEASE ITS TOXIN`,
+            );
+          expect(
+            released.every((x) => x.type === 'toxin'),
+            name,
+          ).toBe(true);
+        }
+        // And the two engines are in the same state, to the last field.
+        expect(normalise(a)).toEqual(normalise(b));
+      }
+    });
+
+    it(`CONTROL: in the original, untouched, ${disease} is a toxin card and nothing releases ${toxin}`, () => {
+      const { g } = run(ORIGINAL, 1, 'normal', arrive(disease), () => []);
+      expect(invs(g).find((x) => x.disease === disease)?.type).toBe('toxin');
+      for (const seed of SEEDS) {
+        const after = threeSpreads(ORIGINAL, seed, disease);
+        expect(invs(after).some((x) => x.disease === toxin)).toBe(false);
+      }
+    });
+  }
+
+  it('Anthrax moves as fast as it did as a toxin: two steps a turn, in both', () => {
+    for (const [name, E] of ENGINES) {
+      const { g } = run(E, 1, 'normal', arrive('Anthrax'), () => []);
+      const iv = invs(g).find((x) => x.disease === 'Anthrax');
+      expect(
+        (E as unknown as { invSpeed(g: Game, iv: unknown): number }).invSpeed(g, iv),
+        name,
+      ).toBe(2);
+    }
+  });
+});
+
+describe('Q16 (Shantanu, 2 October 2026): the Killer T-Cell is told of a hidden pathogen', () => {
+  // The kind holds two protozoa, and the screens call it Hidden Pathogen. One refusal changed its
+  // word; the control is the untouched original, which still says virus.
+  const lab = (_E: Engine, g: Game): void => {
+    g['phase'] = 'command';
+    g['ap'] = 5;
+  };
+  const snipe = (): Raw[] => [{ action: 'snipe', cell: 'tcell', invaderId: 'nothing' }];
+
+  it('with nothing in range it says pathogen, in the port and the original as ruled', () => {
+    for (const [name, E] of ENGINES) {
+      const { g, results } = run(E, 1, 'normal', lab, snipe);
+      expect(results[0], `${name}: THE ENGINE STILL SAYS HIDDEN VIRUS`).toEqual({
+        ok: false,
+        error: 'No hidden pathogen in range.',
+      });
+      expect(g['ap'], name).toBe(5);
+    }
+  });
+
+  it('CONTROL: the original, untouched, refuses the same and still says virus', () => {
+    const { results } = run(ORIGINAL, 1, 'normal', lab, snipe);
+    expect(results[0]).toEqual({ ok: false, error: 'No hidden virus in range.' });
+  });
+});

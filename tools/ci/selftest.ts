@@ -1898,7 +1898,7 @@ const CONTROLS: readonly Control[] = [
     id: 'reachability-report-whole',
     why: "FINDINGS #104: the reachability report's currency check sampled two numbers, so when queue Q3 declared Pathogen X's tropism the report went on saying it had none, and the check passed. It compares the whole report now.",
     file: 'docs/CONTENT_REACHABILITY.md',
-    mutate: (t) => t.replace('TROPISM: **107 entries**', 'TROPISM: **106 entries**'),
+    mutate: (t) => t.replace('TROPISM: **108 entries**', 'TROPISM: **107 entries**'),
     gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
     expect: 'is up to date with the content it describes',
   },
@@ -1965,6 +1965,75 @@ const CONTROLS: readonly Control[] = [
     expect: 'A WRITTEN TURN DID NOT BRING WHAT WAS WRITTEN',
   },
   {
+    id: 'ruled-label-is-as-ruled',
+    why: 'Ruled 2 October 2026: the kind named Hidden Virus is named Hidden Pathogen, because two of its diseases are protozoa. The labels are pinned to the original interface’s, value for value, and a ruled value is the one exception, held to being what was ruled. With the label put back to Hidden Virus, the pin must FAIL saying a ruled label is not what was ruled.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Hidden Pathogen",', '"n": "Hidden Virus",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED LABEL IS NOT WHAT WAS RULED',
+  },
+  {
+    id: 'ruled-label-leaves-the-rest-pinned',
+    why: 'The other half of the ruled label: allowing one value to differ from the original must not loosen the table it is in. With another kind’s name changed in the same table, the pin must still FAIL on that table.',
+    file: 'packages/content/src/labels/labels.json',
+    mutate: (t) => t.replace('"n": "Fungus",', '"n": "Fungi",'),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'UI_ — same values, same key order',
+  },
+  {
+    id: 'queue-q15-diphtheria-is-a-bacterium',
+    why: 'Queue Q15 (Shantanu, 2 October 2026): Diphtheria is a bacterium that releases its toxin, where it was a toxin card whose toxin nothing released. With the pack’s Diphtheria card a toxin again, the queue’s test must FAIL saying the card is not a bacterium (and the corpus, which compares the port with the original as ruled, fails with it).',
+    file: 'packages/content/src/rules/deck.json',
+    mutate: (t) =>
+      t.replace(
+        '"dz": "Diphtheria",\n      "type": "bacteria",',
+        '"dz": "Diphtheria",\n      "type": "toxin",',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE DIPHTHERIA CARD IS NOT A BACTERIUM',
+  },
+  {
+    id: 'queue-q15-anthrax-releases-its-toxin',
+    why: 'Queue Q15: Anthrax goes with Diphtheria, a bacterium that releases Anthrax toxin. With Anthrax taken off the pack’s list of toxin makers, the queue’s test must FAIL saying Anthrax did not release its toxin.',
+    file: 'packages/content/src/rules/invaders.json',
+    mutate: (t) =>
+      t.replace(
+        '"Diphtheria": "Diphtheria toxin",\n    "Anthrax": "Anthrax toxin"',
+        '"Diphtheria": "Diphtheria toxin"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'ANTHRAX DID NOT RELEASE ITS TOXIN',
+  },
+  {
+    id: 'queue-q16-the-engine-says-hidden-pathogen',
+    why: 'Queue Q16 (Shantanu, 2 October 2026): the kind that holds two protozoa is named Hidden Pathogen, and the Killer T-Cell’s refusal for want of a target said hidden virus. With the port saying virus again, the queue’s test must FAIL saying the engine still says hidden virus.',
+    file: 'packages/engine/src/actions.ts',
+    mutate: (t) =>
+      t.replace("err('No hidden pathogen in range.')", "err('No hidden virus in range.')"),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/queue-rules.test.ts',
+    expect: 'THE ENGINE STILL SAYS HIDDEN VIRUS',
+  },
+  {
+    id: 'reachability-finds-the-row-nothing-produces',
+    why: 'FINDINGS #23 and queue Q15: the reachability report had to find Diphtheria toxin, the one record nothing produced, without being told. The content has no such record now, so the answer is demanded with Diphtheria taken out of the toxin makers the generator is handed. With the generator counting every FAMILY entry as producible, its test must FAIL saying the report did not find the row nothing produces.',
+    file: 'tests/equivalence/reachability-report.ts',
+    mutate: (t) =>
+      t.replace(
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d)),',
+        '    family: Object.keys(content.FAMILY).filter((d) => !producible.has(d) && false),',
+      ),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/content-reachability.test.ts',
+    expect: 'THE REPORT DID NOT FIND THE ROW NOTHING PRODUCES',
+  },
+  {
+    id: 'ruled-record-is-in-the-pack',
+    why: 'Queue Q15: Anthrax toxin is a record the original interface does not have, and the labels’ pin takes it out before comparing. With the record gone from the pack, the pin must FAIL saying a ruled record is not in the pack, so that the allowance cannot outlive what it allows.',
+    file: 'packages/content/src/diseases/diseases.json',
+    mutate: (t) => t.replace('    "Anthrax toxin": [1, 5, 5, 2, "Rare"],\n', ''),
+    gate: 'pnpm --filter @immunity-wars/equivalence exec vitest run src/ui-content.test.ts',
+    expect: 'A RULED RECORD IS NOT IN THE PACK',
+  },
+  {
     id: 'queue-q14-the-engine-says-coated',
     why: 'Queue Q14 (Shantanu, 2 October 2026): what an antibody does to a bacterium, a worm or a parasite is one thing with one word, coat; the engine said tagged in three sentences. With the port logging a coated bacterium as tagged again, the queue’s test must FAIL saying the engine still says tagged (and the corpus, which compares the port with the original as ruled, fails with it).',
     file: 'packages/engine/src/actions.ts',
@@ -2020,6 +2089,18 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
     expect: 'the panel barely moved for a whole Action Point',
+  },
+  {
+    id: 'balance-normal-brain-strength',
+    why: "FINDINGS #121: on Normal the fast panel control asserts the STRENGTH of the Brain at integrity 1, since queue Q15's deck left its verdict a coin flip at that scale. A strength assertion must still fail when the change is not there: here the mutant keeps the Brain's two points.",
+    file: 'tests/balance/src/metrics-control.test.ts',
+    mutate: (t) =>
+      t.replace(
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:1, branch:3,\',',
+        'replace: \'brain:   { name:"Brain",       kind:"vital",   integrity:2,  branch:3,\',',
+      ),
+    gate: 'pnpm --filter @immunity-wars/balance exec vitest run src/metrics-control.test.ts',
+    expect: "the panel barely moved for half the Brain's integrity",
   },
   {
     id: 'turbo-outside-reads-hashed',
