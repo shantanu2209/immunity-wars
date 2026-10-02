@@ -1545,7 +1545,7 @@ Six things were put to him in the chat when the guided game was built. He answer
 |---|---|---|---|
 | 1 | Merge the engine's part of the guided game | **Merged** | The other three parts went up as one pull request and not three, to reach a deploy in one merge |
 | 2 | The card of the main differences departs from what he agreed: one card that compares, and after every game on Easy | **Keep** | As built (§19). Those two choices are no longer unruled |
-| 3 | Which of the engine's other differences between the difficulties a player is told, which was put as Kartik's | **Claude's to decide** | Below, when it is built |
+| 3 | Which of the engine's other differences between the difficulties a player is told, which was put as Kartik's | **Claude's to decide** | All of them, in the rulebook's own table. Below |
 | 4 | A bacterium's button said Tag and How to play said Coat | **Coat, if the science is the same** | It is. Below |
 | 5 | Whether the audit's game is seeded | **Unseeded** | Nothing changes. What it reaches on some screens goes on depending on the dice, and each run says what it did not reach |
 | 6 | Deploy the guided game once it is merged, the app only | **Yes** | When that pull request is merged |
@@ -1576,3 +1576,91 @@ Six things were put to him in the chat when the guided game was built. He answer
   ([`DEVIATIONS.md`](DEVIATIONS.md) #14).
 - **Control added, and fired:** `queue-q14-the-engine-says-coated` (the port logging a coated
   bacterium as tagged again: the queue's test fails saying the engine still says tagged).
+
+- **Rules 4.1.2, content 1.4.0,** as for Easy and for the same reason. The balance bands were
+  measured again at the wording's commit, on 24 arms and 150,000 games: no number in them moved.
+- **What it means for the server.** The app and the relay go together, because the rules version
+  moved, and the relay's restart ends any game being played together at that moment. So this is a
+  second deploy, after the guided game's, which is the app alone. Neither is deployed by merging.
+
+### Built: the table of what changes, whole
+
+**His answer was that the call is Claude's.** Which of the engine's differences a player is told
+had been put to him as Kartik's ([`FINDINGS.md`](FINDINGS.md) #116). This is the call, and why.
+
+- **The printed rulebook already has this table,** in its section on difficulty, with eleven rows.
+  The app's card had six of them. The card takes the rulebook's eleven, in the rulebook's order. So
+  most of the call was made by Kartik, when he wrote the rulebook.
+- **Four rows more are what the engine also does differently and no table held.** A player
+  choosing Hard is choosing them: an uncoated bacterium always divides, a hurt organ never heals,
+  infections spread along the lymph, and Pathogen X is in every game.
+- **With those it is every place the engine reads the difficulty.** So it is no longer headed *The
+  main differences*: it stands under its button, *What changes between them*, with the three names
+  at its head. A test counts the engine's reads of the difficulty, so that a new one cannot arrive
+  without the table being looked at.
+- **How to play's section on difficulty shows the same table,** where it had a sentence that named
+  six. One table from one file, in three places.
+- **Normal's worm starts *halfway along its branch*,** the rulebook's words, and not "one step from
+  the organ" as first built. The engine puts it half the branch's length out, rounded down, and
+  never less than one step; the test holds exactly that.
+
+| | Easy | Normal | Hard |
+|---|---|---|---|
+| Action Points each turn | 6 | 5 | 4 |
+| New infections arrive until turn | 15 | 20 | 30 |
+| New infections each turn | 1, sometimes 2 | 1 or 2 | 1 to 3 |
+| The most one antibody store holds | 5 | 4 | 3 |
+| Antibodies from one Produce | Up to 3, or 4 with practice | Up to 3 | Up to 2 |
+| The Killer T-Cell's range, in steps | 3 | 2 | 2 |
+| Antivenom doses at the start | 2 | 1 | None |
+| A worm starts | At the entrance of its branch | Halfway along its branch | In the organ |
+| The body remembers a disease | Once it is beaten | Only by a vaccine | Only by a vaccine, and using the memory costs 1 AP |
+| Antigen presentation raises what a Produce makes | Yes: 2 after 1 presented, 3 after 3 | Yes: 2 after 3 presented, 3 after 7 | No: only the Helper T-Cell adds to it |
+| Practice against one class adds to it | Yes: 1 more after 4 Produces of that class | No | No |
+| An uncoated bacterium divides | On a roll of 2 or less | On a roll of 3 or less | Every turn, and twice on a roll of 3 or less |
+| A hurt organ heals | Yes: 1 back after 2 turns with its branch clear | The same | Never. Only its penalty lifts |
+| Infections spread along the lymph | No | No | Yes: one at a lymph node may copy itself to a linked route, on a roll of 2 or less |
+| Pathogen X is in the game | In 2 games of 10 | In 6 games of 10 | In every game |
+
+**Where each row comes from, and what holds it.** A number is read from the content pack's own
+table wherever the engine reads it from one. Where the engine has the rule written in itself, the
+screens keep a small table of which sentence each difficulty gets, and
+`tests/session/src/differences.test.ts`, 38 tests, holds every row to the engine on each
+difficulty:
+
+| Row | Held by |
+|---|---|
+| Action Points, the window, the store's cap | A new game, asked |
+| New infections a turn | A turn drawn on each face of the die |
+| What a Produce makes, presentation, practice | The engine asked what a Produce makes, with so many antigens presented and so much practice, the Helper T-Cell beside the B-Cell and away |
+| The Killer T-Cell's range | A hidden virus put one to five steps out |
+| Antivenom | A new game's doses |
+| A worm's start | Every worm in the deck arriving |
+| Memory | A disease beaten; a vaccine made, the disease come again, and the cost of using the memory read |
+| A bacterium dividing | A spread run on each face of the die |
+| An organ healing | The lungs hurt, and the turns let pass: healed or not, and the Action Point its hurt cost back either way |
+| The lymph | A virus put at a lymph node and a spread run on each face |
+| Pathogen X | 4,000 seeded games started on each difficulty |
+
+**Reading the rulebook against the engine turned up five places where they differ or the rulebook
+is silent,** which are Kartik's and not settled here ([`FINDINGS.md`](FINDINGS.md) #118). The table
+says what the app does.
+
+**Measured,** in a headless browser on the PC.
+
+| | |
+|---|---|
+| The difficulty screen at 360 by 641, the card shut | One screen tall |
+| The same, the card open | 2,093 px tall, 360 wide, nothing wider than the phone |
+| The same at 200% text | 7,105 px tall, 360 wide, nothing wider than the phone |
+| The Gate 1 audit, alone and together | 88 screens in each of the four passes (90 in one), nothing not reached; every check at zero over 1,131 controls and 2,429 text runs; 38 close paths, none wrong; the play area one height on 48 screens; no scroll at rest on 27; offline met, with no request failed; 47 controls of the audit's own, each firing or passing as it must |
+
+**Controls added, each fired:** one for each of the screens' small tables, so that each is shown to
+be held: `differences-antivenom-is-the-engines`, `differences-division-is-the-engines`,
+`differences-organ-is-the-engines`, `differences-lymph-is-the-engines`,
+`differences-produce-is-the-engines`, `differences-pathogen-x-is-the-engines`,
+`differences-range-is-the-engines`; and `differences-table-is-whole` (one more read of the
+difficulty written into the engine, changing nothing it does: the count fails asking whether the
+new one is on the table). The five from before fire still.
+
+**Not read by him or Kartik:** the table's sentences. **Not played on a phone.**

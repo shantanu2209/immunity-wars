@@ -42,6 +42,7 @@ import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
 import { RichText } from '../panels/LogPanel';
 
 import { BODY as P, CARD, GROUP, LEAD, PAGE, ROW, STACK, TITLE } from './chrome';
+import { DifferencesTable } from './DifferencesCard';
 import { ScreenIcon } from './icons';
 
 const NAME: CSSProperties = { fontWeight: 900 };
@@ -294,7 +295,8 @@ function sectionBody(key: HelpSectionKey): ReactElement {
               ) : null}
             </p>
           ))}
-          <p style={P}>{t('help.s10.p1', n)}</p>
+          <p style={P}>{t('help.s10.p1')}</p>
+          <DifferencesTable />
         </>
       );
     default:

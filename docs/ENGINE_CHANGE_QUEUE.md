@@ -309,4 +309,6 @@ one action in the engine, one thing an antibody does, and one name in the printe
   control.
 - **The screens in the same change:** the row's word, two sentences about residents, two of the
   lesson's. The printed texts already said Coat.
+- **Rules 4.1.2, content 1.4.0.** The bands were measured again for the version, on 24 arms and
+  150,000 games, and no number in them moved: the rules play as they did.
 - [`DEVIATIONS.md`](DEVIATIONS.md) #14.

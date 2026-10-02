@@ -6,7 +6,7 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-10-01 from `packages/content/src` — pack `immunity-wars-core`, content `1.3.0`, rules `4.1.1`.
+Generated 2026-10-02 from `packages/content/src` — pack `immunity-wars-core`, content `1.4.0`, rules `4.1.2`.
 
 **804 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are

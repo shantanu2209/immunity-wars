@@ -5694,6 +5694,16 @@ Section 10 begins "What changes:" and lists six.
 section 10; and whether Hard's description on the difficulty screen, "Faster spread, tighter caps",
 should say more.
 
+**Ruled 2 October 2026, and built:** asked which of these a player should be told, Shantanu
+answered *"Make the call yourself please."* The call: all of them. The printed rulebook has a table
+of what changes, eleven rows, which this finding had not read when it said "Not checked". Six of
+the nine rows above are in the rulebook, whole or in part; three are in neither (#118). The app's
+card is now the rulebook's table with four rows more for what the engine also does, shown on the
+difficulty screen, on an Easy game's result and in How to play in place of section 10's sentence
+(`docs/LOOK_PLAN.md` §20). **Hard's description on the difficulty screen is left as it is:**
+"Faster spread, tighter caps" is true of what the table shows.
+
+
 ## 117. At 200% zoom a long disease name in the log ran past its sheet, and the result's log scrolled sideways — FIXED inline 2 October 2026
 
 **Found 2 October 2026**, by the Gate 1 audit's run on the card of the main differences, in a
@@ -5719,3 +5729,32 @@ happened to deal (#115, and a row's several targets not reached at one zoom). Th
 not seeded. Whether to seed it, as the measuring page's game is, is his to weigh: a seeded walk
 measures the same screens every time and would have missed both of these, and an unseeded one
 finds them only some of the time.
+
+## 118. Five places where the printed rulebook and the engine differ, or the rulebook is silent — OPEN, the designer's
+
+**Found 2 October 2026**, when the rulebook's table of what changes between the difficulties was
+read against the engine, row by row, to build the app's (#116). The app's table says what the
+engine does. **The printed board and the app must agree,** and in these they do not, or cannot be
+checked to:
+
+| | The engine, and so the app | The printed rulebook |
+|---|---|---|
+| 1 | On Easy, practice adds 1 antibody AFTER the cap: a Produce can make 4 | "The total is then capped: 3 per action on Easy and Normal" |
+| 2 | A hurt organ gets 1 integrity back after 2 turns with its branch clear, on Easy and Normal. On Hard it never does, but its penalty lifts | Says nothing of an organ healing, or of a penalty lifting |
+| 3 | On Hard, an uncoated invader at a lymph node copies itself to a linked route on a roll of 1 or 2 | The lymph is a shortcut for cells. Nothing of pathogens using it |
+| 4 | Pathogen X is in 2 games of 10 on Easy, 6 on Normal, every game on Hard, and comes in the first half | Says what Pathogen X is. Nothing of when, or how often |
+| 5 | A bacterium divides on a roll of 1 or 2 on Easy, 1 to 3 on Normal; on Hard always, and twice on 1 to 3 | "guaranteed on Hard, on a die roll otherwise", with no numbers and no second copy |
+
+**1 is a disagreement.** The engine's own comment says the order is the original's and was kept on
+purpose in the port: the cap is applied before the practice bonus. Either the rulebook's sentence
+or the engine's order is the intended one.
+
+**2 to 5 are silences.** A table game played from the rulebook has no rule for them, so it plays
+differently from the app: organs do not heal at the table, and Hard is gentler there than in the
+app.
+
+**Not checked:** the quick reference and the study packet for the same five; the rest of the
+rulebook against the engine. This was one table read against one list.
+
+**Why it is filed and not fixed.** The rules are Kartik's, and so are the printed words. Which side
+is right in 1, and whether 2 to 5 are printed, is his.

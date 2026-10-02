@@ -716,6 +716,12 @@ once in the rulebook and once in the study packet, are Kartik's to keep or chang
 **The engine's own names are not changed:** the action is still `tag` and the mark still
 `tagged`, in both engines, in a saved game and in a room. Only what a player reads has changed.
 
+**The rules version** moves from 4.1.1 to 4.1.2 with it, and the content from 1.3.0 to 1.4.0, for
+the reason #12 gives: the rules play as they did, and the two ends of a game played together must
+not be on different wordings without being told. The balance bands were measured again for the new
+version, at commit `11aba72`, on 24 arms and 150,000 games: every number in the file is what it
+was, to the last digit, and only the versions, the commit and the time differ.
+
 **Decided by:** Shantanu, 2 October 2026.
 **Test:** `tests/equivalence/src/queue-rules.test.ts`, the Q14 cases: a coated bacterium logged as
 coated and both refusals, in the port and the original as ruled, with the untouched original, which

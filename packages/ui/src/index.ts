@@ -99,12 +99,21 @@ export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/P
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export {
+  ANTIVENOM_AT_START,
   DIFFICULTIES,
+  DIVIDES_ON,
+  DIVIDES_TWICE_ON,
+  LYMPH_SPREADS_ON,
   MEMORY_FROM,
+  ORGAN_HEALS,
+  PATHOGEN_X_IN_TEN,
+  PRACTICE_ADDS,
+  PRESENTATION_RAISES,
   WORM_START,
   cardsATurn,
   differenceRows,
   differenceSummary,
+  type DifferenceId,
   type DifferenceRow,
   type DifficultyKey,
   type MemoryFrom,

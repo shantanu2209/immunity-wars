@@ -1,8 +1,8 @@
 /**
- * The card of the main differences, as data (`difficultyFacts.ts`). That each row says what the
- * engine does is `tests/session/src/differences.test.ts`'s, which plays games; here is what needs
- * no game: every sentence the card can ask for is in the catalogue, the die's table is read
- * rightly, and the result's two sentences say nothing the rows do not.
+ * The table of what changes between the difficulties, as data (`difficultyFacts.ts`). That each row
+ * says what the engine does is `tests/session/src/differences.test.ts`'s, which plays the engine;
+ * here is what needs no game: every sentence the table can ask for is in the catalogue, the die's
+ * table is read rightly, and the result's two sentences say nothing the rows do not.
  */
 import { DIFF, UI_I18N_EN } from '@immunity-wars/content';
 import { describe, expect, it } from 'vitest';
@@ -19,15 +19,32 @@ import {
 
 const has = (key: string): boolean => key in (UI_I18N_EN as Record<string, string>);
 
-describe('the card of the main differences', () => {
-  it('has the six rows How to play names, each with a cell for every difficulty', () => {
+describe('the table of what changes', () => {
+  it('has the rulebook’s eleven rows in its order, then the four the engine adds', () => {
     const rows = differenceRows();
-    expect(rows.map((r) => r.id)).toEqual(['ap', 'turns', 'cards', 'store', 'worm', 'memory']);
+    expect(rows.map((r) => r.id)).toEqual([
+      'ap',
+      'turns',
+      'cards',
+      'store',
+      'rate',
+      'range',
+      'antivenom',
+      'worm',
+      'memory',
+      'presentation',
+      'practice',
+      'divide',
+      'organ',
+      'lymph',
+      'pathogenX',
+    ]);
     for (const row of rows) {
       if (!has(row.labelKey)) throw new Error(`A ROW HAS NO SENTENCE: ${row.labelKey}`);
       for (const d of DIFFICULTIES) {
         const cell = row.cells[d];
         if ('n' in cell) {
+          // A bare number is a count of something there is: where there is none, a word says so.
           expect(Number.isInteger(cell.n) && cell.n > 0, `${row.id} on ${d}`).toBe(true);
           continue;
         }
@@ -39,12 +56,33 @@ describe('the card of the main differences', () => {
   });
 
   it('every sentence a cell could ask for is in the catalogue', () => {
-    for (const say of ['one', 'sometimes', 'or', 'to'])
-      expect(has(`differences.cards.${say}`), say).toBe(true);
-    for (const where of ['far', 'near', 'organ'])
-      expect(has(`differences.worm.${where}`), where).toBe(true);
-    for (const from of ['beating', 'vaccine', 'vaccineCosts'])
-      expect(has(`differences.memory.${from}`), from).toBe(true);
+    for (const key of [
+      'differences.no',
+      'differences.none',
+      'differences.cards.one',
+      'differences.cards.sometimes',
+      'differences.cards.or',
+      'differences.cards.to',
+      'differences.rate.upTo',
+      'differences.rate.practice',
+      'differences.worm.far',
+      'differences.worm.half',
+      'differences.worm.organ',
+      'differences.memory.beating',
+      'differences.memory.vaccine',
+      'differences.memory.vaccineCosts',
+      'differences.presentation.yes',
+      'differences.presentation.no',
+      'differences.practice.yes',
+      'differences.divide.roll',
+      'differences.divide.always',
+      'differences.organ.heals',
+      'differences.organ.never',
+      'differences.lymph.yes',
+      'differences.pathogenX.some',
+      'differences.pathogenX.always',
+    ])
+      expect(has(key), key).toBe(true);
   });
 
   it('reads a die’s six faces', () => {
