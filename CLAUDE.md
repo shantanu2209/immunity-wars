@@ -417,9 +417,10 @@ contract Task B was measured against.
   coverage:all && pnpm coverage:gate` · two forced concurrent runs (`pnpm turbo run test
   --force`), because turbo cancels queued tasks on first failure and a single red suite is a
   lower bound, not a census. *2 October 2026:* run for the `serialize-javascript` pin, it found
-  four defects in the checks and none in the pin (`docs/FINDINGS.md` #120, #122 to #124). **The
-  full self-test runs nowhere but here; every push runs only `ci:selftest:inert`.** And **read the
-  nightly run** (`gh run list --workflow Nightly`): its 10,000-game tier had been red or cancelled
+  four defects in the checks and none in the pin (`docs/FINDINGS.md` #120, #122 to #124). **Every
+  push runs only `ci:selftest:inert`; the full self-test runs here and, since that day by ruling,
+  every night** (`.github/workflows/selftest.yml`). And **read both nightly runs**
+  (`gh run list --workflow Nightly`, `gh run list --workflow Self-test`): its 10,000-game tier had been red or cancelled
   on 11 of 16 nights, unread.
 
 - **Stale builds: REMOVED, 2 October 2026.** `tools/legacy/stale/` held `index.html` and

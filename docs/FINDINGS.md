@@ -6050,3 +6050,47 @@ session.
 **Not built here, and put to Shantanu:** the full self-test as a nightly job, so that a control
 that stops firing is seen the next morning and not at the next battery; and reading the nightly
 run's result at the start of every session.
+
+**Ruled the same day, and built:** *"Will it cost me anything? If not then add the nightly
+thing."* It costs nothing on a public repository. The full self-test runs every night from
+`.github/workflows/selftest.yml` ([`LOOK_PLAN.md`](LOOK_PLAN.md) §25).
+
+## 125. The self-test kept one megabyte of a gate's output, and cut the rest — found by its first run on GitHub's runner, 2 October 2026
+
+**Found by the nightly self-test's first run,** on the pull request that added it
+([`LOOK_PLAN.md`](LOOK_PLAN.md) §25): 205 controls of 206 fired on GitHub's runner, in 18 minutes,
+and `queue-q15-diphtheria-is-a-bacterium` *failed, but without* its words. On the PC it fires.
+
+**Measured on the PC,** with that control's change in place and its gate run by hand:
+
+| | stdout | stderr | Where the control's words are |
+|---|---|---|---|
+| As on the PC | 1,361 characters | 975,464 | In the last 600 characters of stderr |
+| With the runner's environment set (`GITHUB_ACTIONS`) | 975,810 | 975,464 | The same |
+
+- **The self-test ran each gate with `execSync` as it comes, which keeps 1,048,576 bytes of each
+  stream,** and past that stops the command and throws.
+- **The gate prints so much because one changed card fails four tests,** and one of them prints two
+  whole games, state by state. The test the control is aimed at is the last to report.
+- **On the PC it fits, with 7% to spare. On the runner every path in a stack trace is longer**
+  (`/home/runner/work/immunity-wars/immunity-wars/` against the PC's), which took stderr past the
+  megabyte and cut the end off. That the runner's output passed the limit is inferred from those
+  two facts and the missing words; its length was not read there.
+
+**It was wrong twice over, and the second is the worse.** A cut output loses the words a control
+looks for, which is what happened. And the throw for a full buffer looked, to code that only
+catches, exactly like the throw for a gate that failed: **a gate that passed while printing more
+than a megabyte was called failed.** A mustPass control on such a gate would have gone red with
+its gate green, and a mustFail control whose gate had stopped failing would still have been
+counted as failed, short only of its words. No control is known to have been judged wrongly that
+way: every gate measured prints under a megabyte.
+
+**Fixed, in the instrument.** `tools/ci/run-gate.ts` holds 512 MB a stream, and reaching that is
+never a verdict: the run stops and says the output was cut. Its test runs real commands three
+megabytes long: one that fails is read to its last words, one that passes is not called failed,
+and one over a limit set low on purpose gets no verdict. Control, fired:
+`selftest-holds-a-long-gate` (the limit taken off the command again: the test fails saying the
+output was cut).
+
+**What this says about running it on the PC only.** The self-test had been run in full there many
+times and never on Linux. Its first run anywhere else found a fault in the self-test itself.
