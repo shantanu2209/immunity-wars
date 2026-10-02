@@ -34,6 +34,25 @@ const ns = engine as unknown as Record<string, unknown>;
 const call = (name: string, ...args: unknown[]): unknown =>
   (ns[name] as (...a: unknown[]) => unknown)(...args);
 
+/**
+ * AN ENGINE CALL ON THE LESSON'S DICE (the guided game, `lesson.ts`). The engine draws every
+ * random number from the one global source, and has no other way to be handed one. So for a game
+ * on rails that source is swapped for the lesson's ROUND THE CALL, and put back before anything
+ * else runs. Nothing but the engine can draw from the lesson's dice, which is what keeps a lesson
+ * the same for every player whatever else the page does with random numbers; and nothing the
+ * engine does can leave the page on the lesson's dice.
+ */
+function onDice<T>(dice: (() => number) | null, engineCall: () => T): T {
+  if (!dice) return engineCall();
+  const pages = Math.random;
+  Math.random = dice;
+  try {
+    return engineCall();
+  } finally {
+    Math.random = pages;
+  }
+}
+
 // THE MOVE CLASS, the actions undo may unwind, is `@immunity-wars/session-core`'s since 27 September
 // 2026, when undo was ruled for games played together: the room reads the same list.
 /** Not player actions on the board; they mark the phase boundaries. */
@@ -45,6 +64,12 @@ export interface LocalSessionOptions {
   readonly now?: () => number;
   readonly self?: PlayerRef;
   readonly saveId?: string;
+  /**
+   * A GAME ON RAILS (the guided game): the engine's dice for as long as the rails last. While
+   * they last nothing is saved, so a lesson that is left starts again from its beginning.
+   * `endRails()` ends both: the dice are the page's again, and the game is saved from there.
+   */
+  readonly rails?: { readonly dice: () => number };
 }
 
 export class LocalSession implements Session {
@@ -77,6 +102,8 @@ export class LocalSession implements Session {
   private committedBy: string | null = null;
   /** True when the game was resumed mid-command: the session has no history of the phase. */
   private resumedMidCommand = false;
+  /** The lesson's dice, while the game is on rails; null for every other game. */
+  private dice: (() => number) | null;
 
   private constructor(g: Record<string, unknown>, opts: LocalSessionOptions) {
     this.g = g;
@@ -84,6 +111,7 @@ export class LocalSession implements Session {
     this.storage = opts.storage ?? new MemoryStorage();
     this.now = opts.now ?? ((): number => Date.now());
     this.saveId = opts.saveId ?? 'current';
+    this.dice = opts.rails?.dice ?? null;
     // A RESUMED game mid-command has an engine snapshot stack and no session history: whether
     // a committing action happened is unknowable from the state, so undo is conservatively
     // unavailable for the rest of that phase. A fresh game has an empty stack and is clean.
@@ -100,8 +128,29 @@ export class LocalSession implements Session {
    * absence.
    */
   static createGame(config: NewGameConfig, opts: LocalSessionOptions = {}): LocalSession {
-    const g = call('newGame', { difficulty: config.difficulty });
+    // `written` is handed on only when there is one, so every other game is made exactly as before.
+    const cfg = config.written
+      ? { difficulty: config.difficulty, written: config.written }
+      : { difficulty: config.difficulty };
+    const g = onDice(opts.rails?.dice ?? null, () => call('newGame', cfg));
     return new LocalSession(g as Record<string, unknown>, opts);
+  }
+
+  /** True while the game is on rails: the lesson's dice, and no save. */
+  get onRails(): boolean {
+    return this.dice !== null;
+  }
+
+  /**
+   * THE RAILS END. From here the engine's dice are the page's own again, and the game is saved
+   * like any other, at once and on every action after. Calling it on a game that is not on rails
+   * does nothing.
+   */
+  async endRails(): Promise<void> {
+    this.assertLive();
+    if (this.dice === null) return;
+    this.dice = null;
+    await this.autosave();
   }
 
   /** Resume a game `Storage` handed back. The state is a whole `GameState`, never a view. */
@@ -131,7 +180,9 @@ export class LocalSession implements Session {
     // Undo never reaches the engine directly: the session rule decides (types.ts, `undo`).
     if (name === 'undo') return this.undoMoves();
 
-    const result = call('applyAction', this.g, { ...action, pid: this.self }) as {
+    const result = onDice(this.dice, () =>
+      call('applyAction', this.g, { ...action, pid: this.self }),
+    ) as {
       ok: boolean;
       error?: string;
       frames?: unknown[];
@@ -212,6 +263,9 @@ export class LocalSession implements Session {
    */
   async save(): Promise<void> {
     this.assertLive();
+    // A game on rails is not saved: it has dice a saved game could not carry, and a lesson that is
+    // left is begun again (`docs/LOOK_PLAN.md` §18).
+    if (this.dice !== null) return;
     await this.storage.put({ id: this.saveId, state: this.g, savedAt: this.now() });
   }
 

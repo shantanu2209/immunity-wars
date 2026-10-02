@@ -57,8 +57,12 @@ residents, memory, a crisis. That needs the engine to accept a written order of 
 lesson's seven turns as listed, and the engine's part is built** (plan §19; queue Q13,
 `docs/DEVIATIONS.md` #13): a new game may be handed the diseases that arrive on its first turns, by
 name (`written`), and on such a turn the draw places exactly those and rolls nothing. No rule
-changed and the rules version stays 4.1.1, by ruling. The lesson itself, its dice (a seed, outside
-the engine) and the light that leads the player are not built yet.
+changed and the rules version stays 4.1.1, by ruling. **The lesson is a file held to the engine**
+(`packages/content/src/guide/lesson.json`): `tests/session/src/lesson.test.ts` plays it whole
+through the session against the real engine, with its seed for dice, and `pnpm guide:seed` finds a
+seed when a change breaks it. Its dice are swapped in round each engine call and nowhere else
+(`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. The light that leads
+the player, the sentences and the way in are not built yet.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`

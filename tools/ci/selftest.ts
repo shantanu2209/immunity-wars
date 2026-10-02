@@ -1700,6 +1700,47 @@ const CONTROLS: readonly Control[] = [
     expect: 'is up to date with the content it describes',
   },
   {
+    id: 'lesson-seed-plays-the-lesson',
+    why: 'Stage L6: the guided game’s lesson is a file, and what makes it a lesson is that the real engine, handed its arrivals and its dice, accepts every step. The dice are a seed in that file. With the seed changed to its neighbour, the lesson’s test must FAIL saying the seed does not play it, which is also what a change to the rules that breaks the lesson would look like.',
+    file: 'packages/content/src/guide/lesson.json',
+    mutate: (t) => t.replace('"seed": 37,', '"seed": 38,'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'THE LESSON’S SEED DOES NOT PLAY IT',
+  },
+  {
+    id: 'lesson-dice-are-put-back',
+    why: 'Stage L6: the lesson’s dice are swapped in round each call to the engine and put back before anything else runs. With the putting back taken out, the lesson still plays, because the engine goes on drawing from its own dice; what is wrong is that the page is left drawing from them too. The test that reads the page’s random source after every call must FAIL saying so.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) =>
+      t.replace(
+        '  } finally {\n    Math.random = pages;\n  }\n}',
+        '  } finally {\n    void pages;\n  }\n}',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'THE PAGE WAS LEFT ON THE LESSON’S DICE',
+  },
+  {
+    id: 'lesson-not-saved-on-rails',
+    why: 'Stage L6, ruled 2 October 2026: a lesson that is left starts again, so a game on rails is not saved. A saved game could not carry the lesson’s dice in any case. With the session saving it all the same, the test must FAIL saying a game on rails was saved.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) =>
+      t.replace(
+        '    if (this.dice !== null) return;\n    await this.storage.put',
+        '    await this.storage.put',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/lesson.test.ts',
+    expect: 'A GAME ON RAILS WAS SAVED',
+  },
+  {
+    id: 'lesson-file-held-to-the-cards',
+    why: 'Stage L6: the lesson’s file is held to the rules’ own tables when the pack loads, so that a disease no card carries is refused there and not found by a player led to it. With that one check switched off, the file’s test must FAIL at the case that plants such a name.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) =>
+      t.replace('        if (!cards.includes(dz)) {', '        if (cards.length < 0) {'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'rejects an arrival no card carries',
+  },
+  {
     id: 'queue-q13-a-written-turn-rolls-nothing',
     why: 'Queue Q13 (Shantanu, 2 October 2026): the guided game hands a game its first turns, written. A written turn rolls nothing, which is what makes the lesson the same every time. With the port rolling the die for how many arrive and then ignoring it, the arrivals are still the written ones, and only the count of numbers drawn shows it: the queue’s test must FAIL saying a written draw rolled a die.',
     file: 'packages/engine/src/actions.ts',

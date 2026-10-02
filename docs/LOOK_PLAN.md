@@ -1298,3 +1298,55 @@ because the rules version had moved to 4.1.1.
   opened there.
 - **Not checked on the live server:** playing together, which would mean making a room on it. The
   audit walked it against a relay on the PC, on this code (§17).
+
+### Built: the lesson, as a file held to the engine (the second part of the guided game)
+
+**The lesson is content:** `packages/content/src/guide/lesson.json`. Seven turns, each with what
+arrives and the steps the player is led through, 36 of them, each named the way a person would say
+it: a disease by its name, a place by its route or its organ. And its dice, a seed.
+
+- **Held to the rules when the pack loads.** An arrival no card carries, a step on a disease that
+  has not arrived, antibodies of a class that does not fit, a move onto a place the board does not
+  have, the B-Cell asked to move, two steps of one name, a crisis the rules do not know: each is
+  refused, and each refusal is made to fire by a test.
+- **Held to the engine by playing it.** `tests/session/src/lesson.test.ts` plays the whole lesson
+  through the session the app uses, against the real engine: every step accepted, in order, no
+  organ hurt, and what arrives is what is written. A change to the rules that breaks the lesson
+  fails that test.
+- **Held to what he ruled it shows:** the nine kinds of invader arrive in it; every cell that acts
+  is led to act, and a resident; a beaten disease comes back and is met with memory; it has its
+  crisis. A lesson edited to drop one of these fails.
+
+**The dice.** The engine draws every random number from one source, the page's own. A game on
+rails has that source swapped for the lesson's **round each call to the engine and nowhere else**,
+and put back before anything else runs. So nothing but the engine draws from the lesson's dice,
+and the page is never left on them. Both are tested: random numbers drawn by the page between the
+engine's calls do not move the lesson by a byte, and the page's own source is back after every call.
+
+**The seed, found by search** (`pnpm guide:seed`, which plays the lesson for each seed):
+
+| Of seeds 1 to 5,000, with the real session and engine | |
+|---|---|
+| Play the lesson whole | **317** |
+| Turn 4's crisis is not Passive antibodies | 2,782 |
+| The NK Cell's roll misses | 1,562 |
+| Pathogen X breaks in during the lesson | 339 |
+
+The lesson's is **37**, the first that plays it. With it the player is handed turn 8 with every
+organ whole and ten diseases remembered. Turn 8's crisis, of which turn 7 warned, is a co-infection,
+and what it brings is Endocarditis, which the body remembers: the first thing a player does alone
+is tap its ring. Pathogen X is not in that game.
+
+**A game on rails is not saved,** as ruled: a lesson that is left starts again. When the rails end
+the dice are the page's again and the game is saved, at once and on every action after, as any
+game is. What is saved then is an ordinary game: the writing went with the last written turn.
+
+**Controls added, each fired:** `lesson-seed-plays-the-lesson` (the seed's neighbour: the test
+fails saying the seed does not play it), `lesson-dice-are-put-back` (the putting back taken out:
+the lesson still plays, and only the page's source shows it), `lesson-not-saved-on-rails`,
+`lesson-file-held-to-the-cards`; and in the tests themselves, thirty seeds that are not the
+lesson's, each refused with its reason, and a lesson that asks to swallow a bacterium before it is
+coated, stopped at that step by name.
+
+**Nothing a player sees has changed.** The light that leads the player, the sentences, the way in
+from the title and the removal of the hints and the coach are the next part.

@@ -57,10 +57,10 @@ because it is an engine change that deliberately re-baselines the corpus.
 
 Neither multiplayer nor bot-conditional. This is the honest remaining gap.
 
-- `schema.ts:599` `if (!carded.includes(c)) {`
-- `schema.ts:608` `if (!cells.includes(c)) {`
-- `schema.ts:624` `if (!placed.includes(o)) {`
-- `schema.ts:656` `if (!placedRoutes.includes(r)) {`
+- `schema.ts:606` `if (!carded.includes(c)) {`
+- `schema.ts:615` `if (!cells.includes(c)) {`
+- `schema.ts:631` `if (!placed.includes(o)) {`
+- `schema.ts:663` `if (!placedRoutes.includes(r)) {`
 - `actions.ts:200` `if (g.phase !== 'command') return err('Not in command.');`
 - `actions.ts:271` `if (!c) return err('B-Cell is stationary.');`
 - `actions.ts:301` `if (!c) return err('B-Cell is stationary.');`

@@ -51,11 +51,18 @@ import { z } from 'zod';
  * it was green while the module was unloadable — so the guard is placement plus this note.
  */
 import boardRulesJson from './rules/board.json';
+import deckRulesJson from './rules/deck.json';
+import eventsRulesJson from './rules/events.json';
+import familiesRulesJson from './rules/families.json';
 import tuningRulesJson from './rules/tuning.json';
 
 const ORGANS_FOR_PARITY = boardRulesJson.ORGANS as Record<string, { branch: number }>;
 const ROUTES_FOR_PARITY = boardRulesJson.ROUTES as Record<string, { len: number }>;
 const CELL_KEYS_FOR_PARITY = tuningRulesJson.CELL_KEYS as readonly string[];
+/** What the guided game's lesson is checked against: the cards, their classes, the crises. */
+const CARDS_FOR_LESSON = (deckRulesJson.DECK_MASTER as readonly { dz: string }[]).map((c) => c.dz);
+const FAMILY_FOR_LESSON = familiesRulesJson.FAMILY as Record<string, string>;
+const EVENTS_FOR_LESSON = Object.keys(eventsRulesJson.EVENTS);
 
 /* ------------------------------------------------------------------ *
  * Key vocabularies — closed sets, mirroring the unions in types.ts
@@ -747,3 +754,179 @@ export function boardPackSchema(
  * two live, tested checks.
  */
 export const BoardPackS = boardPackSchema();
+
+/* ------------------------------------------------------------------ *
+ * the guided game's lesson
+ * ------------------------------------------------------------------ */
+
+/**
+ * THE LESSON (ruled by Shantanu on 2 October 2026, `docs/LOOK_PLAN.md` §18 and §19): the guided
+ * game's turns, written. What arrives on each, and the taps the player is led through, each as
+ * the one action the engine is to be asked for. It is data: the engine is handed the arrivals
+ * (`written`, queue Q13), the session plays the steps, and the screens light each in turn.
+ *
+ * `seed` is the dice. The lesson fixes the engine's random numbers for as long as the rails last,
+ * and this is the seed that makes them fall the lesson's way: the crisis it names on the turn it
+ * names, the NK Cell's roll a hit. It is found by search (`pnpm guide:seed`), and a test replays
+ * the whole lesson with it against the real engine, so a seed that stops working fails a build.
+ */
+const LessonStepS = z.discriminatedUnion('do', [
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('produce'),
+    family: FamilyKeyS,
+    for: z.string().min(1),
+  }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.enum(['coat', 'neutralise', 'engulf', 'snipe', 'nk', 'antivenom', 'memory']),
+    disease: z.string().min(1),
+  }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('move'),
+    cell: CellKeyS,
+    route: RouteKeyS.optional(),
+    organ: OrganKeyS.optional(),
+    step: z.number().int().nonnegative(),
+  }),
+  z.strictObject({ id: z.string().min(1), do: z.literal('recall'), cell: CellKeyS }),
+  z.strictObject({ id: z.string().min(1), do: z.literal('net') }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('strike'),
+    cell: z.enum(['macrophage', 'eosinophil']),
+    disease: z.string().min(1),
+  }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('resMove'),
+    organ: OrganKeyS,
+    step: z.number().int().nonnegative(),
+  }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('resEngulf'),
+    organ: OrganKeyS,
+    disease: z.string().min(1),
+  }),
+  z.strictObject({ id: z.string().min(1), do: z.literal('resRecall'), organ: OrganKeyS }),
+]);
+
+export const LessonS = z.strictObject({
+  LESSON: z.strictObject({
+    seed: z.number().int().nonnegative(),
+    difficulty: DifficultyS,
+    crisis: z.strictObject({ turn: z.number().int().positive(), event: z.string().min(1) }),
+    turns: z
+      .array(z.strictObject({ arrive: z.array(z.string().min(1)), steps: z.array(LessonStepS) }))
+      .min(1),
+  }),
+});
+
+/**
+ * The lesson, bound to the rules it must agree with. They are parameters for the reason
+ * `boardPackSchema`'s are: so that each disagreement is reachable from a test.
+ */
+export function guidePackSchema(
+  cards: readonly string[] = CARDS_FOR_LESSON,
+  family: Record<string, string> = FAMILY_FOR_LESSON,
+  events: readonly string[] = EVENTS_FOR_LESSON,
+  organs: Record<string, { branch: number }> = ORGANS_FOR_PARITY,
+  routes: Record<string, { len: number }> = ROUTES_FOR_PARITY,
+) {
+  return LessonS.superRefine((p, ctx) => {
+    const L = p.LESSON;
+    const at = (...path: (string | number)[]): (string | number)[] => ['LESSON', ...path];
+    if (!events.includes(L.crisis.event)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: at('crisis', 'event'),
+        message: `the rules know no crisis named "${L.crisis.event}"`,
+      });
+    }
+    if (L.crisis.turn > L.turns.length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: at('crisis', 'turn'),
+        message: `the lesson's crisis is on turn ${String(L.crisis.turn)}, and the lesson has ${String(L.turns.length)} turns`,
+      });
+    }
+    const ids = new Set<string>();
+    const arrived = new Set<string>();
+    L.turns.forEach((turn, t) => {
+      turn.arrive.forEach((dz, k) => {
+        if (!cards.includes(dz)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: at('turns', t, 'arrive', k),
+            message: `no card is named "${dz}"`,
+          });
+        }
+        arrived.add(dz);
+      });
+      turn.steps.forEach((step, i) => {
+        const here = at('turns', t, 'steps', i);
+        if (ids.has(step.id)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...here, 'id'],
+            message: `two steps are named "${step.id}"`,
+          });
+        }
+        ids.add(step.id);
+        const disease = 'disease' in step ? step.disease : step.do === 'produce' ? step.for : null;
+        if (disease !== null && !arrived.has(disease)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: here,
+            message: `the step acts on "${disease}", which has not arrived by turn ${String(t + 1)}`,
+          });
+        }
+        if (step.do === 'produce' && family[step.for] !== step.family) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...here, 'family'],
+            message: `${step.family} antibodies do not fit "${step.for}": its class is ${String(family[step.for])}`,
+          });
+        }
+        if (step.do === 'move') {
+          if ((step.route === undefined) === (step.organ === undefined)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: here,
+              message: 'a move goes to a route or to an organ branch: name exactly one',
+            });
+          }
+          if (step.cell === 'bcell') {
+            ctx.addIssue({
+              code: 'custom',
+              path: [...here, 'cell'],
+              message: 'the B-Cell never moves',
+            });
+          }
+          const len = step.route !== undefined ? routes[step.route]?.len : undefined;
+          if (len !== undefined && (step.step < 1 || step.step > len)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [...here, 'step'],
+              message: `the ${String(step.route)} route has steps 1 to ${String(len)}`,
+            });
+          }
+        }
+        if (step.do === 'move' || step.do === 'resMove') {
+          const branch = step.organ !== undefined ? organs[step.organ]?.branch : undefined;
+          if (branch !== undefined && step.step > branch) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [...here, 'step'],
+              message: `the ${String(step.organ)} branch has steps 0 to ${String(branch)}`,
+            });
+          }
+        }
+      });
+    });
+  });
+}
+
+export const GuidePackS = guidePackSchema();

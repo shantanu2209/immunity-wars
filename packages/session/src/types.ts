@@ -150,6 +150,11 @@ export type Unsubscribe = () => void;
 
 export interface NewGameConfig {
   readonly difficulty: string;
+  /**
+   * The game's first turns, written (queue Q13): the diseases that arrive on each, by name. The
+   * guided game's. A game played together never has it: a room makes its game from a difficulty.
+   */
+  readonly written?: readonly (readonly string[])[];
 }
 
 /**
