@@ -98,6 +98,18 @@ export { PauseSheet } from './panels/PauseSheet';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
+export {
+  DIFFICULTIES,
+  MEMORY_FROM,
+  WORM_START,
+  cardsATurn,
+  differenceRows,
+  differenceSummary,
+  type DifferenceRow,
+  type DifficultyKey,
+  type MemoryFrom,
+  type WormStart,
+} from './screens/difficultyFacts';
 export { TogetherScreen } from './screens/TogetherScreen';
 export { LobbyScreen } from './screens/LobbyScreen';
 export { ConnectionLost } from './panels/ConnectionLost';

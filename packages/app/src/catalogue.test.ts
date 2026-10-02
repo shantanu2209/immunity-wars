@@ -24,7 +24,7 @@
  * replayed a cached green (docs/FINDINGS.md #112).
  *
  * WHAT THIS CANNOT SEE: whether a named key is ever REACHED. A sentence asked for by code that
- * is switched off (the hints and the coach, until the guided game replaces them) counts as used.
+ * is switched off counts as used, as the hints' and the coach's did until they were removed.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';

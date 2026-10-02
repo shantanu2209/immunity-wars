@@ -67,8 +67,13 @@ for where the player is; `Spotlight.tsx` dims the rest and hands a press to the 
 its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on a phone that has
 never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
 app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
-had no button (`docs/FINDINGS.md` #113). **Not built:** the difficulty screen's *What changes* and
-the guided game's result card. **Not read by him or Kartik:** the sentences.
+had no button (`docs/FINDINGS.md` #113). **What changes between the difficulties is
+said in three places:** a line of the lesson, a card on the difficulty screen (*The main
+differences*, `packages/ui/src/screens/DifferencesCard.tsx`), and the result of a game on Easy. Its
+six rows are How to play's six; `tests/session/src/differences.test.ts` holds each to games the
+engine plays on each difficulty. The engine differs in more ways than six, and which a player is
+told is Kartik's (`docs/FINDINGS.md` #116). **With that the guided game is built. Not read by him or
+Kartik:** its sentences. **Not played by a newcomer,** which is L6's gate.
 The differences between difficulties are explained on the difficulty screen, on the guided game's
 result, and in one line when memory first happens (the same ruling). **Nothing is sent to him as a file** (the same ruling). **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`

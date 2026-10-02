@@ -1317,6 +1317,18 @@ async function walk(
   await click(page, 'Start and replace');
   await sleep(200);
   await step(page, 'difficulty', results);
+  // THE MAIN DIFFERENCES (stage L6): one tap under the three rows, and a screen of its own: a card
+  // of six rows of three, which is the widest thing this screen holds.
+  if (await clickSel(page, '[data-differences=closed]')) {
+    await sleep(200);
+    await step(page, 'difficulty, the main differences', results);
+    await clickSel(page, '[data-differences=open]');
+    await sleep(150);
+  } else {
+    results.push(
+      notReached('difficulty, the main differences', 'the difficulty screen offered no such card'),
+    );
+  }
   await page.evaluate(() => {
     const el = [...document.querySelectorAll('*')].find(
       (x) => x.textContent?.trim() === 'Easy' && x.children.length === 0,
@@ -1916,13 +1928,29 @@ async function walkToResult(
   const ended = await page.evaluate(() => document.body.innerText.includes('Play again'));
   if (ended) {
     await step(page, 'result', results);
+    // The walk's game is on Easy, and after a game on Easy the result says what the other
+    // difficulties change, with the card of the main differences one tap away (stage L6).
+    if (await clickSel(page, '[data-differences=closed]')) {
+      await sleep(200);
+      await step(page, 'result, the main differences', results);
+      await clickSel(page, '[data-differences=open]');
+      await sleep(150);
+    } else {
+      results.push(
+        notReached('result, the main differences', 'the Result of a game on Easy offered no card'),
+      );
+    }
     if (await clickSel(page, '[data-result-log=closed]')) {
       await sleep(300);
       await step(page, 'result, what happened', results);
     } else {
       results.push(notReached('result, what happened', 'the Result offered no log'));
     }
-  } else
+  } else {
+    // An omitted row and a clean row look the same in a list: what hangs off the Result is named
+    // as not reached with it.
+    results.push(notReached('result, the main differences', 'the Result was not reached'));
+    results.push(notReached('result, what happened', 'the Result was not reached'));
     results.push({
       screen: 'result',
       controls: 0,
@@ -1937,6 +1965,7 @@ async function walkToResult(
         },
       ],
     });
+  }
 }
 
 /* ------------------------------------------------------------------------------------------ *

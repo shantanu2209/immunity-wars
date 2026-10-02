@@ -699,6 +699,7 @@ function App({
             organsDamaged: countDamagedOrgans(g),
             antibodiesMade: sumMade(g),
           }}
+          difficulty={screen.difficulty}
           log={logLinesOf(g)}
           onPlayAgain={() => startNew(screen.difficulty)}
           onChangeDifficulty={() => nav.push({ name: 'difficulty' })}

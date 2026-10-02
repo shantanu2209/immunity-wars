@@ -12,7 +12,8 @@ looks, with his review of the whole the next day** (§14, the last heading). **L
 is built for that review and not yet ruled on** (§15); **it was deployed on 2 October, with Easy**
 (§19). **L6 is under way:** Easy is done (§16), and the guided game is ruled to script everything,
 its seven turns ruled as listed, and built: the engine's part, the lesson, and the light that leads
-the player (§18, §19). The hints and the coach are removed.
+the player, and what changes between the difficulties (§18, §19). The hints and the coach are
+removed. What it wants now is his review and a newcomer.
 
 ## 1. What is decided already
 
@@ -113,7 +114,7 @@ quick reference and study packet, in one change, so the table and the app keep a
 | **L3 The kit** | Colour, type, motion and sound rules; buttons, cards, sheets; the full set of pieces | He approves the kit. ✅ *Done, 1 October 2026: built in three parts and approved on his phone (§13)* |
 | **L4 The play screen** | Board, pieces, actions, the spread, the log, the camera | Played on his phone. ✅ *Done, 1 October 2026: built in five parts, played on his phone, the audit re-aimed and clean, and measured on the S25 at 60 frames a second (§14). Ruled deployed that night, as a mix of two looks* |
 | **L5 Every other screen** | Title, difficulty, playing together, planning, result, the library | Played through, alone and together. *Built on the night of 1 October for his review the next day, without a proposal round, on his word; every choice in it is his to overrule (§15)* |
-| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed, and the engine's part, the lesson and the light that leads the player are built (§19); the difficulties' explanations are not yet* |
+| **L6 The guided game and Easy** | The scripted game; the rename; the printed texts | A newcomer plays it unaided. *Easy is done, 2 October 2026, ruled "Now" (§16). The guided game is ruled to script everything (§18); its seven turns are ruled as listed, and the engine's part, the lesson and the light that leads the player are built (§19); and so are the difficulties' explanations. A newcomer has not yet played it* |
 | **L7 Finish** | Polish, the audit re-aimed, the newcomer test, the measurement on the S25 | **Gate 2: his visual approval** |
 
 Then Phase 4 (Android), Phase 5 (iOS), Phase 6 (the classroom edition, with the low-graphics setting
@@ -1448,5 +1449,85 @@ test fails saying it stands over a control it does not light); and one line in t
   Undo cannot be pressed: only the lit control can. They are there again when the lesson ends.
 - The lesson's sentences are long on turn 1 and short after. At the largest text the card scrolls
   inside itself.
-- **Not built yet:** the difficulty screen's *What changes*, and the card on the result of a guided
-  game (§18, row 3).
+- The difficulty screen's *What changes*, and the card on the result of a guided game (§18, row
+  3), were built next, below.
+
+### Built: what changes between the difficulties (the fourth part of the guided game)
+
+Ruled in three places (§18, row 3). The line in play was built with the lesson: its second turn,
+when the body first remembers a disease, says that on Normal and Hard only a vaccine does that.
+The other two are built here.
+
+| Where | What is there |
+|---|---|
+| The difficulty screen | Under the three rows, a button, *What changes between them*. It opens a card, **The main differences**: six rows, each with Easy, Normal and Hard side by side |
+| The result of a game on Easy | A card, *You played Easy*, of two sentences: Normal and Hard give fewer Action Points and a longer window, and on both only a vaccine gives memory. Under it, *See what else changes* opens the same card of six rows |
+
+**The six rows are the six that How to play's section on difficulty names.**
+
+| | Easy | Normal | Hard |
+|---|---|---|---|
+| Action Points each turn | 6 | 5 | 4 |
+| New infections arrive until turn | 15 | 20 | 30 |
+| New infections each turn | 1, sometimes 2 | 1 or 2 | 1 to 3 |
+| The most one antibody store holds | 5 | 4 | 3 |
+| A worm starts | At the far end of a branch | One step from the organ | At the organ |
+| The body remembers a disease | Once it is beaten | Only by a vaccine | Only by a vaccine, and using the memory costs 1 AP |
+
+**Where each row comes from.** The first four are numbers, read from the content pack's own tables,
+the ones the engine reads; the third is read off the die's six faces. The last two are rules the
+engine has written in itself and no table holds, so the screens keep a small table of which
+sentence each difficulty gets (`packages/ui/src/screens/difficultyFacts.ts`). That is a second copy
+of a rule, and a second copy drifts. `tests/session/src/differences.test.ts` holds every row to
+games the engine plays on each difficulty: it asks the engine for the Action Points, the window and
+a store's cap; draws a turn on each face of the die; lets every worm in the deck arrive; beats a
+disease and looks for memory of it; and vaccinates, lets the disease come again, and reads what
+using the memory cost. It reads none of the engine's source.
+
+**Four choices in it are mine and unruled.**
+
+- **One card that compares, and not each difficulty opening to its own list,** which is what row 3
+  said. A row on that screen is the button that starts a game, so a row that opened would make
+  the screen's one job two taps; and three lists, one open at a time, cannot be read against each
+  other, which is what a player choosing wants.
+- **After every game on Easy, and not only one that began as the lesson.** The lesson ends as an
+  ordinary game on Easy, and nothing marks it afterwards. A player who skipped the lesson has not
+  been told either. The cost is that someone who plays Easy often sees the card each time.
+- **The heading is *The main differences*.** The engine reads the difficulty in more places than
+  six ([`FINDINGS.md`](FINDINGS.md) #116), and a card headed *What changes* would say these were
+  all of them.
+- **Normal's worm is said to start *one step from the organ*.** The engine puts it half the branch's
+  length from the organ, rounded down, and never less than one step. Every branch on the board is
+  two or three steps long, so that is one step on all of them. A longer branch would make the
+  sentence false, and the test would say so.
+
+**Measured,** in a headless browser on the PC.
+
+| | |
+|---|---|
+| The difficulty screen at 360 by 641, the card shut | One screen tall, as it was |
+| The same, the card open | 1,205 px tall, 360 wide, nothing wider than the phone |
+| The same at 200% text | 3,535 px tall, 360 wide, nothing wider than the phone |
+| The Gate 1 audit, alone and together, with the two new screens in each pass | 88 screens in each of the four passes (90 in one), the two new ones in each; every check at zero over 1,137 controls and 2,324 text runs; 38 close paths, none wrong; the play area one height on 48 screens; no scroll at rest on 27; offline met, with no request failed; 47 controls of the audit's own, each firing or passing as it must. **One screen was not reached in one pass:** a row's several targets at the largest text size, which that pass's dice did not deal. It was measured there in the first run, and nothing that draws it changed between the two |
+
+**The audit took two runs.** The first measured both new screens clean in all four passes, and
+found something else, in the game's own screens: at 200% zoom the result's log scrolled 8 px
+sideways inside its card. A line of the log is the turn's tag and its words side by side, and the
+words were never narrower than their longest word; a long disease name is longer than the room
+left at that zoom. Which names a game's last messages hold is the dice's, and the runs before had
+not drawn one. A long name now breaks ([`FINDINGS.md`](FINDINGS.md) #117). The run recorded above
+is the second, on the build with that change.
+
+**Controls added, each fired:** `differences-worm-start-is-the-engines` (Normal's worm said to start
+at the far end: the test fails saying what the card says and where the engine put it),
+`differences-memory-is-the-engines` (Hard said to be as Normal: it fails saying the engine took an
+Action Point), `differences-numbers-are-the-engines` (the store's row reading the Action Points'
+table), `differences-cards-are-the-dies` (the most a turn brings read one too high),
+`result-says-what-changes-after-easy` (the card shown after Hard and not Easy).
+
+**The audit's walk** names what hangs off the Result as not reached when the Result is not
+reached. Before, only the Result itself was named, and its log's screen was left out of the list,
+where a missing row and a clean one look the same.
+
+**With this the guided game is built.** What it still wants is people: his review, Kartik's reading
+of the 63 sentences and of these, and a newcomer playing it unaided, which is the gate of stage L6.

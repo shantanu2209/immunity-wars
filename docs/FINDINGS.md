@@ -5654,3 +5654,65 @@ is cut off there for those frames; a finger can no longer move the cards sideway
 sampling after the change reads the grid as one that does not scroll sideways.
 
 **Product, not instrument:** the audit's reading was right.
+
+## 116. How to play names six differences between the difficulties; the engine has more, and some are said nowhere in the app — OPEN, the designer's
+
+**Found 2 October 2026**, while the card of the main differences was built (`docs/LOOK_PLAN.md`
+§19). The card shows the six that How to play's section 10 names. Before heading it, every place
+the engine reads the difficulty was read.
+
+**The six section 10 names:** Action Points a turn, how long infections keep coming, how many cards
+a turn can bring, how many antibodies a store holds, where a worm starts, and what gives memory.
+
+**What else the engine does differently,** each read from `packages/engine/src`:
+
+| | Easy | Normal | Hard | Said in How to play? |
+|---|---|---|---|---|
+| The Killer T-Cell's range | 3 | 2 | 2 | Yes, on the cell |
+| Using memory of a disease | free | free | 1 Action Point | Yes, section 8 |
+| A bacterium divides on a roll of | 1 or 2 | 1 to 3 | always, and a second on 1 to 3 | Not by difficulty |
+| Antibodies made at once | 1 to 3, the more reached sooner | 1 to 3 | 1, or 2 with the Helper T-Cell | Not by difficulty |
+| Four made of one class brings one more each time after | yes | no | no | Not by difficulty |
+| Doses of antivenom in stock | 2 | 1 | 0 | Not by difficulty |
+| Chance that Pathogen X is in the game | 2 in 10 | 6 in 10 | certain | Not by difficulty |
+| Pathogens hop along the lymph | no | no | yes | Not by difficulty |
+| A hurt organ regrows | yes | yes | no: only its penalty lifts | Not by difficulty |
+
+"Not by difficulty" means that no sentence of How to play that names Easy, Normal or Hard says it.
+Five sentences name a difficulty: the window, the Action Points, the Killer T-Cell's range, and two
+on memory. **Not checked:** the printed rulebook, quick reference and study packet, and whether
+How to play says any of these without naming a difficulty.
+
+**Why it is filed and not fixed.** What a player is told about the rules, and where, is the
+designer's. The card is headed *The main differences* so that it does not claim to be all of them.
+Section 10 begins "What changes:" and lists six.
+
+**For Kartik:** whether any of these belongs among the main differences, on the card and in
+section 10; and whether Hard's description on the difficulty screen, "Faster spread, tighter caps",
+should say more.
+
+## 117. At 200% zoom a long disease name in the log ran past its sheet, and the result's log scrolled sideways — FIXED inline 2 October 2026
+
+**Found 2 October 2026**, by the Gate 1 audit's run on the card of the main differences, in a
+screen that card does not touch: *"result, what happened @200% page zoom: scrolls sideways inside
+itself: 156 > 148"*.
+
+**What was wrong.** A line of the log is a row: the turn's tag, then the line's words. A part of a
+row is never narrower than its longest word unless it is told it may be, and the words were not
+told. At 200% zoom the screen is 180 px wide and a line's words have about 84 px. A long disease
+name in bold is wider than that, so the line ran past the sheet, and the result's log, which
+scrolls down, could be pulled sideways. The same component is the game's Messages.
+
+**Why the audits before had not seen it.** The log shows a game's last eight messages, and which
+diseases those name is the dice's. Of ten games idled to their result on the same build, at 180 px
+wide, one overflowed as played, by the audit's own 8 px, and nine did not. **Shown by putting a
+long name into a line** of a game that had not overflowed: before the change the line's right edge
+was 2 px past the sheet's; after it, inside.
+
+**Fixed:** a line's words may break where they must.
+
+**The third time in one day** that what the audit finds on a screen has depended on what its game
+happened to deal (#115, and a row's several targets not reached at one zoom). The audit's game is
+not seeded. Whether to seed it, as the measuring page's game is, is his to weigh: a seeded walk
+measures the same screens every time and would have missed both of these, and an unseeded one
+finds them only some of the time.

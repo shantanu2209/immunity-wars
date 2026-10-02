@@ -160,7 +160,13 @@ export function LogPanel({
               >
                 {t('log.turn', { n: l.t })}
               </span>
-              <span>
+              {/*
+                A LONG NAME BREAKS RATHER THAN RUN PAST THE SHEET. Beside the turn's tag a line has
+                what is left of the width, and a part of a row is never narrower than its longest
+                word unless it is told it may be. At 200% zoom a disease's name is longer than the
+                room: the result's log then scrolled sideways (the Gate 1 audit, 2 October 2026).
+              */}
+              <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
                 <RichText text={r.text} />
               </span>
             </div>

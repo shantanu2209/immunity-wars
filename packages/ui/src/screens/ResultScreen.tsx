@@ -5,6 +5,11 @@
  *
  * DRAWN IN CLAY (stage L5): the verdict on the table, in mint for a win and coral for a loss, the
  * three figures on a card, and the ways on below. The colour repeats the words; the words say it.
+ *
+ * AFTER A GAME ON EASY (stage L6, ruled 2 October 2026) a card says that Normal and Hard ask more,
+ * in two sentences, with the rest one tap away (`DifferencesCard.tsx`). The guided game ends as a
+ * game on Easy, so this is where its player is told; it is said after every game on Easy, because
+ * a player who skipped the lesson has not been told either.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -13,7 +18,9 @@ import { KitButton } from '../kit/Button';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { LogPanel, type LogLine } from '../panels/LogPanel';
 
-import { BODY, CARD, LEAD, PAGE, STACK } from './chrome';
+import { BODY, CARD, LEAD, PAGE, SECTION, STACK } from './chrome';
+import { DifferencesCard } from './DifferencesCard';
+import { differenceSummary } from './difficultyFacts';
 import { ScreenIcon } from './icons';
 
 export interface ResultStats {
@@ -36,6 +43,7 @@ export function ResultScreen({
   won,
   lossOrgan,
   stats,
+  difficulty = null,
   log = [],
   onPlayAgain,
   onChangeDifficulty,
@@ -47,6 +55,8 @@ export function ResultScreen({
   /** Display name of the organ that fell; null on a win or a non-organ loss. */
   lossOrgan: string | null;
   stats: ResultStats;
+  /** The difficulty the game was played on. On Easy the result says what the others change. */
+  difficulty?: string | null;
   /**
    * The finished game's log (§21 H): a player who has just lost asks what happened, and Messages
    * lived inside the play frame, which is gone by the time they can ask.
@@ -100,6 +110,19 @@ export function ResultScreen({
         {figure(t('result.organsDamaged'), stats.organsDamaged)}
         {figure(t('result.antibodies'), stats.antibodiesMade)}
       </div>
+      {difficulty === 'training' ? (
+        <>
+          <div data-result-differences="" style={{ ...CARD, textAlign: 'left' }}>
+            <h2 style={SECTION}>
+              {t('differences.resultTitle', { name: t('difficulty.training') })}
+            </h2>
+            <p style={{ ...BODY, marginBottom: 0 }}>
+              {t('differences.resultLead', differenceSummary())}
+            </p>
+          </div>
+          <DifferencesCard toggleKey="differences.resultToggle" />
+        </>
+      ) : null}
       {log.length > 0 ? (
         <>
           <KitButton
