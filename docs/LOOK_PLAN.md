@@ -2271,6 +2271,24 @@ Please start."*
   fill the forms with the answers put to him, upload to the closed testing track, and add the
   testers.
 
+**The audience, ruled the same day: 13 and above.** Put to him with Google's rule for apps whose
+audience includes children (a reminder to be safe online before children exchange anything
+freeform, and an adult's action before they exchange anything personal, which a typed room name
+touches), and three ways with the first recommended (the reminder and a one-time grown-up check),
+he answered: *"Let's keep 13 and above."*
+
+- **What it does:** the game is declared for 13 to 15, 16 to 17 and 18 and over, and the rules for
+  children's apps are not taken on now.
+- **Said to him with it:** Play also asks whether the listing could appeal to children without
+  meaning to, and with clay pieces and a smiling shield the honest answer is probably yes. If
+  Google then asks for the children's rules after all, the reminder and the grown-up check are a
+  small change.
+
+**Deployed, 3 October 2026, 17:57 IST:** the app, from `main` at `19520f2`, as version
+`20261003-175754-19520f2`, the relay untouched. The privacy page is live at `/privacy.html`, its
+contact address put in by the deploy and read back from the live page; the address is not written
+in this repository. About's corrected privacy line is in the live build.
+
 **Later pieces, none started** ([`TODO.md`](TODO.md)): the game's launch picture; the
 build for the store and its signing key; what the app does when the game's server refuses an older
 version, which on the web offers Update now; a version stamp on saved games; text size, where the
