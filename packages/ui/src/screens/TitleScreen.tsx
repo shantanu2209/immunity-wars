@@ -117,11 +117,11 @@ export function TitleScreen({
         }}
       >
         {/* LAID OVER ITS BOX, NOT SIZED BY IT (docs/FINDINGS.md #127). The screen is AT LEAST one
-            screen tall, so by the standard the box's height, which flexing gives it, is not a
-            definite one, and a picture `height: 100%` of it falls back to its own shape. Chrome
-            resolves it anyway; WebKit, which every browser on an iPhone is, does not, and the
-            picture ran down over the game's name. A picture placed absolutely is measured against
-            the box as laid out, which every engine knows. */}
+            screen tall, so the box's height comes from flexing, and whether a picture `height:
+            100%` of it can use that height is where engines have differed. Chrome and WebKit 26.6
+            do; the browser on an iPhone, 3 October 2026, did not: the picture took its own shape
+            and ran down over the game's name. A picture placed absolutely is measured against the
+            box as laid out, which does not turn on that question. */}
         <img
           alt=""
           src={`${HERO}@2x.webp`}

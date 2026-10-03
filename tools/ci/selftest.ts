@@ -1741,7 +1741,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'title-picture-laid-over-its-box',
-    why: 'FINDINGS #127: on an iPhone the title’s picture ran down over the game’s name. WebKit does not resolve a height of 100% against a box whose height comes from flexing inside a screen only at least one tall, and Chrome does, so nothing run in Chrome saw it. With the picture sized by its box again, the title’s test must FAIL saying so.',
+    why: 'FINDINGS #127: on an iPhone the title’s picture ran down over the game’s name. Its browser did not resolve a height of 100% against a box whose height comes from flexing inside a screen only at least one tall; Chrome and WebKit 26.6 do, so nothing run here saw it. With the picture sized by its box again, the title’s test must FAIL saying so.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
     mutate: (t) => t.replace("            position: 'absolute',\n", ''),
     gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',

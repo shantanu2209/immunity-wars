@@ -94,9 +94,9 @@ describe('the title’s main button', () => {
   });
 
   it('its picture is laid over its box, not sized by it (FINDINGS #127)', () => {
-    // On an iPhone the picture ran down over the game's name: WebKit does not resolve a height of
-    // 100% against a box whose height comes from flexing inside a screen only AT LEAST one tall.
-    // Chrome does, so no check run in Chrome can see it; this holds the cause instead.
+    // On an iPhone the picture ran down over the game's name: its browser did not resolve a height
+    // of 100% against a box whose height comes from flexing inside a screen only AT LEAST one tall.
+    // Chrome and WebKit 26.6 do, so no check run here can see it; this holds the cause instead.
     const html = title(saved);
     const img = /<img[^>]*>/.exec(html)?.[0] ?? '';
     expect(img, 'the picture is found at all').toContain('object-fit:contain');

@@ -2231,7 +2231,8 @@ we do something about it?"*
 - **The app only, when deployed:** nothing in the relay, the protocol or the rules changed.
 
 **The same day, on the same iPhone:** with the current version on it, the title's name was drawn
-over its picture. WebKit, which every browser on an iPhone is, sizes the picture by a rule Chrome
-is more lenient about; every check here runs in Chrome. The picture is now laid over its box, and
-in Chrome nothing moved ([`FINDINGS.md`](FINDINGS.md) #127). The other screens were looked at by
-reading, not in WebKit.
+over its picture: measured from his screenshot, the picture was drawn at its own shape and not
+in its box. Chrome, and WebKit 26.6 on the PC, draw it in its box; every check here runs in one of
+them. The picture is now laid over its box, which does not depend on what his phone's browser got
+wrong, and in both nothing moved ([`FINDINGS.md`](FINDINGS.md) #127). The fix is not yet seen on
+an iPhone.
