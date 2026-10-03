@@ -1740,6 +1740,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'the page reloaded during a game',
   },
   {
+    id: 'title-picture-laid-over-its-box',
+    why: 'FINDINGS #127: on an iPhone the title’s picture ran down over the game’s name. WebKit does not resolve a height of 100% against a box whose height comes from flexing inside a screen only at least one tall, and Chrome does, so nothing run in Chrome saw it. With the picture sized by its box again, the title’s test must FAIL saying so.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) => t.replace("            position: 'absolute',\n", ''),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',
+    expect: 'THE TITLE’S PICTURE IS SIZED BY A FLEXED BOX',
+  },
+  {
     id: 'app-looks-when-it-comes-back',
     why: 'FINDINGS #126: an iPhone played a version from before the look, days after it went up. The browser looks for a newer version only when a page is opened fresh, and a tab or a home-screen app brought back to the front is not; the app asks itself now. With the asking on coming back taken out, the test must FAIL saying so.',
     file: 'packages/app/src/serviceWorker.ts',

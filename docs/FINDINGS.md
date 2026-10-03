@@ -6169,3 +6169,42 @@ build, and this with it.
 **Not done, on purpose:** a newer worker that takes over at once and reloads every open copy. It
 would reach old builds sooner, and it would reload a game in progress, which the ruling of
 30 September forbids because it drops a game played together.
+
+## 127. On an iPhone the title's picture ran down over the game's name, and nothing run in Chrome could see it — 3 October 2026
+
+**Found by Shantanu,** in Chrome on his iPhone, the first time it showed the Clay title: the game's
+name and the line under it were drawn over the lower half of the picture.
+
+**Why.** The title is a column at least one screen tall (`min-height`, so that it can grow with
+the text at 200%). The picture's box takes the height the words and the buttons leave, by
+flexing, and the picture was `height: 100%` of that box.
+
+- **By the standard, a box flexed inside a column with no definite height has no definite height
+  either,** and a percentage of it falls back to the picture's own shape.
+- **Chrome resolves it anyway. WebKit does not,** and every browser on an iPhone is WebKit, Chrome
+  included. So on the iPhone the picture took its own near-square shape, 393 px wide and about
+  360 tall, in a box about 200 tall, and ran on over the name.
+- **Measured, in headless Chrome with the picture drawn as WebKit draws it** (its height auto and
+  not stretched): at 393 by 664 with no saved game, the picture runs 80 px into the name; at 360 by
+  641, 74. With Continue on the title, as on his phone, the box is shorter and the overlap larger.
+  As Chrome draws it: clear of the name at both sizes.
+
+**Why every check passed.** The audit, the walks and the measurements all run in Chrome. None of
+them can see a difference between Chrome and WebKit; the S25 is Chrome too.
+
+**Fixed, in the product.** The picture is laid over its box (`position: absolute`) and not sized by
+it, which every engine measures against the box as laid out. In Chrome the layout is unchanged,
+measured: at 360 by 641 the box and the picture are both 0 to 240 px with the name at 246; at 393
+by 664, 0 to 263 with the name at 269, before and after.
+
+**Held by:** the title's test, that its picture is placed absolutely in a box placed relatively.
+It holds the cause, not the look: control `title-picture-laid-over-its-box` (the placing taken out:
+the test fails saying the picture is sized by a flexed box), fired.
+
+**Looked for elsewhere, by reading, not by WebKit:** six other parts of the screens are sized as a
+percentage of their box (the board, planning's body, three panels). All are inside the play
+screen, which is exactly one screen tall (`height`, not `min-height`); the standard makes a box
+flexed in such a column definite, so WebKit should resolve them. **Not seen in WebKit.**
+
+**Not measured: on an iPhone,** until this is deployed and he opens it there. **The class is
+open:** a difference between Chrome and WebKit is invisible to every instrument here.
