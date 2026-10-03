@@ -854,6 +854,39 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER DOES NOT STORE AN ICON',
   },
   {
+    id: 'privacy-page-in-the-worker',
+    why: 'Ruled 3 October 2026: Google Play links to /privacy.html. A page the worker does not store it answers with the app, so a phone that had opened the game would be shown the title instead of the policy. With the privacy page left out of what the worker stores, the build test must FAIL saying so.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t.replace('globIgnores: CLAY_NOT_YET,', "globIgnores: [...CLAY_NOT_YET, 'privacy.html'],"),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE WORKER DOES NOT STORE THE PRIVACY PAGE',
+  },
+  {
+    id: 'android-no-key-in-the-repository',
+    why: 'Ruled 3 October 2026: the upload key and its password come from the environment of whoever builds for the store, never from this public repository. With a password written into the signing block, the shell’s test must FAIL saying it is written in the repository.',
+    file: 'packages/android/android/app/build.gradle',
+    mutate: (t) =>
+      t.replace(
+        "storePassword System.getenv('IW_UPLOAD_PASSWORD')",
+        'storePassword "not-a-real-password"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'IS WRITTEN IN THE REPOSITORY',
+  },
+  {
+    id: 'store-build-has-no-developer-page',
+    why: 'Ruled 3 October 2026: the build for the store carries no page of a developer’s, not even the measuring page the debug build keeps. With the store build no longer told apart, the shell build’s test must FAIL naming the page it carries.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t.replace(
+        "const STORE_BUILD = process.env['IW_STORE_BUILD'] === '1';",
+        'const STORE_BUILD = false;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/shell-build.test.ts',
+    expect: 'THE STORE’S BUILD CARRIES measure.html',
+  },
+  {
     id: 'android-icon-has-every-layer',
     why: 'The icon (docs/LOOK_PLAN.md section 26) is written from one picture into every file Android reads, and its adaptive icon carries a monochrome layer, which Android 13 and later tints to the phone’s theme. With that layer taken out of the adaptive icon, as Capacitor’s template has it, the shell’s test must FAIL saying the icon has no themed layer.',
     file: 'packages/android/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',

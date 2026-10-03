@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <title>Privacy: The Immunity Wars</title>
+    <!--
+      THE PRIVACY POLICY (ruled 3 October 2026; docs/LOOK_PLAN.md §26): the page Google Play links to,
+      at /privacy.html on the game's site. Every claim on it is what the code does, read before it was
+      written: the relay logs no name or address (packages/server/src/node.ts), the site keeps no
+      access log and filters addresses out of its error log, which ages out in 7 days
+      (packages/server/deploy/setup.sh), and a phone keeps a room's code and a random seat value
+      for a day at most (packages/app/src/rejoin.ts). Change the code, and this page with it.
+
+      THE CONTACT is put in by the deploy (IW_CONTACT_EMAIL in deploy-app.sh), never written here:
+      this repository is public and carries no contact details.
+    -->
+    <style>
+      @font-face {
+        font-family: Nunito;
+        src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+        font-weight: 200 1000;
+      }
+      html,
+      body {
+        margin: 0;
+        background: #0e2a30;
+      }
+      body {
+        font-family: Nunito, system-ui, sans-serif;
+        color: #2c2233;
+        padding: 24px 16px 48px;
+      }
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        background: #f4e8d2;
+        border-radius: 18px;
+        padding: 24px 22px 28px;
+      }
+      h1 {
+        font-weight: 900;
+        font-size: 1.6rem;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-weight: 900;
+        font-size: 1.15rem;
+        margin: 26px 0 6px;
+      }
+      p,
+      li {
+        font-weight: 600;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      .quiet {
+        color: #65545f;
+      }
+      a {
+        color: #17806a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy</h1>
+      <p class="quiet">The Immunity Wars. In force from 3 October 2026.</p>
+
+      <p>
+        The Immunity Wars is a cooperative game about how the immune system fights an infection. It
+        was designed by Kartik Chaudhary and built under the direction of Shantanu Chaudhary, with
+        code written with Claude (Anthropic).
+      </p>
+
+      <h2>In short</h2>
+      <ul>
+        <li>There are no accounts, no ads, no analytics and no tracking of any kind.</li>
+        <li>Nothing about you is sold, shared or kept.</li>
+        <li>Playing alone sends nothing anywhere.</li>
+        <li>
+          Playing together sends the name you type and your moves to the game's server, for that
+          room only, and nothing is kept after the room closes.
+        </li>
+      </ul>
+
+      <h2>What stays on your device</h2>
+      <p>
+        Your saved game, your settings (text size, and sound on or off), and whether you have
+        finished a game, so the game knows whether to offer its guided lesson. While you are in a
+        room played together, the device also keeps that room's code and a random value that stands
+        for your seat, so you can go back to it if the app closes. That is forgotten when you leave
+        the room or the game ends, and after a day in any case. Your name is not kept.
+      </p>
+      <p>
+        None of this is ever sent anywhere. Removing the app, or clearing this site's data in your
+        browser, deletes all of it. The Android app does not let Android copy it into your Google
+        account's backup.
+      </p>
+
+      <h2>Playing together</h2>
+      <p>
+        When you make or join a room, the app sends the game's server the name you type and the
+        moves you make, and the server shows your name to the other players in that room. The server
+        holds these in its memory only, to run the room. Nothing is written to disk, and a room,
+        with everything in it, is deleted 10 minutes after its last player leaves.
+      </p>
+      <p>
+        The server keeps no record of who visits. Its error log holds no names and no internet
+        addresses, and is deleted after 7 days. To stop any one connection from overwhelming it, the
+        server counts connections by internet address, in its memory, and never writes the address
+        down.
+      </p>
+      <p>Use a first name or a nickname: the other players see it.</p>
+
+      <h2>Children</h2>
+      <p>
+        Many of the game's players are children, so it is built to collect nothing about anyone, of
+        any age. Rooms are private: they are joined only with a code a player shares, there is no
+        way to find or meet strangers, and the only messages players can send each other are a fixed
+        set of game phrases.
+      </p>
+
+      <h2>Anyone else</h2>
+      <p>
+        The game uses no outside services: its fonts and pictures are part of the app, and the web
+        version and the server for playing together are the game's own. The Android app is
+        distributed through Google Play, and Google's own privacy policy covers the Play Store.
+      </p>
+
+      <h2>Changes</h2>
+      <p>If anything here changes, this page will say so, with the date it comes into force.</p>
+
+      <h2>Contact</h2>
+      <!--CONTACT-->
+      <p>
+        Questions about this policy can be sent to the developer's contact address shown on the
+        game's page in Google Play.
+      </p>
+      <!--/CONTACT-->
+    </main>
+  </body>
+</html>

@@ -117,6 +117,11 @@ phone, that it starts and that Android's back goes to the game first (it did not
 it). **The app's text is the game's own size, not the phone's,** by ruling: an Android shell
 follows the phone's font size, which on his phone made the app a fifth smaller than the web
 version; the web view is told 100, and the game's own setting is the one control.
+**The closed test on Google Play is started, by ruling** (3 October; plan §26): `pnpm android:bundle`
+builds for the store, asking for the upload key's password in the holder's own terminal; the key's
+path comes from `IW_UPLOAD_KEYSTORE` and no key or password is ever in the repository (held by
+`packages/android/src/shell.test.ts`). The privacy page is `/privacy.html` on the game's site; its
+contact address is put in at deploy from `IW_CONTACT_EMAIL`, never written here.
 
 **Phase 3 is CLOSED** (30 September 2026, accepted by Shantanu:
 [`docs/PHASE3_CLOSEOUT.md`](docs/PHASE3_CLOSEOUT.md)), **with nothing owing since 1 October**, when he

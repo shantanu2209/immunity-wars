@@ -216,6 +216,20 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(missing, `THE WORKER DOES NOT STORE AN ICON: ${missing.join(', ')}`).toEqual([]);
   });
 
+  // THE PRIVACY PAGE IS STORED (ruled 3 October 2026): Google Play links to /privacy.html. A page the
+  // worker does not store it answers with the app (its navigation fallback), so a phone that had
+  // opened the game would be shown the title instead of the policy. Control: pnpm ci:selftest
+  // privacy-page-in-the-worker.
+  it('the privacy page is built and stored, so the worker serves it and not the app', () => {
+    expect(existsSync(join(out, 'privacy.html')), 'THE PRIVACY PAGE IS NOT BUILT').toBe(true);
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    const stored = [...worker.matchAll(/["']?url["']?:\s*["']([^"']+)["']/g)].map(
+      (m) => m[1] ?? '',
+    );
+    expect(stored.length, 'THE WORKER’S LIST WAS NOT READ').toBeGreaterThan(20);
+    expect(stored, 'THE WORKER DOES NOT STORE THE PRIVACY PAGE').toContain('privacy.html');
+  });
+
   it('the worker it builds takes over when told SKIP_WAITING, which Update now depends on', () => {
     const worker = readFileSync(join(out, 'sw.js'), 'utf8');
     // Either way round: a production build writes `"SKIP_WAITING"===e.data.type&&self.skipWaiting()`,

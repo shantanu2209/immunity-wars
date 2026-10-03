@@ -257,8 +257,10 @@ async function write(): Promise<void> {
       `    <solid android:color="${hex(ground)}" />\n</shape>\n`,
   );
   mkdirSync(STORE, { recursive: true });
+  // Opaque, and still a 32-bit PNG with an alpha channel, which is what Play asks for.
   await sharp(await shown(whole, 512))
     .flatten({ background: hex(ground) })
+    .ensureAlpha()
     .png({ compressionLevel: 9 })
     .toFile(join(STORE, 'icon-512.png'));
   // The web app's: opaque, on the ground, every one.

@@ -7,8 +7,10 @@ android {
         applicationId "com.kartikchaudhary.immunitywars"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        // THE VERSION (ruled 3 October 2026): 0.9 through the closed test, 1.0 when public. The code
+        // rises by one with every build sent to the store, which refuses a code it has seen.
         versionCode 1
-        versionName "1.0"
+        versionName "0.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +18,27 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // THE UPLOAD KEY (ruled 3 October 2026; docs/LOOK_PLAN.md §26). Where it is and its password come
+    // from the environment of whoever builds for the store, never from this repository: the file is
+    // on that machine, and the password is typed into `pnpm android:bundle` when it asks. Without
+    // them a release build is not signed, and `pnpm android:bundle` refuses it. Google re-signs
+    // what it is sent with the app's own key (Play App Signing), so this key only proves the upload.
+    signingConfigs {
+        upload {
+            def keystore = System.getenv('IW_UPLOAD_KEYSTORE')
+            if (keystore) {
+                storeFile file(keystore)
+                storePassword System.getenv('IW_UPLOAD_PASSWORD')
+                keyAlias 'upload'
+                keyPassword System.getenv('IW_UPLOAD_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (System.getenv('IW_UPLOAD_KEYSTORE')) {
+                signingConfig signingConfigs.upload
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

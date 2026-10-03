@@ -7,12 +7,13 @@
  *   - no service worker is written, and NO SCRIPT REGISTERS ONE. Inside the shell every file is in
  *     the app, so a worker would store a second copy of the game and then go looking for newer
  *     builds on a server that is not where this app's updates come from;
- *   - of the developer's pages, only the measuring page.
+ *   - of the developer's pages, only the measuring page;
+ *   - AND IN THE BUILD FOR THE STORE (`IW_STORE_BUILD=1`, `pnpm android:bundle`), not even that.
  *
  * AND THE WEB BUILD IS NOT CHANGED BY ANY OF IT: `entries-build.test.ts` builds that one, in the
  * default mode, and still requires its worker and its four pages.
  *
- * Control: pnpm ci:selftest shell-build-registers-no-worker.
+ * Controls: pnpm ci:selftest shell-build-registers-no-worker, store-build-has-no-developer-page.
  */
 import { execSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
@@ -73,5 +74,27 @@ describe('the build for the Android shell', { timeout: 180_000 }, () => {
     for (const page of ['dev.html', 'kit.html']) {
       expect(existsSync(join(out, page)), `THE SHELL’S BUILD CARRIES ${page}`).toBe(false);
     }
+  });
+});
+
+describe('the build for the store', { timeout: 180_000 }, () => {
+  let out = '';
+  beforeAll(() => {
+    out = mkdtempSync(join(tmpdir(), 'iw-store-'));
+    execSync(
+      `pnpm exec vite build --mode android --logLevel error --emptyOutDir --outDir "${out}"`,
+      { cwd: APP, stdio: 'pipe', env: { ...process.env, IW_STORE_BUILD: '1' } },
+    );
+  }, 180_000);
+  afterAll(() => {
+    if (out !== '') rmSync(out, { recursive: true, force: true });
+  });
+
+  it('is the app, with no page of a developer’s at all', () => {
+    expect(existsSync(join(out, 'index.html')), 'THE STORE’S BUILD HAS NO APP').toBe(true);
+    for (const page of ['measure.html', 'dev.html', 'kit.html']) {
+      expect(existsSync(join(out, page)), `THE STORE’S BUILD CARRIES ${page}`).toBe(false);
+    }
+    expect(existsSync(join(out, 'sw.js'))).toBe(false);
   });
 });

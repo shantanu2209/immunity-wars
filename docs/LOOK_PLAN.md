@@ -2237,6 +2237,40 @@ with it, he answered where it came from: *"I generated on codex"*.
 - **What it changes in the records:** "every picture the app ships was made here" is no longer
   true of this one file. No content licence is declared, as before.
 
+### The closed test, started 3 October 2026
+
+He asked whether to put the game on the Play Store now. Told that a new personal account must run a
+closed test with at least 12 testers for 14 days in a row before it may publish, that this clock is
+the long part, and that a closed test is not public, so his ruling that the public release waits
+for Gate 2 stands, he was put six things with a recommendation each, and answered: *"Yes to all.
+Please start."*
+
+| # | Ruled | Built |
+|---|---|---|
+| 1 | Start the closed test now | Everything below |
+| 2 | A feature graphic from the title's Clay picture and the game's name | `pnpm art:feature`: the title's picture on the kit's table, with the name and line read from the catalogue, in the app's Nunito, photographed by headless Chrome. It refuses when the font has not loaded: the browser's own font check answers yes for a face that failed, which a broken font found when it was fired by hand |
+| 3 | Screenshots now, taken again after Gate 2 | `pnpm art:shots`: the app driven on the phone on the cable, photographed by the phone, cut to the web view's own bounds so no status bar or notification is in one. What the app keeps is read first and put back |
+| 4 | About's privacy line made true | It said nothing is ever sent anywhere; playing together sends the typed name and the moves to the game's server. It says so now, and its first sentence says the game keeps nothing about you, where it said the game collects nothing: Google counts a name sent to a server as collected |
+| 5 | Games, then Educational | A choice in Play Console |
+| 6 | No measuring page in the store's build | `IW_STORE_BUILD=1`, set by `pnpm android:bundle`; the shell build's test holds it, control `store-build-has-no-developer-page` |
+
+- **The build for the store,** `pnpm android:bundle`: refuses a working folder with changes and a
+  missing key; asks for the upload key's password in the terminal and shows nothing as it is typed;
+  writes a release bundle signed by the upload key and prints its SHA-256. The key's path comes
+  from `IW_UPLOAD_KEYSTORE` and its password from the prompt, never from the repository; the shell's
+  test holds the signing block to that (control `android-no-key-in-the-repository`), and no key
+  file may be tracked. Version 0.9, code 1, through the closed test.
+- **The privacy page,** `/privacy.html` on the game's site, every claim read from the code first.
+  Its contact address is put in by the deploy from `IW_CONTACT_EMAIL`, never written in the
+  repository; without it the page points to the developer's contact on Google Play. The worker
+  stores it, so a phone that has the game is shown the page and not the game (control
+  `privacy-page-in-the-worker`).
+- **The 512 px store icon is a 32-bit PNG,** as Play asks. It was 24-bit; the shell's test, written
+  first, failed on it.
+- **His to do, in Play Console and his own terminal:** make the upload key, build, create the app,
+  fill the forms with the answers put to him, upload to the closed testing track, and add the
+  testers.
+
 **Later pieces, none started** ([`TODO.md`](TODO.md)): the game's launch picture; the
 build for the store and its signing key; what the app does when the game's server refuses an older
 version, which on the web offers Update now; a version stamp on saved games; text size, where the
@@ -2314,6 +2348,7 @@ other option?"*
 |---|---|---|---|
 | 13:49 IST | `20261003-134930-fd58650` | `fd58650` | The web app looks for a newer version itself ([`FINDINGS.md`](FINDINGS.md) #126) |
 | 15:33 IST | `20261003-153305-423fab0` | `423fab0` | The title's picture laid over its box (#127); the menu's news and About's version |
+| 16:18 IST | `20261003-161826-2e098fe` | `2e098fe` | The app's icon on the web: the page, the manifest and the worker (§26) |
 
 The app only, both times: the relay was not touched. Each time the deploy script's own checks
 passed; the second time that included its new one, that the build carries its version.
@@ -2323,6 +2358,10 @@ passed; the second time that included its new one, that the build carries its ve
 | The title at 393 by 664 | The picture placed over its box, 0 to 263 px, the name at 269 |
 | About | *Version 20261003-153305-423fab0* |
 | Errors | None |
+
+**The S25, after the third:** the Android app built from `main` at `2e098fe` and installed over the
+cable; `pnpm android:check` passed (it starts, 360 by 697, with no error and no service worker, the
+text at the game's own size; back goes to the game first). The live site served the four icons.
 
 **On his iPhone,** in Chrome on iOS 26.6.2, after the second: *"Yes that works perfectly."* That is
 the title drawn right in the browser that drew it wrong, and the version on About. Which way the
