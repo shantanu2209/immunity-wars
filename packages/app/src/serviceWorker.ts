@@ -221,6 +221,56 @@ export function whenNewerWaits(
   };
 }
 
+/**
+ * THE APP LOOKS FOR A NEWER VERSION ITSELF (docs/FINDINGS.md #126, 3 October 2026). Shantanu opened
+ * the game on his iPhone and played a version from before the look, days after the look was
+ * deployed. The title takes a newer version that has downloaded (`takeWaitingVersion`), but nothing
+ * in the app asked whether there was one: the browser looks only when a page is opened fresh, and a
+ * Safari tab brought back from memory, or an app on the home screen brought back to the front, is not
+ * opened fresh. Playing alone never meets the version refusal either, which comes from the game's
+ * server. So an old version could be played for ever.
+ *
+ * So the app asks: once when it starts, whenever it is brought back to the screen, and every half
+ * hour while it is on it. What it finds downloads while the player plays, and the title takes it, as
+ * ruled on 30 September; nothing here reloads anything. Offline, the asking fails and is let go.
+ *
+ * One question at a time: a second asked while the first is still out is the same question.
+ */
+export interface VisibilityLike {
+  readonly visibilityState: string;
+  addEventListener(type: 'visibilitychange', listener: () => void): void;
+  removeEventListener(type: 'visibilitychange', listener: () => void): void;
+}
+
+export const LOOK_EVERY_MS = 30 * 60 * 1000;
+
+export function lookForNewer(
+  container: UpdateContainerLike | undefined,
+  page: VisibilityLike,
+  everyMs: number = LOOK_EVERY_MS,
+): () => void {
+  if (container === undefined) return () => undefined;
+  let out = false;
+  const look = (): void => {
+    if (out || page.visibilityState !== 'visible') return;
+    out = true;
+    void container
+      .getRegistration()
+      .then((r) => r?.update())
+      .catch(() => undefined)
+      .finally(() => {
+        out = false;
+      });
+  };
+  look();
+  page.addEventListener('visibilitychange', look);
+  const timer = setInterval(look, everyMs);
+  return () => {
+    page.removeEventListener('visibilitychange', look);
+    clearInterval(timer);
+  };
+}
+
 /** The worker once it has finished downloading, or null if it fails or takes too long. */
 function installed(worker: WorkerLike | null, timeoutMs: number): Promise<WorkerLike | null> {
   if (worker === null) return Promise.resolve(null);

@@ -804,11 +804,7 @@ const CONTROLS: readonly Control[] = [
     id: 'shell-build-registers-no-worker',
     why: 'The Android shell (docs/LOOK_PLAN.md §26): every file is inside the app, so a service worker there would store a second copy of the game and look for newer builds on a server the app’s updates do not come from. With the app registering its worker in every build again, the test of the shell’s build must FAIL naming the script that registers one.',
     file: 'packages/app/src/main.tsx',
-    mutate: (t) =>
-      t.replace(
-        "if (import.meta.env.MODE !== 'android') startServiceWorker(import.meta.env.PROD);",
-        'startServiceWorker(import.meta.env.PROD);',
-      ),
+    mutate: (t) => t.replace("if (import.meta.env.MODE !== 'android') {", 'if (true) {'),
     gate: 'pnpm --filter @immunity-wars/app exec vitest run src/shell-build.test.ts',
     expect: 'THE SHELL’S BUILD REGISTERS A SERVICE WORKER',
   },
@@ -1742,6 +1738,26 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm update:check',
     expect: 'the page reloaded during a game',
+  },
+  {
+    id: 'app-looks-when-it-comes-back',
+    why: 'FINDINGS #126: an iPhone played a version from before the look, days after it went up. The browser looks for a newer version only when a page is opened fresh, and a tab or a home-screen app brought back to the front is not; the app asks itself now. With the asking on coming back taken out, the test must FAIL saying so.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) => t.replace("  page.addEventListener('visibilitychange', look);\n", ''),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'THE APP DOES NOT LOOK FOR A NEWER VERSION WHEN IT COMES BACK',
+  },
+  {
+    id: 'update-check-app-looks-itself',
+    why: 'FINDINGS #126: the update check passed while the app never looked for a newer version, because the check asked on its behalf and then deployed inside the second in which Chrome looks after a page loads. With the app’s own looking taken out of main.tsx, the check must refuse it.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        '  if (import.meta.env.PROD) lookForNewer(browserUpdates(), document);\n',
+        '  void lookForNewer;\n',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the title did not take the newer build by itself',
   },
   {
     id: 'room-rematch-captain-only',
