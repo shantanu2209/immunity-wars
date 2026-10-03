@@ -68,7 +68,13 @@ function askHidden(question: string): Promise<string> {
   });
 }
 
-// What goes to the store is a commit.
+// What goes to the store is a commit. Git's view is refreshed first: on Windows a file that only
+// had its line endings rewritten (Capacitor's sync does that) can read as changed until it is.
+try {
+  execSync('git update-index -q --refresh', { cwd: REPO, stdio: 'ignore' });
+} catch {
+  // It exits non-zero when something really has changed; the line below says so.
+}
 if (execSync('git status --porcelain', { cwd: REPO, encoding: 'utf8' }).trim() !== '') {
   stop('the working folder has changes. Commit them, or set them aside, and build again.');
 }
