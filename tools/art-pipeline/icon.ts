@@ -20,7 +20,11 @@
  *     everything that is not ground, in one colour;
  *   - for Android 7 (the oldest the shell supports), which has no adaptive icons, the middle 72 dp
  *     as a picture, square with rounded corners and round;
- *   - for the store, the middle 72 dp at 512 px, square: Google rounds its corners itself.
+ *   - for the store, the middle 72 dp at 512 px, square: Google rounds its corners itself;
+ *   - for the web app (ruled 3 October 2026), its manifest's icons and the iPhone's home-screen
+ *     icon, under `packages/app/public/icons/`: the middle 72 dp at 192 and 512 px, an iPhone's
+ *     180 px, and a MASKABLE 512, cut wider so that the subject's circle is the one Chrome promises
+ *     never to cut (a radius of 40% of the icon).
  *
  * Nothing is drawn: every picture is the source, measured, scaled and cut.
  */
@@ -35,6 +39,7 @@ const REPO = join(HERE, '..', '..');
 const SOURCE = join(HERE, 'icon', 'source.png');
 const RES = join(REPO, 'packages', 'android', 'android', 'app', 'src', 'main', 'res');
 const STORE = join(REPO, 'packages', 'android', 'store');
+const WEB = join(REPO, 'packages', 'app', 'public', 'icons');
 
 /** The 108 dp canvas, worked at this many px. */
 const CANVAS = 1024;
@@ -198,9 +203,9 @@ const mask = (px: number, round: boolean): Buffer =>
       : `<svg width="${String(px)}" height="${String(px)}"><rect width="${String(px)}" height="${String(px)}" rx="${String(px * 0.18)}" fill="#fff"/></svg>`,
   );
 
-/** What a phone shows: the middle 72 dp of the canvas, at `px`. */
-async function shown(whole: Buffer, px: number): Promise<Buffer> {
-  const view = Math.round((CANVAS * SHOWN_DP) / 108);
+/** The middle `dp` of the canvas, at `px`. */
+async function middle(whole: Buffer, dp: number, px: number): Promise<Buffer> {
+  const view = Math.round((CANVAS * dp) / 108);
   const off = Math.round((CANVAS - view) / 2);
   return sharp(whole)
     .extract({ left: off, top: off, width: view, height: view })
@@ -208,6 +213,12 @@ async function shown(whole: Buffer, px: number): Promise<Buffer> {
     .png()
     .toBuffer();
 }
+
+/** What a phone shows: the middle 72 dp of the canvas, at `px`. */
+const shown = (whole: Buffer, px: number): Promise<Buffer> => middle(whole, SHOWN_DP, px);
+
+/** A maskable web icon's cut: the subject's circle, 66 dp, is 80% of it, the circle never cut. */
+const MASKABLE_DP = SAFE_DP / 0.8;
 
 async function write(): Promise<void> {
   const ground = await measureGround(SOURCE);
@@ -250,10 +261,23 @@ async function write(): Promise<void> {
     .flatten({ background: hex(ground) })
     .png({ compressionLevel: 9 })
     .toFile(join(STORE, 'icon-512.png'));
+  // The web app's: opaque, on the ground, every one.
+  mkdirSync(WEB, { recursive: true });
+  for (const [file, dp, px] of [
+    ['icon-192.png', SHOWN_DP, 192],
+    ['icon-512.png', SHOWN_DP, 512],
+    ['maskable-512.png', MASKABLE_DP, 512],
+    ['apple-touch-icon.png', SHOWN_DP, 180],
+  ] as const) {
+    await sharp(await middle(whole, dp, px))
+      .flatten({ background: hex(ground) })
+      .png({ compressionLevel: 9 })
+      .toFile(join(WEB, file));
+  }
   const pictureDp = (SAFE_DP / 2 / subject.r).toFixed(1);
   console.log(
     `icon written: ground ${hex(ground)}; the picture ${pictureDp} dp across, its subject in the ${String(SAFE_DP)} dp safe circle; ` +
-      'five densities, the monochrome layer, legacy icons, and the store icon',
+      'five densities, the monochrome layer, legacy icons, the store icon, and the four for the web',
   );
 }
 

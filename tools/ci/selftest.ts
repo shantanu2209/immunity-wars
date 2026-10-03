@@ -846,6 +846,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE SHELL LEAVES THE TEXT TO THE PHONE’S FONT SIZE',
   },
   {
+    id: 'app-icons-in-the-worker',
+    why: 'The web app’s icon (ruled 3 October 2026): the page names its icon and the iPhone’s home-screen icon, and the manifest lists three. An icon the worker does not store is a request that fails with no network, which is why the page named no icon until that day. With the icons left out of what the worker stores, the build test must FAIL naming the one it does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) => t.replace(", 'icons/*.png'],", '],'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE WORKER DOES NOT STORE AN ICON',
+  },
+  {
     id: 'android-icon-has-every-layer',
     why: 'The icon (docs/LOOK_PLAN.md section 26) is written from one picture into every file Android reads, and its adaptive icon carries a monochrome layer, which Android 13 and later tints to the phone’s theme. With that layer taken out of the adaptive icon, as Capacitor’s template has it, the shell’s test must FAIL saying the icon has no themed layer.',
     file: 'packages/android/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
