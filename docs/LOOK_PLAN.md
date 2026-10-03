@@ -2267,6 +2267,14 @@ Please start."*
   `privacy-page-in-the-worker`).
 - **The 512 px store icon is a 32-bit PNG,** as Play asks. It was 24-bit; the shell's test, written
   first, failed on it.
+- **Found while he filled in the listing, the same day:** Play now asks that screenshots be exactly
+  9:16, and that a 7-inch and a 10-inch tablet's be given too, both marked required. The phone's six
+  had been cut to the web view (1080 by 2093) and were accepted, but are not 9:16; they are set on
+  the kit's table out to 1179 by 2096 now, so nothing is cut. The tablets' twelve are the same six
+  screens of the web build, drawn by headless Chrome at 540 by 960 and 900 by 1600 (twice those in
+  pixels): there is no tablet here, and the shell shows that same build. **On a tablet the game
+  shows its phone layout, centred, with the table round it;** on the 10-inch that is a lot of table.
+  That is how it looks there, and the pictures do not pretend otherwise.
 - **His to do, in Play Console and his own terminal:** make the upload key, build, create the app,
   fill the forms with the answers put to him, upload to the closed testing track, and add the
   testers.

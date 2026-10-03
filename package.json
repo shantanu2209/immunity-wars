@@ -41,7 +41,7 @@
     "art:icon": "tsx tools/art-pipeline/icon.ts",
     "comment:art:feature": "The store's feature graphic, 1024 by 500 (tools/art-pipeline/feature.ts): the title's Clay picture on the kit's table, with the game's name and line read from the catalogue, in the app's own Nunito, photographed by headless Chrome. Refuses if the font did not load.",
     "art:feature": "tsx tools/art-pipeline/feature.ts",
-    "comment:art:shots": "The store's screenshots (tools/art-pipeline/store-shots.ts), from the installed app on the one phone connected: driven through its web view, photographed by the phone, and cut to the web view's own bounds so no status bar or notification is in one. What the app keeps is read first and put back. Needs ANDROID_HOME.",
+    "comment:art:shots": "The store's screenshots (tools/art-pipeline/store-shots.ts), six screens walked by pressing the app's controls, every picture exactly 9:16 as Play asks. Without flags, from the installed app on the one phone connected: photographed by the phone, cut to the web view so no status bar is in one, set on the kit's table out to 9:16, and what the app keeps read first and put back (needs ANDROID_HOME). With --tablet, from the web build in headless Chrome at a 7-inch and a 10-inch tablet's size.",
     "art:shots": "tsx tools/art-pipeline/store-shots.ts",
     "comment:android:check": "The Android shell, checked on the one phone on the cable (tools/perf/shell-check.ts): the installed debug app starts with no error and no service worker, and Android's back goes to the game first. With --measure, the measuring page read inside the shell. Needs a phone, so it is in no gate; seen to fail on the build before back was handled.",
     "android:check": "tsx tools/perf/shell-check.ts",
