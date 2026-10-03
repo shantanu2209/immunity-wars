@@ -44,7 +44,8 @@ For every asset, we need:
 > generated originals under `tools/art-pipeline/raw/`, the 90 WebP files and the manifest under
 > `packages/app/public/art/` (everything there that was not `clay/`), and the pipeline that built
 > them. They are in the repository's history, last at commit `86216ff`. **The rows stay,
-> as the record of where that art came from.** Nothing the app ships now was made by an image
+> as the record of where that art came from.** *(From 3 October 2026 one file is: the Android app's
+icon, in its own row below.)* Nothing else the app ships now was made by an image
 > tool: see the Clay rows below.
 >
 > **Status: COMPLETE for the P2.4 set, 20 Aug 2026.** Every file in `tools/art-pipeline/raw/`
@@ -104,11 +105,12 @@ terms to check. The rows are grouped, because every file in a group has the same
 | The 50 renders under `tools/art-pipeline/clay/renders/` (24 pieces in two views, the base, and a swatch of the board) and the 147 files built from them under `packages/app/public/art/clay/` | Blender 5.2.1, Cycles: modelled and rendered by `tools/art-pipeline/clay/pieces.py`; gated and built by `tools/art-pipeline/clay.ts`. Written with Claude under Shantanu’s direction | 1 Oct 2026 | as above | The script itself; its header says what each shape claims about the real cell or pathogen | Not applicable | as above. The manifest beside the output carries the same provenance and every measured contrast |
 | The render of the board, `tools/art-pipeline/clay/renders/table/board.webp`, the 15 renders of the organs' and ways in's coins and of the unknown piece beside the others, and what is built from them under `packages/app/public/art/clay/` | Blender 5.2.1, Cycles: `tools/art-pipeline/clay/board.py` and `clay/pieces.py`; the coins' pictograms drawn in code, `clay/pictograms.ts`. Written with Claude under Shantanu’s direction | 1 Oct 2026 | as above | The scripts themselves; the board's positions are read from the content pack's `geometry.json` | Not applicable | as above |
 | The title's picture, `tools/art-pipeline/clay/renders/scene/title.webp`, and what is built from it under `packages/app/public/art/clay/scene/` (stage L5) | Blender 5.2.1, Cycles: `tools/art-pipeline/clay/hero.py`, which arranges the seven cell models `clay/pieces.py` builds on a disc of the board's colours. Written with Claude under Shantanu’s direction | 1 Oct 2026 | as above | The script itself. A picture of the pieces for a screen that is not the board: the pipeline holds it to its edge and not to contrast, and says so | Not applicable | as above |
+| The app's icon: `tools/art-pipeline/icon/source.png`, and what `pnpm art:icon` writes from it (the adaptive icon's layers and the legacy icons under `packages/android/android/app/src/main/res/mipmap-*/`, `packages/android/store/icon-512.png`, and the web app's four under `packages/app/public/icons/`) | **Generated:** OpenAI's image model, through Codex (its image tool). Not modelled here: the one picture the app ships that was not made in this repository | 3 Oct 2026 | Shantanu's ChatGPT account, through the Codex app; the plan was not recorded | Two steps, both prompts verbatim in `tools/art-pipeline/icon/PROVENANCE.md`: a concept from three references (the game's own virus render, and two stock pictures of a shield with a cross, one watermarked by Shutterstock, as composition references only), then an edit of that picture alone adding the faces. It shares the stock pictures' idea, a shield beside a virus, and nothing of their drawing | 3 Oct 2026: OpenAI's Terms of Use, effective 1 Jan 2026. As between the user and OpenAI the user owns the Output, and OpenAI assigns its rights in it, if any | None declared, as for all content. Whether anyone holds a copyright in it is the Resolution log's open question, which applies again to this one file |
 
 **What these are.** A prototype's art, three reference pictures, and the Clay set. **From stage L4
 the play screen's board is drawn with the Clay set, and from stage L5 every other screen is.** The
 files in the rows above this section were removed on 2 October 2026; the Clay set is all the art
-the app has.
+the app's screens have. *The app's icon, Android's and the web's, from 3 October 2026, is generated: its own row.*
 
 **Sound has no row, because there is no sound asset.** The kit's ten sounds (stage L3) are lists of
 notes in `packages/ui/src/kit/sound.ts`, played by the browser's own audio engine. No recording,
@@ -131,6 +133,9 @@ not exhaustive — confirm against the repository before concluding.
   `pnpm art:clay` (the gate re-measures; it never trusts this register), controls via
   `--control`, and `pnpm art:clay:check` on every `pnpm verify`. *Until 2 October 2026 this
   folder also held the P2.4 pipeline's output, removed with the art before Clay.*
+- `tools/art-pipeline/icon/source.png` — the app's icon, generated (its row in the register, and
+  `tools/art-pipeline/icon/PROVENANCE.md`); `pnpm art:icon` writes it into the Android project,
+  `packages/android/store/` and `packages/app/public/icons/`.
 - `tools/geometry-from-a2/Immunity_Wars_BOARD_A2.pdf` — the printed A2 board (CLASSIC), located
   20 Aug 2026. Vector, script-generated (the script is lost; the PDF is the surviving record and
   now the input to `tools/geometry-from-a2/`). **Its 16 embedded rasters** — the print's organ
@@ -190,3 +195,12 @@ Google Flow ToS check; this closes the question the register was opened for.**
   embedded in the printed A2 board.
 - **No licence is declared for content, as before.** Whether to declare one now is Shantanu's to
   decide, and nothing here decides it.
+
+**3 Oct 2026 — the Android app's icon is a generated picture; the decision of 20 Aug stands.**
+
+- Shantanu chose an icon made with OpenAI's image model through Codex (register, above;
+  `tools/art-pipeline/icon/PROVENANCE.md`). OpenAI's terms give the user the output, and assign
+  OpenAI's rights in it, if any.
+- So the question the decision of 20 Aug sidestepped applies again to one file the app ships.
+  **No content licence is declared, as before.** The same icon is the web app's, from the same
+  day (its page and manifest name it); every screen is still the Clay set.

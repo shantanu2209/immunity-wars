@@ -88,9 +88,12 @@ rulebook differ the game as it plays is taken to be right** (ruled the same day,
 rulebook was written for the table, and is brought to the game. **What is ruled and not yet built
 is listed in `docs/TODO.md`.** **What was no longer needed is removed**
 (the same ruling; plan §17): the art before Clay and its pipeline, so `tools/art-pipeline/clay.ts`
-is the only art pipeline and every picture the app ships was made here; and 22 sentences no screen
+is the only art pipeline for the game's pictures and every one of them was made here; and 22 sentences no screen
 asked for, held out by `packages/app/src/catalogue.test.ts`. The hints and the coach went with the
 guided game (2 October): their code, tests and sentences are removed.
+**The app's icon is the one exception, chosen 3 October:** a picture generated with OpenAI's
+image model through Codex, not made here (`docs/ASSETS.md`), written to every file Android, the
+store and the web app ask for by `pnpm art:icon` (`tools/art-pipeline/icon.ts`).
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
 lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type

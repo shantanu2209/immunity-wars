@@ -6156,9 +6156,12 @@ newer build by itself). `shell-build-registers-no-worker` is re-aimed: the line 
 **Measured, in headless Chrome on the PC:** the update check passes, the title taking the newer
 build 1.3 s after the page comes back.
 
-**Not measured: on an iPhone.** That Safari tells a page it is back on the screen when a tab or a
-home-screen app returns, and that a page may ask for a newer worker there, is from the standards
-and what WebKit supports, not from a run.
+**Not measured: on an iPhone,** when this was written. That Safari tells a page it is back on the
+screen when a tab or a home-screen app returns, and that a page may ask for a newer worker there,
+is from the standards and what WebKit supports, not from a run. **Seen on his iPhone, 3 October
+2026,** in Chrome on iOS 26.6.2, after the deploys of 13:49 and 15:33: *"Yes that works
+perfectly."* Which of the two ways his phone took the newer version, by itself or after the tab
+was closed and opened, is not recorded.
 
 **What this cannot reach: a phone already holding an older build,** which does not have this code.
 It moves when the browser next loads the page fresh (a reload, the link opened again, or Safari
@@ -6193,8 +6196,11 @@ that flexing gave, in a column with no definite height of its own, is where engi
 | Headless Chrome, the picture's height made `auto` and not stretched | 393 by 349: what his phone drew, to 0.1 point | 80 px into the name |
 | **Real WebKit 26.6** (Playwright's build, on the PC), as an iPhone 15 Pro, at heights 664, 600, 540 and 480 | In its box at every height | Clear |
 
-- **So it is not WebKit as such.** The WebKit on the PC, newer than what ships on phones, uses the
-  height as Chrome does. Which version his iPhone runs is not recorded here.
+- **So it is not WebKit as such.** The WebKit on the PC uses the height as Chrome does. *Corrected
+  the same day:* this said that WebKit was "newer than what ships on phones". His iPhone runs iOS
+  26.6.2, and the PC's is Playwright's WebKit 26.6 for Windows: the same version line, drawing it
+  differently. What separates them is Apple's WebKit on a phone against a build of it for another
+  system, not its age.
 - **Every check here runs in Chrome,** and the S25 is Chrome. None could see it, and a WebKit 26.6
   check would not have either.
 
@@ -6213,9 +6219,9 @@ their box (the board, planning's body, three panels). All are inside the play sc
 exactly one screen tall (`height`, not `min-height`), where the standard makes the flexed height a
 definite one. Not seen on an iPhone.
 
-**Not measured: the fix on an iPhone,** until it is deployed and he opens it there. No engine on
-this PC draws the fault, so the fix is shown to change nothing where nothing was wrong, and is
-argued, not shown, to mend it where something was. **The class is open:** a difference between a
+**The fix on an iPhone:** argued, not shown, when it was made, since no engine on this PC draws the
+fault. **Seen on his iPhone, 3 October 2026,** in Chrome on iOS 26.6.2, after the deploy of 15:33:
+*"Yes that works perfectly."* **The class is open:** a difference between a
 phone's browser and the browsers here is invisible to every instrument here.
 
 ## 128. The accessibility audit never measured About — it skipped the step and said nothing, 3 October 2026

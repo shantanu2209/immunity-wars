@@ -188,6 +188,34 @@ describe('both entries build', { timeout: 180_000 }, () => {
     ).toEqual([]);
   });
 
+  // THE APP'S ICON IS STORED (ruled 3 October 2026): every icon the page names and every icon the
+  // manifest lists is in the build and in what the worker stores. One that is not is a request that
+  // fails with no network, which is why the page named no icon until this day. Control:
+  // pnpm ci:selftest app-icons-in-the-worker.
+  it('every icon the page and the manifest name is built, and stored by the worker', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    const stored = [...worker.matchAll(/["']?url["']?:\s*["']([^"']+)["']/g)].map(
+      (m) => m[1] ?? '',
+    );
+    const page = readFileSync(join(out, 'index.html'), 'utf8');
+    const linked = [
+      ...page.matchAll(/<link rel="(?:icon|apple-touch-icon)"[^>]*href="\/?([^"]+)"/g),
+    ].map((m) => m[1] ?? '');
+    const manifest = JSON.parse(readFileSync(join(out, 'manifest.webmanifest'), 'utf8')) as {
+      icons: { src: string; purpose?: string }[];
+    };
+    const listed = manifest.icons.map((i) => i.src.replace(/^\//, ''));
+    // Read the coverage: a page and a manifest read as naming nothing would pass the last line.
+    expect(linked.length, 'THE PAGE NAMES NO ICON').toBe(2);
+    expect(listed.length, 'THE MANIFEST LISTS NO ICON').toBe(3);
+    expect(manifest.icons.some((i) => i.purpose === 'maskable')).toBe(true);
+    const named = [...new Set([...linked, ...listed])];
+    for (const icon of named)
+      expect(existsSync(join(out, icon)), `${icon} is not built`).toBe(true);
+    const missing = named.filter((icon) => !stored.includes(icon));
+    expect(missing, `THE WORKER DOES NOT STORE AN ICON: ${missing.join(', ')}`).toEqual([]);
+  });
+
   it('the worker it builds takes over when told SKIP_WAITING, which Update now depends on', () => {
     const worker = readFileSync(join(out, 'sw.js'), 'utf8');
     // Either way round: a production build writes `"SKIP_WAITING"===e.data.type&&self.skipWaiting()`,

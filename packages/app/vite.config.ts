@@ -111,7 +111,7 @@ function webWorker(): ReturnType<typeof VitePWA> {
     injectRegister: false,
     // The art the screens use: the Clay
     // pictures the board draws. The rest of `art/clay/` is kept out by CLAY_NOT_YET, above.
-    includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*'],
+    includeAssets: [...CLAY_ON_THE_BOARD, 'fonts/**/*', 'icons/*.png'],
     manifest: {
       name: 'The Immunity Wars',
       short_name: 'Immunity Wars',
@@ -121,7 +121,13 @@ function webWorker(): ReturnType<typeof VitePWA> {
       // its screens stand on. src/ground.test.ts holds these to the kit's value.
       background_color: '#0e2a30',
       theme_color: '#0e2a30',
-      icons: [],
+      // THE APP'S ICON (ruled 3 October 2026), written by `pnpm art:icon` from the Android app's:
+      // as a phone shows it, and a maskable one cut wider for Chrome's own masks.
+      icons: [
+        { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
     },
     workbox: {
       globPatterns: ['**/*.{js,css,html,webp,woff2,json,txt}'],

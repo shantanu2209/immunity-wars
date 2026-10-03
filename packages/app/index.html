@@ -4,13 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--
-      NO ICON YET, SAID SO, so the browser does not go looking for /favicon.ico, which does not
-      exist. Asked for with no network, that is a request that fails, and from stage L4 the browser
+      THE APP'S ICON (ruled 3 October 2026), the Android app's, written by `pnpm art:icon` into
+      public/icons/. NAMED HERE, so the browser does not go looking for /favicon.ico, which does not
+      exist: asked for with no network, that is a request that fails, and from stage L4 the browser
       asks again in the middle of play (measured: at the first press that makes a sound), so the
-      Gate 1 audit's offline pass counted a failed request in a build that plays offline. The app's
-      real icon is Phase 4's packaging.
+      Gate 1 audit's offline pass counted a failed request in a build that plays offline. Until this
+      day it was `data:,`, an icon of nothing. Both files are stored by the worker, so they are
+      answered with no network too (src/entries-build.test.ts). The apple-touch-icon is what an
+      iPhone puts on its home screen; without it, a picture of the page.
     -->
-    <link rel="icon" href="data:," />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <style>
       /* THE TABLE (stage L5): the page's own ground is the kit's table, from the first paint, so a
          screen that is loading is dark and not a white flash. The colour is the kit's
