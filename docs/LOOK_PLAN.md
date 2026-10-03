@@ -1082,7 +1082,8 @@ the rows that say where the old art came from, marked removed.
 2.09 MB. Before: 224 files, 2.50 MB.
 
 **What it does to the licence question.** Every picture the app ships is now modelled in Blender or
-drawn in code here. The question of 20 August, whether anyone holds a copyright in generated
+drawn in code here. *(No longer true of one file from 3 October 2026: the Android app's icon is a
+generated picture, §26 and [`ASSETS.md`](ASSETS.md).)* The question of 20 August, whether anyone holds a copyright in generated
 images, no longer applies to anything the app ships. It still applies to what is kept for
 reference: the icon art in `tools/legacy/`, and the 16 rasters in the printed A2 board. **No
 licence is declared for content, as before;** whether to declare one is his.
@@ -2203,7 +2204,31 @@ your recommendation."*
 phone's text set large; the lesson and a whole game, which the web build's walks cover on the same
 code; anything on a phone that is not this one.
 
-**Later pieces, none started** ([`TODO.md`](TODO.md)): the game's icon and launch picture; the
+### The icon, chosen 3 October 2026
+
+He had a picture made with Codex, whose image tool is OpenAI's image model, and sent it: *"I have
+also added an icon option, see how it looks, I like it."* Told what it would cost (a style unlike
+the game's, a provenance to record, a fit to the circle Android cuts icons to) and recommended to go
+with it, he answered where it came from: *"I generated on codex"*.
+
+- **The picture is a shield with a face meeting the game's virus,** the last of nine Codex made
+  that day. Its prompts, its three references (the game's own virus, and two stock pictures he
+  pasted as starting points) and the terms it was made under are in [`ASSETS.md`](ASSETS.md).
+- **`pnpm art:icon`** writes every file Android and the store ask for from it,
+  `tools/art-pipeline/icon/source.png`, unedited. It measures the picture's ground from its border
+  and refuses a border that is not one colour; it measures the smallest circle round everything
+  else and scales the picture so that circle is the 66 dp one no launcher cuts (the picture comes
+  out 68.6 dp across, of the 72 a phone shows); and it writes the themed layer, the shape alone,
+  for phones that tint their icons.
+- **Seen, on the PC:** under a circle, a squircle and a rounded square nothing is cut, and at 48 px
+  it reads. **Not seen on a phone yet.**
+- **Its refusal, fired once by hand:** a light square planted in the picture's corner, and it said
+  the border is not one colour and wrote nothing. Control `android-icon-has-every-layer` holds the
+  themed layer in the adaptive icon.
+- **What it changes in the records:** "every picture the app ships was made here" is no longer
+  true of this one file. No content licence is declared, as before.
+
+**Later pieces, none started** ([`TODO.md`](TODO.md)): the game's launch picture; the
 build for the store and its signing key; what the app does when the game's server refuses an older
 version, which on the web offers Update now; a version stamp on saved games; text size, where the
 phone's own setting and the game's meet.

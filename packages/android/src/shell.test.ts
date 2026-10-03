@@ -78,6 +78,46 @@ describe('what the shell is allowed and told', () => {
   });
 });
 
+describe('the icon', () => {
+  // Written by `pnpm art:icon` from one render (tools/art-pipeline/icon.ts). Held here to the
+  // sizes Android asks for at each density, read from each file's own header, so that a file left
+  // over from Capacitor's template, or one written at the wrong size, is named.
+  const size = (path: string): string => {
+    const png = readFileSync(join(HERE, path));
+    return `${String(png.readUInt32BE(16))} by ${String(png.readUInt32BE(20))}`;
+  };
+  const DENSITIES: [string, number][] = [
+    ['mdpi', 1],
+    ['hdpi', 1.5],
+    ['xhdpi', 2],
+    ['xxhdpi', 3],
+    ['xxxhdpi', 4],
+  ];
+
+  it('is the game’s at every density, in every file Android reads', () => {
+    for (const [name, k] of DENSITIES) {
+      const dir = `${MAIN}/res/mipmap-${name}`;
+      const layer = `${String(108 * k)} by ${String(108 * k)}`;
+      const legacy = `${String(48 * k)} by ${String(48 * k)}`;
+      expect(size(`${dir}/ic_launcher_foreground.png`), `${dir} foreground`).toBe(layer);
+      expect(size(`${dir}/ic_launcher_monochrome.png`), `${dir} monochrome`).toBe(layer);
+      expect(size(`${dir}/ic_launcher.png`), `${dir} legacy`).toBe(legacy);
+      expect(size(`${dir}/ic_launcher_round.png`), `${dir} legacy, round`).toBe(legacy);
+    }
+    for (const xml of ['ic_launcher', 'ic_launcher_round']) {
+      const adaptive = read(`${MAIN}/res/mipmap-anydpi-v26/${xml}.xml`);
+      expect(adaptive, `THE ICON HAS NO THEMED LAYER: ${xml}.xml`).toContain(
+        '@mipmap/ic_launcher_monochrome',
+      );
+      expect(adaptive).toContain('@drawable/ic_launcher_background');
+    }
+  });
+
+  it('is 512 px square for the store', () => {
+    expect(size('store/icon-512.png')).toBe('512 by 512');
+  });
+});
+
 describe('the size of the text', () => {
   it('is the game’s own, not the phone’s', () => {
     // Ruled 2 October 2026. An Android web view scales every word by the phone's font size unless

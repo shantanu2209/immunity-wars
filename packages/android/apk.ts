@@ -25,7 +25,7 @@ const APK = join(NATIVE, 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.a
 const APP_ID = 'com.kartikchaudhary.immunitywars';
 
 function stop(why: string): never {
-  console.error(`\nNOT BUILT: ${why}`);
+  console.error(`\nSTOPPED: ${why}`);
   process.exit(1);
 }
 
@@ -69,6 +69,8 @@ if (process.argv.includes('--install')) {
     .slice(1)
     .filter((line) => /\tdevice\s*$/.test(line));
   if (devices.length !== 1) {
+    // Built and not installed: said so, so that the build is not taken for a failure.
+    console.error(`\nBuilt, NOT INSTALLED: the app is at ${APK}.`);
     stop(
       `${String(devices.length)} phones are connected and allowed; one is needed. ` +
         'USB debugging must be on, and this computer allowed on the phone.',
