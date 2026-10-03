@@ -6217,3 +6217,22 @@ definite one. Not seen on an iPhone.
 this PC draws the fault, so the fix is shown to change nothing where nothing was wrong, and is
 argued, not shown, to mend it where something was. **The class is open:** a difference between a
 phone's browser and the browsers here is invisible to every instrument here.
+
+## 128. The accessibility audit never measured About — it skipped the step and said nothing, 3 October 2026
+
+**Found by reading what a clean run covered,** not its verdict, after About gained a card for the
+version: the run's list of 88 screens had no About in it, in any of its four passes.
+
+- **Why.** The audit's walk reaches the disease library through How to play, and the library's
+  last step closes back to How to play's contents. The About step came next and pressed About,
+  which is on the title and not there. The step had no other branch, so it wrote nothing: no row,
+  and no NOT REACHED.
+- **For how long:** the About step was added on 8 September; the library's step began ending in
+  How to play on 20 September (commit `9588c27`). From then on, by the walk's own order, no run
+  could reach About, and none said so.
+- **It was in the instrument,** so it is fixed here: the step goes back to the title first, and
+  says NOT REACHED, with where the walk was, when About is not there.
+
+**Measured after the fix,** the full audit alone and together, 3 October 2026: About in all four
+passes (89 screens each, 91 in one, up from 88 and 90), nothing not reached, every check at zero,
+and its close path, Title to About and back, one of 39, none wrong.

@@ -271,6 +271,21 @@ export function lookForNewer(
   };
 }
 
+/**
+ * WHETHER A NEWER VERSION IS WAITING NOW (ruled 3 October 2026): the game's menu says so, and About.
+ * A page nothing answers yet has no older version to be newer than, so on a first visit it is false,
+ * as it is for `whenNewerWaits`. Never rejects: a phone that cannot say has nothing to offer.
+ */
+export async function newerIsWaiting(container: UpdateContainerLike | undefined): Promise<boolean> {
+  if (container === undefined || container.controller === null) return false;
+  try {
+    const registration = await container.getRegistration();
+    return (registration?.waiting ?? null) !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** The worker once it has finished downloading, or null if it fails or takes too long. */
 function installed(worker: WorkerLike | null, timeoutMs: number): Promise<WorkerLike | null> {
   if (worker === null) return Promise.resolve(null);

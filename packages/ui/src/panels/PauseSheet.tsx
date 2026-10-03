@@ -6,6 +6,12 @@
  * It closes from the floating close (docs/for-P2.7.md §9, ruling 8), which is why it has no Resume
  * button: Resume WAS its close. It stays open under Settings and How to play, so closing either
  * returns here (ruling 9).
+ *
+ * A NEW VERSION IS READY (ruled 3 October 2026): said here, last, when one has downloaded, so that
+ * a player in the middle of a game hears of it and chooses when. Nothing reloads by itself outside
+ * the title. Alone, Update now is offered, because the game is saved after every move and Continue
+ * brings it back. Together it is said and not offered: a reload would drop this player from the
+ * table, so it waits for the title, which takes it by itself.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -14,6 +20,7 @@ import { KitButton } from '../kit/Button';
 import { kitCardStyle } from '../kit/Surface';
 import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
 import { SAY } from './onCard';
+import { UpdateNow } from './UpdateNow';
 
 /** Room above each button for the one before it to stand on its edge. */
 const BTN: CSSProperties = { marginTop: 12 };
@@ -24,6 +31,8 @@ export function PauseSheet({
   onSettings,
   onHelp,
   onLeave = null,
+  update = null,
+  onUpdate = () => undefined,
 }: {
   /** Quit to title. The shell keeps the autosave — quitting never deletes a game. */
   /** Back to the game: the same thing the floating close does. */
@@ -40,6 +49,10 @@ export function PauseSheet({
    * confirmed with what it does.
    */
   onLeave?: (() => void) | null;
+  /** A newer version has downloaded: said alone with Update now, together without it. Null when
+   *  there is none, and during the guided game's lesson, which is not saved and would start again. */
+  update?: 'alone' | 'together' | null;
+  onUpdate?: () => void;
 }): ReactElement {
   const together = onLeave !== null;
   const [confirming, setConfirming] = useState<'quit' | 'leave' | null>(null);
@@ -109,6 +122,15 @@ export function PauseSheet({
               <KitButton data-pause="leave" style={BTN} onPress={() => setConfirming('leave')}>
                 {t('pause.leave')}
               </KitButton>
+            ) : null}
+            {update !== null ? (
+              <div data-pause="update-ready">
+                <p style={{ ...SAY.body, margin: '16px 0 0' }}>
+                  {t('update.ready')}{' '}
+                  {update === 'alone' ? t('update.readyAlone') : t('update.readyTogether')}
+                </p>
+                {update === 'alone' ? <UpdateNow onUpdate={onUpdate} /> : null}
+              </div>
             ) : null}
           </>
         )}
