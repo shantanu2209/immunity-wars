@@ -6105,3 +6105,67 @@ end by themselves, and the passing case is held to arriving whole as well.
 **Shown on the runner, 2 October 2026:** with both changes, the CI test job passed, and the full
 self-test fired **207 controls of 207**, in 22 minutes, this control and the new one among them.
 **Closed.**
+
+## 126. The web app never looked for a newer version itself, and the update check could not see it — an iPhone played a version from before the look, 3 October 2026
+
+**Found by Shantanu,** who opened the deployed game on his iPhone, played alone, and got the old
+screens, days after every screen went to Clay.
+
+**Why it could happen.**
+
+- **The browser looks for a newer service worker when it loads a page from the network:** the link
+  opened fresh, or a reload. A Safari tab brought back from memory, or an app on the home screen
+  brought back to the front, is not loaded again, and nothing looks.
+- **The app never asked.** The title takes a newer version once it has downloaded (#93, ruled
+  30 September), and Update now asks when it is pressed, but Update now is offered only under the
+  version refusal, which comes from the relay. A game alone never talks to the relay.
+- **So a phone that keeps its tab could play the version it first downloaded for as long as it
+  kept it.**
+- **Which version his iPhone held is not known:** the app shows its version nowhere. A build from
+  before 30 September has no title rule either, and keeps the old version until every copy of the
+  app is closed.
+
+**Why the update check passed.** `tools/perf/update-check.ts` had two blind spots, and either alone
+hid this.
+
+- **Its deploy asked for the newer version itself:** it called the worker's `update()`, standing in
+  for the browser, and then held the app only to taking what had been found.
+- **It deployed inside the browser's own look.** Chrome asks for the worker's script a moment after
+  a page loads. Measured on three phones in the check, 3 October: 1.2 to 1.9 s after the reload
+  began. The check deployed as soon as the title was drawn, so Chrome's own look found the newer
+  build. With the check's `update()` taken out and the app's new looking taken out too, **the check
+  still passed.** On a phone the deploy comes hours or days after the page loaded.
+
+**Fixed, in the product.** `lookForNewer` (`packages/app/src/serviceWorker.ts`), started by
+`main.tsx` in the web build: the app asks for a newer version once when it starts, whenever it is
+brought back to the screen, and every half hour while it is on it. One question at a time;
+offline, the asking fails and is let go. **It only asks.** What it finds downloads while the player
+plays, and the title takes it, as ruled on 30 September; nothing reloads in a game. The Android
+app has no service worker and does not ask.
+
+**Fixed, in the instrument.** The deploy no longer asks: it switches what the site serves and then
+brings the page back to the screen (`visibilitychange`). And a phone is handed to the deploy only
+once its worker's script has been asked for since the page loaded, and then not again for 3 s, so
+the browser's own look is over first.
+
+**Controls, each fired:** `app-looks-when-it-comes-back` (the asking on coming back taken out: the
+test fails saying the app does not look when it comes back) and `update-check-app-looks-itself`
+(the call taken out of `main.tsx`: the update check refuses, saying the title did not take the
+newer build by itself). `shell-build-registers-no-worker` is re-aimed: the line it changes moved.
+
+**Measured, in headless Chrome on the PC:** the update check passes, the title taking the newer
+build 1.3 s after the page comes back.
+
+**Not measured: on an iPhone.** That Safari tells a page it is back on the screen when a tab or a
+home-screen app returns, and that a page may ask for a newer worker there, is from the standards
+and what WebKit supports, not from a run.
+
+**What this cannot reach: a phone already holding an older build,** which does not have this code.
+It moves when the browser next loads the page fresh (a reload, the link opened again, or Safari
+reloading a tab it had dropped from memory) and, on a build from before 30 September, only once
+every copy of the app is closed. Someone opening the game for the first time gets the current
+build, and this with it.
+
+**Not done, on purpose:** a newer worker that takes over at once and reloads every open copy. It
+would reach old builds sooner, and it would reload a game in progress, which the ruling of
+30 September forbids because it drops a game played together.

@@ -75,6 +75,7 @@ import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoi
 import { readPlayed, writePlayed } from './played';
 import {
   browserUpdates,
+  lookForNewer,
   startServiceWorker,
   takeWaitingVersion,
   updateNow,
@@ -918,4 +919,9 @@ if (el) {
 // there is nothing for a worker to store, and that build writes none to register. Written as a
 // comparison the build can decide, so that in the shell's build the call is not there at all:
 // src/shell-build.test.ts reads the built scripts for it.
-if (import.meta.env.MODE !== 'android') startServiceWorker(import.meta.env.PROD);
+if (import.meta.env.MODE !== 'android') {
+  startServiceWorker(import.meta.env.PROD);
+  // AND IT LOOKS FOR A NEWER VERSION ITSELF (FINDINGS #126): when it starts, when it comes back to
+  // the screen, and every half hour. The title takes what it finds; nothing here reloads.
+  if (import.meta.env.PROD) lookForNewer(browserUpdates(), document);
+}

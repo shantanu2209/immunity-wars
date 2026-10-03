@@ -2207,3 +2207,25 @@ code; anything on a phone that is not this one.
 build for the store and its signing key; what the app does when the game's server refuses an older
 version, which on the web offers Update now; a version stamp on saved games; text size, where the
 phone's own setting and the game's meet.
+
+## 27. Found 3 October 2026: the web app on an iPhone stayed on a version from before the look
+
+He opened the deployed game on his iPhone, played alone, and got the old screens. He asked: *"Can
+we do something about it?"*
+
+- **Why:** the browser looks for a newer version only when it loads a page fresh, and the app never
+  asked. A Safari tab or a home-screen app brought back to the front could go on playing the version
+  it first downloaded. Update now, the one control that asks, is offered only when the game's
+  server refuses a version, and a game alone never meets the server
+  ([`FINDINGS.md`](FINDINGS.md) #126).
+- **The fix:** the web app asks for a newer version when it starts, when it is brought back to the
+  screen, and every half hour while it is on it. What it finds downloads while the player plays, and
+  the title takes it, as ruled on 30 September ([`FINDINGS.md`](FINDINGS.md) #93). Nothing reloads
+  in a game.
+- **The update check could not see it** and is corrected: it asked on the app's behalf, and it
+  deployed inside the moment after a page loads in which Chrome looks by itself. With the app's
+  asking taken out it now refuses; with it in, it passes.
+- **Not measured on an iPhone.** A phone already holding an older build does not have this code: it
+  moves the next time the browser loads the page fresh. Someone opening the game for the first time
+  gets the current build, and this with it.
+- **The app only, when deployed:** nothing in the relay, the protocol or the rules changed.

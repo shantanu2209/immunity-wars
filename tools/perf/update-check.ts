@@ -5,7 +5,9 @@
  * the app. Two rulings answer it, and the check holds both, on three phones:
  *
  *   1. On the title, the newer build is taken by itself, as soon as it has downloaded (ruled
- *      30 September 2026).
+ *      30 September 2026), and THE APP FINDS IT ITSELF when it is brought back to the screen
+ *      (docs/FINDINGS.md #126): the check never asks for it on the app's behalf, and deploys only
+ *      once the browser's own look after loading the page is over.
  *   2. In a game, never: the newer build waits, the game keeps the older one, and the title takes it
  *      once the player is back there. A reload in a game would drop a game played together.
  *   3. Off the title, the version refusal offers Update now (ruled 28 September 2026), and pressing it
@@ -35,6 +37,12 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const WAIT_MS = 30_000;
 /** How long a game must keep the older build with the newer one waiting. */
 const HOLD_MS = 3_000;
+/**
+ * How long nothing may ask for the worker's script before the deploy. Chrome looks for a newer
+ * worker 1.2 to 1.9 s after a page loads (measured 3 October 2026, three phones), later while the
+ * worker is busy; this is that, with room.
+ */
+const QUIET_MS = 3_000;
 /** The relay's close code for "this app and the game server are on different versions". */
 const VERSION_CLOSE = 4001;
 
@@ -126,8 +134,16 @@ try {
   const olderFiles = filesOf(older);
   const newerFiles = filesOf(newer);
   let served = olderFiles;
+  // How often, and when last, the site was asked for the worker's script: each time is the browser
+  // or the app looking for a newer version.
+  let workerAsked = 0;
+  let workerAskedAt = 0;
   const site = createServer((req, res) => {
     const path = (req.url ?? '/').split('?')[0] ?? '/';
+    if (path === '/sw.js') {
+      workerAsked += 1;
+      workerAskedAt = Date.now();
+    }
     const file = served.get(path === '/' ? '/index.html' : path);
     if (file === undefined) {
       res.writeHead(404).end();
@@ -151,10 +167,21 @@ try {
       await page.setViewport({ width: 360, height: 780 });
       await page.goto(url, { waitUntil: 'load' });
       await page.evaluate('navigator.serviceWorker.ready.then(() => true)');
+      const asked = workerAsked;
       await page.reload({ waitUntil: 'load' });
       if (!(await page.evaluate('!!navigator.serviceWorker.controller')))
         refuse("the setup did not hold: the older build's worker never took charge of the page");
       await page.waitForSelector('[data-title]', { timeout: WAIT_MS });
+      // THE BROWSER'S OWN LOOK IS OVER BEFORE THE DEPLOY (docs/FINDINGS.md #126). Chrome asks for
+      // the worker's script a second or two after a page loads, and the check used to deploy inside
+      // that time: Chrome then found the newer build, not the app, and the check passed with the
+      // app's own looking taken out. On a phone the deploy comes hours after the page loaded. So the
+      // phone is handed over only once the script has been asked for since the reload, and then not
+      // again for QUIET_MS.
+      await poll(
+        async () => workerAsked > asked && Date.now() - workerAskedAt > QUIET_MS,
+        'the setup did not hold: nothing looked for a newer worker after the page loaded',
+      );
       return page;
     };
     // Strings, not functions: the page runs them as written, with nothing a transpiler added.
@@ -178,11 +205,20 @@ try {
       }
       return Date.now() - from;
     };
-    /** The deploy: the server has the newer build, and the page's worker looks for it. */
+    /**
+     * The deploy: the server has the newer build, and then the phone brings the app back to the
+     * screen, as a player does who switches to it from another app.
+     *
+     * THE CHECK DOES NOT ASK FOR THE NEWER VERSION ITSELF (docs/FINDINGS.md #126, 3 October 2026).
+     * It used to: the deploy here called the worker's `update()`, standing in for the browser, and
+     * the app was held only to taking what had been found. The app itself never asked, and a page
+     * brought back to the screen is not one the browser looks at, so an iPhone played a version from
+     * before the look days after the look went up, while this check passed.
+     */
     const deploy = async (page: Page): Promise<void> => {
       served = newerFiles;
       await page
-        .evaluate('navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => 1)')
+        .evaluate("document.dispatchEvent(new Event('visibilitychange')); 1")
         .catch(() => undefined);
     };
     /** Every main script the page loads from now on, in order: each is one load of the app. */

@@ -12,9 +12,10 @@
  * The browser-level half, that a refusal in a real page does not reach the crash screen, is the
  * Gate 1 audit's, which enters that state on purpose (tools/perf/gate1-audit.ts).
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  lookForNewer,
   registerServiceWorker,
   takeWaitingVersion,
   updateNow,
@@ -291,5 +292,136 @@ describe('whenNewerWaits', () => {
     w.become('installed');
     b.deploy().become('installed');
     expect(h.count).toBe(0);
+  });
+});
+
+/**
+ * THE APP LOOKS FOR A NEWER VERSION ITSELF (FINDINGS #126). Nothing in the app asked, and a page
+ * brought back to the screen, rather than opened fresh, is never looked at by the browser: an old
+ * version was played on an iPhone days after the look went up. Control:
+ * pnpm ci:selftest app-looks-when-it-comes-back.
+ */
+describe('lookForNewer', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  const page = (state = 'visible') => {
+    const listeners: (() => void)[] = [];
+    return {
+      visibilityState: state,
+      addEventListener: (_t: 'visibilitychange', l: () => void) => listeners.push(l),
+      removeEventListener: (_t: 'visibilitychange', l: () => void) => {
+        listeners.splice(listeners.indexOf(l), 1);
+      },
+      /** The phone brings the app back to the front, or sends it away. */
+      turn(to: string) {
+        this.visibilityState = to;
+        for (const l of [...listeners]) l();
+      },
+      listeners,
+    };
+  };
+  const counting = () => {
+    const asked = { count: 0 };
+    const b = browser({
+      update: () => {
+        asked.count += 1;
+        return Promise.resolve();
+      },
+    });
+    return { b, asked };
+  };
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+  };
+
+  it('FIRES: it asks once when it starts', async () => {
+    const { b, asked } = counting();
+    lookForNewer(b.container, page());
+    await settle();
+    expect(asked.count).toBe(1);
+  });
+
+  it('FIRES: it asks again when the app is brought back to the screen', async () => {
+    const { b, asked } = counting();
+    const p = page();
+    lookForNewer(b.container, p);
+    await settle();
+    p.turn('hidden');
+    p.turn('visible');
+    await settle();
+    expect(asked.count, 'THE APP DOES NOT LOOK FOR A NEWER VERSION WHEN IT COMES BACK').toBe(2);
+  });
+
+  it('FIRES: it asks every half hour while it is on the screen', async () => {
+    vi.useFakeTimers();
+    const { b, asked } = counting();
+    lookForNewer(b.container, page());
+    await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+    await vi.advanceTimersByTimeAsync(30 * 60 * 1000);
+    expect(asked.count).toBe(3);
+  });
+
+  it('PASSES: it does not ask while the app is off the screen', async () => {
+    vi.useFakeTimers();
+    const { b, asked } = counting();
+    const p = page('hidden');
+    lookForNewer(b.container, p);
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(asked.count).toBe(0);
+  });
+
+  it('PASSES: one question at a time, however often the app comes back while it is out', async () => {
+    let answer: () => void = () => undefined;
+    const asked = { count: 0 };
+    const b = browser({
+      update: () => {
+        asked.count += 1;
+        return new Promise<void>((r) => {
+          answer = r;
+        });
+      },
+    });
+    const p = page();
+    lookForNewer(b.container, p);
+    await settle();
+    p.turn('visible');
+    p.turn('visible');
+    expect(asked.count).toBe(1);
+    answer();
+    await settle();
+    p.turn('visible');
+    await settle();
+    expect(asked.count).toBe(2);
+  });
+
+  it('PASSES: offline, the question fails and is let go, and the next one is still asked', async () => {
+    const asked = { count: 0 };
+    const b = browser({
+      update: () => {
+        asked.count += 1;
+        return Promise.reject(new TypeError('Failed to update a ServiceWorker'));
+      },
+    });
+    const p = page();
+    lookForNewer(b.container, p);
+    await settle();
+    p.turn('visible');
+    await settle();
+    expect(asked.count).toBe(2);
+  });
+
+  it('PASSES: once stopped, it asks nothing more; and with no worker API it does nothing', async () => {
+    vi.useFakeTimers();
+    const { b, asked } = counting();
+    const p = page();
+    const stop = lookForNewer(b.container, p);
+    await vi.advanceTimersByTimeAsync(0);
+    stop();
+    p.turn('visible');
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(asked.count).toBe(1);
+    expect(p.listeners.length).toBe(0);
+    expect(() => lookForNewer(undefined, page())()).not.toThrow();
   });
 });
