@@ -21,11 +21,12 @@
  * to reassure is describing a policy; this app has no policy because it has nothing to collect,
  * and the honest form of that is the one line under Privacy rather than a page.
  *
- * NO VERSION STRING, deliberately, though the convention would have one. It would need a build
- * identifier injected through Vite, and its use is telling someone which build a problem came
- * from — but there is no way to report a problem: no network, no form, no address, by design.
- * It becomes worth its plumbing when the app is in a store and a person can write to someone
- * about it, which is Phase 4.
+ * THE VERSION, AND A NEWER ONE WHEN IT IS WAITING (ruled 3 October 2026). This said there was
+ * deliberately no version string, until a store gave a person someone to write to. What changed
+ * it was not a store: an iPhone played a version from before the look for days, and nobody could
+ * tell which build it held (docs/FINDINGS.md #126). The version is the one the deploy names the
+ * server's folder by, put into the build by the deploy script (`VITE_APP_VERSION`), so the two can
+ * be read against each other. A build made anywhere else says it is not a release.
  *
  * The licence lines are the README's split: code under Apache 2.0, and the game content ALL
  * RIGHTS RESERVED by decision, which is the answer a teacher reading this needs to see. The
@@ -34,10 +35,19 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
+import { UpdateNow } from '../panels/UpdateNow';
 import { BODY, CARD, LEAD, PAGE, SECTION, TITLE } from './chrome';
 
 /** Its way back is the floating close (docs/for-P2.7.md §9, ruling 8), not a button at the end. */
-export function AboutScreen(): ReactElement {
+export function AboutScreen({
+  version = null,
+  onUpdate = null,
+}: {
+  /** The build's version, as the deploy named it; null for a build that is not a release. */
+  version?: string | null;
+  /** Present when a newer version has downloaded and waits. Nothing is in play here to lose. */
+  onUpdate?: (() => void) | null;
+}): ReactElement {
   return (
     <div style={PAGE} data-screen="about">
       <h1 style={TITLE}>{t('about.title')}</h1>
@@ -73,6 +83,19 @@ export function AboutScreen(): ReactElement {
         <p style={BODY}>{t('about.licenceCode')}</p>
         <p style={BODY}>{t('about.licenceContent')}</p>
         <p style={{ ...BODY, marginBottom: 0 }}>{t('about.classroom')}</p>
+      </section>
+
+      <section style={CARD} data-about="version">
+        <h2 style={SECTION}>{t('about.version')}</h2>
+        <p style={{ ...BODY, marginBottom: 0, overflowWrap: 'anywhere' }}>
+          {version ?? t('about.versionLocal')}
+        </p>
+        {onUpdate !== null ? (
+          <>
+            <p style={{ ...BODY, margin: '12px 0 0' }}>{t('update.ready')}</p>
+            <UpdateNow onUpdate={onUpdate} />
+          </>
+        ) : null}
       </section>
     </div>
   );

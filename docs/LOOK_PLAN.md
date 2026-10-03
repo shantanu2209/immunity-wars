@@ -2254,3 +2254,47 @@ we do something about it?"*
   moves the next time the browser loads the page fresh. Someone opening the game for the first time
   gets the current build, and this with it.
 - **The app only, when deployed:** nothing in the relay, the protocol or the rules changed.
+
+**The same day, on the same iPhone:** with the current version on it, the title's name was drawn
+over its picture: measured from his screenshot, the picture was drawn at its own shape and not
+in its box. Chrome, and WebKit 26.6 on the PC, draw it in its box; every check here runs in one of
+them. The picture is now laid over its box, which does not depend on what his phone's browser got
+wrong, and in both nothing moved ([`FINDINGS.md`](FINDINGS.md) #127). The fix is not yet seen on
+an iPhone.
+
+### Ruled the same day: a new version is said, and About names the version
+
+Put to him with the alternative of a reload forced on every open copy (not recommended: it would
+reload a game in progress, against the ruling of 30 September), he answered: *"4. yes"*, to a notice
+and the version in About, after *"if/when they do 1. Will be a jarring experience. Is there some
+other option?"*
+
+| Where | What it does |
+|---|---|
+| The title | As before: a newer version that has downloaded is taken at once |
+| The game's menu button | A dot, the kit's mint in its darker edge, when one is ready; its label says so in words |
+| The game's menu, alone | Last, after the way out: *A new version is ready*, that the game is saved and Continue brings it back, and Update now |
+| The game's menu, together | The same news, and that it starts back on the title. No Update now: a reload would drop this player from the table |
+| During the guided game's lesson | Nothing: the lesson is not saved, and would start again |
+| About | The version, and when a newer one waits, the news and Update now |
+| The Android app | No dot and no news: it has no service worker, and its updates come from the store. About shows its version, marked `android-` |
+
+- **The version is the deploy's own name for the build,** the name of its folder on the server
+  (`20261003-134930-fd58650`, say). The deploy script names it before building, puts it into the
+  build, and refuses a build that does not carry it. A build made anywhere else says it is a build
+  for testing.
+- **Measured, in headless Chrome on the PC, by the update check:** in a game alone the menu said so
+  and its Update now brought the newer build on the very next load, in 1.3 s; in a game, nothing
+  reloaded by itself.
+- **Controls, each fired:** `update-waiting-needs-an-older-one`, `update-menu-together-offers-no-reload`,
+  `about-shows-the-version`, `build-carries-its-version`, `update-check-menu-says-it`. The dot's
+  colour is held to 3:1 against the button by the kit's own test (3.5).
+- **The Gate 1 audit, alone and together, on this build:** 89 screens in each of the four passes
+  (91 in one), nothing not reached; every check at zero over 1,139 controls and 2,474 text runs;
+  39 close paths, none wrong; offline met; 47 controls of the audit's own, each as it must be.
+  **About is among them for the first time since 20 September:** the walk had been skipping it
+  without a word ([`FINDINGS.md`](FINDINGS.md) #128). The menu's news is not among them: it shows
+  only when a newer version waits, which the audit's one build never has, so it is the update
+  check that plays it.
+- **Unruled, and his to overrule:** where the news stands (the menu and a dot, not a banner over the
+  game), the words, and the dot's colour.

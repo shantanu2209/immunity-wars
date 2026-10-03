@@ -6169,3 +6169,70 @@ build, and this with it.
 **Not done, on purpose:** a newer worker that takes over at once and reloads every open copy. It
 would reach old builds sooner, and it would reload a game in progress, which the ruling of
 30 September forbids because it drops a game played together.
+
+## 127. On an iPhone the title's picture ran down over the game's name, and nothing run here could see it — 3 October 2026
+
+**Found by Shantanu,** in Chrome on his iPhone, the first time it showed the Clay title: the game's
+name and the line under it were drawn over the lower half of the picture.
+
+**What his phone drew, measured from his screenshot** (1179 by 2556, three pixels to a point on a
+screen 393 points wide): the board is 364.3 points wide at its widest, with its top 35.3 points
+into the page. In the title's picture the board is 0.9222 of the width with its top at 0.1010 of
+the height, so **the picture was drawn 393 by 349: its own shape, across the whole width.** Its box
+was about 200 points tall, so the picture ran on, over the name.
+
+**Why.** The title is a column at least one screen tall (`min-height`, so that it can grow with
+the text at 200%). The picture's box takes the height the words and the buttons leave, by
+flexing, and the picture was `height: 100%` of that box. Whether a percentage can use a height
+that flexing gave, in a column with no definite height of its own, is where engines have differed.
+**His phone's browser did not use it,** and took the picture at its own shape instead.
+
+| Drawn by | Picture at 393 by 664, no saved game | |
+|---|---|---|
+| Headless Chrome | 393 by 263, in its box, the name at 269 | Clear |
+| Headless Chrome, the picture's height made `auto` and not stretched | 393 by 349: what his phone drew, to 0.1 point | 80 px into the name |
+| **Real WebKit 26.6** (Playwright's build, on the PC), as an iPhone 15 Pro, at heights 664, 600, 540 and 480 | In its box at every height | Clear |
+
+- **So it is not WebKit as such.** The WebKit on the PC, newer than what ships on phones, uses the
+  height as Chrome does. Which version his iPhone runs is not recorded here.
+- **Every check here runs in Chrome,** and the S25 is Chrome. None could see it, and a WebKit 26.6
+  check would not have either.
+
+**Fixed, in the product.** The picture is laid over its box (`position: absolute`) and not sized by
+it, so it is measured against the box as laid out, which does not turn on that question. Measured,
+the layout is what it was: in Chrome and in WebKit 26.6 at 393 by 664 the box and the picture are
+both 0 to 263 px with the name at 269; in Chrome at 360 by 641, 0 to 240 with the name at 246; in
+WebKit at heights 600, 540 and 480 as well.
+
+**Held by:** the title's test, that its picture is placed absolutely in a box placed relatively.
+It holds the cause, not the look: control `title-picture-laid-over-its-box` (the placing taken out:
+the test fails saying the picture is sized by a flexed box), fired.
+
+**Looked for elsewhere, by reading:** six other parts of the screens are sized as a percentage of
+their box (the board, planning's body, three panels). All are inside the play screen, which is
+exactly one screen tall (`height`, not `min-height`), where the standard makes the flexed height a
+definite one. Not seen on an iPhone.
+
+**Not measured: the fix on an iPhone,** until it is deployed and he opens it there. No engine on
+this PC draws the fault, so the fix is shown to change nothing where nothing was wrong, and is
+argued, not shown, to mend it where something was. **The class is open:** a difference between a
+phone's browser and the browsers here is invisible to every instrument here.
+
+## 128. The accessibility audit never measured About — it skipped the step and said nothing, 3 October 2026
+
+**Found by reading what a clean run covered,** not its verdict, after About gained a card for the
+version: the run's list of 88 screens had no About in it, in any of its four passes.
+
+- **Why.** The audit's walk reaches the disease library through How to play, and the library's
+  last step closes back to How to play's contents. The About step came next and pressed About,
+  which is on the title and not there. The step had no other branch, so it wrote nothing: no row,
+  and no NOT REACHED.
+- **For how long:** the About step was added on 8 September; the library's step began ending in
+  How to play on 20 September (commit `9588c27`). From then on, by the walk's own order, no run
+  could reach About, and none said so.
+- **It was in the instrument,** so it is fixed here: the step goes back to the title first, and
+  says NOT REACHED, with where the walk was, when About is not there.
+
+**Measured after the fix,** the full audit alone and together, 3 October 2026: About in all four
+passes (89 screens each, 91 in one, up from 88 and 90), nothing not reached, every check at zero,
+and its close path, Title to About and back, one of 39, none wrong.

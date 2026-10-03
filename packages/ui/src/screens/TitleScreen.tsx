@@ -112,16 +112,29 @@ export function TitleScreen({
           maxHeight: 'min(46dvh, 373px)',
           width: '100%',
           maxWidth: 420,
-          display: 'flex',
-          justifyContent: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        {/* LAID OVER ITS BOX, NOT SIZED BY IT (docs/FINDINGS.md #127). The screen is AT LEAST one
+            screen tall, so the box's height comes from flexing, and whether a picture `height:
+            100%` of it can use that height is where engines have differed. Chrome and WebKit 26.6
+            do; the browser on an iPhone, 3 October 2026, did not: the picture took its own shape
+            and ran down over the game's name. A picture placed absolutely is measured against the
+            box as laid out, which does not turn on that question. */}
         <img
           alt=""
           src={`${HERO}@2x.webp`}
           srcSet={HERO_SET}
           sizes="(min-width: 420px) 420px, 100vw"
-          style={{ height: '100%', width: '100%', objectFit: 'contain' }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: '100%',
+            width: '100%',
+            objectFit: 'contain',
+          }}
         />
       </div>
       <div

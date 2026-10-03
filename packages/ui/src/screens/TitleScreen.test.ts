@@ -93,6 +93,18 @@ describe('the title’s main button', () => {
     expect(title(saved)).not.toContain('data-title="learn"');
   });
 
+  it('its picture is laid over its box, not sized by it (FINDINGS #127)', () => {
+    // On an iPhone the picture ran down over the game's name: its browser did not resolve a height
+    // of 100% against a box whose height comes from flexing inside a screen only AT LEAST one tall.
+    // Chrome and WebKit 26.6 do, so no check run here can see it; this holds the cause instead.
+    const html = title(saved);
+    const img = /<img[^>]*>/.exec(html)?.[0] ?? '';
+    expect(img, 'the picture is found at all').toContain('object-fit:contain');
+    expect(img, 'THE TITLE’S PICTURE IS SIZED BY A FLEXED BOX').toContain('position:absolute');
+    const box = /<div aria-hidden="true" style="([^"]*)"><img/.exec(html)?.[1] ?? '';
+    expect(box, 'its box is what it is measured against').toContain('position:relative');
+  });
+
   it('keeps the hooks the instruments find it by, and says what it resumes', () => {
     const html = title(saved);
     for (const hook of ['new', 'together', 'help', 'settings', 'about'])

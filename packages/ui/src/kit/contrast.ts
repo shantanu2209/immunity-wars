@@ -79,6 +79,12 @@ export const PAIRS: readonly Pair[] = [
   { name: 'the main button on the table', fg: COLOUR.coral, bg: COLOUR.tableLit, bound: 'control' },
   { name: 'the go button on a card', fg: COLOUR.mintEdge, bg: COLOUR.cream, bound: 'control' },
   {
+    name: 'a new version’s dot on a resting button',
+    fg: COLOUR.mintEdge,
+    bg: COLOUR.creamSunk,
+    bound: 'control',
+  },
+  {
     name: 'a resting button on a card, by its edge',
     fg: COLOUR.creamSunkEdge,
     bg: COLOUR.cream,

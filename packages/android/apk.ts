@@ -47,6 +47,14 @@ const run = (command: string, cwd: string): void => {
   execSync(command, { cwd, stdio: 'inherit', env: process.env });
 };
 
+// THE VERSION About shows (ruled 3 October 2026), named as the web's deploy names its builds, and
+// marked as the Android app's.
+const now = new Date();
+const two = (n: number): string => String(n).padStart(2, '0');
+const stamp = `${String(now.getFullYear())}${two(now.getMonth() + 1)}${two(now.getDate())}-${two(now.getHours())}${two(now.getMinutes())}${two(now.getSeconds())}`;
+const commit = execSync('git rev-parse --short HEAD', { cwd: REPO, encoding: 'utf8' }).trim();
+process.env['VITE_APP_VERSION'] = `android-${stamp}-${commit}`;
+
 // The app's web build, made for the shell, into www/; then copied into the native project.
 run(
   'pnpm --filter @immunity-wars/app exec vite build --mode android --emptyOutDir --outDir ../android/www',
