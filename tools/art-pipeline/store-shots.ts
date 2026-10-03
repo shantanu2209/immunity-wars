@@ -12,11 +12,15 @@
  * also brings the picture inside Play's rule that no side be more than twice the other.
  *
  * THE APP'S OWN STORE IS PUT BACK. A screenshot of a first visit, and of a new game, means clearing
- * what the app keeps (a saved game, the settings); all of it is read first and written back at the
- * end, and the app reloaded, so the phone's owner finds their game where they left it.
+ * what the app keeps: its settings and records in localStorage, and the saved game in IndexedDB.
+ * Both are read first, written to a file outside the repository too, and put back at the end and
+ * checked, so the phone's owner finds their game where they left it. The first version of this
+ * script backed up localStorage only, and found the saved game by being asked to replace it; it
+ * stopped there, and replaced nothing.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -103,11 +107,53 @@ const browser = await puppeteer.connect({
 const page: Page | undefined = (await browser.pages()).find((p) => p.url().startsWith(HOME));
 if (page === undefined) refuse('the app has no page.');
 
-const kept = (await page.evaluate('JSON.stringify(Object.assign({}, localStorage))')) as string;
+// WHAT THE APP KEEPS, both places: its settings and records in localStorage, and the saved game in
+// IndexedDB (database `immunity-wars`, store `saves`, packages/session/src/indexeddb.ts). Read before
+// anything is cleared, written to a file outside the repository as well, in case the putting back
+// itself fails, and checked after it is put back.
+const SAVES = `new Promise((ok, no) => {
+  const r = indexedDB.open('immunity-wars', 1);
+  r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains('saves')) r.result.createObjectStore('saves', { keyPath: 'id' }); };
+  r.onsuccess = () => ok(r.result);
+  r.onerror = () => no(r.error);
+})`;
+const readKept = async (): Promise<string> =>
+  (await page.evaluate(`(async () => {
+    const db = await ${SAVES};
+    const saves = await new Promise((ok, no) => { const q = db.transaction('saves').objectStore('saves').getAll(); q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error); });
+    db.close();
+    return JSON.stringify({ local: Object.assign({}, localStorage), saves });
+  })()`)) as string;
+const clearKept = async (): Promise<void> => {
+  await page.evaluate(`(async () => {
+    localStorage.clear();
+    const db = await ${SAVES};
+    await new Promise((ok, no) => { const tx = db.transaction('saves', 'readwrite'); tx.objectStore('saves').clear(); tx.oncomplete = () => ok(); tx.onerror = () => no(tx.error); });
+    db.close();
+  })()`);
+};
+const kept = await readKept();
+const KEPT_FILE = join(tmpdir(), `iw-store-shots-kept-${String(Date.now())}.json`);
+writeFileSync(KEPT_FILE, kept);
 const putBack = async (): Promise<void> => {
-  await page.evaluate(
-    `(() => { localStorage.clear(); const k = ${kept}; for (const n of Object.keys(k)) localStorage.setItem(n, k[n]); })()`,
-  );
+  await page.evaluate(`(async () => {
+    const k = ${kept};
+    localStorage.clear();
+    for (const n of Object.keys(k.local)) localStorage.setItem(n, k.local[n]);
+    const db = await ${SAVES};
+    await new Promise((ok, no) => {
+      const tx = db.transaction('saves', 'readwrite');
+      const s = tx.objectStore('saves');
+      s.clear();
+      for (const r of k.saves) s.put(r);
+      tx.oncomplete = () => ok();
+      tx.onerror = () => no(tx.error);
+    });
+    db.close();
+  })()`);
+  if ((await readKept()) !== kept)
+    refuse(`what the app kept was not put back as it was: it is saved in ${KEPT_FILE}`);
+  rmSync(KEPT_FILE);
   await page.reload({ waitUntil: 'load' });
 };
 
@@ -121,6 +167,18 @@ const pressSel = async (selector: string, wait = 8000): Promise<void> => {
     await sleep(250);
   }
   throw new Error(`nothing answers to ${selector}`);
+};
+/** Waits until a button says `label`, without pressing it. */
+const waitFor = async (label: string, wait = 15000): Promise<void> => {
+  const from = Date.now();
+  while (Date.now() - from < wait) {
+    const there = (await page.evaluate(
+      `[...document.querySelectorAll('button')].some((x) => x.textContent.trim() === ${JSON.stringify(label)})`,
+    )) as boolean;
+    if (there) return;
+    await sleep(250);
+  }
+  throw new Error(`no button came to say ${label}`);
 };
 const press = async (label: string, wait = 10000): Promise<void> => {
   const from = Date.now();
@@ -147,25 +205,28 @@ const shoot = async (name: string): Promise<void> => {
 
 try {
   // A first visit: nothing kept.
-  await page.evaluate('localStorage.clear()');
+  await clearKept();
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('[data-title]', { timeout: 20_000 });
   await shoot('1-title');
 
   // The guided game, its light on the first thing to press.
+  // Past its goal dialog, whose one button is Begin, to the first thing the light points at.
   await pressSel('[data-title="learn"]');
-  await sleep(2500);
+  await pressSel('[data-dialog-dismiss]');
+  await sleep(3500);
   await shoot('2-guided-game');
 
   // A game on Easy: the new cards, planning, and the board with the Monocyte in hand.
-  await page.evaluate('localStorage.clear()');
+  await clearKept();
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('[data-title]', { timeout: 20_000 });
   await pressSel('[data-title="new"]');
   await pressSel('[data-new-game="training"]');
-  await pressSel('[data-dialog-dismiss]', 4000).catch(() => undefined);
-  await press('Begin');
-  await sleep(2500);
+  // The goal dialog's one button is Begin; the new cards are dealt after it.
+  await pressSel('[data-dialog-dismiss]');
+  await waitFor('Plan your turn');
+  await sleep(1500);
   await shoot('3-new-cards');
   await press('Plan your turn');
   await shoot('4-planning');
@@ -175,13 +236,18 @@ try {
   await shoot('5-the-board');
 
   // What changes between the difficulties.
-  await page.evaluate('localStorage.clear()');
+  await clearKept();
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('[data-title]', { timeout: 20_000 });
   await pressSel('[data-title="new"]');
   await press('What changes between them');
   await shoot('6-difficulties');
 } catch (e) {
+  // What was on the screen when it stopped, so a stop says where it was.
+  const onScreen = (await page.evaluate(
+    "[...document.querySelectorAll('button')].map((b) => b.textContent.trim()).filter(Boolean).slice(0, 14).join(' | ')",
+  )) as string;
+  console.error(`SCREENSHOTS: the buttons on the screen: ${onScreen}`);
   await putBack();
   await browser.disconnect();
   refuse(e instanceof Error ? e.message : String(e));
