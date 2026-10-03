@@ -41,6 +41,7 @@ import {
   SettingsScreen,
   TitleScreen,
   TogetherScreen,
+  UpdateDot,
   entryRefusal,
   refusalFromClose,
   t,
@@ -76,6 +77,7 @@ import { readPlayed, writePlayed } from './played';
 import {
   browserUpdates,
   lookForNewer,
+  newerIsWaiting,
   startServiceWorker,
   takeWaitingVersion,
   updateNow,
@@ -103,6 +105,9 @@ interface Refusal {
 const update = (): void => {
   void updateNow(browserUpdates(), () => window.location.reload());
 };
+
+/** The version this build is released as, named by the deploy script; null for any other build. */
+const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? null;
 
 const refusalOfEntry = (e: unknown): Refusal => ({
   code: e instanceof RelayError ? entryRefusal(e.code, e.closeCode) : 'unreachable',
@@ -267,6 +272,19 @@ function App({
     take();
     return whenNewerWaits(container, take);
   }, [onTitle]);
+
+  // A NEWER VERSION IS READY (ruled 3 October 2026): off the title, said by a dot on the game's menu
+  // and in the menu, and in About, so a player in the middle of a game hears of it and chooses when.
+  // Web builds only: the Android app has no service worker, and its updates come from the store.
+  const [newerReady, setNewerReady] = useState(false);
+  useEffect(() => {
+    if (import.meta.env.MODE === 'android' || !import.meta.env.PROD) return undefined;
+    const container = browserUpdates();
+    void newerIsWaiting(container).then((waiting) => {
+      if (waiting) setNewerReady(true);
+    });
+    return whenNewerWaits(container, () => setNewerReady(true));
+  }, []);
 
   /**
    * THE SHELL LISTENS FOR THE NOTICE, not PlayScreen, because the warning outlives any one
@@ -611,7 +629,8 @@ function App({
     if (!underPlay && screen.name === 'settings') return settingsScreen(false);
     if (!underPlay && screen.name === 'library') return libraryScreen(screen.view);
     if (!underPlay && screen.name === 'help') return helpScreen(screen.section);
-    if (screen.name === 'about') return <AboutScreen />;
+    if (screen.name === 'about')
+      return <AboutScreen version={APP_VERSION} onUpdate={newerReady ? update : null} />;
 
     if (screen.name === 'title') {
       return (
@@ -771,13 +790,21 @@ function App({
               // screen, for-P2.7.md §19): the turn and the AP are the bar's own now, and the deck's
               // count left it.
               // Drawn in Clay since stage L4, like the bar it sits in: the kit's resting button.
+              // A dot on it when a newer version is ready, and not during the lesson.
               <KitButton
                 data-menu=""
-                aria-label={t('play.pause')}
+                aria-label={newerReady && !guided ? t('play.pauseUpdate') : t('play.pause')}
                 onPress={() => setPaused(true)}
-                style={{ width: 44, minHeight: 44, padding: 0, flex: '0 0 auto' }}
+                style={{
+                  width: 44,
+                  minHeight: 44,
+                  padding: 0,
+                  flex: '0 0 auto',
+                  position: 'relative',
+                }}
               >
                 <MenuIcon />
+                {newerReady && !guided ? <UpdateDot /> : null}
               </KitButton>
             )}
           />
@@ -790,6 +817,11 @@ function App({
               // (ruling 9). It used to close itself first, which is why Back landed on the game.
               onSettings={() => nav.push({ name: 'settings' })}
               onHelp={() => nav.push({ name: 'help', section: null })}
+              // A newer version, said; offered only alone. The lesson is not saved, so not then.
+              update={
+                newerReady && !guided ? (roomRef.current !== null ? 'together' : 'alone') : null
+              }
+              onUpdate={update}
             />
           ) : null}
         </div>

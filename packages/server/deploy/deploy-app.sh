@@ -30,12 +30,21 @@ else
   SCP=scp
 fi
 
-echo "== the app, built as players get it"
+# THE VERSION, named before the build and put into it (ruled 3 October 2026): About shows it, and it
+# is the name of the server's folder for this build, so a phone can be read against the server.
+VERSION="$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)"
+if [[ -n "$(git status --porcelain)" ]]; then VERSION="${VERSION}-dirty"; fi
+
+echo "== the app, built as players get it, as version ${VERSION}"
 # A relay named for the audit must not leak into this build from the environment.
 unset VITE_RELAY_URL
-pnpm --filter @immunity-wars/app build:web
+VITE_APP_VERSION="$VERSION" pnpm --filter @immunity-wars/app build:web
 DIST=packages/app/dist
 MAIN="$(ls "$DIST"/assets/main-*.js)"
+if ! grep -q "$VERSION" "$MAIN"; then
+  echo "REFUSED: the build does not carry its version (${VERSION})" >&2
+  exit 1
+fi
 if ! grep -q "wss://${HOST_NAME}/relay" "$MAIN"; then
   echo "REFUSED: the build does not talk to wss://${HOST_NAME}/relay" >&2
   exit 1
@@ -49,8 +58,6 @@ if ! pnpm -s start:check "$DIST"; then
   exit 1
 fi
 
-VERSION="$(date +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)"
-if [[ -n "$(git status --porcelain)" ]]; then VERSION="${VERSION}-dirty"; fi
 TARBALL="app-${VERSION}.tgz"
 tar -C "$DIST" -czf "$TARBALL" .
 

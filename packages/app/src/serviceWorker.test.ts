@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   lookForNewer,
+  newerIsWaiting,
   registerServiceWorker,
   takeWaitingVersion,
   updateNow,
@@ -423,5 +424,38 @@ describe('lookForNewer', () => {
     expect(asked.count).toBe(1);
     expect(p.listeners.length).toBe(0);
     expect(() => lookForNewer(undefined, page())()).not.toThrow();
+  });
+});
+
+/**
+ * WHETHER A NEWER VERSION IS WAITING (ruled 3 October 2026): what the game's menu and About ask before
+ * they say a new version is ready. Only a newer version counts: a first visit has nothing older.
+ * Control: pnpm ci:selftest update-waiting-needs-an-older-one.
+ */
+describe('newerIsWaiting', () => {
+  it('a version that has downloaded and waits, on a page an older one answers, is waiting', async () => {
+    await expect(newerIsWaiting(browser({ waiting: true }).container)).resolves.toBe(true);
+  });
+
+  it('nothing waiting is nothing to offer, and one still downloading is not ready yet', async () => {
+    await expect(newerIsWaiting(browser({}).container)).resolves.toBe(false);
+    await expect(newerIsWaiting(browser({ installing: true }).container)).resolves.toBe(false);
+  });
+
+  it('a first visit is not a newer version, waiting or not', async () => {
+    await expect(
+      newerIsWaiting(browser({ waiting: true, firstVisit: true }).container),
+      'A FIRST VISIT WAS CALLED A NEWER VERSION',
+    ).resolves.toBe(false);
+  });
+
+  it('no worker, or a phone that cannot say, has nothing to offer, and never throws', async () => {
+    await expect(newerIsWaiting(undefined)).resolves.toBe(false);
+    const fails: UpdateContainerLike = {
+      controller: {},
+      getRegistration: () => Promise.reject(new Error('InvalidStateError')),
+      addEventListener: () => undefined,
+    };
+    await expect(newerIsWaiting(fails)).resolves.toBe(false);
   });
 });

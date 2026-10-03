@@ -12,6 +12,9 @@
  *      once the player is back there. A reload in a game would drop a game played together.
  *   3. Off the title, the version refusal offers Update now (ruled 28 September 2026), and pressing it
  *      brings the newer build on the very next load. The morning of the session, replayed.
+ *   4. In a game alone, the menu says the newer version is ready, with a dot on its button, and its
+ *      Update now brings the newer build on the very next load (ruled 3 October 2026). In a game
+ *      (2) it is said and nothing reloads by itself.
  *
  *   npx tsx tools/perf/update-check.ts    builds the app twice from source, then runs all three
  *
@@ -262,7 +265,13 @@ try {
     if (!(await running(game)).includes(olderMain))
       refuse('the setup did not hold: the game was not on the older build');
     if (await game.$('[data-dialog-dismiss]')) await click(game, '[data-dialog-dismiss]');
+    if ((await game.$('[data-update-dot]')) === null)
+      refuse('in a game, the menu button showed no sign of the newer version');
     await click(game, '[data-menu]');
+    await poll(
+      async () => (await game.$('[data-pause="update-ready"]')) !== null,
+      'in a game, the menu did not say a newer version is ready',
+    );
     await click(game, '[data-pause="quit"]');
     await click(game, '[data-pause="quit-confirm"]');
     const tookAfterGame = await poll(
@@ -301,12 +310,38 @@ try {
     if (!first.includes(newerMain)) refuse(`after Update now the page ran neither build: ${first}`);
     const tookByButton = Date.now() - pressed;
 
+    // 4. IN A GAME ALONE, Update now in the menu: the newer build first, on the very next load.
+    const solo = await phone();
+    await click(solo, '[data-title="new"]');
+    await click(solo, '[data-new-game="training"]');
+    await solo.waitForSelector('[data-menu]', { timeout: WAIT_MS });
+    const soloLoads = loadsOf(solo);
+    await deploy(solo);
+    await poll(
+      async () => (await solo.$('[data-update-dot]')) !== null,
+      'in a game, the menu button showed no sign of the newer version',
+    );
+    if (soloLoads.length > 0) refuse('the page reloaded during a game');
+    if (await solo.$('[data-dialog-dismiss]')) await click(solo, '[data-dialog-dismiss]');
+    await click(solo, '[data-menu]');
+    const pressedInGame = Date.now();
+    await click(solo, '[data-pause="update-ready"] [data-update-now]');
+    await poll(async () => soloLoads.length > 0, 'Update now in the menu did not reload the page');
+    const firstInGame = soloLoads[0] ?? '';
+    if (firstInGame.includes(olderMain))
+      refuse('after Update now in the menu the page still ran the older build');
+    if (!firstInGame.includes(newerMain))
+      refuse(`after Update now in the menu the page ran neither build: ${firstInGame}`);
+    const tookInGame = Date.now() - pressedInGame;
+
     console.log(
       `UPDATE CHECK: passed, ${url}\n` +
         `  on the title, the newer build taken by itself in ${String(tookOnTitle)} ms\n` +
         `  in a game, the older build kept for ${String(HOLD_MS / 1000)} s with the newer one waiting, ` +
         `and taken back on the title in ${String(tookAfterGame)} ms\n` +
-        `  Update now, under the version refusal off the title, the newer build first in ${String(tookByButton)} ms`,
+        `  Update now, under the version refusal off the title, the newer build first in ${String(tookByButton)} ms
+` +
+        `  in a game alone, the menu said so, and its Update now brought the newer build first in ${String(tookInGame)} ms`,
     );
   } finally {
     await browser.close();

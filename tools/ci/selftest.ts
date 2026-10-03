@@ -1740,6 +1740,62 @@ const CONTROLS: readonly Control[] = [
     expect: 'the page reloaded during a game',
   },
   {
+    id: 'update-waiting-needs-an-older-one',
+    why: 'Ruled 3 October 2026: the game’s menu and About say when a newer version is ready. A first visit has nothing older to be newer than, and its worker is not a new version. With the check on an older version answering the page taken out, the test must FAIL saying a first visit was called a newer version.',
+    file: 'packages/app/src/serviceWorker.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (container === undefined || container.controller === null) return false;',
+        'if (container === undefined) return false;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/serviceWorker.test.ts',
+    expect: 'A FIRST VISIT WAS CALLED A NEWER VERSION',
+  },
+  {
+    id: 'update-menu-together-offers-no-reload',
+    why: 'Ruled 3 October 2026: in a game together the menu says a newer version is ready and does not offer it, because a reload would drop this player from the table. With Update now offered together as well, the menu’s test must FAIL saying so.',
+    file: 'packages/ui/src/panels/PauseSheet.tsx',
+    mutate: (t) =>
+      t.replace(
+        "{update === 'alone' ? <UpdateNow onUpdate={onUpdate} /> : null}",
+        '<UpdateNow onUpdate={onUpdate} />',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/PauseSheet.test.ts',
+    expect: 'A GAME TOGETHER IS OFFERED A RELOAD',
+  },
+  {
+    id: 'about-shows-the-version',
+    why: 'Ruled 3 October 2026: About shows the version a build was released as, so a phone can be read against the server. With About ignoring the version it is given, its test must FAIL saying so.',
+    file: 'packages/ui/src/screens/AboutScreen.tsx',
+    mutate: (t) => t.replace("{version ?? t('about.versionLocal')}", "{t('about.versionLocal')}"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/AboutScreen.test.ts',
+    expect: 'ABOUT DOES NOT SHOW THE VERSION',
+  },
+  {
+    id: 'build-carries-its-version',
+    why: 'Ruled 3 October 2026: the deploy script names the version and puts it into the build, and About shows it. With the app no longer reading it, the build test must FAIL saying the build does not carry its version.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        'const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? null;',
+        'const APP_VERSION: string | null = null;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE BUILD DOES NOT CARRY ITS VERSION',
+  },
+  {
+    id: 'update-check-menu-says-it',
+    why: 'Ruled 3 October 2026: in a game the menu says a newer version is ready. With the shell no longer telling the menu, the update check must refuse, saying the menu did not say it.',
+    file: 'packages/app/src/main.tsx',
+    mutate: (t) =>
+      t.replace(
+        "newerReady && !guided ? (roomRef.current !== null ? 'together' : 'alone') : null",
+        'null',
+      ),
+    gate: 'pnpm update:check',
+    expect: 'the menu did not say a newer version is ready',
+  },
+  {
     id: 'title-picture-laid-over-its-box',
     why: 'FINDINGS #127: on an iPhone the title’s picture ran down over the game’s name. Its browser did not resolve a height of 100% against a box whose height comes from flexing inside a screen only at least one tall; Chrome and WebKit 26.6 do, so nothing run here saw it. With the picture sized by its box again, the title’s test must FAIL saying so.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',

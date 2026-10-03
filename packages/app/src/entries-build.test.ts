@@ -29,6 +29,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SKIP_WAITING } from './serviceWorker.js';
 
 const APP = dirname(dirname(fileURLToPath(import.meta.url)));
+/** The version the build is made as here, as the deploy script names one: About must carry it. */
+const VERSION_PROBE = '20991231-235959-probe00';
 
 describe('both entries build', { timeout: 180_000 }, () => {
   let out = '';
@@ -37,6 +39,7 @@ describe('both entries build', { timeout: 180_000 }, () => {
     execSync(`pnpm exec vite build --logLevel error --emptyOutDir --outDir "${out}"`, {
       cwd: APP,
       stdio: 'pipe',
+      env: { ...process.env, VITE_APP_VERSION: VERSION_PROBE },
     });
   }, 180_000);
   afterAll(() => {
@@ -46,6 +49,17 @@ describe('both entries build', { timeout: 180_000 }, () => {
   it('vite build produces the app AND the instrumented dev shell', () => {
     expect(existsSync(join(out, 'index.html'))).toBe(true);
     expect(existsSync(join(out, 'dev.html'))).toBe(true);
+  });
+
+  // THE VERSION ABOUT SHOWS IS IN THE BUILD (ruled 3 October 2026): the deploy script names it and
+  // refuses a build without it; this holds that the app reads it at all. Control: pnpm ci:selftest
+  // build-carries-its-version.
+  it('the app carries the version it was built as', () => {
+    const scripts = readdirSync(join(out, 'assets')).filter((f) => f.endsWith('.js'));
+    const carried = scripts.filter((f) =>
+      readFileSync(join(out, 'assets', f), 'utf8').includes(VERSION_PROBE),
+    );
+    expect(carried.length, 'THE BUILD DOES NOT CARRY ITS VERSION').toBeGreaterThan(0);
   });
 
   // THE CLAY ART (docs/LOOK_PLAN.md §13 and §14), held three ways. The kit page and its art must be

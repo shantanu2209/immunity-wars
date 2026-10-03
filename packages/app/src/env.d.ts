@@ -7,6 +7,9 @@
  * `VITE_RELAY_URL` names a relay other than the deployed one, for a development relay (P3.7). Vite
  * puts a `VITE_` variable into the build only when it is set, so it is optional here.
  *
+ * `VITE_APP_VERSION` is the version a build is released as, named by the deploy script, which names
+ * the server's folder for it the same way; About shows it. Unset in any other build.
+ *
  * `MODE` is the build's mode: `production` for the web build, `android` for the build made for the
  * Android shell (`vite.config.ts`), in which the service worker is not registered.
  */
@@ -14,6 +17,7 @@ interface ImportMetaEnv {
   PROD: boolean;
   MODE: string;
   readonly VITE_RELAY_URL?: string;
+  readonly VITE_APP_VERSION?: string;
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv;

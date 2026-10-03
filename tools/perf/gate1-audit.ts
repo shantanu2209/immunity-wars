@@ -1255,10 +1255,19 @@ async function walk(
     await nest(page, nesting, 'Library index → close', 'help index');
   }
   // About (P2.6): the Title's fourth slot, and the only one that never opens over play.
+  //
+  // FROM THE TITLE, AND SAID WHEN IT IS NOT REACHED (docs/FINDINGS.md #128, 3 October 2026). The
+  // library above is reached through How to play and leaves the walk on its contents, where there
+  // is no About; this step had no else, so it skipped itself and wrote nothing, and a screen left
+  // out reads as a screen measured clean. About was in no run's list of screens.
+  if ((await whereNow(page)) !== 'title') await closeLevel(page);
   if (await click(page, 'About')) {
     await sleep(300);
     await step(page, 'about', results);
     await nest(page, nesting, 'Title → About', 'title');
+  } else {
+    results.push(notReached('about', `About was not on the screen (${await whereNow(page)})`));
+    nestNotReached(nesting, 'Title → About', 'About was not on the screen');
   }
   // THE CRASH SCREEN. Measured like any other screen, because it is one: a player who reaches
   // it at 200% text on a 360px phone is having the worst moment the app offers, and an

@@ -95,6 +95,7 @@ export {
 } from './play/planning';
 export { invaderNowLine } from './panels/invaderNow';
 export { PauseSheet } from './panels/PauseSheet';
+export { UpdateDot } from './panels/UpdateNow';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
