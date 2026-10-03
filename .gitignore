@@ -73,3 +73,7 @@ results/
 site/
 history/
 dist-old/
+
+# No signing key, anywhere in the repository (the Android upload key lives outside it).
+*.jks
+*.keystore

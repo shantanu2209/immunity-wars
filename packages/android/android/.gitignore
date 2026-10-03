@@ -53,9 +53,10 @@ captures/
 .idea/navEditor.xml
 
 # Keystore files
-# Uncomment the following lines if you do not want to check your keystore files in.
-#*.jks
-#*.keystore
+# NO KEY IS EVER CHECKED IN (ruled 3 October 2026): the upload key lives on the machine that builds
+# for the store, and its password nowhere but in that person's keeping.
+*.jks
+*.keystore
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild

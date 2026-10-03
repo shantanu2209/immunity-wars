@@ -5,8 +5,9 @@
  * file. They are held together here, read from the files themselves.
  *
  * Controls: pnpm ci:selftest android-id-is-one-id, android-keeps-no-backup,
- * android-ground-is-the-kits-table, android-text-is-the-games-size.
+ * android-ground-is-the-kits-table, android-text-is-the-games-size, android-no-key-in-the-repository.
  */
+import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -113,8 +114,12 @@ describe('the icon', () => {
     }
   });
 
-  it('is 512 px square for the store', () => {
+  it('is 512 px square for the store, as a 32-bit PNG', () => {
     expect(size('store/icon-512.png')).toBe('512 by 512');
+    // Play asks for a 32-bit PNG, with alpha: colour type 6 in the file's header, at byte 25.
+    // Fired by hand, 3 October 2026: the file as first written, without alpha, read type 2.
+    const png = readFileSync(join(HERE, 'store/icon-512.png'));
+    expect(png[25], 'THE STORE ICON IS NOT A 32-BIT PNG').toBe(6);
   });
 });
 
@@ -151,5 +156,32 @@ describe('the shell’s ground', () => {
     const styles = read(`${MAIN}/res/values/styles.xml`);
     expect(styles.match(/android:windowBackground">@color\/table</g)?.length).toBe(2);
     expect(styles).toMatch(/windowSplashScreenBackground">@color\/table</);
+  });
+});
+
+describe('the release signing', () => {
+  // Ruled 3 October 2026: the upload key and its password come from the environment of whoever
+  // builds for the store, never from this repository, which is public. A value written into the
+  // signing block, or a key file checked in, would be a secret given away.
+  it('names no key and no password: each comes from the environment', () => {
+    const block = /signingConfigs\s*\{[\s\S]*?\n {4}\}/.exec(gradle)?.[0] ?? '';
+    expect(block, 'the signing block is found at all').toContain('upload');
+    for (const field of ['storeFile', 'storePassword', 'keyPassword']) {
+      const line = block.split('\n').find((l) => l.trim().startsWith(field)) ?? '';
+      expect(line, `${field} is set`).not.toBe('');
+      const written = line.replace(/System\.getenv\('IW_[A-Z_]+'\)/g, '');
+      expect(/["']/.test(written), `A ${field} IS WRITTEN IN THE REPOSITORY: ${line.trim()}`).toBe(
+        false,
+      );
+    }
+    expect(gradle).toContain("System.getenv('IW_UPLOAD_KEYSTORE')");
+  });
+
+  it('has no key file in the repository, and the ignore rules keep one out', () => {
+    const tracked = execSync('git ls-files', { cwd: HERE, encoding: 'utf8' })
+      .split('\n')
+      .filter((f) => /\.(jks|keystore|p12)$/i.test(f));
+    expect(tracked, 'A KEY FILE IS IN THE REPOSITORY').toEqual([]);
+    expect(read('android/.gitignore')).toMatch(/^\*\.jks$/m);
   });
 });

@@ -515,7 +515,7 @@
   "about.prize": "Third prize, KVRSS Awards.",
   "about.showcase": "Presented at the University of Hyderabad grant showcase, August 2026.",
   "about.privacy": "Privacy",
-  "about.privacyBody": "This game collects nothing. There are no accounts, no email addresses and no tracking of any kind. Your saved game and your settings stay on this device, and nothing is ever sent anywhere.",
+  "about.privacyBody": "This game keeps nothing about you. There are no accounts, no email addresses and no tracking of any kind. Your saved game and your settings stay on this device. Playing together sends the name you type and your moves to the game's server, for that room only, and nothing is kept after the room closes.",
   "about.licence": "Licence",
   "about.licenceCode": "The source code is licensed under the Apache License 2.0.",
   "about.licenceContent": "The game content, meaning the board artwork, the card designs and the rulebook, is all rights reserved.",

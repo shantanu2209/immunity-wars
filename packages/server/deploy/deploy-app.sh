@@ -58,6 +58,32 @@ if ! pnpm -s start:check "$DIST"; then
   exit 1
 fi
 
+# THE PRIVACY PAGE'S CONTACT (ruled 3 October 2026): put in here, from the environment, and never
+# written in the repository, which is public and carries no contact details. Without
+# IW_CONTACT_EMAIL the page keeps its line pointing to the developer's contact on Google Play.
+if [[ -n "${IW_CONTACT_EMAIL:-}" ]]; then
+  if [[ ! "$IW_CONTACT_EMAIL" =~ ^[^@[:space:]\<\>\"]+@[^@[:space:]\<\>\"]+\.[^@[:space:]\<\>\"]+$ ]]; then
+    echo "REFUSED: IW_CONTACT_EMAIL is not an address" >&2
+    exit 1
+  fi
+  node -e '
+    const fs = require("fs");
+    const file = process.argv[1];
+    const address = process.env.IW_CONTACT_EMAIL;
+    const page = fs.readFileSync(file, "utf8");
+    const line = `<p>Questions about this policy: <a href="mailto:${address}">${address}</a></p>`;
+    const out = page.replace(/<!--CONTACT-->[\s\S]*?<!--\/CONTACT-->/, line);
+    if (out === page) {
+      console.error("REFUSED: the privacy page has no place for the contact");
+      process.exit(1);
+    }
+    fs.writeFileSync(file, out);
+  ' "$DIST/privacy.html"
+  echo "== the privacy page names the contact address it was given"
+else
+  echo "== the privacy page points to the contact on Google Play (no IW_CONTACT_EMAIL)"
+fi
+
 TARBALL="app-${VERSION}.tgz"
 tar -C "$DIST" -czf "$TARBALL" .
 

@@ -71,11 +71,13 @@ const DEVELOPER_PAGES = [/^\/kit\.html/, /^\/measure\.html/];
  *     job, taking a newer build from the server, is the store's there. `main.tsx` does not
  *     register one in this mode, and this build writes none.
  *   - NO DEVELOPER PAGES but the measuring page, which is how the frame rate is read inside the
- *     shell. It is taken out too when a build is made for the store.
+ *     shell. It is taken out too when a build is made for the store (`IW_STORE_BUILD=1`, set by
+ *     `pnpm android:bundle`, ruled 3 October 2026): a player's app has no page of a developer's.
  *
  * Everything else is the web build's. `src/shell-build.test.ts` builds it and holds it to this.
  */
 const SHELL_MODE = 'android';
+const STORE_BUILD = process.env['IW_STORE_BUILD'] === '1';
 
 export default defineConfig(({ mode }) => ({
   plugins: mode === SHELL_MODE ? [] : [webWorker()],
@@ -85,7 +87,7 @@ export default defineConfig(({ mode }) => ({
         mode === SHELL_MODE
           ? {
               main: resolve(HERE, 'index.html'),
-              measurePage: resolve(HERE, 'measure.html'),
+              ...(STORE_BUILD ? {} : { measurePage: resolve(HERE, 'measure.html') }),
             }
           : {
               main: resolve(HERE, 'index.html'),
