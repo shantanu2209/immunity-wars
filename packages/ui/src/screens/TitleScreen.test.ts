@@ -12,6 +12,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import { t } from '../i18n';
 import { kitButtonStyle } from '../kit/Button';
 
 import { TitleScreen, type SaveSummary } from './TitleScreen';
@@ -86,6 +87,25 @@ describe('the title’s main button', () => {
   it('with a game waiting it is offered beside Continue, which is still the main one', () => {
     expect(mains(title(saved, null, true))).toEqual(['continue']);
     expect(title(saved, null, true)).toContain('data-title="learn"');
+  });
+
+  it('a player coming back to the lesson is told it continues, and at which chapter (step 3)', () => {
+    const html = renderToStaticMarkup(
+      createElement(TitleScreen, {
+        save: null,
+        onContinue: () => undefined,
+        onNewGame: () => undefined,
+        onLearn: () => undefined,
+        learnAt: { chapter: 2, of: 7 },
+        onTogether: () => undefined,
+        onSettings: () => undefined,
+        onHelp: () => undefined,
+        onAbout: () => undefined,
+      }),
+    );
+    expect(html, 'THE TITLE DOES NOT SAY THE LESSON CONTINUES').toContain(t('title.learnOn'));
+    expect(html).toContain(t('title.learnAt', { chapter: 2, of: 7 }));
+    expect(mains(html)).toEqual(['learn']);
   });
 
   it('on a phone that has played it is not on the title', () => {

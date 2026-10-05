@@ -60,13 +60,25 @@ function refuse(reason: string): never {
 
 /** The beats the lesson has, in its order, by the names the guide puts on the page. */
 function expectedBeats(): string[] {
+  // A chapter's cards (step 3): the last one done, then what the next is about, just before the
+  // step the next begins at; for a chapter that begins a turn, before that turn's cards are drawn.
+  const cards = (from: string): string[] => {
+    const c = LESSON.chapters.findIndex((ch) => ch.from === from);
+    if (c < 1) return [];
+    return [
+      `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`,
+      `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`,
+    ];
+  };
   const out: string[] = [];
   LESSON.turns.forEach((turn, i) => {
     const n = String(i + 1);
+    const opens = turn.steps[0]?.id ?? '';
     out.push(
+      ...cards(opens),
       `t${n}.cards`,
       `t${n}.plan`,
-      ...turn.steps.map((s) => s.id),
+      ...turn.steps.flatMap((s, k) => [...(k > 0 ? cards(s.id) : []), s.id]),
       `t${n}.end`,
       `t${n}.spread`,
     );

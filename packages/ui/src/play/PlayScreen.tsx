@@ -95,8 +95,9 @@ import {
   GUIDE_START,
   afterAccepted,
   afterTold,
+  chapterOf,
   guideBeat,
-  lessonOver,
+  holdsTheDraw,
   progress,
   type GuidePos,
   type GuideStage,
@@ -202,7 +203,17 @@ export function PlayScreen({
    * shell when it is over: finished, left by the player, or parted from by the game. The shell
    * made the game for the lesson and ends its rails; this screen holds neither.
    */
-  guide?: { lesson: Lesson; onEnd: (how: 'finished' | 'left' | 'parted') => void } | null;
+  guide?: {
+    lesson: Lesson;
+    onEnd: (how: 'finished' | 'left' | 'parted') => void;
+    /**
+     * Where the player begins (step 3, `docs/LOOK_PLAN.md` §28): the lesson's start, or the start of
+     * a chapter they are coming back to, which the shell has already played the game to.
+     */
+    start?: GuidePos;
+    /** A chapter is done: `n` chapters are, and the shell keeps that for the player's return. */
+    onChapter?: (n: number) => void;
+  } | null;
   /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
   onAssignSeat?: ((seat: Seat, to: number) => void) | null;
   /** The room's last refusal of something done at the table (a handover), said in the toast. */
@@ -497,7 +508,7 @@ export function PlayScreen({
 
   // THE GUIDED GAME's place in its lesson. A ref beside the state, because an action is answered
   // after the render that sent it, and must move the place the player is at THEN.
-  const [guidePos, setGuidePos] = useState<GuidePos>(GUIDE_START);
+  const [guidePos, setGuidePos] = useState<GuidePos>(guide?.start ?? GUIDE_START);
   const guidePosRef = useRef(guidePos);
   guidePosRef.current = guidePos;
   const guideRef = useRef(guide);
@@ -505,6 +516,10 @@ export function PlayScreen({
   const moveGuide = (pos: GuidePos): void => {
     guidePosRef.current = pos;
     setGuidePos(pos);
+    // A chapter is done the moment its card says so, so that a player who stops there, or leaves
+    // from anywhere in the next one, comes back to the next one.
+    const g = guideRef.current;
+    if (g && pos.at === 'done') g.onChapter?.(chapterOf(g.lesson, pos));
   };
 
   const send = (action: Record<string, unknown>): void => {
@@ -539,7 +554,7 @@ export function PlayScreen({
         dialogPending: dialogs.hasPending(),
         // The lesson's last word is up: the next turn is the player's own, on the page's dice, and
         // is not drawn until the shell has ended the rails.
-        covered: navState.depth > 0 || (guide !== null && lessonOver(guide.lesson, guidePos)),
+        covered: navState.depth > 0 || (guide !== null && holdsTheDraw(guide.lesson, guidePos)),
         sentForTurn: sentDrawRef.current,
         mayDraw: p.captain,
       })
@@ -1106,7 +1121,7 @@ export function PlayScreen({
   // and what this screen is showing. Null for every other game, and for a moment nothing is asked.
   const guideStage: GuideStage =
     dialogs.current !== null
-      ? 'waiting'
+      ? 'dialog'
       : playing
         ? 'spread'
         : arrivalsNow !== null
@@ -1672,13 +1687,23 @@ export function PlayScreen({
           beatId={beat.id}
           text={t(beat.sayKey)}
           stops={beat.stops}
+          thens={beat.then.map((x) =>
+            x === null
+              ? ''
+              : t(x.key, {
+                  ...x.params,
+                  // An action is named by its button's own word, from the catalogue.
+                  ...(x.params?.['action'] ? { action: t(x.params['action']) } : {}),
+                }),
+          )}
           tell={beat.tell}
           last={beat.last}
+          chapterEnd={beat.chapterEnd}
           watch={guideStage === 'spread'}
           count={t('guide.count', progress(guide.lesson, guidePos))}
           onNext={() => {
             if (beat.last) guide.onEnd('finished');
-            else moveGuide(afterTold(guidePos));
+            else moveGuide(afterTold(guide.lesson, guidePos));
           }}
           onLeave={() => guide.onEnd('left')}
         />

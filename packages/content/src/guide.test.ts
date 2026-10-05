@@ -16,9 +16,10 @@ import { GuidePackS, guidePackSchema } from './schema.js';
 
 type Raw = Record<string, unknown>;
 type Turn = { arrive: string[]; steps: Raw[] };
-const raw = (): { LESSON: { seed: number; crisis: Raw; turns: Turn[] } } =>
+type Chapter = { id: string; from?: string };
+const raw = (): { LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] } } =>
   JSON.parse(JSON.stringify(lessonJson)) as {
-    LESSON: { seed: number; crisis: Raw; turns: Turn[] };
+    LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] };
   };
 const corrupt = (fn: (l: ReturnType<typeof raw>['LESSON']) => void): (() => unknown) => {
   const p = raw();
@@ -100,6 +101,35 @@ describe('the lesson file', () => {
         step(l, 't1.walk2')['id'] = 't1.walk1';
       }),
     ).toThrow(/two steps are named/);
+  });
+
+  it('rejects a chapter that begins at no step of the lesson (step 3)', () => {
+    expect(
+      corrupt((l) => {
+        (l.chapters[1] as Chapter).from = 't2.helpr';
+      }),
+      'A CHAPTER THAT BEGINS NOWHERE WAS ACCEPTED',
+    ).toThrow(/which is no step of the lesson/);
+  });
+
+  it('rejects chapters out of order, a first chapter that names a step, and two of one name', () => {
+    expect(
+      corrupt((l) => {
+        const [a, b] = [l.chapters[1], l.chapters[2]] as [Chapter, Chapter];
+        l.chapters[1] = b;
+        l.chapters[2] = a;
+      }),
+    ).toThrow(/begins before the chapter it follows/);
+    expect(
+      corrupt((l) => {
+        (l.chapters[0] as Chapter).from = 't1.coat';
+      }),
+    ).toThrow(/names no step/);
+    expect(
+      corrupt((l) => {
+        (l.chapters[2] as Chapter).id = (l.chapters[1] as Chapter).id;
+      }),
+    ).toThrow(/two chapters are named/);
   });
 
   it('rejects a crisis the rules do not know, and one after the lesson has ended', () => {
