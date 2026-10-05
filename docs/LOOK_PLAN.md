@@ -2508,6 +2508,11 @@ newer version wrote.
 
 - **Not seen on a phone:** the Android app's button, and Android handing the link to Google Play.
   That is what Capacitor does with a link to another site, read in its code, not watched here.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC):
+  89 screens in each of the four passes (91 in one); every check at zero over 1,138 controls and
+  2,469 text runs; 39 close paths, none wrong; offline met. A row of actions with several targets
+  was not reached in one pass, by its dice; the other three reached it. A save that cannot be
+  continued is not among the screens it walks: its one build has no such save.
 - **Two controls of the title were re-aimed,** `title-one-main-button` and
   `title-guided-game-leads-a-new-phone`: the code they change was renamed, and the check that every
   control still changes its file said so. Both fire.
