@@ -18,7 +18,7 @@
   "devDependencies": {
     "@capacitor/cli": "8.5.2",
     "@immunity-wars/ui": "workspace:*",
-    "@types/node": "^26.6.3",
+    "@types/node": "^26.6.4",
     "vitest": "^4.1.11"
   },
   "comment:what-this-is": "Ruled 2 October 2026 (docs/LOOK_PLAN.md section 26): the Android app is the same web app inside a Capacitor shell, with the whole game bundled so it plays with no connection. `android/` is the native project Capacitor generated, committed, and changed in the few places AndroidManifest.xml says. `www/` is the app's build made for the shell (`pnpm android:web`), built and never committed. Building the app itself needs Android Studio's Java and the Android SDK, named by JAVA_HOME and ANDROID_HOME: see README.md."
