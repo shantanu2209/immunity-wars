@@ -74,6 +74,7 @@ export {
   type EffectChip,
 } from './play/effects';
 export { ArrivalsGrid, ArrivalsNotes } from './play/Arrivals';
+export { ANTIBODIES_DO, antibodiesDo, counterSentence, type AntibodiesDo } from './play/counters';
 export { revealCrisis, type RevealArrival, type RevealCrisis } from './dialogs/RevealBody';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';

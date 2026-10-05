@@ -6242,3 +6242,48 @@ version: the run's list of 88 screens had no About in it, in any of its four pas
 **Measured after the fix,** the full audit alone and together, 3 October 2026: About in all four
 passes (89 screens each, 91 in one, up from 88 and 90), nothing not reached, every check at zero,
 and its close path, Title to About and back, one of 39, none wrong.
+
+## 129. Every new card said its class's antibodies neutralise it, which the game allows for 29 of its 96 diseases — found by an outside review, 5 October 2026
+
+**Found by a review Shantanu had written by another tool** (Codex, 4 October), read here and checked
+against the code: the back of every new card with a known class said *"[class] antibodies
+neutralise it"*, one sentence for every kind.
+
+**What the engine allows** (`packages/engine/src/actions.ts`, the `tag` and `neutralise` actions):
+
+| Kind | What matching antibodies do |
+|---|---|
+| Bacterium, worm, parasite | Coat it, so a cell can swallow or strike it. They cannot neutralise it |
+| Virus, toxin, malaria in the blood | Neutralise it |
+| Hidden pathogen | Nothing: it is inside your own cells |
+| Venom | Nothing: it needs antivenom |
+| Fungus | Nothing: cells fight it |
+
+So for a bacterium, a worm, a parasite, a hidden pathogen, a venom and a fungus, the card said what
+neither the game nor the biology says, on the first thing a player reads about a disease, and
+against what the guided game teaches on its first turn: that a bacterium is coated.
+
+- **Since when:** 20 September 2026 (commit `9588c27`), when the draw became cards turned over; the
+  card was redrawn in Clay at L5 with the same sentence. Live since then. Every check here passed
+  it: none reads what a sentence claims.
+- **Fixed, in the product.** The card says one sentence per kind (`packages/ui/src/play/counters.ts`).
+  **Held to the engine:** `tests/session/src/counters.test.ts` puts every card of the deck in a
+  game where cells can reach it, with five of every class of antibody, and tries both a coat and a
+  neutralise; what the engine accepts must be what the card says. It reads none of the engine's
+  source. **And the words to the table:** `packages/ui/src/play/counters.test.ts`, that a sentence
+  for a kind that is coated says coat and not neutralise, and so on.
+- **The engine's test found one more on its first run:** Sleeping sickness, a parasite that changes
+  its coat (queue Q1), may be coated and may also be neutralised, though on each try, on a roll of
+  1 to 3, it changes its coat and the antibody is lost. "Coat it" was true of it and not the whole
+  of it. It has its own sentence.
+- **What the card does not say:** what happens later in a game (a virus that hides in a
+  macrophage, malaria in the liver, dengue made worse by antibodies from a second infection). The
+  card is read when a disease arrives, and says what is true then; malaria's sentence says the
+  liver.
+- **Controls, each fired:** `card-counters-are-the-engines` (the bacterium said to be neutralised:
+  the engine's test fails saying the engine does not agree) and `card-counter-words-are-the-tables`
+  (the bacterium's sentence saying neutralise: the screens' test fails naming it).
+
+**The class is open:** a sentence that states a rule is checked only where a test was written for
+it. How to play, the lesson's 63 sentences and the disease library's were not re-read against the
+engine for this finding.
