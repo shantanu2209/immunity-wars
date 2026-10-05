@@ -36,6 +36,7 @@ import { CardIcon } from '../panels/CardIcon';
 import { RichText } from '../panels/LogPanel';
 import { SAY, TONE } from '../panels/onCard';
 import { antibodiesDo, counterSentence } from './counters';
+import type { StoryLine } from './spreadStory';
 
 /** How long after the card before it each card is dealt. */
 const DEAL_GAP_MS = 110;
@@ -265,15 +266,16 @@ export function ArrivalsGrid({
 }
 
 /**
- * The middle in the arrivals stage: the turn's event, then what the spread did — the burst's own
- * narration lines, which is what the player has just watched, kept so it can be read at rest.
+ * The middle in the arrivals stage: the turn's event, then what the spread did, which is what the
+ * player has just watched, kept so it can be read at rest. Each beat says the rule that made it
+ * happen under it (step 3, `spreadStory.ts`), so that what was seen is joined to why.
  */
 export function ArrivalsNotes({
   crisis,
   spread,
 }: {
   crisis: RevealCrisis | null;
-  spread: readonly string[];
+  spread: readonly StoryLine[];
 }): ReactElement {
   return (
     <div data-middle-view="arrivals" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -311,8 +313,9 @@ export function ArrivalsNotes({
         <div data-spread-summary={String(spread.length)}>
           <div style={SAY.label}>{t('arrivals.spreadTitle')}</div>
           {spread.map((line, i) => (
-            <div key={String(i)} style={SAY.body}>
-              {line}
+            <div key={String(i)} data-spread-line={line.why ?? ''} style={{ marginTop: 4 }}>
+              <div style={{ ...SAY.body, fontWeight: 800 }}>{line.label}</div>
+              {line.why !== null ? <div style={SAY.quiet}>{t(line.why)}</div> : null}
             </div>
           ))}
         </div>

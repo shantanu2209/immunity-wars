@@ -70,6 +70,7 @@ import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
 import { SAY, TONE, pieceArt } from '../panels/onCard';
 import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
+import { beatsToPlay, spreadStory, type StoryLine } from './spreadStory';
 import {
   ActionsView,
   AdvanceButton,
@@ -311,9 +312,12 @@ export function PlayScreen({
     list: RevealArrival[];
     crisis: RevealCrisis | null;
   } | null>(null);
-  // The burst's own narration lines, kept so the spread can be read at rest on that stage.
-  const spreadLinesRef = useRef<string[]>([]);
-  const [spreadLines, setSpreadLines] = useState<string[]>([]);
+  // WHAT THE SPREAD DID, AND WHY (step 3, `spreadStory.ts`), kept so it can be read at rest on that
+  // stage: the beats that changed the body, each with the rule that made it happen.
+  const spreadLinesRef = useRef<StoryLine[]>([]);
+  const [spreadLines, setSpreadLines] = useState<StoryLine[]>([]);
+  /** The game as it stood before the spread a burst is of: the last view the session sent. */
+  const lastGameRef = useRef<Readonly<Record<string, unknown>>>(session.getView().game);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -366,8 +370,8 @@ export function PlayScreen({
         if (next) setAuthView(next);
         setPlaying(false);
         // THE LAST FRAME IS THE NEW TURN ARRIVING, not something that happened in the spread
-        // (§21 E): "Next turn" is the animation's own word and it is dropped from the summary.
-        setSpreadLines(spreadLinesRef.current.slice(0, -1));
+        // (§21 E): `spreadStory` leaves each burst's last beat out of the summary.
+        setSpreadLines(spreadLinesRef.current);
         spreadLinesRef.current = [];
         return;
       }
@@ -385,15 +389,19 @@ export function PlayScreen({
 
     const unsubscribe = session.subscribe((ev) => {
       if (ev.kind === 'burst') {
+        const before = lastGameRef.current;
+        const story = spreadStory(before, ev.frames);
         if (skipRef.current) {
-          setSpreadLines(ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
+          setSpreadLines(story);
           onCheckRef.current?.(
             `burst skipped (${ev.frames.length} frames) — rendering authoritative views only`,
           );
           return;
         }
-        spreadLinesRef.current.push(...ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
-        queue.burst(ev.frames);
+        spreadLinesRef.current.push(...story);
+        // Only the beats that did something are played: one that changed nothing and rolled
+        // nothing would put its name over a board where nothing happened (FINDINGS #130).
+        queue.burst(beatsToPlay(before, ev.frames));
         burstSizeRef.current = queue.framesLeft;
         if (!playingRef.current) {
           playingRef.current = true;
@@ -401,6 +409,7 @@ export function PlayScreen({
           playNext();
         }
       } else if (ev.kind === 'view') {
+        lastGameRef.current = ev.view.game;
         if (queue.view(ev.view, playingRef.current)) setAuthView(ev.view);
       }
       // `notice` falls through deliberately: it is the shell's, not this screen's.

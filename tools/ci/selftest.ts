@@ -1360,6 +1360,46 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
   },
   {
+    id: 'spread-story-says-only-what-happened',
+    why: 'FINDINGS #130: the engine names a Toxin released beat every turn toxins are in the game, which is every game, and the screens listed every beat, so every spread said a toxin had been released. With every beat listed again, the story test must FAIL saying the spread says something happened that did not.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) => t.replace('    if (!changed && !ALWAYS.has(key)) return;', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'THE SPREAD SAYS SOMETHING HAPPENED THAT DID NOT',
+  },
+  {
+    id: 'spread-plays-only-what-did-something',
+    why: 'FINDINGS #130: a beat that changed nothing and rolled nothing put its name over a board where nothing happened. With every beat played again, the story test must FAIL saying a beat that did nothing is played.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) =>
+      t.replace(
+        'return i === beats.length - 1 || changed || rolled(b) || ALWAYS.has(beatKey(b.label));',
+        'return true;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'A BEAT THAT DID NOTHING IS PLAYED',
+  },
+  {
+    id: 'spread-story-sees-what-a-player-sees',
+    why: 'FINDINGS #130, found by the test on its first run: compared whole, an invader changes every turn by a count it keeps for itself (a toxin maker counts the turns it is left alone), and every spread said a toxin had been released. With the whole invader compared again, the story test must FAIL saying a toxin was released on the wrong turn.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) => t.replace('SEEN.map((k) => iv[k] ?? null)', 'iv'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'A TOXIN WAS RELEASED ON THE WRONG TURN',
+  },
+  {
+    id: 'spread-why-is-the-engines',
+    why: 'Step 3: each why under a beat is a rule, and the ones a newcomer meets first are held to the engine. With the organ damage why saying an invader takes 2, the story test must FAIL saying the why is not what the engine does.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        'An invader that reaches an organ takes 1 of its integrity.',
+        'An invader that reaches an organ takes 2 of its integrity.',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'THE WHY IS NOT WHAT THE ENGINE DOES',
+  },
+  {
     id: 'lesson-resumes-at-every-chapter',
     why: 'Step 3 (docs/LOOK_PLAN.md section 28): a player who stopped comes back to the next chapter, and since a game on rails is never saved the session plays the lesson to it again on the same dice. With one step too many played, the guide test must FAIL saying the player is not brought to the game the chapter begins with.',
     file: 'packages/session/src/lesson.ts',

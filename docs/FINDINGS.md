@@ -6287,3 +6287,25 @@ against what the guided game teaches on its first turn: that a bacterium is coat
 **The class is open:** a sentence that states a rule is checked only where a test was written for
 it. How to play, the lesson's 63 sentences and the disease library's were not re-read against the
 engine for this finding.
+
+## 130. Every spread said a toxin had been released, and nothing had been — found building the why line, 5 October 2026
+
+**Found by reading the engine's spread** (`packages/engine/src/spread.ts`) to write why each of its
+beats happens. The engine names a beat *Toxin released* every turn toxins are in the game, released
+or not; its own header says so, and the corpus holds it. Toxins are in every game.
+
+- **What a player saw:** while the spread played, *Toxin released* stood over the board for a beat
+  in which nothing changed, every turn; and the card at rest, *What just happened*, listed it every
+  turn. *The march* too was listed on a turn when nothing was in the body to march.
+- **Since when:** the summary at rest was added on 20 September (commit `9588c27`); the playing of
+  every beat is older. It is in the screens, not the engine: the engine's beats are what they were.
+- **Fixed, in the screens** (`packages/ui/src/play/spreadStory.ts`): a beat is played when it rolled
+  dice, changed the body, or always says something (a fever, the game's end); it is listed when it
+  changed the body. A bacterium that rolled and did not divide is still played, so the dice can be
+  seen, and is not listed as having divided.
+- **Found again by its own test, on its first run:** compared whole, an invader changes every turn
+  by a count it keeps for itself (the turns a toxin maker has been left alone), so the first version
+  still listed *Toxin released* every turn. Only what a player can see of an invader is compared now.
+- **Held by** `tests/session/src/spread-story.test.ts`, against spreads the real engine runs. Controls,
+  each fired: `spread-story-says-only-what-happened`, `spread-plays-only-what-did-something`,
+  `spread-story-sees-what-a-player-sees`.
