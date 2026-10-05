@@ -26,7 +26,8 @@ export type {
 } from './types.js';
 export { NO_SELECTION } from './types.js';
 
-export { LocalSession, type LocalSessionOptions } from './local.js';
+export { LocalSession, SaveTooNew, type LocalSessionOptions } from './local.js';
+export { canContinue, saveFit, type SaveFit } from './saveFit.js';
 export { lessonAction, replayLesson, seededDice, type LessonReplay } from './lesson.js';
 export { RelayError, RelayRoom, RelaySession, type RelayOptions, type RoomEvent } from './relay.js';
 export { asPlayerRef, newPlayerRef } from './player-ref.js';

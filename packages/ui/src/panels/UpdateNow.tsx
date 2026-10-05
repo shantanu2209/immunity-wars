@@ -6,6 +6,8 @@
  *
  * It says it is working, because on a phone the newer version can take a few seconds to finish
  * downloading, and a button that looks dead gets pressed again.
+ *
+ * Also under a saved game a newer version wrote, on the title (`TitleScreen.tsx`).
  */
 import { useState, type ReactElement } from 'react';
 
@@ -37,20 +39,36 @@ export function UpdateDot(): ReactElement {
   );
 }
 
+/**
+ * WHERE THIS APP'S UPDATES COME FROM (`docs/LOOK_PLAN.md` §28, step 4). The Android app has no
+ * newer version downloading into it: its updates come from Google Play, so its button says so, and
+ * the app's shell opens the game's page there. Nothing on the phone is being updated while the
+ * player is away, so the button is not drawn as busy, and is there to press again when they come
+ * back. Set once by the shell, before its first render.
+ */
+let fromTheStore = false;
+export function updatesComeFromTheStore(on: boolean): void {
+  fromTheStore = on;
+}
+
 export function UpdateNow({ onUpdate }: { onUpdate: () => void }): ReactElement {
   const [updating, setUpdating] = useState(false);
   return (
     <KitButton
       kind="go"
-      data-update-now=""
+      data-update-now={fromTheStore ? 'store' : ''}
       style={{ marginTop: 12 }}
       unavailable={updating}
       onPress={() => {
-        setUpdating(true);
+        if (!fromTheStore) setUpdating(true);
         onUpdate();
       }}
     >
-      {updating ? t('together.updating') : t('together.updateNow')}
+      {fromTheStore
+        ? t('update.inStore')
+        : updating
+          ? t('together.updating')
+          : t('together.updateNow')}
     </KitButton>
   );
 }

@@ -237,8 +237,10 @@ contract Task B was measured against.
   Every message both ways is written by `encode` in `packages/protocol`, which stamps it with the
   protocol version and `RULES_VERSION`; a peer on either other version is refused before its
   body is read, with controls on both the check and the stamping (P3.2, `docs/for-P3.md` §2).
-  **Saved games still carry no version**, which is seam 7's deferred pack check, **ruled Phase 4's
-  on 25 September 2026** (Phase 3 brief review R3), where app updates begin. *Corrected 21 Sep 2026, at P3.2.* This line said messages did not carry it,
+  **Saved games carry the rules version that wrote them, since 5 October 2026** (seam 7, ruled
+  Phase 4's on 25 September and built early, `docs/LOOK_PLAN.md` §28, step 4): a game a newer
+  version saved is not continued, and an older or unstamped one is carried forward
+  (`packages/session/src/saveFit.ts`). *Corrected 21 Sep 2026, at P3.2.* This line said messages did not carry it,
   true until this change; before that, *corrected 12 Aug 2026 at Task D*, it asserted that every
   state and message carried it when neither did (`docs/FINDINGS.md` #26).
 - All player-visible strings go in i18n catalogues. Never hardcode UI text — a Hindi edition

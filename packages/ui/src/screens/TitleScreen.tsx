@@ -20,6 +20,7 @@ import type { CSSProperties, ReactElement } from 'react';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR, TOUCH, TYPE } from '../kit/tokens';
+import { UpdateNow } from '../panels/UpdateNow';
 
 import { STACK } from './chrome';
 import { ScreenIcon } from './icons';
@@ -27,6 +28,12 @@ import { ScreenIcon } from './icons';
 export interface SaveSummary {
   difficulty: string;
   turn: number;
+  /**
+   * WHY IT CANNOT BE CONTINUED, when it cannot (`docs/LOOK_PLAN.md` §28, step 4): `newer`, a newer
+   * version of the game saved it, and the update is offered; `unreadable`, this version could not
+   * open it. Either way it is said, and New game replaces it. Absent for a save that can be.
+   */
+  blocked?: 'newer' | 'unreadable';
 }
 
 /** The title's picture, at the three sizes the pipeline builds. */
@@ -62,6 +69,7 @@ export function TitleScreen({
   onSettings,
   onHelp,
   onAbout,
+  onUpdate = null,
 }: {
   /** Present when an autosave exists; Continue renders only then. */
   save: SaveSummary | null;
@@ -85,7 +93,11 @@ export function TitleScreen({
   onSettings: () => void;
   onHelp: () => void;
   onAbout: () => void;
+  /** Update now, offered when a newer version saved the game; null where there is none to offer. */
+  onUpdate?: (() => void) | null;
 }): ReactElement {
+  // A save that cannot be continued is said, and is not the thing the title is for.
+  const waiting = save !== null && save.blocked === undefined;
   return (
     <div
       data-title-screen=""
@@ -162,7 +174,15 @@ export function TitleScreen({
             {t('title.rejoin', { code: rejoin.code })}
           </KitButton>
         ) : null}
-        {save ? (
+        {save?.blocked ? (
+          <div data-title="save-blocked" style={{ margin: '8px 0 4px' }}>
+            <p style={{ ...TYPE.body, color: COLOUR.onDark, margin: 0 }}>
+              {t(save.blocked === 'newer' ? 'title.saveNewer' : 'title.saveUnreadable')}
+            </p>
+            {save.blocked === 'newer' && onUpdate ? <UpdateNow onUpdate={onUpdate} /> : null}
+          </div>
+        ) : null}
+        {waiting && save ? (
           <KitButton
             kind="main"
             onPress={onContinue}
@@ -179,7 +199,7 @@ export function TitleScreen({
         ) : null}
         {onLearn ? (
           <KitButton
-            kind={save ? 'rest' : 'main'}
+            kind={waiting ? 'rest' : 'main'}
             onPress={onLearn}
             data-title="learn"
             style={STACK}
@@ -189,12 +209,12 @@ export function TitleScreen({
           </KitButton>
         ) : null}
         <KitButton
-          kind={save || onLearn ? 'rest' : 'main'}
+          kind={waiting || onLearn ? 'rest' : 'main'}
           onPress={onNewGame}
           data-title="new"
           style={STACK}
         >
-          {save || onLearn ? null : <ScreenIcon kind="play" />}
+          {waiting || onLearn ? null : <ScreenIcon kind="play" />}
           {t('title.newGame')}
         </KitButton>
         <KitButton onPress={onTogether} data-title="together" style={STACK}>

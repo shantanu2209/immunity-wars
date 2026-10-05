@@ -2467,3 +2467,53 @@ understand."*
   in three of the four passes:** a row of actions with several targets, which those passes' dice
   did not deal in 14 turns. The fourth reached it, and nothing this change touches draws it.
 - **Not played on a phone.**
+
+### Built: step 4, a version on saved games, and the Android app's update
+
+**A saved game says which rules wrote it** (seam 7, ruled Phase 4's on 25 September 2026; TODO rows
+8 and 9). Every save the session writes carries the rules version, and the app reads it before it
+continues one (`packages/session/src/saveFit.ts`):
+
+| The save was written by | What the app does |
+|---|---|
+| This version | Continues it |
+| An older version, or before saves were stamped | Carries it forward, as ruled on 30 September (*"carried forward, not thrown away"*), through `migrateSavedGame`, where a rules change that changes the game's shape adds its step |
+| A newer version | **Does not continue it.** The title says the game was made by a newer version and offers the update; New game replaces it. Continuing would play its turns under older rules and save over it |
+| Something that is not a version | As newer: continuing what cannot be read is the one choice that can lose the game |
+
+- **Where a newer save can come from.** On the web, a page left open for days meets a save another
+  tab wrote after an update; on a phone, a build older than the one that saved. Neither has happened
+  that anyone knows of. The stamp is for the next rules change: from today, the app can tell.
+- **Found by reading the shell while building it:** a save that would not open made Continue do
+  nothing at all. The session threw inside a promise nobody caught, and the title stayed as it was.
+  Nobody is known to have met it. It now says, on
+  the title, that this version could not open the saved game, and New game replaces it.
+
+**The Android app's update comes from Google Play** (TODO row 8). Where the web app offers *Update
+now*, which reloads into the version already downloaded, the Android app has nothing downloading
+into it: a reload brought back the same version, and the server refused it again. Its button now
+says *Update in Google Play* and opens the game's page there (`packages/app/src/storeLink.ts`). It
+is not drawn as busy, so it is there to press again when the player comes back. That is under the
+server's refusal of an older version, on the screens to play together, and under a saved game a
+newer version wrote.
+
+- **The link names the app's ruled id,** and the shell's test holds it to the id in the Android
+  project, so a link to another app's page fails the test.
+
+| Seen in a browser on the PC, at 360 by 641, on the development build | Found |
+|---|---|
+| A game started on Easy, then its save read from the page's own storage | The save says `4.2.0`, this rules version |
+| The save's stamp changed to `999.0.0`, and the page loaded again | The title says the game is from a newer version, offers *Update now*, and has no Continue; everything on one screen |
+| A save whose game is broken, and Continue pressed | The title says this version could not open it, and Continue is gone; no error on the page |
+
+- **Not seen on a phone:** the Android app's button, and Android handing the link to Google Play.
+  That is what Capacitor does with a link to another site, read in its code, not watched here.
+- **Two controls of the title were re-aimed,** `title-one-main-button` and
+  `title-guided-game-leads-a-new-phone`: the code they change was renamed, and the check that every
+  control still changes its file said so. Both fire.
+- **Unruled, and his to overrule:** what the title says, *Update in Google Play*, and that a newer
+  save is not continued rather than tried.
+- **Controls, each fired:** `save-carries-its-rules-version`,
+  `save-from-a-newer-version-is-not-continued`, `title-says-a-save-it-cannot-continue`,
+  `update-in-the-app-names-the-store`, `android-store-link-is-the-apps-id`,
+  `turbo-store-link-read-hashed`.

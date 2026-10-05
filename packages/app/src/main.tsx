@@ -18,7 +18,10 @@ import {
   IndexedDbStorage,
   RelayError,
   RelayRoom,
+  SaveTooNew,
   asPlayerRef,
+  canContinue,
+  saveFit,
   seededDice,
   type RelaySession,
 } from '@immunity-wars/session';
@@ -42,6 +45,7 @@ import {
   TitleScreen,
   TogetherScreen,
   UpdateDot,
+  updatesComeFromTheStore,
   entryRefusal,
   refusalFromClose,
   t,
@@ -83,6 +87,7 @@ import {
   updateNow,
   whenNewerWaits,
 } from './serviceWorker';
+import { STORE_LINK } from './storeLink';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -100,9 +105,20 @@ interface Refusal {
 
 /**
  * UPDATE NOW (FINDINGS #93): take the newer version this phone has downloaded, or is downloading, and
- * reload into it. Offered by the screens under a version refusal only.
+ * reload into it. Offered under a version refusal, under a game a newer version saved, and when a
+ * newer version is ready.
+ *
+ * THE ANDROID APP (docs/LOOK_PLAN.md §28, step 4) has nothing downloading into it: a reload would
+ * bring back the same version, and the server would refuse it again. Its updates come from Google
+ * Play, so it opens the game's page there.
  */
+const ANDROID = import.meta.env.MODE === 'android';
+updatesComeFromTheStore(ANDROID);
 const update = (): void => {
+  if (ANDROID) {
+    window.location.href = STORE_LINK;
+    return;
+  }
   void updateNow(browserUpdates(), () => window.location.reload());
 };
 
@@ -249,9 +265,12 @@ function App({
           return;
         }
         const st = s.state as Record<string, unknown>;
+        // A game a newer version saved is said, and not offered to continue (step 4, saveFit.ts).
+        const newer = !canContinue(saveFit(s));
         setSave({
           difficulty: String(st['difficulty'] ?? ''),
           turn: Number(st['turn'] ?? 0),
+          ...(newer ? { blocked: 'newer' as const } : {}),
         });
       })
       .catch(() => setSave(null));
@@ -352,10 +371,19 @@ function App({
         return;
       }
       const st = s.state as Record<string, unknown>;
+      let resumed: LocalSession;
+      try {
+        resumed = LocalSession.fromSave(s, { storage, saveId: SAVE_ID });
+      } catch (e) {
+        // Not continued, and said on the title; the save is left as it is, and New game replaces
+        // it. Before step 4 a save that would not open left Continue doing nothing at all.
+        setSave((was) =>
+          was ? { ...was, blocked: e instanceof SaveTooNew ? 'newer' : 'unreadable' } : was,
+        );
+        return;
+      }
       difficultyRef.current = String(st['difficulty'] ?? 'training');
-      sessionRef.current = watchForSaveFailure(
-        LocalSession.resume(s.state, { storage, saveId: SAVE_ID }),
-      );
+      sessionRef.current = watchForSaveFailure(resumed);
       setPaused(false);
       nav.reset({ name: 'play' });
     });
@@ -647,6 +675,7 @@ function App({
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
+            onUpdate={update}
           />
         </>
       );
@@ -755,6 +784,7 @@ function App({
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
+            onUpdate={update}
           />
         </>
       );
