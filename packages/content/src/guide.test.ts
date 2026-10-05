@@ -110,6 +110,12 @@ describe('the lesson file', () => {
       }),
       'A CHAPTER THAT BEGINS NOWHERE WAS ACCEPTED',
     ).toThrow(/which is no step of the lesson/);
+    // A chapter after the first that names no step at all begins nowhere too.
+    expect(
+      corrupt((l) => {
+        delete (l.chapters[1] as Chapter).from;
+      }),
+    ).toThrow(/which is no step of the lesson/);
   });
 
   it('rejects chapters out of order, a first chapter that names a step, and two of one name', () => {
