@@ -43,6 +43,11 @@ describe('the app’s id and name', () => {
       'MainActivity.java package': /^package ([\w.]+);/m.exec(
         read(`${MAIN}/java/${RULED_ID.split('.').join('/')}/MainActivity.java`),
       )?.[1],
+      // Where the app sends a player for its update (docs/LOOK_PLAN.md §28, step 4): a link to
+      // another app's page would send them to update something else.
+      'the app’s link to its Google Play page': /details\?id=([\w.]+)/.exec(
+        read('../app/src/storeLink.ts'),
+      )?.[1],
     };
     for (const [where, id] of Object.entries(named)) {
       expect(id, `THE APP HAS TWO IDS: ${where} says ${id ?? 'nothing'}`).toBe(RULED_ID);

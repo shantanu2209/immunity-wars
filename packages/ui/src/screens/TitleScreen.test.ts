@@ -105,6 +105,39 @@ describe('the title’s main button', () => {
     expect(box, 'its box is what it is measured against').toContain('position:relative');
   });
 
+  it('a save that cannot be continued is said, not offered, and New game is the main button', () => {
+    // Step 4 (docs/LOOK_PLAN.md §28): a game a newer version saved, or one this version could not
+    // open. Offering Continue would offer a button that does nothing, or continue it under older
+    // rules and save over it.
+    for (const blocked of ['newer', 'unreadable'] as const) {
+      const html = title({ ...saved, blocked });
+      expect(html, 'A SAVE THAT CANNOT BE CONTINUED IS OFFERED').not.toContain(
+        'data-title="continue"',
+      );
+      expect(html, 'it is said').toContain('data-title="save-blocked"');
+      expect(mains(html), blocked).toEqual(['new']);
+    }
+  });
+
+  it('the update is offered under a game a newer version saved, and only there', () => {
+    const withUpdate = (save: SaveSummary): string =>
+      renderToStaticMarkup(
+        createElement(TitleScreen, {
+          save,
+          onContinue: () => undefined,
+          onNewGame: () => undefined,
+          onTogether: () => undefined,
+          onSettings: () => undefined,
+          onHelp: () => undefined,
+          onAbout: () => undefined,
+          onUpdate: () => undefined,
+        }),
+      );
+    expect(withUpdate({ ...saved, blocked: 'newer' })).toContain('data-update-now');
+    expect(withUpdate({ ...saved, blocked: 'unreadable' })).not.toContain('data-update-now');
+    expect(withUpdate(saved)).not.toContain('data-update-now');
+  });
+
   it('keeps the hooks the instruments find it by, and says what it resumes', () => {
     const html = title(saved);
     for (const hook of ['new', 'together', 'help', 'settings', 'about'])
