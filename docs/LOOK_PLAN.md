@@ -2394,3 +2394,76 @@ the title drawn right in the browser that drew it wrong, and the version on Abou
 phone took the newer version, by itself on coming back or after the tab was closed and opened, is
 not recorded. **The menu's dot is not yet seen there:** it shows only during a game left open across
 a later deploy.
+
+## 28. Ruled 5 October 2026: the game is made easier to understand, and not easier
+
+**The closed test went live on 3 October at 22:53 IST:** release 1, version 0.9, *"Available to
+selected testers"* on the closed track, with the listing, the graphics and the forms of §26. The
+14 days run from when 12 testers have opted in.
+
+**What the testers said,** reported by Shantanu on 5 October: *"everyone that has played is saying
+the game is too difficult to understand, they haven't really started actually playing it because
+they don't really get it yet. Now what I don't want to do is dilute the core game otherwise the
+learning gets diluted too. What we need to focus on first instead is making the game easier to
+understand."*
+
+- **Put to him:** eight ways to teach it better, each with what it costs and what it buys, and
+  first, before any of them, to find out where the testers stopped, since the app records nothing
+  about its players and so cannot say.
+- **Read the same morning, at his asking:** a review he had another tool write (Codex, 4 October).
+  Its claims were checked against the code. **One was a real fault no check here had seen:** every
+  new card said its class's antibodies neutralise it, which is false of 67 of the deck's 96 diseases
+  ([`FINDINGS.md`](FINDINGS.md) #129). It also found the title saying the game is for two to
+  fifteen players, when most people start alone.
+- **The combined plan put to him, with a recommendation:** (1) the cards' sentences, the solo
+  wording and the lesson's last line, as the next test build; (2) two people who have never seen
+  the game, watched for an hour; (3) on what they show, the lesson cut into short chapters, its
+  crowded first steps split, and a line after the spread saying why things happened; (4) before
+  any build that changes the rules, a version on saved games and an answer in the Android app when
+  the server refuses an older one. Claude recommended 2 before 3.
+
+**His ruling:** *"do steps 1,3 and 4 right now"*.
+
+- **Step 2 is not ruled,** and is not done. So step 3 is built without seeing where a newcomer
+  stops: it rests on what the testers said and on what the lesson is, not on a watched game. That
+  is said here so that it is not later read as measured.
+- **The order of building:** 1, then 4, then 3, each its own pull request. Step 1 is the
+  smallest and fixes wrong science on every card; step 4 is what makes any later build safe to
+  send to phones that hold a saved game.
+- **The rules and the difficulties do not change,** by his word: what changes is how the game is
+  taught.
+
+### Built: step 1, the cards, the solo wording, the lesson's last line
+
+| Where | Was | Is |
+|---|---|---|
+| The back of a new card | *"[class] antibodies neutralise it"*, for every kind | One sentence per kind, held to the engine ([`FINDINGS.md`](FINDINGS.md) #129) |
+| The title's line | *"… for two to fifteen players"* | *"A cooperative game about the immune system. Play on your own, or together with up to fifteen players"* |
+| The lesson's last line | Said the lesson was everything | That the game is the player's now, what to aim for (keep every organ alive; infections arrive until turn 15; then clear every pathogen), and that How to play is in the menu |
+| The store's feature graphic | The old title line | Made again by `pnpm art:feature`, which reads the line from the catalogue |
+| The store build | Code 1 | **Code 2,** version 0.9 still: the next build sent to the closed test |
+
+| What a card now says | Kinds |
+|---|---|
+| *"[class] antibodies coat it, so your cells can swallow it"* | Bacterium |
+| *"[class] antibodies coat it, so your cells can strike it"* | Worm, parasite |
+| *"[class] antibodies coat it, and may neutralise it unless it changes its coat"* | Sleeping sickness |
+| *"[class] antibodies neutralise it"* | Virus, toxin |
+| *"[class] antibodies neutralise it in the blood, but not while it hides in the liver"* | Malaria |
+| *"It hides inside your own cells, where antibodies cannot reach it"* | Hidden pathogen |
+| *"Your own antibodies come too slowly for venom: it needs antivenom"* | Venom |
+| *"Antibodies cannot coat or neutralise it: your cells must fight it"* | Fungus |
+
+- **Unruled, and his to overrule:** each of these sentences, the title's line and the lesson's
+  last line. The title's line has no dash, as player text here has none; the review's wording had
+  one.
+- **His to change, in Play Console:** the store's full description, which says *"two to fifteen
+  players"* in its paragraph on playing together; and, if he likes, the feature graphic.
+- **Controls, each fired:** `card-counters-are-the-engines`, `card-counter-words-are-the-tables`.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC,
+  against a relay on the PC): 89 screens in each of the four passes (91 in one); every check at
+  zero over 1,131 controls and 2,463 text runs; 39 close paths, none wrong; offline met, with no
+  request failed; 47 controls of the audit's own, each as it must be. **One screen was not reached
+  in three of the four passes:** a row of actions with several targets, which those passes' dice
+  did not deal in 14 turns. The fourth reached it, and nothing this change touches draws it.
+- **Not played on a phone.**

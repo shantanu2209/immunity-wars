@@ -854,6 +854,26 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER DOES NOT STORE AN ICON',
   },
   {
+    id: 'card-counters-are-the-engines',
+    why: 'FINDINGS #129: a new card said "[class] antibodies neutralise it" of every disease, which the engine does not allow for a bacterium, a worm, a fungus, venom or a hidden pathogen. Each kind now says what antibodies do to it, held to the engine. With the bacterium said to be neutralised, the engine test must FAIL saying the engine does not agree.',
+    file: 'packages/ui/src/play/counters.ts',
+    mutate: (t) => t.replace("  bacteria: 'coat',", "  bacteria: 'neutralise',"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/counters.test.ts',
+    expect: 'A CARD SAYS WHAT ANTIBODIES DO AND THE ENGINE DOES NOT AGREE',
+  },
+  {
+    id: 'card-counter-words-are-the-tables',
+    why: 'FINDINGS #129: the table is held to the engine, and the words are held to the table. With the sentence for a bacterium saying neutralise, the test of the screens must FAIL naming the sentence.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        '"{family} antibodies coat it, so your cells can swallow it"',
+        '"{family} antibodies neutralise it"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/counters.test.ts',
+    expect: 'THE SENTENCE FOR BACTERIA DOES NOT SAY WHAT ITS ROW SAYS',
+  },
+  {
     id: 'privacy-page-in-the-worker',
     why: 'Ruled 3 October 2026: Google Play links to /privacy.html. A page the worker does not store it answers with the app, so a phone that had opened the game would be shown the title instead of the policy. With the privacy page left out of what the worker stores, the build test must FAIL saying so.',
     file: 'packages/app/vite.config.ts',

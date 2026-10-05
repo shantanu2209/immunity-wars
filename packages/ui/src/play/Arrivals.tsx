@@ -22,7 +22,7 @@
  * not fit a tile, and item 11 of the same message forbids an intermediate level that says nothing —
  * so the icon goes straight to the card from either face.
  */
-import { FAMILIES, FAMILY, ROUTES } from '@immunity-wars/content';
+import { DECK_MASTER, FAMILIES, FAMILY, ROUTES } from '@immunity-wars/content';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -35,6 +35,7 @@ import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 import { CardIcon } from '../panels/CardIcon';
 import { RichText } from '../panels/LogPanel';
 import { SAY, TONE } from '../panels/onCard';
+import { antibodiesDo, counterSentence } from './counters';
 
 /** How long after the card before it each card is dealt. */
 const DEAL_GAP_MS = 110;
@@ -73,6 +74,12 @@ const routeName = (lane: string): string => {
 const familyOf = (disease: string): string =>
   String((FAMILY as Record<string, string | undefined>)[disease] ?? '');
 
+/** Whether a disease is a parasite that changes its coat: the content pack's own flag. */
+const changesCoat = (disease: string): boolean =>
+  (DECK_MASTER as readonly { dz: string; variant?: boolean }[]).some(
+    (c) => c.dz === disease && c.variant === true,
+  );
+
 /** A class's own colour, the content pack's: the one its pieces wear. */
 const classColour = (family: string): string | null =>
   (FAMILIES as Record<string, { col?: string } | undefined>)[family]?.col ?? null;
@@ -99,6 +106,9 @@ function ArrivalCard({
     return () => window.clearTimeout(timer);
   }, [index]);
   const family = familyOf(arrival.disease);
+  const variant = changesCoat(arrival.disease);
+  const counter = counterSentence(arrival.type, variant);
+  const does = antibodiesDo(arrival.type, variant);
   const name = arrival.novel ? t('inspect.unknown') : arrival.disease;
   const { piece } = pieceFor(arrival.type, classOf(arrival.disease, arrival.novel), false);
   const colour = classColour(family);
@@ -127,8 +137,15 @@ function ArrivalCard({
               {t('arrivals.remembered')}
             </span>
           ) : null}
-          {family !== '' && !arrival.novel ? (
-            <span style={{ ...SMALL, color: TONE.good }}>{t('arrivals.beatenBy', { family })}</span>
+          {/* WHAT ANTIBODIES DO TO IT, by its kind (./counters.ts; FINDINGS #129). In the colour
+              of what works when they work on it; plain when they cannot. */}
+          {family !== '' && !arrival.novel && counter !== null ? (
+            <span
+              data-arrival-counter={does ?? ''}
+              style={{ ...SMALL, ...(does === 'neither' ? {} : { color: TONE.good }) }}
+            >
+              {t(counter, { family })}
+            </span>
           ) : null}
           {!arrival.novel && onCard ? (
             <span
