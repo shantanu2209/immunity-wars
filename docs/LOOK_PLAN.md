@@ -2587,3 +2587,48 @@ chapter's card now says a fungus cannot be coated).
   `guide-later-tap-names-its-button`, `title-says-the-lesson-continues`. Re-aimed, because the call
   it changes was rewritten, and fired: `guide-walk-names-a-stuck-beat`.
 - **Not played on a phone.**
+
+### Built: step 3, its second part: what the spread did, and why
+
+**After each spread, the card at rest says what happened and the rule that made it happen.** It
+said what happened before, as the engine's names for its beats; now each name has its rule under it,
+from the catalogue, so that what a player watched is joined to why.
+
+| The beat | Its why |
+|---|---|
+| Bacteria divide | A bacterium that is not coated may divide each turn. A coated one never does. |
+| Viruses hide | A free virus may hide inside one of your cells, where antibodies cannot reach it. |
+| Cells burst | A cell with a pathogen hiding inside may burst, and two come out. |
+| Toxin released | A bacterium that makes a toxin releases it once it has been left uncoated for 3 turns. |
+| The march | Invaders move toward the organs each turn. |
+| Organ damage | An invader that reaches an organ takes 1 of its integrity. |
+| And nine more | Complement, malaria in and out of the liver, worms lodging and feeding, the lymph on Hard, a fever, Kala-azar, an organ failing |
+
+**And it says only what happened** ([`FINDINGS.md`](FINDINGS.md) #130). Every spread had said a
+toxin was released, and nothing had been: the engine names that beat every turn, and the screens
+played and listed every beat. A beat is now played when it rolled dice or changed the body, and
+listed when it changed the body. A bacterium that rolled and did not divide is played, so the dice
+are seen, and is not listed as having divided.
+
+- **Held to the engine** (`tests/session/src/spread-story.test.ts`), on spreads the real engine
+  runs: a coated bacterium does not divide on any face of the die; a virus that hid cannot be
+  neutralised; an invader that reaches an organ takes exactly 1; a toxin maker releases on the third
+  spread uncoated and not before; an invader advances. **Not held:** the whys of malaria, worms,
+  Kala-azar, the lymph, complement and fever, which say what the engine's own messages say.
+- **Seen, in headless Chrome on the PC at 360 by 641,** four turns of an Easy game: the spread
+  played *Viruses hide*, *The march*, and no *Toxin released*; the card at rest said *Viruses hide*
+  and *The march*, each with its why, on one screen with the turn's card.
+- **The guided game, walked on this build:** 82 beats of 82, in order; the game handed over at
+  turn 8 of 15; no error.
+- **The Gate 1 audit, alone and together, on this build:** 89 screens in each of the four passes
+  (91 in one); every check at zero over 1,126 controls and 2,476 text runs; 39 close paths, none
+  wrong; offline met. **Two screens were not reached in one pass each:** a row of actions with
+  several targets, by its dice, as before; and the Monocyte moved off the bloodstream with Recall
+  showing, which the walk reaches by tapping a glowing step that a piece can stand over, depending
+  on the deal. That one is walked on the first turn, before any spread has played, which is all
+  this change touches; the other three passes reached it.
+- **Unruled, and his to overrule:** every why, and that a beat that changed nothing is not played.
+- **Controls, each fired:** `spread-story-says-only-what-happened`,
+  `spread-plays-only-what-did-something`, `spread-story-sees-what-a-player-sees`,
+  `spread-why-is-the-engines`.
+- **With this, step 3 is built.**
