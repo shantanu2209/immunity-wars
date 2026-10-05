@@ -2522,3 +2522,68 @@ newer version wrote.
   `save-from-a-newer-version-is-not-continued`, `title-says-a-save-it-cannot-continue`,
   `update-in-the-app-names-the-store`, `android-store-link-is-the-apps-id`,
   `turbo-store-link-read-hashed`.
+
+### Built: step 3, its first part: the lesson in chapters, and shorter sentences for later taps
+
+**The lesson ruled on 2 October is kept whole:** the same seven turns, the same arrivals, the same
+steps and the same seed. What changes is how it is taken in.
+
+**Seven chapters**, each beginning at a step of the lesson, written in the lesson's own file:
+
+| Chapter | Begins at | What it covers |
+|---|---|---|
+| 1, bacteria | The start | Action Points, making antibodies, coating, moving, the spread, swallowing, memory on Easy |
+| 2, viruses | Turn 2, the Helper T-Cell | Hidden viruses: the Killer T-Cell and the NK Cell; Recall; a free virus neutralised |
+| 3, fungi | Turn 3, the Neutrophil's run | The NET |
+| 4, a crisis and a parasite | Turn 4 | A crisis; coating a fast bacterium and a parasite; striking it, then swallowing it |
+| 5, toxins and venom | Turn 5, the antitoxin | Antitoxin, antivenom |
+| 6, worms and memory | Turn 6 | Memory's ring; the Eosinophil and a worm |
+| 7, the organs' defenders and malaria | Turn 7 | A resident macrophage; malaria; what neglect does |
+
+- **At a chapter's end** a card says what was done, with *Next chapter*, and *Stop for now* in
+  place of *Leave the lesson*. The next turn is not drawn while it is up.
+- **A chapter begins with a card that says what it is about,** so that a player who comes back in
+  the middle of a turn is told what has arrived.
+- **The device keeps how many chapters are done** (`packages/app/src/lessonPlace.ts`, its own key;
+  the most ever done). The title's *Learn to play* then says *Continue the lesson, Chapter 2 of 7*.
+  Settings' *Play the guided game* begins at chapter 1.
+- **Coming back.** A game on rails is never saved, so the session plays the lesson to the chapter
+  again on its own dice before the screen opens (`playLessonTo`). The guide's test holds the game it
+  reaches to be the very game a player who never stopped has there, from every chapter, and plays
+  the rest of the lesson from each to its end.
+- **The count says the chapter:** *Chapter 2 of 7: 3 of 7*, where it said *12 of 40*.
+
+**Shorter sentences for later taps.** A step that takes more than one tap says its whole sentence
+when its first control is lit, and a few words when a later one is: *Now pick EXB.*, *Now tap
+Produce.*, *Now tap Coat.*, *Now tap the glowing step.*, *Now choose Endocarditis.* The button is
+named by the word on it, from the catalogue. And the lesson's first long sentence is two: the
+Action Points are their own step, lighting the pips at the top, before making antibodies.
+
+**Changed sentences,** so that each still reads true after a chapter's card: the Helper T-Cell's
+(*The Monocyte's kill also primed it*, where it said *That kill*), and the Neutrophil's first (the
+chapter's card now says a fungus cannot be coated).
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`: a fresh build at 360 by 641, pressing only what is lit | 82 beats of 82, every one in the lesson's order (69 before, the Action Points' step and twelve chapter cards more); the game handed over at turn 8 of 15; no error |
+| The same, headless, to chapter 1's end and back | *Now pick EXB.*, *Now tap Produce.*, *Now tap Coat.*, *Now tap the glowing step.*, *Now tap Engulf.* each where it should be; *Chapter 1 of 7: 9 of 9*; *Stop for now* back to the title, which said *Continue the lesson, Chapter 2 of 7* on one screen; the place kept as one chapter done; coming back began with chapter 2's card, then the Helper T-Cell, then the Killer T-Cell and *Now tap Snipe.* |
+
+- **Unruled, and his to overrule:** the seven chapters and where each begins; every new sentence;
+  that a player comes back at the start of the chapter after the last one done, and not where they
+  left; that the place is kept on the device; that Settings begins at chapter 1.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC):
+  89 screens in each of the four passes (91 in one), nothing not reached; every check at zero over
+  1,138 controls and 2,473 text runs; 39 close paths, none wrong; offline met. Its six guided
+  screens were each reached in every pass. **Not among its screens:** a chapter's card, and the
+  title saying the lesson continues. Its walk of the lesson stops before chapter 1 ends. The card is
+  the guided game's own card, with the kit's main button and a quiet one a full touch target tall,
+  and was seen in the headless check above; it was not measured for contrast or at 200%.
+- **Built without the watched game Claude recommended first** (above): this rests on what the
+  testers said, not on seeing where a newcomer stops.
+- **Not yet built: the line after the spread that says why things happened.** It is the second
+  part of step 3, its own pull request.
+- **Controls, each fired:** `lesson-resumes-at-every-chapter`, `chapter-card-holds-the-draw`,
+  `lesson-place-keeps-the-most`, `lesson-chapter-begins-at-a-step`,
+  `guide-later-tap-names-its-button`, `title-says-the-lesson-continues`. Re-aimed, because the call
+  it changes was rewritten, and fired: `guide-walk-names-a-stuck-beat`.
+- **Not played on a phone.**

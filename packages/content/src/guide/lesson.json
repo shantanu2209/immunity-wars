@@ -3,10 +3,20 @@
     "seed": 37,
     "difficulty": "training",
     "crisis": { "turn": 4, "event": "passiveAntibodies" },
+    "chapters": [
+      { "id": "bacteria" },
+      { "id": "viruses", "from": "t2.helper" },
+      { "id": "fungi", "from": "t3.run1" },
+      { "id": "parasites", "from": "t4.coatBacterium" },
+      { "id": "toxins", "from": "t5.antitoxin" },
+      { "id": "worms", "from": "t6.memory" },
+      { "id": "organs", "from": "t7.residentOut" }
+    ],
     "turns": [
       {
         "arrive": ["Whooping cough"],
         "steps": [
+          { "id": "t1.ap", "do": "tell", "points": "ap" },
           { "id": "t1.produce", "do": "produce", "family": "EXB", "for": "Whooping cough" },
           { "id": "t1.coat", "do": "coat", "disease": "Whooping cough" },
           { "id": "t1.walk1", "do": "move", "cell": "macrophage", "route": "nose", "step": 1 },

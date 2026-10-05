@@ -1360,13 +1360,64 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
   },
   {
+    id: 'lesson-resumes-at-every-chapter',
+    why: 'Step 3 (docs/LOOK_PLAN.md section 28): a player who stopped comes back to the next chapter, and since a game on rails is never saved the session plays the lesson to it again on the same dice. With one step too many played, the guide test must FAIL saying the player is not brought to the game the chapter begins with.',
+    file: 'packages/session/src/lesson.ts',
+    mutate: (t) => t.replace('turn.steps.slice(0, to.step)', 'turn.steps.slice(0, to.step + 1)'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A PLAYER COMING BACK IS NOT BROUGHT TO THE GAME THE CHAPTER BEGINS WITH',
+  },
+  {
+    id: 'chapter-card-holds-the-draw',
+    why: 'Step 3: while a chapter card is up the next turn is not drawn, or the next chapter cards would come in under the card that says the last one is done. With only the lesson end holding the draw, the guide test must FAIL saying a chapter card lets the next turn be drawn.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace('lessonOver(lesson, pos) || pos.at !== undefined;', 'lessonOver(lesson, pos);'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A CHAPTER CARD LETS THE NEXT TURN BE DRAWN',
+  },
+  {
+    id: 'lesson-place-keeps-the-most',
+    why: 'Step 3: playing the lesson again from Settings and stopping early does not take a player place back. With the place written as given, the place test must FAIL saying it was taken back.',
+    file: 'packages/app/src/lessonPlace.ts',
+    mutate: (t) => t.replace('Math.max(done, readChaptersDone(store))', 'done'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/lessonPlace.test.ts',
+    expect: 'PLACE IN THE LESSON WAS TAKEN BACK',
+  },
+  {
+    id: 'lesson-chapter-begins-at-a-step',
+    why: 'Step 3: a chapter begins at a step of the lesson, named by its id, which no compiler checks. With the check that the step exists switched off, the lesson file test must FAIL saying a chapter that begins nowhere was accepted.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) => t.replace('      if (i < 0) {', '      if (i < -1) {'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'A CHAPTER THAT BEGINS NOWHERE WAS ACCEPTED',
+  },
+  {
+    id: 'guide-later-tap-names-its-button',
+    why: 'Step 3: a later tap of a step says a few words, naming the button by the word on it. With every row named as Move, the guide test must FAIL saying a later tap does not say what its button says.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace('params: { action: `action.${row}` }', "params: { action: 'action.move' }"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A LATER TAP DOES NOT SAY WHAT ITS BUTTON SAYS',
+  },
+  {
+    id: 'title-says-the-lesson-continues',
+    why: 'Step 3: a player with chapters done is told on the title that the lesson continues, and at which chapter. With the button saying Learn to play whatever is done, the title test must FAIL saying it does not say the lesson continues.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) =>
+      t.replace("{learnAt ? t('title.learnOn') : t('title.learn')}", "{t('title.learn')}"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',
+    expect: 'THE TITLE DOES NOT SAY THE LESSON CONTINUES',
+  },
+  {
     id: 'guide-walk-names-a-stuck-beat',
     why: 'Stage L6: the guided game is walked in the built app by pressing only what the guide lights. A beat whose control is not on the page lights nothing, and a player would be left looking at a sentence with nothing to tap. With the hook for the Neutrophil’s NET misnamed, the walk must FAIL naming that beat and saying nothing is lit, and not run on to a time limit.',
     file: 'packages/ui/src/guide/model.ts',
     mutate: (t) =>
       t.replace(
-        "return byCell(view, 'neutrophil', 'net', '');",
-        "return byCell(view, 'neutrophil', 'nett', '');",
+        "return byCell(view, 'neutrophil', 'net', '', '');",
+        "return byCell(view, 'neutrophil', 'nett', '', '');",
       ),
     gate: 'pnpm guide:walk --build',
     expect: 'STUCK at t3.net: nothing on the page is lit',

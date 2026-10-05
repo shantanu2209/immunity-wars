@@ -41,13 +41,13 @@ import { cutBy, litBox, type Box } from './box';
 const DIM = 'rgba(4, 18, 22, 0.6)';
 const Z = 18;
 
-/** The first of the beat's stops that is on the page and has a size. */
-function findLit(stops: readonly string[]): HTMLElement | null {
+/** The first of the beat's stops that is on the page and has a size, and which stop it is. */
+function findLit(stops: readonly string[]): { el: HTMLElement; stop: string } | null {
   for (const s of stops) {
     const el = document.querySelector<HTMLElement>(s);
     if (!el) continue;
     const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) return el;
+    if (r.width > 0 && r.height > 0) return { el, stop: s };
   }
   return null;
 }
@@ -119,8 +119,10 @@ export function Spotlight({
   beatId,
   text,
   stops,
+  thens = [],
   tell,
   last,
+  chapterEnd = false,
   watch = false,
   count,
   onNext,
@@ -130,10 +132,17 @@ export function Spotlight({
   beatId: string;
   text: string;
   stops: readonly string[];
+  /**
+   * Beside each stop, the few words said when it is lit after another of the same beat was (step
+   * 3: "Now tap Coat."); empty for none. The beat's whole sentence is said first, always.
+   */
+  thens?: readonly string[];
   /** Said, not done: the card's own button moves on. */
   tell: boolean;
   /** The lesson's last word: its button hands the game over. */
   last: boolean;
+  /** The end of a chapter: its buttons go on to the next, or stop for now. */
+  chapterEnd?: boolean;
   /**
    * The spread is playing: it is watched, so nothing is dimmed and nothing is ringed. The sentence
    * stands alone, and a finger anywhere moves the spread on, as it always does.
@@ -147,6 +156,9 @@ export function Spotlight({
 }): ReactElement {
   const [box, setBox] = useState<Box | null>(null);
   const [name, setName] = useState('');
+  /** Which stop is lit, and which was lit first in this beat: a later one says its few words. */
+  const [litStop, setLitStop] = useState('');
+  const firstLit = useRef<{ beat: string; stop: string } | null>(null);
   /** What is lit is on the board: the card then keeps off the board where it can. */
   const [onBoard, setOnBoard] = useState(false);
   const lit = useRef<HTMLElement | null>(null);
@@ -162,8 +174,17 @@ export function Spotlight({
     /** The control last brought into view, so that it is brought once and not held there. */
     let brought: HTMLElement | null = null;
     let clippers: Clipper[] = [];
+    let stopNow: string | undefined;
     const read = (): void => {
-      const el = last || watch ? null : findLit(stops);
+      const found = last || watch ? null : findLit(stops);
+      const el = found?.el ?? null;
+      if (found !== null && firstLit.current?.beat !== beatId) {
+        firstLit.current = { beat: beatId, stop: found.stop };
+      }
+      if ((found?.stop ?? '') !== stopNow) {
+        stopNow = found?.stop ?? '';
+        setLitStop(stopNow);
+      }
       // WHAT IS LIT MUST BE ON THE SCREEN. With the page zoomed, or the text at its largest, the
       // screen is taller than the phone and the lit control may be below it, or part of it may be
       // below the edge of the middle, which scrolls. The player cannot scroll to it: every touch
@@ -201,7 +222,14 @@ export function Spotlight({
     read();
     return (): void => window.cancelAnimationFrame(frame);
     // `key` stands for `stops`: the same hooks are the same search.
-  }, [key, last, watch]);
+  }, [key, last, watch, beatId]);
+
+  // The words for what is lit: the beat's whole sentence, until a later control of it is lit.
+  const thenText =
+    firstLit.current?.beat === beatId && litStop !== '' && litStop !== firstLit.current.stop
+      ? (thens[stops.indexOf(litStop)] ?? '')
+      : '';
+  const said = thenText !== '' ? thenText : text;
 
   // The ring breathes, so that the eye finds it; not on a phone that asks for less motion.
   useEffect(() => {
@@ -313,7 +341,7 @@ export function Spotlight({
         }}
       >
         <p data-guide-text="" style={{ ...TYPE.body, margin: 0, color: COLOUR.ink }}>
-          {text}
+          {said}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <span
@@ -324,9 +352,10 @@ export function Spotlight({
           </span>
           {last || watch ? null : (
             // A way out, always there and never loud: a quiet word, and still a full touch target.
+            // At a chapter's end it is the choice to stop for now, and the chapter is kept.
             <button
               type="button"
-              data-guide-leave=""
+              data-guide-leave={chapterEnd ? 'stop' : ''}
               onClick={onLeave}
               style={{
                 minHeight: TOUCH.min,
@@ -342,12 +371,12 @@ export function Spotlight({
                 cursor: 'pointer',
               }}
             >
-              {t('guide.leave')}
+              {t(chapterEnd ? 'guide.stop' : 'guide.leave')}
             </button>
           )}
           {tell || last ? (
             <KitButton kind="main" data-guide-next="" onPress={onNext}>
-              {t(last ? 'guide.playOn' : 'guide.next')}
+              {t(last ? 'guide.playOn' : chapterEnd ? 'guide.nextChapter' : 'guide.next')}
             </KitButton>
           ) : null}
         </div>

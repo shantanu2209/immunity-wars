@@ -21,6 +21,7 @@ import {
   SaveTooNew,
   asPlayerRef,
   canContinue,
+  playLessonTo,
   saveFit,
   seededDice,
   type RelaySession,
@@ -45,6 +46,8 @@ import {
   TitleScreen,
   TogetherScreen,
   UpdateDot,
+  chapterStart,
+  resumeAt,
   updatesComeFromTheStore,
   entryRefusal,
   refusalFromClose,
@@ -78,6 +81,7 @@ import {
 } from './settings';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { readPlayed, writePlayed } from './played';
+import { readChaptersDone, writeChaptersDone } from './lessonPlace';
 import {
   browserUpdates,
   lookForNewer,
@@ -134,6 +138,7 @@ const refusalOfEntry = (e: unknown): Refusal => ({
 const prefStore = browserStore();
 const initialSettings = readSettings(prefStore);
 const initialPlayed = readPlayed(prefStore).played;
+const initialChaptersDone = readChaptersDone(prefStore);
 applyTextSize(initialSettings.textSize);
 applySound(initialSettings.sound, kitAudio);
 
@@ -333,18 +338,48 @@ function App({
    * again; when they end, the game is the player's own and is saved like any other.
    */
   const [guided, setGuided] = useState(false);
-  const startGuided = (): void => {
-    difficultyRef.current = LESSON.difficulty;
-    setGameId((n) => n + 1);
-    sessionRef.current = watchForSaveFailure(
+  /**
+   * THE CHAPTERS (step 3, `docs/LOOK_PLAN.md` §28): how many this device has done, and where the
+   * lesson the player is in began. A player coming back begins at the chapter after the last one
+   * done; the game is played to it again on the lesson's dice, since a game on rails is not saved.
+   */
+  const [chaptersDone, setChaptersDone] = useState(initialChaptersDone);
+  const [guideStart, setGuideStart] = useState(resumeAt(LESSON, 0));
+  const startGuided = (from = 0): void => {
+    const c = Math.max(0, Math.min(from, LESSON.chapters.length - 1));
+    const begin = (): LocalSession =>
       LocalSession.createGame(
         { difficulty: LESSON.difficulty, written: LESSON.turns.map((turn) => turn.arrive) },
         { storage, saveId: SAVE_ID, rails: { dice: seededDice(LESSON.seed) } },
-      ),
-    );
-    setGuided(true);
-    setPaused(false);
-    nav.reset({ name: 'play' });
+      );
+    const open = (session: LocalSession, at: number): void => {
+      difficultyRef.current = LESSON.difficulty;
+      setGameId((n) => n + 1);
+      sessionRef.current = watchForSaveFailure(session);
+      setGuideStart(resumeAt(LESSON, at));
+      setGuided(true);
+      setPaused(false);
+      nav.reset({ name: 'play' });
+    };
+    if (c === 0) {
+      open(begin(), 0);
+      return;
+    }
+    const session = begin();
+    void playLessonTo(session, LESSON, chapterStart(LESSON, c)).then((got) => {
+      if (got.ok) {
+        open(session, c);
+        return;
+      }
+      // The lesson could not be played to the chapter: begin it again rather than lead a player
+      // through a game that is not the one its sentences describe. A test holds this never happens.
+      session.dispose();
+      open(begin(), 0);
+    });
+  };
+  const onChapter = (n: number): void => {
+    writeChaptersDone(prefStore, n);
+    setChaptersDone((was) => Math.max(was, n));
   };
   const endGuide = (how: 'finished' | 'left' | 'parted'): void => {
     setGuided(false);
@@ -608,7 +643,7 @@ function App({
       guide={{
         block: overPlay ? 'inPlay' : null,
         replacesSave: save !== null,
-        onStart: startGuided,
+        onStart: () => startGuided(0),
       }}
       onDeleteSave={deleteSave}
     />
@@ -668,7 +703,12 @@ function App({
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
-            onLearn={played ? null : startGuided}
+            onLearn={played ? null : () => startGuided(chaptersDone)}
+            learnAt={
+              !played && chaptersDone > 0 && chaptersDone < LESSON.chapters.length
+                ? { chapter: chaptersDone + 1, of: LESSON.chapters.length }
+                : null
+            }
             onTogether={openTogether}
             rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
             onRejoin={openRejoin}
@@ -805,7 +845,11 @@ function App({
             session={session}
             // THE GUIDED GAME: the lesson this game is. Not while the menu is up: the menu is the
             // player's, and the light would stand between them and it.
-            guide={guided && !paused ? { lesson: LESSON, onEnd: endGuide } : null}
+            guide={
+              guided && !paused
+                ? { lesson: LESSON, onEnd: endGuide, start: guideStart, onChapter }
+                : null
+            }
             // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
             table={roomRef.current !== null && lobby !== null ? lobby : null}
             // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.

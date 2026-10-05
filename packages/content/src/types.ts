@@ -160,8 +160,11 @@ export type LessonStep =
     }
   | { readonly id: string; readonly do: 'recall'; readonly cell: CellKey }
   | { readonly id: string; readonly do: 'net' }
-  /** Said, not done: it asks the engine for nothing. `cell` is what it points at, if anything. */
-  | { readonly id: string; readonly do: 'tell'; readonly cell?: CellKey }
+  /**
+   * Said, not done: it asks the engine for nothing. `cell` is what it points at, if anything; or
+   * `points: 'ap'`, the Action Points at the top of the screen.
+   */
+  | { readonly id: string; readonly do: 'tell'; readonly cell?: CellKey; readonly points?: 'ap' }
   | {
       readonly id: string;
       readonly do: 'strike';
@@ -190,6 +193,19 @@ export interface Lesson {
   /** The crisis the lesson is written round, and its turn. */
   readonly crisis: { readonly turn: number; readonly event: string };
   readonly turns: readonly LessonTurn[];
+  /**
+   * THE CHAPTERS (5 October 2026, `docs/LOOK_PLAN.md` §28, step 3): the same lesson in short parts,
+   * each ending with a choice to go on or stop, and each one a player can come back to. A chapter
+   * begins at the step it names in `from`; the first begins at the beginning and names none.
+   */
+  readonly chapters: readonly LessonChapter[];
+}
+
+export interface LessonChapter {
+  /** What its sentences are found by: `guide.chapter.<id>.*` in the catalogue. */
+  readonly id: string;
+  /** The id of the step it begins at; absent for the first. */
+  readonly from?: string;
 }
 
 /**

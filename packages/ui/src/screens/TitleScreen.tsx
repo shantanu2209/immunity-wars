@@ -63,6 +63,7 @@ export function TitleScreen({
   onContinue,
   onNewGame,
   onLearn = null,
+  learnAt = null,
   onTogether,
   rejoin = null,
   onRejoin = () => undefined,
@@ -81,6 +82,11 @@ export function TitleScreen({
    * is the coral button, unless a game is waiting to be continued.
    */
   onLearn?: (() => void) | null;
+  /**
+   * THE CHAPTER A PLAYER COMES BACK TO (step 3, `docs/LOOK_PLAN.md` §28), when some are done: the
+   * guided game's button then says it continues the lesson, and at which chapter.
+   */
+  learnAt?: { chapter: number; of: number } | null;
   /** Play together (P3.7, ruled 25 September 2026): beside New game, on the Title. */
   onTogether: () => void;
   /**
@@ -202,10 +208,15 @@ export function TitleScreen({
             kind={waiting ? 'rest' : 'main'}
             onPress={onLearn}
             data-title="learn"
-            style={STACK}
+            style={learnAt ? { ...STACK, flexWrap: 'wrap', columnGap: '0.5em', rowGap: 0 } : STACK}
           >
             <ScreenIcon kind="learn" />
-            {t('title.learn')}
+            {learnAt ? t('title.learnOn') : t('title.learn')}
+            {learnAt ? (
+              <span style={{ flex: '1 0 100%', ...TYPE.body, fontWeight: 700 }}>
+                {t('title.learnAt', { chapter: learnAt.chapter, of: learnAt.of })}
+              </span>
+            ) : null}
           </KitButton>
         ) : null}
         <KitButton

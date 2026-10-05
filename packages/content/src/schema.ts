@@ -794,7 +794,12 @@ const LessonStepS = z.discriminatedUnion('do', [
   z.strictObject({ id: z.string().min(1), do: z.literal('net') }),
   // Something the lesson SAYS and the player does not do: what the Helper T-Cell is, what was not
   // shown. It asks the engine for nothing. `cell` is what it points at, when it points at one.
-  z.strictObject({ id: z.string().min(1), do: z.literal('tell'), cell: CellKeyS.optional() }),
+  z.strictObject({
+    id: z.string().min(1),
+    do: z.literal('tell'),
+    cell: CellKeyS.optional(),
+    points: z.literal('ap').optional(),
+  }),
   z.strictObject({
     id: z.string().min(1),
     do: z.literal('strike'),
@@ -823,6 +828,9 @@ export const LessonS = z.strictObject({
     crisis: z.strictObject({ turn: z.number().int().positive(), event: z.string().min(1) }),
     turns: z
       .array(z.strictObject({ arrive: z.array(z.string().min(1)), steps: z.array(LessonStepS) }))
+      .min(1),
+    chapters: z
+      .array(z.strictObject({ id: z.string().min(1), from: z.string().min(1).optional() }))
       .min(1),
   }),
 });
@@ -928,6 +936,47 @@ export function guidePackSchema(
           }
         }
       });
+    });
+    // THE CHAPTERS (step 3): the first begins at the beginning; each later one at a step the
+    // lesson has, after the one before it; and no two share a name.
+    const order = L.turns.flatMap((turn) => turn.steps.map((step) => step.id));
+    let after = -1;
+    const named = new Set<string>();
+    L.chapters.forEach((ch, c) => {
+      const here = at('chapters', c);
+      if (named.has(ch.id)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'id'],
+          message: `two chapters are named "${ch.id}"`,
+        });
+      }
+      named.add(ch.id);
+      if (c === 0) {
+        if (ch.from !== undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...here, 'from'],
+            message: 'the first chapter begins at the beginning, and names no step',
+          });
+        }
+        return;
+      }
+      const i = ch.from === undefined ? -1 : order.indexOf(ch.from);
+      if (i < 0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'from'],
+          message: `chapter "${ch.id}" begins at "${String(ch.from)}", which is no step of the lesson`,
+        });
+      } else if (i <= after) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'from'],
+          message: `chapter "${ch.id}" begins before the chapter it follows`,
+        });
+      }
+      after = Math.max(after, i);
     });
   });
 }

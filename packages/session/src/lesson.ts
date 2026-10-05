@@ -87,6 +87,42 @@ export function lessonAction(step: LessonStep, view: ViewState): Record<string, 
   }
 }
 
+/**
+ * PLAY THE LESSON TO A PLACE IN IT, through a session already on the lesson's dice: how a player
+ * who stopped comes back to the chapter they stopped before (step 3, `docs/LOOK_PLAN.md` §28).
+ * Every turn before the place is played whole, as a player led by the lesson plays it; the place's
+ * own turn is drawn and played to the step before it, unless the place is a turn's very start, which
+ * is before that turn's cards are drawn. The same dice and the same actions bring the game to the
+ * same place: `tests/session/src/guide.test.ts` plays the rest of the lesson from every chapter.
+ */
+export async function playLessonTo(
+  session: LocalSession,
+  lesson: Lesson,
+  to: { readonly turn: number; readonly step: number },
+): Promise<{ readonly ok: boolean; readonly why: string }> {
+  const fail = (why: string): { ok: boolean; why: string } => ({ ok: false, why });
+  for (let t = 0; t <= to.turn && t < lesson.turns.length; t += 1) {
+    const turn = lesson.turns[t];
+    if (!turn) break;
+    const here = t === to.turn;
+    if (here && to.step === 0) break;
+    if (!(await session.sendAction({ action: 'draw' })).ok)
+      return fail(`turn ${String(t + 1)}: no draw`);
+    if (!(await session.sendAction({ action: 'beginCommand' })).ok)
+      return fail(`turn ${String(t + 1)}: no command stage`);
+    for (const step of here ? turn.steps.slice(0, to.step) : turn.steps) {
+      if (step.do === 'tell') continue;
+      const action = lessonAction(step, session.getView().game);
+      if (!action) return fail(`${step.id}: what it names is not in the body`);
+      const outcome = await session.sendAction(action);
+      if (!outcome.ok) return fail(`${step.id}: refused: ${outcome.error ?? ''}`);
+    }
+    if (!here && !(await session.sendAction({ action: 'endCommand' })).ok)
+      return fail(`turn ${String(t + 1)} would not end`);
+  }
+  return { ok: true, why: '' };
+}
+
 /** What a replay found. `ok` only when the whole lesson was played as it is written. */
 export interface LessonReplay {
   readonly ok: boolean;
