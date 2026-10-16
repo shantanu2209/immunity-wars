@@ -35,7 +35,7 @@ import { kitCardStyle } from '../kit/Surface';
 import { prefersReducedMotion } from '../kit/motion';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 
-import { cutBy, litBox, type Box } from './box';
+import { RING, RING_GAP, cutBy, dimPath, edgeBelow, litBox, ringBox, type Box } from './box';
 
 /** The dimming: dark enough that the lit thing is the bright thing, light enough to read through. */
 const DIM = 'rgba(4, 18, 22, 0.6)';
@@ -108,13 +108,6 @@ function press(el: HTMLElement): void {
   el.click();
 }
 
-const pane = (style: CSSProperties): CSSProperties => ({
-  position: 'fixed',
-  background: DIM,
-  pointerEvents: 'auto',
-  ...style,
-});
-
 export function Spotlight({
   beatId,
   text,
@@ -155,6 +148,8 @@ export function Spotlight({
   onLeave: () => void;
 }): ReactElement {
   const [box, setBox] = useState<Box | null>(null);
+  /** The ring, drawn tight round the control and its lip, and the corner it takes (`box.ts`). */
+  const [ringAt, setRingAt] = useState<{ box: Box; radius: number } | null>(null);
   const [name, setName] = useState('');
   /** Which stop is lit, and which was lit first in this beat: a later one says its few words. */
   const [litStop, setLitStop] = useState('');
@@ -162,7 +157,7 @@ export function Spotlight({
   /** What is lit is on the board: the card then keeps off the board where it can. */
   const [onBoard, setOnBoard] = useState(false);
   const lit = useRef<HTMLElement | null>(null);
-  const ring = useRef<HTMLButtonElement | null>(null);
+  const ring = useRef<HTMLDivElement | null>(null);
   const key = stops.join('|');
 
   // Where the lit control is, read every frame while the guide is up (see the header).
@@ -175,6 +170,7 @@ export function Spotlight({
     let brought: HTMLElement | null = null;
     let clippers: Clipper[] = [];
     let stopNow: string | undefined;
+    let ringNow: { box: Box; radius: number } | null = null;
     const read = (): void => {
       const found = last || watch ? null : findLit(stops);
       const el = found?.el ?? null;
@@ -204,16 +200,35 @@ export function Spotlight({
       }
       if (el === null) clippers = [];
       lit.current = el;
-      const next = el
-        ? litBox(
-            el.getBoundingClientRect(),
-            clippers.map((c) => c.el.getBoundingClientRect()),
-            { width: window.innerWidth, height: window.innerHeight },
-          )
-        : null;
-      if (now === undefined || !same(now, next)) {
+      const own = el ? el.getBoundingClientRect() : null;
+      const clipRects = clippers.map((c) => c.el.getBoundingClientRect());
+      const next =
+        el && own
+          ? litBox(own, clipRects, { width: window.innerWidth, height: window.innerHeight })
+          : null;
+      let tight: { box: Box; radius: number } | null = null;
+      if (el && own) {
+        const cs = getComputedStyle(el);
+        const corner = cs.borderTopLeftRadius;
+        // A piece on the board is round, whatever its box says; anything else takes its own corner.
+        const radius =
+          corner.endsWith('%') || el.closest('[data-clay-board]') !== null
+            ? Math.min(own.width, own.height) / 2
+            : parseFloat(corner) || 0;
+        tight = {
+          box: ringBox(own, clipRects, edgeBelow(cs.boxShadow)),
+          radius: radius + RING_GAP,
+        };
+      }
+      if (
+        now === undefined ||
+        !same(now, next) ||
+        !same(ringNow?.box ?? null, tight?.box ?? null)
+      ) {
         now = next;
+        ringNow = tight;
         setBox(next);
+        setRingAt(tight);
         setName(el ? (el.getAttribute('aria-label') ?? el.textContent ?? '').trim() : '');
         setOnBoard(el !== null && el.closest('[data-clay-board]') !== null);
       }
@@ -231,16 +246,33 @@ export function Spotlight({
       : '';
   const said = thenText !== '' ? thenText : text;
 
-  // The ring breathes, so that the eye finds it; not on a phone that asks for less motion.
+  // The ring breathes, so that the eye finds it; not on a phone that asks for less motion. It is a
+  // glow that grows out of the ring and fades, so the control looks lit, not set into the table.
   useEffect(() => {
     const el = ring.current;
     if (!el || prefersReducedMotion() || typeof el.animate !== 'function') return;
     const a = el.animate(
-      [{ boxShadow: `0 0 0 0 ${COLOUR.glow}` }, { boxShadow: `0 0 0 8px rgba(255, 224, 138, 0)` }],
+      [
+        {
+          boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}, 0 0 0 ${String(RING)}px rgba(255, 224, 138, 0.7)`,
+        },
+        {
+          boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}, 0 0 0 ${String(RING + 9)}px rgba(255, 224, 138, 0)`,
+        },
+      ],
       { duration: 1200, iterations: Infinity },
     );
     return (): void => a.cancel();
-  }, [box === null, beatId]);
+  }, [ringAt === null, beatId]);
+  // The dimming stops where the ring does: the hole is the ring's outer edge.
+  const hole: Box | null = ringAt
+    ? {
+        left: ringAt.box.left - RING,
+        top: ringAt.box.top - RING,
+        width: ringAt.box.width + RING * 2,
+        height: ringAt.box.height + RING * 2,
+      }
+    : null;
 
   const W = typeof window === 'undefined' ? 0 : window.innerWidth;
   const H = typeof window === 'undefined' ? 0 : window.innerHeight;
@@ -273,28 +305,42 @@ export function Spotlight({
       data-guide-lit={box ? '1' : '0'}
       style={{ position: 'fixed', inset: 0, zIndex: Z, pointerEvents: 'none' }}
     >
-      {box ? (
+      {watch ? null : (
         <>
-          <div style={pane({ left: 0, top: 0, width: W, height: box.top })} />
+          {/* Every touch outside the light is swallowed. The light's own button lies over this. */}
+          <div data-guide-block="" style={{ position: 'fixed', inset: 0, pointerEvents: 'auto' }} />
+          <svg
+            aria-hidden="true"
+            width={W}
+            height={H}
+            style={{ position: 'fixed', left: 0, top: 0, pointerEvents: 'none' }}
+          >
+            <path
+              fill={DIM}
+              fillRule="evenodd"
+              d={dimPath(W, H, hole && ringAt ? [{ box: hole, radius: ringAt.radius + RING }] : [])}
+            />
+          </svg>
+        </>
+      )}
+      {box && ringAt ? (
+        <>
           <div
-            style={pane({
-              left: 0,
-              top: box.top + box.height,
-              width: W,
-              height: Math.max(0, H - box.top - box.height),
-            })}
-          />
-          <div style={pane({ left: 0, top: box.top, width: box.left, height: box.height })} />
-          <div
-            style={pane({
-              left: box.left + box.width,
-              top: box.top,
-              width: Math.max(0, W - box.left - box.width),
-              height: box.height,
-            })}
+            ref={ring}
+            data-guide-ring=""
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              left: ringAt.box.left,
+              top: ringAt.box.top,
+              width: ringAt.box.width,
+              height: ringAt.box.height,
+              borderRadius: ringAt.radius,
+              boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}`,
+              pointerEvents: 'none',
+            }}
           />
           <button
-            ref={ring}
             type="button"
             data-guide-press=""
             aria-label={name || text}
@@ -303,6 +349,8 @@ export function Spotlight({
               if (pressable && lit.current) press(lit.current);
             }}
             style={{
+              // The finger's target: the control, grown to a finger's size. It draws nothing; the
+              // ring above is what is seen.
               position: 'fixed',
               left: box.left,
               top: box.top,
@@ -311,16 +359,14 @@ export function Spotlight({
               boxSizing: 'border-box',
               padding: 0,
               background: 'transparent',
-              border: `3px solid ${COLOUR.glow}`,
+              border: 0,
               borderRadius: RADIUS.control,
               pointerEvents: 'auto',
               cursor: pressable ? 'pointer' : 'default',
             }}
           />
         </>
-      ) : watch ? null : (
-        <div style={pane({ inset: 0 })} />
-      )}
+      ) : null}
       <div
         data-guide-card=""
         role="note"

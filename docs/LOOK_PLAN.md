@@ -2632,3 +2632,69 @@ are seen, and is not listed as having divided.
   `spread-plays-only-what-did-something`, `spread-story-sees-what-a-player-sees`,
   `spread-why-is-the-engines`.
 - **With this, step 3 is built.**
+
+## 29. Ruled 16 October 2026: chapters to choose, what is talked about lit, and the layout's symmetry
+
+**Twelve of the closed test's fourteen days had passed.** Having played the lesson, Shantanu asked
+for eight things:
+
+> *"1. Good that we have split the tutorial into chapters. 2. Each chapter should have a clickable
+> button, so clicking on learn to play takes to another screen that has 7 buttons - one for each
+> chapter. Initally only chapter one is playable the rest are not clickable and are have a duller
+> colour or something to differentiate. As chapter get complete their button turns green and they
+> are replayable. The new chapter which is unlocked but not completed yet (either not started or
+> started but not finished) stays orange and can be continued. 3. This will of course need some
+> changes because starting conditions of each chapter must be fixed not dependent on what happned
+> in the previous chapter. [...] 4. [...] when a button like 'plan your turn' is highlighted with
+> the gold line around it [...] it appears as if it sunken [...] 5. A lot of the things being
+> talked about in the tutorial are in the background and not highlighted. [...] whatever is bring
+> talked about - the body, whooping cough etc. if it is visible on screen it should not be in the
+> background and greeyed but cleaarly visible an highlighted. 6. Can you please give me all the
+> text shown in the tutorial by chapter and step in an excel [...] 7. [...] just say step a of b
+> [...] 8. In the layout, swap positions of burger and turn counter on the top bar. Move chat to
+> bottom right and AP to bottom left of the playable area [...] clicking it should open it like
+> drawer and show the AP pips [...]"*
+
+**Found first, and fixed before any of it:** the nightly self-test had failed every night since 6
+October on one control of the guided game, gone inert with the chapters' change
+([`FINDINGS.md`](FINDINGS.md) #131). Its own pull request.
+
+### Built: the layout (8) and the ring (4)
+
+| Where | Was | Is |
+|---|---|---|
+| The top bar | The turn and the Action Points, what is in force, the messages and the menu | **The menu at its start, what is in force between, the turn at its end** |
+| The play area's bottom left | Nothing | **The Action Points, as a number** (*AP 6*). Tapping it opens their sheet, which now shows them as pips first, on the table's dark ground, then what makes them |
+| The play area's bottom right | Nothing | **The messages**, and in a game played together the table beside them |
+| A passing message (a refused action) | Over the play area's foot | Just above the two corners' controls, not over them |
+
+- **What the top bar's old rule did, and why it is gone.** The pips gave way to a number whenever
+  a banner was up, because beside six pips the banner had 36 px (the Gate 1 audit, 1 October).
+  With the Action Points out of the bar the banner has all the room between the menu and the turn,
+  so that rule and its control (`frame-banner-has-room`) are retired, and
+  `top-bar-menu-at-start-turn-at-end` holds the new order.
+- **Two sentences moved with the Action Points:** the lesson's first (*Down here at the bottom left
+  are your Action Points*) and How to play's (*Tap the AP figure at the bottom left of the board*).
+
+**The ring no longer looks sunken.** Seen in screenshots before it was changed:
+
+- The ring stood at the edge of the room left round a control, with a strip of the dark table
+  between it and the button: a dark band round a button reads as the recess it sits in.
+- A kit button stands on a lip of itself, drawn as a shadow below its own box, and the ring and
+  the dimming both cut across it.
+- So the ring is drawn a pixel from the control, its lip counted (read from the button's own
+  shadow), and the dimming stops at the ring's outer edge. The dimming is one shape now, its hole
+  in the ring's own rounded shape: four panes round a rectangle had left light squares at the
+  corners of a round control. A piece on the board gets a round ring. The finger's target is as
+  large as before.
+- **Found by its own screenshot, before anything was committed:** the first build drew no ring and
+  dimmed nothing. A browser's rectangle keeps its edges on its prototype, and spreading it gives an
+  empty object; the unit test had used plain objects and passed. It now tests with a rectangle
+  shaped as the browser's, and control `guide-ring-reads-a-measured-rectangle` puts the spread
+  back and sees it fail.
+
+- **Unruled, and his to overrule:** the AP button's look (the dark pill the bar had), the ring's
+  breathing glow, and the table's button standing beside the messages.
+- **Controls, each fired:** `top-bar-menu-at-start-turn-at-end`, `guide-ring-takes-in-the-edge`,
+  `guide-ring-reads-a-measured-rectangle`, `guide-hole-is-the-rings-shape`; re-aimed at the sheet
+  and fired, `frame-pips-show-what-is-left`.

@@ -77,3 +77,88 @@ export function cutBy(own: Rect, clip: Rect): boolean {
     own.right > clip.right + 0.5
   );
 }
+
+/**
+ * THE RING IS DRAWN TIGHT ROUND THE CONTROL (16 October 2026). Shantanu, playing the lesson: a
+ * button ringed for the player to press *"appears as if sunken"*. Two things made it so. The ring
+ * stood at the edge of the room left round the control, with a strip of the dark table between it
+ * and the button, which reads as a recess the button sits in; and a kit button stands on a lip of
+ * itself drawn below its own box (a shadow, `kit/Button.tsx`), which that room did not count, so
+ * the ring and the dimming cut across it. So the ring is drawn this close to what can be seen of the
+ * control and its lip, and the dimming stops where the ring does. The finger's target is still the
+ * larger box above (`litBox`).
+ */
+export const RING_GAP = 1;
+/** The ring's own thickness: it is drawn outside the box `ringBox` gives. */
+export const RING = 3;
+
+/**
+ * How far below its own box a control's hard edge reaches: the largest offset of a shadow that is
+ * not inset and not blurred, which is how the kit draws a button's lip. A soft, blurred shadow is
+ * the button's cast on the table, not the button, and is left out. Reads a style as written
+ * (`0 6px 0 #c2513a`) or as the browser reports it (`rgb(194, 81, 58) 0px 6px 0px 0px`).
+ */
+export function edgeBelow(boxShadow: string): number {
+  if (boxShadow === '' || boxShadow === 'none') return 0;
+  let below = 0;
+  for (const one of boxShadow.split(/,(?![^(]*\))/)) {
+    if (/\binset\b/.test(one)) continue;
+    const lengths = one
+      .replace(/rgba?\([^)]*\)|hsla?\([^)]*\)|#[0-9a-f]+/gi, ' ')
+      .trim()
+      .split(/\s+/)
+      .map((x) => parseFloat(x))
+      .filter((x) => !Number.isNaN(x));
+    const [, y = 0, blur = 0, spread = 0] = lengths;
+    if (blur === 0) below = Math.max(below, y + spread);
+  }
+  return below;
+}
+
+/** Where the ring is drawn: round what can be seen of the control, its lip counted, a hair away. */
+export function ringBox(own: Rect, clips: readonly Rect[], lip = 0): Box {
+  // Read edge by edge: a browser's rectangle keeps them on its prototype, and spreading it gives an
+  // empty object (the first build of this did, and drew its ring at no place at all).
+  const withLip = {
+    left: own.left,
+    top: own.top,
+    right: own.right,
+    bottom: own.bottom + Math.max(0, lip),
+  };
+  const r = seenPart(withLip, clips) ?? withLip;
+  return {
+    left: r.left - RING_GAP,
+    top: r.top - RING_GAP,
+    width: r.right - r.left + RING_GAP * 2,
+    height: r.bottom - r.top + RING_GAP * 2,
+  };
+}
+
+/** A place the dimming leaves clear, with the corner the ring round it takes. */
+export interface Hole {
+  box: Box;
+  radius: number;
+}
+
+/**
+ * THE DIMMING, AS ONE SHAPE: the whole screen, with each hole cut out in the ring's own rounded
+ * shape. Four panes round a rectangle left the corners of a round control clear, as light squares
+ * round a round ring (16 October 2026). Drawn even-odd, so a hole is a hole.
+ */
+export function dimPath(width: number, height: number, holes: readonly Hole[]): string {
+  let d = `M0 0H${String(width)}V${String(height)}H0Z`;
+  for (const { box: b, radius } of holes) {
+    const r = Math.max(0, Math.min(radius, b.width / 2, b.height / 2));
+    const x = b.left;
+    const y = b.top;
+    const x2 = x + b.width;
+    const y2 = y + b.height;
+    const arc = (tx: number, ty: number): string =>
+      `A${String(r)} ${String(r)} 0 0 1 ${String(tx)} ${String(ty)}`;
+    d +=
+      `M${String(x + r)} ${String(y)}H${String(x2 - r)}${arc(x2, y + r)}` +
+      `V${String(y2 - r)}${arc(x2 - r, y2)}H${String(x + r)}${arc(x, y2 - r)}` +
+      `V${String(y + r)}${arc(x + r, y)}Z`;
+  }
+  return d;
+}
