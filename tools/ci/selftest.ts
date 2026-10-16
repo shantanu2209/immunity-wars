@@ -1541,6 +1541,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'WHAT IS SHOWN CAN BE PRESSED',
   },
   {
+    id: 'guide-walk-no-ring-left-standing',
+    why: 'Found 17 October 2026, on the lesson’s last card: a ring drawn round what one card talks about stayed on the page when the next card talked about nothing, round where Malaria had been. Each card began its count of what is drawn at nothing, so a change to nothing was never drawn. With the count begun at nothing again, the walk must FAIL saying a ring is left on what no card talks about.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) =>
+      t.replace(
+        '    let shownNow: string | undefined;\n',
+        "    let shownNow: string | undefined = '';\n",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'A RING IS LEFT ON WHAT NO CARD TALKS ABOUT',
+  },
+  {
     id: 'guide-walk-names-a-stuck-beat',
     why: 'Stage L6: the guided game is walked in the built app by pressing only what the guide lights. A beat whose control is not on the page lights nothing, and a player would be left looking at a sentence with nothing to tap. With the hook for the Neutrophil’s NET misnamed, the walk must FAIL naming that beat and saying nothing is lit, and not run on to a time limit.',
     file: 'packages/ui/src/guide/model.ts',

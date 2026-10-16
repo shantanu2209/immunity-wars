@@ -21,6 +21,8 @@
  *  - every card that talks about something finds it on the page to show (16 October 2026): the
  *    new cards, the body, the disease on the board; and a finger on what is shown lands on the
  *    guide, which swallows it, or on the lit control's own button, never on the thing itself;
+ *  - no card draws a ring round more than it shows: a ring left from the card before is a ring
+ *    round what nobody is talking about, and it stood on the last card once;
  *  - at every beat that asks for a tap, something on the page is lit and pressing it moves the
  *    lesson on. A beat that stays, with nothing lit or with a light that does nothing, is named;
  *  - when the lesson ends the guide is gone and the game stands at the turn after the lesson's last;
@@ -118,6 +120,8 @@ interface Look {
   count: string;
   shows: number;
   showing: number;
+  /** The rings drawn round what is shown. */
+  drawn: number;
   /** What a finger at the middle of a shown thing would press, when it is not the guide. */
   pressedThrough: string;
   lit: boolean;
@@ -135,6 +139,7 @@ const LOOK = `(() => {
     count: (document.querySelector('[data-guide-count]')?.textContent ?? '').trim(),
     shows: g ? Number(g.getAttribute('data-guide-shows')) : 0,
     showing: g ? Number(g.getAttribute('data-guide-showing')) : 0,
+    drawn: document.querySelectorAll('[data-guide-shown]').length,
     pressedThrough: [...document.querySelectorAll('[data-guide-shown]')]
       .map((r) => {
         const b = r.getBoundingClientRect();
@@ -211,6 +216,8 @@ try {
   const showing = new Map<string, number>();
   /** A shown thing a finger would have pressed, with the card it was shown by. */
   let through = '';
+  /** A card that drew more rings than it shows things. */
+  let stale = '';
   let handedTurn = '';
   let guideGone = false;
   try {
@@ -271,6 +278,9 @@ try {
         showing.set(s.beat, Math.max(showing.get(s.beat) ?? 0, s.showing));
       if (s.pressedThrough !== '' && through === '')
         through = `${String(s.beat)}: ${s.pressedThrough}`;
+      if (s.beat !== null && s.drawn > s.showing && stale === '') {
+        stale = `${s.beat}, ${String(s.drawn)} drawn and ${String(s.showing)} shown`;
+      }
       if (stayed > PATIENCE) {
         refuse(
           s.beat === null
@@ -325,6 +335,7 @@ try {
     );
   }
   if (through !== '') refuse(`WHAT IS SHOWN CAN BE PRESSED: at ${through}`);
+  if (stale !== '') refuse(`A RING IS LEFT ON WHAT NO CARD TALKS ABOUT: at ${stale}`);
   console.log(
     `GUIDE WALK: ${String(showing.size)} cards talk about something, each found it on the page, and none of it can be pressed`,
   );

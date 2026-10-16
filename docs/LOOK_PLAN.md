@@ -2806,6 +2806,14 @@ ring that breathes, so the two are told apart.
   reached in one pass, by its dice; the other three measured it clean.
 - **Unruled, and his to overrule:** what each card shows (the defaults and the 16 steps named);
   that a shown thing has a ring at all, its colour, and that it does not breathe.
+- **Found after the pull request was opened, and fixed in it, 17 October:** a ring drawn round what
+  one card talks about stayed on the page when the next card talked about nothing. It was seen on
+  the lesson's last card, round the place Malaria had been after Malaria was neutralised. Each card
+  began its count of what is drawn at "nothing", so a change to nothing was never drawn; it begins
+  at "not yet looked" now, as the lit ring's does. The walk had counted what each card found and not
+  what was drawn, so it passed; it now also requires that no card draws more rings than it shows.
+  The audit above was run before this fix; the walk after it is clean, 82 beats of 82.
 - **Controls, each fired:** `lesson-show-is-in-the-game`, `guide-shows-what-a-step-acts-on`,
-  `guide-walk-finds-what-is-shown`, `guide-walk-shown-is-not-pressable`; re-aimed at the mask's
-  holes and fired, `guide-hole-is-the-rings-shape`.
+  `guide-walk-finds-what-is-shown`, `guide-walk-shown-is-not-pressable`,
+  `guide-walk-no-ring-left-standing`; re-aimed at the mask's holes and fired,
+  `guide-hole-is-the-rings-shape`.

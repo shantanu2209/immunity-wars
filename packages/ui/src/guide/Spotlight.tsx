@@ -223,7 +223,10 @@ export function Spotlight({
     let clippers: Clipper[] = [];
     let stopNow: string | undefined;
     let ringNow: { box: Box; radius: number } | null = null;
-    let shownNow = '';
+    // Unknown until the first look, for the same reason: a beat that shows nothing must take down
+    // what the last beat showed. Started at "nothing", it left Malaria's ring standing on the
+    // lesson's last card, after Malaria was gone (16 October 2026).
+    let shownNow: string | undefined;
     let foundNow = -1;
     /** What cuts each shown thing off, found once for it. */
     const shownClips = new Map<HTMLElement, Clipper[]>();
