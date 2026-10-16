@@ -2746,6 +2746,18 @@ cards, by chapter 16, 13, 8, 16, 6, 12 and 11.
 | `pnpm guide:walk --build`, at 360 by 641 | The chapters on a new phone: the first to play, the six others locked and not pressable. 82 beats of 82 in the lesson's order; every card's count as the walk's own list of the lesson says it should be, from Step 1 at each chapter to Step 16 of 16, 13 of 13, 8 of 8, 16 of 16, 6 of 6, 12 of 12 and 11 of 11; handed over at turn 8 of 15; no error |
 | By hand, headless, on the development build | A locked chapter pressed: nothing. Chapter 1 to its end card (*Step 16 of 16*), *Stop for now*: back at the chapters, the first mint and the second coral, and kept as one done. Back: the title. Settings' row: the same chapters. Chapter 2: begins with what it is about, *Step 1 of 13*. Chapter 1 again: begins at its first card. With a game saved: the title offers Continue, and the chapters say what the lesson does to it. No error |
 
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC), its second run: 91 screens in each of the four passes (93 in one),
+  three of them the chapters (on a new phone, with the first done, and from Settings with a game
+  saved), each measured in every pass; every check at zero over 1,145 controls and 2,560 text runs;
+  40 close paths, none wrong, the new one from Settings among them; offline met. A row of actions
+  with several targets was not reached in one pass, by its dice, and the touch count carries it as
+  its one line; the other three measured it clean.
+- **Its first run lost its place, and the fault was the audit's.** It pressed Settings' guided game
+  row and then *Not now*, the confirmation that is gone; it was left on the chapters, and the walk
+  to the Result idled there, so the Result and the screens after it were not reached in any pass.
+  It was not a finding in the app: the step opens the chapters now, measures them, and closes back
+  to Settings, and the run above is on that.
 - **Unruled, and his to overrule:** the chapters' names and their lines (14 new sentences, written
   from what each chapter does, not read by him or Kartik); the words for the three states; the
   screen's lead; that a chapter is begun again from its start; that Learn to play stays on the
