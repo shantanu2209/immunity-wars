@@ -106,6 +106,7 @@ export { PauseSheet } from './panels/PauseSheet';
 export { UpdateDot, updatesComeFromTheStore } from './panels/UpdateNow';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
+export { ChaptersScreen } from './screens/ChaptersScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export {
   ANTIVENOM_AT_START,
@@ -189,14 +190,16 @@ export {
   chapterStart,
   guideBeat,
   holdsTheDraw,
+  lessonBeats,
   lessonOver,
-  progress as guideProgress,
   resumeAt,
   sameAction,
   stepAt,
+  stepCount,
   stopsFor,
   type GuideBeat,
   type GuideMove,
+  type LessonBeat,
   type GuidePos,
   type GuideStage,
 } from './guide/model';

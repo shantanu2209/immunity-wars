@@ -2705,3 +2705,53 @@ October on one control of the guided game, gone inert with the chapters' change
 - **Controls, each fired:** `top-bar-menu-at-start-turn-at-end`, `guide-ring-takes-in-the-edge`,
   `guide-ring-reads-a-measured-rectangle`, `guide-hole-is-the-rings-shape`; re-aimed at the sheet
   and fired, `frame-pips-show-what-is-left`.
+
+### Built: the chapters to choose (2 and 3), and Step a of b (7)
+
+**Learn to play opens the chapters:** a screen of seven buttons, one each, its name, a line on what
+it covers, and its state in words as well as colour.
+
+| A chapter | Drawn | Pressed |
+|---|---|---|
+| Done | Mint, the kit's colour for what is allowed: *Done: tap to play it again* | Played again, from its start |
+| The next, after the last one done | Coral, the screen's one main button: *Next: tap to play it* | Played, from its start |
+| After that | Flat, and duller: *Finish chapter 3 first* | Nothing: it cannot be pressed |
+
+- **What a chapter starts from was already fixed (3), and nothing had to change for it.** The
+  lesson is one game on its own dice, and only the lit control can be pressed, so the game at a
+  chapter's start is the same every time, whatever was done before. A chapter after the first is
+  reached by playing the ones before it again, unseen, on those dice; the guide's test holds, from
+  every chapter, that this is the very game a player who never stopped has there.
+- **"Can be continued" is begun again from its start.** A game on rails is not saved, so a chapter
+  left in the middle has nothing to come back to but its start.
+- **Learn to play stays on the title** once a game or the lesson has been finished, resting, so a
+  chapter done can be played again. On a phone that has never finished one it is the coral button,
+  unless a game is waiting.
+- **Leaving a chapter, or *Stop for now* at its end, goes back to the chapters,** where the next
+  one is now the coral one. Finishing the lesson marks the seventh done.
+- **Settings' *Play the guided game* opens the chapters,** and its confirmation is gone. When a game
+  is saved the chapters say what the lesson does to it: nothing while it is played, and when the
+  last chapter ends the lesson's game is the player's, and is saved in its place.
+- **Removed:** the title's *Continue the lesson, Chapter 2 of 7*, its two sentences and its control
+  (`title-says-the-lesson-continues`); Settings' four sentences of the confirmation.
+
+**Each card says *Step 3 of 9*,** the step of its chapter, where it said *Chapter 2 of 7: 3 of 9*.
+Every card the player reads is a step: each turn's new cards, its plan, each step of the lesson,
+End turn, the spread, a chapter's two cards, and the last word. The card that says a chapter is
+done is its last step, and the one that says what the next is about is the next one's first. 82
+cards, by chapter 16, 13, 8, 16, 6, 12 and 11.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, at 360 by 641 | The chapters on a new phone: the first to play, the six others locked and not pressable. 82 beats of 82 in the lesson's order; every card's count as the walk's own list of the lesson says it should be, from Step 1 at each chapter to Step 16 of 16, 13 of 13, 8 of 8, 16 of 16, 6 of 6, 12 of 12 and 11 of 11; handed over at turn 8 of 15; no error |
+| By hand, headless, on the development build | A locked chapter pressed: nothing. Chapter 1 to its end card (*Step 16 of 16*), *Stop for now*: back at the chapters, the first mint and the second coral, and kept as one done. Back: the title. Settings' row: the same chapters. Chapter 2: begins with what it is about, *Step 1 of 13*. Chapter 1 again: begins at its first card. With a game saved: the title offers Continue, and the chapters say what the lesson does to it. No error |
+
+- **Unruled, and his to overrule:** the chapters' names and their lines (14 new sentences, written
+  from what each chapter does, not read by him or Kartik); the words for the three states; the
+  screen's lead; that a chapter is begun again from its start; that Learn to play stays on the
+  title; that the sentence about a saved game is on the chapters and not a question; that every
+  card counts as a step.
+- **Controls, each fired:** `chapters-locked-cannot-be-pressed`, `chapters-next-follows-the-done`,
+  `chapters-say-what-the-lesson-does-to-a-save`, `guide-count-begins-again-at-a-chapter`,
+  `guide-walk-reads-the-count`, `title-keeps-the-guided-game`; re-aimed, because the code they
+  change was rewritten, and fired: `title-one-main-button`, `title-guided-game-leads-a-new-phone`.

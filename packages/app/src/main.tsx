@@ -38,6 +38,7 @@ import {
   LobbyScreen,
   NavHost,
   logLinesOf,
+  ChaptersScreen,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -145,6 +146,8 @@ applySound(initialSettings.sound, kitAudio);
 type Screen =
   | { name: 'title' }
   | { name: 'difficulty' }
+  /** The guided game's chapters (ruled 16 October 2026): one button each, done, next, or locked. */
+  | { name: 'chapters' }
   | { name: 'play' }
   /** `together`: the game was played together, and the Result offers another game together. */
   | { name: 'result'; finalView: ViewState; difficulty: string; together: boolean }
@@ -384,17 +387,21 @@ function App({
   const endGuide = (how: 'finished' | 'left' | 'parted'): void => {
     setGuided(false);
     if (how === 'left') {
-      // Nothing of a lesson is saved, so leaving it is dropping it.
+      // Nothing of a lesson is saved, so leaving it is dropping it, and the player is back among
+      // its chapters, where they chose it: the one after the last done is the next one.
       quitToTitle();
+      nav.push({ name: 'chapters' });
       return;
     }
     // Finished, or the game went its own way: either way it is the player's own from here.
     const s = sessionRef.current;
     if (s instanceof LocalSession) void s.endRails().then(refreshSave);
     if (how === 'finished') {
-      // The lesson has been played to its end on this phone: the title offers a new game first.
+      // The lesson has been played to its end on this phone: the title offers a new game first,
+      // and the last chapter is done. It has no card of its own between chapters to say so.
       writePlayed(prefStore);
       setPlayed(true);
+      onChapter(LESSON.chapters.length);
     }
   };
 
@@ -642,8 +649,7 @@ function App({
       // THE GUIDED GAME, to be played again: not from inside a game.
       guide={{
         block: overPlay ? 'inPlay' : null,
-        replacesSave: save !== null,
-        onStart: () => startGuided(0),
+        onOpen: () => nav.push({ name: 'chapters' }),
       }}
       onDeleteSave={deleteSave}
     />
@@ -703,12 +709,8 @@ function App({
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
-            onLearn={played ? null : () => startGuided(chaptersDone)}
-            learnAt={
-              !played && chaptersDone > 0 && chaptersDone < LESSON.chapters.length
-                ? { chapter: chaptersDone + 1, of: LESSON.chapters.length }
-                : null
-            }
+            onLearn={() => nav.push({ name: 'chapters' })}
+            learnFirst={!played}
             onTogether={openTogether}
             rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
             onRejoin={openRejoin}
@@ -718,6 +720,17 @@ function App({
             onUpdate={update}
           />
         </>
+      );
+    }
+
+    if (screen.name === 'chapters') {
+      return (
+        <ChaptersScreen
+          chapters={LESSON.chapters}
+          done={chaptersDone}
+          replacesSave={save !== null}
+          onPlay={startGuided}
+        />
       );
     }
 

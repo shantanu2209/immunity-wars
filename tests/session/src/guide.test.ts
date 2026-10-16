@@ -20,6 +20,12 @@
  * playing the lesson again on its dice (`playLessonTo`): from every chapter, the rest of the lesson
  * is played here to its end, so a place that the replay does not reach exactly is a failure.
  * Control: pnpm ci:selftest lesson-resumes-at-every-chapter.
+ *
+ * STEP A OF B (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): every card the player reads says
+ * which step of its chapter it is, counted from 1 again at each chapter. The cards are listed by
+ * `lessonBeats`, and held here to the walk through the engine; `pnpm guide:walk` holds the whole
+ * list, cards, plans and spreads too, to the built app.
+ * Control: pnpm ci:selftest guide-count-begins-again-at-a-chapter.
  */
 import { LESSON, UI_I18N_EN } from '@immunity-wars/content';
 import { LocalSession, lessonAction, playLessonTo, seededDice } from '@immunity-wars/session';
@@ -32,9 +38,11 @@ import {
   chapterStart,
   guideBeat,
   holdsTheDraw,
+  lessonBeats,
   lessonOver,
   resumeAt,
   sameAction,
+  stepCount,
   stopsFor,
   t,
   type GuidePos,
@@ -268,6 +276,51 @@ describe('the guide follows the lesson through the real engine', () => {
         { action: 'move', cell: 'tcell', zone: 'route', lane: 'blood', step: 2 },
       ),
     ).toBe(false);
+  });
+});
+
+describe('every card says which step of its chapter it is (16 October 2026)', () => {
+  const all = lessonBeats(LESSON);
+
+  it('lists the lesson’s steps and chapter cards in the order the walk through the engine meets them', async () => {
+    const session = newLesson();
+    const { beats } = await walk(session, GUIDE_START);
+    session.dispose();
+    const named = new Set(beats);
+    expect(all.map((b) => b.id).filter((id) => named.has(id))).toEqual(beats);
+    // And each turn's own cards between: the new cards, the plan, End turn, the spread.
+    expect(all.length).toBe(beats.length + LESSON.turns.length * 4 + 1);
+    expect(new Set(all.map((b) => b.id)).size, 'two cards of one name').toBe(all.length);
+  });
+
+  it('each chapter counts from 1 to its own last card, and the next begins at 1 again', () => {
+    for (let c = 0; c < LESSON.chapters.length; c += 1) {
+      const mine = all.filter((b) => b.chapter === c);
+      expect(mine.length, LESSON.chapters[c]?.id).toBeGreaterThan(0);
+      mine.forEach((b, i) => {
+        expect(
+          stepCount(LESSON, b.id),
+          `THE COUNT DOES NOT BEGIN AGAIN AT A CHAPTER: ${b.id}`,
+        ).toEqual({
+          n: i + 1,
+          of: mine.length,
+        });
+      });
+    }
+    expect(stepCount(LESSON, 'no.such.beat')).toBeNull();
+  });
+
+  it('a chapter’s card that says it is done is its last; the one about the next is the next’s first', () => {
+    for (let c = 1; c < LESSON.chapters.length; c += 1) {
+      const done = `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`;
+      const intro = `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`;
+      const d = stepCount(LESSON, done);
+      expect(d?.n, done).toBe(d?.of);
+      expect(stepCount(LESSON, intro)?.n, intro).toBe(1);
+    }
+    expect(stepCount(LESSON, all[0]?.id ?? '')?.n).toBe(1);
+    const end = stepCount(LESSON, 'end');
+    expect(end?.n, 'the last word is the last chapter’s last card').toBe(end?.of);
   });
 });
 

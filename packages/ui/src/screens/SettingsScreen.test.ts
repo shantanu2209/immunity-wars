@@ -5,8 +5,9 @@
  * place of a row that offered to show the first-game guidance again, which was taken off the
  * screen when that guidance was switched off (docs/FINDINGS.md #111) and left with it.
  *
- * Two things the row must say, because not saying them costs a player something: that it cannot
- * be started from inside a game, and, when a game is saved, that the lesson's end replaces it.
+ * The row must say that it cannot be started from inside a game: a button that does nothing and
+ * says nothing is a dead end. It opens the lesson's chapters (16 October 2026), and that screen says
+ * what finishing the lesson does to a saved game (`ChaptersScreen.test.ts`).
  * Control: pnpm ci:selftest settings-guide-row-says-what-it-costs.
  */
 import { createElement } from 'react';
@@ -17,7 +18,7 @@ import { t } from '../i18n';
 
 import { SettingsScreen } from './SettingsScreen';
 
-const settings = (block: 'inPlay' | null = null, replacesSave = false): string =>
+const settings = (block: 'inPlay' | null = null): string =>
   renderToStaticMarkup(
     createElement(SettingsScreen, {
       textSize: '100',
@@ -29,7 +30,7 @@ const settings = (block: 'inPlay' | null = null, replacesSave = false): string =
       onChoose: () => undefined,
       deleteSaveBlock: null,
       onDeleteSave: () => undefined,
-      guide: { block, replacesSave, onStart: () => undefined },
+      guide: { block, onOpen: () => undefined },
     }),
   );
 /** A row of the screen, as markup: from its hook to the next row's. */
@@ -54,11 +55,6 @@ describe('the Settings screen’s guided game row', () => {
       'THE GUIDED GAME’S ROW DOES NOT SAY WHY IT IS UNAVAILABLE',
     ).toContain(t('settings.guideInPlay'));
     expect(row(settings(null), 'guide')).not.toContain(t('settings.guideInPlay'));
-  });
-
-  it('the two confirmations say different things, and only one of them names the saved game', () => {
-    expect(t('settings.guideConfirmSave')).toContain('saved game');
-    expect(t('settings.guideConfirm')).not.toContain('saved game');
   });
 });
 

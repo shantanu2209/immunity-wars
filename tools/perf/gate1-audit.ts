@@ -964,12 +964,14 @@ async function zoom200Audit(page: Page, screen: string, results: ScreenResult[])
  * records every beat NOT REACHED, never clean.
  */
 const GUIDE_SCREENS = [
+  'guided game: its chapters, on a new phone',
   'guided game: the new cards',
   'guided game: planning',
   'guided game: a tile lit',
   'guided game: a row of actions lit',
   'guided game: a place on the board lit',
   'guided game: said, with its own Next',
+  'guided game: its chapters, the first done',
 ] as const;
 const GUIDE_LOOK = `(() => {
   const g = document.querySelector('[data-guide]');
@@ -1018,7 +1020,14 @@ async function walkGuide(
     await sleep(250);
     await step(page, screen, results);
   };
+  // Learn to play opens the chapters (16 October 2026); the first is the one to play.
+  let started = false;
   if (await clickSel(page, '[data-title="learn"]')) {
+    await sleep(400);
+    await measure(GUIDE_SCREENS[0]);
+    started = await clickSel(page, '[data-chapter-state="open"]');
+  }
+  if (started) {
     await sleep(700);
     // Longer than the play screen's half-second guard on a step that has just changed. It stops at
     // the beat after the first thing said, by which point every kind of beat has come: a walk that
@@ -1031,13 +1040,13 @@ async function walkGuide(
         await sleep(650);
         continue;
       }
-      if (s.beat !== null && s.beat.endsWith('.cards') && s.lit) await measure(GUIDE_SCREENS[0]);
+      if (s.beat !== null && s.beat.endsWith('.cards') && s.lit) await measure(GUIDE_SCREENS[1]);
       else if (s.beat !== null && s.beat.endsWith('.plan') && s.lit)
-        await measure(GUIDE_SCREENS[1]);
-      else if (s.lit && s.onTile) await measure(GUIDE_SCREENS[2]);
-      else if (s.lit && s.onRow) await measure(GUIDE_SCREENS[3]);
-      else if (s.lit && s.onBoard) await measure(GUIDE_SCREENS[4]);
-      else if (s.next) await measure(GUIDE_SCREENS[5]);
+        await measure(GUIDE_SCREENS[2]);
+      else if (s.lit && s.onTile) await measure(GUIDE_SCREENS[3]);
+      else if (s.lit && s.onRow) await measure(GUIDE_SCREENS[4]);
+      else if (s.lit && s.onBoard) await measure(GUIDE_SCREENS[5]);
+      else if (s.next) await measure(GUIDE_SCREENS[6]);
       if (s.next) await clickSel(page, '[data-guide-next]');
       else if (s.spread) {
         await page.evaluate(() =>
@@ -1048,8 +1057,9 @@ async function walkGuide(
       } else await clickSel(page, '[data-guide-press]');
       await sleep(650);
     }
-    // The way out, by the card's own control: back to the title, with nothing of the lesson kept.
-    // A spread has no way out on its card, so one that is playing is moved on first.
+    // The way out, by the card's own control: back to the chapters, with nothing of the lesson kept
+    // but the first chapter, done. A spread has no way out on its card, so one that is playing is
+    // moved on first.
     for (let i = 0; i < 12; i += 1) {
       if (await clickSel(page, '[data-guide-leave]')) break;
       await page.evaluate(() =>
@@ -1060,6 +1070,13 @@ async function walkGuide(
       await sleep(650);
     }
     await sleep(500);
+    // Back among the chapters, the first done and the second the one to play: measured, and then
+    // closed, back to the title.
+    if (await page.evaluate(() => document.querySelector('[data-screen="chapters"]') !== null)) {
+      await measure(GUIDE_SCREENS[7]);
+      await closeLevel(page);
+      await sleep(300);
+    }
   }
   for (const screen of GUIDE_SCREENS) {
     if (!done.has(screen)) {
@@ -1308,6 +1325,9 @@ async function walk(
   await page.evaluate(() => {
     try {
       localStorage.removeItem('immunity-wars.played');
+      // The lesson's chapters are consumed the same way (16 October 2026): the walk below finishes
+      // the first, and the next pass would find it done and the second the one to play.
+      localStorage.removeItem('immunity-wars.lesson');
     } catch {
       // A browser refusing storage is the app's own degradation; the walk carries on.
     }

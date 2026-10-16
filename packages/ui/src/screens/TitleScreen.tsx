@@ -63,7 +63,7 @@ export function TitleScreen({
   onContinue,
   onNewGame,
   onLearn = null,
-  learnAt = null,
+  learnFirst = false,
   onTogether,
   rejoin = null,
   onRejoin = () => undefined,
@@ -77,16 +77,15 @@ export function TitleScreen({
   onContinue: () => void;
   onNewGame: () => void;
   /**
-   * THE GUIDED GAME (stage L6, ruled 2 October 2026): offered on a phone that has never finished
-   * a game, and null on every other. While it is offered it is the thing the title is for, so it
-   * is the coral button, unless a game is waiting to be continued.
+   * THE GUIDED GAME (stage L6, ruled 2 October 2026): Learn to play, which opens its chapters (ruled
+   * 16 October 2026, `docs/LOOK_PLAN.md` §29). Always offered, so a chapter done can be played again.
    */
   onLearn?: (() => void) | null;
   /**
-   * THE CHAPTER A PLAYER COMES BACK TO (step 3, `docs/LOOK_PLAN.md` §28), when some are done: the
-   * guided game's button then says it continues the lesson, and at which chapter.
+   * On a phone that has never finished a game, the guided game is the thing the title is for, so it
+   * is the coral button, unless a game is waiting to be continued. On every other it rests.
    */
-  learnAt?: { chapter: number; of: number } | null;
+  learnFirst?: boolean;
   /** Play together (P3.7, ruled 25 September 2026): beside New game, on the Title. */
   onTogether: () => void;
   /**
@@ -205,27 +204,22 @@ export function TitleScreen({
         ) : null}
         {onLearn ? (
           <KitButton
-            kind={waiting ? 'rest' : 'main'}
+            kind={learnFirst && !waiting ? 'main' : 'rest'}
             onPress={onLearn}
             data-title="learn"
-            style={learnAt ? { ...STACK, flexWrap: 'wrap', columnGap: '0.5em', rowGap: 0 } : STACK}
+            style={STACK}
           >
             <ScreenIcon kind="learn" />
-            {learnAt ? t('title.learnOn') : t('title.learn')}
-            {learnAt ? (
-              <span style={{ flex: '1 0 100%', ...TYPE.body, fontWeight: 700 }}>
-                {t('title.learnAt', { chapter: learnAt.chapter, of: learnAt.of })}
-              </span>
-            ) : null}
+            {t('title.learn')}
           </KitButton>
         ) : null}
         <KitButton
-          kind={waiting || onLearn ? 'rest' : 'main'}
+          kind={waiting || learnFirst ? 'rest' : 'main'}
           onPress={onNewGame}
           data-title="new"
           style={STACK}
         >
-          {waiting || onLearn ? null : <ScreenIcon kind="play" />}
+          {waiting || learnFirst ? null : <ScreenIcon kind="play" />}
           {t('title.newGame')}
         </KitButton>
         <KitButton onPress={onTogether} data-title="together" style={STACK}>
