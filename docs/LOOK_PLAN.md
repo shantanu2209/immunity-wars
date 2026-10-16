@@ -2798,6 +2798,12 @@ ring that breathes, so the two are told apart.
 | `pnpm guide:walk` on the development build | 82 beats of 82 in order, the counts as before; 53 cards talk about something, each found it on the page, and a finger at the middle of each thing shown landed on the guide or on the lit control's button, never on the thing |
 | Screenshots, headless, at 360 by 641 | Turn 1's card of Whooping cough clear, with *Plan your turn* lit; the body clear in planning; the Monocyte and the bacterium on one step, both clear, the Monocyte's ring breathing; Hepatitis C on the blood route while the NK Cell is lit |
 
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), the nine of the
+  guided game among them, each clean in every pass; every check at zero over 1,152 controls and
+  2,559 text runs, the occlusion check among them, which the shown rings and the mask could have
+  set off; 40 close paths, none wrong; offline met. A row of actions with several targets was not
+  reached in one pass, by its dice; the other three measured it clean.
 - **Unruled, and his to overrule:** what each card shows (the defaults and the 16 steps named);
   that a shown thing has a ring at all, its colour, and that it does not breathe.
 - **Controls, each fired:** `lesson-show-is-in-the-game`, `guide-shows-what-a-step-acts-on`,
