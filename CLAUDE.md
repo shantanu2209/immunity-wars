@@ -63,10 +63,12 @@ through the session against the real engine, with its seed for dice, and `pnpm g
 seed when a change breaks it. Its dice are swapped in round each engine call and nowhere else
 (`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. **The light that leads the
 player is built** (`packages/ui/src/guide/`: `model.ts` says the one sentence and the one control
-for where the player is; `Spotlight.tsx` dims the rest and hands a press to the real control), with
-its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on a phone that has
-never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
-app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
+for where the player is, and what it talks about; `Spotlight.tsx` dims the rest, leaves what is
+talked about clear, and hands a press to the real control), with its sentences under `guide.` in
+the catalogue. Since 16 October 2026 the lesson is seven chapters to choose from: the title's
+*Learn to play* and Settings' *Play the guided game* open them
+(`packages/ui/src/screens/ChaptersScreen.tsx`; plan §29), and each card says its step of its
+chapter. `pnpm guide:walk` walks it in the built app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
 had no button (`docs/FINDINGS.md` #113). **What changes between the difficulties is
 said in a line of the lesson and in one table** (`packages/ui/src/screens/difficultyFacts.ts`,
 drawn by `DifferencesCard.tsx`), shown on the difficulty screen, on the result of a game on Easy
