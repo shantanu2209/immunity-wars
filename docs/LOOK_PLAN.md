@@ -2693,6 +2693,13 @@ October on one control of the guided game, gone inert with the chapters' change
   shaped as the browser's, and control `guide-ring-reads-a-measured-rectangle` puts the spread
   back and sees it fail.
 
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC): 89 screens in each of the four passes (91 in one); every check at
+  zero over 1,127 controls and 2,497 text runs; 39 close paths, none wrong; offline met, with a
+  turn played. **One screen was not reached in two passes:** a row of actions with several
+  targets, which those passes' dice did not deal in 14 turns, and which the touch-target count
+  carries as its one line, a screen not reached and not a finding. The other two passes measured
+  it clean, and its close path was not reached for the same reason.
 - **Unruled, and his to overrule:** the AP button's look (the dark pill the bar had), the ring's
   breathing glow, and the table's button standing beside the messages.
 - **Controls, each fired:** `top-bar-menu-at-start-turn-at-end`, `guide-ring-takes-in-the-edge`,
