@@ -2846,6 +2846,10 @@ keeping the card as it was and the sentence as it was, is one line to put back.
 | A game saved at Easy turn 1, chapters 1 to 6 done, chapter 7 played to its last card | The card offers *Leave the lesson* and *Play on*; leaving goes to the chapters, all seven done; the title still offers Continue, Easy turn 1, the same game |
 | `pnpm guide:walk`, pressing *Play on* | 82 beats of 82, handed over at turn 8 of 15 |
 
+- **The Gate 1 audit, alone and together, on this build** (17 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), nothing not
+  reached, the nine of the guided game clean in every pass; every check at zero over 1,149 controls
+  and 2,561 text runs; 40 close paths, none wrong; offline met.
 - **Not held by a standing check:** leaving at the last card. The walk presses *Play on*; the path
   was seen once, by hand.
 - **Checked against the engine before writing:** the Helper T-Cell does help the cells it stands
