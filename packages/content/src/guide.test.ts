@@ -15,8 +15,8 @@ import lessonJson from './guide/lesson.json';
 import { GuidePackS, guidePackSchema } from './schema.js';
 
 type Raw = Record<string, unknown>;
-type Turn = { arrive: string[]; steps: Raw[] };
-type Chapter = { id: string; from?: string };
+type Turn = { arrive: string[]; steps: Raw[]; endShow?: string[] };
+type Chapter = { id: string; from?: string; show?: string[] };
 const raw = (): { LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] } } =>
   JSON.parse(JSON.stringify(lessonJson)) as {
     LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] };
@@ -136,6 +136,39 @@ describe('the lesson file', () => {
         (l.chapters[2] as Chapter).id = (l.chapters[1] as Chapter).id;
       }),
     ).toThrow(/two chapters are named/);
+  });
+
+  it('rejects a card that shows what is not in the game when it is up (16 October 2026)', () => {
+    // A disease that has not arrived, a name that is nothing, a turn's End turn card and a
+    // chapter's card each held the same way; a cell is always there.
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['Candida'];
+      }),
+      'A CARD SHOWS WHAT IS NOT IN THE GAME',
+    ).toThrow(/shows \W*Candida\W*, which is no cell and has not arrived by turn 1/);
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['the bacterium'];
+      }),
+    ).toThrow(/shows \W*the bacterium\W*, which is no cell/);
+    expect(
+      corrupt((l) => {
+        (l.turns[0] as Turn).endShow = ['Influenza'];
+      }),
+    ).toThrow(/shows \W*Influenza\W*, which is no cell/);
+    // Chapter 4 begins a turn, so its card is said before that turn's arrivals.
+    expect(
+      corrupt((l) => {
+        (l.chapters[3] as Chapter).show = ['Endocarditis'];
+      }),
+    ).toThrow(/has not arrived before turn 4/);
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['macrophage', 'Whooping cough'];
+      }),
+      'a cell, and a disease that has come, are shown',
+    ).not.toThrow();
   });
 
   it('rejects a crisis the rules do not know, and one after the lesson has ended', () => {

@@ -269,6 +269,9 @@ function Piece({
       // An address for the headless drivers only (the Gate 1 audit opens the inspect sheet by
       // clicking an invader). Nothing shows it.
       data-invader={!leaving && t.kind === 'invader' ? t.label : undefined}
+      // The invaders it stands for, by the game's ids: how the guided game finds the piece its
+      // sentence is about (16 October 2026). Ids say nothing of what a hidden pathogen is.
+      data-invader-ids={!leaving && t.kind === 'invader' ? (t.ids ?? []).join(' ') : undefined}
       data-piece={leaving ? undefined : (t.piece ?? undefined)}
       data-coated={!leaving && t.coated === true ? '1' : undefined}
       data-hidden={leaving ? undefined : t.hiddenIn}

@@ -11,8 +11,8 @@ import {
   LIT_PAD,
   RING_GAP,
   cutBy,
-  dimPath,
   edgeBelow,
+  holeShape,
   litBox,
   ringBox,
   seenPart,
@@ -149,15 +149,13 @@ describe('the ring is drawn tight round the control, and its lip (16 October 202
   });
 });
 
-describe('the dimming is one shape, with each hole cut in its ring’s rounded shape', () => {
+describe('the dimming has a hole in the ring’s rounded shape for each thing lit or shown', () => {
   it('a hole is the ring’s rounded rectangle, and a round control’s hole is round', () => {
-    const d = dimPath(360, 641, [
-      { box: { left: 10, top: 600, width: 60, height: 30 }, radius: 999 },
-    ]);
-    // The screen, then the hole: two closed shapes, drawn even-odd.
-    expect(d.match(/Z/g)?.length).toBe(2);
+    const h = holeShape({ box: { left: 10, top: 600, width: 60, height: 30 }, radius: 999 });
+    expect(h).toMatchObject({ x: 10, y: 600, width: 60, height: 30 });
     // The corner is clamped to half the shorter side, so a pill's hole is a pill.
-    expect(d, 'THE HOLE IS NOT THE RING’S SHAPE').toContain('A15 15 0 0 1');
-    expect(dimPath(10, 10, [])).toBe('M0 0H10V10H0Z');
+    expect(h.rx, 'THE HOLE IS NOT THE RING’S SHAPE').toBe(15);
+    expect(holeShape({ box: { left: 0, top: 0, width: 40, height: 40 }, radius: 6 }).rx).toBe(6);
+    expect(holeShape({ box: { left: 0, top: 0, width: 40, height: 40 }, radius: -3 }).rx).toBe(0);
   });
 });

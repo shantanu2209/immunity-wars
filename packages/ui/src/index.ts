@@ -194,6 +194,8 @@ export {
   lessonOver,
   resumeAt,
   sameAction,
+  showHooks,
+  shownNames,
   stepAt,
   stepCount,
   stopsFor,

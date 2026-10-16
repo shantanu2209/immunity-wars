@@ -1715,6 +1715,7 @@ export function PlayScreen({
                   ...(x.params?.['action'] ? { action: t(x.params['action']) } : {}),
                 }),
           )}
+          shows={beat.shows}
           tell={beat.tell}
           last={beat.last}
           chapterEnd={beat.chapterEnd}

@@ -18,6 +18,9 @@
  *    each step by its name, its End turn and its spread, and then the last word;
  *  - every card says which step of its chapter it is, "Step 3 of 9", counted from the walk's own
  *    list of the lesson's beats and not from the guide's;
+ *  - every card that talks about something finds it on the page to show (16 October 2026): the
+ *    new cards, the body, the disease on the board; and a finger on what is shown lands on the
+ *    guide, which swallows it, or on the lit control's own button, never on the thing itself;
  *  - at every beat that asks for a tap, something on the page is lit and pressing it moves the
  *    lesson on. A beat that stays, with nothing lit or with a light that does nothing, is named;
  *  - when the lesson ends the guide is gone and the game stands at the turn after the lesson's last;
@@ -113,6 +116,10 @@ function expectedCounts(beats: readonly string[]): string[] {
 interface Look {
   beat: string | null;
   count: string;
+  shows: number;
+  showing: number;
+  /** What a finger at the middle of a shown thing would press, when it is not the guide. */
+  pressedThrough: string;
   lit: boolean;
   pressable: boolean;
   next: boolean;
@@ -126,6 +133,17 @@ const LOOK = `(() => {
   return {
     beat: g ? g.getAttribute('data-guide') : null,
     count: (document.querySelector('[data-guide-count]')?.textContent ?? '').trim(),
+    shows: g ? Number(g.getAttribute('data-guide-shows')) : 0,
+    showing: g ? Number(g.getAttribute('data-guide-showing')) : 0,
+    pressedThrough: [...document.querySelectorAll('[data-guide-shown]')]
+      .map((r) => {
+        const b = r.getBoundingClientRect();
+        const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+        if (!hit || hit.closest('[data-guide-block],[data-guide-press],[data-guide-card]')) return '';
+        return hit.tagName + (hit.getAttribute('data-invader') ? ' ' + hit.getAttribute('data-invader') : '');
+      })
+      .filter((x) => x !== '')
+      .join(', '),
     lit: g ? g.getAttribute('data-guide-lit') === '1' : false,
     pressable: p ? !p.disabled : false,
     next: document.querySelector('[data-guide-next]') !== null,
@@ -189,6 +207,10 @@ try {
   const errors: string[] = [];
   const seen: string[] = [];
   const counts: string[] = [];
+  /** Of each card that talks about something, the most of it the page was seen to show. */
+  const showing = new Map<string, number>();
+  /** A shown thing a finger would have pressed, with the card it was shown by. */
+  let through = '';
   let handedTurn = '';
   let guideGone = false;
   try {
@@ -245,6 +267,10 @@ try {
         seen.push(s.beat);
         counts.push(s.count);
       }
+      if (s.beat !== null && s.shows > 0)
+        showing.set(s.beat, Math.max(showing.get(s.beat) ?? 0, s.showing));
+      if (s.pressedThrough !== '' && through === '')
+        through = `${String(s.beat)}: ${s.pressedThrough}`;
       if (stayed > PATIENCE) {
         refuse(
           s.beat === null
@@ -291,6 +317,16 @@ try {
   const lasts = said.filter((_, i) => expected[i + 1]?.endsWith('.intro') ?? true);
   console.log(
     `GUIDE WALK: every card counted in its chapter; each chapter ends at ${lasts.join(', ')}`,
+  );
+  const unshown = [...showing].filter(([, n]) => n === 0).map(([b]) => b);
+  if (unshown.length > 0) {
+    refuse(
+      `THE CARD SHOWS NOTHING OF WHAT IT TALKS ABOUT: ${unshown.slice(0, 3).join(', ')}${unshown.length > 3 ? ` and ${String(unshown.length - 3)} more` : ''}`,
+    );
+  }
+  if (through !== '') refuse(`WHAT IS SHOWN CAN BE PRESSED: at ${through}`);
+  console.log(
+    `GUIDE WALK: ${String(showing.size)} cards talk about something, each found it on the page, and none of it can be pressed`,
   );
   if (!guideGone) refuse('the lesson’s last word was answered and the guide is still on the page');
   const wanted = `${String(LESSON.turns.length + 1)}/`;
