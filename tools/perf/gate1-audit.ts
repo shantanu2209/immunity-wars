@@ -463,6 +463,7 @@ const WHERE = `
     return 'help section: ' + (h ? (h.textContent || '').trim() : '');
   }
   if (q('[data-screen=settings]')) return 'settings';
+  if (q('[data-screen=chapters]')) return 'chapters';
   if (q('[data-screen=library]')) return 'library index';
   if (q('[data-screen=about]')) return 'about';
   if (q('[data-inspect-sheet]')) return 'inspect sheet';
@@ -1732,16 +1733,23 @@ async function walk(
       await sleep(150);
     }
     // THE GUIDED GAME'S ROW (stage L6): it took the place of the row that offered the first-game
-    // guidance again, and its confirmation is a screen. With a game saved, as here, the confirmation
-    // says that the lesson's end replaces it.
+    // guidance again. Since 16 October 2026 it opens the lesson's chapters, which say, with a game
+    // saved as here, that the lesson's end replaces it; closed, they go back to Settings.
     if (await clickSel(page, '[data-settings-row=guide] button:not([disabled])')) {
-      await sleep(200);
-      await step(page, 'settings, guided game confirm', results);
-      await click(page, 'Not now');
-      await sleep(150);
+      await sleep(300);
+      await step(page, 'settings, the guided game’s chapters, with a save', results);
+      await nest(page, nesting, 'Settings → the guided game’s chapters → close', 'settings');
     } else {
       results.push(
-        notReached('settings, guided game confirm', 'the guided game’s row cannot be pressed'),
+        notReached(
+          'settings, the guided game’s chapters, with a save',
+          'the guided game’s row cannot be pressed',
+        ),
+      );
+      nestNotReached(
+        nesting,
+        'Settings → the guided game’s chapters → close',
+        'the guided game’s row cannot be pressed',
       );
     }
     await closeLevel(page);
