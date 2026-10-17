@@ -366,6 +366,14 @@ export function Toast({ text }: { text: string }): ReactElement {
   );
 }
 
+/**
+ * UNDO IS HIDDEN, AND KEPT (ruled by Shantanu, 17 October 2026, `docs/LOOK_PLAN.md` §30): *"let's
+ * hide it beneath a switch in code"*. The button and the reasons it gives when it is flat are not
+ * drawn; the rule under it is untouched (the session's, the engine's, the room's), and nothing sends
+ * an undo. Set this to true and Undo is back as it was, with its tests.
+ */
+export const UNDO_SHOWN = false;
+
 export interface ActionsUndo {
   available: boolean;
   moves: number;
@@ -405,7 +413,7 @@ const TONE: Record<'hint' | 'muted' | 'memory' | 'alert', string> = {
 
 /**
  * THE MIDDLE IN COMMAND, AT REST: a card. The selected piece's line (its picture, and its name,
- * which opens its card; Undo on the right), then its actions two abreast (§14): the piece's own,
+ * which opens its card; Undo on the right, while `UNDO_SHOWN`), then its actions two abreast (§14): the piece's own,
  * Recall to bloodstream, What's here. With nothing selected the line prompts instead. When the
  * piece has nothing to press, the card says why, or what the board offers instead.
  *
@@ -427,6 +435,8 @@ export function ActionsView(props: {
   prompt: string | null;
   promptTone: 'hint' | 'muted' | 'memory' | 'alert';
   undo: ActionsUndo;
+  /** Whether the Undo is drawn: `UNDO_SHOWN`, unless a test says otherwise. */
+  undoShown?: boolean;
   inCommand: boolean;
   onUndo: () => void;
   rows: DockRow[];
@@ -442,6 +452,7 @@ export function ActionsView(props: {
   onSay: (text: string | null) => void;
 }): ReactElement {
   const { undo, piece } = props;
+  const undoShown = props.undoShown ?? UNDO_SHOWN;
   const undoReason =
     undo.reason === 'committed'
       ? t('undo.committed', { action: actionDisplayName(undo.committedBy ?? '') })
@@ -533,7 +544,7 @@ export function ActionsView(props: {
             {props.owner}
           </span>
         ) : null}
-        {props.inCommand ? (
+        {props.inCommand && undoShown ? (
           // Undo stays in place in command: live when a move can be undone, flat otherwise, and a
           // press on the flat one says why.
           <KitButton
