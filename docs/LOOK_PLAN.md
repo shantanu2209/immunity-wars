@@ -2885,3 +2885,11 @@ let's hide it beneath a switch in code and adjust audit step etc. record the rul
   the test fail.
 - **Seen, headless, at 360 by 641:** a game on Easy, the Monocyte in hand: its card has its name
   and its two actions, and no Undo; no error.
+- **The Gate 1 audit, alone and together, on this build** (17 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one); every check at
+  zero over 1,124 controls and 2,529 text runs; 40 close paths, none wrong; offline met. The screen
+  with Recall showing was measured in every pass, and the walk went on past the Recall in each.
+  **Not reached in one pass, the one at 200% page zoom:** its idle game was not lost within 14 turns,
+  so the Result, its two screens and a cell's card from the inspect sheet were not measured there,
+  and a row with several targets was not dealt in two passes. Each is the dice's, as the audit is
+  unseeded by ruling (§20), and each was measured clean in the other passes.
