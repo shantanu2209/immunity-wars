@@ -593,3 +593,27 @@ nothing yet (the iOS half of Capacitor's tool); the battery is run before the An
 merged, on everything that work adds.
 
 > ### The property, re-read 2 October 2026, with the Android shell: no open advisory is in a process that listens, because no advisory is open. The shell adds no process that listens: it is an app on a phone.
+
+## Added 17 October 2026 — one high advisory seen after the day's Dependabot merges, and pinned
+
+**What arrived.** GHSA-68fv-2mgg-jv7q, high: `source-map-js` before 1.2.2 can have its event loop
+held up by a crafted source map, through the offsets of an indexed map's sections. One path,
+sixteen ways round the workspace: `vitest` > `@vitest/coverage-v8` > `magicast` > `source-map-js`
+1.2.1. GitHub raised it on `main` at 06:15 UTC on 17 October, as the first of the day's five
+Dependabot pull requests (#164) merged; none of the five changed `source-map-js`.
+
+**Why it does not reach anything here.** It is read when coverage is measured, over our own
+source maps, in a one-shot run the maintainer starts. It is in no process that listens: not the
+relay, and not the app, which ships none of it.
+
+**Pinned all the same,** so that `pnpm audit` stays clean and the next advisory is not read past:
+one override in `pnpm-workspace.yaml`, `source-map-js` below 1.2.2 to 1.2.2, inside `magicast`'s
+own `^1.2.1` range.
+
+| Checked | Found |
+|---|---|
+| `pnpm audit` | No known vulnerabilities |
+| The lockfile | One version of `source-map-js` left, 1.2.2 |
+| Coverage, which is what reads it | Run by the toolchain battery on this pin with the day's updates (below) |
+
+> ### The property, re-read 17 October 2026: no open advisory is in a process that listens, because no advisory is open.
