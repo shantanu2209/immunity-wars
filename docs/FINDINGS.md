@@ -6309,3 +6309,25 @@ or not; its own header says so, and the corpus holds it. Toxins are in every gam
 - **Held by** `tests/session/src/spread-story.test.ts`, against spreads the real engine runs. Controls,
   each fired: `spread-story-says-only-what-happened`, `spread-plays-only-what-did-something`,
   `spread-story-sees-what-a-player-sees`.
+
+## 131. A control of the guided game went inert on 5 October, and the nightly said so for ten nights before anyone read it — 16 October 2026
+
+**Found by reading the nightly self-test,** which had failed every night from 6 October to 16
+October on one control, `guide-lets-go-when-the-game-parts`: its gate passed with the guide's
+check switched off.
+
+- **Why.** The test held the guide at the lesson's very start, on the premise written beside it:
+  *"The lesson's first step is to make antibodies."* On 5 October the chapters' change put a told
+  step first, the Action Points (`t1.ap`). A stray move during a told step parts the guide for that
+  reason, before the line the control switches off is reached, so the test passed either way.
+- **What it touched:** only the check. The guide itself let go as it should all along; that is
+  what the walk and the guide's other tests show.
+- **Why nothing earlier caught it.** Every push runs the check that each control's change still
+  changes its file, which it did. Only the full self-test, which runs every night, fires each
+  control, and the change that broke it was fired for its own new controls, not for this older one.
+  The nightly did its job the next morning; it was not read until 16 October, the next working
+  session.
+- **Fixed, in the check:** the test now finds the lesson's first step that is done, requires it to
+  be the making of antibodies, and strays from there. It also says separately that any action
+  during a told step parts the guide. The control fires again.
+- **The census:** in each of those nights' runs this was the only control that did not behave.
