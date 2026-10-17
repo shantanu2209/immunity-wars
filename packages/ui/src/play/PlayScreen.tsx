@@ -208,12 +208,13 @@ export function PlayScreen({
   /**
    * THE GUIDED GAME (stage L6, `guide/model.ts`): the lesson this game is, or null for every
    * other game. The screen leads the player through it one lit control at a time, and tells the
-   * shell when it is over: finished, left by the player, or parted from by the game. The shell
+   * shell when it is over: finished and played on, finished and not played on (`declined`), left
+   * by the player, or parted from by the game. The shell
    * made the game for the lesson and ends its rails; this screen holds neither.
    */
   guide?: {
     lesson: Lesson;
-    onEnd: (how: 'finished' | 'left' | 'parted') => void;
+    onEnd: (how: 'finished' | 'declined' | 'left' | 'parted') => void;
     /**
      * Where the player begins (step 3, `docs/LOOK_PLAN.md` §28): the lesson's start, or the start of
      * a chapter they are coming back to, which the shell has already played the game to.
@@ -1725,7 +1726,7 @@ export function PlayScreen({
             if (beat.last) guide.onEnd('finished');
             else moveGuide(afterTold(guide.lesson, guidePos));
           }}
-          onLeave={() => guide.onEnd('left')}
+          onLeave={() => guide.onEnd(beat.last ? 'declined' : 'left')}
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />

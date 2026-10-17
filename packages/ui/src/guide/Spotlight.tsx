@@ -506,12 +506,14 @@ export function Spotlight({
           >
             {count}
           </span>
-          {last || watch ? null : (
+          {watch ? null : (
             // A way out, always there and never loud: a quiet word, and still a full touch target.
-            // At a chapter's end it is the choice to stop for now, and the chapter is kept.
+            // At a chapter's end it is the choice to stop for now, and the chapter is kept. On the
+            // last word it is the choice not to play the lesson's game on (16 October 2026): the
+            // lesson is done either way, and a game saved before it is kept.
             <button
               type="button"
-              data-guide-leave={chapterEnd ? 'stop' : ''}
+              data-guide-leave={chapterEnd ? 'stop' : last ? 'end' : ''}
               onClick={onLeave}
               style={{
                 minHeight: TOUCH.min,

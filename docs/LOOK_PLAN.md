@@ -2817,3 +2817,42 @@ ring that breathes, so the two are told apart.
   `guide-walk-finds-what-is-shown`, `guide-walk-shown-is-not-pressable`,
   `guide-walk-no-ring-left-standing`; re-aimed at the mask's holes and fired,
   `guide-hole-is-the-rings-shape`.
+
+### His words for the lesson, 17 October 2026 (6)
+
+**He sent the spreadsheet back** (§29, item 6) with 28 sentences rewritten and one note. They are
+in the catalogue by key, as he wrote them, but for nine, each changed for one of four reasons and
+each told to him; and the line his note was about is written new:
+
+| Why | Where | His | In the game |
+|---|---|---|---|
+| A typo | Chapter 3's run, chapter 1's line, chapter 3's line, the chapter screen's lead | *upto*; *engulf if*; *with NET*; *: Seven* | *up to*; *engulf it*; *with its NET*; *: seven* |
+| Two sentences joined by a comma | Turn 2's End turn | *are lost, in a regular game you should* | *are lost: in a regular game, always try* |
+| **Not what the game does** | The antitoxin | *Producing them costs 2 Action Points* | *Using them costs 2*: a Produce costs 1; neutralising a toxin costs 2 |
+| **Not what the game does** | Degranulate | *of it is next to an organ, the organ gets damaged too* | *if it is in an organ, that organ is damaged too*: the burn is where the fight is, in the organ (queue Q9) |
+| One word for one thing | What neglect does | *loses all its hit points* | *loses all its health*: hit points are what a pathogen has, and the sentence had said health |
+| **Not what the game does** | The chapters, with a game saved | *Your game is saved while you play* | *Your saved game is kept while you play*: the lesson is not saved while it is played |
+| His note: he could not tell what it meant | Chapter 2's line | *No idea what this line is trying to say* | *Hepatitis B and C hide inside your cells, where only the Killer T-Cell and the NK Cell can reach them. Then antibodies stop Influenza in the blood.* Not read by him |
+
+**One sentence was made true by changing the game.** He wrote that when the last chapter ends
+*"you have the option to finish the game. If you do, it takes the place of your saved game."* The
+lesson's last card offered only *Play on*, which saved its game at once over any saved before. It
+now offers *Leave the lesson* beside it: the lesson is done either way, every chapter is marked
+done, and leaving drops the lesson's game, so a game saved before it is kept. The alternative,
+keeping the card as it was and the sentence as it was, is one line to put back.
+
+| Seen, by hand, headless, on the development build | Found |
+|---|---|
+| A game saved at Easy turn 1, chapters 1 to 6 done, chapter 7 played to its last card | The card offers *Leave the lesson* and *Play on*; leaving goes to the chapters, all seven done; the title still offers Continue, Easy turn 1, the same game |
+| `pnpm guide:walk`, pressing *Play on* | 82 beats of 82, handed over at turn 8 of 15 |
+
+- **The Gate 1 audit, alone and together, on this build** (17 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), nothing not
+  reached, the nine of the guided game clean in every pass; every check at zero over 1,149 controls
+  and 2,561 text runs; 40 close paths, none wrong; offline met.
+- **Not held by a standing check:** leaving at the last card. The walk presses *Play on*; the path
+  was seen once, by hand.
+- **Checked against the engine before writing:** the Helper T-Cell does help the cells it stands
+  with (the B-Cell, the Killer T-Cell and the Eosinophil); the Eosinophil is spent for 4 turns; a
+  resident lives in each organ; antivenom costs 3 Action Points and Easy starts with 2 doses.
+- **Not read by him:** chapter 2's new line, and the ten changes above.

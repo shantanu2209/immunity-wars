@@ -384,8 +384,19 @@ function App({
     writeChaptersDone(prefStore, n);
     setChaptersDone((was) => Math.max(was, n));
   };
-  const endGuide = (how: 'finished' | 'left' | 'parted'): void => {
+  const endGuide = (how: 'finished' | 'declined' | 'left' | 'parted'): void => {
     setGuided(false);
+    if (how === 'declined') {
+      // THE LESSON DONE, AND ITS GAME NOT TAKEN ON (16 October 2026: "When the last chapter ends,
+      // you have the option to finish the game"). Every chapter is done; the lesson's game is
+      // dropped, as a lesson left is, so a game saved before it is kept.
+      writePlayed(prefStore);
+      setPlayed(true);
+      onChapter(LESSON.chapters.length);
+      quitToTitle();
+      nav.push({ name: 'chapters' });
+      return;
+    }
     if (how === 'left') {
       // Nothing of a lesson is saved, so leaving it is dropping it, and the player is back among
       // its chapters, where they chose it: the one after the last done is the next one.
