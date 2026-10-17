@@ -58,7 +58,8 @@ Root, Ticket to Ride and Through the Ages. What they share, turned into rules fo
    quiet. Root's digital edition is the model.
 6. **Legal moves glow; illegal ones are not offered.** Already the rule here; the new look makes it
    beautiful.
-7. **Undo is always one tap away.** Already built.
+7. **Undo is always one tap away.** Already built. *Overruled 17 October 2026 (§30): Undo is
+   hidden, and kept beneath a switch in code.*
 
 ## 4. Where the art comes from, with no money spent
 
@@ -2856,3 +2857,39 @@ keeping the card as it was and the sentence as it was, is one line to put back.
   with (the B-Cell, the Killer T-Cell and the Eosinophil); the Eosinophil is spent for 4 turns; a
   resident lives in each organ; antivenom costs 3 Action Points and Easy starts with 2 doses.
 - **Not read by him:** chapter 2's new line, and the ten changes above.
+
+## 30. Ruled 17 October 2026: Undo is hidden, and kept
+
+He asked whether hiding Undo would cost anything but Undo itself, *"Meaning we don't remove the
+functionality just hide it from the screen? It works irratically and was more of a testing feature
+anyhow."* Told what it touches and recommended to hide it beneath a switch, he answered: *"Agree
+let's hide it beneath a switch in code and adjust audit step etc. record the ruling"*.
+
+| What | Now |
+|---|---|
+| The Undo on the selected piece's card | Not drawn. `UNDO_SHOWN` in `packages/ui/src/play/Frame.tsx` is false; set true, it is back as it was |
+| The reasons a flat Undo gave when pressed | Not shown: only the button gave them. Their four sentences stay in the catalogue, read by the code behind the switch |
+| The rule under it: moves only, unwound to the start of the command stage, ended by anything that cannot be taken back; in a game together, a player's own moves until anyone else acts | Untouched, in the session, the engine and the room, with every test and control on it. Nothing sends an undo |
+| §3's rule 7, *Undo is always one tap away* | Overruled |
+
+- **What a player gives up:** taking back a mis-tapped move. A cell moved to the wrong step costs
+  its Action Point. The lesson had Undo blocked already.
+- **Why it seemed erratic, said to him:** most likely the rule ruled on 4 September, not a fault:
+  live after a move, and flat once a coat, an attack, a Produce or an engulf has happened that turn,
+  after a game is resumed mid-turn, or in a game together once someone else has acted. Nothing
+  else was reported.
+- **The Gate 1 audit used Undo** to put the Monocyte back after taking it off the bloodstream for
+  the screen with Recall showing. It presses Recall now, as a player would, for 1 Action Point.
+- **Held:** the frame's test requires the card to carry no Undo, and renders it with the switch on,
+  so the button and its reasons stay tested. Control `undo-is-hidden` turns the switch on and sees
+  the test fail.
+- **Seen, headless, at 360 by 641:** a game on Easy, the Monocyte in hand: its card has its name
+  and its two actions, and no Undo; no error.
+- **The Gate 1 audit, alone and together, on this build** (17 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one); every check at
+  zero over 1,124 controls and 2,529 text runs; 40 close paths, none wrong; offline met. The screen
+  with Recall showing was measured in every pass, and the walk went on past the Recall in each.
+  **Not reached in one pass, the one at 200% page zoom:** its idle game was not lost within 14 turns,
+  so the Result, its two screens and a cell's card from the inspect sheet were not measured there,
+  and a row with several targets was not dealt in two passes. Each is the dice's, as the audit is
+  unseeded by ruling (§20), and each was measured clean in the other passes.

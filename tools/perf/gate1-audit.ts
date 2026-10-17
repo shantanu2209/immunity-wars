@@ -1590,7 +1590,8 @@ async function walk(
   await sleep(200);
   // RECALL IS A SLOT (§14, ruling 2): measured with it showing, so the dock's one-height check
   // covers the fullest slot set. The Monocyte is moved off the bloodstream by a legal move's glow if
-  // it stands there, the screen is audited, and the move is undone. The glow is `[data-offer="move"]`
+  // it stands there, the screen is audited, and it is Recalled. It was undone until Undo was hidden
+  // (17 October 2026, LOOK_PLAN §30); Recall puts it back as a player would, for 1 Action Point. The glow is `[data-offer="move"]`
   // since the board became pictures on the page (stage L4); it was a dashed SVG circle, and the walk
   // that looked for the circle reported this screen NOT REACHED on the new board.
   await pick(page, 'cell:macrophage');
@@ -1622,7 +1623,7 @@ async function walk(
       ),
     );
   }
-  if (await clickSel(page, '[data-dock-undo="available"]')) await sleep(300);
+  if (await clickSel(page, '[data-dock-move="recall"]')) await sleep(400);
   await deselect(page);
   await sleep(200);
   // A RESIDENT SELECTED, the shortest name and one of the widest. The walk had never selected a
