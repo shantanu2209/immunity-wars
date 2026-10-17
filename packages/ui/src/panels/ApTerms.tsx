@@ -11,7 +11,8 @@
 import type { ReactElement } from 'react';
 
 import { t } from '../i18n';
-import { COLOUR } from '../kit/tokens';
+import { KitPips } from '../kit/Surface';
+import { COLOUR, RADIUS, SHADOW } from '../kit/tokens';
 import { SAY, TONE } from './onCard';
 
 export function ApTerms({
@@ -19,6 +20,7 @@ export function ApTerms({
   total,
   yours = null,
   players = [],
+  pips = null,
 }: {
   terms: readonly { text: string; delta: number }[];
   total: number;
@@ -29,10 +31,37 @@ export function ApTerms({
    */
   yours?: number | null;
   players?: readonly { name: string; ap: number }[];
+  /**
+   * THE PIPS (ruled 16 October 2026): the Action Points stand in the play area's corner as a number,
+   * and their sheet shows them as pips, as many as the turn began with and as many lit as are left,
+   * on the table's dark ground as they stood in the top bar. Null where the sheet has no figure of
+   * its own to show (planning's line).
+   */
+  pips?: { have: number; of: number } | null;
 }): ReactElement {
   return (
     <div data-ap-terms="1" style={{ ...SAY.body, fontSize: '0.8125rem' }}>
       <div style={SAY.label}>{t('ap.title')}</div>
+      {pips !== null ? (
+        <div
+          data-ap-pips=""
+          style={{
+            display: 'inline-flex',
+            flexWrap: 'wrap',
+            margin: '4px 0 6px',
+            padding: '6px 10px',
+            borderRadius: RADIUS.pill,
+            background: COLOUR.table,
+            boxShadow: SHADOW.sunk,
+          }}
+        >
+          <KitPips
+            have={pips.have}
+            of={Math.max(pips.of, pips.have)}
+            label={t('ap.pips', { have: pips.have, of: Math.max(pips.of, pips.have) })}
+          />
+        </div>
+      ) : null}
       {terms.map((term, i) => (
         <div
           key={String(i)}

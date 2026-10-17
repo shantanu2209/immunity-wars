@@ -3,10 +3,11 @@
  * 19 and 20 September 2026). Every stage of a turn has the same shape, and the shape is one screen
  * tall, so the page itself never scrolls:
  *
- *   top bar     the turn and the Action Points on the left, what is in force in the middle, the
- *               messages and the menu on the right
+ *   top bar     the menu at the start, the turn at the end, and what is in force between them
+ *               (ruled 16 October 2026; the Action Points and the messages were here until then)
  *   play area   ONE height in every stage, its shape the board's own from geometry.json: the board
- *               in command, the body in planning, the arrivals' cards in piece 6
+ *               in command, the body in planning, the arrivals' cards in piece 6. In its two
+ *               bottom corners, the Action Points (left) and the messages (right)
  *   middle      whatever else the stage needs: the selected piece and its actions, the Cells,
  *               Antibodies or Body view, a tapped node, the pathogens in the body. It alone scrolls,
  *               and only when what it holds is taller than the room the phone leaves it
@@ -33,7 +34,7 @@ import { engineText } from '../engineText';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { kitAudio } from '../kit/sound';
-import { KitPips, kitCardStyle } from '../kit/Surface';
+import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, RADIUS, SHADOW, TOUCH, TYPE } from '../kit/tokens';
 import { actionDisplayName } from '../names';
 import { ChatIcon, TableIcon } from '../panels/BarIcons';
@@ -101,63 +102,27 @@ const PILL: CSSProperties = {
 };
 
 /**
- * HOW MANY PIPS THE BAR HAS ROOM FOR, on a 360 px phone at the standard text size. More Action
- * Points than this are said as a number. Measured on the built screen, 1 October 2026: the turn is
- * 56 px, the AP button 44 px and 16 px a pip, the messages and the menu 94 px, the table's button
- * (in a game played together) 50 px more, and the bar is 344 px with 6 px between its parts.
- *
- *   alone             206 + 16 a pip  <= 344   8 fit; 7 is taken, because at 200% page zoom the bar
- *                                              is 164 px and the AP button alone must fit a line
- *   together          256 + 16 a pip  <= 344   5 fit
- *   with a banner     none: the banner's words need the room. The first run of the Gate 1 audit
- *                     against this bar found the banner 36 px wide and 148 px tall beside six pips,
- *                     and the bar three lines high. The banner's words were ruled (piece 5, §19); the
- *                     pips are this stage's, so the pips give way.
+ * THE TOP BAR (ruled by Shantanu, 16 October 2026): the menu at its start, the turn at its end, and
+ * what is in force between them. *"So now we have symmetry - burger menu - top left, turn counter
+ * top right, ap bottom left and chat bottom right. This leaves the whole space between burger menu
+ * and turn counter for the banner."* Until then the Action Points and the messages stood here too,
+ * and the pips gave way to a number whenever a banner was up, because the banner's words had no room
+ * beside them (the Gate 1 audit, 1 October: 36 px wide and 148 px tall beside six pips).
  */
-export function pipRoom(banner: boolean, together: boolean): number {
-  if (banner) return 0;
-  return together ? 5 : 7;
-}
-
-/** THE TOP BAR: the turn and the AP on the left, the banner between, the messages and menu right. */
 export function TopBar({
   turnText,
-  apText,
-  ap,
-  apAvailable,
-  onAp,
   banner,
   onBanner,
-  onChat,
-  chatLabel,
   menu,
-  table = null,
 }: {
   turnText: string;
-  /** The Action Points in words ("AP 4"): what a reader is told. The pips show the same. */
-  apText: string;
-  /** The points left, and how many this turn began with. */
-  ap: { have: number; of: number };
-  /** Whether the AP figure has terms to open. */
-  apAvailable: boolean;
-  onAp: () => void;
   banner: Banner | null;
   /** Opens every effect in force, in full, in the middle. */
   onBanner: () => void;
-  onChat: () => void;
-  chatLabel: string;
   /** The shell's menu button (the app's) or its instrumented controls (the dev shell's). */
   menu: ReactNode;
-  /**
-   * THE TABLE, in a game played together (P3.7 piece C): who is here and who holds what. Its badge
-   * counts the pieces nobody can move right now, held by someone away or by nobody, so the table
-   * can see without opening it that something waits. Null alone.
-   */
-  table?: { onOpen: () => void; waiting: number } | null;
 }): ReactElement {
   const face = banner ? BANNER_FACE[banner.kind] : null;
-  const of = Math.max(ap.of, ap.have);
-  const pips = of <= pipRoom(banner !== null, table !== null);
   return (
     <div
       data-top-bar=""
@@ -168,47 +133,19 @@ export function TopBar({
         minHeight: TOUCH.min,
         flex: '0 0 auto',
         fontFamily: TYPE.family,
-        // THE LAST RESORT at 200% page zoom (a 180px layout): the fixed parts are wider than the
-        // screen there, so the icons wrap to a second line rather than leave it, and the turn and
-        // the AP button, wider together than that screen, take a line each. The banner's basis is
-        // 0, so on any wider screen it shrinks before anything wraps.
+        // THE LAST RESORT at 200% page zoom (a 180px layout): the banner takes a line of its own
+        // rather than be squeezed to a sliver, and the turn keeps to the end of its line.
         flexWrap: 'wrap',
       }}
     >
-      <span
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          flex: '0 1 auto',
-          minWidth: 0,
-          flexWrap: 'wrap',
-        }}
-      >
-        <span data-turn="" style={{ ...PILL, fontSize: '0.9375rem', fontWeight: 900 }}>
-          {turnText}
-        </span>
-        <button
-          data-bar-ap="1"
-          aria-label={apText}
-          disabled={!apAvailable}
-          onClick={onAp}
-          style={{ ...PILL, cursor: apAvailable ? 'pointer' : 'default' }}
-        >
-          <span style={{ ...TYPE.label, color: COLOUR.onDarkSoft }}>{t('commandBar.ap')}</span>
-          {pips ? (
-            <KitPips have={ap.have} of={of} label="" />
-          ) : (
-            <span style={{ fontSize: '0.9375rem', fontWeight: 900 }}>{ap.have}</span>
-          )}
-        </button>
+      <span data-bar-start="" style={{ display: 'flex', flex: '0 0 auto' }}>
+        {menu}
       </span>
       <span
         style={{
           flex: '1 1 0',
-          // A banner is never squeezed to a sliver: with less than this it takes a line of its own
-          // (a game played together on a 360 px phone, or 200% page zoom). With no banner the span
-          // is empty and must ask for nothing, or it would push the icons to a second line.
+          // A banner is never squeezed to a sliver: with less than this it takes a line of its own.
+          // With no banner the span is empty and must ask for nothing.
           minWidth: banner ? '6rem' : 0,
           display: 'flex',
           justifyContent: 'center',
@@ -239,12 +176,83 @@ export function TopBar({
         ) : null}
       </span>
       <span
+        data-turn=""
         style={{
+          ...PILL,
+          fontSize: '0.9375rem',
+          fontWeight: 900,
+          flex: '0 0 auto',
+          marginLeft: 'auto',
+        }}
+      >
+        {turnText}
+      </span>
+    </div>
+  );
+}
+
+/** How far into the play area the corners' controls stand. */
+const CORNER = 6;
+
+/**
+ * THE PLAY AREA'S TWO BOTTOM CORNERS (ruled 16 October 2026): the Action Points at the left, said
+ * as a number, which opens their sheet with the pips and what makes them; the messages at the right,
+ * and beside them, in a game played together, the table. They stand over the play area, so the
+ * board keeps its whole height; the board is round, and its corners are table.
+ */
+export function PlayCorners({
+  apText,
+  apHave,
+  apAvailable,
+  onAp,
+  onChat,
+  chatLabel,
+  table = null,
+}: {
+  /** The Action Points in words ("AP 4"): what a reader is told. */
+  apText: string;
+  apHave: number;
+  /** Whether the figure has terms to open. */
+  apAvailable: boolean;
+  onAp: () => void;
+  onChat: () => void;
+  chatLabel: string;
+  /**
+   * THE TABLE, in a game played together (P3.7 piece C): who is here and who holds what. Its badge
+   * counts the pieces nobody can move right now, held by someone away or by nobody, so the table
+   * can see without opening it that something waits. Null alone.
+   */
+  table?: { onOpen: () => void; waiting: number } | null;
+}): ReactElement {
+  return (
+    <>
+      <button
+        data-bar-ap="1"
+        aria-label={apText}
+        disabled={!apAvailable}
+        onClick={onAp}
+        style={{
+          ...PILL,
+          position: 'absolute',
+          left: CORNER,
+          bottom: CORNER,
+          zIndex: 3,
+          cursor: apAvailable ? 'pointer' : 'default',
+        }}
+      >
+        <span style={{ ...TYPE.label, color: COLOUR.onDarkSoft }}>{t('commandBar.ap')}</span>
+        <span style={{ fontSize: '0.9375rem', fontWeight: 900 }}>{apHave}</span>
+      </button>
+      <span
+        data-corner-end=""
+        style={{
+          position: 'absolute',
+          right: CORNER,
+          bottom: CORNER,
+          zIndex: 3,
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          flex: '0 0 auto',
-          marginLeft: 'auto',
         }}
       >
         {table ? (
@@ -288,9 +296,8 @@ export function TopBar({
         <KitButton data-chat="" aria-label={chatLabel} onPress={onChat} style={ICON}>
           <ChatIcon />
         </KitButton>
-        {menu}
       </span>
-    </div>
+    </>
   );
 }
 
@@ -341,7 +348,8 @@ export function Toast({ text }: { text: string }): ReactElement {
         position: 'absolute',
         left: 8,
         right: 8,
-        bottom: 8,
+        // Above the corners' controls (the Action Points and the messages), not over them.
+        bottom: 8 + TOUCH.min + 6,
         zIndex: 4,
         padding: '8px 12px',
         borderRadius: RADIUS.control,

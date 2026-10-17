@@ -80,6 +80,7 @@ import {
   SpreadView,
   TabRow,
   Toast,
+  PlayCorners,
   TopBar,
   type MiddleTab,
 } from './Frame';
@@ -1163,6 +1164,8 @@ export function PlayScreen({
               total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
               yours={p.together && plan === null ? apShown : null}
               players={p.together && plan === null ? budgetsOf(authView, p) : []}
+              // The corner says the figure as a number; the sheet shows it as pips (16 October 2026).
+              pips={{ have: apShown, of: authView.queries.ap.total }}
             />
           </div>
         </MiddleCard>
@@ -1446,32 +1449,11 @@ export function PlayScreen({
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
-        apText={`${t('commandBar.ap')} ${String(apShown)}`}
-        // The pips: what is left, of what the engine says this turn began with.
-        ap={{ have: apShown, of: authView.queries.ap.total }}
-        apAvailable={apTerms.length > 0 && !playing}
-        onAp={() => {
-          closeMiddle();
-          setApSheet(true);
-        }}
         banner={effectBanner(chips)}
         onBanner={() => {
           closeMiddle();
           setEffectsOpen(true);
         }}
-        onChat={() => setDrawer('log')}
-        chatLabel={t('chat.open')}
-        table={
-          table !== null
-            ? {
-                onOpen: () => {
-                  closeMiddle();
-                  setDrawer('table');
-                },
-                waiting: tableSummary(table).waiting.length,
-              }
-            : null
-        }
         menu={
           <LiveControls
             store={frameStore}
@@ -1538,6 +1520,28 @@ export function PlayScreen({
             onTap={playing ? undefined : handleBoardTap}
           />
         </div>
+        <PlayCorners
+          apText={`${t('commandBar.ap')} ${String(apShown)}`}
+          apHave={apShown}
+          apAvailable={apTerms.length > 0 && !playing}
+          onAp={() => {
+            closeMiddle();
+            setApSheet(true);
+          }}
+          onChat={() => setDrawer('log')}
+          chatLabel={t('chat.open')}
+          table={
+            table !== null
+              ? {
+                  onOpen: () => {
+                    closeMiddle();
+                    setDrawer('table');
+                  },
+                  waiting: tableSummary(table).waiting.length,
+                }
+              : null
+          }
+        />
         {toastText !== null ? <Toast text={toastText} /> : null}
       </PlayArea>
       <div

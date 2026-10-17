@@ -1646,22 +1646,48 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE SCREENS AND THE SESSION DISAGREE ABOUT WHAT A MOVE IS',
   },
   {
-    id: 'frame-banner-has-room',
-    why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
+    id: 'top-bar-menu-at-start-turn-at-end',
+    why: 'Ruled 16 October 2026: the top bar is the menu at its start, what is in force between, and the turn at its end, so that the banner has all the room between them; the Action Points and the messages are in the play area’s corners. With the menu taken out of the bar, the frame test must FAIL saying the menu is not at its start.',
     file: 'packages/ui/src/play/Frame.tsx',
-    mutate: (t) => t.replace('  if (banner) return 0;\n', ''),
-    gate: 'pnpm --filter @immunity-wars/ui test',
-    expect: 'THE BANNER HAS NO ROOM',
+    mutate: (t) => t.replace('        {menu}\n      </span>', '      </span>'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Frame.test.ts',
+    expect: 'THE MENU IS NOT AT THE TOP BAR',
+  },
+  {
+    id: 'guide-ring-takes-in-the-edge',
+    why: 'Ruled 16 October 2026, after he played the lesson: a ringed button looked sunken. A kit button stands on a lip drawn below its own box, and the ring cut across it. With the lip no longer read, the ring test must FAIL saying the ring cuts across the button’s edge.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (blur === 0) below = Math.max(below, y + spread);',
+        'if (blur === 0) below = Math.max(below, 0);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE RING CUTS ACROSS THE BUTTON',
+  },
+  {
+    id: 'guide-ring-reads-a-measured-rectangle',
+    why: 'Found building the tight ring, 16 October 2026: a browser’s rectangle keeps its edges on its prototype, so spreading it gives an empty object, and the first build drew its ring at no place at all while a test of plain rectangles passed. With the rectangle spread again, the ring test must FAIL saying the ring is at no place.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace('    left: own.left,\n    top: own.top,\n    right: own.right,\n', '    ...own,\n'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE RING IS AT NO PLACE',
+  },
+  {
+    id: 'guide-hole-is-the-rings-shape',
+    why: 'Found the same day: four panes round a rectangle left the corners of a round control clear, light squares round a round ring. The dimming is one shape now, its hole in the ring’s own rounded shape. With the corner no longer kept to the hole’s size, the test must FAIL saying the hole is not the ring’s shape.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace('Math.max(0, Math.min(radius, b.width / 2, b.height / 2))', 'Math.max(0, radius)'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE HOLE IS NOT THE RING',
   },
   {
     id: 'frame-pips-show-what-is-left',
-    why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
-    file: 'packages/ui/src/play/Frame.tsx',
-    mutate: (t) =>
-      t.replace(
-        '<KitPips have={ap.have} of={of} label="" />',
-        '<KitPips have={of} of={of} label="" />',
-      ),
+    why: 'Stage L4: the Action Points are drawn as pips. Since 16 October 2026 they stand in the play area’s corner as a number, and their sheet shows the pips. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
+    file: 'packages/ui/src/panels/ApTerms.tsx',
+    mutate: (t) => t.replace('have={pips.have}', 'have={Math.max(pips.of, pips.have)}'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE PIPS DO NOT SHOW WHAT IS LEFT',
   },
