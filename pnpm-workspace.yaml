@@ -78,6 +78,13 @@ overrides:
   # called once to see). Pinned so that `pnpm audit` stays clean, on the 4 Sep ruling's terms: one
   # line, no behaviour change. docs/SECURITY_NOTES.md. Drop when xcode asks for a patched uuid.
   'uuid@<11.1.1': '^11.1.1'
+  # source-map-js: GHSA-68fv-2mgg-jv7q (high), the event loop held up by a crafted source map's
+  # section offsets. Dev-only: @vitest/coverage-v8 > magicast > source-map-js 1.2.1, used when
+  # coverage is measured, over our own files; it is in no process that listens. 1.2.2 is inside
+  # magicast's own ^1.2.1 range; pnpm keeps the locked 1.2.1 otherwise. Seen 17 October 2026, after
+  # the day's Dependabot merges, and taken on the 4 Sep ruling's terms: one line, no behaviour
+  # change. docs/SECURITY_NOTES.md. Drop when the lock resolves past it.
+  'source-map-js@<1.2.2': '^1.2.2'
 
 minimumReleaseAgeExclude:
   - '@vitest/coverage-v8@4.1.11'

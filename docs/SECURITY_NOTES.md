@@ -593,3 +593,43 @@ nothing yet (the iOS half of Capacitor's tool); the battery is run before the An
 merged, on everything that work adds.
 
 > ### The property, re-read 2 October 2026, with the Android shell: no open advisory is in a process that listens, because no advisory is open. The shell adds no process that listens: it is an app on a phone.
+
+## Added 17 October 2026 — one high advisory seen after the day's Dependabot merges, and pinned
+
+**What arrived.** GHSA-68fv-2mgg-jv7q, high: `source-map-js` before 1.2.2 can have its event loop
+held up by a crafted source map, through the offsets of an indexed map's sections. One path,
+sixteen ways round the workspace: `vitest` > `@vitest/coverage-v8` > `magicast` > `source-map-js`
+1.2.1. GitHub raised it on `main` at 06:15 UTC on 17 October, as the first of the day's five
+Dependabot pull requests (#164) merged; none of the five changed `source-map-js`.
+
+**Why it does not reach anything here.** It is read when coverage is measured, over our own
+source maps, in a one-shot run the maintainer starts. It is in no process that listens: not the
+relay, and not the app, which ships none of it.
+
+**Pinned all the same,** so that `pnpm audit` stays clean and the next advisory is not read past:
+one override in `pnpm-workspace.yaml`, `source-map-js` below 1.2.2 to 1.2.2, inside `magicast`'s
+own `^1.2.1` range.
+
+| Checked | Found |
+|---|---|
+| `pnpm audit` | No known vulnerabilities |
+| The lockfile | One version of `source-map-js` left, 1.2.2 |
+| Coverage, which is what reads it | Measured from scratch with it, below |
+
+**The toolchain battery** (`CLAUDE.md`, "Known issues"), run on this pin with the day's updates,
+which are the move it exists for: vite 8.3.1 to 8.3.4 (#171); turbo 2.11.4 to 2.11.8, eslint,
+typescript-eslint, prettier, dependency-cruiser and `@types/node` (#179, Dependabot's group in
+place of #173); puppeteer-core (#172), sharp (#164) and ws (#166). On the PC, 17 October 2026.
+
+| Part | Result |
+|---|---|
+| `pnpm verify` | Passed |
+| The full self-test, read control by control | 257 of 257 behaved, each with its own line; the working tree clean after |
+| The manifest's controls | 7 of 7 fired on exactly what each targets; the manifest restored byte for byte |
+| `rm -rf coverage && pnpm coverage:all && pnpm coverage:gate` | 97.49% of 1,873 coverable arms, target 95%; the record committed is the record regenerated |
+| Two forced test runs, `--force --continue` | 18 of 18 suites passed, twice |
+
+- **What the battery does not cover:** the relay running with the new `ws` (#166). Its own tests
+  pass on it; it is not deployed until the relay is.
+
+> ### The property, re-read 17 October 2026: no open advisory is in a process that listens, because no advisory is open.
