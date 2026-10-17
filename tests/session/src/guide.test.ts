@@ -215,13 +215,22 @@ describe('the guide follows the lesson through the real engine', () => {
     const session = newLesson();
     await session.sendAction({ action: 'draw' });
     await session.sendAction({ action: 'beginCommand' });
-    // The lesson's first step is to make antibodies. The player moves a cell instead.
+    // The lesson's first step that is DONE, and not only said, is to make antibodies; the player
+    // moves a cell instead. Found by the nightly self-test (docs/FINDINGS.md #131): this test held
+    // the guide at the lesson's start, and when a told step came first there (the Action Points,
+    // 5 October) the stray move parted the guide for being made during a told step, so the check of
+    // an action the lesson did not ask for was never reached and its control went inert.
+    const first = LESSON.turns[0]?.steps.findIndex((s) => s.do !== 'tell') ?? -1;
+    const at: GuidePos = { turn: 0, step: first };
+    expect(LESSON.turns[0]?.steps[first]?.do, 'the step this test is aimed at').toBe('produce');
     const before = session.getView();
     const stray = { action: 'move', cell: 'nk', zone: 'route', lane: 'blood', step: 2 };
     expect((await session.sendAction(stray)).ok).toBe(true);
-    expect(afterAccepted(LESSON, GUIDE_START, before, stray).kind, 'THE GUIDE DID NOT LET GO').toBe(
+    expect(afterAccepted(LESSON, at, before, stray).kind, 'THE GUIDE DID NOT LET GO').toBe(
       'parted',
     );
+    // During a told step any action parts the guide too: there is nothing to do but read.
+    expect(afterAccepted(LESSON, GUIDE_START, before, stray).kind).toBe('parted');
     // Ending the turn with its steps undone is leaving the lesson too.
     expect(afterAccepted(LESSON, GUIDE_START, before, { action: 'endCommand' }).kind).toBe(
       'parted',
