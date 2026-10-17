@@ -21,7 +21,7 @@
  * Pure, so every rule here is a test's (`model.test.ts`), and the page (`Spotlight.tsx`) is only
  * where it is drawn.
  */
-import type { Lesson, LessonStep } from '@immunity-wars/content';
+import { CELL_KEYS, type Lesson, type LessonStep } from '@immunity-wars/content';
 import { lessonAction, type SessionView } from '@immunity-wars/session';
 
 /**
@@ -64,6 +64,11 @@ export interface GuideBeat {
   readonly stops: readonly string[];
   /** Beside each stop, what to say when it is lit after another control of the same beat was. */
   readonly then: readonly (GuideThen | null)[];
+  /**
+   * WHAT THE SENTENCE TALKS ABOUT (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29), by the page's
+   * hooks: shown undimmed while the card is up, and not pressable. Every one on the page is shown.
+   */
+  readonly shows: readonly string[];
   /** The end of a chapter: the card offers the next chapter, or to stop for now. */
   readonly chapterEnd: boolean;
   /** Said, not done: the card's own button moves on. */
@@ -78,12 +83,43 @@ export interface GuideBeat {
 }
 
 const NEXT = '[data-dock-next]';
+/** The turn's new cards, and its crisis, when one has come: what a turn's first card is about. */
+const ARRIVALS = ['[data-arrivals-grid]', '[data-reveal-crisis]'];
+/** The body from outside: what the planning card is about. */
+const BODY = ['[data-anatomy]'];
 
 type Inv = { readonly id: string; readonly disease: string; readonly remembered?: boolean };
 const invaders = (view: SessionView): readonly Inv[] =>
   ((view.game as unknown as { invaders?: readonly Inv[] }).invaders ?? []) as readonly Inv[];
 const idOf = (view: SessionView, disease: string): string =>
   invaders(view).find((x) => x.disease === disease)?.id ?? '';
+
+/**
+ * What a card talks about, by name: a cell by its key, or a disease, on the board. A step that acts
+ * on a disease talks about it unless it says otherwise; a turn's End turn card and a chapter's card
+ * about it talk about what the lesson file names for them.
+ */
+export function shownNames(lesson: Lesson, pos: GuidePos, stage: GuideStage): readonly string[] {
+  if (stage === 'spread' || stage === 'dialog' || lessonOver(lesson, pos)) return [];
+  if (pos.at === 'intro') return lesson.chapters[chapterOf(lesson, pos)]?.show ?? [];
+  if (pos.at === 'done' || stage !== 'command') return [];
+  const step = stepAt(lesson, pos);
+  if (!step) return lesson.turns[pos.turn]?.endShow ?? [];
+  if (step.show) return step.show;
+  if ('disease' in step) return [step.disease];
+  return step.do === 'produce' ? [step.for] : [];
+}
+
+/** The page's hooks for things by name: a cell's piece, or the piece of every invader of a disease. */
+export function showHooks(names: readonly string[], view: SessionView): string[] {
+  return names.flatMap((x) =>
+    (CELL_KEYS as readonly string[]).includes(x)
+      ? [`[data-cell="${x}"]`]
+      : invaders(view)
+          .filter((i) => i.disease === x)
+          .map((i) => `[data-invader-ids~="${i.id}"]`),
+  );
+}
 
 /** A stop, and what is said when it is lit after another control of the same beat was. */
 interface Stop {
@@ -261,7 +297,15 @@ export function guideBeat(
   stage: GuideStage,
   view: SessionView,
 ): GuideBeat | null {
-  const plain = { tell: false, last: false, nothingInHand: false, then: [], chapterEnd: false };
+  const plain = {
+    tell: false,
+    last: false,
+    nothingInHand: false,
+    then: [],
+    chapterEnd: false,
+    shows: [] as readonly string[],
+  };
+  const shows = showHooks(shownNames(lesson, pos, stage), view);
   if (stage === 'spread') {
     // The spread of the turn just ended: `pos` has moved on to the next one already.
     const n = pos.turn;
@@ -281,6 +325,7 @@ export function guideBeat(
       sayKey: 'guide.end',
       stops: [],
       then: [],
+      shows: [],
       tell: true,
       last: true,
       nothingInHand: false,
@@ -296,6 +341,7 @@ export function guideBeat(
       sayKey: `guide.chapter.${id}.${pos.at}`,
       stops: [],
       then: [],
+      shows,
       tell: true,
       last: false,
       nothingInHand: false,
@@ -312,6 +358,7 @@ export function guideBeat(
         sayKey: `guide.t${String(n)}.cards`,
         ...plain,
         stops: [NEXT],
+        shows: ARRIVALS,
       };
     case 'planning':
       return {
@@ -319,6 +366,7 @@ export function guideBeat(
         sayKey: n === 1 ? 'guide.t1.plan' : 'guide.plan',
         ...plain,
         stops: [NEXT],
+        shows: BODY,
       };
     case 'command': {
       const step = stepAt(lesson, pos);
@@ -328,6 +376,7 @@ export function guideBeat(
           sayKey: `guide.t${String(n)}.end`,
           ...plain,
           stops: ['[data-dock-next="endTurn"]'],
+          shows,
         };
       }
       const stops = stopsOf(step, view);
@@ -336,6 +385,7 @@ export function guideBeat(
         sayKey: `guide.${step.id}`,
         stops: stops.map((x) => x.hook),
         then: stops.map((x) => x.then),
+        shows,
         tell: step.do === 'tell',
         last: false,
         nothingInHand: step.do === 'memory' || step.do === 'antivenom',

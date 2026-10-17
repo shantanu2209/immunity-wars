@@ -2767,3 +2767,53 @@ cards, by chapter 16, 13, 8, 16, 6, 12 and 11.
   `chapters-say-what-the-lesson-does-to-a-save`, `guide-count-begins-again-at-a-chapter`,
   `guide-walk-reads-the-count`, `title-keeps-the-guided-game`; re-aimed, because the code they
   change was rewritten, and fired: `title-one-main-button`, `title-guided-game-leads-a-new-phone`.
+
+### Built: what a card talks about is lit (5)
+
+**What the sentence is about is shown, clear of the dimming, with a thin still ring:** the new
+cards, the body in planning, and the disease or the cell on the board. It cannot be pressed: the
+guide still swallows every touch but the lit control's own, and the lit control keeps its thicker
+ring that breathes, so the two are told apart.
+
+| A card | Shows |
+|---|---|
+| A turn's first, what has arrived | The new cards, and the crisis when one has come |
+| Planning | The body |
+| A step that acts on a disease (coat, engulf, snipe, a Produce made for it, and the rest) | That disease's piece on the board |
+| A step that names something else, in the lesson file | What it names: the bacterium the Monocyte walks out to, the fungus the Neutrophil runs to, the B-Cell beside the Helper T-Cell, and so on, 16 steps |
+| Turn 4's End turn | Endocarditis, which it says is still coming |
+| Chapters 2, 3 and 5's first card | Hepatitis B and C; Candida; Botulism and Snake venom |
+
+- **The lesson file says it, and is held to the game.** A step, a turn's End turn card and a
+  chapter's card may name what they show; each name must be a cell, or a disease that has arrived
+  by then, or the pack does not load. The guide's test walks the lesson through the engine and
+  requires each thing shown to be in the game at its card.
+- **Found on the board by the invaders' own ids,** now on each piece. They say nothing of what a
+  hidden pathogen is.
+- **The dimming is one mask now,** with a hole for each thing lit or shown. Drawn even-odd, as it
+  was, two holes that overlap (the Monocyte and the bacterium on its step) dimmed each other again.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk` on the development build | 82 beats of 82 in order, the counts as before; 53 cards talk about something, each found it on the page, and a finger at the middle of each thing shown landed on the guide or on the lit control's button, never on the thing |
+| Screenshots, headless, at 360 by 641 | Turn 1's card of Whooping cough clear, with *Plan your turn* lit; the body clear in planning; the Monocyte and the bacterium on one step, both clear, the Monocyte's ring breathing; Hepatitis C on the blood route while the NK Cell is lit |
+
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), the nine of the
+  guided game among them, each clean in every pass; every check at zero over 1,152 controls and
+  2,559 text runs, the occlusion check among them, which the shown rings and the mask could have
+  set off; 40 close paths, none wrong; offline met. A row of actions with several targets was not
+  reached in one pass, by its dice; the other three measured it clean.
+- **Unruled, and his to overrule:** what each card shows (the defaults and the 16 steps named);
+  that a shown thing has a ring at all, its colour, and that it does not breathe.
+- **Found after the pull request was opened, and fixed in it, 17 October:** a ring drawn round what
+  one card talks about stayed on the page when the next card talked about nothing. It was seen on
+  the lesson's last card, round the place Malaria had been after Malaria was neutralised. Each card
+  began its count of what is drawn at "nothing", so a change to nothing was never drawn; it begins
+  at "not yet looked" now, as the lit ring's does. The walk had counted what each card found and not
+  what was drawn, so it passed; it now also requires that no card draws more rings than it shows.
+  The audit above was run before this fix; the walk after it is clean, 82 beats of 82.
+- **Controls, each fired:** `lesson-show-is-in-the-game`, `guide-shows-what-a-step-acts-on`,
+  `guide-walk-finds-what-is-shown`, `guide-walk-shown-is-not-pressable`,
+  `guide-walk-no-ring-left-standing`; re-aimed at the mask's holes and fired,
+  `guide-hole-is-the-rings-shape`.

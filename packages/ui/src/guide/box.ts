@@ -140,25 +140,28 @@ export interface Hole {
   radius: number;
 }
 
+/** How far round what is shown its ring stands, and the dimming with it: thinner than the lit one. */
+export const SHOW_RING = 2;
+
 /**
- * THE DIMMING, AS ONE SHAPE: the whole screen, with each hole cut out in the ring's own rounded
- * shape. Four panes round a rectangle left the corners of a round control clear, as light squares
- * round a round ring (16 October 2026). Drawn even-odd, so a hole is a hole.
+ * A HOLE IN THE DIMMING, in the ring's own rounded shape. Four panes round a rectangle left the
+ * corners of a round control clear, as light squares round a round ring (16 October 2026). The
+ * dimming is one mask with a hole for each thing lit or shown, so two holes that overlap (a cell and
+ * the bacterium on its step) are both clear, which one shape drawn even-odd could not be.
  */
-export function dimPath(width: number, height: number, holes: readonly Hole[]): string {
-  let d = `M0 0H${String(width)}V${String(height)}H0Z`;
-  for (const { box: b, radius } of holes) {
-    const r = Math.max(0, Math.min(radius, b.width / 2, b.height / 2));
-    const x = b.left;
-    const y = b.top;
-    const x2 = x + b.width;
-    const y2 = y + b.height;
-    const arc = (tx: number, ty: number): string =>
-      `A${String(r)} ${String(r)} 0 0 1 ${String(tx)} ${String(ty)}`;
-    d +=
-      `M${String(x + r)} ${String(y)}H${String(x2 - r)}${arc(x2, y + r)}` +
-      `V${String(y2 - r)}${arc(x2 - r, y2)}H${String(x + r)}${arc(x, y2 - r)}` +
-      `V${String(y + r)}${arc(x + r, y)}Z`;
-  }
-  return d;
+export function holeShape(hole: Hole): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rx: number;
+} {
+  const { box: b, radius } = hole;
+  return {
+    x: b.left,
+    y: b.top,
+    width: b.width,
+    height: b.height,
+    rx: Math.max(0, Math.min(radius, b.width / 2, b.height / 2)),
+  };
 }

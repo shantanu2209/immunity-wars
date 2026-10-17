@@ -138,7 +138,15 @@ export interface FrameDef {
  * the player is led to, named the way a person would say it: a disease by its name, a place by
  * its route or its organ. Whoever plays it turns a name into the game's own id for that invader.
  */
-export type LessonStep =
+export type LessonStep = LessonStepDo & {
+  /**
+   * What the card talks about, shown undimmed while it is up (16 October 2026): a disease by its
+   * name, or one of your cells by its key. A step that acts on a disease shows it without this.
+   */
+  readonly show?: readonly string[];
+};
+
+type LessonStepDo =
   | {
       readonly id: string;
       readonly do: 'produce';
@@ -184,6 +192,8 @@ export interface LessonTurn {
   /** The diseases that arrive this turn, by name: what the engine is handed as `written`. */
   readonly arrive: readonly string[];
   readonly steps: readonly LessonStep[];
+  /** What the turn's End turn card talks about, shown as a step's `show` is. */
+  readonly endShow?: readonly string[];
 }
 
 export interface Lesson {
@@ -206,6 +216,8 @@ export interface LessonChapter {
   readonly id: string;
   /** The id of the step it begins at; absent for the first. */
   readonly from?: string;
+  /** What the card that says what the chapter is about talks about, shown as a step's is. */
+  readonly show?: readonly string[];
 }
 
 /**

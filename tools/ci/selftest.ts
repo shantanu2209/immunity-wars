@@ -1497,6 +1497,62 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE CARD DOES NOT SAY WHICH STEP IT IS',
   },
   {
+    id: 'lesson-show-is-in-the-game',
+    why: 'Ruled 16 October 2026: what a card talks about is shown, undimmed. The lesson file names it, and a name that is no cell, or a disease that has not arrived yet, would show nothing. With the check taken off, the lesson file’s test must FAIL saying a card shows what is not in the game.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (!cells.includes(x) && !arrived.has(x)) {',
+        "if (!cells.includes(x) && !arrived.has(x) && x === '') {",
+      ),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'A CARD SHOWS WHAT IS NOT IN THE GAME',
+  },
+  {
+    id: 'guide-shows-what-a-step-acts-on',
+    why: 'Ruled 16 October 2026: “when we talk about whooping cough … we should see it clearly”. A step that acts on a disease shows it without the lesson file saying so. With that default taken out, the guide’s test must FAIL saying a step does not show what it acts on.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "  if ('disease' in step) return [step.disease];\n",
+        "  if ('disease' in step) return [];\n",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A STEP DOES NOT SHOW WHAT IT ACTS ON',
+  },
+  {
+    id: 'guide-walk-finds-what-is-shown',
+    why: 'Ruled 16 October 2026: the guide finds what a card talks about by the board’s own hooks. A hook misnamed finds nothing, and the bacterium the sentence is about stays dimmed. With the board’s invader ids put under another name, the walk must FAIL saying a card shows nothing of what it talks about.',
+    file: 'packages/ui/src/board/ClayBoard.tsx',
+    mutate: (t) => t.replace('      data-invader-ids={', '      data-invader-idz={'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'THE CARD SHOWS NOTHING OF WHAT IT TALKS ABOUT',
+  },
+  {
+    id: 'guide-walk-shown-is-not-pressable',
+    why: 'Ruled 16 October 2026: what is shown is seen, and “should still not be interactable”. Only the lit control’s own button takes a press; the guide swallows every other. With the guide’s cover letting a finger through, the walk must FAIL saying what is shown can be pressed.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) =>
+      t.replace(
+        "<div data-guide-block=\"\" style={{ position: 'fixed', inset: 0, pointerEvents: 'auto' }} />",
+        "<div data-guide-block=\"\" style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }} />",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'WHAT IS SHOWN CAN BE PRESSED',
+  },
+  {
+    id: 'guide-walk-no-ring-left-standing',
+    why: 'Found 17 October 2026, on the lesson’s last card: a ring drawn round what one card talks about stayed on the page when the next card talked about nothing, round where Malaria had been. Each card began its count of what is drawn at nothing, so a change to nothing was never drawn. With the count begun at nothing again, the walk must FAIL saying a ring is left on what no card talks about.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) =>
+      t.replace(
+        '    let shownNow: string | undefined;\n',
+        "    let shownNow: string | undefined = '';\n",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'A RING IS LEFT ON WHAT NO CARD TALKS ABOUT',
+  },
+  {
     id: 'guide-walk-names-a-stuck-beat',
     why: 'Stage L6: the guided game is walked in the built app by pressing only what the guide lights. A beat whose control is not on the page lights nothing, and a player would be left looking at a sentence with nothing to tap. With the hook for the Neutrophil’s NET misnamed, the walk must FAIL naming that beat and saying nothing is lit, and not run on to a time limit.',
     file: 'packages/ui/src/guide/model.ts',
@@ -1722,7 +1778,7 @@ const CONTROLS: readonly Control[] = [
   },
   {
     id: 'guide-hole-is-the-rings-shape',
-    why: 'Found the same day: four panes round a rectangle left the corners of a round control clear, light squares round a round ring. The dimming is one shape now, its hole in the ring’s own rounded shape. With the corner no longer kept to the hole’s size, the test must FAIL saying the hole is not the ring’s shape.',
+    why: 'Found 16 October 2026: four panes round a rectangle left the corners of a round control clear, light squares round a round ring. The dimming has a hole in the ring’s own rounded shape for each thing lit or shown. With the corner no longer kept to the hole’s size, the test must FAIL saying the hole is not the ring’s shape.',
     file: 'packages/ui/src/guide/box.ts',
     mutate: (t) =>
       t.replace('Math.max(0, Math.min(radius, b.width / 2, b.height / 2))', 'Math.max(0, radius)'),

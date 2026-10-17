@@ -19,6 +19,11 @@
  *
  * WHAT IS RINGED IS WHAT CAN BE SEEN OF IT (`box.ts`): a control cut off by a part of the screen
  * that scrolls is ringed where it shows, and is first scrolled to where the most of it does.
+ *
+ * WHAT THE SENTENCE TALKS ABOUT IS SHOWN (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): the new
+ * cards, the body, the bacterium on the board. Each is left out of the dimming with a thinner ring
+ * that does not breathe, and stays as unpressable as everything else: only the lit control's own
+ * button takes a press. Whatever of it is on the page is shown; what is not is not looked for.
  */
 import {
   useEffect,
@@ -35,7 +40,18 @@ import { kitCardStyle } from '../kit/Surface';
 import { prefersReducedMotion } from '../kit/motion';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 
-import { RING, RING_GAP, cutBy, dimPath, edgeBelow, litBox, ringBox, type Box } from './box';
+import {
+  RING,
+  RING_GAP,
+  SHOW_RING,
+  cutBy,
+  edgeBelow,
+  holeShape,
+  litBox,
+  ringBox,
+  type Box,
+  type Hole,
+} from './box';
 
 /** The dimming: dark enough that the lit thing is the bright thing, light enough to read through. */
 const DIM = 'rgba(4, 18, 22, 0.6)';
@@ -77,6 +93,34 @@ function clippersOf(el: HTMLElement): Clipper[] {
   return out;
 }
 
+/** A ring round a thing on the page: tight round it and its lip, in its own corner (`box.ts`). */
+function ringOf(el: HTMLElement, own: DOMRect, clipRects: readonly DOMRect[]): Hole {
+  const cs = getComputedStyle(el);
+  const corner = cs.borderTopLeftRadius;
+  // A piece on the board is round, whatever its box says; anything else takes its own corner.
+  const radius =
+    corner.endsWith('%') || el.closest('[data-clay-board]') !== null
+      ? Math.min(own.width, own.height) / 2
+      : parseFloat(corner) || 0;
+  return { box: ringBox(own, clipRects, edgeBelow(cs.boxShadow)), radius: radius + RING_GAP };
+}
+
+/** A hole in the dimming round a ring: its outer edge. */
+const grown = (h: Hole, by: number): Hole => ({
+  box: {
+    left: h.box.left - by,
+    top: h.box.top - by,
+    width: h.box.width + by * 2,
+    height: h.box.height + by * 2,
+  },
+  radius: h.radius + by,
+});
+
+const keyOf = (holes: readonly Hole[]): string =>
+  holes
+    .map((h) => [h.box.left, h.box.top, h.box.width, h.box.height].map(Math.round).join(','))
+    .join(';');
+
 const same = (a: Box | null, b: Box | null): boolean =>
   a === b ||
   (a !== null &&
@@ -113,6 +157,7 @@ export function Spotlight({
   text,
   stops,
   thens = [],
+  shows = [],
   tell,
   last,
   chapterEnd = false,
@@ -130,6 +175,8 @@ export function Spotlight({
    * 3: "Now tap Coat."); empty for none. The beat's whole sentence is said first, always.
    */
   thens?: readonly string[];
+  /** What the sentence talks about, by the page's hooks: shown, not pressable. */
+  shows?: readonly string[];
   /** Said, not done: the card's own button moves on. */
   tell: boolean;
   /** The lesson's last word: its button hands the game over. */
@@ -150,6 +197,10 @@ export function Spotlight({
   const [box, setBox] = useState<Box | null>(null);
   /** The ring, drawn tight round the control and its lip, and the corner it takes (`box.ts`). */
   const [ringAt, setRingAt] = useState<{ box: Box; radius: number } | null>(null);
+  /** What is shown, each ringed where it can be seen. */
+  const [shownAt, setShownAt] = useState<readonly Hole[]>([]);
+  /** How many of what is shown are on the page, the lit control among them: for a walk to read. */
+  const [found, setFound] = useState(0);
   const [name, setName] = useState('');
   /** Which stop is lit, and which was lit first in this beat: a later one says its few words. */
   const [litStop, setLitStop] = useState('');
@@ -159,6 +210,7 @@ export function Spotlight({
   const lit = useRef<HTMLElement | null>(null);
   const ring = useRef<HTMLDivElement | null>(null);
   const key = stops.join('|');
+  const showKey = shows.join('|');
 
   // Where the lit control is, read every frame while the guide is up (see the header).
   useLayoutEffect(() => {
@@ -171,6 +223,13 @@ export function Spotlight({
     let clippers: Clipper[] = [];
     let stopNow: string | undefined;
     let ringNow: { box: Box; radius: number } | null = null;
+    // Unknown until the first look, for the same reason: a beat that shows nothing must take down
+    // what the last beat showed. Started at "nothing", it left Malaria's ring standing on the
+    // lesson's last card, after Malaria was gone (16 October 2026).
+    let shownNow: string | undefined;
+    let foundNow = -1;
+    /** What cuts each shown thing off, found once for it. */
+    const shownClips = new Map<HTMLElement, Clipper[]>();
     const read = (): void => {
       const found = last || watch ? null : findLit(stops);
       const el = found?.el ?? null;
@@ -206,19 +265,41 @@ export function Spotlight({
         el && own
           ? litBox(own, clipRects, { width: window.innerWidth, height: window.innerHeight })
           : null;
-      let tight: { box: Box; radius: number } | null = null;
-      if (el && own) {
-        const cs = getComputedStyle(el);
-        const corner = cs.borderTopLeftRadius;
-        // A piece on the board is round, whatever its box says; anything else takes its own corner.
-        const radius =
-          corner.endsWith('%') || el.closest('[data-clay-board]') !== null
-            ? Math.min(own.width, own.height) / 2
-            : parseFloat(corner) || 0;
-        tight = {
-          box: ringBox(own, clipRects, edgeBelow(cs.boxShadow)),
-          radius: radius + RING_GAP,
-        };
+      const tight = el && own ? ringOf(el, own, clipRects) : null;
+      // What is shown: every one on the page with a size, but the lit control itself, or what holds
+      // it or is held by it, which its own ring already shows.
+      const shown: Hole[] = [];
+      let on = 0;
+      if (!watch && !last) {
+        for (const sel of shows) {
+          for (const s of Array.from(document.querySelectorAll<HTMLElement>(sel))) {
+            const r = s.getBoundingClientRect();
+            if (r.width <= 0 || r.height <= 0) continue;
+            on += 1;
+            if (el !== null && (s === el || s.contains(el) || el.contains(s))) continue;
+            let clips = shownClips.get(s);
+            if (clips === undefined) {
+              clips = clippersOf(s);
+              shownClips.set(s, clips);
+            }
+            shown.push(
+              ringOf(
+                s,
+                r,
+                clips.map((c) => c.el.getBoundingClientRect()),
+              ),
+            );
+          }
+        }
+      }
+      if (on !== foundNow) {
+        foundNow = on;
+        setFound(on);
+      }
+      const shownKey = keyOf(shown);
+      if (shownKey !== shownNow) {
+        shownNow = shownKey;
+        setShownAt(shown);
       }
       if (
         now === undefined ||
@@ -236,8 +317,8 @@ export function Spotlight({
     };
     read();
     return (): void => window.cancelAnimationFrame(frame);
-    // `key` stands for `stops`: the same hooks are the same search.
-  }, [key, last, watch, beatId]);
+    // `key` and `showKey` stand for `stops` and `shows`: the same hooks are the same search.
+  }, [key, showKey, last, watch, beatId]);
 
   // The words for what is lit: the beat's whole sentence, until a later control of it is lit.
   const thenText =
@@ -264,15 +345,11 @@ export function Spotlight({
     );
     return (): void => a.cancel();
   }, [ringAt === null, beatId]);
-  // The dimming stops where the ring does: the hole is the ring's outer edge.
-  const hole: Box | null = ringAt
-    ? {
-        left: ringAt.box.left - RING,
-        top: ringAt.box.top - RING,
-        width: ringAt.box.width + RING * 2,
-        height: ringAt.box.height + RING * 2,
-      }
-    : null;
+  // The dimming stops where each ring does: a hole is a ring's outer edge.
+  const holes: Hole[] = [
+    ...(box && ringAt ? [grown(ringAt, RING)] : []),
+    ...shownAt.map((h) => grown(h, SHOW_RING)),
+  ];
 
   const W = typeof window === 'undefined' ? 0 : window.innerWidth;
   const H = typeof window === 'undefined' ? 0 : window.innerHeight;
@@ -303,6 +380,8 @@ export function Spotlight({
     <div
       data-guide={beatId}
       data-guide-lit={box ? '1' : '0'}
+      data-guide-shows={shows.length}
+      data-guide-showing={found}
       style={{ position: 'fixed', inset: 0, zIndex: Z, pointerEvents: 'none' }}
     >
       {watch ? null : (
@@ -315,12 +394,43 @@ export function Spotlight({
             height={H}
             style={{ position: 'fixed', left: 0, top: 0, pointerEvents: 'none' }}
           >
-            <path
+            <defs>
+              <mask id="iw-guide-dim" maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+                <rect x={0} y={0} width={W} height={H} fill="white" />
+                {holes.map((h, i) => {
+                  const r = holeShape(h);
+                  return <rect key={i} {...r} ry={r.rx} fill="black" />;
+                })}
+              </mask>
+            </defs>
+            <rect
+              data-guide-dim=""
+              x={0}
+              y={0}
+              width={W}
+              height={H}
               fill={DIM}
-              fillRule="evenodd"
-              d={dimPath(W, H, hole && ringAt ? [{ box: hole, radius: ringAt.radius + RING }] : [])}
+              mask="url(#iw-guide-dim)"
             />
           </svg>
+          {shownAt.map((h, i) => (
+            // What the sentence is about: ringed, still, and not pressable.
+            <div
+              key={i}
+              data-guide-shown=""
+              aria-hidden="true"
+              style={{
+                position: 'fixed',
+                left: h.box.left,
+                top: h.box.top,
+                width: h.box.width,
+                height: h.box.height,
+                borderRadius: h.radius,
+                boxShadow: `0 0 0 ${String(SHOW_RING)}px ${COLOUR.glow}`,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
         </>
       )}
       {box && ringAt ? (
