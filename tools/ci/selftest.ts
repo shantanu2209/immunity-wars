@@ -1553,6 +1553,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'A RING IS LEFT ON WHAT NO CARD TALKS ABOUT',
   },
   {
+    id: 'undo-is-hidden',
+    why: 'Ruled 17 October 2026: Undo is hidden beneath a switch in code, and kept. With the switch turned on, the frame test must FAIL saying the Undo is on the screen: the hiding is held by a test, and turning it back on is a choice a person makes.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace('export const UNDO_SHOWN = false;', 'export const UNDO_SHOWN = true;'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Frame.test.ts',
+    expect: 'THE UNDO IS ON THE SCREEN',
+  },
+  {
     id: 'guide-walk-names-a-stuck-beat',
     why: 'Stage L6: the guided game is walked in the built app by pressing only what the guide lights. A beat whose control is not on the page lights nothing, and a player would be left looking at a sentence with nothing to tap. With the hook for the Neutrophil’s NET misnamed, the walk must FAIL naming that beat and saying nothing is lit, and not run on to a time limit.',
     file: 'packages/ui/src/guide/model.ts',

@@ -12,6 +12,8 @@
  *  4. THE TOP BAR IS THE MENU, WHAT IS IN FORCE, AND THE TURN, in that order (ruled 16 October
  *     2026), and the Action Points and the messages are in the play area's corners.
  *     Control: top-bar-menu-at-start-turn-at-end.
+ *  5. UNDO IS HIDDEN, AND KEPT (ruled 17 October 2026): not drawn on the card, and drawn as it was
+ *     when its switch is on, so the button and its reasons stay tested. Control: undo-is-hidden.
  */
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -36,9 +38,10 @@ const row = (action: string, available: boolean): DockRow =>
     offerId: available ? action : null,
   }) as unknown as DockRow;
 
-const actions = (rows: DockRow[]): string =>
+const actions = (rows: DockRow[], undoShown?: boolean): string =>
   renderToStaticMarkup(
     createElement(ActionsView, {
+      ...(undoShown === undefined ? {} : { undoShown }),
       selectedName: 'Monocyte',
       piece: { src: '/art/clay/board/macrophage@3x.webp', base: '/art/clay/board/base@3x.webp' },
       onCard: () => undefined,
@@ -81,8 +84,14 @@ describe('the selected piece’s card', () => {
     expect(dead.map(() => 'A FLAT ACTION CANNOT BE PRESSED: it can no longer say why')).toEqual([]);
   });
 
-  it('and so does the Undo that has nothing to undo', () => {
-    expect(tag(html, 'data-dock-undo="no-moves"')).not.toMatch(/\sdisabled(=|\s|>)/);
+  it('and so does the Undo that has nothing to undo, where Undo is drawn', () => {
+    const shown = actions([row('engulf', true)], true);
+    expect(tag(shown, 'data-dock-undo="no-moves"')).not.toMatch(/\sdisabled(=|\s|>)/);
+  });
+
+  it('Undo is not drawn: it is hidden, and kept behind its switch (17 October 2026)', () => {
+    expect(html.includes('data-dock-undo'), 'THE UNDO IS ON THE SCREEN').toBe(false);
+    expect(actions([row('engulf', true)], true)).toContain('data-dock-undo');
   });
 
   it('while a spread plays nothing on it can be pressed at all', () => {
