@@ -12,8 +12,12 @@
  * exactly as a player led by it would, until the guide hands the game over.
  *
  * WHAT IT REQUIRES, read from the page beat by beat and not from a verdict:
+ *  - the title's Learn to play opens the chapters (ruled 16 October 2026): on a phone that has
+ *    never played, the first is the one to play and every other is locked and cannot be pressed;
  *  - the beats come in the lesson's own order, every one of them: each turn's cards, its plan,
  *    each step by its name, its End turn and its spread, and then the last word;
+ *  - every card says which step of its chapter it is, "Step 3 of 9", counted from the walk's own
+ *    list of the lesson's beats and not from the guide's;
  *  - at every beat that asks for a tap, something on the page is lit and pressing it moves the
  *    lesson on. A beat that stays, with nothing lit or with a light that does nothing, is named;
  *  - when the lesson ends the guide is gone and the game stands at the turn after the lesson's last;
@@ -29,7 +33,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { LESSON } from '@immunity-wars/content';
+import { LESSON, UI_I18N_EN } from '@immunity-wars/content';
 import puppeteer from 'puppeteer-core';
 
 const CHROME =
@@ -87,8 +91,28 @@ function expectedBeats(): string[] {
   return out;
 }
 
+/**
+ * What each beat's card should say it is: its place among its chapter's cards. A chapter's card that
+ * says the one before is done is the last of that one; the card that says what the next is about is
+ * the first of the next.
+ */
+function expectedCounts(beats: readonly string[]): string[] {
+  const chapterOf: number[] = [];
+  let c = 0;
+  for (const b of beats) {
+    if (b.startsWith('chapter.') && b.endsWith('.intro')) c += 1;
+    chapterOf.push(c);
+  }
+  const say = UI_I18N_EN['guide.count'] ?? '';
+  return beats.map((_, i) => {
+    const mine = chapterOf.flatMap((k, j) => (k === chapterOf[i] ? [j] : []));
+    return say.replace('{n}', String(mine.indexOf(i) + 1)).replace('{of}', String(mine.length));
+  });
+}
+
 interface Look {
   beat: string | null;
+  count: string;
   lit: boolean;
   pressable: boolean;
   next: boolean;
@@ -101,6 +125,7 @@ const LOOK = `(() => {
   const p = document.querySelector('[data-guide-press]');
   return {
     beat: g ? g.getAttribute('data-guide') : null,
+    count: (document.querySelector('[data-guide-count]')?.textContent ?? '').trim(),
     lit: g ? g.getAttribute('data-guide-lit') === '1' : false,
     pressable: p ? !p.disabled : false,
     next: document.querySelector('[data-guide-next]') !== null,
@@ -163,6 +188,7 @@ try {
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
   const errors: string[] = [];
   const seen: string[] = [];
+  const counts: string[] = [];
   let handedTurn = '';
   let guideGone = false;
   try {
@@ -187,6 +213,20 @@ try {
     if (!offered)
       refuse('the title of a phone that has never played does not offer the guided game');
     await page.evaluate(click('[data-title="learn"]'));
+    await page
+      .waitForFunction(() => document.querySelector('[data-screen="chapters"]') !== null, {
+        timeout: 10_000,
+      })
+      .catch(() => refuse('Learn to play does not open the chapters'));
+    const chapters = (await page.evaluate(`[...document.querySelectorAll('[data-chapter]')].map(
+      (b) => b.getAttribute('data-chapter-state') + (b.disabled ? ':disabled' : ''))`)) as string[];
+    const fresh = LESSON.chapters.map((_, c) => (c === 0 ? 'open' : 'locked:disabled'));
+    if (chapters.join(' ') !== fresh.join(' '))
+      refuse(
+        `A NEW PHONE'S CHAPTERS ARE NOT THE FIRST TO PLAY AND THE REST LOCKED: ${chapters.join(' ')}`,
+      );
+    console.log(`GUIDE WALK: the chapters, on a new phone: ${chapters.join(' ')}`);
+    await page.evaluate(click('[data-chapter-state="open"]'));
     await wait(1200);
 
     let stayed = 0;
@@ -201,7 +241,10 @@ try {
       const key = `${String(s.beat)}|${String(s.lit)}`;
       stayed = key === last ? stayed + 1 : 0;
       last = key;
-      if (s.beat !== null && seen[seen.length - 1] !== s.beat) seen.push(s.beat);
+      if (s.beat !== null && seen[seen.length - 1] !== s.beat) {
+        seen.push(s.beat);
+        counts.push(s.count);
+      }
       if (stayed > PATIENCE) {
         refuse(
           s.beat === null
@@ -238,6 +281,17 @@ try {
       `THE BEATS ARE NOT THE LESSON’S: beat ${String(at + 1)} should be ${expected[at] ?? 'nothing more'} and was ${seen[at] ?? 'nothing'}`,
     );
   }
+  const said = expectedCounts(expected);
+  const miscount = said.findIndex((c, i) => counts[i] !== c);
+  if (miscount >= 0) {
+    refuse(
+      `THE CARD DOES NOT SAY WHICH STEP IT IS: ${expected[miscount] ?? ''} said "${counts[miscount] ?? ''}" and should say "${said[miscount] ?? ''}"`,
+    );
+  }
+  const lasts = said.filter((_, i) => expected[i + 1]?.endsWith('.intro') ?? true);
+  console.log(
+    `GUIDE WALK: every card counted in its chapter; each chapter ends at ${lasts.join(', ')}`,
+  );
   if (!guideGone) refuse('the lesson’s last word was answered and the guide is still on the page');
   const wanted = `${String(LESSON.turns.length + 1)}/`;
   if (!handedTurn.startsWith(wanted)) {

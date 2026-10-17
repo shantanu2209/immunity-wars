@@ -414,25 +414,55 @@ export function afterTold(lesson: Lesson, pos: GuidePos): GuidePos {
   return arrive(lesson, { turn: pos.turn, step: pos.step + 1 });
 }
 
+/** One card of the lesson's, as a player meets it: its beat, and the chapter it is in (from 0). */
+export interface LessonBeat {
+  readonly id: string;
+  readonly chapter: number;
+}
+
 /**
- * How far through the lesson the player is: the chapter, and the step within it, for "Chapter 2
- * of 7: 3 of 9". Counted in the lesson's own steps; a chapter's card counts as its first.
+ * EVERY CARD OF THE LESSON, IN ITS ORDER (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): each
+ * turn's cards, its plan, each step, its End turn and its spread, a chapter's two cards where it
+ * begins, and the last word. A chapter's card that says the one before is done is the last of that
+ * one; the card that says what the next is about is the first of the next. `pnpm guide:walk` holds
+ * this order to the page, from a list of its own.
  */
-export function progress(
-  lesson: Lesson,
-  pos: GuidePos,
-): { chapter: number; chapters: number; n: number; of: number } {
-  const flat = (p: GuidePos): number =>
-    lesson.turns.slice(0, p.turn).reduce((sum, t) => sum + t.steps.length, 0) + p.step;
-  const total = flat({ turn: lesson.turns.length, step: 0 });
-  const c = pos.at === 'done' ? chapterOf(lesson, pos) - 1 : chapterOf(lesson, pos);
-  const from = flat(chapterStart(lesson, c));
-  const to = c + 1 < lesson.chapters.length ? flat(chapterStart(lesson, c + 1)) : total;
-  const here = pos.at === 'done' ? to - 1 : flat(pos);
-  return {
-    chapter: c + 1,
-    chapters: lesson.chapters.length,
-    n: Math.min(to - from, Math.max(1, here - from + 1)),
-    of: to - from,
+export function lessonBeats(lesson: Lesson): LessonBeat[] {
+  const out: LessonBeat[] = [];
+  let chapter = 0;
+  const cards = (t: number, i: number): void => {
+    const k = lesson.chapters.findIndex(
+      (_, c) => c > 0 && chapterStart(lesson, c).turn === t && chapterStart(lesson, c).step === i,
+    );
+    if (k < 1) return;
+    out.push({ id: `chapter.${lesson.chapters[k - 1]?.id ?? ''}.done`, chapter });
+    chapter = k;
+    out.push({ id: `chapter.${lesson.chapters[k]?.id ?? ''}.intro`, chapter });
   };
+  lesson.turns.forEach((turn, t) => {
+    const n = String(t + 1);
+    cards(t, 0);
+    out.push({ id: `t${n}.cards`, chapter }, { id: `t${n}.plan`, chapter });
+    turn.steps.forEach((step, i) => {
+      if (i > 0) cards(t, i);
+      out.push({ id: step.id, chapter });
+    });
+    out.push({ id: `t${n}.end`, chapter }, { id: `t${n}.spread`, chapter });
+  });
+  out.push({ id: 'end', chapter });
+  return out;
+}
+
+/**
+ * Which card of its chapter a beat is, for "Step 3 of 9" (ruled 16 October 2026: the count names
+ * what it counts, and every card the player reads is a step). Null for a beat the lesson does not
+ * have.
+ */
+export function stepCount(lesson: Lesson, beatId: string): { n: number; of: number } | null {
+  const all = lessonBeats(lesson);
+  const at = all.findIndex((b) => b.id === beatId);
+  const here = all[at];
+  if (!here) return null;
+  const mine = all.filter((b) => b.chapter === here.chapter);
+  return { n: mine.findIndex((b) => b.id === beatId) + 1, of: mine.length };
 }

@@ -100,7 +100,7 @@ import {
   chapterOf,
   guideBeat,
   holdsTheDraw,
-  progress,
+  stepCount,
   type GuidePos,
   type GuideStage,
 } from '../guide/model';
@@ -126,6 +126,12 @@ import {
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
 // its outcome), so they hold longer. A tap anywhere advances immediately.
+/** "Step 3 of 9": which card of its chapter the guide's card is, or nothing if it is not counted. */
+const stepText = (lesson: Lesson, beatId: string): string => {
+  const c = stepCount(lesson, beatId);
+  return c ? t('guide.count', c) : '';
+};
+
 const FRAME_MS = 900;
 const DICE_FRAME_MS = 1400;
 
@@ -1713,7 +1719,7 @@ export function PlayScreen({
           last={beat.last}
           chapterEnd={beat.chapterEnd}
           watch={guideStage === 'spread'}
-          count={t('guide.count', progress(guide.lesson, guidePos))}
+          count={stepText(guide.lesson, beat.id)}
           onNext={() => {
             if (beat.last) guide.onEnd('finished');
             else moveGuide(afterTold(guide.lesson, guidePos));

@@ -6,6 +6,8 @@
  *
  * ON A PHONE THAT HAS NEVER PLAYED IT IS THE GUIDED GAME (stage L6, ruled 2 October 2026): the
  * way in for a newcomer is the thing that title is for. With a game waiting it is still Continue.
+ * On every other phone the guided game is there and rests (16 October 2026): its chapters are
+ * played again from it.
  * Controls: pnpm ci:selftest title-one-main-button, title-guided-game-leads-a-new-phone.
  */
 import { createElement } from 'react';
@@ -28,7 +30,8 @@ const title = (
       rejoin,
       onContinue: () => undefined,
       onNewGame: () => undefined,
-      onLearn: neverPlayed ? () => undefined : null,
+      onLearn: () => undefined,
+      learnFirst: neverPlayed,
       onTogether: () => undefined,
       onRejoin: () => undefined,
       onSettings: () => undefined,
@@ -89,28 +92,11 @@ describe('the title’s main button', () => {
     expect(title(saved, null, true)).toContain('data-title="learn"');
   });
 
-  it('a player coming back to the lesson is told it continues, and at which chapter (step 3)', () => {
-    const html = renderToStaticMarkup(
-      createElement(TitleScreen, {
-        save: null,
-        onContinue: () => undefined,
-        onNewGame: () => undefined,
-        onLearn: () => undefined,
-        learnAt: { chapter: 2, of: 7 },
-        onTogether: () => undefined,
-        onSettings: () => undefined,
-        onHelp: () => undefined,
-        onAbout: () => undefined,
-      }),
-    );
-    expect(html, 'THE TITLE DOES NOT SAY THE LESSON CONTINUES').toContain(t('title.learnOn'));
-    expect(html).toContain(t('title.learnAt', { chapter: 2, of: 7 }));
-    expect(mains(html)).toEqual(['learn']);
-  });
-
-  it('on a phone that has played it is not on the title', () => {
-    expect(title(null)).not.toContain('data-title="learn"');
-    expect(title(saved)).not.toContain('data-title="learn"');
+  it('on a phone that has played it is still on the title, resting, for its chapters', () => {
+    // Ruled 16 October 2026: a chapter done is green and can be played again, so its door stays.
+    expect(title(null), 'THE GUIDED GAME HAS LEFT THE TITLE').toContain('data-title="learn"');
+    expect(title(saved)).toContain('data-title="learn"');
+    expect(title(null)).toContain(t('title.learn'));
   });
 
   it('its picture is laid over its box, not sized by it (FINDINGS #127)', () => {

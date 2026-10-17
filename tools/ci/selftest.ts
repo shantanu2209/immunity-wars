@@ -1318,7 +1318,7 @@ const CONTROLS: readonly Control[] = [
     id: 'title-one-main-button',
     why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
-    mutate: (t) => t.replace("kind={waiting || onLearn ? 'rest' : 'main'}", 'kind="main"'),
+    mutate: (t) => t.replace("kind={waiting || learnFirst ? 'rest' : 'main'}", 'kind="main"'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE TITLE HAS TWO MAIN BUTTONS',
   },
@@ -1355,7 +1355,7 @@ const CONTROLS: readonly Control[] = [
     id: 'title-guided-game-leads-a-new-phone',
     why: 'Stage L6, ruled 2 October 2026: on a phone that has never played, the title’s main button is the guided game. With the guided game drawn as a resting button there, a newcomer’s title has New game resting too and no main button at all, and the title’s test must FAIL saying the guided game is not the main button of a new phone’s title.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
-    mutate: (t) => t.replace("kind={waiting ? 'rest' : 'main'}", 'kind="rest"'),
+    mutate: (t) => t.replace("kind={learnFirst && !waiting ? 'main' : 'rest'}", 'kind="rest"'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
   },
@@ -1442,13 +1442,59 @@ const CONTROLS: readonly Control[] = [
     expect: 'A LATER TAP DOES NOT SAY WHAT ITS BUTTON SAYS',
   },
   {
-    id: 'title-says-the-lesson-continues',
-    why: 'Step 3: a player with chapters done is told on the title that the lesson continues, and at which chapter. With the button saying Learn to play whatever is done, the title test must FAIL saying it does not say the lesson continues.',
+    id: 'title-keeps-the-guided-game',
+    why: 'Ruled 16 October 2026: a chapter done is green and can be played again, so Learn to play stays on the title once the lesson or a game has been finished, where it had left. With it drawn only for a phone that has never played, the title test must FAIL saying the guided game has left the title.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
-    mutate: (t) =>
-      t.replace("{learnAt ? t('title.learnOn') : t('title.learn')}", "{t('title.learn')}"),
+    mutate: (t) => t.replace('        {onLearn ? (', '        {onLearn && learnFirst ? ('),
     gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',
-    expect: 'THE TITLE DOES NOT SAY THE LESSON CONTINUES',
+    expect: 'THE GUIDED GAME HAS LEFT THE TITLE',
+  },
+  {
+    id: 'chapters-locked-cannot-be-pressed',
+    why: 'Ruled 16 October 2026: only the first chapter is playable at first, and each after it only once the one before is done; the rest are not clickable. With a locked chapter drawn as an ordinary button, the chapter screen’s test must FAIL saying a locked chapter can be pressed.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) => t.replace("unavailable={state === 'locked'}", 'unavailable={false}'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'A LOCKED CHAPTER CAN BE PRESSED',
+  },
+  {
+    id: 'chapters-next-follows-the-done',
+    why: 'Ruled 16 October 2026: the chapter after the last one done is the next, orange and playable. With the next counted one too far, the chapter screen’s test must FAIL saying the next chapter is not the one after the last done.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) =>
+      t.replace("c === done ? 'open' : 'locked'", "c === done + 1 ? 'open' : 'locked'"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'THE NEXT CHAPTER IS NOT THE ONE AFTER THE LAST DONE',
+  },
+  {
+    id: 'chapters-say-what-the-lesson-does-to-a-save',
+    why: 'Stage L6: when the lesson’s last chapter ends its game is the player’s, and is saved in place of a game already saved. Settings’ confirm said so until 16 October 2026; the chapters say it now. With the sentence never shown, the chapter screen’s test must FAIL saying the chapters do not say what the lesson does to a saved game.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) =>
+      t.replace('      {replacesSave ? (', '      {replacesSave && chapters.length < 0 ? ('),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'THE CHAPTERS DO NOT SAY WHAT THE LESSON DOES TO A SAVED GAME',
+  },
+  {
+    id: 'guide-count-begins-again-at-a-chapter',
+    why: 'Ruled 16 October 2026: the card says "Step 3 of 9", the step of its chapter, where it said the chapter and two bare numbers. With the lesson counted whole, the guide’s test must FAIL saying the count does not begin again at a chapter.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        'const mine = all.filter((b) => b.chapter === here.chapter);',
+        'const mine = all.filter((b) => b.chapter >= 0);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'THE COUNT DOES NOT BEGIN AGAIN AT A CHAPTER',
+  },
+  {
+    id: 'guide-walk-reads-the-count',
+    why: 'Ruled 16 October 2026: every card says which step of its chapter it is. The walk counts the cards from its own list of the lesson and reads what each says on the page. With every card given the last word’s count, the walk must FAIL saying a card does not say which step it is.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace('count={stepText(guide.lesson, beat.id)}', "count={stepText(guide.lesson, 'end')}"),
+    gate: 'pnpm guide:walk --build',
+    expect: 'THE CARD DOES NOT SAY WHICH STEP IT IS',
   },
   {
     id: 'guide-walk-names-a-stuck-beat',
