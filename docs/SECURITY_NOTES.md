@@ -614,6 +614,22 @@ own `^1.2.1` range.
 |---|---|
 | `pnpm audit` | No known vulnerabilities |
 | The lockfile | One version of `source-map-js` left, 1.2.2 |
-| Coverage, which is what reads it | Run by the toolchain battery on this pin with the day's updates (below) |
+| Coverage, which is what reads it | Measured from scratch with it, below |
+
+**The toolchain battery** (`CLAUDE.md`, "Known issues"), run on this pin with the day's updates,
+which are the move it exists for: vite 8.3.1 to 8.3.4 (#171); turbo 2.11.4 to 2.11.8, eslint,
+typescript-eslint, prettier, dependency-cruiser and `@types/node` (#179, Dependabot's group in
+place of #173); puppeteer-core (#172), sharp (#164) and ws (#166). On the PC, 17 October 2026.
+
+| Part | Result |
+|---|---|
+| `pnpm verify` | Passed |
+| The full self-test, read control by control | 257 of 257 behaved, each with its own line; the working tree clean after |
+| The manifest's controls | 7 of 7 fired on exactly what each targets; the manifest restored byte for byte |
+| `rm -rf coverage && pnpm coverage:all && pnpm coverage:gate` | 97.49% of 1,873 coverable arms, target 95%; the record committed is the record regenerated |
+| Two forced test runs, `--force --continue` | 18 of 18 suites passed, twice |
+
+- **What the battery does not cover:** the relay running with the new `ws` (#166). Its own tests
+  pass on it; it is not deployed until the relay is.
 
 > ### The property, re-read 17 October 2026: no open advisory is in a process that listens, because no advisory is open.
