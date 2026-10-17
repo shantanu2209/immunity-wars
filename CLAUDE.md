@@ -63,10 +63,12 @@ through the session against the real engine, with its seed for dice, and `pnpm g
 seed when a change breaks it. Its dice are swapped in round each engine call and nowhere else
 (`packages/session/src/local.ts`, `rails`), and a game on rails is not saved. **The light that leads the
 player is built** (`packages/ui/src/guide/`: `model.ts` says the one sentence and the one control
-for where the player is; `Spotlight.tsx` dims the rest and hands a press to the real control), with
-its 63 sentences under `guide.` in the catalogue, the title's *Learn to play* on a phone that has
-never finished a game, and Settings' *Play the guided game*. `pnpm guide:walk` walks it in the built
-app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
+for where the player is, and what it talks about; `Spotlight.tsx` dims the rest, leaves what is
+talked about clear, and hands a press to the real control), with its sentences under `guide.` in
+the catalogue. Since 16 October 2026 the lesson is seven chapters to choose from: the title's
+*Learn to play* and Settings' *Play the guided game* open them
+(`packages/ui/src/screens/ChaptersScreen.tsx`; plan §29), and each card says its step of its
+chapter. `pnpm guide:walk` walks it in the built app, pressing only what is lit. Walking it found a rule no player could use: a resident's Recall
 had no button (`docs/FINDINGS.md` #113). **What changes between the difficulties is
 said in a line of the lesson and in one table** (`packages/ui/src/screens/difficultyFacts.ts`,
 drawn by `DifferencesCard.tsx`), shown on the difficulty screen, on the result of a game on Easy
@@ -237,8 +239,10 @@ contract Task B was measured against.
   Every message both ways is written by `encode` in `packages/protocol`, which stamps it with the
   protocol version and `RULES_VERSION`; a peer on either other version is refused before its
   body is read, with controls on both the check and the stamping (P3.2, `docs/for-P3.md` §2).
-  **Saved games still carry no version**, which is seam 7's deferred pack check, **ruled Phase 4's
-  on 25 September 2026** (Phase 3 brief review R3), where app updates begin. *Corrected 21 Sep 2026, at P3.2.* This line said messages did not carry it,
+  **Saved games carry the rules version that wrote them, since 5 October 2026** (seam 7, ruled
+  Phase 4's on 25 September and built early, `docs/LOOK_PLAN.md` §28, step 4): a game a newer
+  version saved is not continued, and an older or unstamped one is carried forward
+  (`packages/session/src/saveFit.ts`). *Corrected 21 Sep 2026, at P3.2.* This line said messages did not carry it,
   true until this change; before that, *corrected 12 Aug 2026 at Task D*, it asserted that every
   state and message carried it when neither did (`docs/FINDINGS.md` #26).
 - All player-visible strings go in i18n catalogues. Never hardcode UI text — a Hindi edition

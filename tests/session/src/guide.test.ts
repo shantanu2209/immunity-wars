@@ -14,19 +14,44 @@
  *  3. THE SCREENS AND THE SESSION DISAGREE ABOUT WHAT A MOVE IS. The walk of the guided game found
  *     exactly that: a resident's Recall, a rule since queue Q6, had no button anywhere, because
  *     the screens' list of moves was not the session's (docs/FINDINGS.md #113).
+ *
+ * THE CHAPTERS (step 3, `docs/LOOK_PLAN.md` §28). The walk meets each chapter's end and the next
+ * one's start, once each and in order. And a player who comes back to a chapter is brought to it by
+ * playing the lesson again on its dice (`playLessonTo`): from every chapter, the rest of the lesson
+ * is played here to its end, so a place that the replay does not reach exactly is a failure.
+ * Control: pnpm ci:selftest lesson-resumes-at-every-chapter.
+ *
+ * STEP A OF B (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): every card the player reads says
+ * which step of its chapter it is, counted from 1 again at each chapter. The cards are listed by
+ * `lessonBeats`, and held here to the walk through the engine; `pnpm guide:walk` holds the whole
+ * list, cards, plans and spreads too, to the built app.
+ * Control: pnpm ci:selftest guide-count-begins-again-at-a-chapter.
+ *
+ * WHAT A CARD TALKS ABOUT IS SHOWN (the same day): the disease a step acts on, or what the lesson
+ * names for it. Shown means found on the board, so at every card of the walk each thing it shows
+ * must be in the game: a cell, or an invader of that disease.
+ * Control: pnpm ci:selftest guide-shows-what-a-step-acts-on.
  */
 import { LESSON, UI_I18N_EN } from '@immunity-wars/content';
-import { LocalSession, lessonAction, seededDice } from '@immunity-wars/session';
+import { LocalSession, lessonAction, playLessonTo, seededDice } from '@immunity-wars/session';
 import { MOVE_CLASS } from '@immunity-wars/session-core';
 import {
   GUIDE_START,
   MOVE_LIKE,
   afterAccepted,
   afterTold,
+  chapterStart,
   guideBeat,
+  holdsTheDraw,
+  lessonBeats,
   lessonOver,
+  resumeAt,
   sameAction,
+  showHooks,
+  shownNames,
+  stepCount,
   stopsFor,
+  t,
   type GuidePos,
 } from '@immunity-wars/ui';
 import { describe, expect, it } from 'vitest';
@@ -37,70 +62,175 @@ const newLesson = (): LocalSession =>
     { rails: { dice: seededDice(LESSON.seed) } },
   );
 
-describe('the guide follows the lesson through the real engine', () => {
-  it('is at each step in turn, moves on when the engine accepts it, and ends with the lesson', async () => {
-    const session = newLesson();
-    let pos: GuidePos = GUIDE_START;
-    const beats: string[] = [];
-    const send = async (action: Record<string, unknown>): Promise<void> => {
-      const before = session.getView();
-      expect((await session.sendAction(action)).ok, JSON.stringify(action)).toBe(true);
-      const move = afterAccepted(LESSON, pos, before, action);
-      expect(move.kind, `THE GUIDE LEFT THE LESSON AT ${JSON.stringify(action)}`).not.toBe(
-        'parted',
-      );
-      if (move.kind === 'to') pos = move.pos;
-    };
-    for (const turn of LESSON.turns) {
+/**
+ * The guide from `start` to the lesson's end, through the real session: every beat it says, in
+ * order. A chapter's cards are passed with their own button, as a player passes them.
+ */
+async function walk(
+  session: LocalSession,
+  start: GuidePos,
+): Promise<{ beats: string[]; at: Map<string, string>; shows: string[] }> {
+  let pos: GuidePos = start;
+  const beats: string[] = [];
+  /** Everything the steps show, in order: for the test that a step shows what it acts on. */
+  const shows: string[] = [];
+  /** The game as each chapter begins, by chapter: what a player coming back must be brought to. */
+  const at = new Map<string, string>();
+  const send = async (action: Record<string, unknown>): Promise<void> => {
+    const before = session.getView();
+    expect((await session.sendAction(action)).ok, JSON.stringify(action)).toBe(true);
+    const move = afterAccepted(LESSON, pos, before, action);
+    expect(move.kind, `THE GUIDE LEFT THE LESSON AT ${JSON.stringify(action)}`).not.toBe('parted');
+    if (move.kind === 'to') pos = move.pos;
+  };
+  /** Each thing the card shows is in the game, where the page will look for it. */
+  const shown = (stage: 'command' | 'waiting', what: string): void => {
+    for (const name of shownNames(LESSON, pos, stage)) {
+      expect(
+        showHooks([name], session.getView()).length,
+        `A CARD SHOWS WHAT IS NOT IN THE GAME: ${what} shows ${name}`,
+      ).toBeGreaterThan(0);
+    }
+  };
+  /** A chapter's cards, wherever they come: each is said, and passed. */
+  const cards = (stage: 'command' | 'waiting'): void => {
+    while (pos.at !== undefined) {
+      shown(stage, `chapter card ${JSON.stringify(pos)}`);
+      expect(holdsTheDraw(LESSON, pos), 'A CHAPTER CARD LETS THE NEXT TURN BE DRAWN').toBe(true);
+      const beat = guideBeat(LESSON, pos, stage, session.getView());
+      expect(beat?.tell).toBe(true);
+      expect(beat?.chapterEnd).toBe(pos.at === 'done');
+      beats.push(beat?.id ?? '');
+      if (pos.at === 'intro') at.set(beat?.id ?? '', JSON.stringify(session.getView().game));
+      pos = afterTold(LESSON, pos);
+    }
+  };
+  for (let t = start.turn; t < LESSON.turns.length; t += 1) {
+    const turn = LESSON.turns[t];
+    if (!turn) break;
+    const resumedMidTurn = t === start.turn && start.step > 0;
+    if (!resumedMidTurn) {
+      cards('waiting');
       await send({ action: 'draw' });
       expect(guideBeat(LESSON, pos, 'arrivals', session.getView())?.stops).toEqual([
         '[data-dock-next]',
       ]);
       await send({ action: 'beginCommand' });
-      for (const step of turn.steps) {
-        const beat = guideBeat(LESSON, pos, 'command', session.getView());
-        expect(beat?.id).toBe(step.id);
-        beats.push(beat?.id ?? '');
-        if (step.do === 'tell') {
-          expect(beat?.tell).toBe(true);
-          pos = afterTold(pos);
-          continue;
-        }
-        // Something on the page is named for every step that is done, and it is a hook, not prose.
-        expect(beat?.stops.length, step.id).toBeGreaterThan(0);
-        expect(
-          beat?.stops.every((s) => s.startsWith('[data-')),
-          step.id,
-        ).toBe(true);
-        const action = lessonAction(step, session.getView().game);
-        if (!action) throw new Error(`${step.id} names what is not in the body`);
-        await send(action);
-      }
-      // The turn's steps are done: what is lit is End turn.
-      expect(guideBeat(LESSON, pos, 'command', session.getView())?.stops[0]).toBe(
-        '[data-dock-next="endTurn"]',
-      );
-      await send({ action: 'endCommand' });
     }
-    expect(beats).toEqual(LESSON.turns.flatMap((t) => t.steps.map((s) => s.id)));
-    expect(lessonOver(LESSON, pos)).toBe(true);
-    // And its last word is the one that hands the game over.
-    const end = guideBeat(LESSON, pos, 'waiting', session.getView());
-    expect(end?.last).toBe(true);
+    for (const step of turn.steps.slice(resumedMidTurn ? start.step : 0)) {
+      cards('command');
+      const beat = guideBeat(LESSON, pos, 'command', session.getView());
+      expect(beat?.id).toBe(step.id);
+      beats.push(beat?.id ?? '');
+      shown('command', step.id);
+      shows.push(...shownNames(LESSON, pos, 'command'));
+      if (step.do === 'tell') {
+        expect(beat?.tell).toBe(true);
+        pos = afterTold(LESSON, pos);
+        continue;
+      }
+      // Something on the page is named for every step that is done, and it is a hook, not prose.
+      expect(beat?.stops.length, step.id).toBeGreaterThan(0);
+      expect(
+        beat?.stops.every((s) => s.startsWith('[data-')),
+        step.id,
+      ).toBe(true);
+      const action = lessonAction(step, session.getView().game);
+      if (!action) throw new Error(`${step.id} names what is not in the body`);
+      await send(action);
+    }
+    cards('command');
+    shown('command', `turn ${String(t + 1)}'s End turn`);
+    // The turn's steps are done: what is lit is End turn.
+    expect(guideBeat(LESSON, pos, 'command', session.getView())?.stops[0]).toBe(
+      '[data-dock-next="endTurn"]',
+    );
+    await send({ action: 'endCommand' });
+  }
+  expect(lessonOver(LESSON, pos)).toBe(true);
+  // And its last word is the one that hands the game over.
+  const end = guideBeat(LESSON, pos, 'waiting', session.getView());
+  expect(end?.last).toBe(true);
+  return { beats, at, shows };
+}
+
+const STEPS = LESSON.turns.flatMap((t) => t.steps.map((s) => s.id));
+const CHAPTER_CARDS = LESSON.chapters.flatMap((ch, c) => [
+  ...(c > 0 ? [`chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`, `chapter.${ch.id}.intro`] : []),
+]);
+
+describe('the guide follows the lesson through the real engine', () => {
+  it('is at each step in turn, moves on when the engine accepts it, and ends with the lesson', async () => {
+    const session = newLesson();
+    const { beats } = await walk(session, GUIDE_START);
+    expect(beats.filter((b) => !b.startsWith('chapter.'))).toEqual(STEPS);
     session.dispose();
   });
+
+  it('meets every chapter’s end and the next one’s start, once each, in order, where each begins', async () => {
+    const session = newLesson();
+    const { beats } = await walk(session, GUIDE_START);
+    expect(LESSON.chapters.length).toBeGreaterThanOrEqual(2);
+    expect(beats.filter((b) => b.startsWith('chapter.'))).toEqual(CHAPTER_CARDS);
+    for (let c = 1; c < LESSON.chapters.length; c += 1) {
+      // The intro comes just before the step the chapter begins at.
+      const intro = beats.indexOf(`chapter.${LESSON.chapters[c]?.id ?? ''}.intro`);
+      expect(beats[intro + 1], LESSON.chapters[c]?.id).toBe(LESSON.chapters[c]?.from);
+    }
+    session.dispose();
+  });
+
+  /** The game as each chapter begins, played live from the lesson's start. */
+  const live = (async () => {
+    const session = newLesson();
+    const { at } = await walk(session, GUIDE_START);
+    session.dispose();
+    return at;
+  })();
+
+  for (let c = 1; c < LESSON.chapters.length; c += 1) {
+    const id = LESSON.chapters[c]?.id ?? '';
+    it(`a player coming back to chapter ${String(c + 1)}, ${id}, is brought to it and plays on to the end`, async () => {
+      const session = newLesson();
+      const to = chapterStart(LESSON, c);
+      const got = await playLessonTo(session, LESSON, to);
+      expect(got.why, 'THE LESSON COULD NOT BE PLAYED TO THE CHAPTER').toBe('');
+      // The very game a player who never stopped has there: the same dice, the same actions.
+      expect(
+        JSON.stringify(session.getView().game) === (await live).get(`chapter.${id}.intro`),
+        'A PLAYER COMING BACK IS NOT BROUGHT TO THE GAME THE CHAPTER BEGINS WITH',
+      ).toBe(true);
+      const { beats } = await walk(session, resumeAt(LESSON, c));
+      expect(beats[0], 'THE CHAPTER DOES NOT BEGIN WITH WHAT IT IS ABOUT').toBe(
+        `chapter.${id}.intro`,
+      );
+      // The rest of the lesson, from the chapter's first step, played as written.
+      const from = STEPS.indexOf(LESSON.chapters[c]?.from ?? '');
+      expect(beats.filter((b) => !b.startsWith('chapter.'))).toEqual(STEPS.slice(from));
+      session.dispose();
+    });
+  }
 
   it('lets go when the engine accepts something the lesson did not ask for', async () => {
     const session = newLesson();
     await session.sendAction({ action: 'draw' });
     await session.sendAction({ action: 'beginCommand' });
-    // The lesson's first step is to make antibodies. The player moves a cell instead.
+    // The lesson's first step that is DONE, and not only said, is to make antibodies; the player
+    // moves a cell instead. Found by the nightly self-test (docs/FINDINGS.md #131): this test held
+    // the guide at the lesson's start, and when a told step came first there (the Action Points,
+    // 5 October) the stray move parted the guide for being made during a told step, so the check of
+    // an action the lesson did not ask for was never reached and its control went inert.
+    const first = LESSON.turns[0]?.steps.findIndex((s) => s.do !== 'tell') ?? -1;
+    const at: GuidePos = { turn: 0, step: first };
+    expect(LESSON.turns[0]?.steps[first]?.do, 'the step this test is aimed at').toBe('produce');
     const before = session.getView();
     const stray = { action: 'move', cell: 'nk', zone: 'route', lane: 'blood', step: 2 };
     expect((await session.sendAction(stray)).ok).toBe(true);
-    expect(afterAccepted(LESSON, GUIDE_START, before, stray).kind, 'THE GUIDE DID NOT LET GO').toBe(
+    expect(afterAccepted(LESSON, at, before, stray).kind, 'THE GUIDE DID NOT LET GO').toBe(
       'parted',
     );
+    // During a told step any action parts the guide too: there is nothing to do but read.
+    expect(afterAccepted(LESSON, GUIDE_START, before, stray).kind).toBe('parted');
     // Ending the turn with its steps undone is leaving the lesson too.
     expect(afterAccepted(LESSON, GUIDE_START, before, { action: 'endCommand' }).kind).toBe(
       'parted',
@@ -129,6 +259,38 @@ describe('the guide follows the lesson through the real engine', () => {
     session.dispose();
   });
 
+  it('says the whole sentence for the first tap, and a few words for each later one (step 3)', async () => {
+    const session = newLesson();
+    await session.sendAction({ action: 'draw' });
+    await session.sendAction({ action: 'beginCommand' });
+    const pos = (id: string): GuidePos => {
+      const i = LESSON.turns[0]?.steps.findIndex((s) => s.id === id) ?? -1;
+      return { turn: 0, step: i };
+    };
+    // Coat: the B-Cell first, with nothing short beside it; then its row, "Now tap Coat."
+    const before = guideBeat(LESSON, pos('t1.coat'), 'command', session.getView());
+    expect(before?.then).toEqual([null]);
+    session.setSelection({ cell: 'bcell', family: null, resident: null });
+    const after = guideBeat(LESSON, pos('t1.coat'), 'command', session.getView());
+    const row = after?.stops.indexOf('[data-dock-row="tag"]') ?? -1;
+    const then = after?.then[row];
+    const words = then
+      ? t(then.key, { ...then.params, action: t(then.params?.['action'] ?? '') })
+      : '';
+    expect(words, 'A LATER TAP DOES NOT SAY WHAT ITS BUTTON SAYS').toBe(
+      `Now tap ${t('action.tag')}.`,
+    );
+    // Produce: the tile, then the class, then the button.
+    session.setSelection({ cell: null, family: 'EXB', resident: null });
+    const produce = guideBeat(LESSON, pos('t1.produce'), 'command', session.getView());
+    expect(produce?.then.map((x) => x?.key ?? null)).toEqual([
+      'guide.then.tap',
+      'guide.then.family',
+      null,
+    ]);
+    session.dispose();
+  });
+
   it('knows one action by what the lesson names, whatever else the screen sends with it', () => {
     const asked = { action: 'tag', invaderId: 'i7' };
     expect(sameAction(asked, { action: 'tag', cell: 'bcell', invaderId: 'i7' })).toBe(true);
@@ -148,6 +310,75 @@ describe('the guide follows the lesson through the real engine', () => {
   });
 });
 
+describe('every card says which step of its chapter it is (16 October 2026)', () => {
+  const all = lessonBeats(LESSON);
+
+  it('lists the lesson’s steps and chapter cards in the order the walk through the engine meets them', async () => {
+    const session = newLesson();
+    const { beats } = await walk(session, GUIDE_START);
+    session.dispose();
+    const named = new Set(beats);
+    expect(all.map((b) => b.id).filter((id) => named.has(id))).toEqual(beats);
+    // And each turn's own cards between: the new cards, the plan, End turn, the spread.
+    expect(all.length).toBe(beats.length + LESSON.turns.length * 4 + 1);
+    expect(new Set(all.map((b) => b.id)).size, 'two cards of one name').toBe(all.length);
+  });
+
+  it('each chapter counts from 1 to its own last card, and the next begins at 1 again', () => {
+    for (let c = 0; c < LESSON.chapters.length; c += 1) {
+      const mine = all.filter((b) => b.chapter === c);
+      expect(mine.length, LESSON.chapters[c]?.id).toBeGreaterThan(0);
+      mine.forEach((b, i) => {
+        expect(
+          stepCount(LESSON, b.id),
+          `THE COUNT DOES NOT BEGIN AGAIN AT A CHAPTER: ${b.id}`,
+        ).toEqual({
+          n: i + 1,
+          of: mine.length,
+        });
+      });
+    }
+    expect(stepCount(LESSON, 'no.such.beat')).toBeNull();
+  });
+
+  it('a chapter’s card that says it is done is its last; the one about the next is the next’s first', () => {
+    for (let c = 1; c < LESSON.chapters.length; c += 1) {
+      const done = `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`;
+      const intro = `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`;
+      const d = stepCount(LESSON, done);
+      expect(d?.n, done).toBe(d?.of);
+      expect(stepCount(LESSON, intro)?.n, intro).toBe(1);
+    }
+    expect(stepCount(LESSON, all[0]?.id ?? '')?.n).toBe(1);
+    const end = stepCount(LESSON, 'end');
+    expect(end?.n, 'the last word is the last chapter’s last card').toBe(end?.of);
+  });
+});
+
+describe('what a card talks about is shown (16 October 2026)', () => {
+  it('a step shows the disease it acts on, and what the lesson names, and each is in the game', async () => {
+    const session = newLesson();
+    const { shows } = await walk(session, GUIDE_START);
+    session.dispose();
+    // Every disease a step acts on is among what is shown, each where it is acted on.
+    for (const step of LESSON.turns.flatMap((t) => t.steps)) {
+      const acts = 'disease' in step ? step.disease : step.do === 'produce' ? step.for : null;
+      if (acts !== null && step.show === undefined) {
+        expect(shows, `A STEP DOES NOT SHOW WHAT IT ACTS ON: ${step.id}`).toContain(acts);
+      }
+    }
+    // The new cards and the body: the turn's first two cards.
+    const view = session.getView();
+    expect(guideBeat(LESSON, GUIDE_START, 'arrivals', view)?.shows).toContain(
+      '[data-arrivals-grid]',
+    );
+    expect(guideBeat(LESSON, GUIDE_START, 'planning', view)?.shows).toEqual(['[data-anatomy]']);
+    // A cell by its key, and nothing during the spread.
+    expect(showHooks(['bcell'], view)).toEqual(['[data-cell="bcell"]']);
+    expect(shownNames(LESSON, GUIDE_START, 'spread')).toEqual([]);
+  });
+});
+
 describe('every beat of the lesson has its sentence, and every sentence its beat', () => {
   const say = UI_I18N_EN as Record<string, string>;
   /** Every key the guide can ask for, from the lesson itself. */
@@ -157,6 +388,11 @@ describe('every beat of the lesson has its sentence, and every sentence its beat
     'guide.end',
     'guide.t1.plan',
     'guide.t1.spread',
+    'guide.then.tap',
+    'guide.then.place',
+    'guide.then.family',
+    'guide.then.target',
+    ...CHAPTER_CARDS.map((b) => `guide.${b}`),
     ...LESSON.turns.flatMap((t, i) => [
       `guide.t${String(i + 1)}.cards`,
       `guide.t${String(i + 1)}.end`,
@@ -173,8 +409,10 @@ describe('every beat of the lesson has its sentence, and every sentence its beat
     expect(asked.size).toBeGreaterThan(50);
   });
 
-  it('no sentence of a turn is left without a beat', () => {
-    const orphans = Object.keys(say).filter((k) => /^guide\.t\d+\./.test(k) && !asked.has(k));
+  it('no sentence of a turn or a chapter is left without a beat', () => {
+    const orphans = Object.keys(say).filter(
+      (k) => /^guide\.(t\d+|chapter|then)\./.test(k) && !asked.has(k),
+    );
     expect(
       orphans,
       `A SENTENCE OF THE LESSON IS NOBODY’S: ${orphans.slice(0, 3).join(', ')}`,

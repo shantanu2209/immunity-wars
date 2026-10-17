@@ -3,16 +3,54 @@
     "seed": 37,
     "difficulty": "training",
     "crisis": { "turn": 4, "event": "passiveAntibodies" },
+    "chapters": [
+      { "id": "bacteria" },
+      { "id": "viruses", "from": "t2.helper", "show": ["Hepatitis B", "Hepatitis C"] },
+      { "id": "fungi", "from": "t3.run1", "show": ["Candida"] },
+      { "id": "parasites", "from": "t4.coatBacterium" },
+      { "id": "toxins", "from": "t5.antitoxin", "show": ["Botulism", "Snake venom"] },
+      { "id": "worms", "from": "t6.memory" },
+      { "id": "organs", "from": "t7.residentOut" }
+    ],
     "turns": [
       {
         "arrive": ["Whooping cough"],
         "steps": [
+          { "id": "t1.ap", "do": "tell", "points": "ap" },
           { "id": "t1.produce", "do": "produce", "family": "EXB", "for": "Whooping cough" },
           { "id": "t1.coat", "do": "coat", "disease": "Whooping cough" },
-          { "id": "t1.walk1", "do": "move", "cell": "macrophage", "route": "nose", "step": 1 },
-          { "id": "t1.walk2", "do": "move", "cell": "macrophage", "route": "nose", "step": 2 },
-          { "id": "t1.walk3", "do": "move", "cell": "macrophage", "route": "nose", "step": 3 },
-          { "id": "t1.walk4", "do": "move", "cell": "macrophage", "route": "nose", "step": 4 }
+          {
+            "id": "t1.walk1",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "nose",
+            "step": 1,
+            "show": ["Whooping cough"]
+          },
+          {
+            "id": "t1.walk2",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "nose",
+            "step": 2,
+            "show": ["Whooping cough"]
+          },
+          {
+            "id": "t1.walk3",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "nose",
+            "step": 3,
+            "show": ["Whooping cough"]
+          },
+          {
+            "id": "t1.walk4",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "nose",
+            "step": 4,
+            "show": ["Whooping cough"]
+          }
         ]
       },
       {
@@ -20,9 +58,16 @@
         "steps": [
           { "id": "t2.engulf", "do": "engulf", "disease": "Whooping cough" },
           { "id": "t2.memory", "do": "tell" },
-          { "id": "t2.helper", "do": "tell", "cell": "helper" },
+          { "id": "t2.helper", "do": "tell", "cell": "helper", "show": ["bcell"] },
           { "id": "t2.snipe", "do": "snipe", "disease": "Hepatitis B" },
-          { "id": "t2.nkMove", "do": "move", "cell": "nk", "route": "blood", "step": 2 },
+          {
+            "id": "t2.nkMove",
+            "do": "move",
+            "cell": "nk",
+            "route": "blood",
+            "step": 2,
+            "show": ["Hepatitis C"]
+          },
           { "id": "t2.nkStrike", "do": "nk", "disease": "Hepatitis C" },
           { "id": "t2.recall", "do": "recall", "cell": "macrophage" }
         ]
@@ -32,10 +77,31 @@
         "steps": [
           { "id": "t3.produce", "do": "produce", "family": "ENV", "for": "Influenza" },
           { "id": "t3.neutralise", "do": "neutralise", "disease": "Influenza" },
-          { "id": "t3.run1", "do": "move", "cell": "neutrophil", "route": "gut", "step": 2 },
-          { "id": "t3.run2", "do": "move", "cell": "neutrophil", "route": "gut", "step": 4 },
-          { "id": "t3.run3", "do": "move", "cell": "neutrophil", "route": "gut", "step": 5 },
-          { "id": "t3.net", "do": "net" }
+          {
+            "id": "t3.run1",
+            "do": "move",
+            "cell": "neutrophil",
+            "route": "gut",
+            "step": 2,
+            "show": ["Candida"]
+          },
+          {
+            "id": "t3.run2",
+            "do": "move",
+            "cell": "neutrophil",
+            "route": "gut",
+            "step": 4,
+            "show": ["Candida"]
+          },
+          {
+            "id": "t3.run3",
+            "do": "move",
+            "cell": "neutrophil",
+            "route": "gut",
+            "step": 5,
+            "show": ["Candida"]
+          },
+          { "id": "t3.net", "do": "net", "show": ["Candida"] }
         ]
       },
       {
@@ -43,11 +109,40 @@
         "steps": [
           { "id": "t4.coatBacterium", "do": "coat", "disease": "Endocarditis" },
           { "id": "t4.coatParasite", "do": "coat", "disease": "Amoebiasis" },
-          { "id": "t4.walk1", "do": "move", "cell": "macrophage", "route": "gut", "step": 1 },
-          { "id": "t4.walk2", "do": "move", "cell": "macrophage", "route": "gut", "step": 2 },
-          { "id": "t4.walk3", "do": "move", "cell": "macrophage", "route": "gut", "step": 3 },
-          { "id": "t4.walk4", "do": "move", "cell": "macrophage", "route": "gut", "step": 4 }
-        ]
+          {
+            "id": "t4.walk1",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "gut",
+            "step": 1,
+            "show": ["Amoebiasis"]
+          },
+          {
+            "id": "t4.walk2",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "gut",
+            "step": 2,
+            "show": ["Amoebiasis"]
+          },
+          {
+            "id": "t4.walk3",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "gut",
+            "step": 3,
+            "show": ["Amoebiasis"]
+          },
+          {
+            "id": "t4.walk4",
+            "do": "move",
+            "cell": "macrophage",
+            "route": "gut",
+            "step": 4,
+            "show": ["Amoebiasis"]
+          }
+        ],
+        "endShow": ["Endocarditis"]
       },
       {
         "arrive": ["Botulism", "Snake venom"],
@@ -64,6 +159,7 @@
           { "id": "t6.memory", "do": "memory", "disease": "Whooping cough" },
           {
             "id": "t6.eosinophil",
+            "show": ["Roundworm"],
             "do": "move",
             "cell": "eosinophil",
             "organ": "liver",
@@ -78,7 +174,13 @@
       {
         "arrive": ["Malaria"],
         "steps": [
-          { "id": "t7.residentOut", "do": "resMove", "organ": "heart", "step": 1 },
+          {
+            "id": "t7.residentOut",
+            "do": "resMove",
+            "organ": "heart",
+            "step": 1,
+            "show": ["Endocarditis"]
+          },
           {
             "id": "t7.residentEngulf",
             "do": "resEngulf",

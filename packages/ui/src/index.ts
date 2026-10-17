@@ -74,6 +74,14 @@ export {
   type EffectChip,
 } from './play/effects';
 export { ArrivalsGrid, ArrivalsNotes } from './play/Arrivals';
+export { ANTIBODIES_DO, antibodiesDo, counterSentence, type AntibodiesDo } from './play/counters';
+export {
+  beatKey,
+  beatsToPlay,
+  spreadStory,
+  type SpreadBeat,
+  type StoryLine,
+} from './play/spreadStory';
 export { revealCrisis, type RevealArrival, type RevealCrisis } from './dialogs/RevealBody';
 export { EffectsStrip } from './panels/EffectsStrip';
 export { PathogenCard, type PathogenCardSubject } from './panels/PathogenCard';
@@ -95,9 +103,10 @@ export {
 } from './play/planning';
 export { invaderNowLine } from './panels/invaderNow';
 export { PauseSheet } from './panels/PauseSheet';
-export { UpdateDot } from './panels/UpdateNow';
+export { UpdateDot, updatesComeFromTheStore } from './panels/UpdateNow';
 export { PlayScreen, type PlaySessionLike, type PlayControlsCtx } from './play/PlayScreen';
 export { TitleScreen, type SaveSummary } from './screens/TitleScreen';
+export { ChaptersScreen } from './screens/ChaptersScreen';
 export { DifficultyScreen } from './screens/DifficultyScreen';
 export {
   ANTIVENOM_AT_START,
@@ -177,14 +186,22 @@ export {
   GUIDE_START,
   afterAccepted,
   afterTold,
+  chapterOf,
+  chapterStart,
   guideBeat,
+  holdsTheDraw,
+  lessonBeats,
   lessonOver,
-  progress as guideProgress,
+  resumeAt,
   sameAction,
+  showHooks,
+  shownNames,
   stepAt,
+  stepCount,
   stopsFor,
   type GuideBeat,
   type GuideMove,
+  type LessonBeat,
   type GuidePos,
   type GuideStage,
 } from './guide/model';

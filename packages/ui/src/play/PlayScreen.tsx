@@ -70,6 +70,7 @@ import { TargetList } from '../panels/DockSheet';
 import { Drawer, type DrawerKind } from '../panels/Drawer';
 import { SAY, TONE, pieceArt } from '../panels/onCard';
 import { ArrivalsGrid, ArrivalsNotes } from './Arrivals';
+import { beatsToPlay, spreadStory, type StoryLine } from './spreadStory';
 import {
   ActionsView,
   AdvanceButton,
@@ -79,6 +80,7 @@ import {
   SpreadView,
   TabRow,
   Toast,
+  PlayCorners,
   TopBar,
   type MiddleTab,
 } from './Frame';
@@ -95,9 +97,10 @@ import {
   GUIDE_START,
   afterAccepted,
   afterTold,
+  chapterOf,
   guideBeat,
-  lessonOver,
-  progress,
+  holdsTheDraw,
+  stepCount,
   type GuidePos,
   type GuideStage,
 } from '../guide/model';
@@ -123,6 +126,12 @@ import {
 
 // Spread pacing — RULED 30 Aug 2026 (for-P2.5.md). Dice frames carry two facts (the roll and
 // its outcome), so they hold longer. A tap anywhere advances immediately.
+/** "Step 3 of 9": which card of its chapter the guide's card is, or nothing if it is not counted. */
+const stepText = (lesson: Lesson, beatId: string): string => {
+  const c = stepCount(lesson, beatId);
+  return c ? t('guide.count', c) : '';
+};
+
 const FRAME_MS = 900;
 const DICE_FRAME_MS = 1400;
 
@@ -199,10 +208,21 @@ export function PlayScreen({
   /**
    * THE GUIDED GAME (stage L6, `guide/model.ts`): the lesson this game is, or null for every
    * other game. The screen leads the player through it one lit control at a time, and tells the
-   * shell when it is over: finished, left by the player, or parted from by the game. The shell
+   * shell when it is over: finished and played on, finished and not played on (`declined`), left
+   * by the player, or parted from by the game. The shell
    * made the game for the lesson and ends its rails; this screen holds neither.
    */
-  guide?: { lesson: Lesson; onEnd: (how: 'finished' | 'left' | 'parted') => void } | null;
+  guide?: {
+    lesson: Lesson;
+    onEnd: (how: 'finished' | 'declined' | 'left' | 'parted') => void;
+    /**
+     * Where the player begins (step 3, `docs/LOOK_PLAN.md` §28): the lesson's start, or the start of
+     * a chapter they are coming back to, which the shell has already played the game to.
+     */
+    start?: GuidePos;
+    /** A chapter is done: `n` chapters are, and the shell keeps that for the player's return. */
+    onChapter?: (n: number) => void;
+  } | null;
   /** The captain hands a waiting piece to a present member, by public id (P3.7 piece C). */
   onAssignSeat?: ((seat: Seat, to: number) => void) | null;
   /** The room's last refusal of something done at the table (a handover), said in the toast. */
@@ -300,9 +320,12 @@ export function PlayScreen({
     list: RevealArrival[];
     crisis: RevealCrisis | null;
   } | null>(null);
-  // The burst's own narration lines, kept so the spread can be read at rest on that stage.
-  const spreadLinesRef = useRef<string[]>([]);
-  const [spreadLines, setSpreadLines] = useState<string[]>([]);
+  // WHAT THE SPREAD DID, AND WHY (step 3, `spreadStory.ts`), kept so it can be read at rest on that
+  // stage: the beats that changed the body, each with the rule that made it happen.
+  const spreadLinesRef = useRef<StoryLine[]>([]);
+  const [spreadLines, setSpreadLines] = useState<StoryLine[]>([]);
+  /** The game as it stood before the spread a burst is of: the last view the session sent. */
+  const lastGameRef = useRef<Readonly<Record<string, unknown>>>(session.getView().game);
 
   const skipRef = useRef(skipBursts);
   skipRef.current = skipBursts;
@@ -355,8 +378,8 @@ export function PlayScreen({
         if (next) setAuthView(next);
         setPlaying(false);
         // THE LAST FRAME IS THE NEW TURN ARRIVING, not something that happened in the spread
-        // (§21 E): "Next turn" is the animation's own word and it is dropped from the summary.
-        setSpreadLines(spreadLinesRef.current.slice(0, -1));
+        // (§21 E): `spreadStory` leaves each burst's last beat out of the summary.
+        setSpreadLines(spreadLinesRef.current);
         spreadLinesRef.current = [];
         return;
       }
@@ -374,15 +397,19 @@ export function PlayScreen({
 
     const unsubscribe = session.subscribe((ev) => {
       if (ev.kind === 'burst') {
+        const before = lastGameRef.current;
+        const story = spreadStory(before, ev.frames);
         if (skipRef.current) {
-          setSpreadLines(ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
+          setSpreadLines(story);
           onCheckRef.current?.(
             `burst skipped (${ev.frames.length} frames) — rendering authoritative views only`,
           );
           return;
         }
-        spreadLinesRef.current.push(...ev.frames.map((fr) => fr.label).filter((l) => l !== ''));
-        queue.burst(ev.frames);
+        spreadLinesRef.current.push(...story);
+        // Only the beats that did something are played: one that changed nothing and rolled
+        // nothing would put its name over a board where nothing happened (FINDINGS #130).
+        queue.burst(beatsToPlay(before, ev.frames));
         burstSizeRef.current = queue.framesLeft;
         if (!playingRef.current) {
           playingRef.current = true;
@@ -390,6 +417,7 @@ export function PlayScreen({
           playNext();
         }
       } else if (ev.kind === 'view') {
+        lastGameRef.current = ev.view.game;
         if (queue.view(ev.view, playingRef.current)) setAuthView(ev.view);
       }
       // `notice` falls through deliberately: it is the shell's, not this screen's.
@@ -497,7 +525,7 @@ export function PlayScreen({
 
   // THE GUIDED GAME's place in its lesson. A ref beside the state, because an action is answered
   // after the render that sent it, and must move the place the player is at THEN.
-  const [guidePos, setGuidePos] = useState<GuidePos>(GUIDE_START);
+  const [guidePos, setGuidePos] = useState<GuidePos>(guide?.start ?? GUIDE_START);
   const guidePosRef = useRef(guidePos);
   guidePosRef.current = guidePos;
   const guideRef = useRef(guide);
@@ -505,6 +533,10 @@ export function PlayScreen({
   const moveGuide = (pos: GuidePos): void => {
     guidePosRef.current = pos;
     setGuidePos(pos);
+    // A chapter is done the moment its card says so, so that a player who stops there, or leaves
+    // from anywhere in the next one, comes back to the next one.
+    const g = guideRef.current;
+    if (g && pos.at === 'done') g.onChapter?.(chapterOf(g.lesson, pos));
   };
 
   const send = (action: Record<string, unknown>): void => {
@@ -539,7 +571,7 @@ export function PlayScreen({
         dialogPending: dialogs.hasPending(),
         // The lesson's last word is up: the next turn is the player's own, on the page's dice, and
         // is not drawn until the shell has ended the rails.
-        covered: navState.depth > 0 || (guide !== null && lessonOver(guide.lesson, guidePos)),
+        covered: navState.depth > 0 || (guide !== null && holdsTheDraw(guide.lesson, guidePos)),
         sentForTurn: sentDrawRef.current,
         mayDraw: p.captain,
       })
@@ -1106,7 +1138,7 @@ export function PlayScreen({
   // and what this screen is showing. Null for every other game, and for a moment nothing is asked.
   const guideStage: GuideStage =
     dialogs.current !== null
-      ? 'waiting'
+      ? 'dialog'
       : playing
         ? 'spread'
         : arrivalsNow !== null
@@ -1139,6 +1171,8 @@ export function PlayScreen({
               total={p.together && plan === null ? Number(authView.game['apPool'] ?? 0) : apShown}
               yours={p.together && plan === null ? apShown : null}
               players={p.together && plan === null ? budgetsOf(authView, p) : []}
+              // The corner says the figure as a number; the sheet shows it as pips (16 October 2026).
+              pips={{ have: apShown, of: authView.queries.ap.total }}
             />
           </div>
         </MiddleCard>
@@ -1422,32 +1456,11 @@ export function PlayScreen({
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
-        apText={`${t('commandBar.ap')} ${String(apShown)}`}
-        // The pips: what is left, of what the engine says this turn began with.
-        ap={{ have: apShown, of: authView.queries.ap.total }}
-        apAvailable={apTerms.length > 0 && !playing}
-        onAp={() => {
-          closeMiddle();
-          setApSheet(true);
-        }}
         banner={effectBanner(chips)}
         onBanner={() => {
           closeMiddle();
           setEffectsOpen(true);
         }}
-        onChat={() => setDrawer('log')}
-        chatLabel={t('chat.open')}
-        table={
-          table !== null
-            ? {
-                onOpen: () => {
-                  closeMiddle();
-                  setDrawer('table');
-                },
-                waiting: tableSummary(table).waiting.length,
-              }
-            : null
-        }
         menu={
           <LiveControls
             store={frameStore}
@@ -1514,6 +1527,28 @@ export function PlayScreen({
             onTap={playing ? undefined : handleBoardTap}
           />
         </div>
+        <PlayCorners
+          apText={`${t('commandBar.ap')} ${String(apShown)}`}
+          apHave={apShown}
+          apAvailable={apTerms.length > 0 && !playing}
+          onAp={() => {
+            closeMiddle();
+            setApSheet(true);
+          }}
+          onChat={() => setDrawer('log')}
+          chatLabel={t('chat.open')}
+          table={
+            table !== null
+              ? {
+                  onOpen: () => {
+                    closeMiddle();
+                    setDrawer('table');
+                  },
+                  waiting: tableSummary(table).waiting.length,
+                }
+              : null
+          }
+        />
         {toastText !== null ? <Toast text={toastText} /> : null}
       </PlayArea>
       <div
@@ -1672,15 +1707,26 @@ export function PlayScreen({
           beatId={beat.id}
           text={t(beat.sayKey)}
           stops={beat.stops}
+          thens={beat.then.map((x) =>
+            x === null
+              ? ''
+              : t(x.key, {
+                  ...x.params,
+                  // An action is named by its button's own word, from the catalogue.
+                  ...(x.params?.['action'] ? { action: t(x.params['action']) } : {}),
+                }),
+          )}
+          shows={beat.shows}
           tell={beat.tell}
           last={beat.last}
+          chapterEnd={beat.chapterEnd}
           watch={guideStage === 'spread'}
-          count={t('guide.count', progress(guide.lesson, guidePos))}
+          count={stepText(guide.lesson, beat.id)}
           onNext={() => {
             if (beat.last) guide.onEnd('finished');
-            else moveGuide(afterTold(guidePos));
+            else moveGuide(afterTold(guide.lesson, guidePos));
           }}
-          onLeave={() => guide.onEnd('left')}
+          onLeave={() => guide.onEnd(beat.last ? 'declined' : 'left')}
         />
       ) : null}
       <DialogHost dialog={dialogs.current} onDismiss={dialogs.dismiss} />

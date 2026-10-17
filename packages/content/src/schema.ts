@@ -770,50 +770,75 @@ export const BoardPackS = boardPackSchema();
  * names, the NK Cell's roll a hit. It is found by search (`pnpm guide:seed`), and a test replays
  * the whole lesson with it against the real engine, so a seed that stops working fails a build.
  */
+/**
+ * WHAT A CARD TALKS ABOUT (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): shown undimmed while it
+ * is up, and not pressable. Each is a disease by its name, on the board, or one of your cells by its
+ * key. A step that acts on a disease shows it without being told; `show` names what else, or what
+ * instead.
+ */
+const ShowS = z.array(z.string().min(1)).min(1).optional();
+
 const LessonStepS = z.discriminatedUnion('do', [
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
     do: z.literal('produce'),
     family: FamilyKeyS,
     for: z.string().min(1),
   }),
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
     do: z.enum(['coat', 'neutralise', 'engulf', 'snipe', 'nk', 'antivenom', 'memory']),
     disease: z.string().min(1),
   }),
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
     do: z.literal('move'),
     cell: CellKeyS,
     route: RouteKeyS.optional(),
     organ: OrganKeyS.optional(),
     step: z.number().int().nonnegative(),
   }),
-  z.strictObject({ id: z.string().min(1), do: z.literal('recall'), cell: CellKeyS }),
-  z.strictObject({ id: z.string().min(1), do: z.literal('net') }),
+  z.strictObject({ id: z.string().min(1), show: ShowS, do: z.literal('recall'), cell: CellKeyS }),
+  z.strictObject({ id: z.string().min(1), show: ShowS, do: z.literal('net') }),
   // Something the lesson SAYS and the player does not do: what the Helper T-Cell is, what was not
   // shown. It asks the engine for nothing. `cell` is what it points at, when it points at one.
-  z.strictObject({ id: z.string().min(1), do: z.literal('tell'), cell: CellKeyS.optional() }),
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
+    do: z.literal('tell'),
+    cell: CellKeyS.optional(),
+    points: z.literal('ap').optional(),
+  }),
+  z.strictObject({
+    id: z.string().min(1),
+    show: ShowS,
     do: z.literal('strike'),
     cell: z.enum(['macrophage', 'eosinophil']),
     disease: z.string().min(1),
   }),
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
     do: z.literal('resMove'),
     organ: OrganKeyS,
     step: z.number().int().nonnegative(),
   }),
   z.strictObject({
     id: z.string().min(1),
+    show: ShowS,
     do: z.literal('resEngulf'),
     organ: OrganKeyS,
     disease: z.string().min(1),
   }),
-  z.strictObject({ id: z.string().min(1), do: z.literal('resRecall'), organ: OrganKeyS }),
+  z.strictObject({
+    id: z.string().min(1),
+    show: ShowS,
+    do: z.literal('resRecall'),
+    organ: OrganKeyS,
+  }),
 ]);
 
 export const LessonS = z.strictObject({
@@ -822,7 +847,24 @@ export const LessonS = z.strictObject({
     difficulty: DifficultyS,
     crisis: z.strictObject({ turn: z.number().int().positive(), event: z.string().min(1) }),
     turns: z
-      .array(z.strictObject({ arrive: z.array(z.string().min(1)), steps: z.array(LessonStepS) }))
+      .array(
+        z.strictObject({
+          arrive: z.array(z.string().min(1)),
+          steps: z.array(LessonStepS),
+          /** What the turn's End turn card talks about. */
+          endShow: ShowS,
+        }),
+      )
+      .min(1),
+    chapters: z
+      .array(
+        z.strictObject({
+          id: z.string().min(1),
+          from: z.string().min(1).optional(),
+          /** What the card that says what the chapter is about talks about. */
+          show: ShowS,
+        }),
+      )
       .min(1),
   }),
 });
@@ -837,6 +879,7 @@ export function guidePackSchema(
   events: readonly string[] = EVENTS_FOR_LESSON,
   organs: Record<string, { branch: number }> = ORGANS_FOR_PARITY,
   routes: Record<string, { len: number }> = ROUTES_FOR_PARITY,
+  cells: readonly string[] = CELL_KEYS_FOR_PARITY,
 ) {
   return LessonS.superRefine((p, ctx) => {
     const L = p.LESSON;
@@ -857,7 +900,36 @@ export function guidePackSchema(
     }
     const ids = new Set<string>();
     const arrived = new Set<string>();
+    /** What a card shows must be in the game when it is up: a cell, or a disease that has come. */
+    const shows = (
+      show: readonly string[] | undefined,
+      path: (string | number)[],
+      when: string,
+    ): void => {
+      (show ?? []).forEach((x, k) => {
+        if (!cells.includes(x) && !arrived.has(x)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, k],
+            message: `the card shows "${x}", which is no cell and has not arrived ${when}`,
+          });
+        }
+      });
+    };
+    /** Each chapter's card about it, at the place it begins: shown before the arrivals there. */
+    const chapterAt = new Map<string, number>();
+    L.chapters.forEach((ch, c) => {
+      if (ch.from !== undefined) chapterAt.set(ch.from, c);
+    });
     L.turns.forEach((turn, t) => {
+      // A chapter that begins a turn is said before that turn's cards are drawn.
+      const opens = chapterAt.get(turn.steps[0]?.id ?? '');
+      if (opens !== undefined)
+        shows(
+          L.chapters[opens]?.show,
+          at('chapters', opens, 'show'),
+          `before turn ${String(t + 1)}`,
+        );
       turn.arrive.forEach((dz, k) => {
         if (!cards.includes(dz)) {
           ctx.addIssue({
@@ -870,6 +942,10 @@ export function guidePackSchema(
       });
       turn.steps.forEach((step, i) => {
         const here = at('turns', t, 'steps', i);
+        const mid = i > 0 ? chapterAt.get(step.id) : undefined;
+        if (mid !== undefined)
+          shows(L.chapters[mid]?.show, at('chapters', mid, 'show'), `by turn ${String(t + 1)}`);
+        shows(step.show, [...here, 'show'], `by turn ${String(t + 1)}`);
         if (ids.has(step.id)) {
           ctx.addIssue({
             code: 'custom',
@@ -928,6 +1004,48 @@ export function guidePackSchema(
           }
         }
       });
+      shows(turn.endShow, at('turns', t, 'endShow'), `by turn ${String(t + 1)}`);
+    });
+    // THE CHAPTERS (step 3): the first begins at the beginning; each later one at a step the
+    // lesson has, after the one before it; and no two share a name.
+    const order = L.turns.flatMap((turn) => turn.steps.map((step) => step.id));
+    let after = -1;
+    const named = new Set<string>();
+    L.chapters.forEach((ch, c) => {
+      const here = at('chapters', c);
+      if (named.has(ch.id)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'id'],
+          message: `two chapters are named "${ch.id}"`,
+        });
+      }
+      named.add(ch.id);
+      if (c === 0) {
+        if (ch.from !== undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...here, 'from'],
+            message: 'the first chapter begins at the beginning, and names no step',
+          });
+        }
+        return;
+      }
+      const i = ch.from === undefined ? -1 : order.indexOf(ch.from);
+      if (i < 0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'from'],
+          message: `chapter "${ch.id}" begins at "${String(ch.from)}", which is no step of the lesson`,
+        });
+      } else if (i <= after) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...here, 'from'],
+          message: `chapter "${ch.id}" begins before the chapter it follows`,
+        });
+      }
+      after = Math.max(after, i);
     });
   });
 }

@@ -6,15 +6,21 @@
  *  1. AN ACTION THAT CANNOT BE USED STILL TAKES A PRESS. It is drawn flat, and a press on it is how
  *     the player asks why. The kit's own unavailable button is dead to a finger; a frame built from
  *     it the plain way would have answered nothing. Control: frame-flat-action-still-answers.
- *  2. The Action Points are pips, as many as are left, of as many as the turn began with.
+ *  2. The Action Points are pips, as many as are left, of as many as the turn began with: in their
+ *     sheet since 16 October 2026, when they moved to the play area's corner as a number.
  *  3. A view's close is the one close, with its hook, in the stage's own button's place.
+ *  4. THE TOP BAR IS THE MENU, WHAT IS IN FORCE, AND THE TURN, in that order (ruled 16 October
+ *     2026), and the Action Points and the messages are in the play area's corners.
+ *     Control: top-bar-menu-at-start-turn-at-end.
  */
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { t } from '../i18n';
-import { ActionsView, AdvanceButton, SlotClose, TabRow, TopBar, pipRoom } from './Frame';
+import { ApTerms } from '../panels/ApTerms';
+
+import { ActionsView, AdvanceButton, PlayCorners, SlotClose, TabRow, TopBar } from './Frame';
 import type { DockRow } from './offered';
 
 const row = (action: string, available: boolean): DockRow =>
@@ -111,39 +117,81 @@ describe('the selected piece’s card', () => {
 });
 
 describe('the top bar', () => {
-  const bar = (
-    have: number,
-    of: number,
-    with_: { banner?: boolean; together?: boolean } = {},
-  ): string =>
+  const bar = (banner: boolean): string =>
     renderToStaticMarkup(
       createElement(TopBar, {
         turnText: '3/15',
-        apText: `AP ${String(have)}`,
-        ap: { have, of },
-        apAvailable: true,
-        onAp: () => undefined,
-        banner: with_.banner === true ? { text: 'Next turn: Co-infection', kind: 'bad' } : null,
+        banner: banner ? { text: 'Next turn: Co-infection', kind: 'bad' } : null,
         onBanner: () => undefined,
-        onChat: () => undefined,
-        chatLabel: 'Messages',
-        menu: null,
-        table: with_.together === true ? { onOpen: () => undefined, waiting: 0 } : null,
+        menu: createElement('button', { 'data-pause': '' }, 'Menu'),
       }),
     );
-  /** The pips: the little discs inside the AP button. */
-  const pips = (html: string): number =>
-    (/<span role="img"[^>]*>(.*?)<\/span><\/button>/.exec(html)?.[1] ?? '').split('<span').length -
-    1;
 
+  it('is the menu at its start, what is in force between, and the turn at its end', () => {
+    const html = bar(true);
+    const at = (hook: string): number => html.indexOf(hook);
+    expect(at('data-pause'), 'THE MENU IS NOT AT THE TOP BAR’S START').toBeGreaterThan(-1);
+    expect(at('data-pause')).toBeLessThan(at('data-banner'));
+    expect(at('data-banner'), 'THE TURN IS NOT AT THE TOP BAR’S END').toBeLessThan(at('data-turn'));
+    expect(html).toContain('Next turn: Co-infection');
+  });
+
+  it('holds neither the Action Points nor the messages: they are in the play area’s corners', () => {
+    const html = bar(false);
+    expect(html).not.toContain('data-bar-ap');
+    expect(html).not.toContain('data-chat');
+    expect(html).toContain('data-turn=""');
+  });
+});
+
+describe('the play area’s corners', () => {
+  const corners = (together: boolean): string =>
+    renderToStaticMarkup(
+      createElement(PlayCorners, {
+        apText: 'AP 4',
+        apHave: 4,
+        apAvailable: true,
+        onAp: () => undefined,
+        onChat: () => undefined,
+        chatLabel: 'Messages',
+        table: together ? { onOpen: () => undefined, waiting: 0 } : null,
+      }),
+    );
+
+  it('the Action Points are a number, and a reader is told the figure', () => {
+    const html = corners(false);
+    expect(tag(html, 'data-bar-ap="1"')).toContain('aria-label="AP 4"');
+    expect(html).toContain('>4</span>');
+    expect(html).not.toContain('role="img"');
+  });
+
+  it('the messages keep their hook, and the table stands beside them when played together', () => {
+    expect(tag(corners(false), 'data-chat=""')).toContain('aria-label="Messages"');
+    expect(corners(false)).not.toContain('data-table-open');
+    expect(corners(true)).toContain('data-table-open');
+  });
+});
+
+describe('the Action Points’ sheet', () => {
+  const sheet = (have: number, of: number): string =>
+    renderToStaticMarkup(
+      createElement(ApTerms, {
+        terms: [{ text: 'Base', delta: of }],
+        total: have,
+        pips: { have, of },
+      }),
+    );
+  /** The pips: the little discs in the sheet's dark strip. */
+  const pips = (html: string): number =>
+    (/<span role="img"[^>]*>(.*?)<\/span><\/div>/.exec(html)?.[1] ?? '').split('<span').length - 1;
   /** The pips that are lit: gold ones, which only a lit pip is. */
   const lit = (html: string): number =>
-    (/<span role="img"[^>]*>(.*?)<\/span><\/button>/.exec(html)?.[1] ?? '').split('radial-gradient')
+    (/<span role="img"[^>]*>(.*?)<\/span><\/div>/.exec(html)?.[1] ?? '').split('radial-gradient')
       .length - 1;
 
-  it('the Action Points are pips: one for each the turn began with', () => {
-    expect(pips(bar(4, 6))).toBe(6);
-    expect(pips(bar(0, 6))).toBe(6);
+  it('shows the Action Points as pips: one for each the turn began with', () => {
+    expect(pips(sheet(4, 6))).toBe(6);
+    expect(pips(sheet(0, 6))).toBe(6);
   });
 
   it('and as many are lit as are left', () => {
@@ -151,53 +199,25 @@ describe('the top bar', () => {
       [4, 6],
       [0, 6],
       [6, 6],
-    ].filter(([have, of]) => lit(bar(have ?? 0, of ?? 0)) !== have);
+    ].filter(([have, of]) => lit(sheet(have ?? 0, of ?? 0)) !== have);
     expect(
       wrong.map(
         ([have, of]) =>
-          `THE PIPS DO NOT SHOW WHAT IS LEFT: ${String(have)} of ${String(of)} lights ${String(lit(bar(have ?? 0, of ?? 0)))}`,
+          `THE PIPS DO NOT SHOW WHAT IS LEFT: ${String(have)} of ${String(of)} lights ${String(lit(sheet(have ?? 0, of ?? 0)))}`,
       ),
     ).toEqual([]);
   });
 
-  it('more left than the turn began with is still shown whole', () => {
-    expect(pips(bar(7, 6))).toBe(7);
+  it('more left than the turn began with is still shown whole, and a reader is told the figure', () => {
+    expect(pips(sheet(7, 6))).toBe(7);
+    expect(sheet(4, 6)).toContain(`aria-label="${t('ap.pips', { have: 4, of: 6 })}"`);
   });
 
-  // THE BAR'S ROOM (the Gate 1 audit's first run against this bar: the banner was 36 px wide and
-  // 148 px tall beside six pips). A render to text has no widths, so what is held here is the rule
-  // the measured widths gave; the audit holds the widths. Control: frame-banner-has-room.
-  it('with a banner up, the points are a number, so the banner’s words have the room', () => {
-    const crowded = bar(4, 6, { banner: true });
-    expect(
-      pips(crowded),
-      'THE BANNER HAS NO ROOM: the pips are drawn beside it, which left it 36 px on a phone',
-    ).toBe(0);
-    expect(crowded).toContain('>4</span>');
-    expect(crowded).toContain('Next turn: Co-infection');
-    expect(tag(crowded, 'data-bar-ap="1"')).toContain('aria-label="AP 4"');
-  });
-
-  it('together, the table’s button takes the room of three pips', () => {
-    expect(pips(bar(4, 5, { together: true }))).toBe(5);
-    expect(pips(bar(4, 6, { together: true }))).toBe(0);
-    expect(pipRoom(false, false)).toBe(7);
-    expect(pipRoom(false, true)).toBe(5);
-    expect(pipRoom(true, false)).toBe(0);
-  });
-
-  it('too many to count at a glance are said as a number, and a reader is told the figure either way', () => {
-    const many = bar(11, 12);
-    expect(pips(many)).toBe(0);
-    expect(many).toContain('>11</span>');
-    expect(tag(many, 'data-bar-ap="1"')).toContain('aria-label="AP 11"');
-    expect(tag(bar(4, 6), 'data-bar-ap="1"')).toContain('aria-label="AP 4"');
-  });
-
-  it('keeps the turn, the messages and their hooks', () => {
-    const html = bar(4, 6);
-    expect(html).toContain('data-turn=""');
-    expect(tag(html, 'data-chat=""')).toContain('aria-label="Messages"');
+  it('planning’s line has no pips of its own', () => {
+    const html = renderToStaticMarkup(
+      createElement(ApTerms, { terms: [{ text: 'Base', delta: 6 }], total: 6 }),
+    );
+    expect(html).not.toContain('data-ap-pips');
   });
 });
 

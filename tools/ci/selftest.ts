@@ -809,6 +809,59 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE SHELL’S BUILD REGISTERS A SERVICE WORKER',
   },
   {
+    id: 'save-carries-its-rules-version',
+    why: 'Step 4 (docs/LOOK_PLAN.md section 28; seam 7): an app that updates must know which rules wrote a saved game it finds. With the stamp left off what the session writes, the save test must FAIL saying a save does not say which rules wrote it.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) => t.replace('rulesVersion: RULES_VERSION,', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/save-version.test.ts',
+    expect: 'A SAVE DOES NOT SAY WHICH RULES WROTE IT',
+  },
+  {
+    id: 'save-from-a-newer-version-is-not-continued',
+    why: 'Step 4: a game a newer version saved is not continued, since this engine does not know the rules it was played under and would save over it. With the refusal taken out, the save test must FAIL saying such a game was continued.',
+    file: 'packages/session/src/local.ts',
+    mutate: (t) =>
+      t.replace('if (!canContinue(fit)) throw new SaveTooNew(save.rulesVersion);', 'void fit;'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/save-version.test.ts',
+    expect: 'A GAME A NEWER VERSION SAVED WAS CONTINUED',
+  },
+  {
+    id: 'title-says-a-save-it-cannot-continue',
+    why: 'Step 4: a saved game that cannot be continued is said on the title, and Continue is not offered for it. With the title offering Continue for any save, its test must FAIL saying a save that cannot be continued is offered.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        'const waiting = save !== null && save.blocked === undefined;',
+        'const waiting = save !== null;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',
+    expect: 'A SAVE THAT CANNOT BE CONTINUED IS OFFERED',
+  },
+  {
+    id: 'update-in-the-app-names-the-store',
+    why: 'Step 4: the Android app is updated from Google Play, and its update button says so. With the button saying Update now in the app as on the web, its test must FAIL saying it does not name Google Play.',
+    file: 'packages/ui/src/panels/UpdateNow.tsx',
+    mutate: (t) => t.replace("? t('update.inStore')", "? t('together.updateNow')"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/UpdateNow.test.ts',
+    expect: 'DOES NOT SAY IT IS IN GOOGLE PLAY',
+  },
+  {
+    id: 'android-store-link-is-the-apps-id',
+    why: 'Step 4: the Android app sends a player to its Google Play page for an update. With the link naming another app, the shell test must FAIL saying the app has two ids, naming the link.',
+    file: 'packages/app/src/storeLink.ts',
+    mutate: (t) => t.replace('id=com.kartikchaudhary.immunitywars', 'id=com.example.other'),
+    gate: 'pnpm --filter @immunity-wars/android test',
+    expect: 'link to its Google Play page says com.example.other',
+  },
+  {
+    id: 'turbo-store-link-read-hashed',
+    why: 'FINDINGS #108 and #112, a third time: the shell test in packages/android reads the store link in packages/app, so it is declared in packages/android/turbo.json. With it taken out, the turbo guard must FAIL naming it.',
+    file: 'packages/android/turbo.json',
+    mutate: (t) => t.replace(', "$TURBO_ROOT$/packages/app/src/storeLink.ts"', ''),
+    gate: 'pnpm turbo:check',
+    expect: 'TURBO TEST HASH BLIND TO A FILE IT READS: @immunity-wars/android#test',
+  },
+  {
     id: 'android-id-is-one-id',
     why: 'The app’s id is ruled, is permanent once published, and is written in four files of the native project and in Capacitor’s config. With one of them saying something else, the shell’s test must FAIL saying the app has two ids.',
     file: 'packages/android/android/app/build.gradle',
@@ -852,6 +905,26 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) => t.replace(", 'icons/*.png'],", '],'),
     gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
     expect: 'THE WORKER DOES NOT STORE AN ICON',
+  },
+  {
+    id: 'card-counters-are-the-engines',
+    why: 'FINDINGS #129: a new card said "[class] antibodies neutralise it" of every disease, which the engine does not allow for a bacterium, a worm, a fungus, venom or a hidden pathogen. Each kind now says what antibodies do to it, held to the engine. With the bacterium said to be neutralised, the engine test must FAIL saying the engine does not agree.',
+    file: 'packages/ui/src/play/counters.ts',
+    mutate: (t) => t.replace("  bacteria: 'coat',", "  bacteria: 'neutralise',"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/counters.test.ts',
+    expect: 'A CARD SAYS WHAT ANTIBODIES DO AND THE ENGINE DOES NOT AGREE',
+  },
+  {
+    id: 'card-counter-words-are-the-tables',
+    why: 'FINDINGS #129: the table is held to the engine, and the words are held to the table. With the sentence for a bacterium saying neutralise, the test of the screens must FAIL naming the sentence.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        '"{family} antibodies coat it, so your cells can swallow it"',
+        '"{family} antibodies neutralise it"',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/counters.test.ts',
+    expect: 'THE SENTENCE FOR BACTERIA DOES NOT SAY WHAT ITS ROW SAYS',
   },
   {
     id: 'privacy-page-in-the-worker',
@@ -1245,7 +1318,7 @@ const CONTROLS: readonly Control[] = [
     id: 'title-one-main-button',
     why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
-    mutate: (t) => t.replace("kind={save || onLearn ? 'rest' : 'main'}", 'kind="main"'),
+    mutate: (t) => t.replace("kind={waiting || learnFirst ? 'rest' : 'main'}", 'kind="main"'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE TITLE HAS TWO MAIN BUTTONS',
   },
@@ -1282,9 +1355,202 @@ const CONTROLS: readonly Control[] = [
     id: 'title-guided-game-leads-a-new-phone',
     why: 'Stage L6, ruled 2 October 2026: on a phone that has never played, the title’s main button is the guided game. With the guided game drawn as a resting button there, a newcomer’s title has New game resting too and no main button at all, and the title’s test must FAIL saying the guided game is not the main button of a new phone’s title.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
-    mutate: (t) => t.replace("kind={save ? 'rest' : 'main'}", 'kind="rest"'),
+    mutate: (t) => t.replace("kind={learnFirst && !waiting ? 'main' : 'rest'}", 'kind="rest"'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE GUIDED GAME IS NOT THE MAIN BUTTON OF A NEW PHONE’S TITLE',
+  },
+  {
+    id: 'spread-story-says-only-what-happened',
+    why: 'FINDINGS #130: the engine names a Toxin released beat every turn toxins are in the game, which is every game, and the screens listed every beat, so every spread said a toxin had been released. With every beat listed again, the story test must FAIL saying the spread says something happened that did not.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) => t.replace('    if (!changed && !ALWAYS.has(key)) return;', ''),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'THE SPREAD SAYS SOMETHING HAPPENED THAT DID NOT',
+  },
+  {
+    id: 'spread-plays-only-what-did-something',
+    why: 'FINDINGS #130: a beat that changed nothing and rolled nothing put its name over a board where nothing happened. With every beat played again, the story test must FAIL saying a beat that did nothing is played.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) =>
+      t.replace(
+        'return i === beats.length - 1 || changed || rolled(b) || ALWAYS.has(beatKey(b.label));',
+        'return true;',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'A BEAT THAT DID NOTHING IS PLAYED',
+  },
+  {
+    id: 'spread-story-sees-what-a-player-sees',
+    why: 'FINDINGS #130, found by the test on its first run: compared whole, an invader changes every turn by a count it keeps for itself (a toxin maker counts the turns it is left alone), and every spread said a toxin had been released. With the whole invader compared again, the story test must FAIL saying a toxin was released on the wrong turn.',
+    file: 'packages/ui/src/play/spreadStory.ts',
+    mutate: (t) => t.replace('SEEN.map((k) => iv[k] ?? null)', 'iv'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'A TOXIN WAS RELEASED ON THE WRONG TURN',
+  },
+  {
+    id: 'spread-why-is-the-engines',
+    why: 'Step 3: each why under a beat is a rule, and the ones a newcomer meets first are held to the engine. With the organ damage why saying an invader takes 2, the story test must FAIL saying the why is not what the engine does.',
+    file: 'packages/content/src/i18n/en/ui.json',
+    mutate: (t) =>
+      t.replace(
+        'An invader that reaches an organ takes 1 of its integrity.',
+        'An invader that reaches an organ takes 2 of its integrity.',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/spread-story.test.ts',
+    expect: 'THE WHY IS NOT WHAT THE ENGINE DOES',
+  },
+  {
+    id: 'lesson-resumes-at-every-chapter',
+    why: 'Step 3 (docs/LOOK_PLAN.md section 28): a player who stopped comes back to the next chapter, and since a game on rails is never saved the session plays the lesson to it again on the same dice. With one step too many played, the guide test must FAIL saying the player is not brought to the game the chapter begins with.',
+    file: 'packages/session/src/lesson.ts',
+    mutate: (t) => t.replace('turn.steps.slice(0, to.step)', 'turn.steps.slice(0, to.step + 1)'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A PLAYER COMING BACK IS NOT BROUGHT TO THE GAME THE CHAPTER BEGINS WITH',
+  },
+  {
+    id: 'chapter-card-holds-the-draw',
+    why: 'Step 3: while a chapter card is up the next turn is not drawn, or the next chapter cards would come in under the card that says the last one is done. With only the lesson end holding the draw, the guide test must FAIL saying a chapter card lets the next turn be drawn.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace('lessonOver(lesson, pos) || pos.at !== undefined;', 'lessonOver(lesson, pos);'),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A CHAPTER CARD LETS THE NEXT TURN BE DRAWN',
+  },
+  {
+    id: 'lesson-place-keeps-the-most',
+    why: 'Step 3: playing the lesson again from Settings and stopping early does not take a player place back. With the place written as given, the place test must FAIL saying it was taken back.',
+    file: 'packages/app/src/lessonPlace.ts',
+    mutate: (t) => t.replace('Math.max(done, readChaptersDone(store))', 'done'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/lessonPlace.test.ts',
+    expect: 'PLACE IN THE LESSON WAS TAKEN BACK',
+  },
+  {
+    id: 'lesson-chapter-begins-at-a-step',
+    why: 'Step 3: a chapter begins at a step of the lesson, named by its id, which no compiler checks. With the check that the step exists switched off, the lesson file test must FAIL saying a chapter that begins nowhere was accepted.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) => t.replace('      if (i < 0) {', '      if (i < -1) {'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'A CHAPTER THAT BEGINS NOWHERE WAS ACCEPTED',
+  },
+  {
+    id: 'guide-later-tap-names-its-button',
+    why: 'Step 3: a later tap of a step says a few words, naming the button by the word on it. With every row named as Move, the guide test must FAIL saying a later tap does not say what its button says.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace('params: { action: `action.${row}` }', "params: { action: 'action.move' }"),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A LATER TAP DOES NOT SAY WHAT ITS BUTTON SAYS',
+  },
+  {
+    id: 'title-keeps-the-guided-game',
+    why: 'Ruled 16 October 2026: a chapter done is green and can be played again, so Learn to play stays on the title once the lesson or a game has been finished, where it had left. With it drawn only for a phone that has never played, the title test must FAIL saying the guided game has left the title.',
+    file: 'packages/ui/src/screens/TitleScreen.tsx',
+    mutate: (t) => t.replace('        {onLearn ? (', '        {onLearn && learnFirst ? ('),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/TitleScreen.test.ts',
+    expect: 'THE GUIDED GAME HAS LEFT THE TITLE',
+  },
+  {
+    id: 'chapters-locked-cannot-be-pressed',
+    why: 'Ruled 16 October 2026: only the first chapter is playable at first, and each after it only once the one before is done; the rest are not clickable. With a locked chapter drawn as an ordinary button, the chapter screen’s test must FAIL saying a locked chapter can be pressed.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) => t.replace("unavailable={state === 'locked'}", 'unavailable={false}'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'A LOCKED CHAPTER CAN BE PRESSED',
+  },
+  {
+    id: 'chapters-next-follows-the-done',
+    why: 'Ruled 16 October 2026: the chapter after the last one done is the next, orange and playable. With the next counted one too far, the chapter screen’s test must FAIL saying the next chapter is not the one after the last done.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) =>
+      t.replace("c === done ? 'open' : 'locked'", "c === done + 1 ? 'open' : 'locked'"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'THE NEXT CHAPTER IS NOT THE ONE AFTER THE LAST DONE',
+  },
+  {
+    id: 'chapters-say-what-the-lesson-does-to-a-save',
+    why: 'Stage L6: when the lesson’s last chapter ends its game is the player’s, and is saved in place of a game already saved. Settings’ confirm said so until 16 October 2026; the chapters say it now. With the sentence never shown, the chapter screen’s test must FAIL saying the chapters do not say what the lesson does to a saved game.',
+    file: 'packages/ui/src/screens/ChaptersScreen.tsx',
+    mutate: (t) =>
+      t.replace('      {replacesSave ? (', '      {replacesSave && chapters.length < 0 ? ('),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/screens/ChaptersScreen.test.ts',
+    expect: 'THE CHAPTERS DO NOT SAY WHAT THE LESSON DOES TO A SAVED GAME',
+  },
+  {
+    id: 'guide-count-begins-again-at-a-chapter',
+    why: 'Ruled 16 October 2026: the card says "Step 3 of 9", the step of its chapter, where it said the chapter and two bare numbers. With the lesson counted whole, the guide’s test must FAIL saying the count does not begin again at a chapter.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        'const mine = all.filter((b) => b.chapter === here.chapter);',
+        'const mine = all.filter((b) => b.chapter >= 0);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'THE COUNT DOES NOT BEGIN AGAIN AT A CHAPTER',
+  },
+  {
+    id: 'guide-walk-reads-the-count',
+    why: 'Ruled 16 October 2026: every card says which step of its chapter it is. The walk counts the cards from its own list of the lesson and reads what each says on the page. With every card given the last word’s count, the walk must FAIL saying a card does not say which step it is.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace('count={stepText(guide.lesson, beat.id)}', "count={stepText(guide.lesson, 'end')}"),
+    gate: 'pnpm guide:walk --build',
+    expect: 'THE CARD DOES NOT SAY WHICH STEP IT IS',
+  },
+  {
+    id: 'lesson-show-is-in-the-game',
+    why: 'Ruled 16 October 2026: what a card talks about is shown, undimmed. The lesson file names it, and a name that is no cell, or a disease that has not arrived yet, would show nothing. With the check taken off, the lesson file’s test must FAIL saying a card shows what is not in the game.',
+    file: 'packages/content/src/schema.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (!cells.includes(x) && !arrived.has(x)) {',
+        "if (!cells.includes(x) && !arrived.has(x) && x === '') {",
+      ),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/guide.test.ts',
+    expect: 'A CARD SHOWS WHAT IS NOT IN THE GAME',
+  },
+  {
+    id: 'guide-shows-what-a-step-acts-on',
+    why: 'Ruled 16 October 2026: “when we talk about whooping cough … we should see it clearly”. A step that acts on a disease shows it without the lesson file saying so. With that default taken out, the guide’s test must FAIL saying a step does not show what it acts on.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "  if ('disease' in step) return [step.disease];\n",
+        "  if ('disease' in step) return [];\n",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'A STEP DOES NOT SHOW WHAT IT ACTS ON',
+  },
+  {
+    id: 'guide-walk-finds-what-is-shown',
+    why: 'Ruled 16 October 2026: the guide finds what a card talks about by the board’s own hooks. A hook misnamed finds nothing, and the bacterium the sentence is about stays dimmed. With the board’s invader ids put under another name, the walk must FAIL saying a card shows nothing of what it talks about.',
+    file: 'packages/ui/src/board/ClayBoard.tsx',
+    mutate: (t) => t.replace('      data-invader-ids={', '      data-invader-idz={'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'THE CARD SHOWS NOTHING OF WHAT IT TALKS ABOUT',
+  },
+  {
+    id: 'guide-walk-shown-is-not-pressable',
+    why: 'Ruled 16 October 2026: what is shown is seen, and “should still not be interactable”. Only the lit control’s own button takes a press; the guide swallows every other. With the guide’s cover letting a finger through, the walk must FAIL saying what is shown can be pressed.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) =>
+      t.replace(
+        "<div data-guide-block=\"\" style={{ position: 'fixed', inset: 0, pointerEvents: 'auto' }} />",
+        "<div data-guide-block=\"\" style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }} />",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'WHAT IS SHOWN CAN BE PRESSED',
+  },
+  {
+    id: 'guide-walk-no-ring-left-standing',
+    why: 'Found 17 October 2026, on the lesson’s last card: a ring drawn round what one card talks about stayed on the page when the next card talked about nothing, round where Malaria had been. Each card began its count of what is drawn at nothing, so a change to nothing was never drawn. With the count begun at nothing again, the walk must FAIL saying a ring is left on what no card talks about.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) =>
+      t.replace(
+        '    let shownNow: string | undefined;\n',
+        "    let shownNow: string | undefined = '';\n",
+      ),
+    gate: 'pnpm guide:walk --build',
+    expect: 'A RING IS LEFT ON WHAT NO CARD TALKS ABOUT',
   },
   {
     id: 'guide-walk-names-a-stuck-beat',
@@ -1292,8 +1558,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/ui/src/guide/model.ts',
     mutate: (t) =>
       t.replace(
-        "return byCell(view, 'neutrophil', 'net', '');",
-        "return byCell(view, 'neutrophil', 'nett', '');",
+        "return byCell(view, 'neutrophil', 'net', '', '');",
+        "return byCell(view, 'neutrophil', 'nett', '', '');",
       ),
     gate: 'pnpm guide:walk --build',
     expect: 'STUCK at t3.net: nothing on the page is lit',
@@ -1482,22 +1748,48 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE SCREENS AND THE SESSION DISAGREE ABOUT WHAT A MOVE IS',
   },
   {
-    id: 'frame-banner-has-room',
-    why: 'Stage L4, found by the Gate 1 audit: beside six pips the event banner had 36 px, wrapped a letter or two to a line, and made the top bar 148 px tall. The banner’s words were ruled (piece 5); the pips give way to a number while a banner is up. With the pips drawn beside a banner again, the frame test must FAIL saying the banner has no room.',
+    id: 'top-bar-menu-at-start-turn-at-end',
+    why: 'Ruled 16 October 2026: the top bar is the menu at its start, what is in force between, and the turn at its end, so that the banner has all the room between them; the Action Points and the messages are in the play area’s corners. With the menu taken out of the bar, the frame test must FAIL saying the menu is not at its start.',
     file: 'packages/ui/src/play/Frame.tsx',
-    mutate: (t) => t.replace('  if (banner) return 0;\n', ''),
-    gate: 'pnpm --filter @immunity-wars/ui test',
-    expect: 'THE BANNER HAS NO ROOM',
+    mutate: (t) => t.replace('        {menu}\n      </span>', '      </span>'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Frame.test.ts',
+    expect: 'THE MENU IS NOT AT THE TOP BAR',
+  },
+  {
+    id: 'guide-ring-takes-in-the-edge',
+    why: 'Ruled 16 October 2026, after he played the lesson: a ringed button looked sunken. A kit button stands on a lip drawn below its own box, and the ring cut across it. With the lip no longer read, the ring test must FAIL saying the ring cuts across the button’s edge.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace(
+        'if (blur === 0) below = Math.max(below, y + spread);',
+        'if (blur === 0) below = Math.max(below, 0);',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE RING CUTS ACROSS THE BUTTON',
+  },
+  {
+    id: 'guide-ring-reads-a-measured-rectangle',
+    why: 'Found building the tight ring, 16 October 2026: a browser’s rectangle keeps its edges on its prototype, so spreading it gives an empty object, and the first build drew its ring at no place at all while a test of plain rectangles passed. With the rectangle spread again, the ring test must FAIL saying the ring is at no place.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace('    left: own.left,\n    top: own.top,\n    right: own.right,\n', '    ...own,\n'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE RING IS AT NO PLACE',
+  },
+  {
+    id: 'guide-hole-is-the-rings-shape',
+    why: 'Found 16 October 2026: four panes round a rectangle left the corners of a round control clear, light squares round a round ring. The dimming has a hole in the ring’s own rounded shape for each thing lit or shown. With the corner no longer kept to the hole’s size, the test must FAIL saying the hole is not the ring’s shape.',
+    file: 'packages/ui/src/guide/box.ts',
+    mutate: (t) =>
+      t.replace('Math.max(0, Math.min(radius, b.width / 2, b.height / 2))', 'Math.max(0, radius)'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/guide/box.test.ts',
+    expect: 'THE HOLE IS NOT THE RING',
   },
   {
     id: 'frame-pips-show-what-is-left',
-    why: 'Stage L4: the Action Points are drawn as pips and no longer as a number, so the pips are the figure. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
-    file: 'packages/ui/src/play/Frame.tsx',
-    mutate: (t) =>
-      t.replace(
-        '<KitPips have={ap.have} of={of} label="" />',
-        '<KitPips have={of} of={of} label="" />',
-      ),
+    why: 'Stage L4: the Action Points are drawn as pips. Since 16 October 2026 they stand in the play area’s corner as a number, and their sheet shows the pips. A row of pips that lit them all would say a full turn’s points were left when none were. With every pip lit, the frame test must FAIL naming a count.',
+    file: 'packages/ui/src/panels/ApTerms.tsx',
+    mutate: (t) => t.replace('have={pips.have}', 'have={Math.max(pips.of, pips.have)}'),
     gate: 'pnpm --filter @immunity-wars/ui test',
     expect: 'THE PIPS DO NOT SHOW WHAT IS LEFT',
   },

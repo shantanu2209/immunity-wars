@@ -35,6 +35,12 @@ export interface SavedGame {
   readonly state: unknown;
   /** Millisecond timestamp, supplied by the caller so this module has no clock. */
   readonly savedAt: number;
+  /**
+   * THE RULES VERSION THAT WROTE IT (seam 7, ruled Phase 4's on 25 September 2026, built 5 October
+   * 2026: `docs/LOOK_PLAN.md` §28, step 4). Absent from every save written before that day, which
+   * is why it is optional here; `saveFit.ts` says what each case means.
+   */
+  readonly rulesVersion?: string;
 }
 
 /**

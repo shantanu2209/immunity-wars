@@ -7,11 +7,13 @@
  * than a convention.
  */
 
+import { RULES_VERSION } from '@immunity-wars/content';
 import * as engine from '@immunity-wars/engine';
 import { MOVE_CLASS, migrateSavedGame, precompute, scope } from '@immunity-wars/session-core';
 
 import { newPlayerRef } from './player-ref.js';
-import { MemoryStorage, type Storage } from './storage.js';
+import { canContinue, saveFit } from './saveFit.js';
+import { MemoryStorage, type SavedGame, type Storage } from './storage.js';
 import {
   NO_SELECTION,
   type ActionOutcome,
@@ -50,6 +52,14 @@ function onDice<T>(dice: (() => number) | null, engineCall: () => T): T {
     return engineCall();
   } finally {
     Math.random = pages;
+  }
+}
+
+/** A saved game a newer version of the rules wrote, which this app does not continue (`saveFit.ts`). */
+export class SaveTooNew extends Error {
+  constructor(readonly rulesVersion: unknown) {
+    super(`this game was saved by rules ${String(rulesVersion)}, newer than ${RULES_VERSION}`);
+    this.name = 'SaveTooNew';
   }
 }
 
@@ -165,6 +175,17 @@ export class LocalSession implements Session {
     return new LocalSession(state as Record<string, unknown>, opts);
   }
 
+  /**
+   * CONTINUE A SAVED GAME, as `Storage` handed it back: the one way the app continues one. A game a
+   * newer version saved is refused, with `SaveTooNew`, and nothing is written over it; any other is
+   * resumed, carried forward if an older version wrote it (`saveFit.ts`).
+   */
+  static fromSave(save: SavedGame, opts: LocalSessionOptions = {}): LocalSession {
+    const fit = saveFit(save);
+    if (!canContinue(fit)) throw new SaveTooNew(save.rulesVersion);
+    return LocalSession.resume(save.state, opts);
+  }
+
   getView(): SessionView {
     return this.cached;
   }
@@ -266,7 +287,12 @@ export class LocalSession implements Session {
     // A game on rails is not saved: it has dice a saved game could not carry, and a lesson that is
     // left is begun again (`docs/LOOK_PLAN.md` §18).
     if (this.dice !== null) return;
-    await this.storage.put({ id: this.saveId, state: this.g, savedAt: this.now() });
+    await this.storage.put({
+      id: this.saveId,
+      state: this.g,
+      savedAt: this.now(),
+      rulesVersion: RULES_VERSION,
+    });
   }
 
   dispose(): void {

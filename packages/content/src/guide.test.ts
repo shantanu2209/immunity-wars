@@ -15,10 +15,11 @@ import lessonJson from './guide/lesson.json';
 import { GuidePackS, guidePackSchema } from './schema.js';
 
 type Raw = Record<string, unknown>;
-type Turn = { arrive: string[]; steps: Raw[] };
-const raw = (): { LESSON: { seed: number; crisis: Raw; turns: Turn[] } } =>
+type Turn = { arrive: string[]; steps: Raw[]; endShow?: string[] };
+type Chapter = { id: string; from?: string; show?: string[] };
+const raw = (): { LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] } } =>
   JSON.parse(JSON.stringify(lessonJson)) as {
-    LESSON: { seed: number; crisis: Raw; turns: Turn[] };
+    LESSON: { seed: number; crisis: Raw; turns: Turn[]; chapters: Chapter[] };
   };
 const corrupt = (fn: (l: ReturnType<typeof raw>['LESSON']) => void): (() => unknown) => {
   const p = raw();
@@ -34,6 +35,16 @@ const step = (l: ReturnType<typeof raw>['LESSON'], id: string): Raw => {
 describe('the lesson file', () => {
   it('validates as it ships', () => {
     expect(() => GuidePackS.parse(raw())).not.toThrow();
+  });
+
+  it('accepts a turn with no steps: one the player only ends', () => {
+    // The lesson has none, and the checks that look for a chapter beginning at a turn's first step
+    // must not trip over a turn that has no first step.
+    expect(
+      corrupt((l) => {
+        l.turns.push({ arrive: [], steps: [] });
+      }),
+    ).not.toThrow();
   });
 
   it('rejects an arrival no card carries', () => {
@@ -100,6 +111,74 @@ describe('the lesson file', () => {
         step(l, 't1.walk2')['id'] = 't1.walk1';
       }),
     ).toThrow(/two steps are named/);
+  });
+
+  it('rejects a chapter that begins at no step of the lesson (step 3)', () => {
+    expect(
+      corrupt((l) => {
+        (l.chapters[1] as Chapter).from = 't2.helpr';
+      }),
+      'A CHAPTER THAT BEGINS NOWHERE WAS ACCEPTED',
+    ).toThrow(/which is no step of the lesson/);
+    // A chapter after the first that names no step at all begins nowhere too.
+    expect(
+      corrupt((l) => {
+        delete (l.chapters[1] as Chapter).from;
+      }),
+    ).toThrow(/which is no step of the lesson/);
+  });
+
+  it('rejects chapters out of order, a first chapter that names a step, and two of one name', () => {
+    expect(
+      corrupt((l) => {
+        const [a, b] = [l.chapters[1], l.chapters[2]] as [Chapter, Chapter];
+        l.chapters[1] = b;
+        l.chapters[2] = a;
+      }),
+    ).toThrow(/begins before the chapter it follows/);
+    expect(
+      corrupt((l) => {
+        (l.chapters[0] as Chapter).from = 't1.coat';
+      }),
+    ).toThrow(/names no step/);
+    expect(
+      corrupt((l) => {
+        (l.chapters[2] as Chapter).id = (l.chapters[1] as Chapter).id;
+      }),
+    ).toThrow(/two chapters are named/);
+  });
+
+  it('rejects a card that shows what is not in the game when it is up (16 October 2026)', () => {
+    // A disease that has not arrived, a name that is nothing, a turn's End turn card and a
+    // chapter's card each held the same way; a cell is always there.
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['Candida'];
+      }),
+      'A CARD SHOWS WHAT IS NOT IN THE GAME',
+    ).toThrow(/shows \W*Candida\W*, which is no cell and has not arrived by turn 1/);
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['the bacterium'];
+      }),
+    ).toThrow(/shows \W*the bacterium\W*, which is no cell/);
+    expect(
+      corrupt((l) => {
+        (l.turns[0] as Turn).endShow = ['Influenza'];
+      }),
+    ).toThrow(/shows \W*Influenza\W*, which is no cell/);
+    // Chapter 4 begins a turn, so its card is said before that turn's arrivals.
+    expect(
+      corrupt((l) => {
+        (l.chapters[3] as Chapter).show = ['Endocarditis'];
+      }),
+    ).toThrow(/has not arrived before turn 4/);
+    expect(
+      corrupt((l) => {
+        step(l, 't1.walk1')['show'] = ['macrophage', 'Whooping cough'];
+      }),
+      'a cell, and a disease that has come, are shown',
+    ).not.toThrow();
   });
 
   it('rejects a crisis the rules do not know, and one after the lesson has ended', () => {

@@ -2394,3 +2394,465 @@ the title drawn right in the browser that drew it wrong, and the version on Abou
 phone took the newer version, by itself on coming back or after the tab was closed and opened, is
 not recorded. **The menu's dot is not yet seen there:** it shows only during a game left open across
 a later deploy.
+
+## 28. Ruled 5 October 2026: the game is made easier to understand, and not easier
+
+**The closed test went live on 3 October at 22:53 IST:** release 1, version 0.9, *"Available to
+selected testers"* on the closed track, with the listing, the graphics and the forms of §26. The
+14 days run from when 12 testers have opted in.
+
+**What the testers said,** reported by Shantanu on 5 October: *"everyone that has played is saying
+the game is too difficult to understand, they haven't really started actually playing it because
+they don't really get it yet. Now what I don't want to do is dilute the core game otherwise the
+learning gets diluted too. What we need to focus on first instead is making the game easier to
+understand."*
+
+- **Put to him:** eight ways to teach it better, each with what it costs and what it buys, and
+  first, before any of them, to find out where the testers stopped, since the app records nothing
+  about its players and so cannot say.
+- **Read the same morning, at his asking:** a review he had another tool write (Codex, 4 October).
+  Its claims were checked against the code. **One was a real fault no check here had seen:** every
+  new card said its class's antibodies neutralise it, which is false of 67 of the deck's 96 diseases
+  ([`FINDINGS.md`](FINDINGS.md) #129). It also found the title saying the game is for two to
+  fifteen players, when most people start alone.
+- **The combined plan put to him, with a recommendation:** (1) the cards' sentences, the solo
+  wording and the lesson's last line, as the next test build; (2) two people who have never seen
+  the game, watched for an hour; (3) on what they show, the lesson cut into short chapters, its
+  crowded first steps split, and a line after the spread saying why things happened; (4) before
+  any build that changes the rules, a version on saved games and an answer in the Android app when
+  the server refuses an older one. Claude recommended 2 before 3.
+
+**His ruling:** *"do steps 1,3 and 4 right now"*.
+
+- **Step 2 is not ruled,** and is not done. So step 3 is built without seeing where a newcomer
+  stops: it rests on what the testers said and on what the lesson is, not on a watched game. That
+  is said here so that it is not later read as measured.
+- **The order of building:** 1, then 4, then 3, each its own pull request. Step 1 is the
+  smallest and fixes wrong science on every card; step 4 is what makes any later build safe to
+  send to phones that hold a saved game.
+- **The rules and the difficulties do not change,** by his word: what changes is how the game is
+  taught.
+
+### Built: step 1, the cards, the solo wording, the lesson's last line
+
+| Where | Was | Is |
+|---|---|---|
+| The back of a new card | *"[class] antibodies neutralise it"*, for every kind | One sentence per kind, held to the engine ([`FINDINGS.md`](FINDINGS.md) #129) |
+| The title's line | *"… for two to fifteen players"* | *"A cooperative game about the immune system. Play on your own, or together with up to fifteen players"* |
+| The lesson's last line | Said the lesson was everything | That the game is the player's now, what to aim for (keep every organ alive; infections arrive until turn 15; then clear every pathogen), and that How to play is in the menu |
+| The store's feature graphic | The old title line | Made again by `pnpm art:feature`, which reads the line from the catalogue |
+| The store build | Code 1 | **Code 2,** version 0.9 still: the next build sent to the closed test |
+
+| What a card now says | Kinds |
+|---|---|
+| *"[class] antibodies coat it, so your cells can swallow it"* | Bacterium |
+| *"[class] antibodies coat it, so your cells can strike it"* | Worm, parasite |
+| *"[class] antibodies coat it, and may neutralise it unless it changes its coat"* | Sleeping sickness |
+| *"[class] antibodies neutralise it"* | Virus, toxin |
+| *"[class] antibodies neutralise it in the blood, but not while it hides in the liver"* | Malaria |
+| *"It hides inside your own cells, where antibodies cannot reach it"* | Hidden pathogen |
+| *"Your own antibodies come too slowly for venom: it needs antivenom"* | Venom |
+| *"Antibodies cannot coat or neutralise it: your cells must fight it"* | Fungus |
+
+- **Unruled, and his to overrule:** each of these sentences, the title's line and the lesson's
+  last line. The title's line has no dash, as player text here has none; the review's wording had
+  one.
+- **His to change, in Play Console:** the store's full description, which says *"two to fifteen
+  players"* in its paragraph on playing together; and, if he likes, the feature graphic.
+- **Controls, each fired:** `card-counters-are-the-engines`, `card-counter-words-are-the-tables`.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC,
+  against a relay on the PC): 89 screens in each of the four passes (91 in one); every check at
+  zero over 1,131 controls and 2,463 text runs; 39 close paths, none wrong; offline met, with no
+  request failed; 47 controls of the audit's own, each as it must be. **One screen was not reached
+  in three of the four passes:** a row of actions with several targets, which those passes' dice
+  did not deal in 14 turns. The fourth reached it, and nothing this change touches draws it.
+- **Not played on a phone.**
+
+### Built: step 4, a version on saved games, and the Android app's update
+
+**A saved game says which rules wrote it** (seam 7, ruled Phase 4's on 25 September 2026; TODO rows
+8 and 9). Every save the session writes carries the rules version, and the app reads it before it
+continues one (`packages/session/src/saveFit.ts`):
+
+| The save was written by | What the app does |
+|---|---|
+| This version | Continues it |
+| An older version, or before saves were stamped | Carries it forward, as ruled on 30 September (*"carried forward, not thrown away"*), through `migrateSavedGame`, where a rules change that changes the game's shape adds its step |
+| A newer version | **Does not continue it.** The title says the game was made by a newer version and offers the update; New game replaces it. Continuing would play its turns under older rules and save over it |
+| Something that is not a version | As newer: continuing what cannot be read is the one choice that can lose the game |
+
+- **Where a newer save can come from.** On the web, a page left open for days meets a save another
+  tab wrote after an update; on a phone, a build older than the one that saved. Neither has happened
+  that anyone knows of. The stamp is for the next rules change: from today, the app can tell.
+- **Found by reading the shell while building it:** a save that would not open made Continue do
+  nothing at all. The session threw inside a promise nobody caught, and the title stayed as it was.
+  Nobody is known to have met it. It now says, on
+  the title, that this version could not open the saved game, and New game replaces it.
+
+**The Android app's update comes from Google Play** (TODO row 8). Where the web app offers *Update
+now*, which reloads into the version already downloaded, the Android app has nothing downloading
+into it: a reload brought back the same version, and the server refused it again. Its button now
+says *Update in Google Play* and opens the game's page there (`packages/app/src/storeLink.ts`). It
+is not drawn as busy, so it is there to press again when the player comes back. That is under the
+server's refusal of an older version, on the screens to play together, and under a saved game a
+newer version wrote.
+
+- **The link names the app's ruled id,** and the shell's test holds it to the id in the Android
+  project, so a link to another app's page fails the test.
+
+| Seen in a browser on the PC, at 360 by 641, on the development build | Found |
+|---|---|
+| A game started on Easy, then its save read from the page's own storage | The save says `4.2.0`, this rules version |
+| The save's stamp changed to `999.0.0`, and the page loaded again | The title says the game is from a newer version, offers *Update now*, and has no Continue; everything on one screen |
+| A save whose game is broken, and Continue pressed | The title says this version could not open it, and Continue is gone; no error on the page |
+
+- **Not seen on a phone:** the Android app's button, and Android handing the link to Google Play.
+  That is what Capacitor does with a link to another site, read in its code, not watched here.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC):
+  89 screens in each of the four passes (91 in one); every check at zero over 1,138 controls and
+  2,469 text runs; 39 close paths, none wrong; offline met. A row of actions with several targets
+  was not reached in one pass, by its dice; the other three reached it. A save that cannot be
+  continued is not among the screens it walks: its one build has no such save.
+- **Two controls of the title were re-aimed,** `title-one-main-button` and
+  `title-guided-game-leads-a-new-phone`: the code they change was renamed, and the check that every
+  control still changes its file said so. Both fire.
+- **Unruled, and his to overrule:** what the title says, *Update in Google Play*, and that a newer
+  save is not continued rather than tried.
+- **Controls, each fired:** `save-carries-its-rules-version`,
+  `save-from-a-newer-version-is-not-continued`, `title-says-a-save-it-cannot-continue`,
+  `update-in-the-app-names-the-store`, `android-store-link-is-the-apps-id`,
+  `turbo-store-link-read-hashed`.
+
+### Built: step 3, its first part: the lesson in chapters, and shorter sentences for later taps
+
+**The lesson ruled on 2 October is kept whole:** the same seven turns, the same arrivals, the same
+steps and the same seed. What changes is how it is taken in.
+
+**Seven chapters**, each beginning at a step of the lesson, written in the lesson's own file:
+
+| Chapter | Begins at | What it covers |
+|---|---|---|
+| 1, bacteria | The start | Action Points, making antibodies, coating, moving, the spread, swallowing, memory on Easy |
+| 2, viruses | Turn 2, the Helper T-Cell | Hidden viruses: the Killer T-Cell and the NK Cell; Recall; a free virus neutralised |
+| 3, fungi | Turn 3, the Neutrophil's run | The NET |
+| 4, a crisis and a parasite | Turn 4 | A crisis; coating a fast bacterium and a parasite; striking it, then swallowing it |
+| 5, toxins and venom | Turn 5, the antitoxin | Antitoxin, antivenom |
+| 6, worms and memory | Turn 6 | Memory's ring; the Eosinophil and a worm |
+| 7, the organs' defenders and malaria | Turn 7 | A resident macrophage; malaria; what neglect does |
+
+- **At a chapter's end** a card says what was done, with *Next chapter*, and *Stop for now* in
+  place of *Leave the lesson*. The next turn is not drawn while it is up.
+- **A chapter begins with a card that says what it is about,** so that a player who comes back in
+  the middle of a turn is told what has arrived.
+- **The device keeps how many chapters are done** (`packages/app/src/lessonPlace.ts`, its own key;
+  the most ever done). The title's *Learn to play* then says *Continue the lesson, Chapter 2 of 7*.
+  Settings' *Play the guided game* begins at chapter 1.
+- **Coming back.** A game on rails is never saved, so the session plays the lesson to the chapter
+  again on its own dice before the screen opens (`playLessonTo`). The guide's test holds the game it
+  reaches to be the very game a player who never stopped has there, from every chapter, and plays
+  the rest of the lesson from each to its end.
+- **The count says the chapter:** *Chapter 2 of 7: 3 of 7*, where it said *12 of 40*.
+
+**Shorter sentences for later taps.** A step that takes more than one tap says its whole sentence
+when its first control is lit, and a few words when a later one is: *Now pick EXB.*, *Now tap
+Produce.*, *Now tap Coat.*, *Now tap the glowing step.*, *Now choose Endocarditis.* The button is
+named by the word on it, from the catalogue. And the lesson's first long sentence is two: the
+Action Points are their own step, lighting the pips at the top, before making antibodies.
+
+**Changed sentences,** so that each still reads true after a chapter's card: the Helper T-Cell's
+(*The Monocyte's kill also primed it*, where it said *That kill*), and the Neutrophil's first (the
+chapter's card now says a fungus cannot be coated).
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`: a fresh build at 360 by 641, pressing only what is lit | 82 beats of 82, every one in the lesson's order (69 before, the Action Points' step and twelve chapter cards more); the game handed over at turn 8 of 15; no error |
+| The same, headless, to chapter 1's end and back | *Now pick EXB.*, *Now tap Produce.*, *Now tap Coat.*, *Now tap the glowing step.*, *Now tap Engulf.* each where it should be; *Chapter 1 of 7: 9 of 9*; *Stop for now* back to the title, which said *Continue the lesson, Chapter 2 of 7* on one screen; the place kept as one chapter done; coming back began with chapter 2's card, then the Helper T-Cell, then the Killer T-Cell and *Now tap Snipe.* |
+
+- **Unruled, and his to overrule:** the seven chapters and where each begins; every new sentence;
+  that a player comes back at the start of the chapter after the last one done, and not where they
+  left; that the place is kept on the device; that Settings begins at chapter 1.
+- **The Gate 1 audit, alone and together, on this build** (5 October, headless Chrome on the PC):
+  89 screens in each of the four passes (91 in one), nothing not reached; every check at zero over
+  1,138 controls and 2,473 text runs; 39 close paths, none wrong; offline met. Its six guided
+  screens were each reached in every pass. **Not among its screens:** a chapter's card, and the
+  title saying the lesson continues. Its walk of the lesson stops before chapter 1 ends. The card is
+  the guided game's own card, with the kit's main button and a quiet one a full touch target tall,
+  and was seen in the headless check above; it was not measured for contrast or at 200%.
+- **Built without the watched game Claude recommended first** (above): this rests on what the
+  testers said, not on seeing where a newcomer stops.
+- **Not yet built: the line after the spread that says why things happened.** It is the second
+  part of step 3, its own pull request.
+- **Controls, each fired:** `lesson-resumes-at-every-chapter`, `chapter-card-holds-the-draw`,
+  `lesson-place-keeps-the-most`, `lesson-chapter-begins-at-a-step`,
+  `guide-later-tap-names-its-button`, `title-says-the-lesson-continues`. Re-aimed, because the call
+  it changes was rewritten, and fired: `guide-walk-names-a-stuck-beat`.
+- **Not played on a phone.**
+
+### Built: step 3, its second part: what the spread did, and why
+
+**After each spread, the card at rest says what happened and the rule that made it happen.** It
+said what happened before, as the engine's names for its beats; now each name has its rule under it,
+from the catalogue, so that what a player watched is joined to why.
+
+| The beat | Its why |
+|---|---|
+| Bacteria divide | A bacterium that is not coated may divide each turn. A coated one never does. |
+| Viruses hide | A free virus may hide inside one of your cells, where antibodies cannot reach it. |
+| Cells burst | A cell with a pathogen hiding inside may burst, and two come out. |
+| Toxin released | A bacterium that makes a toxin releases it once it has been left uncoated for 3 turns. |
+| The march | Invaders move toward the organs each turn. |
+| Organ damage | An invader that reaches an organ takes 1 of its integrity. |
+| And nine more | Complement, malaria in and out of the liver, worms lodging and feeding, the lymph on Hard, a fever, Kala-azar, an organ failing |
+
+**And it says only what happened** ([`FINDINGS.md`](FINDINGS.md) #130). Every spread had said a
+toxin was released, and nothing had been: the engine names that beat every turn, and the screens
+played and listed every beat. A beat is now played when it rolled dice or changed the body, and
+listed when it changed the body. A bacterium that rolled and did not divide is played, so the dice
+are seen, and is not listed as having divided.
+
+- **Held to the engine** (`tests/session/src/spread-story.test.ts`), on spreads the real engine
+  runs: a coated bacterium does not divide on any face of the die; a virus that hid cannot be
+  neutralised; an invader that reaches an organ takes exactly 1; a toxin maker releases on the third
+  spread uncoated and not before; an invader advances. **Not held:** the whys of malaria, worms,
+  Kala-azar, the lymph, complement and fever, which say what the engine's own messages say.
+- **Seen, in headless Chrome on the PC at 360 by 641,** four turns of an Easy game: the spread
+  played *Viruses hide*, *The march*, and no *Toxin released*; the card at rest said *Viruses hide*
+  and *The march*, each with its why, on one screen with the turn's card.
+- **The guided game, walked on this build:** 82 beats of 82, in order; the game handed over at
+  turn 8 of 15; no error.
+- **The Gate 1 audit, alone and together, on this build:** 89 screens in each of the four passes
+  (91 in one); every check at zero over 1,126 controls and 2,476 text runs; 39 close paths, none
+  wrong; offline met. **Two screens were not reached in one pass each:** a row of actions with
+  several targets, by its dice, as before; and the Monocyte moved off the bloodstream with Recall
+  showing, which the walk reaches by tapping a glowing step that a piece can stand over, depending
+  on the deal. That one is walked on the first turn, before any spread has played, which is all
+  this change touches; the other three passes reached it.
+- **Unruled, and his to overrule:** every why, and that a beat that changed nothing is not played.
+- **Controls, each fired:** `spread-story-says-only-what-happened`,
+  `spread-plays-only-what-did-something`, `spread-story-sees-what-a-player-sees`,
+  `spread-why-is-the-engines`.
+- **With this, step 3 is built.**
+
+## 29. Ruled 16 October 2026: chapters to choose, what is talked about lit, and the layout's symmetry
+
+**Twelve of the closed test's fourteen days had passed.** Having played the lesson, Shantanu asked
+for eight things:
+
+> *"1. Good that we have split the tutorial into chapters. 2. Each chapter should have a clickable
+> button, so clicking on learn to play takes to another screen that has 7 buttons - one for each
+> chapter. Initally only chapter one is playable the rest are not clickable and are have a duller
+> colour or something to differentiate. As chapter get complete their button turns green and they
+> are replayable. The new chapter which is unlocked but not completed yet (either not started or
+> started but not finished) stays orange and can be continued. 3. This will of course need some
+> changes because starting conditions of each chapter must be fixed not dependent on what happned
+> in the previous chapter. [...] 4. [...] when a button like 'plan your turn' is highlighted with
+> the gold line around it [...] it appears as if it sunken [...] 5. A lot of the things being
+> talked about in the tutorial are in the background and not highlighted. [...] whatever is bring
+> talked about - the body, whooping cough etc. if it is visible on screen it should not be in the
+> background and greeyed but cleaarly visible an highlighted. 6. Can you please give me all the
+> text shown in the tutorial by chapter and step in an excel [...] 7. [...] just say step a of b
+> [...] 8. In the layout, swap positions of burger and turn counter on the top bar. Move chat to
+> bottom right and AP to bottom left of the playable area [...] clicking it should open it like
+> drawer and show the AP pips [...]"*
+
+**Found first, and fixed before any of it:** the nightly self-test had failed every night since 6
+October on one control of the guided game, gone inert with the chapters' change
+([`FINDINGS.md`](FINDINGS.md) #131). Its own pull request.
+
+### Built: the layout (8) and the ring (4)
+
+| Where | Was | Is |
+|---|---|---|
+| The top bar | The turn and the Action Points, what is in force, the messages and the menu | **The menu at its start, what is in force between, the turn at its end** |
+| The play area's bottom left | Nothing | **The Action Points, as a number** (*AP 6*). Tapping it opens their sheet, which now shows them as pips first, on the table's dark ground, then what makes them |
+| The play area's bottom right | Nothing | **The messages**, and in a game played together the table beside them |
+| A passing message (a refused action) | Over the play area's foot | Just above the two corners' controls, not over them |
+
+- **What the top bar's old rule did, and why it is gone.** The pips gave way to a number whenever
+  a banner was up, because beside six pips the banner had 36 px (the Gate 1 audit, 1 October).
+  With the Action Points out of the bar the banner has all the room between the menu and the turn,
+  so that rule and its control (`frame-banner-has-room`) are retired, and
+  `top-bar-menu-at-start-turn-at-end` holds the new order.
+- **Two sentences moved with the Action Points:** the lesson's first (*Down here at the bottom left
+  are your Action Points*) and How to play's (*Tap the AP figure at the bottom left of the board*).
+
+**The ring no longer looks sunken.** Seen in screenshots before it was changed:
+
+- The ring stood at the edge of the room left round a control, with a strip of the dark table
+  between it and the button: a dark band round a button reads as the recess it sits in.
+- A kit button stands on a lip of itself, drawn as a shadow below its own box, and the ring and
+  the dimming both cut across it.
+- So the ring is drawn a pixel from the control, its lip counted (read from the button's own
+  shadow), and the dimming stops at the ring's outer edge. The dimming is one shape now, its hole
+  in the ring's own rounded shape: four panes round a rectangle had left light squares at the
+  corners of a round control. A piece on the board gets a round ring. The finger's target is as
+  large as before.
+- **Found by its own screenshot, before anything was committed:** the first build drew no ring and
+  dimmed nothing. A browser's rectangle keeps its edges on its prototype, and spreading it gives an
+  empty object; the unit test had used plain objects and passed. It now tests with a rectangle
+  shaped as the browser's, and control `guide-ring-reads-a-measured-rectangle` puts the spread
+  back and sees it fail.
+
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC): 89 screens in each of the four passes (91 in one); every check at
+  zero over 1,127 controls and 2,497 text runs; 39 close paths, none wrong; offline met, with a
+  turn played. **One screen was not reached in two passes:** a row of actions with several
+  targets, which those passes' dice did not deal in 14 turns, and which the touch-target count
+  carries as its one line, a screen not reached and not a finding. The other two passes measured
+  it clean, and its close path was not reached for the same reason.
+- **Unruled, and his to overrule:** the AP button's look (the dark pill the bar had), the ring's
+  breathing glow, and the table's button standing beside the messages.
+- **Controls, each fired:** `top-bar-menu-at-start-turn-at-end`, `guide-ring-takes-in-the-edge`,
+  `guide-ring-reads-a-measured-rectangle`, `guide-hole-is-the-rings-shape`; re-aimed at the sheet
+  and fired, `frame-pips-show-what-is-left`.
+
+### Built: the chapters to choose (2 and 3), and Step a of b (7)
+
+**Learn to play opens the chapters:** a screen of seven buttons, one each, its name, a line on what
+it covers, and its state in words as well as colour.
+
+| A chapter | Drawn | Pressed |
+|---|---|---|
+| Done | Mint, the kit's colour for what is allowed: *Done: tap to play it again* | Played again, from its start |
+| The next, after the last one done | Coral, the screen's one main button: *Next: tap to play it* | Played, from its start |
+| After that | Flat, and duller: *Finish chapter 3 first* | Nothing: it cannot be pressed |
+
+- **What a chapter starts from was already fixed (3), and nothing had to change for it.** The
+  lesson is one game on its own dice, and only the lit control can be pressed, so the game at a
+  chapter's start is the same every time, whatever was done before. A chapter after the first is
+  reached by playing the ones before it again, unseen, on those dice; the guide's test holds, from
+  every chapter, that this is the very game a player who never stopped has there.
+- **"Can be continued" is begun again from its start.** A game on rails is not saved, so a chapter
+  left in the middle has nothing to come back to but its start.
+- **Learn to play stays on the title** once a game or the lesson has been finished, resting, so a
+  chapter done can be played again. On a phone that has never finished one it is the coral button,
+  unless a game is waiting.
+- **Leaving a chapter, or *Stop for now* at its end, goes back to the chapters,** where the next
+  one is now the coral one. Finishing the lesson marks the seventh done.
+- **Settings' *Play the guided game* opens the chapters,** and its confirmation is gone. When a game
+  is saved the chapters say what the lesson does to it: nothing while it is played, and when the
+  last chapter ends the lesson's game is the player's, and is saved in its place.
+- **Removed:** the title's *Continue the lesson, Chapter 2 of 7*, its two sentences and its control
+  (`title-says-the-lesson-continues`); Settings' four sentences of the confirmation.
+
+**Each card says *Step 3 of 9*,** the step of its chapter, where it said *Chapter 2 of 7: 3 of 9*.
+Every card the player reads is a step: each turn's new cards, its plan, each step of the lesson,
+End turn, the spread, a chapter's two cards, and the last word. The card that says a chapter is
+done is its last step, and the one that says what the next is about is the next one's first. 82
+cards, by chapter 16, 13, 8, 16, 6, 12 and 11.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, at 360 by 641 | The chapters on a new phone: the first to play, the six others locked and not pressable. 82 beats of 82 in the lesson's order; every card's count as the walk's own list of the lesson says it should be, from Step 1 at each chapter to Step 16 of 16, 13 of 13, 8 of 8, 16 of 16, 6 of 6, 12 of 12 and 11 of 11; handed over at turn 8 of 15; no error |
+| By hand, headless, on the development build | A locked chapter pressed: nothing. Chapter 1 to its end card (*Step 16 of 16*), *Stop for now*: back at the chapters, the first mint and the second coral, and kept as one done. Back: the title. Settings' row: the same chapters. Chapter 2: begins with what it is about, *Step 1 of 13*. Chapter 1 again: begins at its first card. With a game saved: the title offers Continue, and the chapters say what the lesson does to it. No error |
+
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC), its second run: 91 screens in each of the four passes (93 in one),
+  three of them the chapters (on a new phone, with the first done, and from Settings with a game
+  saved), each measured in every pass; every check at zero over 1,145 controls and 2,560 text runs;
+  40 close paths, none wrong, the new one from Settings among them; offline met. A row of actions
+  with several targets was not reached in one pass, by its dice, and the touch count carries it as
+  its one line; the other three measured it clean.
+- **Its first run lost its place, and the fault was the audit's.** It pressed Settings' guided game
+  row and then *Not now*, the confirmation that is gone; it was left on the chapters, and the walk
+  to the Result idled there, so the Result and the screens after it were not reached in any pass.
+  It was not a finding in the app: the step opens the chapters now, measures them, and closes back
+  to Settings, and the run above is on that.
+- **Unruled, and his to overrule:** the chapters' names and their lines (14 new sentences, written
+  from what each chapter does, not read by him or Kartik); the words for the three states; the
+  screen's lead; that a chapter is begun again from its start; that Learn to play stays on the
+  title; that the sentence about a saved game is on the chapters and not a question; that every
+  card counts as a step.
+- **Controls, each fired:** `chapters-locked-cannot-be-pressed`, `chapters-next-follows-the-done`,
+  `chapters-say-what-the-lesson-does-to-a-save`, `guide-count-begins-again-at-a-chapter`,
+  `guide-walk-reads-the-count`, `title-keeps-the-guided-game`; re-aimed, because the code they
+  change was rewritten, and fired: `title-one-main-button`, `title-guided-game-leads-a-new-phone`.
+
+### Built: what a card talks about is lit (5)
+
+**What the sentence is about is shown, clear of the dimming, with a thin still ring:** the new
+cards, the body in planning, and the disease or the cell on the board. It cannot be pressed: the
+guide still swallows every touch but the lit control's own, and the lit control keeps its thicker
+ring that breathes, so the two are told apart.
+
+| A card | Shows |
+|---|---|
+| A turn's first, what has arrived | The new cards, and the crisis when one has come |
+| Planning | The body |
+| A step that acts on a disease (coat, engulf, snipe, a Produce made for it, and the rest) | That disease's piece on the board |
+| A step that names something else, in the lesson file | What it names: the bacterium the Monocyte walks out to, the fungus the Neutrophil runs to, the B-Cell beside the Helper T-Cell, and so on, 16 steps |
+| Turn 4's End turn | Endocarditis, which it says is still coming |
+| Chapters 2, 3 and 5's first card | Hepatitis B and C; Candida; Botulism and Snake venom |
+
+- **The lesson file says it, and is held to the game.** A step, a turn's End turn card and a
+  chapter's card may name what they show; each name must be a cell, or a disease that has arrived
+  by then, or the pack does not load. The guide's test walks the lesson through the engine and
+  requires each thing shown to be in the game at its card.
+- **Found on the board by the invaders' own ids,** now on each piece. They say nothing of what a
+  hidden pathogen is.
+- **The dimming is one mask now,** with a hole for each thing lit or shown. Drawn even-odd, as it
+  was, two holes that overlap (the Monocyte and the bacterium on its step) dimmed each other again.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk` on the development build | 82 beats of 82 in order, the counts as before; 53 cards talk about something, each found it on the page, and a finger at the middle of each thing shown landed on the guide or on the lit control's button, never on the thing |
+| Screenshots, headless, at 360 by 641 | Turn 1's card of Whooping cough clear, with *Plan your turn* lit; the body clear in planning; the Monocyte and the bacterium on one step, both clear, the Monocyte's ring breathing; Hepatitis C on the blood route while the NK Cell is lit |
+
+- **The Gate 1 audit, alone and together, on this build** (16 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), the nine of the
+  guided game among them, each clean in every pass; every check at zero over 1,152 controls and
+  2,559 text runs, the occlusion check among them, which the shown rings and the mask could have
+  set off; 40 close paths, none wrong; offline met. A row of actions with several targets was not
+  reached in one pass, by its dice; the other three measured it clean.
+- **Unruled, and his to overrule:** what each card shows (the defaults and the 16 steps named);
+  that a shown thing has a ring at all, its colour, and that it does not breathe.
+- **Found after the pull request was opened, and fixed in it, 17 October:** a ring drawn round what
+  one card talks about stayed on the page when the next card talked about nothing. It was seen on
+  the lesson's last card, round the place Malaria had been after Malaria was neutralised. Each card
+  began its count of what is drawn at "nothing", so a change to nothing was never drawn; it begins
+  at "not yet looked" now, as the lit ring's does. The walk had counted what each card found and not
+  what was drawn, so it passed; it now also requires that no card draws more rings than it shows.
+  The audit above was run before this fix; the walk after it is clean, 82 beats of 82.
+- **Controls, each fired:** `lesson-show-is-in-the-game`, `guide-shows-what-a-step-acts-on`,
+  `guide-walk-finds-what-is-shown`, `guide-walk-shown-is-not-pressable`,
+  `guide-walk-no-ring-left-standing`; re-aimed at the mask's holes and fired,
+  `guide-hole-is-the-rings-shape`.
+
+### His words for the lesson, 17 October 2026 (6)
+
+**He sent the spreadsheet back** (§29, item 6) with 28 sentences rewritten and one note. They are
+in the catalogue by key, as he wrote them, but for nine, each changed for one of four reasons and
+each told to him; and the line his note was about is written new:
+
+| Why | Where | His | In the game |
+|---|---|---|---|
+| A typo | Chapter 3's run, chapter 1's line, chapter 3's line, the chapter screen's lead | *upto*; *engulf if*; *with NET*; *: Seven* | *up to*; *engulf it*; *with its NET*; *: seven* |
+| Two sentences joined by a comma | Turn 2's End turn | *are lost, in a regular game you should* | *are lost: in a regular game, always try* |
+| **Not what the game does** | The antitoxin | *Producing them costs 2 Action Points* | *Using them costs 2*: a Produce costs 1; neutralising a toxin costs 2 |
+| **Not what the game does** | Degranulate | *of it is next to an organ, the organ gets damaged too* | *if it is in an organ, that organ is damaged too*: the burn is where the fight is, in the organ (queue Q9) |
+| One word for one thing | What neglect does | *loses all its hit points* | *loses all its health*: hit points are what a pathogen has, and the sentence had said health |
+| **Not what the game does** | The chapters, with a game saved | *Your game is saved while you play* | *Your saved game is kept while you play*: the lesson is not saved while it is played |
+| His note: he could not tell what it meant | Chapter 2's line | *No idea what this line is trying to say* | *Hepatitis B and C hide inside your cells, where only the Killer T-Cell and the NK Cell can reach them. Then antibodies stop Influenza in the blood.* Not read by him |
+
+**One sentence was made true by changing the game.** He wrote that when the last chapter ends
+*"you have the option to finish the game. If you do, it takes the place of your saved game."* The
+lesson's last card offered only *Play on*, which saved its game at once over any saved before. It
+now offers *Leave the lesson* beside it: the lesson is done either way, every chapter is marked
+done, and leaving drops the lesson's game, so a game saved before it is kept. The alternative,
+keeping the card as it was and the sentence as it was, is one line to put back.
+
+| Seen, by hand, headless, on the development build | Found |
+|---|---|
+| A game saved at Easy turn 1, chapters 1 to 6 done, chapter 7 played to its last card | The card offers *Leave the lesson* and *Play on*; leaving goes to the chapters, all seven done; the title still offers Continue, Easy turn 1, the same game |
+| `pnpm guide:walk`, pressing *Play on* | 82 beats of 82, handed over at turn 8 of 15 |
+
+- **The Gate 1 audit, alone and together, on this build** (17 October, headless Chrome on the PC,
+  against a relay on the PC): 91 screens in each of the four passes (93 in one), nothing not
+  reached, the nine of the guided game clean in every pass; every check at zero over 1,149 controls
+  and 2,561 text runs; 40 close paths, none wrong; offline met.
+- **Not held by a standing check:** leaving at the last card. The walk presses *Play on*; the path
+  was seen once, by hand.
+- **Checked against the engine before writing:** the Helper T-Cell does help the cells it stands
+  with (the B-Cell, the Killer T-Cell and the Eosinophil); the Eosinophil is spent for 4 turns; a
+  resident lives in each organ; antivenom costs 3 Action Points and Easy starts with 2 doses.
+- **Not read by him:** chapter 2's new line, and the ten changes above.

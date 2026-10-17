@@ -18,7 +18,11 @@ import {
   IndexedDbStorage,
   RelayError,
   RelayRoom,
+  SaveTooNew,
   asPlayerRef,
+  canContinue,
+  playLessonTo,
+  saveFit,
   seededDice,
   type RelaySession,
 } from '@immunity-wars/session';
@@ -34,6 +38,7 @@ import {
   LobbyScreen,
   NavHost,
   logLinesOf,
+  ChaptersScreen,
   PauseSheet,
   PlayScreen,
   ResultScreen,
@@ -42,6 +47,9 @@ import {
   TitleScreen,
   TogetherScreen,
   UpdateDot,
+  chapterStart,
+  resumeAt,
+  updatesComeFromTheStore,
   entryRefusal,
   refusalFromClose,
   t,
@@ -74,6 +82,7 @@ import {
 } from './settings';
 import { clearRejoin, readRejoin, writeRejoin, type RejoinRecord } from './rejoin';
 import { readPlayed, writePlayed } from './played';
+import { readChaptersDone, writeChaptersDone } from './lessonPlace';
 import {
   browserUpdates,
   lookForNewer,
@@ -83,6 +92,7 @@ import {
   updateNow,
   whenNewerWaits,
 } from './serviceWorker';
+import { STORE_LINK } from './storeLink';
 
 const SAVE_ID = 'autosave';
 const storage = new IndexedDbStorage();
@@ -100,9 +110,20 @@ interface Refusal {
 
 /**
  * UPDATE NOW (FINDINGS #93): take the newer version this phone has downloaded, or is downloading, and
- * reload into it. Offered by the screens under a version refusal only.
+ * reload into it. Offered under a version refusal, under a game a newer version saved, and when a
+ * newer version is ready.
+ *
+ * THE ANDROID APP (docs/LOOK_PLAN.md §28, step 4) has nothing downloading into it: a reload would
+ * bring back the same version, and the server would refuse it again. Its updates come from Google
+ * Play, so it opens the game's page there.
  */
+const ANDROID = import.meta.env.MODE === 'android';
+updatesComeFromTheStore(ANDROID);
 const update = (): void => {
+  if (ANDROID) {
+    window.location.href = STORE_LINK;
+    return;
+  }
   void updateNow(browserUpdates(), () => window.location.reload());
 };
 
@@ -118,12 +139,15 @@ const refusalOfEntry = (e: unknown): Refusal => ({
 const prefStore = browserStore();
 const initialSettings = readSettings(prefStore);
 const initialPlayed = readPlayed(prefStore).played;
+const initialChaptersDone = readChaptersDone(prefStore);
 applyTextSize(initialSettings.textSize);
 applySound(initialSettings.sound, kitAudio);
 
 type Screen =
   | { name: 'title' }
   | { name: 'difficulty' }
+  /** The guided game's chapters (ruled 16 October 2026): one button each, done, next, or locked. */
+  | { name: 'chapters' }
   | { name: 'play' }
   /** `together`: the game was played together, and the Result offers another game together. */
   | { name: 'result'; finalView: ViewState; difficulty: string; together: boolean }
@@ -249,9 +273,12 @@ function App({
           return;
         }
         const st = s.state as Record<string, unknown>;
+        // A game a newer version saved is said, and not offered to continue (step 4, saveFit.ts).
+        const newer = !canContinue(saveFit(s));
         setSave({
           difficulty: String(st['difficulty'] ?? ''),
           turn: Number(st['turn'] ?? 0),
+          ...(newer ? { blocked: 'newer' as const } : {}),
         });
       })
       .catch(() => setSave(null));
@@ -314,33 +341,78 @@ function App({
    * again; when they end, the game is the player's own and is saved like any other.
    */
   const [guided, setGuided] = useState(false);
-  const startGuided = (): void => {
-    difficultyRef.current = LESSON.difficulty;
-    setGameId((n) => n + 1);
-    sessionRef.current = watchForSaveFailure(
+  /**
+   * THE CHAPTERS (step 3, `docs/LOOK_PLAN.md` §28): how many this device has done, and where the
+   * lesson the player is in began. A player coming back begins at the chapter after the last one
+   * done; the game is played to it again on the lesson's dice, since a game on rails is not saved.
+   */
+  const [chaptersDone, setChaptersDone] = useState(initialChaptersDone);
+  const [guideStart, setGuideStart] = useState(resumeAt(LESSON, 0));
+  const startGuided = (from = 0): void => {
+    const c = Math.max(0, Math.min(from, LESSON.chapters.length - 1));
+    const begin = (): LocalSession =>
       LocalSession.createGame(
         { difficulty: LESSON.difficulty, written: LESSON.turns.map((turn) => turn.arrive) },
         { storage, saveId: SAVE_ID, rails: { dice: seededDice(LESSON.seed) } },
-      ),
-    );
-    setGuided(true);
-    setPaused(false);
-    nav.reset({ name: 'play' });
+      );
+    const open = (session: LocalSession, at: number): void => {
+      difficultyRef.current = LESSON.difficulty;
+      setGameId((n) => n + 1);
+      sessionRef.current = watchForSaveFailure(session);
+      setGuideStart(resumeAt(LESSON, at));
+      setGuided(true);
+      setPaused(false);
+      nav.reset({ name: 'play' });
+    };
+    if (c === 0) {
+      open(begin(), 0);
+      return;
+    }
+    const session = begin();
+    void playLessonTo(session, LESSON, chapterStart(LESSON, c)).then((got) => {
+      if (got.ok) {
+        open(session, c);
+        return;
+      }
+      // The lesson could not be played to the chapter: begin it again rather than lead a player
+      // through a game that is not the one its sentences describe. A test holds this never happens.
+      session.dispose();
+      open(begin(), 0);
+    });
   };
-  const endGuide = (how: 'finished' | 'left' | 'parted'): void => {
+  const onChapter = (n: number): void => {
+    writeChaptersDone(prefStore, n);
+    setChaptersDone((was) => Math.max(was, n));
+  };
+  const endGuide = (how: 'finished' | 'declined' | 'left' | 'parted'): void => {
     setGuided(false);
-    if (how === 'left') {
-      // Nothing of a lesson is saved, so leaving it is dropping it.
+    if (how === 'declined') {
+      // THE LESSON DONE, AND ITS GAME NOT TAKEN ON (16 October 2026: "When the last chapter ends,
+      // you have the option to finish the game"). Every chapter is done; the lesson's game is
+      // dropped, as a lesson left is, so a game saved before it is kept.
+      writePlayed(prefStore);
+      setPlayed(true);
+      onChapter(LESSON.chapters.length);
       quitToTitle();
+      nav.push({ name: 'chapters' });
+      return;
+    }
+    if (how === 'left') {
+      // Nothing of a lesson is saved, so leaving it is dropping it, and the player is back among
+      // its chapters, where they chose it: the one after the last done is the next one.
+      quitToTitle();
+      nav.push({ name: 'chapters' });
       return;
     }
     // Finished, or the game went its own way: either way it is the player's own from here.
     const s = sessionRef.current;
     if (s instanceof LocalSession) void s.endRails().then(refreshSave);
     if (how === 'finished') {
-      // The lesson has been played to its end on this phone: the title offers a new game first.
+      // The lesson has been played to its end on this phone: the title offers a new game first,
+      // and the last chapter is done. It has no card of its own between chapters to say so.
       writePlayed(prefStore);
       setPlayed(true);
+      onChapter(LESSON.chapters.length);
     }
   };
 
@@ -352,10 +424,19 @@ function App({
         return;
       }
       const st = s.state as Record<string, unknown>;
+      let resumed: LocalSession;
+      try {
+        resumed = LocalSession.fromSave(s, { storage, saveId: SAVE_ID });
+      } catch (e) {
+        // Not continued, and said on the title; the save is left as it is, and New game replaces
+        // it. Before step 4 a save that would not open left Continue doing nothing at all.
+        setSave((was) =>
+          was ? { ...was, blocked: e instanceof SaveTooNew ? 'newer' : 'unreadable' } : was,
+        );
+        return;
+      }
       difficultyRef.current = String(st['difficulty'] ?? 'training');
-      sessionRef.current = watchForSaveFailure(
-        LocalSession.resume(s.state, { storage, saveId: SAVE_ID }),
-      );
+      sessionRef.current = watchForSaveFailure(resumed);
       setPaused(false);
       nav.reset({ name: 'play' });
     });
@@ -579,8 +660,7 @@ function App({
       // THE GUIDED GAME, to be played again: not from inside a game.
       guide={{
         block: overPlay ? 'inPlay' : null,
-        replacesSave: save !== null,
-        onStart: startGuided,
+        onOpen: () => nav.push({ name: 'chapters' }),
       }}
       onDeleteSave={deleteSave}
     />
@@ -640,15 +720,28 @@ function App({
             save={save}
             onContinue={continueSave}
             onNewGame={() => nav.push({ name: 'difficulty' })}
-            onLearn={played ? null : startGuided}
+            onLearn={() => nav.push({ name: 'chapters' })}
+            learnFirst={!played}
             onTogether={openTogether}
             rejoin={roomRef.current === null && rejoin !== null ? { code: rejoin.code } : null}
             onRejoin={openRejoin}
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
+            onUpdate={update}
           />
         </>
+      );
+    }
+
+    if (screen.name === 'chapters') {
+      return (
+        <ChaptersScreen
+          chapters={LESSON.chapters}
+          done={chaptersDone}
+          replacesSave={save !== null}
+          onPlay={startGuided}
+        />
       );
     }
 
@@ -755,6 +848,7 @@ function App({
             onSettings={() => nav.push({ name: 'settings' })}
             onHelp={() => nav.push({ name: 'help', section: null })}
             onAbout={() => nav.push({ name: 'about' })}
+            onUpdate={update}
           />
         </>
       );
@@ -775,7 +869,11 @@ function App({
             session={session}
             // THE GUIDED GAME: the lesson this game is. Not while the menu is up: the menu is the
             // player's, and the light would stand between them and it.
-            guide={guided && !paused ? { lesson: LESSON, onEnd: endGuide } : null}
+            guide={
+              guided && !paused
+                ? { lesson: LESSON, onEnd: endGuide, start: guideStart, onChapter }
+                : null
+            }
             // A GAME PLAYED TOGETHER: the room as the relay last described it, and who this is.
             table={roomRef.current !== null && lobby !== null ? lobby : null}
             // THE CAPTAIN HANDS A WAITING PIECE ON (piece C, ruling 4); the room says no if it may not.

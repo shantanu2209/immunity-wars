@@ -19,6 +19,11 @@
  *
  * WHAT IS RINGED IS WHAT CAN BE SEEN OF IT (`box.ts`): a control cut off by a part of the screen
  * that scrolls is ringed where it shows, and is first scrolled to where the most of it does.
+ *
+ * WHAT THE SENTENCE TALKS ABOUT IS SHOWN (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): the new
+ * cards, the body, the bacterium on the board. Each is left out of the dimming with a thinner ring
+ * that does not breathe, and stays as unpressable as everything else: only the lit control's own
+ * button takes a press. Whatever of it is on the page is shown; what is not is not looked for.
  */
 import {
   useEffect,
@@ -35,19 +40,30 @@ import { kitCardStyle } from '../kit/Surface';
 import { prefersReducedMotion } from '../kit/motion';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 
-import { cutBy, litBox, type Box } from './box';
+import {
+  RING,
+  RING_GAP,
+  SHOW_RING,
+  cutBy,
+  edgeBelow,
+  holeShape,
+  litBox,
+  ringBox,
+  type Box,
+  type Hole,
+} from './box';
 
 /** The dimming: dark enough that the lit thing is the bright thing, light enough to read through. */
 const DIM = 'rgba(4, 18, 22, 0.6)';
 const Z = 18;
 
-/** The first of the beat's stops that is on the page and has a size. */
-function findLit(stops: readonly string[]): HTMLElement | null {
+/** The first of the beat's stops that is on the page and has a size, and which stop it is. */
+function findLit(stops: readonly string[]): { el: HTMLElement; stop: string } | null {
   for (const s of stops) {
     const el = document.querySelector<HTMLElement>(s);
     if (!el) continue;
     const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) return el;
+    if (r.width > 0 && r.height > 0) return { el, stop: s };
   }
   return null;
 }
@@ -76,6 +92,34 @@ function clippersOf(el: HTMLElement): Clipper[] {
   }
   return out;
 }
+
+/** A ring round a thing on the page: tight round it and its lip, in its own corner (`box.ts`). */
+function ringOf(el: HTMLElement, own: DOMRect, clipRects: readonly DOMRect[]): Hole {
+  const cs = getComputedStyle(el);
+  const corner = cs.borderTopLeftRadius;
+  // A piece on the board is round, whatever its box says; anything else takes its own corner.
+  const radius =
+    corner.endsWith('%') || el.closest('[data-clay-board]') !== null
+      ? Math.min(own.width, own.height) / 2
+      : parseFloat(corner) || 0;
+  return { box: ringBox(own, clipRects, edgeBelow(cs.boxShadow)), radius: radius + RING_GAP };
+}
+
+/** A hole in the dimming round a ring: its outer edge. */
+const grown = (h: Hole, by: number): Hole => ({
+  box: {
+    left: h.box.left - by,
+    top: h.box.top - by,
+    width: h.box.width + by * 2,
+    height: h.box.height + by * 2,
+  },
+  radius: h.radius + by,
+});
+
+const keyOf = (holes: readonly Hole[]): string =>
+  holes
+    .map((h) => [h.box.left, h.box.top, h.box.width, h.box.height].map(Math.round).join(','))
+    .join(';');
 
 const same = (a: Box | null, b: Box | null): boolean =>
   a === b ||
@@ -108,19 +152,15 @@ function press(el: HTMLElement): void {
   el.click();
 }
 
-const pane = (style: CSSProperties): CSSProperties => ({
-  position: 'fixed',
-  background: DIM,
-  pointerEvents: 'auto',
-  ...style,
-});
-
 export function Spotlight({
   beatId,
   text,
   stops,
+  thens = [],
+  shows = [],
   tell,
   last,
+  chapterEnd = false,
   watch = false,
   count,
   onNext,
@@ -130,10 +170,19 @@ export function Spotlight({
   beatId: string;
   text: string;
   stops: readonly string[];
+  /**
+   * Beside each stop, the few words said when it is lit after another of the same beat was (step
+   * 3: "Now tap Coat."); empty for none. The beat's whole sentence is said first, always.
+   */
+  thens?: readonly string[];
+  /** What the sentence talks about, by the page's hooks: shown, not pressable. */
+  shows?: readonly string[];
   /** Said, not done: the card's own button moves on. */
   tell: boolean;
   /** The lesson's last word: its button hands the game over. */
   last: boolean;
+  /** The end of a chapter: its buttons go on to the next, or stop for now. */
+  chapterEnd?: boolean;
   /**
    * The spread is playing: it is watched, so nothing is dimmed and nothing is ringed. The sentence
    * stands alone, and a finger anywhere moves the spread on, as it always does.
@@ -146,12 +195,22 @@ export function Spotlight({
   onLeave: () => void;
 }): ReactElement {
   const [box, setBox] = useState<Box | null>(null);
+  /** The ring, drawn tight round the control and its lip, and the corner it takes (`box.ts`). */
+  const [ringAt, setRingAt] = useState<{ box: Box; radius: number } | null>(null);
+  /** What is shown, each ringed where it can be seen. */
+  const [shownAt, setShownAt] = useState<readonly Hole[]>([]);
+  /** How many of what is shown are on the page, the lit control among them: for a walk to read. */
+  const [found, setFound] = useState(0);
   const [name, setName] = useState('');
+  /** Which stop is lit, and which was lit first in this beat: a later one says its few words. */
+  const [litStop, setLitStop] = useState('');
+  const firstLit = useRef<{ beat: string; stop: string } | null>(null);
   /** What is lit is on the board: the card then keeps off the board where it can. */
   const [onBoard, setOnBoard] = useState(false);
   const lit = useRef<HTMLElement | null>(null);
-  const ring = useRef<HTMLButtonElement | null>(null);
+  const ring = useRef<HTMLDivElement | null>(null);
   const key = stops.join('|');
+  const showKey = shows.join('|');
 
   // Where the lit control is, read every frame while the guide is up (see the header).
   useLayoutEffect(() => {
@@ -162,8 +221,25 @@ export function Spotlight({
     /** The control last brought into view, so that it is brought once and not held there. */
     let brought: HTMLElement | null = null;
     let clippers: Clipper[] = [];
+    let stopNow: string | undefined;
+    let ringNow: { box: Box; radius: number } | null = null;
+    // Unknown until the first look, for the same reason: a beat that shows nothing must take down
+    // what the last beat showed. Started at "nothing", it left Malaria's ring standing on the
+    // lesson's last card, after Malaria was gone (16 October 2026).
+    let shownNow: string | undefined;
+    let foundNow = -1;
+    /** What cuts each shown thing off, found once for it. */
+    const shownClips = new Map<HTMLElement, Clipper[]>();
     const read = (): void => {
-      const el = last || watch ? null : findLit(stops);
+      const found = last || watch ? null : findLit(stops);
+      const el = found?.el ?? null;
+      if (found !== null && firstLit.current?.beat !== beatId) {
+        firstLit.current = { beat: beatId, stop: found.stop };
+      }
+      if ((found?.stop ?? '') !== stopNow) {
+        stopNow = found?.stop ?? '';
+        setLitStop(stopNow);
+      }
       // WHAT IS LIT MUST BE ON THE SCREEN. With the page zoomed, or the text at its largest, the
       // screen is taller than the phone and the lit control may be below it, or part of it may be
       // below the edge of the middle, which scrolls. The player cannot scroll to it: every touch
@@ -183,16 +259,57 @@ export function Spotlight({
       }
       if (el === null) clippers = [];
       lit.current = el;
-      const next = el
-        ? litBox(
-            el.getBoundingClientRect(),
-            clippers.map((c) => c.el.getBoundingClientRect()),
-            { width: window.innerWidth, height: window.innerHeight },
-          )
-        : null;
-      if (now === undefined || !same(now, next)) {
+      const own = el ? el.getBoundingClientRect() : null;
+      const clipRects = clippers.map((c) => c.el.getBoundingClientRect());
+      const next =
+        el && own
+          ? litBox(own, clipRects, { width: window.innerWidth, height: window.innerHeight })
+          : null;
+      const tight = el && own ? ringOf(el, own, clipRects) : null;
+      // What is shown: every one on the page with a size, but the lit control itself, or what holds
+      // it or is held by it, which its own ring already shows.
+      const shown: Hole[] = [];
+      let on = 0;
+      if (!watch && !last) {
+        for (const sel of shows) {
+          for (const s of Array.from(document.querySelectorAll<HTMLElement>(sel))) {
+            const r = s.getBoundingClientRect();
+            if (r.width <= 0 || r.height <= 0) continue;
+            on += 1;
+            if (el !== null && (s === el || s.contains(el) || el.contains(s))) continue;
+            let clips = shownClips.get(s);
+            if (clips === undefined) {
+              clips = clippersOf(s);
+              shownClips.set(s, clips);
+            }
+            shown.push(
+              ringOf(
+                s,
+                r,
+                clips.map((c) => c.el.getBoundingClientRect()),
+              ),
+            );
+          }
+        }
+      }
+      if (on !== foundNow) {
+        foundNow = on;
+        setFound(on);
+      }
+      const shownKey = keyOf(shown);
+      if (shownKey !== shownNow) {
+        shownNow = shownKey;
+        setShownAt(shown);
+      }
+      if (
+        now === undefined ||
+        !same(now, next) ||
+        !same(ringNow?.box ?? null, tight?.box ?? null)
+      ) {
         now = next;
+        ringNow = tight;
         setBox(next);
+        setRingAt(tight);
         setName(el ? (el.getAttribute('aria-label') ?? el.textContent ?? '').trim() : '');
         setOnBoard(el !== null && el.closest('[data-clay-board]') !== null);
       }
@@ -200,19 +317,39 @@ export function Spotlight({
     };
     read();
     return (): void => window.cancelAnimationFrame(frame);
-    // `key` stands for `stops`: the same hooks are the same search.
-  }, [key, last, watch]);
+    // `key` and `showKey` stand for `stops` and `shows`: the same hooks are the same search.
+  }, [key, showKey, last, watch, beatId]);
 
-  // The ring breathes, so that the eye finds it; not on a phone that asks for less motion.
+  // The words for what is lit: the beat's whole sentence, until a later control of it is lit.
+  const thenText =
+    firstLit.current?.beat === beatId && litStop !== '' && litStop !== firstLit.current.stop
+      ? (thens[stops.indexOf(litStop)] ?? '')
+      : '';
+  const said = thenText !== '' ? thenText : text;
+
+  // The ring breathes, so that the eye finds it; not on a phone that asks for less motion. It is a
+  // glow that grows out of the ring and fades, so the control looks lit, not set into the table.
   useEffect(() => {
     const el = ring.current;
     if (!el || prefersReducedMotion() || typeof el.animate !== 'function') return;
     const a = el.animate(
-      [{ boxShadow: `0 0 0 0 ${COLOUR.glow}` }, { boxShadow: `0 0 0 8px rgba(255, 224, 138, 0)` }],
+      [
+        {
+          boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}, 0 0 0 ${String(RING)}px rgba(255, 224, 138, 0.7)`,
+        },
+        {
+          boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}, 0 0 0 ${String(RING + 9)}px rgba(255, 224, 138, 0)`,
+        },
+      ],
       { duration: 1200, iterations: Infinity },
     );
     return (): void => a.cancel();
-  }, [box === null, beatId]);
+  }, [ringAt === null, beatId]);
+  // The dimming stops where each ring does: a hole is a ring's outer edge.
+  const holes: Hole[] = [
+    ...(box && ringAt ? [grown(ringAt, RING)] : []),
+    ...shownAt.map((h) => grown(h, SHOW_RING)),
+  ];
 
   const W = typeof window === 'undefined' ? 0 : window.innerWidth;
   const H = typeof window === 'undefined' ? 0 : window.innerHeight;
@@ -243,30 +380,77 @@ export function Spotlight({
     <div
       data-guide={beatId}
       data-guide-lit={box ? '1' : '0'}
+      data-guide-shows={shows.length}
+      data-guide-showing={found}
       style={{ position: 'fixed', inset: 0, zIndex: Z, pointerEvents: 'none' }}
     >
-      {box ? (
+      {watch ? null : (
         <>
-          <div style={pane({ left: 0, top: 0, width: W, height: box.top })} />
+          {/* Every touch outside the light is swallowed. The light's own button lies over this. */}
+          <div data-guide-block="" style={{ position: 'fixed', inset: 0, pointerEvents: 'auto' }} />
+          <svg
+            aria-hidden="true"
+            width={W}
+            height={H}
+            style={{ position: 'fixed', left: 0, top: 0, pointerEvents: 'none' }}
+          >
+            <defs>
+              <mask id="iw-guide-dim" maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+                <rect x={0} y={0} width={W} height={H} fill="white" />
+                {holes.map((h, i) => {
+                  const r = holeShape(h);
+                  return <rect key={i} {...r} ry={r.rx} fill="black" />;
+                })}
+              </mask>
+            </defs>
+            <rect
+              data-guide-dim=""
+              x={0}
+              y={0}
+              width={W}
+              height={H}
+              fill={DIM}
+              mask="url(#iw-guide-dim)"
+            />
+          </svg>
+          {shownAt.map((h, i) => (
+            // What the sentence is about: ringed, still, and not pressable.
+            <div
+              key={i}
+              data-guide-shown=""
+              aria-hidden="true"
+              style={{
+                position: 'fixed',
+                left: h.box.left,
+                top: h.box.top,
+                width: h.box.width,
+                height: h.box.height,
+                borderRadius: h.radius,
+                boxShadow: `0 0 0 ${String(SHOW_RING)}px ${COLOUR.glow}`,
+                pointerEvents: 'none',
+              }}
+            />
+          ))}
+        </>
+      )}
+      {box && ringAt ? (
+        <>
           <div
-            style={pane({
-              left: 0,
-              top: box.top + box.height,
-              width: W,
-              height: Math.max(0, H - box.top - box.height),
-            })}
-          />
-          <div style={pane({ left: 0, top: box.top, width: box.left, height: box.height })} />
-          <div
-            style={pane({
-              left: box.left + box.width,
-              top: box.top,
-              width: Math.max(0, W - box.left - box.width),
-              height: box.height,
-            })}
+            ref={ring}
+            data-guide-ring=""
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              left: ringAt.box.left,
+              top: ringAt.box.top,
+              width: ringAt.box.width,
+              height: ringAt.box.height,
+              borderRadius: ringAt.radius,
+              boxShadow: `0 0 0 ${String(RING)}px ${COLOUR.glow}`,
+              pointerEvents: 'none',
+            }}
           />
           <button
-            ref={ring}
             type="button"
             data-guide-press=""
             aria-label={name || text}
@@ -275,6 +459,8 @@ export function Spotlight({
               if (pressable && lit.current) press(lit.current);
             }}
             style={{
+              // The finger's target: the control, grown to a finger's size. It draws nothing; the
+              // ring above is what is seen.
               position: 'fixed',
               left: box.left,
               top: box.top,
@@ -283,16 +469,14 @@ export function Spotlight({
               boxSizing: 'border-box',
               padding: 0,
               background: 'transparent',
-              border: `3px solid ${COLOUR.glow}`,
+              border: 0,
               borderRadius: RADIUS.control,
               pointerEvents: 'auto',
               cursor: pressable ? 'pointer' : 'default',
             }}
           />
         </>
-      ) : watch ? null : (
-        <div style={pane({ inset: 0 })} />
-      )}
+      ) : null}
       <div
         data-guide-card=""
         role="note"
@@ -313,7 +497,7 @@ export function Spotlight({
         }}
       >
         <p data-guide-text="" style={{ ...TYPE.body, margin: 0, color: COLOUR.ink }}>
-          {text}
+          {said}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <span
@@ -322,11 +506,14 @@ export function Spotlight({
           >
             {count}
           </span>
-          {last || watch ? null : (
+          {watch ? null : (
             // A way out, always there and never loud: a quiet word, and still a full touch target.
+            // At a chapter's end it is the choice to stop for now, and the chapter is kept. On the
+            // last word it is the choice not to play the lesson's game on (16 October 2026): the
+            // lesson is done either way, and a game saved before it is kept.
             <button
               type="button"
-              data-guide-leave=""
+              data-guide-leave={chapterEnd ? 'stop' : last ? 'end' : ''}
               onClick={onLeave}
               style={{
                 minHeight: TOUCH.min,
@@ -342,12 +529,12 @@ export function Spotlight({
                 cursor: 'pointer',
               }}
             >
-              {t('guide.leave')}
+              {t(chapterEnd ? 'guide.stop' : 'guide.leave')}
             </button>
           )}
           {tell || last ? (
             <KitButton kind="main" data-guide-next="" onPress={onNext}>
-              {t(last ? 'guide.playOn' : 'guide.next')}
+              {t(last ? 'guide.playOn' : chapterEnd ? 'guide.nextChapter' : 'guide.next')}
             </KitButton>
           ) : null}
         </div>

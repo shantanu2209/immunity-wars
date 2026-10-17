@@ -96,6 +96,9 @@ const OUTSIDE_READS: readonly [string, string][] = [
   ['@immunity-wars/ui', '../../tools/art-pipeline/clay/board.py'],
   ['@immunity-wars/ui', '../../tools/art-pipeline/clay/pieces.py'],
   ['@immunity-wars/ui', '../app/public/art/clay/manifest.json'],
+  // The shell's test holds the app's link to its Google Play page to the app's id (step 4,
+  // docs/LOOK_PLAN.md §28).
+  ['@immunity-wars/android', '../app/src/storeLink.ts'],
 ];
 const inputsOf = new Map(dry.tasks.map((t) => [t.taskId, t.inputs ?? {}]));
 for (const [name, file] of OUTSIDE_READS) {

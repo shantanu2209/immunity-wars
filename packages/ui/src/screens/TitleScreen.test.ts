@@ -6,12 +6,15 @@
  *
  * ON A PHONE THAT HAS NEVER PLAYED IT IS THE GUIDED GAME (stage L6, ruled 2 October 2026): the
  * way in for a newcomer is the thing that title is for. With a game waiting it is still Continue.
+ * On every other phone the guided game is there and rests (16 October 2026): its chapters are
+ * played again from it.
  * Controls: pnpm ci:selftest title-one-main-button, title-guided-game-leads-a-new-phone.
  */
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import { t } from '../i18n';
 import { kitButtonStyle } from '../kit/Button';
 
 import { TitleScreen, type SaveSummary } from './TitleScreen';
@@ -27,7 +30,8 @@ const title = (
       rejoin,
       onContinue: () => undefined,
       onNewGame: () => undefined,
-      onLearn: neverPlayed ? () => undefined : null,
+      onLearn: () => undefined,
+      learnFirst: neverPlayed,
       onTogether: () => undefined,
       onRejoin: () => undefined,
       onSettings: () => undefined,
@@ -88,9 +92,11 @@ describe('the title’s main button', () => {
     expect(title(saved, null, true)).toContain('data-title="learn"');
   });
 
-  it('on a phone that has played it is not on the title', () => {
-    expect(title(null)).not.toContain('data-title="learn"');
-    expect(title(saved)).not.toContain('data-title="learn"');
+  it('on a phone that has played it is still on the title, resting, for its chapters', () => {
+    // Ruled 16 October 2026: a chapter done is green and can be played again, so its door stays.
+    expect(title(null), 'THE GUIDED GAME HAS LEFT THE TITLE').toContain('data-title="learn"');
+    expect(title(saved)).toContain('data-title="learn"');
+    expect(title(null)).toContain(t('title.learn'));
   });
 
   it('its picture is laid over its box, not sized by it (FINDINGS #127)', () => {
@@ -103,6 +109,39 @@ describe('the title’s main button', () => {
     expect(img, 'THE TITLE’S PICTURE IS SIZED BY A FLEXED BOX').toContain('position:absolute');
     const box = /<div aria-hidden="true" style="([^"]*)"><img/.exec(html)?.[1] ?? '';
     expect(box, 'its box is what it is measured against').toContain('position:relative');
+  });
+
+  it('a save that cannot be continued is said, not offered, and New game is the main button', () => {
+    // Step 4 (docs/LOOK_PLAN.md §28): a game a newer version saved, or one this version could not
+    // open. Offering Continue would offer a button that does nothing, or continue it under older
+    // rules and save over it.
+    for (const blocked of ['newer', 'unreadable'] as const) {
+      const html = title({ ...saved, blocked });
+      expect(html, 'A SAVE THAT CANNOT BE CONTINUED IS OFFERED').not.toContain(
+        'data-title="continue"',
+      );
+      expect(html, 'it is said').toContain('data-title="save-blocked"');
+      expect(mains(html), blocked).toEqual(['new']);
+    }
+  });
+
+  it('the update is offered under a game a newer version saved, and only there', () => {
+    const withUpdate = (save: SaveSummary): string =>
+      renderToStaticMarkup(
+        createElement(TitleScreen, {
+          save,
+          onContinue: () => undefined,
+          onNewGame: () => undefined,
+          onTogether: () => undefined,
+          onSettings: () => undefined,
+          onHelp: () => undefined,
+          onAbout: () => undefined,
+          onUpdate: () => undefined,
+        }),
+      );
+    expect(withUpdate({ ...saved, blocked: 'newer' })).toContain('data-update-now');
+    expect(withUpdate({ ...saved, blocked: 'unreadable' })).not.toContain('data-update-now');
+    expect(withUpdate(saved)).not.toContain('data-update-now');
   });
 
   it('keeps the hooks the instruments find it by, and says what it resumes', () => {

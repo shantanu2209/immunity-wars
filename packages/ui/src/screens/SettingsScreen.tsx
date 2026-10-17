@@ -48,7 +48,7 @@ export type DeleteSaveBlock = 'none' | 'inPlay' | null;
 /** The choice rows the shell knows how to store; a new choice row is a new member here. */
 export type ChoiceRow = 'textSize' | 'language' | 'sound';
 
-/** A row of the settings table: a choice among options, or an action with a confirm. */
+/** A row of the settings table: a choice among options, or an action, with a confirm or without. */
 type Row =
   | {
       kind: 'choice';
@@ -65,8 +65,9 @@ type Row =
       blockedKey: string | null;
       /** The confirm's three strings and what it does. Generalised on 9 September 2026, when
        *  the hints row became the SECOND action row: the first was written straight into the
-       *  renderer, which is exactly the shape the rows table exists to avoid. */
-      confirmKey: string;
+       *  renderer, which is exactly the shape the rows table exists to avoid. Null for a row that
+       *  only opens another screen, where the choice is made (the guided game's chapters). */
+      confirmKey: string | null;
       confirmYesKey: string;
       /** The word on the button that says no. "Keep" for a delete; another word where that is odd. */
       confirmNoKey?: string;
@@ -109,10 +110,10 @@ export function SettingsScreen({
   onDeleteSave: () => void;
   /**
    * THE GUIDED GAME, to be played again (stage L6, ruled 2 October 2026). Not while a game is
-   * being played: the row then says why. Its confirm says, when a game is saved, that the lesson's
-   * end replaces it.
+   * being played: the row then says why. It opens the lesson's chapters (16 October 2026), which say
+   * what finishing the lesson does to a saved game, so it asks nothing itself.
    */
-  guide: { block: 'inPlay' | null; replacesSave: boolean; onStart: () => void };
+  guide: { block: 'inPlay' | null; onOpen: () => void };
 }): ReactElement {
   const [confirming, setConfirming] = useState<string | null>(null);
   // The confirm is a dialog on the navigation stack: the back gesture cancels it, and the floating
@@ -173,10 +174,9 @@ export function SettingsScreen({
           key: 'guide',
           labelKey: 'settings.guide',
           blockedKey: guide.block === 'inPlay' ? 'settings.guideInPlay' : null,
-          confirmKey: guide.replacesSave ? 'settings.guideConfirmSave' : 'settings.guideConfirm',
-          confirmYesKey: 'settings.guideYes',
-          confirmNoKey: 'settings.guideNo',
-          onAct: guide.onStart,
+          confirmKey: null,
+          confirmYesKey: '',
+          onAct: guide.onOpen,
         },
       ],
     },
@@ -216,7 +216,10 @@ export function SettingsScreen({
     const blocked = row.blockedKey !== null;
     return (
       <div key={row.key} style={{ ...ROW, display: 'block' }} data-settings-row={row.key}>
-        <KitButton unavailable={blocked} onPress={() => setConfirming(row.key)}>
+        <KitButton
+          unavailable={blocked}
+          onPress={() => (row.confirmKey === null ? row.onAct() : setConfirming(row.key))}
+        >
           {t(row.labelKey)}
         </KitButton>
         {row.blockedKey ? <p style={NOTE}>{t(row.blockedKey)}</p> : null}

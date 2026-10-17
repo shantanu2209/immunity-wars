@@ -12,8 +12,17 @@
  * exactly as a player led by it would, until the guide hands the game over.
  *
  * WHAT IT REQUIRES, read from the page beat by beat and not from a verdict:
+ *  - the title's Learn to play opens the chapters (ruled 16 October 2026): on a phone that has
+ *    never played, the first is the one to play and every other is locked and cannot be pressed;
  *  - the beats come in the lesson's own order, every one of them: each turn's cards, its plan,
  *    each step by its name, its End turn and its spread, and then the last word;
+ *  - every card says which step of its chapter it is, "Step 3 of 9", counted from the walk's own
+ *    list of the lesson's beats and not from the guide's;
+ *  - every card that talks about something finds it on the page to show (16 October 2026): the
+ *    new cards, the body, the disease on the board; and a finger on what is shown lands on the
+ *    guide, which swallows it, or on the lit control's own button, never on the thing itself;
+ *  - no card draws a ring round more than it shows: a ring left from the card before is a ring
+ *    round what nobody is talking about, and it stood on the last card once;
  *  - at every beat that asks for a tap, something on the page is lit and pressing it moves the
  *    lesson on. A beat that stays, with nothing lit or with a light that does nothing, is named;
  *  - when the lesson ends the guide is gone and the game stands at the turn after the lesson's last;
@@ -29,7 +38,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { LESSON } from '@immunity-wars/content';
+import { LESSON, UI_I18N_EN } from '@immunity-wars/content';
 import puppeteer from 'puppeteer-core';
 
 const CHROME =
@@ -60,13 +69,25 @@ function refuse(reason: string): never {
 
 /** The beats the lesson has, in its order, by the names the guide puts on the page. */
 function expectedBeats(): string[] {
+  // A chapter's cards (step 3): the last one done, then what the next is about, just before the
+  // step the next begins at; for a chapter that begins a turn, before that turn's cards are drawn.
+  const cards = (from: string): string[] => {
+    const c = LESSON.chapters.findIndex((ch) => ch.from === from);
+    if (c < 1) return [];
+    return [
+      `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`,
+      `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`,
+    ];
+  };
   const out: string[] = [];
   LESSON.turns.forEach((turn, i) => {
     const n = String(i + 1);
+    const opens = turn.steps[0]?.id ?? '';
     out.push(
+      ...cards(opens),
       `t${n}.cards`,
       `t${n}.plan`,
-      ...turn.steps.map((s) => s.id),
+      ...turn.steps.flatMap((s, k) => [...(k > 0 ? cards(s.id) : []), s.id]),
       `t${n}.end`,
       `t${n}.spread`,
     );
@@ -75,8 +96,34 @@ function expectedBeats(): string[] {
   return out;
 }
 
+/**
+ * What each beat's card should say it is: its place among its chapter's cards. A chapter's card that
+ * says the one before is done is the last of that one; the card that says what the next is about is
+ * the first of the next.
+ */
+function expectedCounts(beats: readonly string[]): string[] {
+  const chapterOf: number[] = [];
+  let c = 0;
+  for (const b of beats) {
+    if (b.startsWith('chapter.') && b.endsWith('.intro')) c += 1;
+    chapterOf.push(c);
+  }
+  const say = UI_I18N_EN['guide.count'] ?? '';
+  return beats.map((_, i) => {
+    const mine = chapterOf.flatMap((k, j) => (k === chapterOf[i] ? [j] : []));
+    return say.replace('{n}', String(mine.indexOf(i) + 1)).replace('{of}', String(mine.length));
+  });
+}
+
 interface Look {
   beat: string | null;
+  count: string;
+  shows: number;
+  showing: number;
+  /** The rings drawn round what is shown. */
+  drawn: number;
+  /** What a finger at the middle of a shown thing would press, when it is not the guide. */
+  pressedThrough: string;
   lit: boolean;
   pressable: boolean;
   next: boolean;
@@ -89,6 +136,19 @@ const LOOK = `(() => {
   const p = document.querySelector('[data-guide-press]');
   return {
     beat: g ? g.getAttribute('data-guide') : null,
+    count: (document.querySelector('[data-guide-count]')?.textContent ?? '').trim(),
+    shows: g ? Number(g.getAttribute('data-guide-shows')) : 0,
+    showing: g ? Number(g.getAttribute('data-guide-showing')) : 0,
+    drawn: document.querySelectorAll('[data-guide-shown]').length,
+    pressedThrough: [...document.querySelectorAll('[data-guide-shown]')]
+      .map((r) => {
+        const b = r.getBoundingClientRect();
+        const hit = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+        if (!hit || hit.closest('[data-guide-block],[data-guide-press],[data-guide-card]')) return '';
+        return hit.tagName + (hit.getAttribute('data-invader') ? ' ' + hit.getAttribute('data-invader') : '');
+      })
+      .filter((x) => x !== '')
+      .join(', '),
     lit: g ? g.getAttribute('data-guide-lit') === '1' : false,
     pressable: p ? !p.disabled : false,
     next: document.querySelector('[data-guide-next]') !== null,
@@ -151,6 +211,13 @@ try {
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
   const errors: string[] = [];
   const seen: string[] = [];
+  const counts: string[] = [];
+  /** Of each card that talks about something, the most of it the page was seen to show. */
+  const showing = new Map<string, number>();
+  /** A shown thing a finger would have pressed, with the card it was shown by. */
+  let through = '';
+  /** A card that drew more rings than it shows things. */
+  let stale = '';
   let handedTurn = '';
   let guideGone = false;
   try {
@@ -175,6 +242,20 @@ try {
     if (!offered)
       refuse('the title of a phone that has never played does not offer the guided game');
     await page.evaluate(click('[data-title="learn"]'));
+    await page
+      .waitForFunction(() => document.querySelector('[data-screen="chapters"]') !== null, {
+        timeout: 10_000,
+      })
+      .catch(() => refuse('Learn to play does not open the chapters'));
+    const chapters = (await page.evaluate(`[...document.querySelectorAll('[data-chapter]')].map(
+      (b) => b.getAttribute('data-chapter-state') + (b.disabled ? ':disabled' : ''))`)) as string[];
+    const fresh = LESSON.chapters.map((_, c) => (c === 0 ? 'open' : 'locked:disabled'));
+    if (chapters.join(' ') !== fresh.join(' '))
+      refuse(
+        `A NEW PHONE'S CHAPTERS ARE NOT THE FIRST TO PLAY AND THE REST LOCKED: ${chapters.join(' ')}`,
+      );
+    console.log(`GUIDE WALK: the chapters, on a new phone: ${chapters.join(' ')}`);
+    await page.evaluate(click('[data-chapter-state="open"]'));
     await wait(1200);
 
     let stayed = 0;
@@ -189,7 +270,17 @@ try {
       const key = `${String(s.beat)}|${String(s.lit)}`;
       stayed = key === last ? stayed + 1 : 0;
       last = key;
-      if (s.beat !== null && seen[seen.length - 1] !== s.beat) seen.push(s.beat);
+      if (s.beat !== null && seen[seen.length - 1] !== s.beat) {
+        seen.push(s.beat);
+        counts.push(s.count);
+      }
+      if (s.beat !== null && s.shows > 0)
+        showing.set(s.beat, Math.max(showing.get(s.beat) ?? 0, s.showing));
+      if (s.pressedThrough !== '' && through === '')
+        through = `${String(s.beat)}: ${s.pressedThrough}`;
+      if (s.beat !== null && s.drawn > s.showing && stale === '') {
+        stale = `${s.beat}, ${String(s.drawn)} drawn and ${String(s.showing)} shown`;
+      }
       if (stayed > PATIENCE) {
         refuse(
           s.beat === null
@@ -226,6 +317,28 @@ try {
       `THE BEATS ARE NOT THE LESSON’S: beat ${String(at + 1)} should be ${expected[at] ?? 'nothing more'} and was ${seen[at] ?? 'nothing'}`,
     );
   }
+  const said = expectedCounts(expected);
+  const miscount = said.findIndex((c, i) => counts[i] !== c);
+  if (miscount >= 0) {
+    refuse(
+      `THE CARD DOES NOT SAY WHICH STEP IT IS: ${expected[miscount] ?? ''} said "${counts[miscount] ?? ''}" and should say "${said[miscount] ?? ''}"`,
+    );
+  }
+  const lasts = said.filter((_, i) => expected[i + 1]?.endsWith('.intro') ?? true);
+  console.log(
+    `GUIDE WALK: every card counted in its chapter; each chapter ends at ${lasts.join(', ')}`,
+  );
+  const unshown = [...showing].filter(([, n]) => n === 0).map(([b]) => b);
+  if (unshown.length > 0) {
+    refuse(
+      `THE CARD SHOWS NOTHING OF WHAT IT TALKS ABOUT: ${unshown.slice(0, 3).join(', ')}${unshown.length > 3 ? ` and ${String(unshown.length - 3)} more` : ''}`,
+    );
+  }
+  if (through !== '') refuse(`WHAT IS SHOWN CAN BE PRESSED: at ${through}`);
+  if (stale !== '') refuse(`A RING IS LEFT ON WHAT NO CARD TALKS ABOUT: at ${stale}`);
+  console.log(
+    `GUIDE WALK: ${String(showing.size)} cards talk about something, each found it on the page, and none of it can be pressed`,
+  );
   if (!guideGone) refuse('the lesson’s last word was answered and the guide is still on the page');
   const wanted = `${String(LESSON.turns.length + 1)}/`;
   if (!handedTurn.startsWith(wanted)) {
