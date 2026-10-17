@@ -37,6 +37,16 @@ describe('the lesson file', () => {
     expect(() => GuidePackS.parse(raw())).not.toThrow();
   });
 
+  it('accepts a turn with no steps: one the player only ends', () => {
+    // The lesson has none, and the checks that look for a chapter beginning at a turn's first step
+    // must not trip over a turn that has no first step.
+    expect(
+      corrupt((l) => {
+        l.turns.push({ arrive: [], steps: [] });
+      }),
+    ).not.toThrow();
+  });
+
   it('rejects an arrival no card carries', () => {
     expect(
       corrupt((l) => {
