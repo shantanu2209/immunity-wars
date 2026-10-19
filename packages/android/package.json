@@ -12,7 +12,7 @@
     "build": "echo \"no build output: pnpm android:apk builds the app\""
   },
   "dependencies": {
-    "@capacitor/android": "8.5.2",
+    "@capacitor/android": "8.5.3",
     "@capacitor/core": "8.5.2"
   },
   "devDependencies": {
