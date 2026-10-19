@@ -26,7 +26,7 @@
     "@immunity-wars/session": "workspace:*",
     "@immunity-wars/ui": "workspace:*",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0",
+    "react-dom": "^19.3.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
