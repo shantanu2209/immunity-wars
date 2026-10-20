@@ -1,10 +1,24 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.2 · 2 October 2026
+**Version:** 2.3 · 20 October 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.3 records
+
+v2.3 changes the order of one thing again, by ruling (Shantanu, 18 and 20 October 2026;
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §31): *"Yes I would apply the latest build everywhere"*, and, when
+Google granted production access, *"let's make the app live"*.
+
+- **The game is released on Google Play before Gate 2.** v2.2 kept the public release for after
+  his visual approval. It was made on 20 October 2026: version 0.9, in every country Play offers.
+- **Gate 2 is not met,** and is still the gate this phase ends on. His approval of the whole look
+  has not been given, and nothing here claims it has. What changes is that the screens reach
+  players through store updates while it is open.
+- **Store updates follow the closed test first.** The closed track stays, so that a build can be
+  played on his phone before it reaches everyone.
 
 ## What v2.2 records
 
@@ -15,7 +29,8 @@ v2.2 changes the order of one thing, by ruling (Shantanu, 2 October 2026;
   this phase ends. The app is one codebase, and the Android app is that codebase inside a shell, so
   a change to a screen costs the same before the shell exists and after it.
 - **What still waits for Gate 2 is the public release:** the store's listing, its screenshots and
-  the release itself.
+  the release itself. ⚠️ *Superseded in v2.3:* the public release was made on 20 October 2026,
+  before Gate 2, by ruling.
 - **His review and his visual approval may be done on the Android app,** which is the thing that
   ships. The web version stays live, and the automated checks go on being run against it.
 - **Locked decision #1** is confirmed by a measurement taken inside the shell, as the plan's last

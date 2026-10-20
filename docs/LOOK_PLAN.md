@@ -2893,3 +2893,73 @@ let's hide it beneath a switch in code and adjust audit step etc. record the rul
   so the Result, its two screens and a cell's card from the inspect sheet were not measured there,
   and a row with several targets was not dealt in two passes. Each is the dice's, as the audit is
   unseeded by ruling (§20), and each was measured clean in the other passes.
+
+## 31. Ruled 18 and 20 October 2026: released on Google Play, before Gate 2
+
+**The closed test's fourteen days were done on 18 October.** He asked: *"14 days are done shall I
+apply for production? We can always keep uodating right?"*, and then: *"Yes I would apply the
+latest build everywhere."* He applied for production access himself that evening, at 20:38. **Google granted it
+on 20 October,** and he wrote: *"approval has come from google, let's make the app live"*. Told
+then that this overrides the order the plan and the brief had, he went ahead.
+
+- **This replaces the order of §26 and the brief's v2.2**, where the public release waited for his
+  visual approval. The brief is v2.3 and says so.
+- **Gate 2 is not met,** and stays the gate this phase ends on. His approval of the whole look has
+  not been given; the screens now reach players through store updates while it is open.
+
+### What reached people, from 5 October
+
+| When | What | From `main` at | Version |
+|---|---|---|---|
+| 5 October, 20:21 IST | The app: the lesson in chapters and why each beat of the spread happened (§28, step 3) | `45d9578` | `20261005-202119-45d9578` |
+| 17 October, 11:41 IST | The app: the chapters to choose, what a card talks about lit, the layout's symmetry, his words for the lesson (§29) | `10f1282` | `20261017-114100-10f1282` |
+| 17 October, 20:00 IST | The relay: the day's dependency updates, `ws` among them. Nobody was connected; it restarted at 20:00:33 | `f01dccf` | `20261017-200026-f01dccf` |
+| 17 October, 20:00 IST | The app: Undo hidden (§30) | `f01dccf` | `20261017-200059-f01dccf` |
+| 18 October, 21:31 | **The closed test:** version 0.9, code 2, built by him with `pnpm android:bundle` | `f01dccf` | `android-0.9-2-f01dccf`, SHA-256 `b9a0ebb05f4f69342ccad55c0c477aced39a5234c595a0462ccaded9260fd8c0` |
+| 20 October, 16:20 | **Production:** the same bundle, code 2, full rollout, in all 178 countries and regions Play offers | `f01dccf` | the same |
+
+The times on the last two rows are Play Console's. After each app deploy the lesson was walked on the
+live app, 82 beats of 82; on the last, the selected piece's card had no Undo.
+
+### The store listing, made current for the release
+
+The listing had been filled in for the closed test on 3 October, and the public would have opened
+on pictures of the game before §28 and §29: the old title line, the Action Points as pips in the
+top bar, Undo on the piece's card, and the lesson counting *1 of 40*. Its feature graphic was the
+3 October one, which says *"for two to fifteen players"*; the corrected one, made on 5 October, had
+not been uploaded.
+
+| Picture | Made |
+|---|---|
+| The feature graphic | The 5 October one, from the catalogue's title line (§28, step 1) |
+| Six phone screenshots | 20 October, by `pnpm art:shots` on the S25 over the cable, from a debug build of `main` at `f158037`. Its screens are code 2's: what `main` gained after `f01dccf` is dependency updates |
+| Twelve tablet screenshots | 20 October, by `pnpm art:shots --tablet`, from the web build in headless Chrome |
+
+- **The screenshot tool had stopped working on 16 October,** when *Learn to play* began opening the
+  chapters: it pressed the title's button and waited for the lesson. It now presses the chapter that
+  can be played. It needs a phone or a browser to run, so no gate runs it, and nothing said it was
+  broken until it was used.
+- **The first phone set was retaken:** another app's chat bubble was drawn over the game in all six,
+  as Android draws bubbles over every app. He dismissed it and the six were taken again, clean.
+- **What's new**, the release notes: *"The first public release of The Immunity Wars. Learn to play
+  in seven short chapters, then defend the body on Easy, Normal or Hard, on your own or with friends
+  in a private room."*
+
+**Who pressed what.** Claude chose the 178 countries in the console and saved them as a draft.
+Creating the release, the pictures' upload and the submission were his: this session's permission
+check refused two of Claude's presses, on creating and on promoting a release, and the browser pane cannot
+hand a file to a page. An empty draft release Claude had opened on the Production track, which greys
+out *Promote release*, he discarded.
+
+| Seen after, from the PC | Found |
+|---|---|
+| Play Console's latest releases | Production: 2 (0.9), *Available on Google Play*, full rollout, 178 of 178 |
+| The public store page | The new screenshots; *What's new* as above |
+
+- **Not seen:** the game installed from the public listing on a phone that is not a tester's. On his
+  S25 the store says *Immunity Wars (Beta)*, because his account is in the closed test; it stays in
+  it, so that updates can be played there first.
+- **Found on the way, and committed with this record:** Dependabot's two Capacitor updates (8.5.2 to
+  8.5.3) had left the file Capacitor writes for the Android project naming the old version's folder.
+  Today's build rewrote it, and `pnpm android:bundle` refuses a working folder with changes, so
+  left uncommitted it would have stopped the next store build made on this PC.

@@ -123,7 +123,10 @@ async function walk(
     await fresh();
     await shoot('1-title');
     // The guided game, past its goal dialog (whose one button is Begin), its light on the first step.
+    // Learn to play opens the chapters since 16 October 2026 (docs/LOOK_PLAN.md §29); on a first
+    // visit the one that can be played is the first.
     await pressSel('[data-title="learn"]');
+    await pressSel('[data-chapter-state="open"]');
     await pressSel('[data-dialog-dismiss]');
     await sleep(3500);
     await shoot('2-guided-game');
