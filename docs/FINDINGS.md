@@ -4868,6 +4868,16 @@ deploying, the start check was ruled.
   what is merged; `pnpm deps:check` is what stops a React split at its pull request. `pnpm peers
   check` in CI was not ruled and is not built.
 
+### Seen again, 19 October 2026, and grouped
+
+Dependabot's #182 moved `react-dom` to 19.3.1 and left `react` at 19.3.0. This time it never
+reached `main`: `pnpm deps:check` refused the lockfile in CI's static job, and every UI suite that
+imports React failed at import. `react` was moved to 19.3.1 on the pull request, and it merged
+green. Ruled the next day (*"yes please"*): `.github/dependabot.yml` puts `react`, `react-dom` and
+their two `@types` packages in one group, ahead of `dev-tooling`, so they arrive in one pull
+request, majors included. The check stays as the guard; the group is so its pull requests are not
+red to begin with.
+
 ## 93. A phone with the app from before a deploy is refused by the relay, and the refusal asks for an update a web player cannot see how to make
 
 **Found 26 September 2026**, at the start of the P3.6 session. On the live app, not the version-check
