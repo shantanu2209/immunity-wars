@@ -1315,6 +1315,43 @@ const CONTROLS: readonly Control[] = [
     expect: 'NO SCREEN ASKS FOR: title.leftBehind',
   },
   {
+    id: 'hi-catalogue-is-whole',
+    why: '24 November 2026, the Hindi edition: a key the Hindi catalogue lacks falls back to the English silently on the screen, so only a test can say the Hindi is whole. With one key dropped from hi/ui.json, the Hindi test must FAIL naming it.',
+    file: 'packages/content/src/i18n/hi/ui.json',
+    mutate: (t) => t.replace(/\n {2}"title\.newGame": "[^"\n]*",/, ''),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'HINDI IS MISSING, ui: title.newGame',
+  },
+  {
+    id: 'hi-placeholders-are-kept',
+    why: '24 November 2026, the Hindi edition: a {n} dropped from a translation is a number a player never sees, and the sentence still reads. With the placeholder taken out of one Hindi sentence, the Hindi test must FAIL naming the key.',
+    file: 'packages/content/src/i18n/hi/ui.json',
+    mutate: (t) =>
+      t.replace('"selection.needsAp": "{n} AP चाहिए"', '"selection.needsAp": "AP चाहिए"'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'A PLACEHOLDER IS LOST, ui: selection.needsAp',
+  },
+  {
+    id: 'hi-library-is-whole',
+    why: "24 November 2026, the Hindi edition's second batch: the library's text (the disease cards, the cell cards, the why essays, the organ and class notes) is Kartik's science, and a sentence the Hindi lacks falls back to the English on the card without a word. With one sentence dropped from hi/library.json, the Hindi test must FAIL naming it.",
+    file: 'packages/content/src/i18n/hi/library.json',
+    mutate: (t) => t.replace(/\n {2}"library\.Cholera\.r": "[^"\n]*",/, ''),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'HINDI LIBRARY IS MISSING: library.Cholera.r',
+  },
+  {
+    id: 'hi-review-sheet-refuses-a-lost-placeholder',
+    why: '24 November 2026: the Hindi is reviewed in a spreadsheet generated from the catalogues and read back by key, and the read-back refuses a cell whose placeholders no longer match the English. With that refusal taken out of the tool, its own check must FAIL saying the placeholder control did not fire.',
+    file: 'tools/i18n/review_sheet.py',
+    mutate: (t) =>
+      t.replace(
+        '                if want != got:\n                    refused.append(',
+        '                if False:\n                    refused.append(',
+      ),
+    gate: 'pnpm i18n:sheet:check',
+    expect: 'THE PLACEHOLDER CONTROL DID NOT FIRE',
+  },
+  {
     id: 'title-one-main-button',
     why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
@@ -2341,8 +2378,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/ui/src/engineText.ts',
     mutate: (t) =>
       t.replace(
-        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
-        'out.sort((a, b) => b.template.length - a.template.length);',
+        'out.sort((a, b) => literalLength(b.key) - literalLength(a.key));',
+        "out.sort((a, b) => (ENGINE_I18N_EN[b.key] ?? '').length - (ENGINE_I18N_EN[a.key] ?? '').length);",
       ),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
     expect: 'comes back as itself, by its own entry',
@@ -2353,8 +2390,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/ui/src/engineText.ts',
     mutate: (t) =>
       t.replace(
-        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
-        'out.sort((a, b) => b.template.length - a.template.length);',
+        'out.sort((a, b) => literalLength(b.key) - literalLength(a.key));',
+        "out.sort((a, b) => (ENGINE_I18N_EN[b.key] ?? '').length - (ENGINE_I18N_EN[a.key] ?? '').length);",
       ),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
     expect: 'no line is ambiguous',

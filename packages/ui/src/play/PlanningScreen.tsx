@@ -35,7 +35,7 @@ import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR, TOUCH } from '../kit/tokens';
-import { cellDisplayName, typeDisplayName } from '../names';
+import { cellDisplayName, diseaseDisplayName, typeDisplayName } from '../names';
 import { CardIcon } from '../panels/CardIcon';
 import { organEffect, unavailableText } from '../panels/InspectSheet';
 import { SAY, TONE, pieceArt } from '../panels/onCard';
@@ -162,7 +162,7 @@ function GroupRow({
       <span style={{ flex: '1 1 auto', minWidth: 0 }}>
         <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>
           {only !== undefined && !only.novel
-            ? only.disease
+            ? diseaseDisplayName(only.disease)
             : group.novel
               ? t('inspect.unknown')
               : typeDisplayName(group.type)}
@@ -233,7 +233,7 @@ function GroupRow({
               }}
             >
               <span style={{ fontSize: '0.875rem', flex: '1 1 auto' }}>
-                {iv.novel ? t('inspect.unknown') : iv.disease}
+                {iv.novel ? t('inspect.unknown') : diseaseDisplayName(iv.disease)}
                 <span style={{ color: COLOUR.inkSoft }}>
                   {' '}
                   {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
@@ -242,7 +242,7 @@ function GroupRow({
               {!iv.novel ? (
                 <KitButton
                   style={CARD_BUTTON}
-                  aria-label={t('card.about', { name: iv.disease })}
+                  aria-label={t('card.about', { name: diseaseDisplayName(iv.disease) })}
                   disabled={disabled}
                   onPress={() => onPathogenCard(iv.id)}
                 >

@@ -22,7 +22,7 @@
  * not fit a tile, and item 11 of the same message forbids an intermediate level that says nothing —
  * so the icon goes straight to the card from either face.
  */
-import { DECK_MASTER, FAMILIES, FAMILY, ROUTES } from '@immunity-wars/content';
+import { DECK_MASTER, FAMILIES, FAMILY } from '@immunity-wars/content';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
@@ -30,6 +30,7 @@ import { classOf, pieceFor } from '../board/clay';
 import type { RevealArrival, RevealCrisis } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { play } from '../kit/motion';
+import { diseaseDisplayName, localiseEnglishNames, routeDisplayName } from '../names';
 import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 import { CardIcon } from '../panels/CardIcon';
@@ -68,8 +69,7 @@ const SMALL: CSSProperties = { ...SAY.quiet, fontSize: '0.75rem', lineHeight: 1.
 
 /** A route's player-facing name, as the reveal said it. */
 const routeName = (lane: string): string => {
-  const r = (ROUTES as Record<string, { name?: unknown }>)[lane];
-  return typeof r?.name === 'string' ? r.name : lane;
+  return routeDisplayName(lane);
 };
 
 const familyOf = (disease: string): string =>
@@ -110,7 +110,7 @@ function ArrivalCard({
   const variant = changesCoat(arrival.disease);
   const counter = counterSentence(arrival.type, variant);
   const does = antibodiesDo(arrival.type, variant);
-  const name = arrival.novel ? t('inspect.unknown') : arrival.disease;
+  const name = arrival.novel ? t('inspect.unknown') : diseaseDisplayName(arrival.disease);
   const { piece } = pieceFor(arrival.type, classOf(arrival.disease, arrival.novel), false);
   const colour = classColour(family);
   return (
@@ -153,7 +153,7 @@ function ArrivalCard({
               data-arrival-card={arrival.disease}
               role="button"
               tabIndex={0}
-              aria-label={t('card.about', { name: arrival.disease })}
+              aria-label={t('card.about', { name: diseaseDisplayName(arrival.disease) })}
               style={{
                 color: COLOUR.ink,
                 marginTop: 'auto',
@@ -296,7 +296,9 @@ export function ArrivalsNotes({
           <div style={{ ...SAY.label, color: crisis.bad ? TONE.bad : COLOUR.mintInk }}>
             {t(crisis.bad ? 'reveal.crisisBad' : 'reveal.crisisGood')}
           </div>
-          <div style={{ ...SAY.heading, color: 'inherit' }}>{crisis.name}</div>
+          <div style={{ ...SAY.heading, color: 'inherit' }}>
+            {localiseEnglishNames(crisis.name)}
+          </div>
           {crisis.why !== null ? (
             <div style={{ ...SAY.body, color: 'inherit' }}>
               <RichText text={crisis.why} />

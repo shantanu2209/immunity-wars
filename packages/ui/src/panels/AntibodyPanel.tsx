@@ -29,6 +29,7 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import { engineText } from '../engineText';
 import { t } from '../i18n';
+import { familyDisplayName } from '../names';
 import { KitButton } from '../kit/Button';
 import { COLOUR } from '../kit/tokens';
 import { SAY, TONE } from './onCard';
@@ -83,8 +84,7 @@ export function AntibodyPanel({
   /** Says why Produce cannot produce, in the play screen's toast. */
   onSay: (text: string | null) => void;
 }): ReactElement {
-  const name = (f: string): string =>
-    String((FAMILIES as Record<string, { name?: unknown }>)[f]?.name ?? f);
+  const name = familyDisplayName;
   const colour = (f: string): string | null => {
     const c = (FAMILIES as Record<string, { col?: unknown }>)[f]?.col;
     return typeof c === 'string' ? c : null;

@@ -31,6 +31,7 @@ import { CardIcon } from './CardIcon';
 import { SAY, SMALL, TONE, pieceArt } from './onCard';
 import {
   cellDisplayName as cellName,
+  diseaseDisplayName,
   organDisplayName,
   residentDisplayName,
   typeDisplayName as typeName,
@@ -156,7 +157,7 @@ export function InspectSheet({
           {/* The same picture the board draws it with: its kind, in its antigen class's colour. */}
           <Pic name={pieceFor(iv.type, iv.cls, iv.coated).piece} own={false} />
           <span style={{ flex: '1 1 auto' }}>
-            {iv.novel ? t('inspect.unknown') : iv.disease}
+            {iv.novel ? t('inspect.unknown') : diseaseDisplayName(iv.disease)}
             <span style={{ color: COLOUR.inkSoft }}>
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
@@ -176,7 +177,7 @@ export function InspectSheet({
             // novel pathogen gets no card — it is masked everywhere as unknown.
             <KitButton
               style={ICON_BTN}
-              aria-label={t('card.about', { name: iv.disease })}
+              aria-label={t('card.about', { name: diseaseDisplayName(iv.disease) })}
               disabled={disabled}
               onPress={() => onCard(iv.id)}
               data-sheet-card={iv.id}
