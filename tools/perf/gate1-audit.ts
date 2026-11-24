@@ -1380,28 +1380,17 @@ async function walk(
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
     await step(page, 'arrivals', results);
-    // A CARD TURNS OVER (piece 6, §20), and its card icon opens the pathogen card from the back,
-    // which closes back to the stage (ruling 9). A draw of novel arrivals alone offers no card.
-    if (await clickSel(page, '[data-arrival]')) {
-      await sleep(250);
-      await step(page, 'arrivals, a card turned over', results);
-      if (await clickSel(page, '[data-arrival-card]')) {
-        await sleep(300);
-        await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
-      } else {
-        nestNotReached(
-          nesting,
-          'Arrivals card → pathogen card',
-          'the card that turned over is novel',
-        );
-      }
+    // A TAP ON A CARD OPENS THE PATHOGEN CARD (Gate 2's polish, docs/LOOK_PLAN.md §33; until then
+    // a card turned over first), which closes back to the stage (ruling 9). A draw of novel
+    // arrivals alone offers no card: a novel card is not a button.
+    if (await clickSel(page, '[data-arrival-card]')) {
+      await sleep(300);
+      await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
     } else {
-      results.push(notReached('arrivals, a card turned over', 'no card to turn over'));
-      nestNotReached(nesting, 'Arrivals card → pathogen card', 'no card to turn over');
+      nestNotReached(nesting, 'Arrivals card → pathogen card', 'every card of the draw is novel');
     }
   } else {
     results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
-    results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
     nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
   }
   await click(page, 'Plan your turn');
