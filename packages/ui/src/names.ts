@@ -13,6 +13,7 @@ import {
   CNAME,
   EVENTS,
   FAMILIES,
+  LIBRARY_I18N_HI,
   NAMES_I18N_HI,
   ORGANS,
   RARE,
@@ -26,6 +27,7 @@ import {
 import { currentLocale, t } from './i18n';
 
 const NAMES: Record<string, Record<string, string> | undefined> = { hi: NAMES_I18N_HI };
+const LIBRARY: Record<string, Record<string, string> | undefined> = { hi: LIBRARY_I18N_HI };
 
 /** The locale's word for a table's row, or the English the table holds. */
 export function localName(key: string, english: string): string {
@@ -103,6 +105,18 @@ export const familyDisplayName = (family: string): string =>
 /** A disease by its name in the content pack, which is also its key everywhere in the engine. */
 export const diseaseDisplayName = (disease: string): string =>
   localName(`disease.${disease}`, disease);
+
+/**
+ * The library's text in the locale: a disease card's sentence (`library.<name>.<d|c|w|p|r>`), its
+ * fact (`fact.<name>`), a cell card's field (`cellCard.<cell>.<field>`), a why essay
+ * (`why.<key>`), an organ's or a class's note (`organ.<k>.bio`, `family.<k>.bio`). The English
+ * the table holds is what a miss falls back to.
+ */
+export function libraryText(key: string, english: string): string {
+  const l = currentLocale();
+  if (l === 'en') return english;
+  return LIBRARY[l]?.[key] ?? english;
+}
 
 /** A pathogen card's tier word: Common, Rare, Legendary. */
 export const tierDisplayName = (tier: string): string => localName(`tier.${tier}`, tier);

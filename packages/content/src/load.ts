@@ -61,6 +61,7 @@ import uiI18nEnJson from './i18n/en/ui.json';
 import glossaryI18nEnJson from './i18n/en/glossary.json';
 import engineI18nHiJson from './i18n/hi/engine.json';
 import glossaryI18nHiJson from './i18n/hi/glossary.json';
+import libraryI18nHiJson from './i18n/hi/library.json';
 import namesI18nHiJson from './i18n/hi/names.json';
 import uiI18nHiJson from './i18n/hi/ui.json';
 import boardJson from './rules/board.json';
@@ -404,4 +405,14 @@ export const GLOSSARY_I18N_EN: Record<string, string> = buildUiCatalogue(
 export const GLOSSARY_I18N_HI: Record<string, string> = buildUiCatalogue(
   glossaryI18nHiJson as Record<string, unknown>,
   'i18n/hi/glossary.json',
+);
+/**
+ * The library's text in Hindi: each disease card's five sentences and its fact, the cell cards,
+ * the "why it works this way" essays, and the organ and class notes, keyed by table and row as
+ * tools/i18n/review_sheet.py keys them. The English stays in the tables (DZINFO, FACT, CELL_CARDS,
+ * WHY, ORGANS, FAMILIES); i18n-hi.test.ts requires a Hindi for every row of each.
+ */
+export const LIBRARY_I18N_HI: Record<string, string> = buildUiCatalogue(
+  libraryI18nHiJson as Record<string, unknown>,
+  'i18n/hi/library.json',
 );

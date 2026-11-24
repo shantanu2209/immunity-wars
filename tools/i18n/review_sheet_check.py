@@ -57,7 +57,7 @@ def main() -> int:
         wb.save(edited)
         r = run('apply', 'hi', str(edited))
         ui = (HI / 'ui.json').read_text(encoding='utf-8')
-        changed = [f for f in ('ui.json', 'engine.json', 'names.json', 'glossary.json') if not filecmp.cmp(before / f, HI / f, shallow=False)]
+        changed = [f for f in ('ui.json', 'engine.json', 'names.json', 'glossary.json', 'library.json') if not filecmp.cmp(before / f, HI / f, shallow=False)]
         if r.returncode != 0 or '"nav.back": "वापस (check)"' not in ui or changed != ['ui.json']:
             failures.append(f'AN EDITED CELL DID NOT LAND ALONE: changed {changed}')
         else:

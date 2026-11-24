@@ -45,6 +45,7 @@ import {
   beatText,
   diseaseDisplayName,
   familyDisplayName,
+  libraryText,
   organDisplayName,
   tierDisplayName,
   typeDisplayName,
@@ -96,7 +97,8 @@ export function PathogenCard({
   const stats = (
     DZSTATS as Record<string, readonly [number, number, number, number, string] | undefined>
   )[disease];
-  const fact = (FACT as Record<string, string | undefined>)[disease];
+  const factEn = (FACT as Record<string, string | undefined>)[disease];
+  const fact = factEn ? libraryText(`fact.${disease}`, factEn) : undefined;
   const tropism = (TROPISM as Record<string, readonly string[] | 'any' | undefined>)[disease];
   const famKey = (FAMILY as Record<string, string | undefined>)[disease];
   const fam = famKey
@@ -170,7 +172,7 @@ export function PathogenCard({
         {fam?.bio ? (
           <div style={{ marginTop: 8 }}>
             <div style={LABEL}>{t('card.family')}</div>
-            <div>{fam.bio}</div>
+            <div>{libraryText(`family.${String(famKey)}.bio`, fam.bio)}</div>
           </div>
         ) : null}
         <div style={{ marginTop: 8 }}>
@@ -223,11 +225,11 @@ export function PathogenCard({
           <div style={{ marginTop: 10 }}>
             {(
               [
-                ['card.discovered', info.d],
-                ['card.causes', info.c],
-                ['card.found', info.w],
-                ['card.prevent', info.p],
-                ['card.treat', info.r],
+                ['card.discovered', info.d && libraryText(`library.${disease}.d`, info.d)],
+                ['card.causes', info.c && libraryText(`library.${disease}.c`, info.c)],
+                ['card.found', info.w && libraryText(`library.${disease}.w`, info.w)],
+                ['card.prevent', info.p && libraryText(`library.${disease}.p`, info.p)],
+                ['card.treat', info.r && libraryText(`library.${disease}.r`, info.r)],
               ] as const
             ).map(([key, text]) =>
               text ? (

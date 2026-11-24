@@ -15,7 +15,7 @@ import { KitPiece } from '../kit/Piece';
 import { KitChip, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
-import { cellDisplayName, cellRoleText } from '../names';
+import { cellDisplayName, cellRoleText, libraryText } from '../names';
 import { SAY, TONE } from './onCard';
 
 export interface CellCardSubject {
@@ -40,11 +40,13 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
   const tag = cellRoleText(cell) || undefined;
   void UM;
   const speed = (SPEED as Record<string, number | undefined>)[cell] ?? null;
+  const local = (field: string, text: string | undefined): string | undefined =>
+    text ? libraryText(`cellCard.${cell}.${field}`, text) : text;
   const fields = [
-    ['cellCard.role', card.role],
-    ['cellCard.home', card.home],
-    ['cellCard.bestAgainst', card.bestAgainst],
-    ['cellCard.deficiency', card.deficiency],
+    ['cellCard.role', local('role', card.role)],
+    ['cellCard.home', local('home', card.home)],
+    ['cellCard.bestAgainst', local('bestAgainst', card.bestAgainst)],
+    ['cellCard.deficiency', local('deficiency', card.deficiency)],
   ] as const;
   const filled = fields.some(([, text]) => text) || Boolean(card.fact);
 
@@ -114,7 +116,7 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
         ) : null}
         {card.fact ? (
           <div style={{ marginTop: 8, fontStyle: 'italic', color: COLOUR.inkSoft }}>
-            {card.fact}
+            {local('fact', card.fact)}
           </div>
         ) : null}
         {!filled ? (

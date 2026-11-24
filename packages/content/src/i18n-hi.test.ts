@@ -11,9 +11,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CELL_CARDS,
   CNAME,
   DECK_MASTER,
   DZINFO,
+  FACT,
+  WHY,
   DZSTATS,
   ENGINE_I18N_EN,
   ENGINE_I18N_HI,
@@ -21,6 +24,7 @@ import {
   FAMILIES,
   GLOSSARY_I18N_EN,
   GLOSSARY_I18N_HI,
+  LIBRARY_I18N_HI,
   NAMES_I18N_HI,
   ORGANS,
   RARE,
@@ -124,6 +128,32 @@ describe('the Hindi edition is whole', () => {
       DASHES.some((d) => (NAMES_I18N_HI[k] ?? '').includes(d)),
     );
     expect(dashed, `A DASH IN A HINDI NAME: ${dashed.join(', ')}`).toEqual([]);
+  });
+
+  it('the library: a Hindi for every sentence of every card, essay and note the tables hold', () => {
+    // The same keys tools/i18n/review_sheet.py gives the Library sheet, built from the same tables.
+    const expected = new Set<string>();
+    for (const [name, info] of Object.entries(
+      DZINFO as unknown as Record<string, Record<string, string>>,
+    ))
+      for (const field of Object.keys(info)) expected.add(`library.${name}.${field}`);
+    for (const name of Object.keys(FACT as Record<string, string>)) expected.add(`fact.${name}`);
+    for (const [cell, card] of Object.entries(CELL_CARDS as Record<string, Record<string, string>>))
+      for (const field of Object.keys(card)) expected.add(`cellCard.${cell}.${field}`);
+    for (const w of WHY) expected.add(`why.${w.key}`);
+    for (const k of Object.keys(ORGANS as Record<string, unknown>)) expected.add(`organ.${k}.bio`);
+    for (const k of Object.keys(FAMILIES as Record<string, unknown>))
+      expected.add(`family.${k}.bio`);
+    const missing = [...expected].filter((k) => !(k in LIBRARY_I18N_HI));
+    expect(missing, `HINDI LIBRARY IS MISSING: ${missing.join(', ')}`).toEqual([]);
+    const extra = Object.keys(LIBRARY_I18N_HI).filter((k) => !expected.has(k));
+    expect(extra, `HINDI LIBRARY HAS A TEXT NO TABLE HOLDS: ${extra.join(', ')}`).toEqual([]);
+    const empty = Object.keys(LIBRARY_I18N_HI).filter((k) => LIBRARY_I18N_HI[k] === '');
+    expect(empty, `HINDI LIBRARY IS EMPTY: ${empty.join(', ')}`).toEqual([]);
+    const dashed = Object.keys(LIBRARY_I18N_HI).filter((k) =>
+      DASHES.some((d) => (LIBRARY_I18N_HI[k] ?? '').includes(d)),
+    );
+    expect(dashed, `A DASH IN THE HINDI LIBRARY: ${dashed.join(', ')}`).toEqual([]);
   });
 
   it('the glossary: every term has a Hindi term and meaning, and no dash', () => {

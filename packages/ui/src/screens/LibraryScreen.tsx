@@ -47,7 +47,7 @@ import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR, RADIUS, SHADOW, TOUCH, TYPE } from '../kit/tokens';
-import { diseaseDisplayName, typeDisplayName } from '../names';
+import { diseaseDisplayName, libraryText, typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
 
 import { BODY as P, CARD, FIELD, ITEM, LEAD, PAGE, ROW as ROW_BTN, SECTION, TITLE } from './chrome';
@@ -263,7 +263,7 @@ export function LibraryScreen({
             data-library-why={w.key}
           >
             <h2 style={SECTION}>{t(`library.why.${w.key}.title`)}</h2>
-            <p style={P}>{w.text}</p>
+            <p style={P}>{libraryText(`why.${w.key}`, w.text)}</p>
             <KitButton
               style={{
                 ...ROW_BTN,

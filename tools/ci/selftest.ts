@@ -1332,6 +1332,14 @@ const CONTROLS: readonly Control[] = [
     expect: 'A PLACEHOLDER IS LOST, ui: selection.needsAp',
   },
   {
+    id: 'hi-library-is-whole',
+    why: "24 November 2026, the Hindi edition's second batch: the library's text (the disease cards, the cell cards, the why essays, the organ and class notes) is Kartik's science, and a sentence the Hindi lacks falls back to the English on the card without a word. With one sentence dropped from hi/library.json, the Hindi test must FAIL naming it.",
+    file: 'packages/content/src/i18n/hi/library.json',
+    mutate: (t) => t.replace(/\n {2}"library\.Cholera\.r": "[^"\n]*",/, ''),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'HINDI LIBRARY IS MISSING: library.Cholera.r',
+  },
+  {
     id: 'hi-review-sheet-refuses-a-lost-placeholder',
     why: '24 November 2026: the Hindi is reviewed in a spreadsheet generated from the catalogues and read back by key, and the read-back refuses a cell whose placeholders no longer match the English. With that refusal taken out of the tool, its own check must FAIL saying the placeholder control did not fire.',
     file: 'tools/i18n/review_sheet.py',

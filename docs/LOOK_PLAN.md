@@ -2981,12 +2981,13 @@ dictioanry for all languages in case we use terms that are not everyday amd need
   he asked about.
 - **A glossary**, in both languages, of the terms a player meets that are not everyday words.
 
-### Built: the Hindi edition, the screens' half
+### Built: the Hindi edition
 
 **What a player sees.** Settings' Language row offers English and हिन्दी. Chosen, every screen,
 every button, every card of the lesson, every refusal and every line of the log is in Hindi; the
-class codes (ENV, EXB and the rest) and AP stay as they are, being codes on the pieces; the
-disease library's cards stay in English until the next batch ([`TODO.md`](TODO.md) row 14).
+class codes (ENV, EXB and the rest) and AP stay as they are, being codes on the pieces. **The
+library followed the same night,** at his asking (*"there is tab which says batch 2 not
+translated. can you do that as well?"*): every disease card, cell card, why essay and note.
 
 | Made | Where | How many |
 |---|---|---|
@@ -2994,6 +2995,7 @@ disease library's cards stay in English until the next batch ([`TODO.md`](TODO.m
 | The engine's sentences in Hindi | `hi/engine.json` | 196 |
 | The names the content pack holds as data: cells and their roles, kinds, organs and what their damage costs, routes, classes, residents, crisis and rare events, tiers, the card's "beat it", and the 108 disease names | `hi/names.json` | 218 |
 | A glossary, English and Hindi, with the textbook (NCERT) word beside the everyday one | `en/glossary.json`, `hi/glossary.json` | 60 terms. **Not yet drawn by any screen** |
+| The library's text: each disease card's five sentences and its fact, the seven cell cards, the 15 why essays, the organ and class notes, about 6,600 words of Kartik's science | `hi/library.json` | 628, read by the pathogen card, the cell card and the library's essays through `libraryText` |
 
 **How it reaches the screen.**
 
@@ -3015,8 +3017,7 @@ disease library's cards stay in English until the next batch ([`TODO.md`](TODO.m
 
 **The review sheet.** `pnpm i18n:sheet` writes `out/hindi/review.xlsx` from the catalogues: one
 sheet each for the screens, the engine, the names and the glossary, the English beside the Hindi
-with the placeholders each row must keep, and a last sheet listing the library's 628 texts in
-English for the next batch. `pnpm i18n:apply` reads the Hindi columns back by key, and refuses,
+with the placeholders each row must keep, and the library's 628 texts last. `pnpm i18n:apply` reads the Hindi columns back by key, the library's among them, and refuses,
 by name and writing nothing, a cell whose placeholders no longer match the English or one with a
 dash. `pnpm i18n:sheet:check` proves the round trip byte-identical, an edited cell landing alone,
 and both refusals. The lesson's spreadsheet of October was the precedent.
@@ -3027,18 +3028,20 @@ glossary beside it; cell names transliterated as NCERT does at class 11 (मो�
 किलर टी-सेल, एनके सेल); disease names by their everyday Hindi name where one is in use (काली
 खाँसी, हैजा, खसरा, टीबी, दाद) and transliterated otherwise; coat = लपेटें, neutralise = निष्क्रिय
 करें, engulf = निगलें, strike = वार करें, NET = जाल, turn = बारी, a step on the board = कदम,
-an organ's integrity = सेहत. **Not read by him or Kartik:** every one of the 1,238 strings.
+an organ's integrity = सेहत. **Not read by him or Kartik:** every one of the 1,866 strings. The library's 628 are the ones
+where a wrong number, name or date is a science error, so they are the ones to read first.
 
 | Seen, on the PC | Found |
 |---|---|
 | `pnpm guide:walk --lang hi` on the built app, the whole lesson in Hindi, pressing only what is lit | 82 beats of 82, every card counted in Hindi (चरण 16 / 16 and the rest), the game handed over at turn 8 of 15, no error |
 | The title, the chapters, the lesson's first card, the play screen with the Monocyte in hand, the messages, Settings, at 360 by 697 | Each in Hindi and 360 wide; the title and the play screen one screen tall; the log's four lines in Hindi with the names translated |
+| The library's card for Cholera, from How to play | Its class, its organ, its beat, its tier and its five sentences in Hindi; 360 wide |
 | The same at 200% text, 360 by 697 | 360 wide at every one, the lesson's card still one screen; the title scrolls to 896 and the chapters to 3,843, as they do in English (the one-screen fixes are row 16's) |
 
 **Held.** `packages/content/src/i18n-hi.test.ts`: every English key has its Hindi, no Hindi key the
 English lacks, no placeholder lost, no dash, and a Hindi name for every row of every table the
 screens draw a name from. Controls, each fired: `hi-catalogue-is-whole`, `hi-placeholders-are-kept`,
-`hi-review-sheet-refuses-a-lost-placeholder`.
+`hi-library-is-whole`, `hi-review-sheet-refuses-a-lost-placeholder`.
 
 **Known, and left.**
 

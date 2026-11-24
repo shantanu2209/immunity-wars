@@ -14,9 +14,8 @@ dash is allowed is the engine's English, which is pinned to legacy and not edite
 WHAT IS IN IT. One sheet per source: the screens' catalogue (ui.json), the engine's sentences
 (engine.json), the names the content pack holds as data (cells, kinds, organs, routes, classes,
 events, residents, tiers, the 97 diseases; their English comes from the tables, not from a second
-copy), and the glossary. A last sheet lists the library's text (the disease cards, the cell cards,
-the "why" essays, the organ and class notes) in English only: that is Kartik's written science and
-is translated as its own batch after the screens.
+copy), and the glossary, and the library's text (the disease cards, the cell cards, the "why" essays, the organ
+and class notes), whose English also comes from the tables.
 
 THE ROUND TRIP IS CHECKED, not assumed: `pnpm i18n:sheet:check` builds the sheet, applies it
 unchanged and requires the catalogue files to be byte-identical; then edits one cell and requires
@@ -218,8 +217,9 @@ def build(locale: str, out: Path) -> None:
         gl_rows.append([t, en_gl.get(t + '.term', ''), en_gl.get(t + '.meaning', ''), hi_gl.get(t + '.term', ''), hi_gl.get(t + '.meaning', ''), hi_gl.get(t + '.textbook', ''), ''])
     sheet(wb, 'Glossary', ['Key (do not edit)', 'English term', 'English meaning', 'Hindi term (edit)', 'Hindi meaning (edit)', 'Textbook (NCERT) Hindi (edit)', 'Your comment'], [24, 26, 52, 26, 52, 30, 30], gl_rows, {4, 5, 6})
 
-    lib = [[k, w, e, '', 'Batch 2: not translated yet', ''] for k, w, e in library_rows()]
-    sheet(wb, 'Library (later)', header, widths, lib, {4})
+    hi_lib = read(I18N / locale / 'library.json')
+    lib = [[k, w, e, hi_lib.get(k, ''), '', ''] for k, w, e in library_rows()]
+    sheet(wb, 'Library', header, widths, lib, {4})
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
     count = lambda d: sum(1 for k in d if not k.startswith('$'))
@@ -237,10 +237,12 @@ NAMES_WHERE = {
 def apply(locale: str, src: Path) -> None:
     wb = load_workbook(src)
     en_names = english_names()
+    en_library = {k: e for k, _w, e in library_rows()}
     sources = {
         'Screens': (I18N / 'en' / 'ui.json', I18N / locale / 'ui.json'),
         'Engine': (I18N / 'en' / 'engine.json', I18N / locale / 'engine.json'),
         'Names': (None, I18N / locale / 'names.json'),
+        'Library': (None, I18N / locale / 'library.json'),
     }
     refused: list[str] = []
     comments: list[str] = []
@@ -249,7 +251,7 @@ def apply(locale: str, src: Path) -> None:
     pending: list[tuple[str, Path, dict, int]] = []
     for title, (en_path, hi_path) in sources.items():
         ws = wb[title]
-        en = read(en_path) if en_path else en_names
+        en = read(en_path) if en_path else (en_library if title == 'Library' else en_names)
         hi = read(hi_path)
         changed = 0
         for row in ws.iter_rows(min_row=2, values_only=True):
@@ -324,8 +326,8 @@ Disease names use the Hindi common name where one is in everyday use (काल�
 The antigen class codes (ENV, NAK, EXB, ICB, TOX, EUK) and AP stay in Latin letters: they are codes on the pieces.
 Coat = लपेटें (coated = लिपटा हुआ). Neutralise = निष्क्रिय करें. Engulf = निगलें. Strike = वार करें. NET = जाल. Turn = बारी. Step on the board = कदम. Organ integrity = सेहत. Action Points = ऐक्शन पॉइंट.
 
-Not in this batch
-The disease library (97 cards, 5 sentences each), the cell cards, the "why" essays and the organ and class notes: Kartik's written science, about 6,800 words. They are listed in the last sheet in English and are translated as the next batch.
+The Library sheet
+The disease cards (5 sentences each), the cell cards, the "why" essays and the organ and class notes: Kartik's written science, about 6,600 words, translated last and least read. A number, a name or a date that reads wrong there is a science error, so it is the sheet to read most carefully.
 """
 
 
