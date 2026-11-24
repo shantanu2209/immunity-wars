@@ -6341,3 +6341,28 @@ check switched off.
   be the making of antibodies, and strays from there. It also says separately that any action
   during a told step parts the guide. The control fires again.
 - **The census:** in each of those nights' runs this was the only control that did not behave.
+
+## 132. Every screen on the stack reserved room for the floating close twice: 88 px of scroll on Settings, the chapters and How to play's index that nothing was under — 24 November 2026
+
+**Found** while making the screens of Gate 2's polish fit one screen ([`LOOK_PLAN.md`](LOOK_PLAN.md)
+§33, piece 2). The chapters screen was 805 px tall at 360 by 697, and its rows ended at 625: below
+them stood 88 px of the page's own bottom padding, then 88 px more of a spacer the navigation host
+puts after any page while the floating close shows. Both were added for the same reason, ruling 8
+of [`for-P2.7.md`](for-P2.7.md) §9: the last line must scroll clear of the floating close. The
+page's padding came with the Clay screens at stage L5; the host's spacer came with the play
+screen's panels at L4, where the game's page has no padding of its own. On every screen drawn from
+`screens/chrome.ts` the two stacked.
+
+**What it cost.** 88 px of every stacked screen's height, at every text size: the October survey's
+table of screens that scroll (§33) counted it in each row, and Settings' +155 at 697 was more than
+half this.
+
+**Fixed inline**, since piece 2 is the change that makes these screens fit: the page keeps a plain
+20 px at its foot and the host's spacer is the one reserve. The occlusion check, which is what
+found the need for a reserve in the first place, is the audit's; it ran clean on the build with
+this change.
+
+**What the audit could not see.** It holds the play screen's stages to no scroll at rest, and
+reports every other screen's findings at zero when nothing is clipped or covered: a screen that
+scrolls 88 px for no reason has no finding in it. Piece 2 adds the list of screens required to be
+one screen (`ONE_SCREEN` in the audit) so that this cannot come back unseen.

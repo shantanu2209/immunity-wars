@@ -347,11 +347,23 @@ export function HelpScreen({
       <div style={PAGE} data-screen="help">
         <h1 style={TITLE}>{t('help.title')}</h1>
         <p style={LEAD}>{t('help.index.lead')}</p>
-        {HELP_SECTION_KEYS.map((k, i) => (
-          <KitButton key={k} style={ROW} onPress={() => onOpen(k)} data-help-section={k}>
-            {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
-          </KitButton>
-        ))}
+        {/* TWO COLUMNS (Gate 2's polish, piece 2; docs/LOOK_PLAN.md §33): ten rows of 60 px
+            scrolled 313 px past a phone's screen, and the names are short. */}
+        <div
+          data-help-index=""
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}
+        >
+          {HELP_SECTION_KEYS.map((k, i) => (
+            <KitButton
+              key={k}
+              style={{ ...ROW, marginTop: 0, minWidth: 0 }}
+              onPress={() => onOpen(k)}
+              data-help-section={k}
+            >
+              {t('help.number', { n: i + 1 })} {t(`help.${k}.title`)}
+            </KitButton>
+          ))}
+        </div>
         <div style={{ marginTop: 22 }}>
           <p style={LEAD}>{t('help.libraryLead')}</p>
           <KitButton style={ROW} onPress={onLibrary} data-help-library="">

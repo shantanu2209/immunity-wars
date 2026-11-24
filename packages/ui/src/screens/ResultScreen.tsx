@@ -20,6 +20,30 @@ import { LogPanel, type LogLine } from '../panels/LogPanel';
 
 import { BODY, CARD, LEAD, PAGE, SECTION, STACK } from './chrome';
 import { DifferencesCard } from './DifferencesCard';
+
+/**
+ * ONE SCREEN (Gate 2's polish, piece 2, ruled 24 November 2026; docs/LOOK_PLAN.md §33). Five
+ * stacked buttons under two cards scrolled 167 px past a phone's screen. The way to the whole
+ * table is the Easy card's last line, Change difficulty and Title stand side by side, and What
+ * happened is a quiet line: a player who has just lost asks for it, and a resting button the size
+ * of Play again said it was as likely a next step.
+ */
+const PAIR: CSSProperties = { display: 'flex', gap: 10, marginTop: 12 };
+const QUIET_LINE: CSSProperties = {
+  ...TYPE.body,
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: 44,
+  marginTop: 6,
+  padding: '0 12px',
+  border: 0,
+  background: 'transparent',
+  color: COLOUR.onDark,
+  fontWeight: 800,
+  textDecoration: 'underline',
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+};
 import { differenceSummary } from './difficultyFacts';
 import { ScreenIcon } from './icons';
 
@@ -119,20 +143,21 @@ export function ResultScreen({
             <p style={{ ...BODY, marginBottom: 0 }}>
               {t('differences.resultLead', differenceSummary())}
             </p>
+            <DifferencesCard toggleKey="differences.resultToggle" marginTop={8} />
           </div>
-          <DifferencesCard toggleKey="differences.resultToggle" />
         </>
       ) : null}
       {log.length > 0 ? (
         <>
-          <KitButton
-            style={{ ...STACK, marginTop: 18 }}
+          <button
+            type="button"
+            style={QUIET_LINE}
             data-result-log={showLog ? 'open' : 'closed'}
             aria-expanded={showLog}
-            onPress={() => setShowLog((v) => !v)}
+            onClick={() => setShowLog((v) => !v)}
           >
             {showLog ? t('result.hideLog') : t('result.showLog')}
-          </KitButton>
+          </button>
           {showLog ? (
             <div
               style={{
@@ -179,15 +204,23 @@ export function ResultScreen({
             <ScreenIcon kind="again" />
             {t('result.playAgain')}
           </KitButton>
-          <KitButton style={STACK} onPress={onChangeDifficulty}>
-            {t('result.changeDifficulty')}
-          </KitButton>
+          <div style={PAIR}>
+            <KitButton style={{ flex: '1 1 0', minWidth: 0 }} onPress={onChangeDifficulty}>
+              {t('result.changeDifficulty')}
+            </KitButton>
+            <KitButton style={{ flex: '1 1 0', minWidth: 0 }} onPress={onTitle}>
+              <ScreenIcon kind="home" />
+              {t('result.title')}
+            </KitButton>
+          </div>
         </>
       )}
-      <KitButton style={STACK} onPress={onTitle}>
-        <ScreenIcon kind="home" />
-        {t('result.title')}
-      </KitButton>
+      {onTogether !== null ? (
+        <KitButton style={STACK} onPress={onTitle}>
+          <ScreenIcon kind="home" />
+          {t('result.title')}
+        </KitButton>
+      ) : null}
     </div>
   );
 }
