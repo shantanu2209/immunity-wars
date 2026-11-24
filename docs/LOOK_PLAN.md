@@ -3054,3 +3054,39 @@ screens draw a name from. Controls, each fired: `hi-catalogue-is-whole`, `hi-pla
 - The glossary is content only: no screen draws it yet. A Glossary page under How to play is
   the obvious place, in both languages.
 - The web app only. The Android app takes it with its next store build.
+
+## 33. Ruled 24 November 2026: Gate 2's polish, the four pieces
+
+Put to him as four pieces, each its own pull request, played on his phone before it is deployed,
+and he ruled each: *"1. agree 2. Agree 3. Agree 4. Agree. Let implement all of it along with the
+hindi strings and the langiage picker which now includes hindi."* So every sentence a piece adds
+or changes is added in both catalogues, and the Hindi test holds the two whole.
+
+### Piece 1: a tap on a new card opens its full card
+
+**Was:** a tap turned a new card over to a back that summarised it (where it came in, whether the
+body remembers it, what antibodies do to it) and a second control on the back opened the full
+card. **Is:** the whole card is the button, and a tap opens the full card. The back's lines went
+to where each is used:
+
+| The back said | Now |
+|---|---|
+| Where it came in | On the front, under the class: *via the Nose* |
+| Your body remembers it | A mint tag on the front: it is the one thing on a new card a player can act on |
+| What antibodies do to it | At the top of the full card, under its class and above *Beat it*, the paragraph it summarises |
+| Never seen before | On the front of a card new to the body, which has no full card and is not a button |
+| *Tap a card to turn it over* | Gone, with its sentence in both catalogues |
+
+- **A draw of one or two cards is given more room** (a column of 9 rem and a row of 12 rem,
+  against 7.5 and 10 for three): one card had stood 160 px tall in a 340 px play area.
+- **A first turn's middle is empty, so nothing is drawn there.** The card that held the hint had
+  nothing else to say on turn 1. Piece 3 puts the game's goal there.
+- **The audit is re-aimed:** its *arrivals, a card turned over* screen is gone, and its nest from
+  a card to the pathogen card is reached by the card itself. The lesson's sentences never
+  mentioned turning a card over, so none changed.
+
+| Seen | Found |
+|---|---|
+| A game on Easy at 360 by 697, headless Chrome on the PC | Two cards, each with its route under its class; a tap on one opened its full card with the antibody line under its class; a first turn with one card and no middle card; 360 wide at each |
+| `pnpm guide:walk --build`, English and then Hindi | 82 beats of 82 each, every card counted, handed over at turn 8 of 15, no error |
+| The Gate 1 audit, alone, on this build (24 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one), the nest from a new card to its pathogen card reached and right; every check at zero over 924 controls and 2,150 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; offline met, with no request failed; 47 controls of the audit's own. Not reached: a row's several targets in three passes, by the dice; and playing together, which this run did not ask for |

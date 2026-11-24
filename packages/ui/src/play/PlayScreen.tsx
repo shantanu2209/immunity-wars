@@ -1186,12 +1186,17 @@ export function PlayScreen({
         </MiddleCard>
       );
     // The new cards' notes and planning's list are on the middle's card, as every view is (L5).
-    if (arrivalsNow !== null)
+    // A first turn has no crisis and no spread to tell of, and an empty card said "tap a card to
+    // turn it over" until Gate 2's polish (docs/LOOK_PLAN.md §33); with nothing to say there is
+    // no card.
+    if (arrivalsNow !== null) {
+      if (arrivalsNow.crisis === null && spreadLines.length === 0) return null;
       return (
         <MiddleCard>
           <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
         </MiddleCard>
       );
+    }
     if (plan !== null)
       return (
         <MiddleCard>
