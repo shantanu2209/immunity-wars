@@ -160,7 +160,7 @@ export {
 } from './screens/LibraryScreen';
 export { ResultScreen, type ResultStats } from './screens/ResultScreen';
 export { cellDisplayName, typeDisplayName, residentDisplayName, organDisplayName } from './names';
-export { t } from './i18n';
+export { t, setLocale, currentLocale, type UiLocale } from './i18n';
 export * as boardGeometry from './board/geometry';
 export {
   offeredActions,

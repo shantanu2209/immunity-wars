@@ -50,7 +50,13 @@ import { t as say } from '../i18n';
 import { play, prefersReducedMotion } from '../kit/motion';
 import { kitAudio } from '../kit/sound';
 import { COLOUR, MOTION, TYPE } from '../kit/tokens';
-import { cellDisplayName, residentDisplayName, typeDisplayName } from '../names';
+import {
+  cellDisplayName,
+  organDisplayName,
+  residentDisplayName,
+  routeDisplayName,
+  typeDisplayName,
+} from '../names';
 import {
   buildNodeModel,
   integrityState,
@@ -87,10 +93,10 @@ const FILL: CSSProperties = {
 /** A length in board units, as a share of a piece's own square. */
 const ofPiece = (units: number): string => `${(units / PIECE_SPAN) * 100}%`;
 
-const organName = (o: string): string =>
-  String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
-const routeName = (lane: string): string =>
-  String((ROUTES as Record<string, { name?: unknown }>)[lane]?.name ?? lane);
+const organName = organDisplayName;
+const routeName = routeDisplayName;
+void ORGANS;
+void ROUTES;
 
 /** What an invader's picture is called: its kind, from the content pack, and whether it is coated. */
 function invaderName(t: DisplayToken): string {

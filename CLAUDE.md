@@ -144,6 +144,13 @@ release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), an
 T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
 the bands measured again and moved. **Deployed 2 October, 13:09 IST:** the relay and the app
 together, from `main` at `8c7f887` (plan §23).
+**The Hindi edition's screens are built, 24 November 2026** (plan §32, ruled for the SBI Youth
+Ideathon interview): the two catalogues, the names the content pack holds as data and a glossary,
+in `packages/content/src/i18n/hi/`, chosen from Settings; the engine still writes English and
+`packages/ui/src/engineText.ts` renders the Hindi for each line; reviewed through a sheet
+generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
+`pnpm i18n:sheet:check`); the disease library is the next batch (`docs/TODO.md` row 14). **Not read
+by him or Kartik.**
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

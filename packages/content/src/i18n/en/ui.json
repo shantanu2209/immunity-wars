@@ -379,6 +379,7 @@
   "settings.sound.off": "Off",
   "settings.language": "Language",
   "settings.language.en": "English",
+  "settings.language.hi": "हिन्दी",
   "settings.deleteSave": "Delete saved game",
   "settings.deleteSaveNone": "No saved game",
   "settings.deleteSaveInPlay": "You are playing the saved game. Quit to the title to delete it.",

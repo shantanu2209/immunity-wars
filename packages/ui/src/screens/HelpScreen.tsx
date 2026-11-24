@@ -39,7 +39,7 @@ import { Fragment, type CSSProperties, type ReactElement } from 'react';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR } from '../kit/tokens';
-import { cellDisplayName, organDisplayName, typeDisplayName } from '../names';
+import { cellDisplayName, eventDisplayText, organDisplayName, typeDisplayName } from '../names';
 import { RichText } from '../panels/LogPanel';
 
 import { BODY as P, CARD, GROUP, LEAD, PAGE, ROW, STACK, TITLE } from './chrome';
@@ -275,11 +275,11 @@ function sectionBody(key: HelpSectionKey): ReactElement {
           <p style={P}>{t('help.s9.lead')}</p>
           {Object.keys(events).map((k) => (
             <p key={k} style={P} data-help-event={k}>
-              <Lead text={String(events[k]?.name ?? k)} />
+              <Lead text={eventDisplayText(k).name} />
               {/* The reason carries the engine's <b> emphasis; the app's rich-text renderer
                   turns it into runs, as the reveal does. A regex that stripped tags was
                   CodeQL's "incomplete sanitisation" pattern and is gone. */}
-              <RichText text={String(events[k]?.why ?? '')} />
+              <RichText text={eventDisplayText(k).why} />
               {/* Two reasons (Fatigue, Acute-phase surge) already state the effect in Kartik's
                   own words, so their Help line is empty rather than a repeat; the pin checks
                   the reason's numbers for those. */}

@@ -41,7 +41,14 @@ import { KitPiece } from '../kit/Piece';
 import { KitChip, KitMeter, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
-import { typeDisplayName } from '../names';
+import {
+  beatText,
+  diseaseDisplayName,
+  familyDisplayName,
+  organDisplayName,
+  tierDisplayName,
+  typeDisplayName,
+} from '../names';
 import { SAY, TONE } from './onCard';
 
 export interface PathogenCardSubject {
@@ -95,18 +102,19 @@ export function PathogenCard({
   const fam = famKey
     ? (FAMILIES as Record<string, { name?: string; bio?: string } | undefined>)[famKey]
     : undefined;
-  const beat = (BEAT_BY_TYPE as Record<string, string | undefined>)[type];
+  const beat = beatText(type) || undefined;
+  void BEAT_BY_TYPE;
   // THE ACRONYM IN BRACKETS after the full class name (ruled 6 September 2026): the card
   // teaches the link between "Enveloped virus" and the ENV the antibody panel's chips carry,
   // at the point of use, instead of a permanent legend. Both halves are content's.
-  const famLine = fam?.name ? `${fam.name} (${String(famKey)})` : null;
+  const famLine = fam?.name ? `${familyDisplayName(String(famKey))} (${String(famKey)})` : null;
   const famColour = famKey
     ? (FAMILIES as Record<string, { col?: string } | undefined>)[famKey]?.col
     : undefined;
   // The piece the board draws this disease with: its kind, in its class's colour.
   const piece = pieceFor(type, classOf(disease, false), false).piece;
-  const organName = (o: string): string =>
-    String((ORGANS as Record<string, { name?: string } | undefined>)[o]?.name ?? o);
+  const organName = organDisplayName;
+  void ORGANS;
 
   return (
     <div
@@ -139,7 +147,9 @@ export function PathogenCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <KitPiece name={piece} view="card" size={84} label="" style={{ flex: '0 0 auto' }} />
           <div style={{ flex: '1 1 9rem', minWidth: 0 }}>
-            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>{disease}</div>
+            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>
+              {diseaseDisplayName(disease)}
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
               <KitChip>{typeDisplayName(type)}</KitChip>
               {famLine !== null ? <KitChip dot={famColour}>{famLine}</KitChip> : null}
@@ -193,7 +203,7 @@ export function PathogenCard({
         {stats ? (
           <div style={{ marginTop: 10 }}>
             <div style={{ ...LABEL, marginBottom: 6 }}>
-              {t('card.tier')} {t('inspect.sep')} {stats[4]}
+              {t('card.tier')} {t('inspect.sep')} {tierDisplayName(stats[4])}
             </div>
             <div
               style={{

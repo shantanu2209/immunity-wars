@@ -38,7 +38,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { LESSON, UI_I18N_EN } from '@immunity-wars/content';
+import { LESSON, UI_I18N_EN, UI_I18N_HI } from '@immunity-wars/content';
 import puppeteer from 'puppeteer-core';
 
 const CHROME =
@@ -101,6 +101,12 @@ function expectedBeats(): string[] {
  * says the one before is done is the last of that one; the card that says what the next is about is
  * the first of the next.
  */
+/** `--lang hi` walks the lesson in Hindi: the stored Language setting, and the count's own words. */
+const LANG: 'en' | 'hi' =
+  process.argv.includes('--lang') && process.argv[process.argv.indexOf('--lang') + 1] === 'hi'
+    ? 'hi'
+    : 'en';
+
 function expectedCounts(beats: readonly string[]): string[] {
   const chapterOf: number[] = [];
   let c = 0;
@@ -108,7 +114,7 @@ function expectedCounts(beats: readonly string[]): string[] {
     if (b.startsWith('chapter.') && b.endsWith('.intro')) c += 1;
     chapterOf.push(c);
   }
-  const say = UI_I18N_EN['guide.count'] ?? '';
+  const say = (LANG === 'hi' ? UI_I18N_HI : UI_I18N_EN)['guide.count'] ?? '';
   return beats.map((_, i) => {
     const mine = chapterOf.flatMap((k, j) => (k === chapterOf[i] ? [j] : []));
     return say.replace('{n}', String(mine.indexOf(i) + 1)).replace('{of}', String(mine.length));
@@ -232,6 +238,16 @@ try {
       isMobile: true,
       hasTouch: true,
     });
+    if (LANG !== 'en') {
+      // The Language setting as the app stores it (packages/app/src/settings.ts), set before the
+      // page's own script reads it, so the first paint is already in that language.
+      await page.evaluateOnNewDocument(
+        (record: string) => {
+          localStorage.setItem('immunity-wars.settings', record);
+        },
+        JSON.stringify({ v: 1, textSize: '100', language: LANG, sound: 'on' }),
+      );
+    }
     await page.goto(url, { waitUntil: 'load' });
     const offered = await page
       .waitForFunction(() => document.querySelector('[data-title="learn"]') !== null, {

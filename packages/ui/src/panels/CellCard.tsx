@@ -15,7 +15,7 @@ import { KitPiece } from '../kit/Piece';
 import { KitChip, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
-import { cellDisplayName } from '../names';
+import { cellDisplayName, cellRoleText } from '../names';
 import { SAY, TONE } from './onCard';
 
 export interface CellCardSubject {
@@ -37,7 +37,8 @@ const LABEL: CSSProperties = SAY.label;
 export function CellCard({ subject }: { subject: CellCardSubject }): ReactElement {
   const { cell } = subject;
   const card = (CELL_CARDS as Record<string, Fields | undefined>)[cell] ?? {};
-  const tag = (UM as Record<string, { r?: string } | undefined>)[cell]?.r;
+  const tag = cellRoleText(cell) || undefined;
+  void UM;
   const speed = (SPEED as Record<string, number | undefined>)[cell] ?? null;
   const fields = [
     ['cellCard.role', card.role],

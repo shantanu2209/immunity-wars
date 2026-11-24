@@ -2893,3 +2893,91 @@ let's hide it beneath a switch in code and adjust audit step etc. record the rul
   so the Result, its two screens and a cell's card from the inspect sheet were not measured there,
   and a row with several targets was not dealt in two passes. Each is the dice's, as the audit is
   unseeded by ruling (§20), and each was measured clean in the other passes.
+
+## 32. Ruled 24 November 2026: the Hindi edition, and Gate 2's polish
+
+**Kartik is in the top 600 of the SBI Youth Ideathon, with an interview the next day.** Asked what
+the plan still owes and what could be built in two or three days, and given a ranked list with
+Hindi first, Shantanu ruled: *"let's do the gate 2 stuff and hindi give me everything I have to
+rule out and a table which has all the english text in the game so it can be translated into hindi
+(or do you have a differnet approach in mind for the tranlsation)? [...] I think we may aso need a
+dictioanry for all languages in case we use terms that are not everyday amd need explaining."*
+
+- **Hindi first, then Gate 2's polish** (the October report's four pull requests,
+  [`TODO.md`](TODO.md) row 16). Hindi is the grant's committed deliverable, pulled forward.
+- **The translation is reviewed in a sheet generated from the catalogues and read back by key,**
+  not in a table typed up by hand: the catalogue is the one source of what the game says, and a
+  hand-made table drifts from it the first time either changes. Agreed as the different approach
+  he asked about.
+- **A glossary**, in both languages, of the terms a player meets that are not everyday words.
+
+### Built: the Hindi edition, the screens' half
+
+**What a player sees.** Settings' Language row offers English and हिन्दी. Chosen, every screen,
+every button, every card of the lesson, every refusal and every line of the log is in Hindi; the
+class codes (ENV, EXB and the rest) and AP stay as they are, being codes on the pieces; the
+disease library's cards stay in English until the next batch ([`TODO.md`](TODO.md) row 14).
+
+| Made | Where | How many |
+|---|---|---|
+| The screens' catalogue in Hindi | `packages/content/src/i18n/hi/ui.json` | 764 strings, with `settings.language.hi` added to the English |
+| The engine's sentences in Hindi | `hi/engine.json` | 196 |
+| The names the content pack holds as data: cells and their roles, kinds, organs and what their damage costs, routes, classes, residents, crisis and rare events, tiers, the card's "beat it", and the 108 disease names | `hi/names.json` | 218 |
+| A glossary, English and Hindi, with the textbook (NCERT) word beside the everyday one | `en/glossary.json`, `hi/glossary.json` | 60 terms. **Not yet drawn by any screen** |
+
+**How it reaches the screen.**
+
+- `t()` reads the chosen locale's catalogue and falls back to the English for a key it lacks;
+  the app sets the locale from its Language setting at start and on change, and the page's `lang`
+  with it, so the browser picks its Devanagari font (`packages/ui/src/i18n.ts`,
+  `packages/app/src/settings.ts`).
+- **The engine still writes English.** Every line is already mapped back to its catalogue key by
+  template (`engineText.ts`); the Hindi template for that key is filled with the values the
+  English recovered, and the English names inside a value (a disease, a cell, an organ, a place
+  the engine composed such as "Lungs branch 2") are turned into Hindi whole words at a time,
+  the longest first (`names.ts`, `localiseEnglishNames`).
+- **A name is looked up by table and row** (`organ.lungs.name`, `disease.Cholera`): the tables
+  stay the one source of which names exist, and the fourteen screens that read a name from a table
+  read it through `names.ts` now.
+- **The font.** Nunito has no Devanagari. The kit's family falls back to Noto Sans Devanagari,
+  then Nirmala UI, then the system's, so Android, Windows and iOS each use the one they have.
+  Bundling one is a download, and is put to him ([`TODO.md`](TODO.md) row 15).
+
+**The review sheet.** `pnpm i18n:sheet` writes `out/hindi/review.xlsx` from the catalogues: one
+sheet each for the screens, the engine, the names and the glossary, the English beside the Hindi
+with the placeholders each row must keep, and a last sheet listing the library's 628 texts in
+English for the next batch. `pnpm i18n:apply` reads the Hindi columns back by key, and refuses,
+by name and writing nothing, a cell whose placeholders no longer match the English or one with a
+dash. `pnpm i18n:sheet:check` proves the round trip byte-identical, an edited cell landing alone,
+and both refusals. The lesson's spreadsheet of October was the precedent.
+
+**What the Hindi assumes, until he rules otherwise.** Everyday Hindi in Devanagari, a Hindi
+newspaper's register (वायरस, बैक्टीरिया, एंटीबॉडी, टीका, फंगस), with the NCERT word in the
+glossary beside it; cell names transliterated as NCERT does at class 11 (मोनोसाइट, बी-सेल,
+किलर टी-सेल, एनके सेल); disease names by their everyday Hindi name where one is in use (काली
+खाँसी, हैजा, खसरा, टीबी, दाद) and transliterated otherwise; coat = लपेटें, neutralise = निष्क्रिय
+करें, engulf = निगलें, strike = वार करें, NET = जाल, turn = बारी, a step on the board = कदम,
+an organ's integrity = सेहत. **Not read by him or Kartik:** every one of the 1,238 strings.
+
+| Seen, on the PC | Found |
+|---|---|
+| `pnpm guide:walk --lang hi` on the built app, the whole lesson in Hindi, pressing only what is lit | 82 beats of 82, every card counted in Hindi (चरण 16 / 16 and the rest), the game handed over at turn 8 of 15, no error |
+| The title, the chapters, the lesson's first card, the play screen with the Monocyte in hand, the messages, Settings, at 360 by 697 | Each in Hindi and 360 wide; the title and the play screen one screen tall; the log's four lines in Hindi with the names translated |
+| The same at 200% text, 360 by 697 | 360 wide at every one, the lesson's card still one screen; the title scrolls to 896 and the chapters to 3,843, as they do in English (the one-screen fixes are row 16's) |
+
+**Held.** `packages/content/src/i18n-hi.test.ts`: every English key has its Hindi, no Hindi key the
+English lacks, no placeholder lost, no dash, and a Hindi name for every row of every table the
+screens draw a name from. Controls, each fired: `hi-catalogue-is-whole`, `hi-placeholders-are-kept`,
+`hi-review-sheet-refuses-a-lost-placeholder`.
+
+**Known, and left.**
+
+- Six engine lines carry a fragment the engine composes in English and the catalogue keeps as a
+  placeholder (" (2 AP)", "s", "virus(es)"): `{apCost}`, `{pool2}`, `{made2}`, `{anyEuk}`,
+  `{difficulty}`, `{costTxt}`, `{how}`. They render with the English fragment until the mapper
+  translates fragments too; the two plural suffixes are simply left out of the Hindi.
+- The Gate 1 audit has not been run in Hindi. Hindi runs longer than English, so its 200% pass
+  is where a screen will spill first.
+- The glossary is content only: no screen draws it yet. A Glossary page under How to play is
+  the obvious place, in both languages.
+- The web app only. The Android app takes it with its next store build.
