@@ -16,7 +16,7 @@
     "@capacitor/core": "8.5.3"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.5.2",
+    "@capacitor/cli": "8.5.3",
     "@immunity-wars/ui": "workspace:*",
     "@types/node": "^26.6.5",
     "vitest": "^4.1.11"
