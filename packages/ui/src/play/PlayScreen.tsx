@@ -462,8 +462,9 @@ export function PlayScreen({
   // re-announce a draw the player already saw. Arrivals are diffed by invader id because
   // `drawn` carries only the first card and `drawnList` is one of the 13 state-only keys the
   // view drops. A `__sentinel` drawn (mop-up / every slot capped) announces nothing.
+  // NOTHING RAISES A DIALOG IN PLAY since the goal moved onto turn 1's card (piece 3, §37). The
+  // queue and its host stay: a dialog is still a layer the guide, the draw and a screen reader know.
   const dialogs = useDialogQueue();
-  const enqueueDialog = dialogs.enqueue;
   // A dialog is on the stack too, without the floating close: it is answered by its own button,
   // and the back gesture answers it the same way (APP_FLOW ruling 1: the dialog goes first).
   useNavLayer(
@@ -477,27 +478,11 @@ export function PlayScreen({
     const g = authView.game;
     const prev = prevGameRef.current;
     prevGameRef.current = g;
-    if (!prev) {
-      // THE GOAL DIALOG — shown once, at the start of a NEW game only. A fresh game's first
-      // view is turn 1, nothing drawn; a resumed game can never look like this, because the
-      // autosave is written on accepted actions and a turn-1-pre-draw state is never saved.
-      const maxTurn = Number(g['maxTurn'] ?? 0);
-      if (Number(g['turn']) === 1 && !g['drawn'] && String(g['phase']) === 'infection') {
-        enqueueDialog({
-          id: 'goal',
-          title: t('goal.title'),
-          body: (
-            <GoalBody
-              maxTurn={maxTurn}
-              lastTurn={maxTurn + GRACE_CLEAR}
-              together={pRef.current.together}
-            />
-          ),
-          dismissLabel: t('goal.begin'),
-        });
-      }
-      return;
-    }
+    // THE GOAL IS SAID ON TURN 1'S CARD, NOT IN A DIALOG BEFORE IT (Gate 2's polish, piece 3,
+    // ruled 24 and 25 November 2026; docs/LOOK_PLAN.md §37). A new game opened on a dialog to be
+    // answered before anything could be seen; it opens on its first cards now, with the same three
+    // sentences on the middle's card beside them (`GoalBody`).
+    if (!prev) return;
     const drawn = g['drawn'] as Record<string, unknown> | null;
     if (!drawn || prev['drawn'] || drawn['__sentinel']) return;
     const prevIds = new Set(
@@ -1096,6 +1081,22 @@ export function PlayScreen({
   const arrivalsNow = !playing && arrivals !== null && arrivals.list.length > 0 ? arrivals : null;
   // Planning's model while planning shows, or null: one name, so every use of it is narrowed.
   const plan = arrivalsNow === null && planning !== null && planningActive ? planning : null;
+  // PLANNING IS FOLDED AWAY, ALONE (Gate 2's polish, piece 3, ruled 24 and 25 November 2026;
+  // docs/LOOK_PLAN.md §37). Its screen was one more stop on every turn, between the new cards and
+  // the board. Alone the cards' button now begins the command stage, and the body seen from outside
+  // is the Body tile's: drawn in the play area while that view is open, with its panel below.
+  // Played together it stays: it is where the captain hands out the Action Points.
+  const folded = !p.together;
+  // During the guided lesson the board stays under the Body tile: its steps there point at pieces
+  // on the board (the venom the antivenom is for), which the figure does not draw.
+  const bodyFigure =
+    drawer === 'body' &&
+    p.seats.body &&
+    !playing &&
+    plan === null &&
+    arrivalsNow === null &&
+    planning !== null &&
+    guide === null;
   const apShown = plan !== null ? plan.apNext : Number(game['ap'] ?? 0);
   // WHO THIS PLAYER IS WAITING FOR, when the next step is the captain's and this is not the
   // captain's device; null otherwise, and always alone.
@@ -1186,14 +1187,22 @@ export function PlayScreen({
         </MiddleCard>
       );
     // The new cards' notes and planning's list are on the middle's card, as every view is (L5).
-    // A first turn has no crisis and no spread to tell of, and an empty card said "tap a card to
-    // turn it over" until Gate 2's polish (docs/LOOK_PLAN.md §33); with nothing to say there is
-    // no card.
+    // TURN 1 SAYS THE GOAL there (Gate 2's polish, piece 3; §37): it had no crisis and no spread to
+    // tell of, and the goal was a dialog before it. Any other turn with nothing to say has no card.
     if (arrivalsNow !== null) {
-      if (arrivalsNow.crisis === null && spreadLines.length === 0) return null;
+      const firstTurn = Number(game['turn']) === 1;
+      const notes = arrivalsNow.crisis !== null || spreadLines.length > 0;
+      if (!firstTurn && !notes) return null;
+      const maxTurn = Number(game['maxTurn'] ?? 0);
       return (
         <MiddleCard>
-          <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} />
+          {firstTurn ? (
+            <div data-middle-view="goal">
+              <div style={SAY.label}>{t('goal.title')}</div>
+              <GoalBody maxTurn={maxTurn} lastTurn={maxTurn + GRACE_CLEAR} together={p.together} />
+            </div>
+          ) : null}
+          {notes ? <ArrivalsNotes crisis={arrivalsNow.crisis} spread={spreadLines} /> : null}
         </MiddleCard>
       );
     }
@@ -1361,6 +1370,17 @@ export function PlayScreen({
       return (
         <MiddleCard>
           <div data-middle-view="body">
+            {bodyFigure && planning !== null && planFocus !== null ? (
+              // A place tapped on the figure: what stands there, as planning listed it.
+              <div data-body-place={planFocus} style={{ marginBottom: 8 }}>
+                <PathogenList
+                  model={planning}
+                  focus={planFocus}
+                  disabled={playing}
+                  onPathogenCard={openPathogenCard}
+                />
+              </div>
+            ) : null}
             <BodyPanel data={bodyData} disabled={playing} onOffer={sendOffer} />
           </div>
         </MiddleCard>
@@ -1511,13 +1531,22 @@ export function PlayScreen({
             onFigureTap={setPlanFocus}
           />
         ) : null}
+        {bodyFigure && planning !== null ? (
+          <PlanningScreen
+            screen="body"
+            model={planning}
+            focus={planFocus}
+            disabled={playing}
+            onFigureTap={setPlanFocus}
+          />
+        ) : null}
         {/* THE COMMAND STAGE STAYS MOUNTED behind planning (ruled 6 September 2026, the mount fix for
             the command tap's breach): hidden, not unmounted, so the tap that ends planning is a
             visibility toggle and the board's redraw for the new turn. The flight reads its landing
             rectangles after that commit. Measured in P2_3_MEASUREMENT.md, "Added 6 September". */}
         <div
           data-command-stage="1"
-          hidden={plan !== null || arrivalsNow !== null}
+          hidden={plan !== null || arrivalsNow !== null || bodyFigure}
           style={{ position: 'absolute', inset: 0 }}
         >
           <LiveBoard
@@ -1599,7 +1628,9 @@ export function PlayScreen({
             playing
               ? 'spread'
               : arrivalsNow !== null
-                ? 'planTurn'
+                ? folded
+                  ? 'beginCommand'
+                  : 'planTurn'
                 : plan !== null
                   ? plan.mode === 'allocate'
                     ? 'confirmAllocation'
@@ -1612,7 +1643,9 @@ export function PlayScreen({
               : playing
                 ? t('spread.tapToContinue')
                 : arrivalsNow !== null
-                  ? t('reveal.plan')
+                  ? folded
+                    ? t('play.beginCommand')
+                    : t('reveal.plan')
                   : plan !== null
                     ? // Together, planning before the allocation is only reached without the cards
                       // (a captain back after the draw), and its step is still Plan your turn.
@@ -1634,8 +1667,14 @@ export function PlayScreen({
             // captain's tap on the cards sends `beginCommand`, and the cards give way on every screen
             // when the phase moves (the effect above), so planning and the handing out of points are
             // one screen. Alone there is no allocation, and the tap only puts the cards away.
+            // ALONE THE CARDS' BUTTON BEGINS THE COMMAND STAGE (piece 3, §37): it sends what
+            // planning's button sent, and the cards give way when the phase moves on (the effect
+            // above). Before the draw has been taken in there is nothing to begin, and it only puts
+            // the cards away, as it did.
             if (arrivalsNow !== null) {
               if (p.together) send({ action: 'beginCommand' });
+              else if (planning !== null && planning.active && planning.mode === 'plan')
+                send(planning.button.params);
               else setArrivals(null);
             } else if (plan !== null && plan.mode === 'plan' && p.together)
               send({ action: 'beginCommand' });

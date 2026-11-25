@@ -16,7 +16,7 @@
  * as NOT REACHED; without `--together` it says, as one NOT REACHED line, that it did not run.
  *
  * Drives the APP SHELL (index.html — the thing a player installs, not the dev shell) through
- * every screen a game passes: Title, Difficulty, the goal dialog, the reveal, the planning
+ * every screen a game passes: Title, Difficulty, the reveal (turn 1's with the goal), the planning
  * screen, the command screen with its sheet and cards and pause menu, a spread, and the
  * Result screen. On each screen it runs the four machine-checkable Gate 1 items:
  *
@@ -756,7 +756,10 @@ function playAreaFindings(
   records: readonly { screen: string; height: number; stage: string }[],
 ): Finding[] {
   const stages = new Set(records.map((r) => r.stage));
-  if (!stages.has('planning') || !stages.has('command')) {
+  // ALONE THERE IS NO PLANNING STAGE since Gate 2's polish (piece 3, docs/LOOK_PLAN.md §37): the
+  // body's figure is the Body tile's, in the command stage's box. The two a game alone must show are
+  // the new cards and the board.
+  if (!stages.has('arrivals') || !stages.has('command')) {
     return [
       {
         check: 'playArea',
@@ -1097,15 +1100,16 @@ async function zoom200Audit(page: Page, screen: string, results: ScreenResult[])
   });
 }
 
-/** Title → Difficulty → goal → first draw → reveal → planning → command, auditing each. */
+/** Title → Difficulty → first draw → reveal → command, auditing each. Alone there is no planning
+ *  stage since Gate 2's polish (piece 3, docs/LOOK_PLAN.md §37); together it is walked below. */
 /**
  * THE GUIDED GAME'S SCREENS (stage L6, docs/LOOK_PLAN.md §19). The guide dims the screen, lights
  * one control and says one sentence, so each kind of beat is a screen of its own to measure: the
  * card of the sentence, the lit control's own button, and the way out. The walk presses only what
  * the guide lights, as a player led by it would, and measures at six beats:
  *
- *   the new cards · planning · a tile lit · a row of a piece's actions lit · a place on the board
- *   lit · something said, with its own Next
+ *   the new cards · a tile lit · a row of a piece's actions lit · a place on the board lit ·
+ *   something said, with its own Next (planning had its own until Gate 2's polish, piece 3)
  *
  * Then it leaves the lesson by the card's own way out, which is also measured as being there. The
  * lesson's last word is the same card as a thing said; walking to it is `pnpm guide:walk`'s.
@@ -1118,7 +1122,6 @@ async function zoom200Audit(page: Page, screen: string, results: ScreenResult[])
 const GUIDE_SCREENS = [
   'guided game: its chapters, on a new phone',
   'guided game: the new cards',
-  'guided game: planning',
   'guided game: a tile lit',
   'guided game: a row of actions lit',
   'guided game: a place on the board lit',
@@ -1193,12 +1196,10 @@ async function walkGuide(
         continue;
       }
       if (s.beat !== null && s.beat.endsWith('.cards') && s.lit) await measure(GUIDE_SCREENS[1]);
-      else if (s.beat !== null && s.beat.endsWith('.plan') && s.lit)
-        await measure(GUIDE_SCREENS[2]);
-      else if (s.lit && s.onTile) await measure(GUIDE_SCREENS[3]);
-      else if (s.lit && s.onRow) await measure(GUIDE_SCREENS[4]);
-      else if (s.lit && s.onBoard) await measure(GUIDE_SCREENS[5]);
-      else if (s.next) await measure(GUIDE_SCREENS[6]);
+      else if (s.lit && s.onTile) await measure(GUIDE_SCREENS[2]);
+      else if (s.lit && s.onRow) await measure(GUIDE_SCREENS[3]);
+      else if (s.lit && s.onBoard) await measure(GUIDE_SCREENS[4]);
+      else if (s.next) await measure(GUIDE_SCREENS[5]);
       if (s.next) await clickSel(page, '[data-guide-next]');
       else if (s.spread) {
         await page.evaluate(() =>
@@ -1225,7 +1226,7 @@ async function walkGuide(
     // Back among the chapters, the first done and the second the one to play: measured, and then
     // closed, back to the title.
     if (await page.evaluate(() => document.querySelector('[data-screen="chapters"]') !== null)) {
-      await measure(GUIDE_SCREENS[7]);
+      await measure(GUIDE_SCREENS[6]);
       await closeLevel(page);
       await sleep(300);
     }
@@ -1523,14 +1524,32 @@ async function walk(
   // earlier pass is on this Title.
   await click(page, 'Start and replace');
   await sleep(400);
-  await step(page, 'goal dialog', results);
-  await click(page, 'Begin');
-  // THE DRAW IS THE APP'S (docs/for-P2.7.md §12, ruling 2): the reveal follows Begin with nothing
-  // pressed. "Play, infection phase" was walked as a screen until then; it is no longer a resting
-  // state, so it is no longer a screen, and a reveal that never comes is NOT REACHED.
-  if (await waitFor(page, 'Plan your turn', 8000)) {
+  // THE DRAW IS THE APP'S (docs/for-P2.7.md §12, ruling 2), and since Gate 2's polish (piece 3,
+  // docs/LOOK_PLAN.md §37) nothing stands before it: the goal dialog's three sentences are on turn
+  // 1's middle card, beside the new cards. Alone the cards' button is Command your cells. A reveal
+  // that never comes is NOT REACHED.
+  if (await waitFor(page, 'Command your cells', 8000)) {
     await sleep(300);
     await step(page, 'arrivals', results);
+    const goal = await page.evaluate(
+      () => document.querySelector('[data-middle-view=goal]') !== null,
+    );
+    if (!goal) {
+      results.push({
+        screen: 'arrivals',
+        controls: 0,
+        textRuns: 0,
+        findings: [
+          {
+            check: 'layout',
+            screen: 'arrivals',
+            path: '',
+            text: '',
+            detail: "turn 1's middle card does not say the goal, and nothing else does",
+          },
+        ],
+      });
+    }
     // A TAP ON A CARD OPENS THE PATHOGEN CARD (Gate 2's polish, docs/LOOK_PLAN.md §33; until then
     // a card turned over first), which closes back to the stage (ruling 9). A draw of novel
     // arrivals alone offers no card: a novel card is not a button.
@@ -1541,95 +1560,10 @@ async function walk(
       nestNotReached(nesting, 'Arrivals card → pathogen card', 'every card of the draw is novel');
     }
   } else {
-    results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
-    nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
-  }
-  await click(page, 'Plan your turn');
-  await sleep(300);
-  await step(page, 'planning', results);
-  // PLANNING'S LIST IS IN THE MIDDLE (piece 5, docs/for-P2.7.md §19): the Pathogens drawer is gone.
-  // A PATHOGEN CARD from the list closes back to planning (ruling 9). A lone pathogen's row opens its
-  // card; a group opens to its members, each with a card button.
-  await clickSel(page, '[data-middle-view=planning] [data-planning-place] > button');
-  await sleep(250);
-  let listCard = await clickSel(page, '[data-middle-view=planning] [data-opens-card]');
-  if (!listCard) {
-    await clickSel(page, '[data-middle-view=planning] [data-planning-group] > button');
-    await sleep(250);
-    listCard = await clickSel(page, '[data-middle-view=planning] [data-planning-member] button');
-  }
-  if (listCard) {
-    await sleep(300);
-    await step(page, 'pathogen card, from planning', results);
-    await nest(page, nesting, 'Planning list → pathogen card', 'planning');
-  } else {
-    results.push(notReached('pathogen card, from planning', 'no row in the list offered a card'));
-    nestNotReached(nesting, 'Planning list → pathogen card', 'no row in the list offered a card');
-  }
-  // A TAP ON THE FIGURE filters the list to that place, and a tap elsewhere on the body lists them
-  // all again (§19). Not a layer: a filter, so no close. A real pointer click at a marker's centre,
-  // because the figure resolves the tap from the pointer's coordinates.
-  const marker = (await page.evaluate(FIGURE_MARKER)) as { x: number; y: number } | null;
-  if (marker !== null) {
-    await page.mouse.click(marker.x, marker.y);
-    await sleep(350);
-  }
-  const showing = (): Promise<boolean> =>
-    page.evaluate(
-      () => document.querySelector('[data-middle-view=planning] [data-planning-showing]') !== null,
-    );
-  if (marker !== null && (await showing())) {
-    await step(page, 'planning, list at a place', results);
-    // Elsewhere on the body: the play area's top left corner, away from every marker.
-    const box = (await page.evaluate(() => {
-      const r = document.querySelector('[data-play-area]')?.getBoundingClientRect();
-      return r ? { x: r.left + 6, y: r.top + 6 } : null;
-    })) as { x: number; y: number } | null;
-    if (box !== null) await page.mouse.click(box.x, box.y);
-    await sleep(300);
-    if (await showing()) {
-      results.push({
-        screen: 'planning, list at a place',
-        controls: 0,
-        textRuns: 0,
-        findings: [
-          {
-            check: 'touch',
-            screen: 'planning, list at a place',
-            path: '',
-            text: '',
-            detail: 'a tap away from every marker left the list filtered',
-          },
-        ],
-      });
-    }
-  } else {
     results.push(
-      notReached(
-        'planning, list at a place',
-        marker === null
-          ? 'no place on the figure had a pathogen'
-          : 'a tap on a marker did not filter the list',
-      ),
+      notReached('arrivals', 'no draw followed the difficulty: the draw did not happen'),
     );
-  }
-  // MESSAGES, from the top bar's chat icon (§19): "What happened" is its System messages tab.
-  if (await clickSel(page, '[data-chat]')) {
-    await sleep(300);
-    await step(page, 'planning, Messages', results);
-    await nest(page, nesting, 'Planning → Messages → close', 'planning');
-  } else {
-    results.push(notReached('planning, Messages', 'no chat icon in the top bar'));
-    nestNotReached(nesting, 'Planning → Messages → close', 'no chat icon in the top bar');
-  }
-  // THE AP TERMS, from the top bar's AP figure (§19): a view in the middle, one close away.
-  if (await clickSel(page, '[data-bar-ap]:not([disabled])')) {
-    await sleep(250);
-    await step(page, 'planning, AP terms open', results);
-    await nest(page, nesting, 'Planning → AP terms → close', 'planning');
-  } else {
-    results.push(notReached('planning, AP terms open', 'the AP figure was not tappable'));
-    nestNotReached(nesting, 'Planning → AP terms → close', 'the AP figure was not tappable');
+    nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
   }
   await click(page, 'Command your cells');
   await sleep(900);
@@ -1695,10 +1629,66 @@ async function walk(
     results.push(notReached('view: antibodies', 'no Antibodies button'));
     nestNotReached(nesting, 'Antibodies view → close', 'no Antibodies button');
   }
-  // THE OTHER TWO VIEWS, then MESSAGES: each opened, audited, and closed back to the game.
+  // THE BODY VIEW draws the body seen from outside since Gate 2's polish (piece 3, docs/LOOK_PLAN.md
+  // §37): the figure planning drew, in the play area, with the panel of antivenom and vaccines in
+  // the middle. A tap on a place lists what stands there above that panel, each with its card.
+  if (await clickSel(page, '[data-tab="body"]')) {
+    await sleep(300);
+    await step(page, 'view: the body', results);
+    const figure = await page.evaluate(
+      () => document.querySelector('[data-screen=body] svg[data-anatomy]') !== null,
+    );
+    if (!figure)
+      results.push(notReached('view: the body, a place tapped', 'the view draws no figure'));
+    const marker = figure
+      ? ((await page.evaluate(FIGURE_MARKER)) as { x: number; y: number } | null)
+      : null;
+    if (marker !== null) {
+      await page.mouse.click(marker.x, marker.y);
+      await sleep(350);
+    }
+    const listed = await page.evaluate(
+      () => document.querySelector('[data-middle-view=body] [data-body-place]') !== null,
+    );
+    if (marker !== null && listed) {
+      await step(page, 'view: the body, a place tapped', results);
+      let card = await clickSel(page, '[data-body-place] [data-opens-card]');
+      if (!card) {
+        await clickSel(page, '[data-body-place] [data-planning-group] > button');
+        await sleep(250);
+        card = await clickSel(page, '[data-body-place] [data-planning-member] button');
+      }
+      if (card) {
+        await sleep(300);
+        await step(page, 'pathogen card, from the body', results);
+        await nest(page, nesting, 'The body → pathogen card', 'view: body');
+      } else {
+        results.push(
+          notReached('pathogen card, from the body', 'no row at the place offered a card'),
+        );
+        nestNotReached(nesting, 'The body → pathogen card', 'no row at the place offered a card');
+      }
+    } else {
+      if (figure)
+        results.push(
+          notReached(
+            'view: the body, a place tapped',
+            marker === null
+              ? 'no place on the figure had a pathogen'
+              : 'a tap on a marker listed nothing',
+          ),
+        );
+      results.push(notReached('pathogen card, from the body', 'no place was listed'));
+      nestNotReached(nesting, 'The body → pathogen card', 'no place was listed');
+    }
+    await nest(page, nesting, 'view: the body → close', 'play');
+  } else {
+    results.push(notReached('view: the body', 'no button to open it'));
+    nestNotReached(nesting, 'view: the body → close', 'no button to open it');
+  }
+  // THE CELLS VIEW, then MESSAGES: each opened, audited, and closed back to the game.
   for (const [sel, screen] of [
     ['[data-tab="pieces"]', 'view: cells'],
-    ['[data-tab="body"]', 'view: the body'],
     ['[data-chat]', 'Messages'],
   ] as const) {
     if (await clickSel(page, sel)) {
@@ -1818,15 +1808,12 @@ async function walk(
     if (!more) break;
   }
   // The spread ends and the app draws: the next turn opens on its reveal (§12, ruling 2).
-  if (await waitFor(page, 'Plan your turn', 8000)) {
+  if (await waitFor(page, 'Command your cells', 8000)) {
     await sleep(300);
     await step(page, 'arrivals, after End turn', results);
   } else {
     results.push(notReached('arrivals, after End turn', 'no reveal followed the spread'));
   }
-  await click(page, 'Plan your turn');
-  await sleep(300);
-  await step(page, 'planning, next turn', results);
   // A GAME CLOSED MID-SPREAD resumes before its draw, because the session writes the autosave as
   // the spread starts; with no Draw button the same rule must draw on resume, or the player has
   // nothing to press (§12, "What the measurement changes", 2). Reloaded the way a closed tab is.
@@ -1841,7 +1828,7 @@ async function walk(
   }, rootPct);
   await sleep(300);
   await clickContinue(page);
-  await waitFor(page, 'Plan your turn', 8000);
+  await waitFor(page, 'Command your cells', 8000);
   await sleep(300);
   if (nesting !== null) {
     const actual = await whereNow(page);
@@ -1853,8 +1840,8 @@ async function walk(
       ok: actual === 'arrivals',
     });
   }
-  await click(page, 'Plan your turn');
-  await sleep(300);
+  await click(page, 'Command your cells');
+  await sleep(600);
   // Settings from the Title WITH a save (the first visit had none, so the delete row was
   // disabled): quit keeps the save, the row is live, its confirm is measured, and Continue
   // resumes the game for the walk to the Result.
@@ -2061,8 +2048,7 @@ async function walkToResult(
     const ended = await page.evaluate(() => document.body.innerText.includes('Play again'));
     if (ended) break;
     // The app draws at the start of every turn (§12, ruling 2); a mop-up draw shows no reveal.
-    await waitFor(page, 'Plan your turn', 1500);
-    if (await click(page, 'Plan your turn')) await sleep(250);
+    await waitFor(page, 'Command your cells', 1500);
     if (await click(page, 'Command your cells')) await sleep(700);
     await tryDockTargets(page, results, step, nesting);
     await deselect(page);
@@ -2224,7 +2210,6 @@ async function walkTogether(
     'together',
     'together, a refusal',
     'lobby, captain',
-    'goal dialog, together',
     'planning, allocation, captain',
     'AP terms, together',
     "command, another player's piece",
@@ -2345,10 +2330,7 @@ async function walkTogether(
     await nest(page, nesting, 'Lobby → back gesture', 'lobby', 'gesture');
     await clickSel(page, '[data-difficulty="hard"]');
     await clickSel(page, '[data-lobby="start"]');
-    need(await waitFor(page, 'Begin', 15000), 'the game did not start');
-    await at(page, 'goal dialog, together');
-    await click(page, 'Begin');
-    if (await waitFor(helper, 'Begin', 10000)) await click(helper, 'Begin');
+    // No goal dialog since Gate 2's polish (piece 3): the goal is on turn 1's card.
     // The captain's device draws; Plan your turn begins the allocation at once (ruled 26 September
     // 2026), so planning and the captain's controls for the points are one screen.
     need(await waitFor(page, 'Plan your turn', 15000), 'the draw did not come');
@@ -2533,9 +2515,6 @@ async function walkTogether(
     );
     await at2('lobby, not captain');
     await clickSel(captain, '[data-lobby="start"]');
-    need(await waitFor(page, 'Begin', 15000), 'the game did not start');
-    await click(page, 'Begin');
-    if (await waitFor(captain, 'Begin', 10000)) await click(captain, 'Begin');
     need(
       await until(
         page,
@@ -3287,7 +3266,7 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'play area fires: a screen where it is another height is reported, by name',
     playAreaFindings([
-      { screen: 'a', height: 300, stage: 'planning' },
+      { screen: 'a', height: 300, stage: 'arrivals' },
       { screen: 'b', height: 340, stage: 'command' },
       { screen: 'c', height: 300, stage: 'command' },
     ]).some((f) => f.screen === 'b' && f.detail.startsWith('the play area is 340px')),
@@ -3295,7 +3274,7 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'play area passes: both stages at one height are NOT reported',
     playAreaFindings([
-      { screen: 'a', height: 300, stage: 'planning' },
+      { screen: 'a', height: 300, stage: 'arrivals' },
       { screen: 'b', height: 300.2, stage: 'command' },
     ]).length === 0,
   );
@@ -3376,12 +3355,11 @@ async function controls(page: Page): Promise<string[]> {
       });
       await sleep(300);
       await click(p, 'Start and replace');
-      await waitClick(p, 'Begin');
-      await waitClick(p, 'Plan your turn');
-      await sleep(300);
+      // Into the command stage either way: closed there, a game resumes there, which is not the
+      // arrivals stage, and the check must say so; closed mid-spread, it resumes at its draw.
+      await waitClick(p, 'Command your cells');
+      await sleep(900);
       if (midSpread) {
-        await waitClick(p, 'Command your cells');
-        await sleep(900);
         await waitClick(p, 'End turn');
         await sleep(350);
       }
@@ -3389,7 +3367,7 @@ async function controls(page: Page): Promise<string[]> {
       await p.waitForFunction(() => document.querySelector('button') !== null, { timeout: 30000 });
       await sleep(300);
       await clickContinue(p);
-      await waitFor(p, 'Plan your turn', 5000);
+      await waitFor(p, midSpread ? 'Command your cells' : 'End turn', 5000);
       await sleep(400);
       return await whereNow(p);
     } finally {
@@ -3398,7 +3376,7 @@ async function controls(page: Page): Promise<string[]> {
   };
   line(
     'resume fires: a resumed game that lands anywhere but the arrivals stage is reported',
-    (await resumeLanding(false)) === 'planning',
+    (await resumeLanding(false)) !== 'arrivals',
   );
   line(
     'resume passes: a game closed mid-spread reaches its arrivals stage',
@@ -3480,9 +3458,8 @@ async function playATurn(page: Page): Promise<{
     )
     .then(() => click(page, 'Start and replace'))
     .catch(() => undefined);
-  await step('Begin', () => waitClick(page, 'Begin'));
-  // The draw is the app's (§12, ruling 2): the reveal follows Begin with nothing pressed.
-  await step('Plan your turn', () => waitClick(page, 'Plan your turn'));
+  // The draw is the app's (§12, ruling 2), and alone the cards' button begins the command stage
+  // (Gate 2's polish, piece 3).
   await step('Command your cells', () => waitClick(page, 'Command your cells'));
   await step('select the Monocyte', async () => {
     await page
@@ -3550,15 +3527,15 @@ async function restAt641(page: Page): Promise<{ screen: string; overflow: number
   });
   await sleep(300);
   await click(page, 'Start and replace');
-  await waitClick(page, 'Begin');
-  if (!(await waitClick(page, 'Plan your turn'))) {
-    miss('planning @360x641');
+  // Turn 1's new cards, with the goal beside them (Gate 2's polish, piece 3), where planning was.
+  if (!(await waitFor(page, 'Command your cells', 8000))) {
+    miss('arrivals, turn 1 @360x641');
     miss('command, nothing selected @360x641');
     miss('command, a view open @360x641');
     return out;
   }
   await sleep(400);
-  out.push({ screen: 'planning @360x641', overflow: await overflow() });
+  out.push({ screen: 'arrivals, turn 1 @360x641', overflow: await overflow() });
   if (!(await waitClick(page, 'Command your cells'))) {
     miss('command, nothing selected @360x641');
     miss('command, a view open @360x641');

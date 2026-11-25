@@ -94,7 +94,6 @@ const NEXT = '[data-dock-next]';
 /** The turn's new cards, and its crisis, when one has come: what a turn's first card is about. */
 const ARRIVALS = ['[data-arrivals-grid]', '[data-reveal-crisis]'];
 /** The body from outside: what the planning card is about. */
-const BODY = ['[data-anatomy]'];
 
 type Inv = { readonly id: string; readonly disease: string; readonly remembered?: boolean };
 const invaders = (view: SessionView): readonly Inv[] =>
@@ -374,13 +373,9 @@ export function guideBeat(
         shows: ARRIVALS,
       };
     case 'planning':
-      return {
-        id: `t${String(n)}.plan`,
-        sayKey: n === 1 ? 'guide.t1.plan' : 'guide.plan',
-        ...plain,
-        stops: [NEXT],
-        shows: BODY,
-      };
+      // The lesson is played alone, and alone planning is folded away (Gate 2's polish, piece 3,
+      // §37): the cards' button begins the command stage. There is no card for it to say.
+      return null;
     case 'command': {
       const step = stepAt(lesson, pos);
       if (!step) {
@@ -510,7 +505,7 @@ export function lessonBeats(lesson: Lesson): LessonBeat[] {
   lesson.turns.forEach((turn, t) => {
     const n = String(t + 1);
     cards(t, 0);
-    out.push({ id: `t${n}.cards`, chapter }, { id: `t${n}.plan`, chapter });
+    out.push({ id: `t${n}.cards`, chapter });
     turn.steps.forEach((step, i) => {
       if (i > 0) cards(t, i);
       out.push({ id: step.id, chapter });

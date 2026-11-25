@@ -335,8 +335,9 @@ describe('every card says which step of its chapter it is (16 October 2026)', ()
     session.dispose();
     const named = new Set(beats);
     expect(all.map((b) => b.id).filter((id) => named.has(id))).toEqual(beats);
-    // And each turn's own cards between: the new cards, the plan, End turn, the spread.
-    expect(all.length).toBe(beats.length + LESSON.turns.length * 4 + 1);
+    // And each turn's own cards between: the new cards, End turn, the spread. No plan since Gate
+    // 2's polish (piece 3): alone, planning is folded away.
+    expect(all.length).toBe(beats.length + LESSON.turns.length * 3 + 1);
     expect(new Set(all.map((b) => b.id)).size, 'two cards of one name').toBe(all.length);
   });
 
@@ -390,12 +391,13 @@ describe('what a card talks about is shown (16 October 2026)', () => {
         expect(shows, `A STEP DOES NOT SHOW WHAT IT ACTS ON: ${step.id}`).toContain(acts);
       }
     }
-    // The new cards and the body: the turn's first two cards.
+    // The new cards: the turn's first card. Planning has none since Gate 2's polish (piece 3): the
+    // lesson is played alone, and alone the cards' button begins the command stage.
     const view = session.getView();
     expect(guideBeat(LESSON, GUIDE_START, 'arrivals', view)?.shows).toContain(
       '[data-arrivals-grid]',
     );
-    expect(guideBeat(LESSON, GUIDE_START, 'planning', view)?.shows).toEqual(['[data-anatomy]']);
+    expect(guideBeat(LESSON, GUIDE_START, 'planning', view)).toBeNull();
     // A cell by its key, and nothing during the spread.
     expect(showHooks(['bcell'], view)).toEqual(['[data-cell="bcell"]']);
     expect(shownNames(LESSON, GUIDE_START, 'spread')).toEqual([]);
@@ -406,10 +408,8 @@ describe('every beat of the lesson has its sentence, and every sentence its beat
   const say = UI_I18N_EN as Record<string, string>;
   /** Every key the guide can ask for, from the lesson itself. */
   const asked = new Set<string>([
-    'guide.plan',
     'guide.spread',
     'guide.end',
-    'guide.t1.plan',
     'guide.t1.spread',
     'guide.then.tap',
     'guide.then.place',
