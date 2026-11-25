@@ -380,10 +380,17 @@ try {
       `document.querySelector('[data-announce]') !== null`,
     )) as boolean;
     if (!region) refuse('WHAT HAPPENS IS NOT SAID: the play screen has no region to say it in');
-    const arrived =
-      untag(
-        (ENGINE_I18N_EN as Record<string, string>)['actions.infectionEnteredViaThe'] ?? '',
-      ).split('{')[0] ?? '';
+    // The arrival is known by the disease it names, not by the words it begins with: the engine
+    // says a worm's arrival in its own sentence, and an infection's in another (docs/FINDINGS.md
+    // #134: this read "Infection: …" alone, and a worm dealt on the runner failed it).
+    const via = say('arrivals.via').replace('{place}', '');
+    const arrivals = await until('no new card is a button in the tree', async () => {
+      const names = [...(await told(cdp)).values()]
+        .filter((n) => n.role === 'button' && n.name.includes(via))
+        .map((n) => n.name.split(',')[0]?.trim() ?? '')
+        .filter((n) => n !== '');
+      return names.length > 0 ? names : null;
+    });
     const opening = await until(
       'WHAT AN ACTION DID IS NOT SAID: nothing was said as the game opened, where its arrival should be',
       async () => {
@@ -391,16 +398,15 @@ try {
         return said.length > 0 ? said : null;
       },
     );
-    if (!(opening[0] ?? '').startsWith(arrived))
+    if (!arrivals.some((name) => (opening[0] ?? '').includes(name)))
       refuse(
-        `A GAME THAT OPENS IS SAID TO HAVE DONE SOMETHING: the first thing said is "${(opening[0] ?? '').slice(0, 80)}", where it should be the arrival ("${arrived}…")`,
+        `A GAME THAT OPENS IS SAID TO HAVE DONE SOMETHING: the first thing said is "${(opening[0] ?? '').slice(0, 80)}", where it should be the arrival of ${arrivals.join(' or ')}`,
       );
     console.log(
       `SR WALK: as the game opens, its arrival is said first ("${(opening[0] ?? '').slice(0, 60)}")`,
     );
 
     // A NEW CARD, named by what it shows.
-    const via = say('arrivals.via').replace('{place}', '');
     const classes = Object.values(FAMILIES as Record<string, { name?: string }>).flatMap((f) =>
       f.name ? [f.name] : [],
     );
