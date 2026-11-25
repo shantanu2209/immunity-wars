@@ -81,6 +81,11 @@ builds a spinner for a network we do not use.
    under Capacitor, and the on-screen back): dialog → sheet → pause menu → quit-confirm —
    in that order, and back never silently exits Play.**
 
+   > ⚠️ **Amended 24 November 2026 ([`LOOK_PLAN.md`](LOOK_PLAN.md) §33, piece 4): Quit asks
+   > nothing.** Its confirm's note said the game was saved, so it protected nothing; the row says so
+   > under its name and a press quits. The one confirm left on the menu is *Leave the game*'s, in a
+   > game played together. Back still never exits Play by itself.
+
    > ⚠️ **Extended 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §9, ruling 9): navigation is a
    > STACK.** Every close or back, on screen or the hardware button, returns to the level it came
    > from and never straight to the main screen: a card opened from the inspect sheet closes to the

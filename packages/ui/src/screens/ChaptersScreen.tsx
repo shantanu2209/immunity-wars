@@ -12,6 +12,11 @@
  *   open     coral, the screen's one main button: the next chapter, begun or not
  *   locked   flat, and not pressable: its chapter before it is not done yet
  *
+ * ONE SCREEN (Gate 2's polish, piece 2, ruled 24 November 2026; docs/LOOK_PLAN.md §33). Seven rows
+ * of three lines each scrolled 570 px past a phone's screen. A row is now its name with its state
+ * at the end of the same line, and the line saying what a chapter covers is shown on the one
+ * chapter to play next: the one a player is deciding about.
+ *
  * WHAT A CHAPTER BEGINS FROM IS FIXED. The lesson is one game on its own dice, and the player can
  * press only what is lit, so the game at a chapter's start is the same every time, whatever was
  * done before it. A chapter opened from here is reached by playing the chapters before it again,
@@ -43,14 +48,22 @@ export function chapterStates(count: number, done: number): ChapterState[] {
   );
 }
 
-/** A row of three lines: the chapter, what it is about, and its state in words. */
+/** A row: the chapter and its state on one line, and on the next chapter what it is about. */
 const ROW: CSSProperties = {
   ...STACK,
+  marginTop: 4,
   flexDirection: 'column',
-  alignItems: 'flex-start',
+  alignItems: 'stretch',
   gap: 2,
   textAlign: 'left',
-  padding: '0.7em 1em',
+  padding: '0.45em 0.9em',
+};
+const LINE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 10,
+  width: '100%',
 };
 
 export function ChaptersScreen({
@@ -87,15 +100,28 @@ export function ChaptersScreen({
             data-chapter={ch.id}
             data-chapter-state={state}
           >
-            <span style={{ ...TYPE.action, fontSize: '1.0625rem', fontWeight: 900 }}>
-              {t('chapters.numbered', { n: c + 1, name: t(`chapters.${ch.id}.name`) })}
+            <span style={LINE}>
+              <span style={{ ...TYPE.action, fontSize: '0.9375rem', fontWeight: 900, minWidth: 0 }}>
+                {t('chapters.numbered', { n: c + 1, name: t(`chapters.${ch.id}.name`) })}
+              </span>
+              <span
+                style={{
+                  ...TYPE.body,
+                  fontSize: '0.8125rem',
+                  fontWeight: 900,
+                  color: quiet,
+                  flex: '0 0 auto',
+                  textAlign: 'right',
+                }}
+              >
+                {state === 'locked'
+                  ? t('chapters.locked', { n: c })
+                  : t(state === 'done' ? 'chapters.done' : 'chapters.open')}
+              </span>
             </span>
-            <span style={{ ...TYPE.body, color: quiet }}>{t(`chapters.${ch.id}.about`)}</span>
-            <span style={{ ...TYPE.body, fontWeight: 900, color: quiet }}>
-              {state === 'locked'
-                ? t('chapters.locked', { n: c })
-                : t(state === 'done' ? 'chapters.done' : 'chapters.open')}
-            </span>
+            {state === 'open' ? (
+              <span style={{ ...TYPE.body, color: quiet }}>{t(`chapters.${ch.id}.about`)}</span>
+            ) : null}
           </KitButton>
         );
       })}

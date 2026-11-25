@@ -57,17 +57,31 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The Hindi review sheet's gate (pnpm i18n:sheet:check) is Python, and reads and writes the
+      # sheet with openpyxl, which the runner's image does not have: its control failed here for
+      # that and not for its own reason, the first time this ran after it (docs/FINDINGS.md #133).
+      # A Python of its own, so the install goes into the Python the gate runs, however the image's
+      # own is set up; and the PC's openpyxl.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install openpyxl==3.1.5
 
       # Unchanged, the gate that needs the most of this machine must PASS: it builds the app and
       # opens it in the browser. If it cannot, every control on a browser gate would "fail" below
       # for a reason that is not its own, an hour in. Said here, in a minute, by name.
       - name: The browser gates can run here at all
         run: pnpm start:check --build
+
+      # The same for the gate that is Python: unchanged it must PASS, so a runner without what it
+      # needs says so here by name, and not as one control failing "for another reason" an hour in.
+      - name: The sheet gate can run here at all
+        run: pnpm i18n:sheet:check
 
       - name: Every gate, made to fail on purpose
         env:
@@ -103,7 +117,7 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: selftest

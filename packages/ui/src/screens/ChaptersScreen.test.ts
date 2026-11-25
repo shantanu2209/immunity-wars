@@ -71,7 +71,10 @@ describe('the chapter screen', () => {
       expect(got[c]?.body).toContain(
         esc(t('chapters.numbered', { n: c + 1, name: t(`chapters.${id}.name`) })),
       );
-      expect(got[c]?.body).toContain(esc(t(`chapters.${id}.about`)));
+      // ONE SCREEN (Gate 2's polish, piece 2): what a chapter is about is said on the next chapter
+      // to play, the one a player is deciding about, and on no other.
+      if (c === 2) expect(got[c]?.body).toContain(esc(t(`chapters.${id}.about`)));
+      else expect(got[c]?.body).not.toContain(esc(t(`chapters.${id}.about`)));
     });
   });
 

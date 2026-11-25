@@ -18,10 +18,11 @@
  *
  * Pure: a function of the view. Legality is not decided here; this is state made visible.
  */
-import { GRACE_CLEAR, ORGANS } from '@immunity-wars/content';
+import { GRACE_CLEAR } from '@immunity-wars/content';
 import type { SessionView, ViewState } from '@immunity-wars/session';
 
 import { t } from '../i18n';
+import { diseaseDisplayName, localiseEnglishNames, organDisplayName } from '../names';
 import type { LogLine } from '../panels/LogPanel';
 
 export interface EffectChip {
@@ -125,7 +126,7 @@ export function effectChips(view: SessionView): EffectChip[] {
     ...new Set(
       ((g['invaders'] as { remembered?: unknown; disease?: unknown }[] | undefined) ?? [])
         .filter((iv) => iv.remembered === true)
-        .map((iv) => String(iv.disease ?? '')),
+        .map((iv) => diseaseDisplayName(String(iv.disease ?? ''))),
     ),
   ];
   if (remembered.length > 0)
@@ -257,21 +258,23 @@ export function turnLine(g: ViewState): string {
 export function apTermLines(view: SessionView): { text: string; delta: number }[] {
   const g = view.game;
   const banner = g['banner'] as { name?: unknown } | null;
-  const organName = (o: string): string =>
-    String((ORGANS as Record<string, { name?: unknown } | undefined>)[o]?.name ?? o);
+  const organName = organDisplayName;
   return view.queries.ap.terms.map((term) => {
     switch (term.kind) {
       case 'base':
         return { text: t('ap.base', { n: term.delta }), delta: term.delta };
       case 'drain':
-        return { text: t('ap.drain', { disease: term.disease ?? '' }), delta: term.delta };
+        return {
+          text: t('ap.drain', { disease: diseaseDisplayName(term.disease ?? '') }),
+          delta: term.delta,
+        };
       case 'organ':
         return { text: t('ap.organ', { organ: organName(term.organ ?? '') }), delta: term.delta };
       case 'event':
         return {
           text:
             banner && typeof banner.name === 'string'
-              ? t('ap.eventNamed', { name: banner.name })
+              ? t('ap.eventNamed', { name: localiseEnglishNames(banner.name) })
               : t('ap.event'),
           delta: term.delta,
         };

@@ -1,11 +1,17 @@
 /**
  * PAUSE MENU (sheet over Play) — Gate 1's "no screen without an exit", made real.
  * Quit KEEPS the save (docs/APP_FLOW.md save semantics), and the sheet says so.
- * Back-ordering: this sheet closes before quit-confirm can appear; the confirm is modal.
+ * Back-ordering: the one confirm left, Leave the game's, is modal and closes before the sheet does.
+ * Its layer keeps the name it had when Quit asked too, `quit-confirm`.
  *
- * It closes from the floating close (docs/for-P2.7.md §9, ruling 8), which is why it has no Resume
- * button: Resume WAS its close. It stays open under Settings and How to play, so closing either
+ * It closes from the floating close (docs/for-P2.7.md §9, ruling 8), and Resume is its first row,
+ * which does the same (§21 I). It stays open under Settings and How to play, so closing either
  * returns here (ruling 9).
+ *
+ * QUIT ASKS NOTHING (Gate 2's polish, piece 4, ruled 24 November 2026; docs/LOOK_PLAN.md §33). It
+ * asked for a confirm whose note said the game was saved: a confirm that protected nothing. The
+ * row says what quitting does, under its name, and a press does it. Together, Back to the title is
+ * the same: the seats wait. Leave the game keeps its confirm, being the one that cannot be undone.
  *
  * A NEW VERSION IS READY (ruled 3 October 2026): said here, last, when one has downloaded, so that
  * a player in the middle of a game hears of it and chooses when. Nothing reloads by itself outside
@@ -13,17 +19,21 @@
  * brings it back. Together it is said and not offered: a reload would drop this player from the
  * table, so it waits for the title, which takes it by itself.
  */
-import { useState, type CSSProperties, type ReactElement } from 'react';
+import { useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { kitCardStyle } from '../kit/Surface';
+import { TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
+import { modalProps, useModal } from '../nav/modal';
 import { SAY } from './onCard';
 import { UpdateNow } from './UpdateNow';
 
 /** Room above each button for the one before it to stand on its edge. */
 const BTN: CSSProperties = { marginTop: 12 };
+/** What a way out does, said under its name on the same button. */
+const NOTE: CSSProperties = { ...TYPE.body, fontSize: '0.8125rem' };
 
 export function PauseSheet({
   onResume,
@@ -55,9 +65,12 @@ export function PauseSheet({
   onUpdate?: () => void;
 }): ReactElement {
   const together = onLeave !== null;
-  const [confirming, setConfirming] = useState<'quit' | 'leave' | null>(null);
+  const [confirming, setConfirming] = useState<'leave' | null>(null);
   // The confirm is a dialog on the stack: the back gesture cancels it.
   useNavLayer('quit-confirm', confirming !== null, () => setConfirming(null), false);
+  // A dialog to a screen reader too: named, with what is behind it not read (`nav/modal.ts`).
+  const card = useRef<HTMLDivElement | null>(null);
+  useModal(card);
   return (
     <div
       style={{
@@ -73,11 +86,15 @@ export function PauseSheet({
       }}
     >
       <div
+        ref={card}
+        {...modalProps(t('play.pause'))}
+        data-pause-menu=""
         style={{
           width: 'min(88vw, 340px)',
           boxSizing: 'border-box',
           ...kitCardStyle,
           padding: '6px 16px 22px',
+          outline: 'none',
         }}
       >
         {confirming === 'leave' && onLeave !== null ? (
@@ -85,18 +102,6 @@ export function PauseSheet({
             <p style={{ ...SAY.body, margin: '12px 0 0' }}>{t('pause.leaveNote')}</p>
             <KitButton kind="main" data-pause="leave-confirm" style={BTN} onPress={onLeave}>
               {t('pause.leaveConfirm')}
-            </KitButton>
-            <KitButton style={BTN} onPress={() => setConfirming(null)}>
-              {t('pause.quitCancel')}
-            </KitButton>
-          </>
-        ) : confirming === 'quit' ? (
-          <>
-            <p style={{ ...SAY.body, margin: '12px 0 0' }}>
-              {together ? t('pause.closeNote') : t('pause.quitNote')}
-            </p>
-            <KitButton kind="main" data-pause="quit-confirm" style={BTN} onPress={onQuit}>
-              {together ? t('pause.closeConfirm') : t('pause.quitConfirm')}
             </KitButton>
             <KitButton style={BTN} onPress={() => setConfirming(null)}>
               {t('pause.quitCancel')}
@@ -115,8 +120,15 @@ export function PauseSheet({
             <KitButton style={BTN} onPress={onSettings}>
               {t('pause.settings')}
             </KitButton>
-            <KitButton data-pause="quit" style={BTN} onPress={() => setConfirming('quit')}>
-              {together ? t('pause.close') : t('pause.quit')}
+            <KitButton
+              data-pause="quit"
+              style={{ ...BTN, flexDirection: 'column', gap: 2 }}
+              onPress={onQuit}
+            >
+              <span>{together ? t('pause.close') : t('pause.quit')}</span>
+              <span data-pause-note="" style={NOTE}>
+                {together ? t('pause.closeSeats') : t('pause.quitSaved')}
+              </span>
             </KitButton>
             {together ? (
               <KitButton data-pause="leave" style={BTN} onPress={() => setConfirming('leave')}>

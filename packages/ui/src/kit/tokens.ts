@@ -66,7 +66,7 @@ export const COLOUR = {
 
 /** Sizes in rem, so the phone's own text size scales every one of them. 1rem is 16px at rest. */
 export const TYPE = {
-  family: 'Nunito, system-ui, sans-serif',
+  family: "Nunito, 'Noto Sans Devanagari', 'Nirmala UI', system-ui, sans-serif",
   /** The title of the game. */
   display: {
     fontSize: '2.5rem',

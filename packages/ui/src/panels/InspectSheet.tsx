@@ -12,7 +12,7 @@
 import { ORGANS } from '@immunity-wars/content';
 import type { CSSProperties, ReactElement } from 'react';
 
-import type { InspectInfo, Unavailable } from '../board/Board';
+import type { InspectInfo, InspectInvader, Unavailable } from '../board/Board';
 
 /** The organ's kind from the rules pack: `vital` or `defence` (a miss renders loudly through t()). */
 const organKind = (organ: string): string =>
@@ -31,6 +31,7 @@ import { CardIcon } from './CardIcon';
 import { SAY, SMALL, TONE, pieceArt } from './onCard';
 import {
   cellDisplayName as cellName,
+  diseaseDisplayName,
   organDisplayName,
   residentDisplayName,
   typeDisplayName as typeName,
@@ -119,6 +120,45 @@ export function unavailableText(u: Unavailable): string {
   return t('inspect.unavailableWhen', { what, when });
 }
 
+/**
+ * ONE ROW PER KIND OF INVADER ON THE STEP (Gate 2's polish, piece 4, ruled 24 November 2026;
+ * docs/LOOK_PLAN.md §33). Six Tuberculosis after division were six identical rows, 468 px inside a
+ * 218 px middle. Invaders alike in everything their row says (disease, kind, class, coat, health,
+ * novelty, malaria's stage, where one hides) and in what is offered against them are one row with
+ * their number, as planning's list already groups them. The row's card and offers are the first
+ * one's: alike, either would do. Two that differ in anything said or offered stay two rows.
+ */
+export function groupInvaders<
+  T extends Pick<
+    InspectInvader,
+    'disease' | 'type' | 'cls' | 'coated' | 'hp' | 'novel' | 'stage' | 'hiddenIn'
+  >,
+>(invaders: readonly T[], offered: (iv: T) => string = () => ''): { iv: T; count: number }[] {
+  const out: { iv: T; count: number }[] = [];
+  const index = new Map<string, number>();
+  for (const iv of invaders) {
+    const key = JSON.stringify([
+      iv.disease,
+      iv.type,
+      iv.cls,
+      iv.coated,
+      iv.hp,
+      iv.novel,
+      iv.stage,
+      iv.hiddenIn,
+      offered(iv),
+    ]);
+    const at = index.get(key);
+    const group = at === undefined ? undefined : out[at];
+    if (group) group.count += 1;
+    else {
+      index.set(key, out.length);
+      out.push({ iv, count: 1 });
+    }
+  }
+  return out;
+}
+
 export function InspectSheet({
   info,
   selectedCell,
@@ -151,12 +191,17 @@ export function InspectSheet({
     // shows below the play area, so the board stays in view, and the floating close returns to the
     // actions.
     <div data-inspect-sheet="" data-middle-view="node" style={SAY.body}>
-      {info.invaders.map((iv, i) => (
-        <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }}>
+      {groupInvaders(info.invaders, (iv) =>
+        (offers[iv.id] ?? []).map((o) => o.label).join('|'),
+      ).map(({ iv, count }, i) => (
+        <div key={`iv-${String(i)}`} style={{ ...ROW, flexWrap: 'wrap' }} data-sheet-group={count}>
           {/* The same picture the board draws it with: its kind, in its antigen class's colour. */}
           <Pic name={pieceFor(iv.type, iv.cls, iv.coated).piece} own={false} />
           <span style={{ flex: '1 1 auto' }}>
-            {iv.novel ? t('inspect.unknown') : iv.disease}
+            {iv.novel ? t('inspect.unknown') : diseaseDisplayName(iv.disease)}
+            {count > 1 ? (
+              <span style={{ fontWeight: 900 }}> {t('planning.times', { n: count })}</span>
+            ) : null}
             <span style={{ color: COLOUR.inkSoft }}>
               {' '}
               {iv.novel ? null : typeName(iv.type)} {t('inspect.hp')} {[iv.hp, iv.maxhp].join('/')}
@@ -176,7 +221,7 @@ export function InspectSheet({
             // novel pathogen gets no card — it is masked everywhere as unknown.
             <KitButton
               style={ICON_BTN}
-              aria-label={t('card.about', { name: iv.disease })}
+              aria-label={t('card.about', { name: diseaseDisplayName(iv.disease) })}
               disabled={disabled}
               onPress={() => onCard(iv.id)}
               data-sheet-card={iv.id}
