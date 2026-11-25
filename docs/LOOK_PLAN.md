@@ -3132,3 +3132,85 @@ of the audit's own, each firing or passing as it must.
 
 **Unruled, and his to overrule:** the state words on the chapters; chapter 7's shorter name; that
 the delete row is hidden rather than drawn flat; *What happened* as a line and not a button.
+
+## 34. Ruled 25 November 2026: the Hindi face is bundled, the Hindi stands, and accessibility
+
+Three things were open when piece 2 went up, each put with a recommendation. He answered:
+
+> *"Bundle the font - yes / Strings re fine / yes do the check and the screen reader"*
+
+| What was put | His ruling | What follows |
+|---|---|---|
+| Bundling a Devanagari font with the app, which is a download | **Yes** | Built, below |
+| The Hindi strings, which he and Kartik had not read, with the library's 628 named as the ones to read first | ***"Strings re fine"*** | They stand as they are, and §32's register is no longer unruled. Whether each was read is not recorded, and nothing here says it was |
+| Accessibility: a colour-blindness check as a standing test, then screen reader support | **Yes, both** | Not built here ([`TODO.md`](TODO.md) row 17) |
+
+### What the accessibility question was, and what was answered
+
+He asked, on 24 November, what could be done for players who cannot see, who cannot hear, or both,
+and how games usually do it. What he was told, and what the game was found to be:
+
+| Who | Where the game stands |
+|---|---|
+| Deaf or hard of hearing | **Nothing is lost.** There is no speech and no voice chat, and every sound goes with something drawn. That is by design; no check holds it |
+| Low vision | Partly covered, by Gate 1's own items: contrast, 44 px targets, text to 200%, less motion, no time limit |
+| Colour blind | **A first reading, below.** On the board a piece's colour is its antigen class |
+| Blind, and deafblind | **Cannot play it.** The board's pictures have names, but a tap on the board is read by its position, so a screen reader cannot choose where a cell moves, and nothing speaks what the spread did. A deafblind player's way in is the same one: a braille display is driven by the screen reader |
+
+**The first reading on colour.** The content pack's six class colours were put through a
+simulation of the three kinds of colour blindness (Machado, Oliveira and Fernandes 2009, at full
+severity) and the difference between each pair measured (CIE76: about 2 is the least an eye can
+tell between two swatches laid side by side; small pieces standing apart on a board need far more).
+
+| | The closest pairs | The two pairs that share a shape: the viruses (ENV, NAK) and the bacteria (EXB, ICB) |
+|---|---|---|
+| Full colour vision | EXB and TOX 26; ENV and NAK 35 | 35 and 64 |
+| Red-blind (protan) | EXB and TOX 13; NAK and EXB 13 | 38 and 64 |
+| Green-blind (deutan), the commonest | **NAK and TOX 7; EXB and TOX 11; NAK and EXB 13; ENV and EXB 14** | 25 and 62 |
+| Blue-blind (tritan), rare | ENV and NAK 19; ICB and TOX 21 | 19 and 40 |
+
+- **What it says:** to the commonest kind of colour blindness four classes come within 7 to 14 of
+  each other, where with full colour vision the closest two are 26 apart; what tells those four
+  apart is the piece's shape. The two pairs that have one shape stay 25 and 62 apart.
+- **What it is not:** it is the palette, not the pieces as Blender lights them, and it is one run
+  of a script, not a standing check. The check ruled here is that reading taken from the rendered
+  pieces and held, with the class's code drawn wherever two would merge.
+
+**What was recommended, and is ruled:** the colour check first; then screen reader support as
+three pull requests (names and roles on every control; the spread and the log spoken as they
+happen, in the sentences the catalogues already have in both languages; the board offered as a
+list by place, with a cell's destinations as buttons). **Not recommended, and not ruled:** a
+narration of the game's own, since the phone's screen reader already speaks in the voice and at
+the speed its user has chosen.
+
+- **The brief left screen readers out until someone asked** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md)
+  §1, with its condition for bringing them back). He has asked. The brief is brought level when
+  the first of it is built.
+- **What may be said until then:** built to the contrast and text-size standard, playable in full
+  without sound, no time pressure. **Not** that it supports blind players: that waits for someone
+  using TalkBack to have finished a game.
+
+### Built: the Hindi edition's own face
+
+Nunito has no Devanagari, so Hindi was drawn in whatever each phone had. The app now brings one.
+
+| | |
+|---|---|
+| The face | Noto Sans Devanagari, variable weight, its Devanagari subset: 121,192 bytes, under the SIL Open Font License, its licence beside it. **Not made here:** taken unchanged from the npm package `@fontsource-variable/noto-sans-devanagari` 5.3.0 ([`ASSETS.md`](ASSETS.md)) |
+| Where it is declared | On the app's page, under the name the kit's family already asked for second. Kept to its script by its range, so it is fetched only where Devanagari is drawn; in English that is the Language row's own word for Hindi |
+| Its weights | Declared 400 to 700, as Nunito's are, so a bold word is as bold in either script |
+| Offline | The worker stores it: a phone holds 139 files, 3.38 MB, of which this is 0.12. The Android app's build has it too |
+
+| Seen, on the PC | Found |
+|---|---|
+| `pnpm guide:walk --build --lang hi`, which now asks Chrome which fonts drew the title's button | Noto Sans Devanagari, 9 glyphs, and Nunito for the space: both faces the page loaded itself, none the machine's own. 82 beats of 82, handed over at turn 8 of 15, no error |
+
+- **Why the walk asks.** A face that fails to load is an error nowhere: the words are drawn in the
+  machine's own font and look right on any PC that has one. Only asking what was drawn shows it.
+- **Held:** the build's test requires every font the page names to be built and stored by the
+  worker, and the Devanagari face to be kept to its script. Controls, each fired:
+  `app-fonts-in-the-worker` (the fonts left out of what the worker stores: the test fails naming
+  the font) and `guide-walk-hindi-in-the-bundled-face` (the face declared under a name the kit
+  does not ask for: the walk fails saying what the button was drawn in).
+- **Not done:** the kit page, the measuring page and the developer's page do not declare it. **Not
+  seen on a phone.**

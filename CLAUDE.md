@@ -150,7 +150,11 @@ Ideathon interview): the two catalogues, the names the content pack holds as dat
 and the library's text, in `packages/content/src/i18n/hi/`, chosen from Settings; the engine still writes English and
 `packages/ui/src/engineText.ts` renders the Hindi for each line; reviewed through a sheet
 generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
-`pnpm i18n:sheet:check`). **Not read by him or Kartik.**
+`pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
+§34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
+(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check and screen reader
+support are ruled and not built** (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
+pieces** (plan §33): the first two are built.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

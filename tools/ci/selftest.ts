@@ -907,6 +907,17 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER DOES NOT STORE AN ICON',
   },
   {
+    id: 'app-fonts-in-the-worker',
+    why: 'The Hindi edition’s own face, Noto Sans Devanagari, is bundled by ruling of 25 November 2026 (LOOK_PLAN §34), so Hindi is drawn in one face on every phone and with no network. A font the worker does not store is text in whatever the phone has once the network is gone. With the fonts left out of what the worker stores, the build test must FAIL naming the one it does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t
+        .replace("'fonts/**/*', ", '')
+        .replace('{js,css,html,webp,woff2,json,txt}', '{js,css,html,webp,json,txt}'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE WORKER DOES NOT STORE A FONT',
+  },
+  {
     id: 'card-counters-are-the-engines',
     why: 'FINDINGS #129: a new card said "[class] antibodies neutralise it" of every disease, which the engine does not allow for a bacterium, a worm, a fungus, venom or a hidden pathogen. Each kind now says what antibodies do to it, held to the engine. With the bacterium said to be neutralised, the engine test must FAIL saying the engine does not agree.',
     file: 'packages/ui/src/play/counters.ts',
@@ -1608,6 +1619,15 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm guide:walk --build',
     expect: 'STUCK at t3.net: nothing on the page is lit',
+  },
+  {
+    id: 'guide-walk-hindi-in-the-bundled-face',
+    why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
+    file: 'packages/app/index.html',
+    mutate: (t) =>
+      t.replace("font-family: 'Noto Sans Devanagari';", "font-family: 'Noto Sans Devanagarx';"),
+    gate: 'pnpm guide:walk --build --lang hi',
+    expect: 'HINDI IS NOT DRAWN IN THE BUNDLED FACE',
   },
   {
     id: 'engulf-is-chip-only-when-it-wounds',
