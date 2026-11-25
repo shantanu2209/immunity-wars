@@ -54,7 +54,12 @@ import type { SessionView, ViewState } from '@immunity-wars/session';
 import type { Located } from '../board/Board';
 import { t } from '../i18n';
 import { engineText } from '../engineText';
-import { residentDisplayName } from '../names';
+import {
+  diseaseDisplayName,
+  familyDisplayName,
+  residentDisplayName,
+  routeDisplayName,
+} from '../names';
 
 export type OfferSource = 'cell' | 'body';
 
@@ -246,7 +251,7 @@ function verbFor(action: string, type: string, hp: number | null): string {
 /** The full class name with its acronym in brackets (ruled 6 September 2026), or the key alone. */
 export function familyLabel(family: string): string {
   const name = (FAMILIES as Record<string, { name?: unknown } | undefined>)[family]?.name;
-  return typeof name === 'string' ? `${name} (${family})` : family;
+  return typeof name === 'string' ? `${familyDisplayName(family)} (${family})` : family;
 }
 
 /** The engine's generic gate before any board action: AP left (the free-action slot went, Q2). */
@@ -303,7 +308,7 @@ export function bodyOffers(view: SessionView): Offered {
         action: 'memoryKill',
         cell: null,
         invaderId: id,
-        label: `${t('action.memoryKill')} ${String(iv.disease ?? '')}`,
+        label: `${t('action.memoryKill')} ${diseaseDisplayName(String(iv.disease ?? ''))}`,
         verb: t('action.memoryKill'),
         target: String(iv.disease ?? ''),
         cost: hard ? apLabel(MEMORY_RESPONSE_AP_HARD) : null,
@@ -322,7 +327,7 @@ export function bodyOffers(view: SessionView): Offered {
         action: 'antivenom',
         cell: null,
         invaderId: iv.id,
-        label: `${t('action.antivenom')} ${iv.disease}`,
+        label: `${t('action.antivenom')} ${diseaseDisplayName(iv.disease)}`,
         verb: t('action.antivenom'),
         target: String(iv.disease),
         cost: apLabel(ANTIVENOM_AP),
@@ -580,7 +585,7 @@ export function offeredActions(view: SessionView, seats: SeatRule = EVERY_SEAT):
         action,
         cell,
         invaderId: iv.id,
-        label: `${verbFor(action, iv.type, iv.hp)} ${iv.disease}`,
+        label: `${verbFor(action, iv.type, iv.hp)} ${diseaseDisplayName(iv.disease)}`,
         verb: verbFor(action, iv.type, iv.hp),
         target: iv.disease,
         cost,
@@ -729,8 +734,8 @@ export function lymphPartners(lane: string): string[] {
   });
 }
 
-const routeName = (lane: string): string =>
-  String((ROUTES as Record<string, { name?: string } | undefined>)[lane]?.name ?? lane);
+const routeName = routeDisplayName;
+void ROUTES;
 
 /**
  * A RESIDENT MACROPHAGE'S OFFERS (CP3) — the one extension to the selection model. A resident
@@ -791,7 +796,7 @@ function residentOffers(view: SessionView, organ: string): Offered {
         cell: null,
         organ,
         invaderId: iv.id,
-        label: `${t('action.engulf')} ${iv.disease}`,
+        label: `${t('action.engulf')} ${diseaseDisplayName(iv.disease)}`,
         verb: t('action.engulf'),
         target: String(iv.disease),
         cost: null,

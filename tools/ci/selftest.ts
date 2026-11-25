@@ -907,6 +907,17 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER DOES NOT STORE AN ICON',
   },
   {
+    id: 'app-fonts-in-the-worker',
+    why: 'The Hindi edition’s own face, Noto Sans Devanagari, is bundled by ruling of 25 November 2026 (LOOK_PLAN §34), so Hindi is drawn in one face on every phone and with no network. A font the worker does not store is text in whatever the phone has once the network is gone. With the fonts left out of what the worker stores, the build test must FAIL naming the one it does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t
+        .replace("'fonts/**/*', ", '')
+        .replace('{js,css,html,webp,woff2,json,txt}', '{js,css,html,webp,json,txt}'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE WORKER DOES NOT STORE A FONT',
+  },
+  {
     id: 'card-counters-are-the-engines',
     why: 'FINDINGS #129: a new card said "[class] antibodies neutralise it" of every disease, which the engine does not allow for a bacterium, a worm, a fungus, venom or a hidden pathogen. Each kind now says what antibodies do to it, held to the engine. With the bacterium said to be neutralised, the engine test must FAIL saying the engine does not agree.',
     file: 'packages/ui/src/play/counters.ts',
@@ -1315,6 +1326,43 @@ const CONTROLS: readonly Control[] = [
     expect: 'NO SCREEN ASKS FOR: title.leftBehind',
   },
   {
+    id: 'hi-catalogue-is-whole',
+    why: '24 November 2026, the Hindi edition: a key the Hindi catalogue lacks falls back to the English silently on the screen, so only a test can say the Hindi is whole. With one key dropped from hi/ui.json, the Hindi test must FAIL naming it.',
+    file: 'packages/content/src/i18n/hi/ui.json',
+    mutate: (t) => t.replace(/\n {2}"title\.newGame": "[^"\n]*",/, ''),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'HINDI IS MISSING, ui: title.newGame',
+  },
+  {
+    id: 'hi-placeholders-are-kept',
+    why: '24 November 2026, the Hindi edition: a {n} dropped from a translation is a number a player never sees, and the sentence still reads. With the placeholder taken out of one Hindi sentence, the Hindi test must FAIL naming the key.',
+    file: 'packages/content/src/i18n/hi/ui.json',
+    mutate: (t) =>
+      t.replace('"selection.needsAp": "{n} AP चाहिए"', '"selection.needsAp": "AP चाहिए"'),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'A PLACEHOLDER IS LOST, ui: selection.needsAp',
+  },
+  {
+    id: 'hi-library-is-whole',
+    why: "24 November 2026, the Hindi edition's second batch: the library's text (the disease cards, the cell cards, the why essays, the organ and class notes) is Kartik's science, and a sentence the Hindi lacks falls back to the English on the card without a word. With one sentence dropped from hi/library.json, the Hindi test must FAIL naming it.",
+    file: 'packages/content/src/i18n/hi/library.json',
+    mutate: (t) => t.replace(/\n {2}"library\.Cholera\.r": "[^"\n]*",/, ''),
+    gate: 'pnpm --filter @immunity-wars/content exec vitest run src/i18n-hi.test.ts',
+    expect: 'HINDI LIBRARY IS MISSING: library.Cholera.r',
+  },
+  {
+    id: 'hi-review-sheet-refuses-a-lost-placeholder',
+    why: '24 November 2026: the Hindi is reviewed in a spreadsheet generated from the catalogues and read back by key, and the read-back refuses a cell whose placeholders no longer match the English. With that refusal taken out of the tool, its own check must FAIL saying the placeholder control did not fire.',
+    file: 'tools/i18n/review_sheet.py',
+    mutate: (t) =>
+      t.replace(
+        '                if want != got:\n                    refused.append(',
+        '                if False:\n                    refused.append(',
+      ),
+    gate: 'pnpm i18n:sheet:check',
+    expect: 'THE PLACEHOLDER CONTROL DID NOT FIRE',
+  },
+  {
     id: 'title-one-main-button',
     why: 'Stage L5: the coral button is the thing a screen is for, one to a screen; on the title that is Continue when a game is waiting and New game when none is. With New game always coral, the title’s test must FAIL saying there are two.',
     file: 'packages/ui/src/screens/TitleScreen.tsx',
@@ -1571,6 +1619,101 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm guide:walk --build',
     expect: 'STUCK at t3.net: nothing on the page is lit',
+  },
+  {
+    id: 'guide-one-card-between-chapters',
+    why: 'Gate 2’s polish, piece 4 (LOOK_PLAN §33): two cards stood between chapters, each wanting a tap, the second saying only what the next chapter is about. The card that says a chapter is done now carries that line, and Next chapter goes to the next chapter’s first step. With Next chapter sent to the opening card again, the guide’s test must FAIL saying it does not go to the chapter’s first step.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (pos.at === 'done') return { turn: pos.turn, step: pos.step };",
+        "if (pos.at === 'done') return { turn: pos.turn, step: pos.step, at: 'intro' };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'NEXT CHAPTER DOES NOT GO TO THE CHAPTER',
+  },
+  {
+    id: 'guide-chapter-end-says-the-next',
+    why: 'The same change: the opening card a player no longer meets said what the chapter is about, so the card that says the last one is done must say it. With that card saying nothing more, the guide’s test must FAIL saying a chapter’s end does not say what the next is about.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "alsoKey: pos.at === 'done' ? `guide.chapter.${lesson.chapters[c]?.id ?? ''}.intro` : null,",
+        'alsoKey: null,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'DOES NOT SAY WHAT THE NEXT IS ABOUT',
+  },
+  {
+    id: 'guide-opening-card-is-not-a-step',
+    why: 'The same change: a chapter’s opening card is met only from the chapters screen. Counted as a step, a chapter would be Step 1 of 13 from the chapters and Step 2 of 13 after Next chapter. With the opening card put back among the lesson’s counted cards, the guide’s test must FAIL saying it is counted as a step.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        '    chapter = k;\n  };',
+        "    chapter = k;\n    out.push({ id: `chapter.${lesson.chapters[k]?.id ?? ''}.intro`, chapter });\n  };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'OPENING CARD IS COUNTED AS A STEP',
+  },
+  {
+    id: 'guide-walk-chapter-end-says-the-next',
+    why: 'The guide’s test holds the model; the page is the walk’s. With the play screen no longer handing the guide’s card its second sentence, the walk must FAIL at the first chapter’s end saying the card does not say what the next chapter is about.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace('also={beat.alsoKey !== null ? t(beat.alsoKey) : null}', 'also={null}'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'DOES NOT SAY WHAT THE NEXT CHAPTER IS ABOUT',
+  },
+  {
+    id: 'guide-walk-card-is-read-whole',
+    why: 'Gate 2’s polish, piece 4: the card between chapters carries two sentences, and a card whose words run past it has to be scrolled inside itself on a screen where everything else is dimmed. The walk reads how far each card’s content runs past the card. With the card held to 40 px, the walk must FAIL saying a card must be scrolled to be read.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) => t.replace('maxHeight: Math.max(96, room - 8),', 'maxHeight: 40,'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'A CARD MUST BE SCROLLED TO BE READ',
+  },
+  {
+    id: 'pause-quit-asks-nothing',
+    why: 'Gate 2’s polish, piece 4 (LOOK_PLAN §33): the menu’s Quit asked for a confirm whose note said the game was saved, a confirm that protected nothing. The row says so under its name and a press quits. With the press opening a question again, the menu’s test must FAIL saying Quit asked before it quit.',
+    file: 'packages/ui/src/panels/PauseSheet.tsx',
+    mutate: (t) => t.replace('onPress={onQuit}', "onPress={() => setConfirming('leave')}"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/PauseSheet.quit.test.ts',
+    expect: 'QUIT ASKED BEFORE IT QUIT',
+  },
+  {
+    id: 'spread-button-is-quiet',
+    why: 'Gate 2’s polish, piece 4: the spread moves on by itself, and a tap on its coral button skipped a beat a newcomer was meant to watch. Coral is kept for a step the player must take. With the spread’s button coral again, the frame’s test must FAIL saying so.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace("kind={keyName === 'spread' ? 'rest' : 'main'}", 'kind="main"'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Frame.test.ts',
+    expect: 'BUTTON IS THE COLOUR OF A STEP TO TAKE',
+  },
+  {
+    id: 'inspect-sheet-gathers-what-is-alike',
+    why: 'Gate 2’s polish, piece 4: six Tuberculosis after division were six identical rows, 468 px inside a 218 px middle. Invaders alike in everything their row says and offers are one row with their number. With nothing gathered, the sheet’s test must FAIL saying six alike are not one row.',
+    file: 'packages/ui/src/panels/InspectSheet.tsx',
+    mutate: (t) =>
+      t.replace('if (group) group.count += 1;', 'if (group && group.count < 0) group.count += 1;'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/InspectSheet.test.ts',
+    expect: 'SIX ALIKE ARE NOT ONE ROW',
+  },
+  {
+    id: 'inspect-sheet-keeps-apart-what-differs',
+    why: 'The other half of the same rule: a row that gathered too much would hide the one difference a player has to act on. With the coat left out of what makes two invaders alike, the sheet’s test must FAIL saying a coated one is counted with the uncoated.',
+    file: 'packages/ui/src/panels/InspectSheet.tsx',
+    mutate: (t) => t.replace('      iv.coated,\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/InspectSheet.test.ts',
+    expect: 'A COATED ONE IS COUNTED WITH THE UNCOATED',
+  },
+  {
+    id: 'guide-walk-hindi-in-the-bundled-face',
+    why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
+    file: 'packages/app/index.html',
+    mutate: (t) =>
+      t.replace("font-family: 'Noto Sans Devanagari';", "font-family: 'Noto Sans Devanagarx';"),
+    gate: 'pnpm guide:walk --build --lang hi',
+    expect: 'HINDI IS NOT DRAWN IN THE BUNDLED FACE',
   },
   {
     id: 'engulf-is-chip-only-when-it-wounds',
@@ -2341,8 +2484,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/ui/src/engineText.ts',
     mutate: (t) =>
       t.replace(
-        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
-        'out.sort((a, b) => b.template.length - a.template.length);',
+        'out.sort((a, b) => literalLength(b.key) - literalLength(a.key));',
+        "out.sort((a, b) => (ENGINE_I18N_EN[b.key] ?? '').length - (ENGINE_I18N_EN[a.key] ?? '').length);",
       ),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/engine-text.test.ts',
     expect: 'comes back as itself, by its own entry',
@@ -2353,8 +2496,8 @@ const CONTROLS: readonly Control[] = [
     file: 'packages/ui/src/engineText.ts',
     mutate: (t) =>
       t.replace(
-        'out.sort((a, b) => literalLength(b.template) - literalLength(a.template));',
-        'out.sort((a, b) => b.template.length - a.template.length);',
+        'out.sort((a, b) => literalLength(b.key) - literalLength(a.key));',
+        "out.sort((a, b) => (ENGINE_I18N_EN[b.key] ?? '').length - (ENGINE_I18N_EN[a.key] ?? '').length);",
       ),
     gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/log-text.test.ts',
     expect: 'no line is ambiguous',

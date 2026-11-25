@@ -163,6 +163,9 @@ interface ScreenResult {
   /** The base pass only: how far the page is taller than the screen while the play screen is at
    *  rest (its stage shown, nothing open over it); null on any other screen. */
   rest?: { overflow: number } | null;
+  /** The base pass only: how far the page is taller than the screen on ANY screen, for the ones
+   *  `ONE_SCREEN` requires to fit (Gate 2's polish, piece 2; docs/LOOK_PLAN.md §33). */
+  page?: { overflow: number } | null;
   findings: Finding[];
 }
 
@@ -467,7 +470,7 @@ const WHERE = `
   if (q('[data-screen=library]')) return 'library index';
   if (q('[data-screen=about]')) return 'about';
   if (q('[data-inspect-sheet]')) return 'inspect sheet';
-  if (button('Quit to title') || button('Leave the game')) return 'pause menu';
+  if (q('[data-pause=quit]') || button('Leave the game')) return 'pause menu';
   // PLAYING TOGETHER (P3.7): the way in and the lobby.
   if (q('[data-screen=lobby]')) return 'lobby';
   if (q('[data-screen=together]')) return 'together';
@@ -511,6 +514,14 @@ const REST_PROBE = `
   const shown = (s) => { const el = document.querySelector(s); return !!el && el.getClientRects().length > 0; };
   if (!shown('[data-command-stage]') && !shown('[data-screen=planning]')) return null;
   if (document.querySelector('[data-nav-close]')) return null;
+  const el = document.scrollingElement || document.documentElement;
+  return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
+})()
+`;
+
+/** How far the page is taller than the screen, on any screen at all. */
+const PAGE_PROBE = `
+(() => {
   const el = document.scrollingElement || document.documentElement;
   return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
 })()
@@ -805,6 +816,52 @@ function restFindings(records: readonly { screen: string; overflow: number }[]):
     }));
 }
 
+/**
+ * THE SCREENS THAT ARE ONE SCREEN (Gate 2's polish, piece 2, ruled 24 November 2026; docs/LOOK_PLAN.md
+ * §33). The October survey found these scrolling at 100% on his phone and each was redrawn to fit;
+ * without this, nothing says whether that held next month. On the base pass (360 x 780, Standard
+ * text) each must not be taller than the screen, with the 1px tolerance the rest check has. A
+ * named screen the run never measured is NOT REACHED, never clean. The play screen's own stages
+ * are the rest check's business, not this one's.
+ */
+const ONE_SCREEN: readonly string[] = [
+  'settings, no save',
+  'settings, with a save',
+  'guided game: its chapters, on a new phone',
+  'guided game: its chapters, the first done',
+  'result',
+  'help, index',
+  'view: cells',
+];
+
+function oneScreenFindings(
+  records: readonly { screen: string; overflow: number }[],
+  required: readonly string[] = ONE_SCREEN,
+): Finding[] {
+  const out: Finding[] = [];
+  for (const name of required) {
+    const r = records.find((x) => x.screen === name);
+    if (!r) {
+      out.push({
+        check: 'scroll',
+        screen: name,
+        path: '',
+        text: '',
+        detail: 'NOT REACHED: a screen required to be one screen was not measured',
+      });
+    } else if (r.overflow > 1) {
+      out.push({
+        check: 'scroll',
+        screen: name,
+        path: '',
+        text: '',
+        detail: `required to be one screen, and scrolls ${String(r.overflow)}px`,
+      });
+    }
+  }
+  return out;
+}
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Waits for a button by its exact text without clicking it; false when it never comes. */
@@ -891,12 +948,14 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const playArea = (await page.evaluate(PLAY_AREA_PROBE)) as ScreenResult['playArea'];
   const rest = (await page.evaluate(REST_PROBE)) as ScreenResult['rest'];
+  const pageFit = (await page.evaluate(PAGE_PROBE)) as ScreenResult['page'];
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
     playArea,
     rest,
+    page: pageFit,
     findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
   });
 }
@@ -1380,28 +1439,17 @@ async function walk(
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
     await step(page, 'arrivals', results);
-    // A CARD TURNS OVER (piece 6, §20), and its card icon opens the pathogen card from the back,
-    // which closes back to the stage (ruling 9). A draw of novel arrivals alone offers no card.
-    if (await clickSel(page, '[data-arrival]')) {
-      await sleep(250);
-      await step(page, 'arrivals, a card turned over', results);
-      if (await clickSel(page, '[data-arrival-card]')) {
-        await sleep(300);
-        await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
-      } else {
-        nestNotReached(
-          nesting,
-          'Arrivals card → pathogen card',
-          'the card that turned over is novel',
-        );
-      }
+    // A TAP ON A CARD OPENS THE PATHOGEN CARD (Gate 2's polish, docs/LOOK_PLAN.md §33; until then
+    // a card turned over first), which closes back to the stage (ruling 9). A draw of novel
+    // arrivals alone offers no card: a novel card is not a button.
+    if (await clickSel(page, '[data-arrival-card]')) {
+      await sleep(300);
+      await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
     } else {
-      results.push(notReached('arrivals, a card turned over', 'no card to turn over'));
-      nestNotReached(nesting, 'Arrivals card → pathogen card', 'no card to turn over');
+      nestNotReached(nesting, 'Arrivals card → pathogen card', 'every card of the draw is novel');
     }
   } else {
     results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
-    results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
     nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
   }
   await click(page, 'Plan your turn');
@@ -1720,9 +1768,8 @@ async function walk(
   // resumes the game for the walk to the Result.
   await clickSel(page, '[data-menu]');
   await sleep(200);
-  await click(page, 'Quit to title');
-  await sleep(200);
-  await click(page, 'Quit');
+  // Quit asks nothing since Gate 2's polish (piece 4): one press, and the title.
+  await clickSel(page, '[data-pause="quit"]');
   await sleep(400);
   if (await click(page, 'Settings')) {
     await sleep(200);
@@ -2092,7 +2139,6 @@ async function walkTogether(
     'table, captain',
     'pause menu, together',
     'pause menu, leave confirm',
-    'pause menu, back to the title confirm',
     'play, connection lost',
     'title, a room to rejoin',
     'together, rejoin',
@@ -2277,10 +2323,8 @@ async function walkTogether(
     await until(page, `!!document.querySelector('[data-pause="leave-confirm"]')`);
     await at(page, 'pause menu, leave confirm');
     await click(page, 'Stay');
-    await clickSel(page, '[data-pause="quit"]');
-    await until(page, `!!document.querySelector('[data-pause="quit-confirm"]')`);
-    await at(page, 'pause menu, back to the title confirm');
-    await click(page, 'Stay');
+    // Back to the title acts at once since Gate 2's polish (piece 4): it is not pressed here, where
+    // the walk goes on in the room.
     await click(page, 'Resume');
     // This device's connection drops: the sheet, at once. The captaincy passes to the helper.
     await page.evaluate(`window.__sockets.at(-1).close()`);
@@ -3137,6 +3181,24 @@ async function controls(page: Page): Promise<string[]> {
     'scroll fires: a run that measured no screen at rest is NOT REACHED, never clean',
     restFindings([]).some((f) => f.detail.startsWith('NOT REACHED')),
   );
+  // THE SCREENS REQUIRED TO BE ONE SCREEN (§33): a named screen taller than the screen is reported
+  // by name, one within the tolerance is not, and one the run never measured is NOT REACHED.
+  line(
+    'one screen fires: a required screen taller than the screen is reported, by name',
+    oneScreenFindings([{ screen: 'result', overflow: 40 }], ['result']).some(
+      (f) => f.screen === 'result' && f.detail.includes('40px'),
+    ),
+  );
+  line(
+    'one screen passes: a required screen that fits, to the pixel, is NOT reported',
+    oneScreenFindings([{ screen: 'result', overflow: 1 }], ['result']).length === 0,
+  );
+  line(
+    'one screen fires: a required screen the run never measured is NOT REACHED, never clean',
+    oneScreenFindings([{ screen: 'other', overflow: 0 }], ['result']).some((f) =>
+      f.detail.startsWith('NOT REACHED'),
+    ),
+  );
 
   // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands
   // anywhere but a reveal, and pass the game closed mid-spread that the walk itself relies on. The
@@ -3567,6 +3629,20 @@ try {
         heights: [...new Set(areaRecords.map((r) => r.height))],
         findings: playAreaFindings(areaRecords),
       };
+  // The screens required to be one screen, over the base pass (§33).
+  const pageRecords = results.flatMap((r) =>
+    r.page ? [{ screen: r.screen, overflow: r.page.overflow }] : [],
+  );
+  const oneScreen = offlineOnly
+    ? null
+    : {
+        required: ONE_SCREEN,
+        overflows: ONE_SCREEN.map((name) => {
+          const r = pageRecords.find((x) => x.screen === name);
+          return `${name}: ${r ? String(r.overflow) : 'NOT REACHED'}`;
+        }),
+        findings: oneScreenFindings(pageRecords),
+      };
   const out = {
     url: URL,
     when: new Date().toISOString(),
@@ -3580,6 +3656,7 @@ try {
     nesting,
     playArea,
     mainScreen,
+    oneScreen,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -3604,6 +3681,7 @@ try {
       nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
       playAreaFindings: playArea ? playArea.findings.length : null,
       mainScreenScrollFindings: mainScreen ? mainScreen.findings.length : null,
+      oneScreenFindings: oneScreen ? oneScreen.findings.length : null,
       offlineMet: off['met'],
     },
   };

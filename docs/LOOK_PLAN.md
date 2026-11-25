@@ -2893,3 +2893,385 @@ let's hide it beneath a switch in code and adjust audit step etc. record the rul
   so the Result, its two screens and a cell's card from the inspect sheet were not measured there,
   and a row with several targets was not dealt in two passes. Each is the dice's, as the audit is
   unseeded by ruling (§20), and each was measured clean in the other passes.
+
+## 31. Ruled 18 and 20 October 2026: released on Google Play, before Gate 2
+
+**The closed test's fourteen days were done on 18 October.** He asked: *"14 days are done shall I
+apply for production? We can always keep uodating right?"*, and then: *"Yes I would apply the
+latest build everywhere."* He applied for production access himself that evening, at 20:38. **Google granted it
+on 20 October,** and he wrote: *"approval has come from google, let's make the app live"*. Told
+then that this overrides the order the plan and the brief had, he went ahead.
+
+- **This replaces the order of §26 and the brief's v2.2**, where the public release waited for his
+  visual approval. The brief is v2.3 and says so.
+- **Gate 2 is not met,** and stays the gate this phase ends on. His approval of the whole look has
+  not been given; the screens now reach players through store updates while it is open.
+
+### What reached people, from 5 October
+
+| When | What | From `main` at | Version |
+|---|---|---|---|
+| 5 October, 20:21 IST | The app: the lesson in chapters and why each beat of the spread happened (§28, step 3) | `45d9578` | `20261005-202119-45d9578` |
+| 17 October, 11:41 IST | The app: the chapters to choose, what a card talks about lit, the layout's symmetry, his words for the lesson (§29) | `10f1282` | `20261017-114100-10f1282` |
+| 17 October, 20:00 IST | The relay: the day's dependency updates, `ws` among them. Nobody was connected; it restarted at 20:00:33 | `f01dccf` | `20261017-200026-f01dccf` |
+| 17 October, 20:00 IST | The app: Undo hidden (§30) | `f01dccf` | `20261017-200059-f01dccf` |
+| 18 October, 21:31 | **The closed test:** version 0.9, code 2, built by him with `pnpm android:bundle` | `f01dccf` | `android-0.9-2-f01dccf`, SHA-256 `b9a0ebb05f4f69342ccad55c0c477aced39a5234c595a0462ccaded9260fd8c0` |
+| 20 October, 16:20 | **Production:** the same bundle, code 2, full rollout, in all 178 countries and regions Play offers | `f01dccf` | the same |
+
+The times on the last two rows are Play Console's. After each app deploy the lesson was walked on the
+live app, 82 beats of 82; on the last, the selected piece's card had no Undo.
+
+### The store listing, made current for the release
+
+The listing had been filled in for the closed test on 3 October, and the public would have opened
+on pictures of the game before §28 and §29: the old title line, the Action Points as pips in the
+top bar, Undo on the piece's card, and the lesson counting *1 of 40*. Its feature graphic was the
+3 October one, which says *"for two to fifteen players"*; the corrected one, made on 5 October, had
+not been uploaded.
+
+| Picture | Made |
+|---|---|
+| The feature graphic | The 5 October one, from the catalogue's title line (§28, step 1) |
+| Six phone screenshots | 20 October, by `pnpm art:shots` on the S25 over the cable, from a debug build of `main` at `f158037`. Its screens are code 2's: what `main` gained after `f01dccf` is dependency updates |
+| Twelve tablet screenshots | 20 October, by `pnpm art:shots --tablet`, from the web build in headless Chrome |
+
+- **The screenshot tool had stopped working on 16 October,** when *Learn to play* began opening the
+  chapters: it pressed the title's button and waited for the lesson. It now presses the chapter that
+  can be played. It needs a phone or a browser to run, so no gate runs it, and nothing said it was
+  broken until it was used.
+- **The first phone set was retaken:** another app's chat bubble was drawn over the game in all six,
+  as Android draws bubbles over every app. He dismissed it and the six were taken again, clean.
+- **What's new**, the release notes: *"The first public release of The Immunity Wars. Learn to play
+  in seven short chapters, then defend the body on Easy, Normal or Hard, on your own or with friends
+  in a private room."*
+
+**Who pressed what.** Claude chose the 178 countries in the console and saved them as a draft.
+Creating the release, the pictures' upload and the submission were his: this session's permission
+check refused two of Claude's presses, on creating and on promoting a release, and the browser pane cannot
+hand a file to a page. An empty draft release Claude had opened on the Production track, which greys
+out *Promote release*, he discarded.
+
+| Seen after, from the PC | Found |
+|---|---|
+| Play Console's latest releases | Production: 2 (0.9), *Available on Google Play*, full rollout, 178 of 178 |
+| The public store page | The new screenshots; *What's new* as above |
+
+- **Not seen:** the game installed from the public listing on a phone that is not a tester's. On his
+  S25 the store says *Immunity Wars (Beta)*, because his account is in the closed test; it stays in
+  it, so that updates can be played there first.
+- **Found on the way, and committed with this record:** Dependabot's two Capacitor updates (8.5.2 to
+  8.5.3) had left the file Capacitor writes for the Android project naming the old version's folder.
+  Today's build rewrote it, and `pnpm android:bundle` refuses a working folder with changes, so
+  left uncommitted it would have stopped the next store build made on this PC.
+
+## 32. Ruled 24 November 2026: the Hindi edition, and Gate 2's polish
+
+**Kartik is in the top 600 of the SBI Youth Ideathon, with an interview the next day.** Asked what
+the plan still owes and what could be built in two or three days, and given a ranked list with
+Hindi first, Shantanu ruled: *"let's do the gate 2 stuff and hindi give me everything I have to
+rule out and a table which has all the english text in the game so it can be translated into hindi
+(or do you have a differnet approach in mind for the tranlsation)? [...] I think we may aso need a
+dictioanry for all languages in case we use terms that are not everyday amd need explaining."*
+
+- **Hindi first, then Gate 2's polish** (the October report's four pull requests,
+  [`TODO.md`](TODO.md) row 16). Hindi is the grant's committed deliverable, pulled forward.
+- **The translation is reviewed in a sheet generated from the catalogues and read back by key,**
+  not in a table typed up by hand: the catalogue is the one source of what the game says, and a
+  hand-made table drifts from it the first time either changes. Agreed as the different approach
+  he asked about.
+- **A glossary**, in both languages, of the terms a player meets that are not everyday words.
+
+### Built: the Hindi edition
+
+**What a player sees.** Settings' Language row offers English and हिन्दी. Chosen, every screen,
+every button, every card of the lesson, every refusal and every line of the log is in Hindi; the
+class codes (ENV, EXB and the rest) and AP stay as they are, being codes on the pieces. **The
+library followed the same night,** at his asking (*"there is tab which says batch 2 not
+translated. can you do that as well?"*): every disease card, cell card, why essay and note.
+
+| Made | Where | How many |
+|---|---|---|
+| The screens' catalogue in Hindi | `packages/content/src/i18n/hi/ui.json` | 764 strings, with `settings.language.hi` added to the English |
+| The engine's sentences in Hindi | `hi/engine.json` | 196 |
+| The names the content pack holds as data: cells and their roles, kinds, organs and what their damage costs, routes, classes, residents, crisis and rare events, tiers, the card's "beat it", and the 108 disease names | `hi/names.json` | 218 |
+| A glossary, English and Hindi, with the textbook (NCERT) word beside the everyday one | `en/glossary.json`, `hi/glossary.json` | 60 terms. **Not yet drawn by any screen** |
+| The library's text: each disease card's five sentences and its fact, the seven cell cards, the 15 why essays, the organ and class notes, about 6,600 words of Kartik's science | `hi/library.json` | 628, read by the pathogen card, the cell card and the library's essays through `libraryText` |
+
+**How it reaches the screen.**
+
+- `t()` reads the chosen locale's catalogue and falls back to the English for a key it lacks;
+  the app sets the locale from its Language setting at start and on change, and the page's `lang`
+  with it, so the browser picks its Devanagari font (`packages/ui/src/i18n.ts`,
+  `packages/app/src/settings.ts`).
+- **The engine still writes English.** Every line is already mapped back to its catalogue key by
+  template (`engineText.ts`); the Hindi template for that key is filled with the values the
+  English recovered, and the English names inside a value (a disease, a cell, an organ, a place
+  the engine composed such as "Lungs branch 2") are turned into Hindi whole words at a time,
+  the longest first (`names.ts`, `localiseEnglishNames`).
+- **A name is looked up by table and row** (`organ.lungs.name`, `disease.Cholera`): the tables
+  stay the one source of which names exist, and the fourteen screens that read a name from a table
+  read it through `names.ts` now.
+- **The font.** Nunito has no Devanagari. The kit's family falls back to Noto Sans Devanagari,
+  then Nirmala UI, then the system's, so Android, Windows and iOS each use the one they have.
+  Bundling one is a download, and is put to him ([`TODO.md`](TODO.md) row 15).
+
+**The review sheet.** `pnpm i18n:sheet` writes `out/hindi/review.xlsx` from the catalogues: one
+sheet each for the screens, the engine, the names and the glossary, the English beside the Hindi
+with the placeholders each row must keep, and the library's 628 texts last. `pnpm i18n:apply` reads the Hindi columns back by key, the library's among them, and refuses,
+by name and writing nothing, a cell whose placeholders no longer match the English or one with a
+dash. `pnpm i18n:sheet:check` proves the round trip byte-identical, an edited cell landing alone,
+and both refusals. The lesson's spreadsheet of October was the precedent.
+
+**What the Hindi assumes, until he rules otherwise.** Everyday Hindi in Devanagari, a Hindi
+newspaper's register (वायरस, बैक्टीरिया, एंटीबॉडी, टीका, फंगस), with the NCERT word in the
+glossary beside it; cell names transliterated as NCERT does at class 11 (मोनोसाइट, बी-सेल,
+किलर टी-सेल, एनके सेल); disease names by their everyday Hindi name where one is in use (काली
+खाँसी, हैजा, खसरा, टीबी, दाद) and transliterated otherwise; coat = लपेटें, neutralise = निष्क्रिय
+करें, engulf = निगलें, strike = वार करें, NET = जाल, turn = बारी, a step on the board = कदम,
+an organ's integrity = सेहत. **Not read by him or Kartik:** every one of the 1,866 strings. The library's 628 are the ones
+where a wrong number, name or date is a science error, so they are the ones to read first.
+
+| Seen, on the PC | Found |
+|---|---|
+| `pnpm guide:walk --lang hi` on the built app, the whole lesson in Hindi, pressing only what is lit | 82 beats of 82, every card counted in Hindi (चरण 16 / 16 and the rest), the game handed over at turn 8 of 15, no error |
+| The title, the chapters, the lesson's first card, the play screen with the Monocyte in hand, the messages, Settings, at 360 by 697 | Each in Hindi and 360 wide; the title and the play screen one screen tall; the log's four lines in Hindi with the names translated |
+| The library's card for Cholera, from How to play | Its class, its organ, its beat, its tier and its five sentences in Hindi; 360 wide |
+| The same at 200% text, 360 by 697 | 360 wide at every one, the lesson's card still one screen; the title scrolls to 896 and the chapters to 3,843, as they do in English (the one-screen fixes are row 16's) |
+
+**Held.** `packages/content/src/i18n-hi.test.ts`: every English key has its Hindi, no Hindi key the
+English lacks, no placeholder lost, no dash, and a Hindi name for every row of every table the
+screens draw a name from. Controls, each fired: `hi-catalogue-is-whole`, `hi-placeholders-are-kept`,
+`hi-library-is-whole`, `hi-review-sheet-refuses-a-lost-placeholder`.
+
+**Known, and left.**
+
+- Six engine lines carry a fragment the engine composes in English and the catalogue keeps as a
+  placeholder (" (2 AP)", "s", "virus(es)"): `{apCost}`, `{pool2}`, `{made2}`, `{anyEuk}`,
+  `{difficulty}`, `{costTxt}`, `{how}`. They render with the English fragment until the mapper
+  translates fragments too; the two plural suffixes are simply left out of the Hindi.
+- The Gate 1 audit has not been run in Hindi. Hindi runs longer than English, so its 200% pass
+  is where a screen will spill first.
+- The glossary is content only: no screen draws it yet. A Glossary page under How to play is
+  the obvious place, in both languages.
+- The web app only. The Android app takes it with its next store build.
+
+## 33. Ruled 24 November 2026: Gate 2's polish, the four pieces
+
+Put to him as four pieces, each its own pull request, played on his phone before it is deployed,
+and he ruled each: *"1. agree 2. Agree 3. Agree 4. Agree. Let implement all of it along with the
+hindi strings and the langiage picker which now includes hindi."* So every sentence a piece adds
+or changes is added in both catalogues, and the Hindi test holds the two whole.
+
+### Piece 1: a tap on a new card opens its full card
+
+**Was:** a tap turned a new card over to a back that summarised it (where it came in, whether the
+body remembers it, what antibodies do to it) and a second control on the back opened the full
+card. **Is:** the whole card is the button, and a tap opens the full card. The back's lines went
+to where each is used:
+
+| The back said | Now |
+|---|---|
+| Where it came in | On the front, under the class: *via the Nose* |
+| Your body remembers it | A mint tag on the front: it is the one thing on a new card a player can act on |
+| What antibodies do to it | At the top of the full card, under its class and above *Beat it*, the paragraph it summarises |
+| Never seen before | On the front of a card new to the body, which has no full card and is not a button |
+| *Tap a card to turn it over* | Gone, with its sentence in both catalogues |
+
+- **A draw of one or two cards is given more room** (a column of 9 rem and a row of 12 rem,
+  against 7.5 and 10 for three): one card had stood 160 px tall in a 340 px play area.
+- **A first turn's middle is empty, so nothing is drawn there.** The card that held the hint had
+  nothing else to say on turn 1. Piece 3 puts the game's goal there.
+- **The audit is re-aimed:** its *arrivals, a card turned over* screen is gone, and its nest from
+  a card to the pathogen card is reached by the card itself. The lesson's sentences never
+  mentioned turning a card over, so none changed.
+
+| Seen | Found |
+|---|---|
+| A game on Easy at 360 by 697, headless Chrome on the PC | Two cards, each with its route under its class; a tap on one opened its full card with the antibody line under its class; a first turn with one card and no middle card; 360 wide at each |
+| `pnpm guide:walk --build`, English and then Hindi | 82 beats of 82 each, every card counted, handed over at turn 8 of 15, no error |
+| The Gate 1 audit, alone, on this build (24 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one), the nest from a new card to its pathogen card reached and right; every check at zero over 924 controls and 2,150 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; offline met, with no request failed; 47 controls of the audit's own. Not reached: a row's several targets in three passes, by the dice; and playing together, which this run did not ask for |
+
+### Piece 2: the screens that are one screen
+
+The October survey's table A, each screen redrawn to fit a phone at 100% text, at 697 (the Android
+app's page on his S25) and at 641 (his Chrome tab).
+
+| Screen | Was | Is |
+|---|---|---|
+| **Settings** | Three cards with a heading over each; the delete row drawn flat with *No saved game* under it | One card, its groups as labels inside it. The delete row is drawn only when there is a save and it is not being played |
+| **The chapters** | Seven rows of three lines | A row is its name with its state at the end of the line (*Done*, *Next*, *Locked*); what a chapter covers is said on the next chapter to play, the one a player is deciding about. Chapter 7 is *The organs' defenders, and malaria* |
+| **Result** | Five stacked buttons under two cards | The way to the whole table is the Easy card's last line; *Change difficulty* and *Title* stand side by side; *What happened* is a quiet line |
+| **How to play's index** | Ten rows of 60 px | Two columns of five |
+| **The Cells view** | Seven chips with a name each, two to a row, scrolling inside the middle | One row of seven pieces on their bases, 45 by 44 px each, no names: the name is on the selected piece's card the moment it is picked. A spent cell's return hangs on its chip as a number, as on the board. The residents wait behind their control as before |
+| **Recall** | *Recall to bloodstream*, which made a second row of actions | *Recall*: it goes nowhere else |
+
+**Found on the way, and fixed here** ([`FINDINGS.md`](FINDINGS.md) #132): every screen on the stack
+reserved room for the floating close twice, the page's own padding and the navigation host's spacer,
+88 px of scroll on each that nothing was under. The page keeps a plain foot now and the host's
+spacer is the one reserve.
+
+**The audit holds them.** `ONE_SCREEN` in `tools/perf/gate1-audit.ts` names the screens required
+to fit the base pass's 780 px (Settings with and without a save, the chapters on a new phone and
+with the first done, the Result, How to play's index, the Cells view); a named screen taller than
+the screen is a finding by name, and one the run never measured is NOT REACHED. Three controls
+of the audit's own, each firing or passing as it must.
+
+| Measured, headless Chrome on the PC at 100% text | At 697 | At 641 |
+|---|---|---|
+| Settings, with no save, with a save, and over a game | Fits | Fits |
+| The chapters, on a new phone | Fits | Fits, to the pixel |
+| The chapters, with a game saved | Scrolls by the note that says what the lesson does to the save, his sentence of 17 October | The same, 745 |
+| How to play's index | Fits | Fits |
+| The Cells view | Seven chips in one row, the middle not scrolling | The same |
+| The Result | Held by the audit at 780; not measured by hand here | |
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, English and then Hindi, on this build | 82 beats of 82 each, every card counted, handed over at turn 8 of 15, no error |
+| The Gate 1 audit, alone, on this build (24 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one); **each of the seven named screens fits, 0 px over**; every check at zero over 903 controls and 2,039 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; offline met, with no request failed; 50 controls of the audit's own, the three new ones among them. A row's several targets was reached in every pass. Not reached: playing together, which this run did not ask for |
+
+**Unruled, and his to overrule:** the state words on the chapters; chapter 7's shorter name; that
+the delete row is hidden rather than drawn flat; *What happened* as a line and not a button.
+
+### Piece 4: the small things
+
+| Where | Was | Is |
+|---|---|---|
+| **The menu's Quit** | A press asked *Quit?* under a note that the game is saved: a confirm that protected nothing | The row says *Your game is saved* under its name, and a press quits. In a game together *Back to the title* says *Your seats wait for you* and goes at once. *Leave the game* still asks first: it is the one that cannot be undone |
+| **The spread's button** | Coral, the colour of the one step a player must take, saying *Tap to continue* | A resting button, *Tap to skip ahead*. The spread moves on by itself, and a tap skipped a beat a newcomer was meant to watch |
+| **A tapped step** | A row for every invader: six Tuberculosis after division were six identical rows, 468 px in a 218 px middle | One row for those alike in everything the row says and offers, with their number (×6). Two that differ in anything, a coat, a wound, a stage, what is offered against them, stay two rows |
+| **Between chapters** | Two cards, each wanting a tap: the last chapter is done; what the next is about | One card that says both, and *Next chapter* goes to the next chapter's first step. A chapter opened from the chapters screen still begins with its own card |
+
+**What it does to the lesson's count.** A chapter's opening card is met only from the chapters
+screen now, so it is no longer a step: counted, a chapter would be *Step 1 of 13* from the chapters
+and *Step 2 of 13* after *Next chapter*. The lesson is **76 cards, by chapter 16, 12, 7, 15, 5, 11
+and 10**, where it was 82 (§29). The card that says a chapter is done shows what the next one
+talks about (Hepatitis B and C; Candida; Botulism and Snake venom), as the opening card did.
+
+**The sentences.** Four left both catalogues (the two confirms' notes and buttons) and two came,
+each in English and Hindi: *Your game is saved* (आपका खेल सहेजा हुआ है) and *Your seats wait for
+you* (आपकी सीटें आपका इंतज़ार करती हैं). *Tap to continue* is *Tap to skip ahead* (आगे कूदने के लिए
+टैप करें). The lesson's own sentences are his of 17 October and are not changed: the card between
+chapters says two of them, one under the other.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, English and then Hindi, at 360 by 641 | 76 beats of 76 each, every card counted (to Step 16 of 16, 12 of 12, 7 of 7, 15 of 15, 5 of 5, 11 of 11 and 10 of 10); each card that says a chapter is done says what the next is about, and no other card says a second sentence; **every card is read whole, none scrolls inside itself**; 53 cards talk about something, each found on the page; handed over at turn 8 of 15; no error |
+| The built app in a browser on the PC, at 360 by 697 | The menu: Resume, How to play, Settings, and *Quit to title* with *Your game is saved* under it, 55 px tall. A press: the title at once, and Continue brought the game back. The spread's button: cream, *Tap to skip ahead*. Chapter 1's end: both sentences, *Step 16 of 16*, Hepatitis B and C lit, the card 295 px and wholly on the screen; *Next chapter* went to the Helper T-Cell's step, *Step 1 of 12* |
+| The Gate 1 audit, alone, on this build (25 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one), the menu and the spread's frame among them; every check at zero over 902 controls and 2,038 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; the seven named screens each 0 px over; offline met, with no request failed; 50 controls of the audit's own. Not reached: playing together, which this run did not ask for. Not among its screens: the card between chapters, which the walk holds at 100% text and nothing holds at 200% |
+| `pnpm update:check`, which pressed the confirm that is gone | Passed, with the one press: in a game the older build was kept with the newer one waiting, and Quit took the newer one on the title in 1.3 s; in a game alone the menu said a newer version was ready, and its Update now brought it |
+
+**Found on the way, in the instruments, and fixed here.** The audit and the update check each
+pressed *Quit* and then its confirm, and the audit knew the menu by the words on its Quit button,
+which now has two lines. Both press the row by its hook and expect the title; the audit's screen
+*pause menu, back to the title confirm* is gone with the confirm.
+
+**Held.** The menu's test presses each row through a stand-in for the kit's button, since the
+package has no page to press on. Controls, each fired: `pause-quit-asks-nothing`,
+`spread-button-is-quiet`, `inspect-sheet-gathers-what-is-alike` and
+`inspect-sheet-keeps-apart-what-differs` (both halves of the grouping), `guide-one-card-between-chapters`,
+`guide-chapter-end-says-the-next`, `guide-opening-card-is-not-a-step`; and on the built app, by the
+walk, `guide-walk-chapter-end-says-the-next` and `guide-walk-card-is-read-whole`.
+
+**Not seen:** a step with six alike in a real game, which needs the dice; the grouping is held by
+its test on the sheet's own markup. A game played together, where *Back to the title* goes at
+once: the audit's walk of it was not run. **Not played on a phone.**
+
+**Unruled, and his to overrule:** the two notes' words; *Tap to skip ahead*; that the note stands
+under the name on the same button; that a chapter's opening card is not counted.
+
+### Piece 3 is not built
+
+Ruled with the others (*"3. Agree"*): planning folded into the cards' button alone, with the body
+under a tab, and the goal on turn 1. Reading the code before building it found it larger than it
+was put to him as, so it is put to him again and not built:
+
+- **The Body tile is not the body.** It opens the panel of antivenom and vaccines. The figure
+  planning draws would need a view of its own.
+- **Seven cards leave the lesson:** each turn's *plan* card lights the body in planning.
+- **The audit holds the play area to one height across four stages,** planning among them, and
+  walks four planning screens.
+
+Recommended: after the interview, as its own pull request, with the figure under a new tab.
+
+## 34. Ruled 25 November 2026: the Hindi face is bundled, the Hindi stands, and accessibility
+
+Three things were open when piece 2 went up, each put with a recommendation. He answered:
+
+> *"Bundle the font - yes / Strings re fine / yes do the check and the screen reader"*
+
+| What was put | His ruling | What follows |
+|---|---|---|
+| Bundling a Devanagari font with the app, which is a download | **Yes** | Built, below |
+| The Hindi strings, which he and Kartik had not read, with the library's 628 named as the ones to read first | ***"Strings re fine"*** | They stand as they are, and §32's register is no longer unruled. Whether each was read is not recorded, and nothing here says it was |
+| Accessibility: a colour-blindness check as a standing test, then screen reader support | **Yes, both** | Not built here ([`TODO.md`](TODO.md) row 17) |
+
+### What the accessibility question was, and what was answered
+
+He asked, on 24 November, what could be done for players who cannot see, who cannot hear, or both,
+and how games usually do it. What he was told, and what the game was found to be:
+
+| Who | Where the game stands |
+|---|---|
+| Deaf or hard of hearing | **Nothing is lost.** There is no speech and no voice chat, and every sound goes with something drawn. That is by design; no check holds it |
+| Low vision | Partly covered, by Gate 1's own items: contrast, 44 px targets, text to 200%, less motion, no time limit |
+| Colour blind | **A first reading, below.** On the board a piece's colour is its antigen class |
+| Blind, and deafblind | **Cannot play it.** The board's pictures have names, but a tap on the board is read by its position, so a screen reader cannot choose where a cell moves, and nothing speaks what the spread did. A deafblind player's way in is the same one: a braille display is driven by the screen reader |
+
+**The first reading on colour.** The content pack's six class colours were put through a
+simulation of the three kinds of colour blindness (Machado, Oliveira and Fernandes 2009, at full
+severity) and the difference between each pair measured (CIE76: about 2 is the least an eye can
+tell between two swatches laid side by side; small pieces standing apart on a board need far more).
+
+| | The closest pairs | The two pairs that share a shape: the viruses (ENV, NAK) and the bacteria (EXB, ICB) |
+|---|---|---|
+| Full colour vision | EXB and TOX 26; ENV and NAK 35 | 35 and 64 |
+| Red-blind (protan) | EXB and TOX 13; NAK and EXB 13 | 38 and 64 |
+| Green-blind (deutan), the commonest | **NAK and TOX 7; EXB and TOX 11; NAK and EXB 13; ENV and EXB 14** | 25 and 62 |
+| Blue-blind (tritan), rare | ENV and NAK 19; ICB and TOX 21 | 19 and 40 |
+
+- **What it says:** to the commonest kind of colour blindness four classes come within 7 to 14 of
+  each other, where with full colour vision the closest two are 26 apart; what tells those four
+  apart is the piece's shape. The two pairs that have one shape stay 25 and 62 apart.
+- **What it is not:** it is the palette, not the pieces as Blender lights them, and it is one run
+  of a script, not a standing check. The check ruled here is that reading taken from the rendered
+  pieces and held, with the class's code drawn wherever two would merge.
+
+**What was recommended, and is ruled:** the colour check first; then screen reader support as
+three pull requests (names and roles on every control; the spread and the log spoken as they
+happen, in the sentences the catalogues already have in both languages; the board offered as a
+list by place, with a cell's destinations as buttons). **Not recommended, and not ruled:** a
+narration of the game's own, since the phone's screen reader already speaks in the voice and at
+the speed its user has chosen.
+
+- **The brief left screen readers out until someone asked** ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md)
+  §1, with its condition for bringing them back). He has asked. The brief is brought level when
+  the first of it is built.
+- **What may be said until then:** built to the contrast and text-size standard, playable in full
+  without sound, no time pressure. **Not** that it supports blind players: that waits for someone
+  using TalkBack to have finished a game.
+
+### Built: the Hindi edition's own face
+
+Nunito has no Devanagari, so Hindi was drawn in whatever each phone had. The app now brings one.
+
+| | |
+|---|---|
+| The face | Noto Sans Devanagari, variable weight, its Devanagari subset: 121,192 bytes, under the SIL Open Font License, its licence beside it. **Not made here:** taken unchanged from the npm package `@fontsource-variable/noto-sans-devanagari` 5.3.0 ([`ASSETS.md`](ASSETS.md)) |
+| Where it is declared | On the app's page, under the name the kit's family already asked for second. Kept to its script by its range, so it is fetched only where Devanagari is drawn; in English that is the Language row's own word for Hindi |
+| Its weights | Declared 400 to 700, as Nunito's are, so a bold word is as bold in either script |
+| Offline | The worker stores it: a phone holds 139 files, 3.38 MB, of which this is 0.12. The Android app's build has it too |
+
+| Seen, on the PC | Found |
+|---|---|
+| `pnpm guide:walk --build --lang hi`, which now asks Chrome which fonts drew the title's button | Noto Sans Devanagari, 9 glyphs, and Nunito for the space: both faces the page loaded itself, none the machine's own. 82 beats of 82, handed over at turn 8 of 15, no error |
+
+- **Why the walk asks.** A face that fails to load is an error nowhere: the words are drawn in the
+  machine's own font and look right on any PC that has one. Only asking what was drawn shows it.
+- **Held:** the build's test requires every font the page names to be built and stored by the
+  worker, and the Devanagari face to be kept to its script. Controls, each fired:
+  `app-fonts-in-the-worker` (the fonts left out of what the worker stores: the test fails naming
+  the font) and `guide-walk-hindi-in-the-bundled-face` (the face declared under a name the kit
+  does not ask for: the walk fails saying what the button was drawn in).
+- **Not done:** the kit page, the measuring page and the developer's page do not declare it. **Not
+  seen on a phone.**
