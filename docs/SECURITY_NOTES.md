@@ -664,7 +664,16 @@ that listens:** not the relay, and not the app, which ships none of it. Drop the
 | `pnpm audit`, after | 2 moderate: `glob` 11.1.0 and `minimatch` 10.2.6, both by `workbox-build` alone |
 | The lockfile | `fast-uri` 3.1.9; `serialize-javascript` 7.1.4; `@vitest/mocker` 4.1.12; `rimraf` 6.1.4 with `glob` 14.0.6 |
 
-**The toolchain battery** (`CLAUDE.md`, "Known issues") is owed by the runner's move and is run
-before this merges, on the PC; its result is in this pull request's description.
+**The toolchain battery** (`CLAUDE.md`, "Known issues"), owed by the runner's move, run on the PC
+before this merged, 25 November 2026, every part's own lines read:
+
+| Part | Found |
+|---|---|
+| `pnpm verify` | Passed |
+| The full self-test, read control by control | 286 of 286 behaved: red where each must be, green where each must be. The working tree clean after |
+| The manifest's controls | 7 run, each firing on exactly the assertions it targets; the manifest restored byte for byte |
+| Coverage from scratch, and its gate | Coverable branch coverage 97.49%, of a 95% target; 47 coverable arms uncovered; the gate passes |
+| Two forced test runs | 18 tasks of 18 each time, every one on vitest 4.1.12 |
+| The working tree after | No file changed |
 
 > ### The property, re-read 25 November 2026: no open advisory is in a process that listens. Two are open, both in the one-shot build, both accepted above.
