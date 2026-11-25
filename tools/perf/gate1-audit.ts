@@ -143,7 +143,8 @@ interface Finding {
     | 'offline'
     | 'occlusion'
     | 'playArea'
-    | 'scroll';
+    | 'scroll'
+    | 'name';
   screen: string;
   path: string;
   text: string;
@@ -163,6 +164,12 @@ interface ScreenResult {
   /** The base pass only: how far the page is taller than the screen while the play screen is at
    *  rest (its stage shown, nothing open over it); null on any other screen. */
   rest?: { overflow: number } | null;
+  /** The base pass only: how far the page is taller than the screen on ANY screen, for the ones
+   *  `ONE_SCREEN` requires to fit (Gate 2's polish, piece 2; docs/LOOK_PLAN.md §33). */
+  page?: { overflow: number } | null;
+  /** The base pass only: how many controls, pictures and dialogs Chrome's accessibility tree
+   *  held on this screen, each of which was required to have a name. */
+  named?: number;
   findings: Finding[];
 }
 
@@ -467,7 +474,7 @@ const WHERE = `
   if (q('[data-screen=library]')) return 'library index';
   if (q('[data-screen=about]')) return 'about';
   if (q('[data-inspect-sheet]')) return 'inspect sheet';
-  if (button('Quit to title') || button('Leave the game')) return 'pause menu';
+  if (q('[data-pause=quit]') || button('Leave the game')) return 'pause menu';
   // PLAYING TOGETHER (P3.7): the way in and the lobby.
   if (q('[data-screen=lobby]')) return 'lobby';
   if (q('[data-screen=together]')) return 'together';
@@ -511,6 +518,14 @@ const REST_PROBE = `
   const shown = (s) => { const el = document.querySelector(s); return !!el && el.getClientRects().length > 0; };
   if (!shown('[data-command-stage]') && !shown('[data-screen=planning]')) return null;
   if (document.querySelector('[data-nav-close]')) return null;
+  const el = document.scrollingElement || document.documentElement;
+  return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
+})()
+`;
+
+/** How far the page is taller than the screen, on any screen at all. */
+const PAGE_PROBE = `
+(() => {
   const el = document.scrollingElement || document.documentElement;
   return { overflow: Math.max(0, Math.round(el.scrollHeight - window.innerHeight)) };
 })()
@@ -805,6 +820,52 @@ function restFindings(records: readonly { screen: string; overflow: number }[]):
     }));
 }
 
+/**
+ * THE SCREENS THAT ARE ONE SCREEN (Gate 2's polish, piece 2, ruled 24 November 2026; docs/LOOK_PLAN.md
+ * §33). The October survey found these scrolling at 100% on his phone and each was redrawn to fit;
+ * without this, nothing says whether that held next month. On the base pass (360 x 780, Standard
+ * text) each must not be taller than the screen, with the 1px tolerance the rest check has. A
+ * named screen the run never measured is NOT REACHED, never clean. The play screen's own stages
+ * are the rest check's business, not this one's.
+ */
+const ONE_SCREEN: readonly string[] = [
+  'settings, no save',
+  'settings, with a save',
+  'guided game: its chapters, on a new phone',
+  'guided game: its chapters, the first done',
+  'result',
+  'help, index',
+  'view: cells',
+];
+
+function oneScreenFindings(
+  records: readonly { screen: string; overflow: number }[],
+  required: readonly string[] = ONE_SCREEN,
+): Finding[] {
+  const out: Finding[] = [];
+  for (const name of required) {
+    const r = records.find((x) => x.screen === name);
+    if (!r) {
+      out.push({
+        check: 'scroll',
+        screen: name,
+        path: '',
+        text: '',
+        detail: 'NOT REACHED: a screen required to be one screen was not measured',
+      });
+    } else if (r.overflow > 1) {
+      out.push({
+        check: 'scroll',
+        screen: name,
+        path: '',
+        text: '',
+        detail: `required to be one screen, and scrolls ${String(r.overflow)}px`,
+      });
+    }
+  }
+  return out;
+}
+
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Waits for a button by its exact text without clicking it; false when it never comes. */
@@ -881,6 +942,92 @@ const progress = (pass: string, screen: string): void => {
   if (PROGRESS) console.error(`  .. ${pass}: ${screen}`);
 };
 
+/**
+ * NAMES, FOR A SCREEN READER (ruled 25 November 2026; docs/LOOK_PLAN.md §34 and §36). A player
+ * who cannot see the screen is read it by TalkBack or VoiceOver, and what they are read is the name
+ * of each thing, as the browser works it out. A button drawn as a picture with no name is read as
+ * "button" and nothing more.
+ *
+ * So the names are taken from where the screen reader takes them: Chrome's own accessibility tree,
+ * not this script's idea of it. On every screen of the base pass, each control, each picture that
+ * is not marked as decoration and each dialog must have a name there, and the page must say what
+ * language it is in, which is how a screen reader picks its voice.
+ *
+ * What it does not hold: that a name is a GOOD name, or that anything is said in a sensible order.
+ * Those need a person listening.
+ */
+const NAMED_ROLES = new Set([
+  'button',
+  'link',
+  'textbox',
+  'searchbox',
+  'combobox',
+  'listbox',
+  'option',
+  'checkbox',
+  'radio',
+  'switch',
+  'slider',
+  'spinbutton',
+  'tab',
+  'menuitem',
+  'image',
+  'dialog',
+  'alertdialog',
+]);
+async function names(page: Page): Promise<{ read: number; findings: Omit<Finding, 'screen'>[] }> {
+  const cdp = await page.createCDPSession();
+  const findings: Omit<Finding, 'screen'>[] = [];
+  let read = 0;
+  try {
+    await cdp.send('DOM.enable');
+    await cdp.send('Accessibility.enable');
+    const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+    for (const node of nodes) {
+      const role = String((node.role?.value as string | undefined) ?? '');
+      if (node.ignored || !NAMED_ROLES.has(role)) continue;
+      read += 1;
+      const name = String((node.name?.value as string | undefined) ?? '').trim();
+      if (name !== '') continue;
+      // Which element it is, by its own tag and the hooks on it: the tree knows it by a number.
+      let path = role;
+      if (node.backendDOMNodeId !== undefined) {
+        const described = await cdp
+          .send('DOM.describeNode', { backendNodeId: node.backendDOMNodeId })
+          .catch(() => null);
+        const attrs = described?.node.attributes ?? [];
+        const hooks: string[] = [];
+        for (let i = 0; i + 1 < attrs.length; i += 2) {
+          const key = attrs[i] ?? '';
+          if (key.startsWith('data-') || key === 'role' || key === 'src')
+            hooks.push(`[${key}="${(attrs[i + 1] ?? '').slice(0, 60)}"]`);
+        }
+        path = `${described?.node.localName ?? role}${hooks.join('')}`;
+      }
+      findings.push({
+        check: 'name',
+        path,
+        text: '',
+        detail:
+          role === 'image'
+            ? 'a picture with no name, and not marked as decoration'
+            : `a ${role} with no name: a screen reader says "${role}" and nothing more`,
+      });
+    }
+    const lang = (await page.evaluate(`document.documentElement.lang`)) as string;
+    if (lang.trim() === '')
+      findings.push({
+        check: 'name',
+        path: 'html',
+        text: '',
+        detail: 'the page does not say its language, so a screen reader guesses its voice',
+      });
+  } finally {
+    await cdp.detach().catch(() => undefined);
+  }
+  return { read, findings };
+}
+
 async function audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
   progress('base', screen);
   const r = (await page.evaluate(AUDITOR)) as {
@@ -891,13 +1038,17 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
   const o = (await page.evaluate(OCCLUSION_AUDITOR)) as { findings: Omit<Finding, 'screen'>[] };
   const playArea = (await page.evaluate(PLAY_AREA_PROBE)) as ScreenResult['playArea'];
   const rest = (await page.evaluate(REST_PROBE)) as ScreenResult['rest'];
+  const pageFit = (await page.evaluate(PAGE_PROBE)) as ScreenResult['page'];
+  const named = await names(page);
   results.push({
     screen,
     controls: r.controls,
     textRuns: r.textRuns,
     playArea,
     rest,
-    findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
+    page: pageFit,
+    named: named.read,
+    findings: [...r.findings, ...o.findings, ...named.findings].map((f) => ({ ...f, screen })),
   });
 }
 
@@ -1380,28 +1531,17 @@ async function walk(
   if (await waitFor(page, 'Plan your turn', 8000)) {
     await sleep(300);
     await step(page, 'arrivals', results);
-    // A CARD TURNS OVER (piece 6, §20), and its card icon opens the pathogen card from the back,
-    // which closes back to the stage (ruling 9). A draw of novel arrivals alone offers no card.
-    if (await clickSel(page, '[data-arrival]')) {
-      await sleep(250);
-      await step(page, 'arrivals, a card turned over', results);
-      if (await clickSel(page, '[data-arrival-card]')) {
-        await sleep(300);
-        await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
-      } else {
-        nestNotReached(
-          nesting,
-          'Arrivals card → pathogen card',
-          'the card that turned over is novel',
-        );
-      }
+    // A TAP ON A CARD OPENS THE PATHOGEN CARD (Gate 2's polish, docs/LOOK_PLAN.md §33; until then
+    // a card turned over first), which closes back to the stage (ruling 9). A draw of novel
+    // arrivals alone offers no card: a novel card is not a button.
+    if (await clickSel(page, '[data-arrival-card]')) {
+      await sleep(300);
+      await nest(page, nesting, 'Arrivals card → pathogen card', 'arrivals');
     } else {
-      results.push(notReached('arrivals, a card turned over', 'no card to turn over'));
-      nestNotReached(nesting, 'Arrivals card → pathogen card', 'no card to turn over');
+      nestNotReached(nesting, 'Arrivals card → pathogen card', 'every card of the draw is novel');
     }
   } else {
     results.push(notReached('arrivals', 'no draw followed Begin: the draw did not happen'));
-    results.push(notReached('arrivals, a card turned over', 'the stage was not reached'));
     nestNotReached(nesting, 'Arrivals card → pathogen card', 'the stage was not reached');
   }
   await click(page, 'Plan your turn');
@@ -1720,9 +1860,8 @@ async function walk(
   // resumes the game for the walk to the Result.
   await clickSel(page, '[data-menu]');
   await sleep(200);
-  await click(page, 'Quit to title');
-  await sleep(200);
-  await click(page, 'Quit');
+  // Quit asks nothing since Gate 2's polish (piece 4): one press, and the title.
+  await clickSel(page, '[data-pause="quit"]');
   await sleep(400);
   if (await click(page, 'Settings')) {
     await sleep(200);
@@ -2092,7 +2231,6 @@ async function walkTogether(
     'table, captain',
     'pause menu, together',
     'pause menu, leave confirm',
-    'pause menu, back to the title confirm',
     'play, connection lost',
     'title, a room to rejoin',
     'together, rejoin',
@@ -2277,10 +2415,8 @@ async function walkTogether(
     await until(page, `!!document.querySelector('[data-pause="leave-confirm"]')`);
     await at(page, 'pause menu, leave confirm');
     await click(page, 'Stay');
-    await clickSel(page, '[data-pause="quit"]');
-    await until(page, `!!document.querySelector('[data-pause="quit-confirm"]')`);
-    await at(page, 'pause menu, back to the title confirm');
-    await click(page, 'Stay');
+    // Back to the title acts at once since Gate 2's polish (piece 4): it is not pressed here, where
+    // the walk goes on in the room.
     await click(page, 'Resume');
     // This device's connection drops: the sheet, at once. The captaincy passes to the helper.
     await page.evaluate(`window.__sockets.at(-1).close()`);
@@ -3058,6 +3194,61 @@ async function controls(page: Page): Promise<string[]> {
   await unplant();
 
   // ------------------------------------------------------------------------------------------
+  // NAMES (docs/LOOK_PLAN.md §36): a button with a picture and no name, a picture with no
+  // alternative and a dialog with no name must each be flagged; the same three named, and a picture
+  // marked as decoration, must not be. Read through Chrome's accessibility tree, as the walk is.
+  // ------------------------------------------------------------------------------------------
+  const DOT = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  await page.evaluate(`(() => {
+    const ground = document.createElement('div');
+    ground.setAttribute('data-control', 'ground');
+    ground.innerHTML = [
+      '<button data-control="button-bare"><img alt="" src="${DOT}"></button>',
+      '<button data-control="button-labelled" aria-label="planted label"><img alt="" src="${DOT}"></button>',
+      '<button data-control="button-pictured"><img alt="planted picture" src="${DOT}"></button>',
+      '<img data-control="picture-bare" src="${DOT}">',
+      '<img data-control="picture-named" alt="planted alternative" src="${DOT}">',
+      '<img data-control="picture-decoration" alt="" src="${DOT}">',
+      '<div role="dialog" data-control="dialog-bare">planted</div>',
+      '<div role="dialog" aria-label="planted dialog" data-control="dialog-named">planted</div>',
+    ].join('');
+    document.body.prepend(ground);
+  })()`);
+  const planted = await names(page);
+  const flagged = (id: string): boolean =>
+    planted.findings.some((f) => f.path.includes(`[data-control="${id}"]`));
+  line('name fires: a button with a picture and no name is flagged', flagged('button-bare'));
+  line(
+    'name passes: the same button with a label is NOT flagged',
+    !flagged('button-labelled') && planted.read > 0,
+  );
+  line(
+    'name passes: a button named by its picture’s alternative is NOT flagged',
+    !flagged('button-pictured'),
+  );
+  line('name fires: a picture with no alternative is flagged', flagged('picture-bare'));
+  line('name passes: a picture with one is NOT flagged', !flagged('picture-named'));
+  line(
+    'name passes: a picture marked as decoration is NOT flagged',
+    !flagged('picture-decoration'),
+  );
+  line('name fires: a dialog with no name is flagged', flagged('dialog-bare'));
+  line('name passes: a dialog with one is NOT flagged', !flagged('dialog-named'));
+  const langWas = (await page.evaluate(`document.documentElement.lang`)) as string;
+  await page.evaluate(`document.documentElement.removeAttribute('lang')`);
+  const mute = await names(page);
+  line(
+    'name fires: a page that does not say its language is flagged',
+    mute.findings.some((f) => f.path === 'html'),
+  );
+  await page.evaluate(`document.documentElement.lang = ${JSON.stringify(langWas)}`);
+  line(
+    'name passes: a page that says its language is NOT flagged',
+    !planted.findings.some((f) => f.path === 'html'),
+  );
+  await unplant();
+
+  // ------------------------------------------------------------------------------------------
   // NESTING (docs/for-P2.7.md §9, ruling 9): the landing check must report a close that went too
   // far and pass one that went exactly one level. How to play, section 1; the planted defect
   // closes TWICE while expecting the index, lands on the title, and must be reported. The same
@@ -3136,6 +3327,24 @@ async function controls(page: Page): Promise<string[]> {
   line(
     'scroll fires: a run that measured no screen at rest is NOT REACHED, never clean',
     restFindings([]).some((f) => f.detail.startsWith('NOT REACHED')),
+  );
+  // THE SCREENS REQUIRED TO BE ONE SCREEN (§33): a named screen taller than the screen is reported
+  // by name, one within the tolerance is not, and one the run never measured is NOT REACHED.
+  line(
+    'one screen fires: a required screen taller than the screen is reported, by name',
+    oneScreenFindings([{ screen: 'result', overflow: 40 }], ['result']).some(
+      (f) => f.screen === 'result' && f.detail.includes('40px'),
+    ),
+  );
+  line(
+    'one screen passes: a required screen that fits, to the pixel, is NOT reported',
+    oneScreenFindings([{ screen: 'result', overflow: 1 }], ['result']).length === 0,
+  );
+  line(
+    'one screen fires: a required screen the run never measured is NOT REACHED, never clean',
+    oneScreenFindings([{ screen: 'other', overflow: 0 }], ['result']).some((f) =>
+      f.detail.startsWith('NOT REACHED'),
+    ),
   );
 
   // RESUME (docs/for-P2.7.md §12): the landing check on a resumed game must report one that lands
@@ -3567,6 +3776,20 @@ try {
         heights: [...new Set(areaRecords.map((r) => r.height))],
         findings: playAreaFindings(areaRecords),
       };
+  // The screens required to be one screen, over the base pass (§33).
+  const pageRecords = results.flatMap((r) =>
+    r.page ? [{ screen: r.screen, overflow: r.page.overflow }] : [],
+  );
+  const oneScreen = offlineOnly
+    ? null
+    : {
+        required: ONE_SCREEN,
+        overflows: ONE_SCREEN.map((name) => {
+          const r = pageRecords.find((x) => x.screen === name);
+          return `${name}: ${r ? String(r.overflow) : 'NOT REACHED'}`;
+        }),
+        findings: oneScreenFindings(pageRecords),
+      };
   const out = {
     url: URL,
     when: new Date().toISOString(),
@@ -3580,6 +3803,7 @@ try {
     nesting,
     playArea,
     mainScreen,
+    oneScreen,
     offline: off,
     totals: {
       controlsMeasured: results.reduce((n, s) => n + s.controls, 0),
@@ -3595,6 +3819,8 @@ try {
       scaleSize200: count(size200, 'scale'),
       layoutSize200: count(size200, 'layout'),
       sizeSize200: count(size200, 'size'),
+      namesRead: results.reduce((n, s) => n + (s.named ?? 0), 0),
+      name: count(results, 'name'),
       occlusion: count(results, 'occlusion'),
       occlusionFont200: count(font200, 'occlusion'),
       occlusionZoom200: count(zoom200, 'occlusion'),
@@ -3604,6 +3830,7 @@ try {
       nestingNotReached: nesting.filter((n) => n.actual === 'NOT REACHED').length,
       playAreaFindings: playArea ? playArea.findings.length : null,
       mainScreenScrollFindings: mainScreen ? mainScreen.findings.length : null,
+      oneScreenFindings: oneScreen ? oneScreen.findings.length : null,
       offlineMet: off['met'],
     },
   };

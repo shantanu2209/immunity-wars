@@ -216,6 +216,37 @@ describe('both entries build', { timeout: 180_000 }, () => {
     expect(missing, `THE WORKER DOES NOT STORE AN ICON: ${missing.join(', ')}`).toEqual([]);
   });
 
+  // THE FONTS ARE STORED (the Hindi edition's own face, ruled bundled on 25 November 2026;
+  // docs/LOOK_PLAN.md §34). The page names each face by its file. A face whose file is not built is
+  // text in whatever the phone has, and one the worker does not store is that with no network, which
+  // for Hindi is the whole edition. And the Devanagari face is held to its script, so that it is
+  // fetched only where Devanagari is drawn. Control: pnpm ci:selftest app-fonts-in-the-worker.
+  it('every font the page names is built, stored by the worker, and the Hindi one kept to its script', () => {
+    const worker = readFileSync(join(out, 'sw.js'), 'utf8');
+    const stored = [...worker.matchAll(/["']?url["']?:\s*["']([^"']+)["']/g)].map(
+      (m) => m[1] ?? '',
+    );
+    const page = readFileSync(join(out, 'index.html'), 'utf8');
+    const faces = [...page.matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1] ?? '');
+    const fileOf = (face: string): string => /url\(['"]?\/?([^'")]+)['"]?\)/.exec(face)?.[1] ?? '';
+    const named = faces.map(fileOf);
+    // Read the coverage: a page read as naming no font would pass every line below.
+    expect(named.length, 'THE PAGE NAMES NO FONT').toBe(2);
+    for (const font of named)
+      expect(existsSync(join(out, font)), `A FONT THE PAGE NAMES IS NOT BUILT: ${font}`).toBe(true);
+    const missing = named.filter((font) => !stored.includes(font));
+    expect(missing, `THE WORKER DOES NOT STORE A FONT: ${missing.join(', ')}`).toEqual([]);
+    const hindi = faces.find((f) => f.includes('Noto Sans Devanagari')) ?? '';
+    expect(hindi, 'THE PAGE HAS NO DEVANAGARI FACE').not.toBe('');
+    expect(
+      // The build writes the range its own way (U+900-97F), so it is read either way.
+      /unicode-range:[^;}]*U\+0?900-0?97F/i.test(hindi),
+      'THE DEVANAGARI FACE IS NOT KEPT TO ITS SCRIPT',
+    ).toBe(true);
+    // And its licence goes with it, as the Open Font License asks.
+    expect(existsSync(join(out, 'fonts', 'OFL-NotoSansDevanagari.txt'))).toBe(true);
+  });
+
   // THE PRIVACY PAGE IS STORED (ruled 3 October 2026): Google Play links to /privacy.html. A page the
   // worker does not store it answers with the app (its navigation fallback), so a phone that had
   // opened the game would be shown the title instead of the policy. Control: pnpm ci:selftest

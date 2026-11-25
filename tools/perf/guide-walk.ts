@@ -69,15 +69,14 @@ function refuse(reason: string): never {
 
 /** The beats the lesson has, in its order, by the names the guide puts on the page. */
 function expectedBeats(): string[] {
-  // A chapter's cards (step 3): the last one done, then what the next is about, just before the
-  // step the next begins at; for a chapter that begins a turn, before that turn's cards are drawn.
+  // ONE CARD BETWEEN CHAPTERS (Gate 2's polish, piece 4; LOOK_PLAN §33): the card that says the last
+  // one is done, which carries what the next is about, just before the step the next begins at;
+  // for a chapter that begins a turn, before that turn's cards are drawn. Next chapter goes from
+  // it to the next chapter's first step.
   const cards = (from: string): string[] => {
     const c = LESSON.chapters.findIndex((ch) => ch.from === from);
     if (c < 1) return [];
-    return [
-      `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`,
-      `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`,
-    ];
+    return [`chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`];
   };
   const out: string[] = [];
   LESSON.turns.forEach((turn, i) => {
@@ -111,8 +110,9 @@ function expectedCounts(beats: readonly string[]): string[] {
   const chapterOf: number[] = [];
   let c = 0;
   for (const b of beats) {
-    if (b.startsWith('chapter.') && b.endsWith('.intro')) c += 1;
     chapterOf.push(c);
+    // The card after the one that says a chapter is done is the next chapter's first.
+    if (b.startsWith('chapter.') && b.endsWith('.done')) c += 1;
   }
   const say = (LANG === 'hi' ? UI_I18N_HI : UI_I18N_EN)['guide.count'] ?? '';
   return beats.map((_, i) => {
@@ -128,6 +128,10 @@ interface Look {
   showing: number;
   /** The rings drawn round what is shown. */
   drawn: number;
+  /** The card carries a second sentence: at a chapter's end, what the next is about. */
+  also: boolean;
+  /** How far the card's own content runs past the card, in px: it would have to be scrolled. */
+  cardOver: number;
   /** What a finger at the middle of a shown thing would press, when it is not the guide. */
   pressedThrough: string;
   lit: boolean;
@@ -146,6 +150,11 @@ const LOOK = `(() => {
     shows: g ? Number(g.getAttribute('data-guide-shows')) : 0,
     showing: g ? Number(g.getAttribute('data-guide-showing')) : 0,
     drawn: document.querySelectorAll('[data-guide-shown]').length,
+    also: document.querySelector('[data-guide-also]') !== null,
+    cardOver: (() => {
+      const c = document.querySelector('[data-guide-card]');
+      return c ? Math.max(0, c.scrollHeight - c.clientHeight) : 0;
+    })(),
     pressedThrough: [...document.querySelectorAll('[data-guide-shown]')]
       .map((r) => {
         const b = r.getBoundingClientRect();
@@ -224,6 +233,10 @@ try {
   let through = '';
   /** A card that drew more rings than it shows things. */
   let stale = '';
+  /** A card that says a second sentence and should not, or should and does not. */
+  let alsoWrong = '';
+  /** The card whose content ran furthest past it, and by how much. */
+  let scrolled = { beat: '', over: 0 };
   let handedTurn = '';
   let guideGone = false;
   try {
@@ -257,6 +270,39 @@ try {
       .catch(() => false);
     if (!offered)
       refuse('the title of a phone that has never played does not offer the guided game');
+    if (LANG === 'hi') {
+      // HINDI IS DRAWN IN THE FACE THE APP BRINGS (ruled bundled, 25 November 2026; LOOK_PLAN §34).
+      // A face that fails to load is not an error anywhere: the words are drawn in whatever the
+      // machine has, and look right on a PC that has a Devanagari font. So Chrome is asked which
+      // fonts drew the title's button, and every one must be a face the page loaded itself.
+      // Control: pnpm ci:selftest guide-walk-hindi-in-the-bundled-face.
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+      const cdp = await page.createCDPSession();
+      await cdp.send('DOM.enable');
+      await cdp.send('CSS.enable');
+      const { root } = await cdp.send('DOM.getDocument');
+      const { nodeId } = await cdp.send('DOM.querySelector', {
+        nodeId: root.nodeId,
+        selector: '[data-title="learn"]',
+      });
+      const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+      await cdp.detach();
+      const drew = fonts.map(
+        (f) => `${f.familyName}${f.isCustomFont ? '' : ' (the machine’s own)'}`,
+      );
+      const bundled = fonts.find(
+        (f) => f.isCustomFont && /Noto Sans Devanagari/.test(f.familyName),
+      );
+      if (!bundled || fonts.some((f) => !f.isCustomFont))
+        refuse(
+          `HINDI IS NOT DRAWN IN THE BUNDLED FACE: the title’s button was drawn in ${drew.join(', ') || 'no font at all'}`,
+        );
+      console.log(
+        `GUIDE WALK: Hindi is drawn in the face the app brings: ${drew.join(', ')}; ${String(bundled.glyphCount)} glyphs of the title’s button in ${bundled.familyName}`,
+      );
+    }
     await page.evaluate(click('[data-title="learn"]'));
     await page
       .waitForFunction(() => document.querySelector('[data-screen="chapters"]') !== null, {
@@ -294,6 +340,16 @@ try {
         showing.set(s.beat, Math.max(showing.get(s.beat) ?? 0, s.showing));
       if (s.pressedThrough !== '' && through === '')
         through = `${String(s.beat)}: ${s.pressedThrough}`;
+      // ONE CARD BETWEEN CHAPTERS (Gate 2's polish, piece 4): the card that says a chapter is done
+      // says what the next is about, and no other card says a second sentence.
+      if (s.beat !== null && alsoWrong === '') {
+        const ends = s.beat.startsWith('chapter.') && s.beat.endsWith('.done');
+        if (ends && !s.also) alsoWrong = `${s.beat} DOES NOT SAY WHAT THE NEXT CHAPTER IS ABOUT`;
+        if (!ends && s.also)
+          alsoWrong = `${s.beat} says a second sentence, and is not a chapter’s end`;
+      }
+      if (s.beat !== null && s.cardOver > scrolled.over)
+        scrolled = { beat: s.beat, over: s.cardOver };
       if (s.beat !== null && s.drawn > s.showing && stale === '') {
         stale = `${s.beat}, ${String(s.drawn)} drawn and ${String(s.showing)} shown`;
       }
@@ -340,7 +396,9 @@ try {
       `THE CARD DOES NOT SAY WHICH STEP IT IS: ${expected[miscount] ?? ''} said "${counts[miscount] ?? ''}" and should say "${said[miscount] ?? ''}"`,
     );
   }
-  const lasts = said.filter((_, i) => expected[i + 1]?.endsWith('.intro') ?? true);
+  const lasts = said.filter(
+    (_, i) => (expected[i]?.endsWith('.done') ?? false) || i === said.length - 1,
+  );
   console.log(
     `GUIDE WALK: every card counted in its chapter; each chapter ends at ${lasts.join(', ')}`,
   );
@@ -352,6 +410,15 @@ try {
   }
   if (through !== '') refuse(`WHAT IS SHOWN CAN BE PRESSED: at ${through}`);
   if (stale !== '') refuse(`A RING IS LEFT ON WHAT NO CARD TALKS ABOUT: at ${stale}`);
+  if (alsoWrong !== '') refuse(`THE CARD BETWEEN CHAPTERS IS WRONG: ${alsoWrong}`);
+  // A CARD IS READ WHOLE (Gate 2's polish, piece 4): the card between chapters carries two
+  // sentences now, and a card whose words run past it must be scrolled inside itself on a screen
+  // where everything else is dimmed. At this walk's size and 100% text, none may.
+  if (scrolled.over > 1)
+    refuse(
+      `A CARD MUST BE SCROLLED TO BE READ: ${scrolled.beat} runs ${String(scrolled.over)} px past its card`,
+    );
+  console.log('GUIDE WALK: every card is read whole, none scrolls inside itself');
   console.log(
     `GUIDE WALK: ${String(showing.size)} cards talk about something, each found it on the page, and none of it can be pressed`,
   );
