@@ -122,25 +122,25 @@ async function walk(
     // A first visit: nothing kept.
     await fresh();
     await shoot('1-title');
-    // The guided game, past its goal dialog (whose one button is Begin), its light on the first step.
-    // Learn to play opens the chapters since 16 October 2026 (docs/LOOK_PLAN.md §29); on a first
-    // visit the one that can be played is the first.
+    // The guided game, its light on the first step. Learn to play opens the chapters since 16
+    // October 2026 (docs/LOOK_PLAN.md §29); on a first visit the one that can be played is the first.
+    // No goal dialog comes first since Gate 2's polish (piece 3, §37).
     await pressSel('[data-title="learn"]');
     await pressSel('[data-chapter-state="open"]');
-    await pressSel('[data-dialog-dismiss]');
     await sleep(3500);
     await shoot('2-guided-game');
-    // A game on Easy: the new cards, planning, and the board with the Monocyte in hand.
+    // A game on Easy: turn 1's new cards with the goal beside them, the body seen from outside (the
+    // Body tile's since piece 3, where planning had it), and the board with the Monocyte in hand.
     await fresh();
     await pressSel('[data-title="new"]');
     await pressSel('[data-new-game="training"]');
-    await pressSel('[data-dialog-dismiss]');
-    await waitFor('Plan your turn');
+    await waitFor('Command your cells');
     await sleep(1500);
     await shoot('3-new-cards');
-    await press('Plan your turn');
-    await shoot('4-planning');
     await press('Command your cells');
+    await pressSel('[data-tab="body"]');
+    await shoot('4-the-body');
+    await pressSel('[data-tab="body"]');
     await pressSel('[data-tab="pieces"]');
     await pressSel('[data-piece="cell:macrophage"]');
     await shoot('5-the-board');

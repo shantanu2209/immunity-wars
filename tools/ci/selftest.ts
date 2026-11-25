@@ -1755,6 +1755,35 @@ const CONTROLS: readonly Control[] = [
     expect: 'A NEW CARD DOES NOT SAY WHAT IT SHOWS',
   },
   {
+    id: 'sr-walk-the-goal-is-on-turn-1',
+    why: 'Gate 2’s polish, piece 3, ruled 24 and 25 November 2026 (LOOK_PLAN §37): a new game opened on a dialog to be answered before anything could be seen. Its three sentences are on turn 1’s middle card now, beside the new cards. With that card saying nothing of the goal, the walk must FAIL saying the goal is not read on turn 1.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace("const firstTurn = Number(game['turn']) === 1;", 'const firstTurn = false;'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE GOAL IS NOT READ ON TURN 1',
+  },
+  {
+    id: 'sr-walk-planning-is-folded-alone',
+    why: 'The same ruling: alone, planning was one more stop on every turn, between the new cards and the board. The cards’ button begins the command stage now; together, planning stays, being where the captain hands out the points. With the fold taken off, the walk must FAIL saying planning is not folded away.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) => t.replace('const folded = !p.together;', 'const folded = false;'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'PLANNING IS NOT FOLDED AWAY',
+  },
+  {
+    id: 'sr-walk-the-body-tile-draws-the-body',
+    why: 'The same ruling: the body seen from outside, which planning drew, is the Body tile’s now, in the play area with the panel of antivenom and vaccines below. With the figure not drawn there, the walk must FAIL saying the Body tile does not draw the body.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        "  const bodyFigure =\n    drawer === 'body' &&",
+        "  const bodyFigure =\n    false &&\n    drawer === 'body' &&",
+      ),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE BODY TILE DOES NOT DRAW THE BODY',
+  },
+  {
     id: 'guide-walk-hindi-in-the-bundled-face',
     why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
     file: 'packages/app/index.html',

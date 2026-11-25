@@ -15,12 +15,15 @@
  * WHAT IT HOLDS, so far (the first of the three parts §36 lists):
  *
  *  - the page says its language, which is how a screen reader picks its voice;
- *  - A LAYER THAT COVERS THE SCREEN IS ALL THERE IS: with the opening dialog, a pathogen's card,
- *    the game's menu or the messages open, the tree holds a dialog with a name, focus is in it,
+ *  - A LAYER THAT COVERS THE SCREEN IS ALL THERE IS: with a pathogen's card, the game's menu or the
+ *    messages open (and the opening dialog until Gate 2's polish, piece 3, put the goal on turn 1), the tree holds a dialog with a name, focus is in it,
  *    and nothing behind it is read: no button, no picture, no word. The one close that floats over
  *    every layer is kept, and is pressed here to close the card and the messages. When the layer
  *    goes, what was behind it is read again;
  *  - the turn is said in words ("Turn 1 of 15"), and its figure ("1/15") is not read;
+ *  - the goal is read on turn 1's card;
+ *  - alone, the new cards' button goes straight to the command stage, and the Body tile draws the
+ *    body, its organs read by name (Gate 2's polish, piece 3);
  *  - a new card is named by what it shows: its disease, its class by its name, and its way in.
  *
  * WHAT IT DOES NOT HOLD: that the names are good ones, that things are read in a sensible order,
@@ -29,7 +32,8 @@
  * the board to be offered as a list.
  *
  * Controls: pnpm ci:selftest sr-walk-a-layer-hides-what-is-behind, sr-walk-focus-goes-to-the-layer,
- * sr-walk-the-turn-is-said-in-words, sr-walk-a-new-card-says-what-it-shows.
+ * sr-walk-the-turn-is-said-in-words, sr-walk-a-new-card-says-what-it-shows,
+ * sr-walk-the-goal-is-on-turn-1, sr-walk-planning-is-folded-alone, sr-walk-the-body-tile-draws-the-body.
  */
 import { execSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -39,7 +43,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FAMILIES, UI_I18N_EN } from '@immunity-wars/content';
+import { FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
 import puppeteer, { type CDPSession, type Page } from 'puppeteer-core';
 
 const CHROME =
@@ -310,24 +314,22 @@ try {
       refuse(`THE PAGE DOES NOT SAY ITS LANGUAGE: it says "${lang}", and the game is in English`);
     console.log(`SR WALK: the page says its language (${lang})`);
 
-    // A NEW GAME ON EASY: the opening dialog is the first layer.
+    // A NEW GAME ON EASY. No dialog stands before it since Gate 2's polish (piece 3, LOOK_PLAN
+    // §37): the goal is said on turn 1's card, and is held below to be read there.
     await press(cdp, newGame);
     const easy = await until('the difficulty screen’s Easy is not in the tree', async () =>
       button(await told(cdp), (n) => n.startsWith(say('difficulty.training'))),
     );
     await press(cdp, easy);
-    const goal = await layerIsAll(page, cdp, say('goal.title'));
-    const begin = button(await told(cdp), (n) => n === say('goal.begin'));
-    if (!begin) refuse('the opening dialog has no Begin in the tree');
-    await press(cdp, begin);
-    await layerIsGone(cdp, goal.name);
-    const layers: string[] = [`"${goal.name}" (${String(goal.inside)} things read)`];
+    const layers: string[] = [];
 
     // THE TURN, in words.
     const turn = say('play.turnOf').replace('{n}', '1').replace('{max}', '15');
+    // Read once turn 1's cards are drawn: a new game's first view is the turn before its draw.
+    const via0 = say('arrivals.via').replace('{place}', '');
     const words = await until('the new cards did not come', async () => {
       const t = await told(cdp);
-      return [...t.values()].some((n) => n.role === 'button' && n.name === say('play.pause'))
+      return [...t.values()].some((n) => n.role === 'button' && n.name.includes(via0))
         ? [...t.values()].filter((n) => n.role === 'StaticText').map((n) => n.name)
         : null;
     });
@@ -336,6 +338,16 @@ try {
         `THE TURN IS NOT SAID IN WORDS: a screen reader should be told "${turn}"${words.includes('1/15') ? ', and is told "1/15"' : ', and is not'}`,
       );
     console.log(`SR WALK: the turn is said in words ("${turn}"), and its figure is not read`);
+
+    // THE GOAL, read on turn 1's card where the dialog that said it was.
+    const goalWords = say('goal.win');
+    // The heading is drawn in capitals, and Chrome reads it as drawn: matched without regard to case.
+    const heard = new Set(words.map((w) => w.toLowerCase()));
+    if (!heard.has(say('goal.title').toLowerCase()) || !heard.has(goalWords.toLowerCase()))
+      refuse(
+        `THE GOAL IS NOT READ ON TURN 1: a screen reader should be told "${say('goal.title')}" and "${goalWords}"`,
+      );
+    console.log(`SR WALK: the goal is read on turn 1's card ("${say('goal.title')}")`);
 
     // A NEW CARD, named by what it shows.
     const via = say('arrivals.via').replace('{place}', '');
@@ -365,6 +377,50 @@ try {
       refuse(`with "${pathogen.name}" open, the close that floats over it is not read`);
     layers.push(`"${pathogen.name}" (${String(pathogen.inside)}, and its close kept)`);
     await close(pathogen.name);
+
+    // ALONE, THE CARDS' BUTTON BEGINS THE COMMAND STAGE (Gate 2's polish, piece 3, LOOK_PLAN §37):
+    // planning was one more stop between the new cards and the board on every turn.
+    const begin = button(await told(cdp), (n) => n === say('play.beginCommand'));
+    if (!begin)
+      refuse(
+        `PLANNING IS NOT FOLDED AWAY: the new cards' button is not "${say('play.beginCommand')}"`,
+      );
+    // A step's button that has just come back counts no tap for half a second (FINDINGS #90), as
+    // the lesson's walk waits: a person's pause.
+    await wait(700);
+    await press(cdp, begin);
+    await until(
+      `PLANNING IS NOT FOLDED AWAY: "${say('play.beginCommand')}" did not bring the command stage`,
+      async () => (button(await told(cdp), (n) => n === say('play.endCommand')) ? true : null),
+    );
+    console.log(
+      `SR WALK: alone, the new cards' "${say('play.beginCommand')}" goes straight to the command stage`,
+    );
+
+    // THE BODY TILE DRAWS THE BODY: the figure planning had, its places read by their names.
+    const organNames = new Set(
+      Object.values(ORGANS as Record<string, { name?: string }>).flatMap((o) =>
+        o.name ? [o.name] : [],
+      ),
+    );
+    const bodyTile = button(await told(cdp), (n) => n === say('body.title'));
+    if (!bodyTile) refuse(`no "${say('body.title')}" tile in the tree`);
+    await press(cdp, bodyTile);
+    const places = await until(
+      `THE BODY TILE DOES NOT DRAW THE BODY: with "${say('body.title')}" open, no place of the figure is read`,
+      async () => {
+        const n = [...(await told(cdp)).values()].filter(
+          (x) => x.role === 'group' && organNames.has(x.name),
+        ).length;
+        return n > 0 ? n : null;
+      },
+    );
+    console.log(
+      `SR WALK: "${say('body.title')}" draws the body, ${String(places)} of its organs read by name`,
+    );
+    const shut = button(await told(cdp), (n) => n === say('body.title'));
+    if (shut) await press(cdp, shut);
+    await wait(400);
 
     // THE MENU: the third.
     const menu = button(await told(cdp), (n) => n === say('play.pause'));

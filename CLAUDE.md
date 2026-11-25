@@ -157,8 +157,10 @@ generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18
 reader support is brought into scope** (brief v2.4): the first of its three parts is built (plan §36;
 `pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
 to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
-pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
-it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
+pieces** (plan §33 and §37), and all four are built: alone a turn goes from its cards straight to
+the board, the body seen from outside is the Body tile's, and a new game opens on its cards with
+the goal beside them. The lesson is 69 cards. **Claude merges any pull request that is safe and
+ready, Dependabot's too** (his standing rule, 25 November); deploying is still his word.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
