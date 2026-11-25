@@ -3275,3 +3275,72 @@ Nunito has no Devanagari, so Hindi was drawn in whatever each phone had. The app
   does not ask for: the walk fails saying what the button was drawn in).
 - **Not done:** the kit page, the measuring page and the developer's page do not declare it. **Not
   seen on a phone.**
+
+## 35. Built 25 November 2026: colour is held for every kind of colour vision
+
+Ruled the same day (§34): *"yes do the check"*. The first reading there was of the palette. This is
+the reading taken from the pieces as Blender renders them, and held on every `pnpm verify`.
+
+**What is asked.** The kit's rule is that shape says what kind of thing a piece is and colour says
+its antigen class (§13). So wherever two classes are drawn in **one** shape, colour is the only
+thing that tells them apart, and the two must stay two colours to a red-blind, a green-blind and a
+blue-blind eye. The same is asked of the one other pair on the board that is one shape in two
+colours: a move's ring and the ring of a hop along the lymph.
+
+| Held | Read from | Full colour vision | Red-blind | Green-blind | Blue-blind |
+|---|---|---|---|---|---|
+| The two bacteria, EXB and ICB | The rendered pieces' measured bodies | 53 | 49 | 50 | 44 |
+| The two viruses, ENV and NAK | The same | 28 | 29 | 22 | **10.7** |
+| A move's ring and a lymph hop's | The kit's two colours | 66 | 61 | 66 | 50 |
+
+- **The numbers** are how far apart two colours are (CIE76, in CIELAB). About 2 is the least an
+  eye can tell between two swatches laid side by side; a piece on a phone is far smaller.
+- **The least allowed is 10, and it was set after the reading,** not before it, which this
+  project's rule is against. It is said so in the gate's own file. It is his to move.
+- **The two viruses pass with nothing to spare to a blue-blind eye.** That is the rarest kind of
+  colour blindness. To the two common kinds they are 29 and 22 apart.
+- **Nothing merges by this rule, so no class code is drawn on a piece.** He ruled the code *"shown
+  wherever two would merge"* (§34).
+
+**Not changed, and his to rule.** Putting the two viruses further apart for a blue-blind eye
+means moving a class's colour, which is the content pack's and Kartik's, or drawing a mark on one
+of them. Recommended: leave it. The class is said in words one tap away, and the pair is fine to
+the two kinds that are common.
+
+**What the reading also showed, and what is not held.**
+
+| What | The reading | Why it is not held |
+|---|---|---|
+| Pieces of different shapes | To a green-blind eye a toxin and a naked virus are 3 apart (71 to full colour vision), a bacterium and a toxin 3 (18), a bacterium and a naked virus 5 (54) | Their shapes tell them apart, which is the kit's first rule. This is where the palette's four classes that draw together (§34) ended up: in different shapes |
+| A hidden pathogen's three classes | 3 to 10 apart, to any eyes, full colour vision too | Its piece is one of the body's own cells with something showing through it. The class is in what shows through, and this measure reads the cell. Nothing a player can do to a hidden pathogen depends on its class |
+| An organ's health (mint, gold, coral) | 22 or more apart to every eye | And the count is in the arc's segments, by shape |
+| An attack's ring against a move's | 22 or more | A different ring, on a piece and not on a step |
+
+**How it is measured.**
+
+- **The simulation** is Machado, Oliveira and Fernandes (IEEE TVCG 2009) at its highest severity,
+  which the authors give as the case of a dichromat: the worst case. Most colour-blind people have
+  a milder form and see more difference than this. Its three matrices were read against the
+  authors' own table, digit for digit. They are applied to linear RGB, as implementations of the
+  model do; the authors' page does not say which.
+- **The colours** are the ones the pipeline already measures from each render: the mean of a
+  piece's solid pixels. Nothing new is measured, and the manifest is unchanged.
+- **Not used:** a published model of how much difference small marks need (Stone, Albers Szafir
+  and Setlur, 2014), which would ask more of a small piece than of a swatch. Its numbers could be
+  read here only from a library that implements it and not from the paper, so nothing rests on it.
+
+**Held,** in `tools/art-pipeline/clay/vision.ts`, by `pnpm art:clay:check`, which runs on every
+`pnpm verify` and in CI. A set with no two classes of one shape is refused, never passed for having
+nothing to hold. Its line says what it held and the least it found.
+
+- **The gate's own controls** (`pnpm art:clay --control`), each as it must be: a red and a brown of
+  one shape, 46 apart to full colour vision and 2.3 to a red-blind eye, refused for that eye; a
+  blue and a yellow accepted; the same merging colours in two shapes, in a hidden pathogen and in
+  a coated piece, not held, as meant; a grey the same grey to every eye, which each matrix must
+  keep.
+- **Self-test controls, each fired:** `clay-classes-of-one-shape-stay-apart` (the least allowed
+  raised above what the two viruses have: the check fails naming them, which shows it reads the
+  pictures) and `clay-move-and-hop-stay-apart` (the lymph's colour set beside the move's).
+
+**What it is not.** It is arithmetic on measured colours. Nobody colour blind has played the game,
+and nothing here says how the pieces look to one.
