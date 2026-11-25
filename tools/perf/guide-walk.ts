@@ -85,7 +85,6 @@ function expectedBeats(): string[] {
     out.push(
       ...cards(opens),
       `t${n}.cards`,
-      `t${n}.plan`,
       ...turn.steps.flatMap((s, k) => [...(k > 0 ? cards(s.id) : []), s.id]),
       `t${n}.end`,
       `t${n}.spread`,

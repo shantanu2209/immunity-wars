@@ -1,10 +1,25 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.4 · 25 November 2026
+**Version:** 2.5 · 25 November 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.5 records
+
+**Gate 2 is given** (Shantanu, 25 November 2026; [`LOOK_PLAN.md`](LOOK_PLAN.md) §37). Asked whether
+his *"consider it approved"* meant Gate 2 itself or only that the polish could ship without his
+playing it first, he answered:
+
+> *"No the approval is for everything gate 2 related. I will play and test out on the live deplyed app itself. maybe we hold off google play store deployment for now and only do the web one. We can play test and if there are no more changes we can do the deplyement on the google play store then (in case we do see more changes those can also be done before moving to the play store)."*
+
+- **That is the separate, stated act §1 asks for,** and it is recorded as Gate 2's approval.
+- **It was given before he had played the last of the polish,** which he plays on the live web app.
+  What that play finds is made before anything more goes to Google Play.
+- **What it does not do.** It does not close Phase 2 by itself: §8's definition of done asks for a
+  closeout in the same discipline, and Gate 1 still has its one human-tested item deferred, not met.
+  The closeout is put to him as its own piece of work.
 
 ## What v2.4 records
 
@@ -304,6 +319,8 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 > strict. This changes nothing about the ruling; it changes what Gate 1 is allowed to lean on.
 
 ### Gate 2 — Visual approval, given explicitly by Shantanu
+
+> ✅ **Given 25 November 2026** ("What v2.5 records"; [`LOOK_PLAN.md`](LOOK_PLAN.md) §37).
 
 Not implied by Gate 1. Not implied by a review going well. **A separate, stated act:**
 *"the visual design is approved."*
@@ -822,7 +839,8 @@ land as deliberate, isolated changes measured against the corpus, not as part of
 ## 8. Definition of done
 
 - [ ] Gate 1 — every capability item verified, including contrast and 200% text scaling
-- [ ] Gate 2 — visual approval, explicitly stated by Shantanu
+- [x] Gate 2 — visual approval, explicitly stated by Shantanu. ✅ *Given 25 November 2026, in his
+      words: "the approval is for everything gate 2 related" ("What v2.5 records")*
 - [ ] Performance budget met **on real low-end hardware**, every number carrying the device it was
       measured on — **or** the shortfall stated plainly, in which case the closeout says in those
       words that **locked decision #1 goes unresolved into Phase 4**
