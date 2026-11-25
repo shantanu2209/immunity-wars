@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.3). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.4). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -98,7 +98,8 @@ image model through Codex, not made here (`docs/ASSETS.md`), written to every fi
 store and the web app ask for by `pnpm art:icon` (`tools/art-pipeline/icon.ts`).
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
-lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
+lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the same check holds two classes
+drawn in one shape apart to simulated colour blindness (`clay/vision.ts`, plan §35); the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`; the play screen is
 drawn from it, and the kit page, `/kit.html`, shows it), held to the contrast bounds by the kit's
 own test; the Clay art is served from `packages/app/public/art/clay/`, and a phone stores what the
@@ -150,7 +151,14 @@ Ideathon interview): the two catalogues, the names the content pack holds as dat
 and the library's text, in `packages/content/src/i18n/hi/`, chosen from Settings; the engine still writes English and
 `packages/ui/src/engineText.ts` renders the Hindi for each line; reviewed through a sheet
 generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
-`pnpm i18n:sheet:check`). **Not read by him or Kartik.**
+`pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
+§34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
+(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check is built** (plan §35), and **screen
+reader support is brought into scope** (brief v2.4): the first of its three parts is built (plan §36;
+`pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
+to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
+pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
+it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

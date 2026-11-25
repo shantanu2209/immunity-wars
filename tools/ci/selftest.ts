@@ -907,6 +907,17 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE WORKER DOES NOT STORE AN ICON',
   },
   {
+    id: 'app-fonts-in-the-worker',
+    why: 'The Hindi edition’s own face, Noto Sans Devanagari, is bundled by ruling of 25 November 2026 (LOOK_PLAN §34), so Hindi is drawn in one face on every phone and with no network. A font the worker does not store is text in whatever the phone has once the network is gone. With the fonts left out of what the worker stores, the build test must FAIL naming the one it does not store.',
+    file: 'packages/app/vite.config.ts',
+    mutate: (t) =>
+      t
+        .replace("'fonts/**/*', ", '')
+        .replace('{js,css,html,webp,woff2,json,txt}', '{js,css,html,webp,json,txt}'),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/entries-build.test.ts',
+    expect: 'THE WORKER DOES NOT STORE A FONT',
+  },
+  {
     id: 'card-counters-are-the-engines',
     why: 'FINDINGS #129: a new card said "[class] antibodies neutralise it" of every disease, which the engine does not allow for a bacterium, a worm, a fungus, venom or a hidden pathogen. Each kind now says what antibodies do to it, held to the engine. With the bacterium said to be neutralised, the engine test must FAIL saying the engine does not agree.',
     file: 'packages/ui/src/play/counters.ts',
@@ -1185,6 +1196,22 @@ const CONTROLS: readonly Control[] = [
     mutate: (t) => t.replace(/"sha256": "[0-9a-f]{8}/g, '"sha256": "00000000'),
     gate: 'pnpm art:clay:check',
     expect: 'OUTPUT IS NOT WHAT THE MANIFEST RECORDS',
+  },
+  {
+    id: 'clay-classes-of-one-shape-stay-apart',
+    why: 'Ruled 25 November 2026 (LOOK_PLAN §35): a piece’s colour is its antigen class, and two classes drawn in one shape are told apart by colour alone, so they must stay two colours to a red-blind, a green-blind and a blue-blind eye. The gate simulates each on the rendered pieces’ measured colours. With the least allowed difference raised above what the two viruses have, the check must FAIL naming them, which shows it reads the pictures and is not passing by having nothing to hold.',
+    file: 'tools/art-pipeline/clay/vision.ts',
+    mutate: (t) => t.replace('export const APART_MIN = 10;', 'export const APART_MIN = 60;'),
+    gate: 'pnpm art:clay:check',
+    expect: 'TWO CLASSES OF ONE SHAPE CANNOT BE TOLD APART: virus ENV and NAK',
+  },
+  {
+    id: 'clay-move-and-hop-stay-apart',
+    why: 'The same ruling: on the board a move and a hop along the lymph are one ring in two colours, so colour alone tells them apart. The gate holds the two colours apart to every kind of colour vision. With the lymph’s colour set to a pale gold beside the move’s, the check must FAIL saying a move and a hop cannot be told apart.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/lymph: '#[0-9a-fA-F]{6}'/, "lymph: '#F2DC92'"),
+    gate: 'pnpm art:clay:check',
+    expect: 'A MOVE AND A HOP ALONG THE LYMPH CANNOT BE TOLD APART',
   },
   {
     id: 'clay-kit-colour-is-measured',
@@ -1608,6 +1635,133 @@ const CONTROLS: readonly Control[] = [
       ),
     gate: 'pnpm guide:walk --build',
     expect: 'STUCK at t3.net: nothing on the page is lit',
+  },
+  {
+    id: 'guide-one-card-between-chapters',
+    why: 'Gate 2’s polish, piece 4 (LOOK_PLAN §33): two cards stood between chapters, each wanting a tap, the second saying only what the next chapter is about. The card that says a chapter is done now carries that line, and Next chapter goes to the next chapter’s first step. With Next chapter sent to the opening card again, the guide’s test must FAIL saying it does not go to the chapter’s first step.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "if (pos.at === 'done') return { turn: pos.turn, step: pos.step };",
+        "if (pos.at === 'done') return { turn: pos.turn, step: pos.step, at: 'intro' };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'NEXT CHAPTER DOES NOT GO TO THE CHAPTER',
+  },
+  {
+    id: 'guide-chapter-end-says-the-next',
+    why: 'The same change: the opening card a player no longer meets said what the chapter is about, so the card that says the last one is done must say it. With that card saying nothing more, the guide’s test must FAIL saying a chapter’s end does not say what the next is about.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        "alsoKey: pos.at === 'done' ? `guide.chapter.${lesson.chapters[c]?.id ?? ''}.intro` : null,",
+        'alsoKey: null,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'DOES NOT SAY WHAT THE NEXT IS ABOUT',
+  },
+  {
+    id: 'guide-opening-card-is-not-a-step',
+    why: 'The same change: a chapter’s opening card is met only from the chapters screen. Counted as a step, a chapter would be Step 1 of 13 from the chapters and Step 2 of 13 after Next chapter. With the opening card put back among the lesson’s counted cards, the guide’s test must FAIL saying it is counted as a step.',
+    file: 'packages/ui/src/guide/model.ts',
+    mutate: (t) =>
+      t.replace(
+        '    chapter = k;\n  };',
+        "    chapter = k;\n    out.push({ id: `chapter.${lesson.chapters[k]?.id ?? ''}.intro`, chapter });\n  };",
+      ),
+    gate: 'pnpm --filter @immunity-wars/session-tests exec vitest run src/guide.test.ts',
+    expect: 'OPENING CARD IS COUNTED AS A STEP',
+  },
+  {
+    id: 'guide-walk-chapter-end-says-the-next',
+    why: 'The guide’s test holds the model; the page is the walk’s. With the play screen no longer handing the guide’s card its second sentence, the walk must FAIL at the first chapter’s end saying the card does not say what the next chapter is about.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace('also={beat.alsoKey !== null ? t(beat.alsoKey) : null}', 'also={null}'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'DOES NOT SAY WHAT THE NEXT CHAPTER IS ABOUT',
+  },
+  {
+    id: 'guide-walk-card-is-read-whole',
+    why: 'Gate 2’s polish, piece 4: the card between chapters carries two sentences, and a card whose words run past it has to be scrolled inside itself on a screen where everything else is dimmed. The walk reads how far each card’s content runs past the card. With the card held to 40 px, the walk must FAIL saying a card must be scrolled to be read.',
+    file: 'packages/ui/src/guide/Spotlight.tsx',
+    mutate: (t) => t.replace('maxHeight: Math.max(96, room - 8),', 'maxHeight: 40,'),
+    gate: 'pnpm guide:walk --build',
+    expect: 'A CARD MUST BE SCROLLED TO BE READ',
+  },
+  {
+    id: 'pause-quit-asks-nothing',
+    why: 'Gate 2’s polish, piece 4 (LOOK_PLAN §33): the menu’s Quit asked for a confirm whose note said the game was saved, a confirm that protected nothing. The row says so under its name and a press quits. With the press opening a question again, the menu’s test must FAIL saying Quit asked before it quit.',
+    file: 'packages/ui/src/panels/PauseSheet.tsx',
+    mutate: (t) => t.replace('onPress={onQuit}', "onPress={() => setConfirming('leave')}"),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/PauseSheet.quit.test.ts',
+    expect: 'QUIT ASKED BEFORE IT QUIT',
+  },
+  {
+    id: 'spread-button-is-quiet',
+    why: 'Gate 2’s polish, piece 4: the spread moves on by itself, and a tap on its coral button skipped a beat a newcomer was meant to watch. Coral is kept for a step the player must take. With the spread’s button coral again, the frame’s test must FAIL saying so.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace("kind={keyName === 'spread' ? 'rest' : 'main'}", 'kind="main"'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Frame.test.ts',
+    expect: 'BUTTON IS THE COLOUR OF A STEP TO TAKE',
+  },
+  {
+    id: 'inspect-sheet-gathers-what-is-alike',
+    why: 'Gate 2’s polish, piece 4: six Tuberculosis after division were six identical rows, 468 px inside a 218 px middle. Invaders alike in everything their row says and offers are one row with their number. With nothing gathered, the sheet’s test must FAIL saying six alike are not one row.',
+    file: 'packages/ui/src/panels/InspectSheet.tsx',
+    mutate: (t) =>
+      t.replace('if (group) group.count += 1;', 'if (group && group.count < 0) group.count += 1;'),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/InspectSheet.test.ts',
+    expect: 'SIX ALIKE ARE NOT ONE ROW',
+  },
+  {
+    id: 'inspect-sheet-keeps-apart-what-differs',
+    why: 'The other half of the same rule: a row that gathered too much would hide the one difference a player has to act on. With the coat left out of what makes two invaders alike, the sheet’s test must FAIL saying a coated one is counted with the uncoated.',
+    file: 'packages/ui/src/panels/InspectSheet.tsx',
+    mutate: (t) => t.replace('      iv.coated,\n', ''),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/panels/InspectSheet.test.ts',
+    expect: 'A COATED ONE IS COUNTED WITH THE UNCOATED',
+  },
+  {
+    id: 'sr-walk-a-layer-hides-what-is-behind',
+    why: 'Screen reader support, ruled 25 November 2026 (LOOK_PLAN §36): a dialog, the menu, a card and the messages cover the screen, but a screen reader reads the page’s elements and not what covers what, so behind the menu it went on reading the board and End turn, and could press them. A layer now makes everything else inert while it is up. With nothing made inert, the screen reader’s walk must FAIL saying what is behind a layer is read.',
+    file: 'packages/ui/src/nav/modal.ts',
+    mutate: (t) => t.replace('beside.inert = true;', 'beside.inert = false;'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'WHAT IS BEHIND A LAYER IS READ',
+  },
+  {
+    id: 'sr-walk-focus-goes-to-the-layer',
+    why: 'The same ruling: a screen reader announces a dialog when focus moves into it, and says nothing when a dialog is only drawn. With focus left where it was, the walk must FAIL saying focus is not in the layer.',
+    file: 'packages/ui/src/nav/modal.ts',
+    mutate: (t) => t.replace('    layer.focus({ preventScroll: true });\n', ''),
+    gate: 'pnpm sr:walk --build',
+    expect: 'FOCUS IS NOT IN THE LAYER',
+  },
+  {
+    id: 'sr-walk-the-turn-is-said-in-words',
+    why: 'The same ruling: the top bar’s "3/15" is read by a screen reader as "three slash fifteen". The figure is hidden from it and the turn said in words beside it. With the figure read again, the walk must FAIL saying the turn is not said in words.',
+    file: 'packages/ui/src/play/Frame.tsx',
+    mutate: (t) => t.replace('<span data-turn="" aria-hidden="true">', '<span data-turn="">'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE TURN IS NOT SAID IN WORDS',
+  },
+  {
+    id: 'sr-walk-a-new-card-says-what-it-shows',
+    why: 'The same ruling: a new card’s label of "About Nipah" replaced everything on the card for a screen reader, which was told neither its class nor where it came in. With the class left out of the card’s name, the walk must FAIL saying a new card does not say what it shows.',
+    file: 'packages/ui/src/play/Arrivals.tsx',
+    mutate: (t) => t.replace("family !== '' ? familyDisplayName(family) : '',", "'',"),
+    gate: 'pnpm sr:walk --build',
+    expect: 'A NEW CARD DOES NOT SAY WHAT IT SHOWS',
+  },
+  {
+    id: 'guide-walk-hindi-in-the-bundled-face',
+    why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
+    file: 'packages/app/index.html',
+    mutate: (t) =>
+      t.replace("font-family: 'Noto Sans Devanagari';", "font-family: 'Noto Sans Devanagarx';"),
+    gate: 'pnpm guide:walk --build --lang hi',
+    expect: 'HINDI IS NOT DRAWN IN THE BUNDLED FACE',
   },
   {
     id: 'engulf-is-chip-only-when-it-wounds',

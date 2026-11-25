@@ -1,10 +1,26 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.3 · 20 October 2026
+**Version:** 2.4 · 25 November 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.4 records
+
+v2.4 brings one thing back into scope, by ruling (Shantanu, 25 November 2026;
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §34 and §36): *"yes do the check and the screen reader"*.
+
+- **Screen reader support is in scope.** §1 left it out on purpose, and wrote down what would
+  bring it back: the app offered somewhere that requires it, *"or anyone asks for it"*. He asked,
+  on 24 November, what could be done for players who cannot see.
+- **What §1 said against it still governs how it is claimed.** *"It is not a target this team can
+  honestly verify today."* What a machine can verify is built and held: the names and the layers a
+  screen reader is told of, read from Chrome's own accessibility tree. What only a person can
+  verify has not been done: nobody who uses TalkBack or VoiceOver has played. **So it is not an
+  item of Gate 1, and the game is not said to support blind players.**
+- **It is three parts** (the plan's §36), and the first is built.
+- **Gate 2 is still the gate this phase ends on.**
 
 ## What v2.3 records
 
@@ -275,6 +291,9 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 >   > requirement, or anyone asks for it — whichever comes first. At that point it is scoped work
 >   > with a real consumer, which is the condition this project applies to every deferred seam
 >   > ([`SEAM_DECISIONS.md`](SEAM_DECISIONS.md) §4).
+>
+>   ⚠️ *Brought back in v2.4, 25 November 2026:* he asked. See "What v2.4 records": in scope, not
+>   an item of this gate, and not claimed until a person who uses a screen reader has played.
 >
 > ⚠️ **One correction to the ruling's own premise, stated rather than smoothed over.** The ruling
 > reads "contrast IN Gate 1, since the art pipeline already has a measured target." **There is no
@@ -793,7 +812,8 @@ started in this phase, by ruling; the store work stays Phase 4's.
 **No competent reference bot** — Phase 3, with the seat-filling AI; see §6. It is an engine
 change and it breaks the corpus, which is not a thing to do during a rewrite.
 No AI tutor — deferred, tiered behind a `HelpProvider` that is not being built.
-No screen-reader support — deferred with a reinstate condition, §1.
+No screen-reader support — deferred with a reinstate condition, §1. ⚠️ *v2.4, 25 November 2026:* brought back
+into scope, by ruling.
 No engine rule changes. Kartik's six open design questions are a separate conversation and
 land as deliberate, isolated changes measured against the corpus, not as part of the rewrite.
 

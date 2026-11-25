@@ -52,6 +52,8 @@ describe('the build for the Android shell', { timeout: 180_000 }, () => {
     expect(existsSync(join(out, 'art', 'clay', 'manifest.json'))).toBe(true);
     expect(existsSync(join(out, 'art', 'clay', 'board', 'macrophage@3x.webp'))).toBe(true);
     expect(existsSync(join(out, 'fonts', 'nunito-latin-var.woff2'))).toBe(true);
+    // The Hindi edition's face is in the Android app too: it has no network to fetch one from.
+    expect(existsSync(join(out, 'fonts', 'noto-sans-devanagari-var.woff2'))).toBe(true);
   });
 
   it('writes no service worker, and no script of it registers one', () => {
