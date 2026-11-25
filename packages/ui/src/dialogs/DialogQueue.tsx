@@ -15,6 +15,8 @@ import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { useCallback, useRef, useState, type ReactElement, type ReactNode } from 'react';
 
+import { modalProps, useModal } from '../nav/modal';
+
 export interface QueuedDialog {
   /** Stable id — a dialog enqueued twice with the same id is dropped, not shown twice. */
   id: string;
@@ -68,6 +70,21 @@ export function DialogHost({
   onDismiss: () => void;
 }): ReactElement | null {
   if (!dialog) return null;
+  // Keyed by the dialog, so the next one in the queue is a new layer and is announced as one.
+  return <DialogCard key={dialog.id} dialog={dialog} onDismiss={onDismiss} />;
+}
+
+function DialogCard({
+  dialog,
+  onDismiss,
+}: {
+  dialog: QueuedDialog;
+  onDismiss: () => void;
+}): ReactElement {
+  // A dialog to a screen reader too: named by its title, with what is behind it not read
+  // (`nav/modal.ts`).
+  const card = useRef<HTMLDivElement | null>(null);
+  useModal(card);
   return (
     <div
       style={{
@@ -81,7 +98,10 @@ export function DialogHost({
       }}
     >
       <div
+        ref={card}
+        {...modalProps(dialog.title)}
         style={{
+          outline: 'none',
           width: 'min(92vw, 380px)',
           // Border-box, so the padding stays inside the width: at 200% text (a 180px layout,
           // Gate 1's zoom audit, 6 September 2026) content-box sizing overflowed by 8px.

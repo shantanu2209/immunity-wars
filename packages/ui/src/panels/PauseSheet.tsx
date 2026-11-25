@@ -19,13 +19,14 @@
  * brings it back. Together it is said and not offered: a reload would drop this player from the
  * table, so it waits for the title, which takes it by itself.
  */
-import { useState, type CSSProperties, type ReactElement } from 'react';
+import { useRef, useState, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { kitCardStyle } from '../kit/Surface';
 import { TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE, useNavLayer } from '../nav/NavHost';
+import { modalProps, useModal } from '../nav/modal';
 import { SAY } from './onCard';
 import { UpdateNow } from './UpdateNow';
 
@@ -67,6 +68,9 @@ export function PauseSheet({
   const [confirming, setConfirming] = useState<'leave' | null>(null);
   // The confirm is a dialog on the stack: the back gesture cancels it.
   useNavLayer('quit-confirm', confirming !== null, () => setConfirming(null), false);
+  // A dialog to a screen reader too: named, with what is behind it not read (`nav/modal.ts`).
+  const card = useRef<HTMLDivElement | null>(null);
+  useModal(card);
   return (
     <div
       style={{
@@ -82,11 +86,15 @@ export function PauseSheet({
       }}
     >
       <div
+        ref={card}
+        {...modalProps(t('play.pause'))}
+        data-pause-menu=""
         style={{
           width: 'min(88vw, 340px)',
           boxSizing: 'border-box',
           ...kitCardStyle,
           padding: '6px 16px 22px',
+          outline: 'none',
         }}
       >
         {confirming === 'leave' && onLeave !== null ? (
