@@ -73,7 +73,7 @@ keeps being pushed out of phases rather than squeezed into them.
 ## Phase 2 — The app people see
 
 **Goal:** stop being a browser page and become an application.
-**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v2.1. **Status: RESUMED on 1 October 2026 as
+**Spec:** [`docs/PHASE2_BRIEF.md`](docs/PHASE2_BRIEF.md) v2.5. **Status: RESUMED on 1 October 2026 as
 "the look"** ([`docs/LOOK_PLAN.md`](docs/LOOK_PLAN.md)): the screens are replaced so the game looks
 like the best modern mobile games, on modern phones only, before Phase 4. It had been paused on 20
 September ([`docs/PHASE2_PAUSE.md`](docs/PHASE2_PAUSE.md)); the three items owed then, the handset
@@ -83,7 +83,10 @@ P2.7 (polish) stopped partway. **Phase 4's release must not happen before the pl
 2026, by ruling:* this said Phase 4 must not start. The Android shell is started in this phase
 ([`docs/LOOK_PLAN.md`](docs/LOOK_PLAN.md) §26), because that measurement is taken inside it and a
 screen costs the same to change before the shell exists and after; the store work and the public
-release still wait for his visual approval.
+release were to wait for his visual approval. *Status, 25 November 2026:* the public release was made
+on Google Play on 20 October, before Gate 2, by ruling, and before the plan's measurement inside the
+app ([`docs/LOOK_PLAN.md`](docs/LOOK_PLAN.md) §31). Gate 2 was given on 25 November. The closeout is
+written and put to him, not yet accepted ([`docs/PHASE2_CLOSEOUT.md`](docs/PHASE2_CLOSEOUT.md)).
 *This line said "P2.1 complete" and "v1.1" until 6 September 2026; the documentation sweep
 checks only that the roadmap is not calling an earlier phase current, so the sub-phase and
 version here are a person's to keep true.*
