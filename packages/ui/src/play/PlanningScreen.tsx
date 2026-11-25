@@ -515,7 +515,13 @@ export function PlanningScreen({
   focus,
   disabled = false,
   onFigureTap,
+  screen = 'planning',
 }: {
+  /**
+   * Which screen the figure is on, for the drivers: planning's own, or the Body tile's since Gate
+   * 2's polish (piece 3, docs/LOOK_PLAN.md §37).
+   */
+  screen?: 'planning' | 'body';
   model: PlanningModel;
   /** The place the list is filtered to, ringed on the figure; null when none is. */
   focus: string | null;
@@ -524,7 +530,7 @@ export function PlanningScreen({
 }): ReactElement {
   return (
     <div
-      data-screen="planning"
+      data-screen={screen}
       style={{
         position: 'absolute',
         inset: 0,

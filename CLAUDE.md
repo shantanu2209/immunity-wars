@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.4). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.5). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -113,7 +113,10 @@ no service worker, no developer's page but the measuring page); id
 `com.kartikchaudhary.immunitywars`, name "Immunity Wars", no Android backup, all ruled. His review
 and his visual approval may be done on the Android app. **The public release was made before
 Gate 2, by ruling** (20 October 2026; plan §31, brief v2.3): the game is on Google Play, version
-0.9, in every country Play offers; Gate 2 is still open. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+0.9, in every country Play offers. **Gate 2 was given on 25 November 2026** (brief v2.5, plan §37):
+*"the approval is for everything gate 2 related"*, before he had played the last of the polish, which
+he plays on the live web app; **the next store build is held until then**, and Phase 2's closeout is
+its own piece of work. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
 repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
 120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected
@@ -157,8 +160,10 @@ generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18
 reader support is brought into scope** (brief v2.4): the first of its three parts is built (plan §36;
 `pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
 to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
-pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
-it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
+pieces** (plan §33 and §37), and all four are built: alone a turn goes from its cards straight to
+the board, the body seen from outside is the Body tile's, and a new game opens on its cards with
+the goal beside them. The lesson is 69 cards. **Claude merges any pull request that is safe and
+ready, Dependabot's too** (his standing rule, 25 November); deploying is still his word.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

@@ -1755,6 +1755,81 @@ const CONTROLS: readonly Control[] = [
     expect: 'A NEW CARD DOES NOT SAY WHAT IT SHOWS',
   },
   {
+    id: 'sr-walk-the-goal-is-on-turn-1',
+    why: 'Gate 2’s polish, piece 3, ruled 24 and 25 November 2026 (LOOK_PLAN §37): a new game opened on a dialog to be answered before anything could be seen. Its three sentences are on turn 1’s middle card now, beside the new cards. With that card saying nothing of the goal, the walk must FAIL saying the goal is not read on turn 1.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace("const firstTurn = Number(game['turn']) === 1;", 'const firstTurn = false;'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE GOAL IS NOT READ ON TURN 1',
+  },
+  {
+    id: 'sr-walk-planning-is-folded-alone',
+    why: 'The same ruling: alone, planning was one more stop on every turn, between the new cards and the board. The cards’ button begins the command stage now; together, planning stays, being where the captain hands out the points. With the fold taken off, the walk must FAIL saying planning is not folded away.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) => t.replace('const folded = !p.together;', 'const folded = false;'),
+    gate: 'pnpm sr:walk --build',
+    expect: 'PLANNING IS NOT FOLDED AWAY',
+  },
+  {
+    id: 'sr-walk-the-body-tile-draws-the-body',
+    why: 'The same ruling: the body seen from outside, which planning drew, is the Body tile’s now, in the play area with the panel of antivenom and vaccines below. With the figure not drawn there, the walk must FAIL saying the Body tile does not draw the body.',
+    file: 'packages/ui/src/play/PlayScreen.tsx',
+    mutate: (t) =>
+      t.replace(
+        "  const bodyFigure =\n    drawer === 'body' &&",
+        "  const bodyFigure =\n    false &&\n    drawer === 'body' &&",
+      ),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE BODY TILE DOES NOT DRAW THE BODY',
+  },
+  {
+    id: 'sr-walk-what-an-action-did-is-said',
+    why: 'Screen reader support, its second part (LOOK_PLAN §38): a sighted player sees what a tap did on the board; a screen reader is told nothing of the pictures, so the log’s new lines are said. With them never said, the walk must FAIL saying what an action did is not said.',
+    file: 'packages/ui/src/play/Announcer.tsx',
+    mutate: (t) => t.replace('if (fresh.length > 0) say(', 'if (fresh.length < 0) say('),
+    gate: 'pnpm sr:walk --build',
+    expect: 'WHAT AN ACTION DID IS NOT SAID',
+  },
+  {
+    id: 'sr-walk-the-spread-is-said',
+    why: 'The same part: the spread is watched on the board, beat by beat. Each beat’s name is said as it is shown. With the beats never said, the walk must FAIL saying the spread is not said.',
+    file: 'packages/ui/src/play/Announcer.tsx',
+    mutate: (t) =>
+      t.replace(
+        'if (frame !== null) say(engineText(frame.label));',
+        'if (frame === undefined) say(engineText(frame.label));',
+      ),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE SPREAD IS NOT SAID',
+  },
+  {
+    id: 'sr-walk-nothing-is-said-as-a-game-opens',
+    why: 'The other half: what is in the log when a game opens, new or resumed, was not just done, and saying it would tell a screen reader of moves nobody made. With the first view compared against nothing as if it were new, the walk must FAIL saying a game that opens is said to have done something.',
+    file: 'packages/ui/src/play/Announcer.tsx',
+    mutate: (t) =>
+      t
+        .replace('    if (before === null || spreadEnded) return;', '    if (spreadEnded) return;')
+        .replace(
+          'const fresh = newLines(before, lines);',
+          'const fresh = newLines(before ?? [], lines);',
+        ),
+    gate: 'pnpm sr:walk --build',
+    expect: 'A GAME THAT OPENS IS SAID TO HAVE DONE SOMETHING',
+  },
+  {
+    id: 'announcer-finds-what-is-new',
+    why: 'The same part: the engine’s log is newest first and kept to a length, so what an action added stands before where the log stood. Found wrong, a screen reader is told an old line again. With the search starting a line late, the announcer’s test must FAIL saying the new lines are not found.',
+    file: 'packages/ui/src/play/Announcer.tsx',
+    mutate: (t) =>
+      t.replace(
+        'for (let k = 0; k + probe.length <= now.length; k += 1) {',
+        'for (let k = 1; k + probe.length <= now.length; k += 1) {',
+      ),
+    gate: 'pnpm --filter @immunity-wars/ui exec vitest run src/play/Announcer.test.ts',
+    expect: 'THE NEW LINES ARE NOT FOUND',
+  },
+  {
     id: 'guide-walk-hindi-in-the-bundled-face',
     why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
     file: 'packages/app/index.html',
