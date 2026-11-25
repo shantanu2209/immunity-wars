@@ -11,12 +11,13 @@
  * and did nothing would be a control that does nothing, so the tap does the one thing a tap outside
  * an open panel can mean.
  */
-import type { ReactElement, ReactNode } from 'react';
+import { useRef, type ReactElement, type ReactNode } from 'react';
 
 import { t } from '../i18n';
 import { kitCardStyle } from '../kit/Surface';
 import { RADIUS } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
+import { modalProps, useModal } from '../nav/modal';
 
 /** The middle's three views and the messages: the play screen holds one of these, or none. */
 export type DrawerKind = 'pieces' | 'antibodies' | 'body' | 'log' | 'table';
@@ -45,11 +46,15 @@ export function Drawer({
   onClose: () => void;
   children: ReactNode;
 }): ReactElement {
+  // A dialog to a screen reader too, with what is behind it not read (`nav/modal.ts`).
+  const drawer = useRef<HTMLDivElement | null>(null);
+  useModal(drawer);
   return (
     <>
       <style>{MOTION}</style>
       <div
         aria-hidden="true"
+        data-modal-keep=""
         data-drawer-scrim=""
         onClick={onClose}
         style={{
@@ -60,10 +65,11 @@ export function Drawer({
         }}
       />
       <div
+        ref={drawer}
         data-drawer={kind}
-        role="dialog"
-        aria-label={t(LABEL[kind])}
+        {...modalProps(t(LABEL[kind]))}
         style={{
+          outline: 'none',
           position: 'fixed',
           left: 0,
           right: 0,

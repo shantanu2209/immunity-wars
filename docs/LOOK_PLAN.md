@@ -3275,3 +3275,167 @@ Nunito has no Devanagari, so Hindi was drawn in whatever each phone had. The app
   does not ask for: the walk fails saying what the button was drawn in).
 - **Not done:** the kit page, the measuring page and the developer's page do not declare it. **Not
   seen on a phone.**
+
+## 35. Built 25 November 2026: colour is held for every kind of colour vision
+
+Ruled the same day (§34): *"yes do the check"*. The first reading there was of the palette. This is
+the reading taken from the pieces as Blender renders them, and held on every `pnpm verify`.
+
+**What is asked.** The kit's rule is that shape says what kind of thing a piece is and colour says
+its antigen class (§13). So wherever two classes are drawn in **one** shape, colour is the only
+thing that tells them apart, and the two must stay two colours to a red-blind, a green-blind and a
+blue-blind eye. The same is asked of the one other pair on the board that is one shape in two
+colours: a move's ring and the ring of a hop along the lymph.
+
+| Held | Read from | Full colour vision | Red-blind | Green-blind | Blue-blind |
+|---|---|---|---|---|---|
+| The two bacteria, EXB and ICB | The rendered pieces' measured bodies | 53 | 49 | 50 | 44 |
+| The two viruses, ENV and NAK | The same | 28 | 29 | 22 | **10.7** |
+| A move's ring and a lymph hop's | The kit's two colours | 66 | 61 | 66 | 50 |
+
+- **The numbers** are how far apart two colours are (CIE76, in CIELAB). About 2 is the least an
+  eye can tell between two swatches laid side by side; a piece on a phone is far smaller.
+- **The least allowed is 10, and it was set after the reading,** not before it, which this
+  project's rule is against. It is said so in the gate's own file. It is his to move.
+- **The two viruses pass with nothing to spare to a blue-blind eye.** That is the rarest kind of
+  colour blindness. To the two common kinds they are 29 and 22 apart.
+- **Nothing merges by this rule, so no class code is drawn on a piece.** He ruled the code *"shown
+  wherever two would merge"* (§34).
+
+**Not changed, and his to rule.** Putting the two viruses further apart for a blue-blind eye
+means moving a class's colour, which is the content pack's and Kartik's, or drawing a mark on one
+of them. Recommended: leave it. The class is said in words one tap away, and the pair is fine to
+the two kinds that are common.
+
+**What the reading also showed, and what is not held.**
+
+| What | The reading | Why it is not held |
+|---|---|---|
+| Pieces of different shapes | To a green-blind eye a toxin and a naked virus are 3 apart (71 to full colour vision), a bacterium and a toxin 3 (18), a bacterium and a naked virus 5 (54) | Their shapes tell them apart, which is the kit's first rule. This is where the palette's four classes that draw together (§34) ended up: in different shapes |
+| A hidden pathogen's three classes | 3 to 10 apart, to any eyes, full colour vision too | Its piece is one of the body's own cells with something showing through it. The class is in what shows through, and this measure reads the cell. Nothing a player can do to a hidden pathogen depends on its class |
+| An organ's health (mint, gold, coral) | 22 or more apart to every eye | And the count is in the arc's segments, by shape |
+| An attack's ring against a move's | 22 or more | A different ring, on a piece and not on a step |
+
+**How it is measured.**
+
+- **The simulation** is Machado, Oliveira and Fernandes (IEEE TVCG 2009) at its highest severity,
+  which the authors give as the case of a dichromat: the worst case. Most colour-blind people have
+  a milder form and see more difference than this. Its three matrices were read against the
+  authors' own table, digit for digit. They are applied to linear RGB, as implementations of the
+  model do; the authors' page does not say which.
+- **The colours** are the ones the pipeline already measures from each render: the mean of a
+  piece's solid pixels. Nothing new is measured, and the manifest is unchanged.
+- **Not used:** a published model of how much difference small marks need (Stone, Albers Szafir
+  and Setlur, 2014), which would ask more of a small piece than of a swatch. Its numbers could be
+  read here only from a library that implements it and not from the paper, so nothing rests on it.
+
+**Held,** in `tools/art-pipeline/clay/vision.ts`, by `pnpm art:clay:check`, which runs on every
+`pnpm verify` and in CI. A set with no two classes of one shape is refused, never passed for having
+nothing to hold. Its line says what it held and the least it found.
+
+- **The gate's own controls** (`pnpm art:clay --control`), each as it must be: a red and a brown of
+  one shape, 46 apart to full colour vision and 2.3 to a red-blind eye, refused for that eye; a
+  blue and a yellow accepted; the same merging colours in two shapes, in a hidden pathogen and in
+  a coated piece, not held, as meant; a grey the same grey to every eye, which each matrix must
+  keep.
+- **Self-test controls, each fired:** `clay-classes-of-one-shape-stay-apart` (the least allowed
+  raised above what the two viruses have: the check fails naming them, which shows it reads the
+  pictures) and `clay-move-and-hop-stay-apart` (the lymph's colour set beside the move's).
+
+**What it is not.** It is arithmetic on measured colours. Nobody colour blind has played the game,
+and nothing here says how the pieces look to one.
+
+## 36. Built 25 November 2026: screen reader support, its first part
+
+Ruled the same day (§34): *"yes do the check and the screen reader"*. The brief had left screen
+readers out until someone asked, and is v2.4 now. It is three parts, each its own pull request:
+
+| Part | What | State |
+|---|---|---|
+| 1 | **What is there is said rightly:** every control, picture and dialog has a name, and a layer that covers the screen is all there is to a screen reader too | Built, below |
+| 2 | **What happens is said:** each beat of the spread, the log's new lines, a refusal, whose step it is | Not started |
+| 3 | **The board as a list by place,** with a cell's destinations as buttons, so that a turn can be played without the picture | Not started |
+
+### Where a screen reader's words come from, and how they are read here
+
+TalkBack and VoiceOver do not read the picture. They read the browser's **accessibility tree**: the
+things on the page, each with a role and a name. So that is what is read here, from Chrome itself
+and not from a script's idea of it, by two instruments:
+
+- **The Gate 1 audit** gained a check, `name`: on every screen of its base pass, each control, each
+  picture not marked as decoration and each dialog must have a name in Chrome's tree, and the page
+  must say its language, which is how a screen reader picks its voice. Ten controls of its own.
+- **`pnpm sr:walk`**, new: the built app walked by the tree alone. It finds each thing by its role
+  and name and presses the element, as a screen reader does, not a place on the screen.
+
+### What the first reading found
+
+The audit read **1,590 controls, pictures and dialogs on 68 screens and found none without a
+name.** The stages before this had kept names: every picture on the board has one, and every
+button drawn as a picture. That was too clean to be believed as it stood, so what the tree says on
+the main screens was printed and read, as a screen reader's user would hear it. Having a name is
+not being told what you need:
+
+| Found | What a player was told | Done |
+|---|---|---|
+| A layer was not a layer | With the opening dialog or the menu up, the tree went on holding the board, the tiles and End turn, which could be pressed. Nothing said a dialog had opened | Part 1, below |
+| The turn | *"1/15"*, read as "one slash fifteen" | Part 1 |
+| A new card | *"About Nipah"*, which replaced everything on the card: neither its class nor its way in was said | Part 1 |
+| The board | What each thing is, and not where it is or how it is: thirty-four names in a row | Part 3 |
+| What happened | Nothing: the spread and the log are drawn, not said | Part 2 |
+
+### Built: a layer is all there is, the turn in words, a card by what it shows
+
+- **A layer that covers the screen** (`packages/ui/src/nav/modal.ts`): the opening dialog and every
+  dialog after it, the menu, a pathogen's card, a cell's card, and the messages. Each is a dialog
+  with a name and says it is modal. While it is up, everything else is made **inert**, which the
+  browser takes out of what a screen reader is told; focus is moved into it, which is what makes a
+  screen reader announce it; and focus goes back where it was when it closes. The one close that
+  floats over every layer is kept, being the layer's way out.
+- **Nothing changes for the eye or the finger.** What is behind a layer was already covered.
+- **The turn** is "3/15" to the eye and *Turn 3 of 15* to a screen reader, in words that take no
+  room and are not seen (`packages/ui/src/kit/spoken.ts`). The sentence was in both catalogues.
+- **A new card** is named by what it shows: *Cholera, Extracellular bacterium, via the Gut*, and
+  *Your body remembers it* when it does. The class is said by its name, where the eye is shown its
+  code. No sentence was added: each part was in both catalogues.
+
+### What the walk holds
+
+| Held by `pnpm sr:walk`, on the built app | Found |
+|---|---|
+| The page says its language | *en* |
+| Four layers, each opened and closed through the tree: the opening dialog, a pathogen's card, the menu, the messages | Each a named dialog that says it is modal, focus in it, **nothing behind it read**; the card and the messages closed by the close kept beside them; the game read again after each |
+| The turn | *Turn 1 of 15* is in the tree, and *1/15* is not |
+| A new card | Named with its class and its way in |
+
+- **Found while building it, in the instrument:** read in the instant a dialog appeared, Chrome's
+  tree still held everything behind it, on a build served one way and not on another. Chrome brings
+  its tree up to date a little after the page, and a screen reader is told then. The walk reads
+  again for up to two seconds and refuses what is still wrong at the end of them. Ten runs of ten
+  pass since.
+- **Controls, each fired:** `sr-walk-a-layer-hides-what-is-behind` (nothing made inert: the walk
+  fails saying what is behind a layer is read), `sr-walk-focus-goes-to-the-layer`,
+  `sr-walk-the-turn-is-said-in-words`, `sr-walk-a-new-card-says-what-it-shows`.
+
+| Seen besides | Found |
+|---|---|
+| `pnpm guide:walk`, the lesson through its own controls | 76 beats of 76, no error: the layers change nothing for a finger |
+| The Gate 1 audit, alone, on this build (25 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one); every check at zero over 909 controls and 2,100 text runs, the new name check among them, over 1,261 controls, pictures and dialogs, none without a name (1,590 before this change: with a layer up, what is behind it is no longer in the tree, which is the change); 35 close paths, none wrong; the play area one height on 33 screens; offline met; 60 controls of the audit's own, the name check's ten among them. Not reached: playing together, which this run did not ask for |
+
+### What this is not
+
+- **It is Chrome's tree on a PC, not TalkBack on a phone.** What a machine can read is read.
+  Nobody who uses a screen reader has tried the game, and until one has finished a game it is not
+  said to support blind players.
+- **It does not hold that a name is a good name,** or that things are said in a sensible order.
+- **A turn cannot be played by it yet.** A cell's move is a tap on a place on the board, which a
+  screen reader cannot make. That is part 3.
+- **The guided lesson is not a layer.** Its light dims the screen for the eye; a screen reader is
+  still told of everything behind it and could press out of order, and the guide then lets go, as
+  it is built to. Leading a screen reader through the lesson is not built.
+- **Not walked:** a cell's card, which uses the same hook as a pathogen's; the lost-connection
+  notice and a row's several targets, which are not layers. **English only:** the names come from
+  the same catalogues in Hindi, and the walk was not run in it.
+
+**Unruled, and his to overrule:** the turn's words for a screen reader; how a new card is named;
+that focus goes back where it was when a layer closes.
