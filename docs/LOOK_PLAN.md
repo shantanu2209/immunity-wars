@@ -3090,3 +3090,45 @@ to where each is used:
 | A game on Easy at 360 by 697, headless Chrome on the PC | Two cards, each with its route under its class; a tap on one opened its full card with the antibody line under its class; a first turn with one card and no middle card; 360 wide at each |
 | `pnpm guide:walk --build`, English and then Hindi | 82 beats of 82 each, every card counted, handed over at turn 8 of 15, no error |
 | The Gate 1 audit, alone, on this build (24 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one), the nest from a new card to its pathogen card reached and right; every check at zero over 924 controls and 2,150 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; offline met, with no request failed; 47 controls of the audit's own. Not reached: a row's several targets in three passes, by the dice; and playing together, which this run did not ask for |
+
+### Piece 2: the screens that are one screen
+
+The October survey's table A, each screen redrawn to fit a phone at 100% text, at 697 (the Android
+app's page on his S25) and at 641 (his Chrome tab).
+
+| Screen | Was | Is |
+|---|---|---|
+| **Settings** | Three cards with a heading over each; the delete row drawn flat with *No saved game* under it | One card, its groups as labels inside it. The delete row is drawn only when there is a save and it is not being played |
+| **The chapters** | Seven rows of three lines | A row is its name with its state at the end of the line (*Done*, *Next*, *Locked*); what a chapter covers is said on the next chapter to play, the one a player is deciding about. Chapter 7 is *The organs' defenders, and malaria* |
+| **Result** | Five stacked buttons under two cards | The way to the whole table is the Easy card's last line; *Change difficulty* and *Title* stand side by side; *What happened* is a quiet line |
+| **How to play's index** | Ten rows of 60 px | Two columns of five |
+| **The Cells view** | Seven chips with a name each, two to a row, scrolling inside the middle | One row of seven pieces on their bases, 45 by 44 px each, no names: the name is on the selected piece's card the moment it is picked. A spent cell's return hangs on its chip as a number, as on the board. The residents wait behind their control as before |
+| **Recall** | *Recall to bloodstream*, which made a second row of actions | *Recall*: it goes nowhere else |
+
+**Found on the way, and fixed here** ([`FINDINGS.md`](FINDINGS.md) #132): every screen on the stack
+reserved room for the floating close twice, the page's own padding and the navigation host's spacer,
+88 px of scroll on each that nothing was under. The page keeps a plain foot now and the host's
+spacer is the one reserve.
+
+**The audit holds them.** `ONE_SCREEN` in `tools/perf/gate1-audit.ts` names the screens required
+to fit the base pass's 780 px (Settings with and without a save, the chapters on a new phone and
+with the first done, the Result, How to play's index, the Cells view); a named screen taller than
+the screen is a finding by name, and one the run never measured is NOT REACHED. Three controls
+of the audit's own, each firing or passing as it must.
+
+| Measured, headless Chrome on the PC at 100% text | At 697 | At 641 |
+|---|---|---|
+| Settings, with no save, with a save, and over a game | Fits | Fits |
+| The chapters, on a new phone | Fits | Fits, to the pixel |
+| The chapters, with a game saved | Scrolls by the note that says what the lesson does to the save, his sentence of 17 October | The same, 745 |
+| How to play's index | Fits | Fits |
+| The Cells view | Seven chips in one row, the middle not scrolling | The same |
+| The Result | Held by the audit at 780; not measured by hand here | |
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, English and then Hindi, on this build | 82 beats of 82 each, every card counted, handed over at turn 8 of 15, no error |
+| The Gate 1 audit, alone, on this build (24 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one); **each of the seven named screens fits, 0 px over**; every check at zero over 903 controls and 2,039 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; offline met, with no request failed; 50 controls of the audit's own, the three new ones among them. A row's several targets was reached in every pass. Not reached: playing together, which this run did not ask for |
+
+**Unruled, and his to overrule:** the state words on the chapters; chapter 7's shorter name; that
+the delete row is hidden rather than drawn flat; *What happened* as a line and not a button.
