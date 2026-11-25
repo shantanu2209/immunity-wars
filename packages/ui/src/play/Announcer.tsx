@@ -94,7 +94,14 @@ export function Announcer({
   }, [game, playing]);
 
   return (
-    <div data-announce="" role="status" aria-live="polite" aria-atomic="true" style={SPOKEN_ONLY}>
+    <div
+      data-announce=""
+      data-spoken-only=""
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style={SPOKEN_ONLY}
+    >
       <span key={said.n}>{said.text}</span>
     </div>
   );

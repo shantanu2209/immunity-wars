@@ -108,6 +108,7 @@ import { Spotlight } from '../guide/Spotlight';
 import { TableMessages, sayText, type TableLine } from '../panels/TableMessages';
 import { refusalText } from '../together/model';
 import { Announcer } from './Announcer';
+import { BoardList } from './BoardList';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
 import { ViewQueue, type QueuedFrame } from './viewQueue';
 import {
@@ -1562,6 +1563,16 @@ export function PlayScreen({
             watching={playing}
             onTap={playing ? undefined : handleBoardTap}
           />
+          {/* THE BOARD AS A LIST, for a screen reader (its third part, §39): its places, and the
+              moves of the piece in hand, each pressed through the board's own tap. */}
+          {playing ? null : (
+            <BoardList
+              view={game}
+              readyTurn={authView.queries.readyTurn}
+              targets={boardTargets}
+              onTap={handleBoardTap}
+            />
+          )}
         </div>
         <PlayCorners
           apText={`${t('commandBar.ap')} ${String(apShown)}`}

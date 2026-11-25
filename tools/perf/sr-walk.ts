@@ -27,6 +27,8 @@
  *  - WHAT HAPPENS IS SAID (its second part): as a game opens, its arrival first and nothing that
  *    was in the log before; what Produce did, in the log's words, once it is done; and each beat of
  *    the spread, word for word, as it is shown;
+ *  - THE BOARD AS A LIST (its third part): its places read with what stands there, and a cell moved
+ *    by the list alone, to the step its button named;
  *  - a new card is named by what it shows: its disease, its class by its name, and its way in.
  *
  * WHAT IT DOES NOT HOLD: that the names are good ones, that things are read in a sensible order,
@@ -37,7 +39,8 @@
  * Controls: pnpm ci:selftest sr-walk-a-layer-hides-what-is-behind, sr-walk-focus-goes-to-the-layer,
  * sr-walk-the-turn-is-said-in-words, sr-walk-a-new-card-says-what-it-shows,
  * sr-walk-the-goal-is-on-turn-1, sr-walk-planning-is-folded-alone, sr-walk-the-body-tile-draws-the-body,
- * sr-walk-what-an-action-did-is-said, sr-walk-the-spread-is-said, sr-walk-nothing-is-said-as-a-game-opens.
+ * sr-walk-what-an-action-did-is-said, sr-walk-the-spread-is-said, sr-walk-nothing-is-said-as-a-game-opens,
+ * sr-walk-the-board-is-a-list, sr-walk-a-cell-moves-by-the-list.
  */
 import { execSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -47,7 +50,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ENGINE_I18N_EN, FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
+import { CNAME, ENGINE_I18N_EN, FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
 import puppeteer, { type CDPSession, type Page } from 'puppeteer-core';
 
 const CHROME =
@@ -477,6 +480,55 @@ try {
     const shut = button(await told(cdp), (n) => n === say('body.title'));
     if (shut) await press(cdp, shut);
     await wait(400);
+
+    // THE BOARD AS A LIST (its third part, LOOK_PLAN §39): its places, each saying what stands
+    // there; and a cell moved through it, by the tree alone, as a screen reader would.
+    const disease = card.name.split(',')[0]?.trim() ?? '';
+    const listed = (tree: Map<string, Told>): Told[] =>
+      [...tree.values()].filter((n) => n.role === 'button' && n.name.includes(': '));
+    const boardPlaces = await until(
+      `THE BOARD IS NOT A LIST: no place on it is read with what stands there ("${disease}" among them)`,
+      async () => {
+        const found = listed(await told(cdp));
+        return found.some((n) => n.name.includes(disease)) ? found : null;
+      },
+    );
+    console.log(
+      `SR WALK: the board is a list of ${String(boardPlaces.length)} places, each with what stands there ("${boardPlaces.find((n) => n.name.includes(disease))?.name.slice(0, 60) ?? ''}")`,
+    );
+    const monocyte = String((CNAME as Record<string, string>)['macrophage'] ?? 'Monocyte');
+    const placeOf = async (): Promise<string> =>
+      listed(await told(cdp))
+        .find((n) => n.name.split(': ')[1]?.split(', ').includes(monocyte))
+        ?.name.split(': ')[0] ?? '';
+    const from = await placeOf();
+    const cellsTile = button(await told(cdp), (n) => n === say('tabs.cells'));
+    if (!cellsTile) refuse(`no "${say('tabs.cells')}" tile in the tree`);
+    await press(cdp, cellsTile);
+    const chip = await until(`no ${monocyte} to take in hand in the Cells view`, async () =>
+      button(await told(cdp), (n) => n === monocyte),
+    );
+    await press(cdp, chip);
+    const moveTo = say('board.moveTo').split('{')[0] ?? '';
+    const move = await until(
+      `A CELL'S MOVES ARE NOT BUTTONS: with the ${monocyte} in hand, nothing in the tree says "${moveTo}…"`,
+      async () => button(await told(cdp), (n) => n.startsWith(moveTo)),
+    );
+    const goingTo = move.name.slice(moveTo.length);
+    await press(cdp, move);
+    const to = await until(
+      `A CELL'S MOVES ARE NOT BUTTONS: "${move.name}" was pressed and the ${monocyte} did not go there`,
+      async () => {
+        const now = await placeOf();
+        return now !== '' && now !== from ? now : null;
+      },
+    );
+    if (to !== goingTo)
+      refuse(`A CELL'S MOVES ARE NOT BUTTONS: "${move.name}" took the ${monocyte} to ${to}`);
+    console.log(`SR WALK: the ${monocyte} moved by the list alone, from ${from} to ${to}`);
+    const shutCells = button(await told(cdp), (n) => n === say('nav.close'));
+    if (shutCells) await press(cdp, shutCells);
+    await wait(700);
 
     // THE MENU: the third.
     const menu = button(await told(cdp), (n) => n === say('play.pause'));
