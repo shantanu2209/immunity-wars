@@ -1198,6 +1198,22 @@ const CONTROLS: readonly Control[] = [
     expect: 'OUTPUT IS NOT WHAT THE MANIFEST RECORDS',
   },
   {
+    id: 'clay-classes-of-one-shape-stay-apart',
+    why: 'Ruled 25 November 2026 (LOOK_PLAN §35): a piece’s colour is its antigen class, and two classes drawn in one shape are told apart by colour alone, so they must stay two colours to a red-blind, a green-blind and a blue-blind eye. The gate simulates each on the rendered pieces’ measured colours. With the least allowed difference raised above what the two viruses have, the check must FAIL naming them, which shows it reads the pictures and is not passing by having nothing to hold.',
+    file: 'tools/art-pipeline/clay/vision.ts',
+    mutate: (t) => t.replace('export const APART_MIN = 10;', 'export const APART_MIN = 60;'),
+    gate: 'pnpm art:clay:check',
+    expect: 'TWO CLASSES OF ONE SHAPE CANNOT BE TOLD APART: virus ENV and NAK',
+  },
+  {
+    id: 'clay-move-and-hop-stay-apart',
+    why: 'The same ruling: on the board a move and a hop along the lymph are one ring in two colours, so colour alone tells them apart. The gate holds the two colours apart to every kind of colour vision. With the lymph’s colour set to a pale gold beside the move’s, the check must FAIL saying a move and a hop cannot be told apart.',
+    file: 'packages/ui/src/kit/tokens.ts',
+    mutate: (t) => t.replace(/lymph: '#[0-9a-fA-F]{6}'/, "lymph: '#F2DC92'"),
+    gate: 'pnpm art:clay:check',
+    expect: 'A MOVE AND A HOP ALONG THE LYMPH CANNOT BE TOLD APART',
+  },
+  {
     id: 'clay-kit-colour-is-measured',
     why: 'The kit writes down the lit colour of the board and of the well so the page can match the board. They are measurements, read from the renders by the art pipeline; a value typed in by hand, or left behind when the board is re-rendered, must turn the check red.',
     file: 'packages/ui/src/kit/tokens.ts',
