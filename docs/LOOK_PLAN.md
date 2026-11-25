@@ -3344,3 +3344,98 @@ nothing to hold. Its line says what it held and the least it found.
 
 **What it is not.** It is arithmetic on measured colours. Nobody colour blind has played the game,
 and nothing here says how the pieces look to one.
+
+## 36. Built 25 November 2026: screen reader support, its first part
+
+Ruled the same day (§34): *"yes do the check and the screen reader"*. The brief had left screen
+readers out until someone asked, and is v2.4 now. It is three parts, each its own pull request:
+
+| Part | What | State |
+|---|---|---|
+| 1 | **What is there is said rightly:** every control, picture and dialog has a name, and a layer that covers the screen is all there is to a screen reader too | Built, below |
+| 2 | **What happens is said:** each beat of the spread, the log's new lines, a refusal, whose step it is | Not started |
+| 3 | **The board as a list by place,** with a cell's destinations as buttons, so that a turn can be played without the picture | Not started |
+
+### Where a screen reader's words come from, and how they are read here
+
+TalkBack and VoiceOver do not read the picture. They read the browser's **accessibility tree**: the
+things on the page, each with a role and a name. So that is what is read here, from Chrome itself
+and not from a script's idea of it, by two instruments:
+
+- **The Gate 1 audit** gained a check, `name`: on every screen of its base pass, each control, each
+  picture not marked as decoration and each dialog must have a name in Chrome's tree, and the page
+  must say its language, which is how a screen reader picks its voice. Ten controls of its own.
+- **`pnpm sr:walk`**, new: the built app walked by the tree alone. It finds each thing by its role
+  and name and presses the element, as a screen reader does, not a place on the screen.
+
+### What the first reading found
+
+The audit read **1,590 controls, pictures and dialogs on 68 screens and found none without a
+name.** The stages before this had kept names: every picture on the board has one, and every
+button drawn as a picture. That was too clean to be believed as it stood, so what the tree says on
+the main screens was printed and read, as a screen reader's user would hear it. Having a name is
+not being told what you need:
+
+| Found | What a player was told | Done |
+|---|---|---|
+| A layer was not a layer | With the opening dialog or the menu up, the tree went on holding the board, the tiles and End turn, which could be pressed. Nothing said a dialog had opened | Part 1, below |
+| The turn | *"1/15"*, read as "one slash fifteen" | Part 1 |
+| A new card | *"About Nipah"*, which replaced everything on the card: neither its class nor its way in was said | Part 1 |
+| The board | What each thing is, and not where it is or how it is: thirty-four names in a row | Part 3 |
+| What happened | Nothing: the spread and the log are drawn, not said | Part 2 |
+
+### Built: a layer is all there is, the turn in words, a card by what it shows
+
+- **A layer that covers the screen** (`packages/ui/src/nav/modal.ts`): the opening dialog and every
+  dialog after it, the menu, a pathogen's card, a cell's card, and the messages. Each is a dialog
+  with a name and says it is modal. While it is up, everything else is made **inert**, which the
+  browser takes out of what a screen reader is told; focus is moved into it, which is what makes a
+  screen reader announce it; and focus goes back where it was when it closes. The one close that
+  floats over every layer is kept, being the layer's way out.
+- **Nothing changes for the eye or the finger.** What is behind a layer was already covered.
+- **The turn** is "3/15" to the eye and *Turn 3 of 15* to a screen reader, in words that take no
+  room and are not seen (`packages/ui/src/kit/spoken.ts`). The sentence was in both catalogues.
+- **A new card** is named by what it shows: *Cholera, Extracellular bacterium, via the Gut*, and
+  *Your body remembers it* when it does. The class is said by its name, where the eye is shown its
+  code. No sentence was added: each part was in both catalogues.
+
+### What the walk holds
+
+| Held by `pnpm sr:walk`, on the built app | Found |
+|---|---|
+| The page says its language | *en* |
+| Four layers, each opened and closed through the tree: the opening dialog, a pathogen's card, the menu, the messages | Each a named dialog that says it is modal, focus in it, **nothing behind it read**; the card and the messages closed by the close kept beside them; the game read again after each |
+| The turn | *Turn 1 of 15* is in the tree, and *1/15* is not |
+| A new card | Named with its class and its way in |
+
+- **Found while building it, in the instrument:** read in the instant a dialog appeared, Chrome's
+  tree still held everything behind it, on a build served one way and not on another. Chrome brings
+  its tree up to date a little after the page, and a screen reader is told then. The walk reads
+  again for up to two seconds and refuses what is still wrong at the end of them. Ten runs of ten
+  pass since.
+- **Controls, each fired:** `sr-walk-a-layer-hides-what-is-behind` (nothing made inert: the walk
+  fails saying what is behind a layer is read), `sr-walk-focus-goes-to-the-layer`,
+  `sr-walk-the-turn-is-said-in-words`, `sr-walk-a-new-card-says-what-it-shows`.
+
+| Seen besides | Found |
+|---|---|
+| `pnpm guide:walk`, the lesson through its own controls | 76 beats of 76, no error: the layers change nothing for a finger |
+| The Gate 1 audit, alone, on this build (25 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one); every check at zero over 909 controls and 2,100 text runs, the new name check among them, over 1,261 controls, pictures and dialogs, none without a name (1,590 before this change: with a layer up, what is behind it is no longer in the tree, which is the change); 35 close paths, none wrong; the play area one height on 33 screens; offline met; 60 controls of the audit's own, the name check's ten among them. Not reached: playing together, which this run did not ask for |
+
+### What this is not
+
+- **It is Chrome's tree on a PC, not TalkBack on a phone.** What a machine can read is read.
+  Nobody who uses a screen reader has tried the game, and until one has finished a game it is not
+  said to support blind players.
+- **It does not hold that a name is a good name,** or that things are said in a sensible order.
+- **A turn cannot be played by it yet.** A cell's move is a tap on a place on the board, which a
+  screen reader cannot make. That is part 3.
+- **The guided lesson is not a layer.** Its light dims the screen for the eye; a screen reader is
+  still told of everything behind it and could press out of order, and the guide then lets go, as
+  it is built to. Leading a screen reader through the lesson is not built.
+- **Not walked:** a cell's card, which uses the same hook as a pathogen's; the lost-connection
+  notice and a row's several targets, which are not layers. **English only:** the names come from
+  the same catalogues in Hindi, and the walk was not run in it.
+
+**Unruled, and his to overrule:** the turn's words for a screen reader; how a new card is named;
+that focus goes back where it was when a layer closes.

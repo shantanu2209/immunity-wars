@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.3). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.4). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -153,8 +153,10 @@ and the library's text, in `packages/content/src/i18n/hi/`, chosen from Settings
 generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
 `pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
 §34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
-(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check is built** (plan §35) **and screen
-reader support is ruled and not built** (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
+(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check is built** (plan §35), and **screen
+reader support is brought into scope** (brief v2.4): the first of its three parts is built (plan §36;
+`pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
+to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
 pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
 it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
