@@ -3459,9 +3459,19 @@ made and unruled; what only he can do). He answered:
 | The choices made and unruled, §33 to §36 | **Keep them all** | They are his now, and he may still change any |
 | What only he could do: play the pieces on his phone first, and the next store build | ***"consider it approved"***: the pieces ship without his playing them first, and the store build is approved, the Play Console's steps Claude's once he has opened the browser | The upload key's password is still typed by him alone |
 
-**What "consider it approved" was not read as.** The item said that Gate 2's approval follows his
-playing the pieces on his phone. Gate 2 is a separate, stated act ([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md)
-§1): *"the visual design is approved."* It was not read as given, and is put to him.
+**What "consider it approved" was not read as, and then was.** The item said that Gate 2's
+approval follows his playing the pieces on his phone. Gate 2 is a separate, stated act
+([`PHASE2_BRIEF.md`](PHASE2_BRIEF.md) §1), so it was not read as given, and was put to him: did he
+mean Gate 2 itself, or only that the pieces could ship without his playing them first? He answered:
+
+> *"No the approval is for everything gate 2 related. I will play and test out on the live deplyed app itself. maybe we hold off google play store deployment for now and only do the web one. We can play test and if there are no more changes we can do the deplyement on the google play store then (in case we do see more changes those can also be done before moving to the play store)."*
+
+| What | Now |
+|---|---|
+| **Gate 2** | **Given.** The brief is v2.5 and says so. Given before he had played the last of the polish |
+| Where he plays it | **The live web app,** deployed for it |
+| **Google Play** | **Held.** No store build and no release until he has played the web version; what that play finds is made first. The next store build's version code is 3, already on `main` ([`TODO.md`](TODO.md)) |
+| Phase 2 | **Not closed by this.** The brief's definition of done asks for a closeout, which is put to him as its own piece of work |
 
 ### Piece 3: planning folded away, alone, and the goal on turn 1
 
@@ -3515,3 +3525,60 @@ captain hands out the Action Points; and the lesson has a planning card on every
 **Unruled, and his to overrule:** that the figure in the Body tile replaces the board while the view
 is open; that a place's list stands above the antivenom panel; *Defend the body* as the label of
 turn 1's middle card.
+
+## 38. Built 25 November 2026: screen reader support, its second part: what happens is said
+
+The second of the three parts §36 lists. A sighted player watches a move land, a coat snap on, the
+spread play out beat by beat. A player with a screen reader was told none of it: the board is
+pictures, and the log that says it in words is in the messages, which nobody opens after every tap.
+
+**What happens is said** (`packages/ui/src/play/Announcer.tsx`), the ordinary way a page says that
+something changed: a region that is not seen, which a screen reader reads aloud when its words
+change, after what it is already saying.
+
+| When | What is said |
+|---|---|
+| A beat of the spread is shown | Its name, the words the eye reads above the board: *Viruses hide*, *The march* |
+| An action is done | The lines it added to the log, oldest first, in the words the messages show: *B-Cell produced 1 EXB antibody (1/5).* |
+| A turn's draw | Its line in the log: *Infection: Nipah entered via the Nose.*, the screen reader's version of the new cards appearing |
+| The screen opens, on a new game or a resumed one | Nothing of what was already in the log: it was not just done |
+| The spread ends | Nothing of its own lines again: its beats were said as they played |
+
+- **A refusal was said already:** the passing message that gives it is a region of its own.
+- **The words are the catalogue's,** through the renderers the screens use, so a game in Hindi is
+  said in Hindi. Nothing was added to either catalogue.
+- **What is new in the log** is found by where the log stood: the engine keeps it newest first and
+  to a length, so the new lines are those before the first few lines it began with, found together
+  because one line alone can repeat. A test holds it, with a control.
+
+**Held by `pnpm sr:walk`,** which now records everything said from the page's first moment:
+
+| Held | Found |
+|---|---|
+| As a game opens | Its arrival is the first thing said, and nothing that was in the log before |
+| Produce, pressed through the tree | *B-Cell produced 1 EXB antibody (1/5).* said |
+| End turn, pressed through the tree | Each of the spread's beats said as it was shown, word for word: *Viruses hide, The march, Next turn* |
+
+- **Found while building it, in the walk and not the game:** its first rule was that nothing is said
+  as a game opens, and the game said the turn's arrival. That is right: the app draws turn 1 at
+  once, and the arrival is what a sighted player sees appear. The rule is that nothing that was in
+  the log before is said, and the arrival is said first.
+- **Found in the walk's own recorder, twice:** it began listening after the page had finished
+  loading, and then it stopped at its first function, which the TypeScript runner had wrapped in a
+  helper the page does not have. It is handed to the page as text.
+- **Controls, each fired:** `sr-walk-what-an-action-did-is-said`, `sr-walk-the-spread-is-said`,
+  `sr-walk-nothing-is-said-as-a-game-opens` (the first view treated as new: the walk fails saying
+  a game that opens is said to have done something), and `announcer-finds-what-is-new` on the test.
+  Three of the four failed for another reason on their first run, which shows nothing about their
+  own check; each was made to fail on its own words before it was kept.
+
+| Seen besides | Found |
+|---|---|
+| `pnpm guide:walk --build` | 69 beats of 69, no error: saying what happens changes nothing for a finger |
+| The Gate 1 audit, alone, on this build (25 November, headless Chrome on the PC) | 63 screens in each of the four passes (65 in one); every check at zero over 873 controls and 2,091 text runs, the name check among them; 33 close paths, none wrong; the play area one height; offline met; 60 controls of the audit's own. Not reached, each by the deal: a row's several targets in one pass, and in the pass at 200% text the Body view's place and its card, the turn's one invader having been dealt with before the view was opened (both were reached in every pass of the run before, §37); and playing together, which this run did not ask for |
+
+**What this is not.** Chrome's region on a PC, not TalkBack on a phone, where how much is read and
+how fast is the reader's own setting. **Not held:** that the words are said in a sensible order
+when several things happen at once, or that the spread's pace leaves time to hear each beat; a
+screen reader user can tap the spread on, as anyone can. **The board as a list,** without which a
+turn cannot yet be played without seeing it, is the third part, not started.
