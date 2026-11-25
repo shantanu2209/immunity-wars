@@ -126,19 +126,25 @@ Each with what it leads to and a recommendation.
    120. The release was made on 20 October before this measurement, which the roadmap said must come
    first; the ruling of that day put the release ahead of Gate 2 and did not speak to it.
    - **Recommendation: take it, after your play test,** so it measures the screens that ship.
-2. **The two older measuring scripts** (`tools/perf/measure.ts`, `tools/perf/measure-full.ts`), left
+   - **Put to him again the same evening with its whole context,** at his asking: what the decision
+   is and why it was locked, what has been measured and why the first reading in the app is not the
+   last, what he does (the phone on the cable, left alone for a couple of minutes), and that a phone
+   holding the Google Play version must have it removed first, which loses only that app's own saved
+   game. **Not yet ruled.**
+2. **The two older measuring scripts** (`measure.ts` and `measure-full.ts` in `tools/perf/`), left
    for this stage to decide.
-   - They drive the developer's page of the screens before Clay, and were never run against the new
+   - They drove the developer's page of the screens before Clay, and were never run against the new
    ones; the measuring page replaced them.
-   - **Recommendation: remove them,** with a line in the record. They are in the history.
+   - **Ruled 25 November 2026, as recommended: removed** ([`LOOK_PLAN.md`](LOOK_PLAN.md) §40). They
+   are in the history.
 3. **The store's screenshots, retaken after Gate 2** (`TODO.md` row 12).
-   - **Recommendation:** with the next store build, after your play test, so the listing shows what
-   that build is.
+   - **Ruled 25 November 2026, as recommended:** with the next store build, after his play test, so
+   the listing shows what that build is.
 4. **Accepting this closeout.**
    - Then `CLAUDE.md`'s marker moves to Phase 4, the brief's last boxes are ticked or marked as
    above, and the roadmap says Phase 2 is closed.
-   - **Recommendation: after your play test and decision 1,** with this document brought level with
-   whatever they find.
+   - **Ruled 25 November 2026, as recommended:** after his play test and decision 1, with this
+   document brought level with whatever they find.
 
 ---
 

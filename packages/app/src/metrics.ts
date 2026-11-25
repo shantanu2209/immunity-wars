@@ -1,8 +1,8 @@
 /**
  * P2.2 step 6 — the instrumentation P2.3 reads. Numbers on the DEVICE CLOCK, not impressions
- * (PHASE2_BRIEF §4). Everything here is recorded into `window.__iwMetrics` so the measurement
- * driver (`tools/perf/measure.ts`) can collect it over CDP; the page never interprets, it only
- * measures.
+ * (PHASE2_BRIEF §4). Everything here is recorded into `window.__iwMetrics` so a measuring
+ * driver can collect it over CDP (the first, `tools/perf/measure.ts`, was removed on 25 November
+ * 2026 with the screens it measured); the page never interprets, it only measures.
  *
  * The three §4 budget rows and where each is captured:
  *   - initial full-board render  -> `initialRenderMs` (module-load to post-mount paint)

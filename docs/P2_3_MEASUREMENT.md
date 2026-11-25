@@ -20,7 +20,7 @@ do not exist yet, so every redraw figure below is a **lower bound** on the final
 | Device | 12th Gen Intel Core i7-12700F, 20 threads, Windows 11 — a development PC |
 | Browser | headless system Chrome, CPU throttling via CDP `Emulation.setCPUThrottlingRate` |
 | Server | Vite dev server (development React build, unminified) |
-| Driver | `tools/perf/measure.ts` — orchestrates only; every number is read from the page's own clock (`window.__iwMetrics`, `packages/app/src/metrics.ts`) |
+| Driver | `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) — orchestrates only; every number is read from the page's own clock (`window.__iwMetrics`, `packages/app/src/metrics.ts`) |
 | Game | Training difficulty, through `LocalSession` against the real engine |
 | Samples | per throttle level: 3 fresh page loads · 24 selection taps · 4 full turns of real spreads |
 
@@ -116,7 +116,7 @@ Two notes from the ruling that belong beside the numbers:
   full UI lands (P2.5), row 3 is re-measured with this same instrument before Gate 1 is
   claimed.**
 
-*Instrument: `tools/perf/measure.ts` against `packages/app/src/metrics.ts`. Raw JSON for this
+*Instrument: `measure.ts` in `tools/perf/` against `packages/app/src/metrics.ts`. Raw JSON for this
 run is reproducible with:*
 
 ```
@@ -172,7 +172,7 @@ note a third time.
 ## Added 6 September 2026 — THE MANDATORY FULL-UI PER-REDRAW RE-MEASURE, and the breach RESOLVED in part
 
 **What was measured.** The same instrument as the screening pass (i7-12700F, headless system
-Chrome, CDP CPU throttling; `tools/perf/measure-full.ts`, `pnpm perf:full`) against the DEV
+Chrome, CDP CPU throttling; `measure-full.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*), `pnpm perf:full`) against the DEV
 SHELL, which mounts the FULL play screen — the effects strip, the command bar with its rows and
 AP terms, the piece grid, the antibody, body and log panels, the planning screen, the reveal
 and the goal dialog — at 360 × 780. Per throttle level: three fresh loads (row 1), 24 board
@@ -288,7 +288,7 @@ not credited to piece 2.
 **Conditions:** i7-12700F (20 threads), Windows, headless system Chrome over CDP, 360 × 780, the dev
 shell (`/dev.html`) of the shipped build served by `vite preview`, CPU throttling as given.
 
-`tools/perf/measure-full.ts`, five command taps per level:
+`measure-full.ts` in `tools/perf/`, five command taps per level:
 
 | device · throttle | initial render (3 loads) | selection tap busy p50 / p95 | command tap busy p50 / p95 / max | per-redraw work p50 / p95 | long tasks |
 |---|---|---|---|---|---|
@@ -296,7 +296,7 @@ shell (`/dev.html`) of the shipped build served by `vite preview`, CPU throttlin
 | i7-12700F · 6× | 565.7 / 143.5 / 132.4ms | 7.2 / 13.3ms | 42.9 / 55.5 / 55.5ms | 5.2 / 8.5ms (20 frames) | 2, max 97ms, 168ms total |
 | *6 September (late), 6×, for reference* | *299 / 152 / 186ms* | *38.7ms p50* | *96.4 / 97.6 / 97.6ms* | *26.7 / 52.6ms* | |
 
-`tools/perf/measure.ts` (P2.3's driver, now against the full play screen): 1× initial render 63.8 /
+`measure.ts` in `tools/perf/` (P2.3's driver, now against the full play screen): 1× initial render 63.8 /
 29.1 / 24.8ms, selection tap busy p50 0.9ms, per-redraw work p50 0.6ms (16 frames), no long tasks;
 6× initial render 638.2 / 158.4 / 142.3ms, selection tap busy p50 7.4ms, per-redraw work p50 4.0 and
 p95 9.9ms (20 frames), 2 long tasks, max 104ms. Every burst's tail assertion passed at both levels.

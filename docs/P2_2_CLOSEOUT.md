@@ -62,7 +62,7 @@ Written down at the boundary, same as `P2_2_PLAN.md` §2 — several are traps.
   scheduler without it). Refactoring it away silently changes what row 3 measures; if P2.5
   restructures the shell, the measurement path moves with it or the numbers stop meaning what
   the doc says.
-- **⚠️ `tools/perf/measure.ts` is coupled to the shell by button TEXT and `[data-cell]`
+- **⚠️ `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) is coupled to the shell by button TEXT and `[data-cell]`
   attributes.** Renaming "Draw" / "Begin command" / "End command" or dropping `data-cell`
   breaks the driver — loudly (it throws), but a session could burn time on why. The same
   driver is intended for the handset pass over remote debugging; keep it working.

@@ -276,7 +276,7 @@ was found that moved it.
 
 ### What building it changes beyond the screen
 
-- **The instruments.** The Gate 1 audit and `tools/perf/measure.ts` and `measure-full.ts` drive a
+- **The instruments.** The Gate 1 audit and `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) and `measure-full.ts` drive a
   turn by clicking its buttons, so removing Draw and moving the dock changes their walks, and each
   change re-runs the controls it depends on. `APP_FLOW.md` ruling 6 keeps the dev shell's own turn
   buttons for the perf driver's coupling; that is honoured and re-measured, not silently broken.
@@ -477,7 +477,7 @@ Piece 1 went proposal, ruling, build, and piece 2 does the same wherever the rul
 ### What piece 2 changes beyond the screen
 
 - **The Gate 1 audit** clicks "Draw a card" in its walk, in the walk to the Result and in the
-  offline steps; `tools/perf/measure.ts` and `tools/perf/measure-full.ts` drive a turn by its button
+  offline steps; `measure.ts` in `tools/perf/` and `measure-full.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) drive a turn by its button
   text too. Each walk changes, and its controls re-run.
 - **The audit must still hold, every run:** 34 controls all firing the right way; 44 screens per
   pass (46 under SIZE200), none NOT REACHED; every check 0 under all four mechanisms, occlusion
@@ -1043,7 +1043,7 @@ while `pnpm verify` is running.
   still sits under it. The body view shrinks to about 410px and the pathogen list becomes a drawer.
   Measure it on the current build first; the numbers above predate pieces 2 and 3.
 - **Owed before the Phase 2 closeout:** the draw's render re-timed on the real low-end handset, and the
-  performance rows re-timed after pieces 2 and 3 (`tools/perf/measure.ts`, `measure-full.ts`).
+  performance rows re-timed after pieces 2 and 3 (`measure.ts` in `tools/perf/`, `measure-full.ts`).
 - **Then the S25 pass**, which also measures what no headless run can: an Android font's widths ("Recall
   to bloodstream" is 146 of a slot's 150px in Arial; the widest resident name has about 6px to spare in
   the Pieces drawer at 180px).
@@ -1225,7 +1225,7 @@ ZOOM200, where the zones' words wrap at 180px.
   → Back, landing on the drawer, which replaces "Planning → pathogen card". The no-scroll check reaches
   planning at rest. Under (b) the dock's one-height check reaches planning's screens unchanged; under
   (c) it needs a second height and controls of its own.
-- **`tools/perf/measure.ts` and `measure-full.ts`** press "Command your cells" by its words, which stay.
+- **`measure.ts` in `tools/perf/` and `measure-full.ts`** press "Command your cells" by its words, which stay.
 - **`APP_FLOW.md`'s planning bullet** is amended when it is built.
 
 ### Found on the way

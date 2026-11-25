@@ -1148,7 +1148,7 @@ finding, and is his to weigh.
 | **The hints and the first-game coach**, switched off since L4 | The guided game replaces them, and may reuse the part that says a thing once, the first time it is met. They go with L6 |
 | **`docs/ART_BRIEF.md` and `docs/ANATOMY_FRAME_BRIEF.md`**, the prompts the old art was generated from | The asset register's rows cite them. They are the record of where removed art came from |
 | **`tools/legacy/stale/`**, two builds from before the Brain fix that contradict the rules | `tools/legacy/` is never edited: that is a hard rule of this repository, and his to lift |
-| **Two older measuring scripts**, `tools/perf/measure.ts` and `tools/perf/measure-full.ts`, and the developer page they drive | Written for the screens before Clay. Not run against the new ones, so whether they still measure anything is not known. For L7, where the measurement is re-aimed |
+| **Two older measuring scripts**, `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) and `measure-full.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*), and the developer page they drive | Written for the screens before Clay. Not run against the new ones, so whether they still measure anything is not known. For L7, where the measurement is re-aimed |
 | **124 names `packages/ui` offers that the app never asks for** | Its own tests use them. Harmless |
 | **Branches already merged**, here and on GitHub | Not part of the repository's files; his to say |
 
@@ -3696,3 +3696,16 @@ the dashboard failed: GitHub could not find the dashboard's artifact, which the 
 and said to check its own status page. Run again, the publish of 25 November passed. **GitHub's
 side, not this repository's.** The Self-test workflow's scheduled run of the same day passed, the
 first with #133 and #134 in it.
+
+### Decisions 2 to 4 of the closeout, ruled; decision 1 put again
+
+Asked to rule on the closeout's four decisions, he answered: *"I don't know what decision 1 is
+about. When you ask me take calls please give me full context including explanations, implications
+and recommendations. The other three are fine as per your recommendations"*.
+
+| Decision | Ruled |
+|---|---|
+| 2. The two older measuring scripts | **Removed,** as recommended: `measure.ts` and `measure-full.ts` in `tools/perf/`, with `pnpm perf:full`. They drove the developer's page of the screens before Clay and had not been run since; the records that name them keep their words and say they were removed. The developer's page and the metrics it records stay: the measuring page, the shell's check and the build's tests use them |
+| 3. The store's screenshots | **With the next store build,** after his play test |
+| 4. Accepting the closeout | **After his play test and decision 1** |
+| 1. Stage L7's measurement inside the app | **Put to him again, with its whole context.** Not yet ruled |
