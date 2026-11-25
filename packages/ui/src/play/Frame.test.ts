@@ -131,6 +131,7 @@ describe('the top bar', () => {
     renderToStaticMarkup(
       createElement(TopBar, {
         turnText: '3/15',
+        turnSpoken: 'Turn 3 of 15',
         banner: banner ? { text: 'Next turn: Co-infection', kind: 'bad' } : null,
         onBanner: () => undefined,
         menu: createElement('button', { 'data-pause': '' }, 'Menu'),

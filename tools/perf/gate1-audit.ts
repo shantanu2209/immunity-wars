@@ -143,7 +143,8 @@ interface Finding {
     | 'offline'
     | 'occlusion'
     | 'playArea'
-    | 'scroll';
+    | 'scroll'
+    | 'name';
   screen: string;
   path: string;
   text: string;
@@ -166,6 +167,9 @@ interface ScreenResult {
   /** The base pass only: how far the page is taller than the screen on ANY screen, for the ones
    *  `ONE_SCREEN` requires to fit (Gate 2's polish, piece 2; docs/LOOK_PLAN.md §33). */
   page?: { overflow: number } | null;
+  /** The base pass only: how many controls, pictures and dialogs Chrome's accessibility tree
+   *  held on this screen, each of which was required to have a name. */
+  named?: number;
   findings: Finding[];
 }
 
@@ -938,6 +942,92 @@ const progress = (pass: string, screen: string): void => {
   if (PROGRESS) console.error(`  .. ${pass}: ${screen}`);
 };
 
+/**
+ * NAMES, FOR A SCREEN READER (ruled 25 November 2026; docs/LOOK_PLAN.md §34 and §36). A player
+ * who cannot see the screen is read it by TalkBack or VoiceOver, and what they are read is the name
+ * of each thing, as the browser works it out. A button drawn as a picture with no name is read as
+ * "button" and nothing more.
+ *
+ * So the names are taken from where the screen reader takes them: Chrome's own accessibility tree,
+ * not this script's idea of it. On every screen of the base pass, each control, each picture that
+ * is not marked as decoration and each dialog must have a name there, and the page must say what
+ * language it is in, which is how a screen reader picks its voice.
+ *
+ * What it does not hold: that a name is a GOOD name, or that anything is said in a sensible order.
+ * Those need a person listening.
+ */
+const NAMED_ROLES = new Set([
+  'button',
+  'link',
+  'textbox',
+  'searchbox',
+  'combobox',
+  'listbox',
+  'option',
+  'checkbox',
+  'radio',
+  'switch',
+  'slider',
+  'spinbutton',
+  'tab',
+  'menuitem',
+  'image',
+  'dialog',
+  'alertdialog',
+]);
+async function names(page: Page): Promise<{ read: number; findings: Omit<Finding, 'screen'>[] }> {
+  const cdp = await page.createCDPSession();
+  const findings: Omit<Finding, 'screen'>[] = [];
+  let read = 0;
+  try {
+    await cdp.send('DOM.enable');
+    await cdp.send('Accessibility.enable');
+    const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+    for (const node of nodes) {
+      const role = String((node.role?.value as string | undefined) ?? '');
+      if (node.ignored || !NAMED_ROLES.has(role)) continue;
+      read += 1;
+      const name = String((node.name?.value as string | undefined) ?? '').trim();
+      if (name !== '') continue;
+      // Which element it is, by its own tag and the hooks on it: the tree knows it by a number.
+      let path = role;
+      if (node.backendDOMNodeId !== undefined) {
+        const described = await cdp
+          .send('DOM.describeNode', { backendNodeId: node.backendDOMNodeId })
+          .catch(() => null);
+        const attrs = described?.node.attributes ?? [];
+        const hooks: string[] = [];
+        for (let i = 0; i + 1 < attrs.length; i += 2) {
+          const key = attrs[i] ?? '';
+          if (key.startsWith('data-') || key === 'role' || key === 'src')
+            hooks.push(`[${key}="${(attrs[i + 1] ?? '').slice(0, 60)}"]`);
+        }
+        path = `${described?.node.localName ?? role}${hooks.join('')}`;
+      }
+      findings.push({
+        check: 'name',
+        path,
+        text: '',
+        detail:
+          role === 'image'
+            ? 'a picture with no name, and not marked as decoration'
+            : `a ${role} with no name: a screen reader says "${role}" and nothing more`,
+      });
+    }
+    const lang = (await page.evaluate(`document.documentElement.lang`)) as string;
+    if (lang.trim() === '')
+      findings.push({
+        check: 'name',
+        path: 'html',
+        text: '',
+        detail: 'the page does not say its language, so a screen reader guesses its voice',
+      });
+  } finally {
+    await cdp.detach().catch(() => undefined);
+  }
+  return { read, findings };
+}
+
 async function audit(page: Page, screen: string, results: ScreenResult[]): Promise<void> {
   progress('base', screen);
   const r = (await page.evaluate(AUDITOR)) as {
@@ -949,6 +1039,7 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
   const playArea = (await page.evaluate(PLAY_AREA_PROBE)) as ScreenResult['playArea'];
   const rest = (await page.evaluate(REST_PROBE)) as ScreenResult['rest'];
   const pageFit = (await page.evaluate(PAGE_PROBE)) as ScreenResult['page'];
+  const named = await names(page);
   results.push({
     screen,
     controls: r.controls,
@@ -956,7 +1047,8 @@ async function audit(page: Page, screen: string, results: ScreenResult[]): Promi
     playArea,
     rest,
     page: pageFit,
-    findings: [...r.findings, ...o.findings].map((f) => ({ ...f, screen })),
+    named: named.read,
+    findings: [...r.findings, ...o.findings, ...named.findings].map((f) => ({ ...f, screen })),
   });
 }
 
@@ -3102,6 +3194,61 @@ async function controls(page: Page): Promise<string[]> {
   await unplant();
 
   // ------------------------------------------------------------------------------------------
+  // NAMES (docs/LOOK_PLAN.md §36): a button with a picture and no name, a picture with no
+  // alternative and a dialog with no name must each be flagged; the same three named, and a picture
+  // marked as decoration, must not be. Read through Chrome's accessibility tree, as the walk is.
+  // ------------------------------------------------------------------------------------------
+  const DOT = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  await page.evaluate(`(() => {
+    const ground = document.createElement('div');
+    ground.setAttribute('data-control', 'ground');
+    ground.innerHTML = [
+      '<button data-control="button-bare"><img alt="" src="${DOT}"></button>',
+      '<button data-control="button-labelled" aria-label="planted label"><img alt="" src="${DOT}"></button>',
+      '<button data-control="button-pictured"><img alt="planted picture" src="${DOT}"></button>',
+      '<img data-control="picture-bare" src="${DOT}">',
+      '<img data-control="picture-named" alt="planted alternative" src="${DOT}">',
+      '<img data-control="picture-decoration" alt="" src="${DOT}">',
+      '<div role="dialog" data-control="dialog-bare">planted</div>',
+      '<div role="dialog" aria-label="planted dialog" data-control="dialog-named">planted</div>',
+    ].join('');
+    document.body.prepend(ground);
+  })()`);
+  const planted = await names(page);
+  const flagged = (id: string): boolean =>
+    planted.findings.some((f) => f.path.includes(`[data-control="${id}"]`));
+  line('name fires: a button with a picture and no name is flagged', flagged('button-bare'));
+  line(
+    'name passes: the same button with a label is NOT flagged',
+    !flagged('button-labelled') && planted.read > 0,
+  );
+  line(
+    'name passes: a button named by its picture’s alternative is NOT flagged',
+    !flagged('button-pictured'),
+  );
+  line('name fires: a picture with no alternative is flagged', flagged('picture-bare'));
+  line('name passes: a picture with one is NOT flagged', !flagged('picture-named'));
+  line(
+    'name passes: a picture marked as decoration is NOT flagged',
+    !flagged('picture-decoration'),
+  );
+  line('name fires: a dialog with no name is flagged', flagged('dialog-bare'));
+  line('name passes: a dialog with one is NOT flagged', !flagged('dialog-named'));
+  const langWas = (await page.evaluate(`document.documentElement.lang`)) as string;
+  await page.evaluate(`document.documentElement.removeAttribute('lang')`);
+  const mute = await names(page);
+  line(
+    'name fires: a page that does not say its language is flagged',
+    mute.findings.some((f) => f.path === 'html'),
+  );
+  await page.evaluate(`document.documentElement.lang = ${JSON.stringify(langWas)}`);
+  line(
+    'name passes: a page that says its language is NOT flagged',
+    !planted.findings.some((f) => f.path === 'html'),
+  );
+  await unplant();
+
+  // ------------------------------------------------------------------------------------------
   // NESTING (docs/for-P2.7.md §9, ruling 9): the landing check must report a close that went too
   // far and pass one that went exactly one level. How to play, section 1; the planted defect
   // closes TWICE while expecting the index, lands on the title, and must be reported. The same
@@ -3672,6 +3819,8 @@ try {
       scaleSize200: count(size200, 'scale'),
       layoutSize200: count(size200, 'layout'),
       sizeSize200: count(size200, 'size'),
+      namesRead: results.reduce((n, s) => n + (s.named ?? 0), 0),
+      name: count(results, 'name'),
       occlusion: count(results, 'occlusion'),
       occlusionFont200: count(font200, 'occlusion'),
       occlusionZoom200: count(zoom200, 'occlusion'),
