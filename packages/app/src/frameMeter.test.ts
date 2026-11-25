@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { SLOW_MS, VERY_SLOW_MS, slowest, summarise } from './frameMeter';
+import { SIXTY, SLOW_MS, VERY_SLOW_MS, slowest, summarise } from './frameMeter';
 
 describe('the frame meter’s counting', () => {
   it('a run at 60 a second has no slow frame', () => {
@@ -76,6 +76,36 @@ describe('the frame meter’s counting', () => {
       worst: 0,
       slow: 0,
       verySlow: 0,
+      refresh: 16.7,
+      late: 0,
+      lateTwice: 0,
     });
+  });
+
+  // THE LINES FOLLOW THE SCREEN (stage L7, ruled 25 November 2026; docs/TODO.md row 11). Inside the
+  // Android app the S25 refreshes every 8.3 ms, and a frame that misses one refresh arrives at
+  // 16.7: under the fixed 20 ms line. The late lines are counted against the screen's own pace.
+  it('at 120 a second, a frame one refresh late is late, though it is not slow by the 20 ms line', () => {
+    const s = summarise([8.3, 8.4, 8.2, 16.7, 8.3, 25.0, 9.1, 7.6], 8.3);
+    expect(
+      s.slow,
+      'A FRAME ONE REFRESH LATE AT 120 IS NOT COUNTED: the late line is not the screen’s',
+    ).toBe(1);
+    expect(
+      s.late,
+      'A FRAME ONE REFRESH LATE AT 120 IS NOT COUNTED: the late line is not the screen’s',
+    ).toBe(2);
+    expect(s.lateTwice).toBe(1);
+    expect(s.refresh).toBe(8.3);
+  });
+
+  it('at 120 a second, the jitter of a frame on time is not late', () => {
+    expect(summarise([8.3, 9.4, 7.2, 10.1, 12.4], 8.3).late).toBe(0);
+  });
+
+  it('at 60 a second, the late lines say what the fixed ones said of a missed refresh', () => {
+    const s = summarise([16.7, 33.3, 16.7, 50.1, 16.7, 18.9], SIXTY);
+    expect(s.late).toBe(s.slow);
+    expect(s.lateTwice).toBe(s.verySlow);
   });
 });

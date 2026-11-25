@@ -34,6 +34,21 @@ export const SLOW_MS = 20;
  */
 export const VERY_SLOW_MS = 41.7;
 
+/**
+ * LATE, AT THE SCREEN'S OWN PACE (ruled 25 November 2026 with stage L7's measurement, docs/TODO.md
+ * row 11). The two lines above were set for a screen that refreshes 60 times a second. Inside the
+ * Android app the S25 refreshes every 8.3 ms, and a frame that misses one refresh there arrives at
+ * 16.7 ms: under the 20 ms line, so the meter could not say how many were late (§26). These lines
+ * follow the refresh the page reads before it starts: a frame is LATE at one and a half refreshes,
+ * halfway between on time and one missed, and LATE BY MORE THAN ONE at two and a half, halfway
+ * between one missed and two. At 60 a second the second is the 41.7 above. The fixed lines stay
+ * beside them, so a reading can still be laid against those of 1 and 2 October.
+ */
+export const LATE_AT = 1.5;
+export const LATE_TWICE_AT = 2.5;
+/** The refresh assumed when none is given: 60 a second. */
+export const SIXTY = 1000 / 60;
+
 export interface FrameStats {
   frames: number;
   seconds: number;
@@ -44,8 +59,14 @@ export interface FrameStats {
   worst: number;
   /** Frames that took 20 ms or more. */
   slow: number;
-  /** Frames that took 41.7 ms or more: more than one refresh missed. */
+  /** Frames that took 41.7 ms or more: more than one refresh missed, at 60 a second. */
   verySlow: number;
+  /** The screen's refresh these were counted against, in ms. */
+  refresh: number;
+  /** Frames one and a half refreshes or more apart: at least one refresh late. */
+  late: number;
+  /** Frames two and a half refreshes or more apart: more than one refresh late. */
+  lateTwice: number;
 }
 
 function pick(sorted: readonly number[], q: number): number {
@@ -54,7 +75,7 @@ function pick(sorted: readonly number[], q: number): number {
 }
 const round = (n: number): number => Math.round(n * 10) / 10;
 
-export function summarise(deltas: readonly number[]): FrameStats {
+export function summarise(deltas: readonly number[], refresh: number = SIXTY): FrameStats {
   const d = [...deltas].sort((a, b) => a - b);
   return {
     frames: deltas.length,
@@ -65,6 +86,9 @@ export function summarise(deltas: readonly number[]): FrameStats {
     worst: round(d[d.length - 1] ?? 0),
     slow: deltas.filter((x) => x >= SLOW_MS).length,
     verySlow: deltas.filter((x) => x >= VERY_SLOW_MS).length,
+    refresh: round(refresh),
+    late: deltas.filter((x) => x >= LATE_AT * refresh).length,
+    lateTwice: deltas.filter((x) => x >= LATE_TWICE_AT * refresh).length,
   };
 }
 
@@ -104,9 +128,10 @@ export interface Meter {
 
 /**
  * Start timing frames. `mark` is asked once a frame whether this frame is one of the marked ones.
- * It runs until `stop`, which hands back the count.
+ * It runs until `stop`, which hands back the count. `refresh` is the screen's own pace, read
+ * before the run (`refreshPace`), which the lines for a late frame follow.
  */
-export function startMeter(mark: () => boolean, burnMs = 0): Meter {
+export function startMeter(mark: () => boolean, burnMs = 0, refresh: number = SIXTY): Meter {
   const all: number[] = [];
   const marked: number[] = [];
   const named: NamedFrame[] = [];
@@ -149,8 +174,8 @@ export function startMeter(mark: () => boolean, burnMs = 0): Meter {
       running = false;
       observer?.disconnect();
       return {
-        all: summarise(all),
-        marked: summarise(marked),
+        all: summarise(all, refresh),
+        marked: summarise(marked, refresh),
         slowest: slowest(named),
         longTasks,
       };

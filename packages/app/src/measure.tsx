@@ -30,7 +30,7 @@ import { COLOUR, KitButton, KitCard, TYPE, kitAudio } from '@immunity-wars/ui/ki
 import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { refreshPace, startMeter, type MeterResult } from './frameMeter';
+import { LATE_AT, LATE_TWICE_AT, refreshPace, startMeter, type MeterResult } from './frameMeter';
 
 const params = new URLSearchParams(window.location.search);
 const TURNS = Math.max(1, Math.min(8, Number(params.get('turns') ?? '3') || 3));
@@ -191,16 +191,20 @@ function Measure(): ReactElement {
     let cameraWas = 'wide';
     let cameraChanged = -Infinity;
     let cameraIns = 0;
-    const meter = startMeter(() => {
-      const now = performance.now();
-      const camera = find('[data-clay-surface]')?.getAttribute('data-camera') ?? 'wide';
-      if (camera !== cameraWas) {
-        cameraWas = camera;
-        cameraChanged = now;
-        if (camera === 'in') cameraIns += 1;
-      }
-      return camera === 'in' || now - cameraChanged < 600;
-    }, BURN);
+    const meter = startMeter(
+      () => {
+        const now = performance.now();
+        const camera = find('[data-clay-surface]')?.getAttribute('data-camera') ?? 'wide';
+        if (camera !== cameraWas) {
+          cameraWas = camera;
+          cameraChanged = now;
+          if (camera === 'in') cameraIns += 1;
+        }
+        return camera === 'in' || now - cameraChanged < 600;
+      },
+      BURN,
+      refresh,
+    );
     const played = await playTurns(TURNS, setRunning);
     const result = meter.stop();
     setRunning(null);
@@ -274,9 +278,14 @@ function Measure(): ReactElement {
               what="Slow frames (20 ms or more)"
               value={`${String(r.all.slow)} of ${String(r.all.frames)}`}
             />
+            <Row what="Of them, 42 ms or more" value={String(r.all.verySlow)} />
             <Row
-              what="Of them, more than one refresh missed (42 ms or more)"
-              value={String(r.all.verySlow)}
+              what={`Late by a refresh or more, at this screen's pace (${String(Math.round(LATE_AT * reading.refresh * 10) / 10)} ms or more)`}
+              value={`${String(r.all.late)} of ${String(r.all.frames)}`}
+            />
+            <Row
+              what={`Of them, more than one refresh late (${String(Math.round(LATE_TWICE_AT * reading.refresh * 10) / 10)} ms or more)`}
+              value={String(r.all.lateTwice)}
             />
             <Row
               what="A frame: middle, 95th, 99th of a hundred, worst"
@@ -285,6 +294,10 @@ function Measure(): ReactElement {
             <Row
               what="While the camera was moving or in: slow frames"
               value={`${String(r.marked.slow)} of ${String(r.marked.frames)}`}
+            />
+            <Row
+              what="While the camera was moving or in: late by a refresh or more"
+              value={`${String(r.marked.late)} of ${String(r.marked.frames)}`}
             />
             <Row
               what="While the camera was moving or in: worst"

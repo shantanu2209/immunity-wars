@@ -3709,3 +3709,27 @@ and recommendations. The other three are fine as per your recommendations"*.
 | 3. The store's screenshots | **With the next store build,** after his play test |
 | 4. Accepting the closeout | **After his play test and decision 1** |
 | 1. Stage L7's measurement inside the app | **Put to him again, with its whole context.** Not yet ruled |
+
+He answered: *"Yes let's do it after my play test"*.
+
+### Built: the meter counts a late frame at the screen's own pace
+
+The one thing the measurement needed first (`TODO.md` row 11). The measuring page's line for a slow
+frame was 20 ms, set for a screen that refreshes 60 times a second. Inside the Android app the S25
+refreshes every 8.3 ms, and a frame one refresh late arrives at 16.7 ms, under the line: the first
+reading of 2 October could not say how many there were (§26).
+
+- **Two lines now follow the refresh the page reads before it starts** (`packages/app/src/frameMeter.ts`):
+  a frame is late at one and a half refreshes, halfway between on time and one missed, and late by
+  more than one at two and a half. At 120 a second they are 12.5 and 20.8 ms; at 60, 25 and 41.7.
+- **The fixed lines stay on the card beside them,** so the reading can be laid against those of 1
+  and 2 October.
+- **Seen on the PC,** in headless Chrome, which refreshes there every 17.6 ms: 1,852 frames, 14 late
+  by its own pace, 101 over the fixed 20 ms line. With every frame made to waste 40 ms, 257 of 257
+  late, and the meter's own control fires. The PC is not the phone.
+- **Control added, and fired:** `meter-late-follows-the-refresh` (the late line put back at 20 ms:
+  the meter's test fails saying a frame one refresh late at 120 is not counted).
+
+**What is left for the measurement:** his play test, then the S25 on the cable, the app built and
+installed, and `pnpm android:check --measure`, which opens the measuring page inside the app and
+reads its card. If the phone holds the Google Play version, it is removed first.
