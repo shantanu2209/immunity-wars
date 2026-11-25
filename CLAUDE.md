@@ -116,7 +116,7 @@ Gate 2, by ruling** (20 October 2026; plan §31, brief v2.3): the game is on Goo
 0.9, in every country Play offers. **Gate 2 was given on 25 November 2026** (brief v2.5, plan §37):
 *"the approval is for everything gate 2 related"*, before he had played the last of the polish, which
 he plays on the live web app; **the next store build is held until then**, and Phase 2's closeout is
-its own piece of work. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+written and put to him, not yet accepted (`docs/PHASE2_CLOSEOUT.md`; plan §40). `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
 repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
 120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected

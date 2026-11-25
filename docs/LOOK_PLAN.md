@@ -3656,3 +3656,43 @@ board, a cell taken in hand and moved, an action on the card, End turn, and what
 **What it still is not.** Nobody who uses TalkBack has played it; how it sounds, how long a turn
 takes by ear, and whether the order of things makes sense are a person's to find. The guided lesson
 is not led by ear: its light dims for the eye. **So it is still not said to support blind players.**
+
+## 40. Ruled 25 November 2026, the evening: deployed; the closeout written; the store waits
+
+Told what had merged since the afternoon's deploy and what needed him, each with a recommendation,
+he answered:
+
+> *"1. Yes please deploy 2. Yes please write it up 3. Yes this can wait till I have tested."*
+
+| What | Ruled | Done |
+|---|---|---|
+| Deploy the screen reader's third part, the app alone | **Yes** | Below |
+| The Phase 2 closeout | **Write it** | [`PHASE2_CLOSEOUT.md`](PHASE2_CLOSEOUT.md), put to him with its decisions. **Not accepted** |
+| Google Play | **Waits for his play test** | `TODO.md` row 18, as it was |
+
+He asked how to test the screen reader, and was told in the chat. The short of it: on the web app in
+Chrome, since the Play build predates all three parts; TalkBack's shortcut set first so it can be
+turned off; swipe and double tap; the board's list is reached by swiping, not by touch; and the
+guided lesson is not led by ear.
+
+### Deployed, 25 November 2026, 19:39 IST: the screen reader's third part
+
+On his word: the app alone, from `main` at `c2058e8`, as version `20261125-193924-c2058e8`. The
+relay was not touched: nothing in it, the protocol or the rules changed. With it went what merged
+after the afternoon's deploy: the dependency updates of #211, the board as a list (#213), and the
+test machinery (#212, #214; [`FINDINGS.md`](FINDINGS.md) #133, #134).
+
+| Checked on the live app, from the PC, in headless Chrome | Found |
+|---|---|
+| The deploy script's own checks | The build starts with no error; the privacy page names its contact, carried over from the live page; the server serves this build |
+| `pnpm sr:walk`, by the accessibility tree alone | Every check passed, the board's among them: 9 places, each with what stands there, and the Monocyte moved by the list from the bloodstream to *Nose lane, step 1* |
+| `pnpm guide:walk`, in English and in Hindi | Every beat in order, handed over at turn 8 of 15; the Hindi in the bundled face |
+
+### The nightly, read
+
+The Nightly workflow failed on 22, 24 and 25 November, and passed on 23 November on the same
+commit. Each time its tests passed, 5 suite rows with none failed, and only the job that publishes
+the dashboard failed: GitHub could not find the dashboard's artifact, which the run had uploaded,
+and said to check its own status page. Run again, the publish of 25 November passed. **GitHub's
+side, not this repository's.** The Self-test workflow's scheduled run of the same day passed, the
+first with #133 and #134 in it.
