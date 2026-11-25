@@ -25,6 +25,7 @@ import type { SessionView } from '@immunity-wars/session';
 
 import { buildNodeModel, type InspectInvader, type Located } from '../board/Board';
 import { t } from '../i18n';
+import { organDisplayName, routeDisplayName } from '../names';
 
 export type Depth = 'entry' | 'blood' | 'organ';
 
@@ -79,10 +80,10 @@ export interface PlanningModel {
 }
 
 const num = (v: unknown): number => (typeof v === 'number' ? v : 0);
-const organName = (o: string): string =>
-  String((ORGANS as Record<string, { name?: unknown }>)[o]?.name ?? o);
-const routeName = (lane: string): string =>
-  String((ROUTES as Record<string, { name?: unknown }>)[lane]?.name ?? lane);
+const organName = organDisplayName;
+const routeName = routeDisplayName;
+void ORGANS;
+void ROUTES;
 
 export function depthOf(loc: Located): Depth {
   if (loc.zone === 'branch') return 'organ';

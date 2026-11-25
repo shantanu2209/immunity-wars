@@ -16,26 +16,30 @@
  * the body is the pale unknown piece and says so; its class is not shown, because it has none yet.
  * The cards are dealt: each arrives a moment after the one before, with the kit's arrival.
  *
- * A tap flips one card to its back: where it came in, whether it is novel or remembered, and the
- * class that neutralises it, with the card icon opening the full pathogen card. A second tap flips
- * it back. The back is a SUMMARY, not the full card: the full card is a window of its own and does
- * not fit a tile, and item 11 of the same message forbids an intermediate level that says nothing —
- * so the icon goes straight to the card from either face.
+ * A TAP OPENS THE FULL CARD (Gate 2's polish, ruled 24 November 2026; docs/LOOK_PLAN.md §33). Until
+ * then a tap turned the card over to a back that summarised it, and a second control on the back
+ * opened the card: a middle step that said little and cost a tap. What the back carried is on the
+ * front now (the route it came in by, and whether the body remembers it) or on the full card (what
+ * antibodies do to it, above "Beat it"). A pathogen new to the body has no card and is not a button.
  */
-import { DECK_MASTER, FAMILIES, FAMILY, ROUTES } from '@immunity-wars/content';
+import { DECK_MASTER, FAMILIES, FAMILY } from '@immunity-wars/content';
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactElement, type RefObject } from 'react';
 
 import { classOf, pieceFor } from '../board/clay';
 import type { RevealArrival, RevealCrisis } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { play } from '../kit/motion';
+import {
+  diseaseDisplayName,
+  familyDisplayName,
+  localiseEnglishNames,
+  routeDisplayName,
+} from '../names';
 import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
-import { CardIcon } from '../panels/CardIcon';
 import { RichText } from '../panels/LogPanel';
 import { SAY, TONE } from '../panels/onCard';
-import { antibodiesDo, counterSentence } from './counters';
 import type { StoryLine } from './spreadStory';
 
 /** How long after the card before it each card is dealt. */
@@ -53,9 +57,9 @@ const CARD: CSSProperties = {
   borderRadius: RADIUS.control,
   border: 0,
   boxShadow: `0 4px 0 ${COLOUR.creamEdge}, 0 8px 14px rgba(0, 0, 0, 0.3)`,
-  cursor: 'pointer',
   textAlign: 'center',
   overflow: 'hidden',
+  font: 'inherit',
 };
 const NAME: CSSProperties = {
   ...TYPE.action,
@@ -66,17 +70,11 @@ const NAME: CSSProperties = {
 };
 const SMALL: CSSProperties = { ...SAY.quiet, fontSize: '0.75rem', lineHeight: 1.25 };
 
-/** A route's player-facing name, as the reveal said it. */
-const routeName = (lane: string): string => {
-  const r = (ROUTES as Record<string, { name?: unknown }>)[lane];
-  return typeof r?.name === 'string' ? r.name : lane;
-};
-
 const familyOf = (disease: string): string =>
   String((FAMILY as Record<string, string | undefined>)[disease] ?? '');
 
 /** Whether a disease is a parasite that changes its coat: the content pack's own flag. */
-const changesCoat = (disease: string): boolean =>
+export const changesCoat = (disease: string): boolean =>
   (DECK_MASTER as readonly { dz: string; variant?: boolean }[]).some(
     (c) => c.dz === disease && c.variant === true,
   );
@@ -85,7 +83,7 @@ const changesCoat = (disease: string): boolean =>
 const classColour = (family: string): string | null =>
   (FAMILIES as Record<string, { col?: string } | undefined>)[family]?.col ?? null;
 
-/** One card, front or back; the whole tile is the button that flips it. */
+/** One card. The whole tile is the button that opens the full card; a novel one is not a button. */
 function ArrivalCard({
   arrival,
   index,
@@ -96,8 +94,7 @@ function ArrivalCard({
   index: number;
   onCard: ((a: RevealArrival) => void) | undefined;
 }): ReactElement {
-  const [back, setBack] = useState(false);
-  const ref = useRef<HTMLButtonElement | null>(null);
+  const ref = useRef<HTMLElement | null>(null);
   // Dealt once, when it is first shown. A card is drawn where it belongs and the arrival is only
   // how it got there, so a phone that asks for less motion, or a deal cut short, leaves it right.
   useEffect(() => {
@@ -107,119 +104,102 @@ function ArrivalCard({
     return () => window.clearTimeout(timer);
   }, [index]);
   const family = familyOf(arrival.disease);
-  const variant = changesCoat(arrival.disease);
-  const counter = counterSentence(arrival.type, variant);
-  const does = antibodiesDo(arrival.type, variant);
-  const name = arrival.novel ? t('inspect.unknown') : arrival.disease;
+  const name = arrival.novel ? t('inspect.unknown') : diseaseDisplayName(arrival.disease);
   const { piece } = pieceFor(arrival.type, classOf(arrival.disease, arrival.novel), false);
   const colour = classColour(family);
+  const face = (
+    <>
+      <img
+        src={`/art/clay/card/${piece}@2x.webp`}
+        alt=""
+        style={{ flex: '0 1 auto', width: '78%', maxWidth: 112, aspectRatio: '1', minHeight: 0 }}
+      />
+      <span style={NAME}>{name}</span>
+      {family !== '' && !arrival.novel ? (
+        // The class by its code, with its colour as a dot beside it: the code carries the
+        // meaning, the dot is the colour its piece wears.
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: '0.75rem',
+            fontWeight: 900,
+            color: COLOUR.ink,
+          }}
+        >
+          {colour !== null ? (
+            <span
+              aria-hidden="true"
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: colour,
+                boxShadow: `0 0 0 1.5px ${COLOUR.ink}`,
+              }}
+            />
+          ) : null}
+          {family}
+        </span>
+      ) : null}
+      {arrival.lane !== null ? (
+        // The route it came in by: what planning is planned against.
+        <span style={SMALL}>{t('arrivals.via', { place: routeDisplayName(arrival.lane) })}</span>
+      ) : null}
+      {arrival.novel ? (
+        <span style={{ ...SMALL, fontWeight: 800, color: TONE.bad }}>{t('arrivals.novel')}</span>
+      ) : null}
+      {arrival.remembered ? (
+        // Actionable, so it is a tag on the front: the ring on the board is one tap.
+        <span
+          data-arrival-remembered=""
+          style={{
+            ...SMALL,
+            fontWeight: 800,
+            color: COLOUR.mintInk,
+            background: COLOUR.mintSoft,
+            borderRadius: RADIUS.control,
+            padding: '1px 6px',
+          }}
+        >
+          {t('arrivals.remembered')}
+        </span>
+      ) : null}
+    </>
+  );
+  if (arrival.novel || !onCard) {
+    return (
+      <div
+        ref={ref as RefObject<HTMLDivElement | null>}
+        data-arrival={arrival.disease}
+        style={CARD}
+      >
+        {face}
+      </div>
+    );
+  }
   return (
     <button
-      ref={ref}
+      ref={ref as RefObject<HTMLButtonElement | null>}
       type="button"
       data-arrival={arrival.disease}
-      data-arrival-face={back ? 'back' : 'front'}
-      style={CARD}
-      onClick={() => setBack((b) => !b)}
+      data-arrival-card={arrival.disease}
+      // NAMED BY WHAT IT SHOWS (screen reader support, §36). A label of "About Nipah" replaced
+      // everything on the card for a screen reader, which was then told neither its class nor
+      // where it came in. The class is said by its name, where the eye is shown its code.
+      aria-label={[
+        name,
+        family !== '' ? familyDisplayName(family) : '',
+        arrival.lane !== null ? t('arrivals.via', { place: routeDisplayName(arrival.lane) }) : '',
+        arrival.remembered ? t('arrivals.remembered') : '',
+      ]
+        .filter((part) => part !== '')
+        .join(', ')}
+      style={{ ...CARD, cursor: 'pointer' }}
+      onClick={() => onCard(arrival)}
     >
-      {back ? (
-        <>
-          <span style={NAME}>{name}</span>
-          {arrival.lane !== null ? (
-            <span style={SMALL}>{t('arrivals.via', { place: routeName(arrival.lane) })}</span>
-          ) : null}
-          {arrival.novel ? (
-            <span style={{ ...SMALL, fontWeight: 800, color: TONE.bad }}>
-              {t('arrivals.novel')}
-            </span>
-          ) : null}
-          {arrival.remembered ? (
-            <span style={{ ...SMALL, fontWeight: 800, color: TONE.good }}>
-              {t('arrivals.remembered')}
-            </span>
-          ) : null}
-          {/* WHAT ANTIBODIES DO TO IT, by its kind (./counters.ts; FINDINGS #129). In the colour
-              of what works when they work on it; plain when they cannot. */}
-          {family !== '' && !arrival.novel && counter !== null ? (
-            <span
-              data-arrival-counter={does ?? ''}
-              style={{ ...SMALL, ...(does === 'neither' ? {} : { color: TONE.good }) }}
-            >
-              {t(counter, { family })}
-            </span>
-          ) : null}
-          {!arrival.novel && onCard ? (
-            <span
-              data-arrival-card={arrival.disease}
-              role="button"
-              tabIndex={0}
-              aria-label={t('card.about', { name: arrival.disease })}
-              style={{
-                color: COLOUR.ink,
-                marginTop: 'auto',
-                // A CONTROL IS 44 (Gate 1): the icon alone measured 26 x 26 on the audit's first
-                // run of this piece, which is what the touch check is for.
-                minWidth: TOUCH.min,
-                minHeight: TOUCH.min,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: RADIUS.control,
-                background: COLOUR.creamSunk,
-                boxShadow: `0 3px 0 ${COLOUR.creamSunkEdge}`,
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onCard(arrival);
-              }}
-              onKeyDown={(e) => {
-                if (e.key !== 'Enter' && e.key !== ' ') return;
-                e.stopPropagation();
-                onCard(arrival);
-              }}
-            >
-              <CardIcon />
-            </span>
-          ) : null}
-        </>
-      ) : (
-        <>
-          <img
-            src={`/art/clay/card/${piece}@2x.webp`}
-            alt=""
-            style={{ flex: '0 1 auto', width: '78%', maxWidth: 96, aspectRatio: '1', minHeight: 0 }}
-          />
-          <span style={NAME}>{name}</span>
-          {family !== '' && !arrival.novel ? (
-            // The class by its code, with its colour as a dot beside it: the code carries the
-            // meaning, the dot is the colour its piece wears.
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize: '0.75rem',
-                fontWeight: 900,
-                color: COLOUR.ink,
-              }}
-            >
-              {colour !== null ? (
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: colour,
-                    boxShadow: `0 0 0 1.5px ${COLOUR.ink}`,
-                  }}
-                />
-              ) : null}
-              {family}
-            </span>
-          ) : null}
-        </>
-      )}
+      {face}
     </button>
   );
 }
@@ -232,6 +212,11 @@ export function ArrivalsGrid({
   arrivals: readonly RevealArrival[];
   onCard?: (a: RevealArrival) => void;
 }): ReactElement {
+  // A CARD KEEPS A CARD'S SHAPE: three to a row, fewer when the draw is smaller, each column and
+  // row capped so one arrival does not stretch into a poster. A draw of one or two is given more
+  // room than a draw of three (one card had stood 160 px tall in a 340 px play area, 18 October
+  // 2026); a draw with more cards than fit scrolls inside the grid.
+  const small = arrivals.length <= 2;
   return (
     <div
       data-arrivals-grid={String(arrivals.length)}
@@ -239,11 +224,8 @@ export function ArrivalsGrid({
         position: 'absolute',
         inset: 0,
         display: 'grid',
-        // A CARD KEEPS A CARD'S SHAPE: three to a row, fewer when the draw is smaller, each
-        // column and row capped so one arrival does not stretch into a poster. The play area's
-        // height is fixed, so a draw with more cards than fit scrolls inside the grid.
-        gridTemplateColumns: `repeat(${String(Math.min(3, Math.max(1, arrivals.length)))}, minmax(0, 7.5rem))`,
-        gridAutoRows: 'minmax(0, 10rem)',
+        gridTemplateColumns: `repeat(${String(Math.min(3, Math.max(1, arrivals.length)))}, minmax(0, ${small ? '9rem' : '7.5rem'}))`,
+        gridAutoRows: `minmax(0, ${small ? '12rem' : '10rem'})`,
         justifyContent: 'center',
         alignContent: 'center',
         gap: 10,
@@ -296,7 +278,9 @@ export function ArrivalsNotes({
           <div style={{ ...SAY.label, color: crisis.bad ? TONE.bad : COLOUR.mintInk }}>
             {t(crisis.bad ? 'reveal.crisisBad' : 'reveal.crisisGood')}
           </div>
-          <div style={{ ...SAY.heading, color: 'inherit' }}>{crisis.name}</div>
+          <div style={{ ...SAY.heading, color: 'inherit' }}>
+            {localiseEnglishNames(crisis.name)}
+          </div>
           {crisis.why !== null ? (
             <div style={{ ...SAY.body, color: 'inherit' }}>
               <RichText text={crisis.why} />
@@ -320,7 +304,6 @@ export function ArrivalsNotes({
           ))}
         </div>
       ) : null}
-      <div style={SAY.quiet}>{t('arrivals.flipHint')}</div>
     </div>
   );
 }

@@ -30,16 +30,20 @@ import type { CSSProperties } from 'react';
 
 import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
-import { FLOAT_RESERVE } from '../nav/NavHost';
 
 /**
- * The page shell. Its top padding is the ONLY space above the title (see TITLE), and its bottom
- * keeps the floating close clear of the last line (docs/for-P2.7.md §9, ruling 8).
+ * The page shell. Its top padding is the ONLY space above the title (see TITLE).
+ *
+ * ITS BOTTOM NO LONGER RESERVES ROOM FOR THE FLOATING CLOSE (Gate 2's polish, piece 2, 24 November
+ * 2026; docs/FINDINGS.md #132). It did, by ruling 8 of docs/for-P2.7.md §9, and so does the
+ * navigation host, which puts a spacer of the same height after any page while the close shows:
+ * every screen on the stack reserved the room twice, 88 px of scroll on Settings, the chapters and
+ * How to play's index that nothing was under. The host's spacer is the one reserve.
  */
 export const PAGE: CSSProperties = {
   maxWidth: 420,
   margin: '0 auto',
-  padding: `20px 8px ${FLOAT_RESERVE}`,
+  padding: '20px 8px 20px',
   fontFamily: TYPE.family,
   color: COLOUR.onDark,
 };

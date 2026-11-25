@@ -24,8 +24,8 @@ import { z } from 'zod';
 export const TEXT_SIZES = ['100', '125', '150', '200'] as const;
 export type TextSize = (typeof TEXT_SIZES)[number];
 
-/** The locales the catalogue offers. One today; the Hindi edition adds to this list. */
-export const LOCALES = ['en'] as const;
+/** The locales the catalogue offers: English, and Hindi since 24 November 2026. */
+export const LOCALES = ['en', 'hi'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 /**
@@ -111,6 +111,17 @@ export function applySound(sound: SoundSetting, audio: Mutable): void {
 export interface RootLike {
   style: { fontSize: string };
   dataset: { textSize?: string };
+  lang?: string;
+}
+
+/**
+ * THE PAGE'S LANGUAGE (24 November 2026): the root's `lang` follows the chosen locale, so the
+ * browser picks its Devanagari fallback font and hyphenation for Hindi. What the screens SAY
+ * in that locale is packages/ui's setLocale(), called beside this by the app.
+ */
+export function applyLanguage(locale: Locale, root: RootLike | null = documentRoot()): void {
+  if (!root) return;
+  root.lang = locale;
 }
 
 /**

@@ -61,6 +61,7 @@ import {
   type LibraryView,
   type LobbyRoom,
   type SaveSummary,
+  setLocale,
 } from '@immunity-wars/ui';
 import { KitButton, kitAudio } from '@immunity-wars/ui/kit';
 import { useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
@@ -70,6 +71,7 @@ import {
   LOCALES,
   SOUND_SETTINGS,
   TEXT_SIZES,
+  applyLanguage,
   applySound,
   applyTextSize,
   browserStore,
@@ -142,6 +144,8 @@ const initialPlayed = readPlayed(prefStore).played;
 const initialChaptersDone = readChaptersDone(prefStore);
 applyTextSize(initialSettings.textSize);
 applySound(initialSettings.sound, kitAudio);
+applyLanguage(initialSettings.language);
+setLocale(initialSettings.language);
 
 type Screen =
   | { name: 'title' }
@@ -206,6 +210,8 @@ function App({
     setSettings(s);
     applyTextSize(s.textSize);
     applySound(s.sound, kitAudio);
+    applyLanguage(s.language);
+    setLocale(s.language);
     writeSettings(prefStore, s);
   };
   // Whether a game is under way, reported up so the crash screen can tell case A from case B.

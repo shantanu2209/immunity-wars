@@ -63,6 +63,17 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 import { PICTOGRAMS, pictogramPng } from './clay/pictograms';
+import {
+  APART_MIN,
+  VISIONS,
+  VISION_NAMES,
+  apart,
+  lowest,
+  sameShapeProblems,
+  sameShapeReadings,
+  seenAs,
+  type ShapeReading,
+} from './clay/vision';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLAY = join(HERE, 'clay');
@@ -542,6 +553,8 @@ async function build(
   };
   const g = await grounds((name) => read('board', name));
   const failures: string[] = [];
+  /** Each piece's body as it was measured, for the colour-vision gate (clay/vision.ts). */
+  const bodies: Record<string, string> = {};
   const assets: Record<string, Asset> = {};
   let files = 0;
   let bytes = 0;
@@ -554,6 +567,7 @@ async function build(
       if (!input) continue;
       const v = await judge(name, input, g, null, view);
       failures.push(...v.failures.map((f) => `[${view}] ${f}`));
+      if (view === 'board') bodies[name] = v.measured.body;
       const displayPx = VIEWS[view];
       const out: Asset['files'] = {};
       for (const scale of [1, 2, 3]) {
@@ -635,6 +649,7 @@ async function build(
       files: out,
     };
   }
+  failures.push(...sameShapeProblems(sameShapeReadings(bodies)).map((p) => `[colour vision] ${p}`));
   const manifest = {
     generator: 'tools/art-pipeline/clay.ts',
     minContrast: MIN_CONTRAST,
@@ -650,6 +665,13 @@ async function build(
   };
   writeFileSync(join(outDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   return { assets: Object.keys(assets).length, files, bytes, failures };
+}
+
+/** How far a colour moves when a kind of colour blindness is simulated on it. */
+function apartFrom(hexColour: string, vision: 'protan' | 'deutan' | 'tritan'): number {
+  const a = seenAs(hexColour, 'full');
+  const b = seenAs(hexColour, vision);
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
 /** A flat disc of one colour on a clear ground, as a render would be. */
@@ -833,6 +855,47 @@ async function control(): Promise<boolean> {
     forEmpty,
     `${speck.measured.share} of it solid, ${forEmpty ? 'rejected for it' : 'NOT REJECTED FOR IT'}`,
   );
+  // COLOUR VISION (clay/vision.ts). A red and a brown that are 46 apart to full colour vision and 2
+  // to a red-blind eye, drawn in one shape, must be refused for that eye; a blue and a yellow, far
+  // apart to every eye, must not be; and two colours that merge are no problem in two shapes, or
+  // in a hidden pathogen, whose class is not in its body's colour.
+  const merged = sameShapeProblems(
+    sameShapeReadings({ 'virus-ENV': '#d04a3a', 'virus-NAK': '#88683c' }),
+  );
+  line(
+    'mustFail, two classes of one shape that a red-blind eye sees as one colour',
+    merged.length > 0 && merged.every((p) => p.includes('red-blind')),
+    merged.length > 0 ? `refused: ${merged[0] ?? ''}` : 'ACCEPTED',
+  );
+  const farApart = sameShapeProblems(
+    sameShapeReadings({ 'virus-ENV': '#2a5fd0', 'virus-NAK': '#e0c020' }),
+  );
+  line(
+    'mustPass, two classes of one shape in a blue and a yellow',
+    farApart.length === 0,
+    farApart.length === 0 ? 'accepted' : `REFUSED: ${farApart[0] ?? ''}`,
+  );
+  const twoShapes = sameShapeReadings({
+    'virus-NAK': '#d04a3a',
+    'toxin-TOX': '#88683c',
+    'hidden-ENV': '#d04a3a',
+    'hidden-NAK': '#88683c',
+    'bacteria-EXB-coated': '#d04a3a',
+    unknown: '#88683c',
+  });
+  line(
+    'mustPass, the same two colours in two shapes, in a hidden pathogen, in a coated piece',
+    twoShapes.length === 0,
+    twoShapes.length === 0 ? 'nothing to hold, as meant' : `HELD: ${String(twoShapes.length)}`,
+  );
+  const grey = ['protan', 'deutan', 'tritan'].map((v) =>
+    apartFrom('#808080', v as 'protan' | 'deutan' | 'tritan'),
+  );
+  line(
+    'mustPass, a grey is the same grey to every eye (each matrix keeps what has no colour)',
+    grey.every((d) => d < 0.01),
+    `moved by ${grey.map((d) => d.toFixed(3)).join(', ')}`,
+  );
   return ok;
 }
 
@@ -876,8 +939,13 @@ async function check(): Promise<{
   pictures: number;
   scenes: number;
   files: number;
+  /** Every pair of classes drawn in one shape, as each kind of colour vision sees them. */
+  vision: ShapeReading[];
+  /** How far apart a move's ring and a lymph hop's are, at the least, to any kind of vision. */
+  offers: number | null;
 }> {
   const problems: string[] = [];
+  const bodies: Record<string, string> = {};
   const manifestPath = join(OUT, 'manifest.json');
   if (!existsSync(manifestPath))
     return {
@@ -885,6 +953,8 @@ async function check(): Promise<{
       pictures: 0,
       scenes: 0,
       files: 0,
+      vision: [],
+      offers: null,
     };
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
     minContrast: number;
@@ -918,6 +988,7 @@ async function check(): Promise<{
       const v = await judge(name, input, g, null, view);
       if (v.failures.length > 0)
         problems.push(...v.failures.map((f) => `CONTRAST GATE: [${view}] ${f}`));
+      if (view === 'board') bodies[name] = v.measured.body;
       if (!asset) {
         problems.push(`A RENDER IS NOT IN THE MANIFEST: ${key}`);
         continue;
@@ -953,6 +1024,28 @@ async function check(): Promise<{
         `THE KIT'S COLOUR IS NOT THE MEASURED ONE: tokens.ts has the ${ground} as ${m[1]}, the renders measure ${measuredGrounds[ground]}`,
       );
   }
+  // A MOVE AND A HOP ALONG THE LYMPH are one ring in two colours (`OFFER` in ClayBoard.tsx: the kit's
+  // `glow` and its `lymph`), so colour alone tells them apart, as it does two classes of one shape.
+  // The two are held apart to every kind of colour vision by the same rule (clay/vision.ts). An
+  // attack is a different ring, on a piece and not on a step, and is not held here.
+  const token = (name: string): string | null =>
+    new RegExp(`^\\s*${name}: '(#[0-9a-fA-F]{6})'`, 'm').exec(tokens)?.[1] ?? null;
+  const glow = token('glow');
+  const lymph = token('lymph');
+  let offers: number | null = null;
+  if (!glow || !lymph)
+    problems.push(
+      'COLOUR VISION GATE: NOTHING WAS HELD: tokens.ts names no glow or no lymph, the colours of a move and of a hop',
+    );
+  else
+    for (const v of VISIONS) {
+      const d = apart(glow, lymph, v);
+      offers = offers === null ? d : Math.min(offers, d);
+      if (d < APART_MIN)
+        problems.push(
+          `COLOUR VISION GATE: A MOVE AND A HOP ALONG THE LYMPH CANNOT BE TOLD APART: their rings are ${d.toFixed(1)} apart to ${VISION_NAMES[v]}, and the least allowed is ${String(APART_MIN)}`,
+        );
+    }
   const tableFile = join(RENDERS, 'table', `${TABLE}.webp`);
   if (existsSync(tableFile)) {
     const key = `table/${TABLE}`;
@@ -1017,7 +1110,16 @@ async function check(): Promise<{
   for (const key of Object.keys(manifest.assets))
     if (!seen.has(key))
       problems.push(`MANIFEST RECORDS WHAT WAS NOT MEASURED: ${key} has no render`);
-  return { problems, pictures: seen.size - scenes, scenes, files };
+  // COLOUR VISION (clay/vision.ts): two classes drawn in one shape are told apart by colour alone,
+  // so they must stay two colours to every kind of colour vision. A set with no such pair would
+  // pass by having nothing to hold, so that is refused too.
+  const vision = sameShapeReadings(bodies);
+  problems.push(...sameShapeProblems(vision).map((p) => `COLOUR VISION GATE: ${p}`));
+  if (vision.length === 0)
+    problems.push(
+      'COLOUR VISION GATE: NOTHING WAS HELD: no two classes drawn in one shape were found among the pieces',
+    );
+  return { problems, pictures: seen.size - scenes, scenes, files, vision, offers };
 }
 
 const arg = (flag: string): boolean => process.argv.includes(flag);
@@ -1040,6 +1142,10 @@ if (arg('--pictograms')) {
   }
   console.log(
     `clay check: ${r.pictures} pictures re-measured from their renders, every one at ${MIN_CONTRAST}:1 or better against its ground; ${r.scenes} scene${r.scenes === 1 ? '' : 's'}, held to its edge and not to contrast; the manifest records what was measured, and its ${r.files} output files are the ones built`,
+  );
+  const low = lowest(r.vision);
+  console.log(
+    `clay check, colour vision: ${r.vision.length} pair${r.vision.length === 1 ? '' : 's'} of classes drawn in one shape (${r.vision.map((x) => `${x.kind} ${x.a} and ${x.b}`).join('; ')}), each ${APART_MIN} or more apart to full colour vision and to a red-blind, a green-blind and a blue-blind eye${low ? `; the least is ${low.apart.toFixed(1)}, ${low.kind} ${low.a} and ${low.b} to ${VISION_NAMES[low.vision]}` : ''}${r.offers === null ? '' : `; a move's ring and a lymph hop's are ${r.offers.toFixed(1)} or more apart to each`}`,
   );
 } else if (arg('--control')) {
   console.log('clay gate controls');

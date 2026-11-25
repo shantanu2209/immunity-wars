@@ -27,7 +27,9 @@ import { lessonAction, type SessionView } from '@immunity-wars/session';
 /**
  * Where the player is: the lesson's turn (from 0), and the step of it (from 0). `at` is a chapter's
  * own card, between two chapters (step 3, `docs/LOOK_PLAN.md` §28): `done` says the one before is
- * done and offers the choice to stop; `intro` says what the next one is about.
+ * done and offers the choice to stop, and since Gate 2's polish (piece 4, §33) carries what the next
+ * one is about, so that Next chapter goes to its first step. `intro` says what a chapter is about
+ * when it is opened from the chapters screen, which is the only place it is still met.
  */
 export interface GuidePos {
   readonly turn: number;
@@ -71,6 +73,12 @@ export interface GuideBeat {
   readonly shows: readonly string[];
   /** The end of a chapter: the card offers the next chapter, or to stop for now. */
   readonly chapterEnd: boolean;
+  /**
+   * A second sentence on the same card (Gate 2's polish, piece 4; docs/LOOK_PLAN.md §33): at a
+   * chapter's end, what the next chapter is about, so that Next chapter goes to its first step
+   * and not to a card that said only that. Null on every other card.
+   */
+  readonly alsoKey: string | null;
   /** Said, not done: the card's own button moves on. */
   readonly tell: boolean;
   /** The lesson's last word: its button hands the game over. */
@@ -101,8 +109,10 @@ const idOf = (view: SessionView, disease: string): string =>
  */
 export function shownNames(lesson: Lesson, pos: GuidePos, stage: GuideStage): readonly string[] {
   if (stage === 'spread' || stage === 'dialog' || lessonOver(lesson, pos)) return [];
-  if (pos.at === 'intro') return lesson.chapters[chapterOf(lesson, pos)]?.show ?? [];
-  if (pos.at === 'done' || stage !== 'command') return [];
+  // A chapter's two cards both talk about what the chapter is about: the one that says the last is
+  // done carries the next one's line since Gate 2's polish (piece 4).
+  if (pos.at !== undefined) return lesson.chapters[chapterOf(lesson, pos)]?.show ?? [];
+  if (stage !== 'command') return [];
   const step = stepAt(lesson, pos);
   if (!step) return lesson.turns[pos.turn]?.endShow ?? [];
   if (step.show) return step.show;
@@ -303,6 +313,7 @@ export function guideBeat(
     nothingInHand: false,
     then: [],
     chapterEnd: false,
+    alsoKey: null,
     shows: [] as readonly string[],
   };
   const shows = showHooks(shownNames(lesson, pos, stage), view);
@@ -330,6 +341,7 @@ export function guideBeat(
       last: true,
       nothingInHand: false,
       chapterEnd: false,
+      alsoKey: null,
     };
   }
   if (pos.at !== undefined) {
@@ -346,6 +358,7 @@ export function guideBeat(
       last: false,
       nothingInHand: false,
       chapterEnd: pos.at === 'done',
+      alsoKey: pos.at === 'done' ? `guide.chapter.${lesson.chapters[c]?.id ?? ''}.intro` : null,
     };
   }
   const n = pos.turn + 1;
@@ -390,6 +403,7 @@ export function guideBeat(
         last: false,
         nothingInHand: step.do === 'memory' || step.do === 'antivenom',
         chapterEnd: false,
+        alsoKey: null,
       };
     }
   }
@@ -459,7 +473,8 @@ export function afterAccepted(
  * its first step; any other told step goes on to the next.
  */
 export function afterTold(lesson: Lesson, pos: GuidePos): GuidePos {
-  if (pos.at === 'done') return { turn: pos.turn, step: pos.step, at: 'intro' };
+  // Next chapter goes to the next chapter's first step: its line was on the card just read.
+  if (pos.at === 'done') return { turn: pos.turn, step: pos.step };
   if (pos.at === 'intro') return { turn: pos.turn, step: pos.step };
   return arrive(lesson, { turn: pos.turn, step: pos.step + 1 });
 }
@@ -472,10 +487,11 @@ export interface LessonBeat {
 
 /**
  * EVERY CARD OF THE LESSON, IN ITS ORDER (ruled 16 October 2026, `docs/LOOK_PLAN.md` §29): each
- * turn's cards, its plan, each step, its End turn and its spread, a chapter's two cards where it
- * begins, and the last word. A chapter's card that says the one before is done is the last of that
- * one; the card that says what the next is about is the first of the next. `pnpm guide:walk` holds
- * this order to the page, from a list of its own.
+ * turn's cards, its plan, each step, its End turn and its spread, the card that says a chapter is
+ * done, and the last word. That card is the last of its chapter, and the card after it is the next
+ * one's first. A chapter's opening card is not here (Gate 2's polish, piece 4, §33): it is met only
+ * from the chapters screen, and counting it would make a chapter's count depend on the way in.
+ * `pnpm guide:walk` holds this order to the page, from a list of its own.
  */
 export function lessonBeats(lesson: Lesson): LessonBeat[] {
   const out: LessonBeat[] = [];
@@ -485,9 +501,11 @@ export function lessonBeats(lesson: Lesson): LessonBeat[] {
       (_, c) => c > 0 && chapterStart(lesson, c).turn === t && chapterStart(lesson, c).step === i,
     );
     if (k < 1) return;
+    // The card that says the one before is done carries what the next is about (piece 4), so the
+    // next chapter's own card is met only when it is opened from the chapters screen, and is not
+    // counted as a step: the count is then the same whichever way a chapter is come to.
     out.push({ id: `chapter.${lesson.chapters[k - 1]?.id ?? ''}.done`, chapter });
     chapter = k;
-    out.push({ id: `chapter.${lesson.chapters[k]?.id ?? ''}.intro`, chapter });
   };
   lesson.turns.forEach((turn, t) => {
     const n = String(t + 1);
@@ -506,7 +524,7 @@ export function lessonBeats(lesson: Lesson): LessonBeat[] {
 /**
  * Which card of its chapter a beat is, for "Step 3 of 9" (ruled 16 October 2026: the count names
  * what it counts, and every card the player reads is a step). Null for a beat the lesson does not
- * have.
+ * have, and for a chapter's opening card, which is not a step.
  */
 export function stepCount(lesson: Lesson, beatId: string): { n: number; of: number } | null {
   const all = lessonBeats(lesson);
