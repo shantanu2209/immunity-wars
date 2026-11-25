@@ -6366,3 +6366,28 @@ this change.
 reports every other screen's findings at zero when nothing is clipped or covered: a screen that
 scrolls 88 px for no reason has no finding in it. Piece 2 adds the list of screens required to be
 one screen (`ONE_SCREEN` in the audit) so that this cannot come back unseen.
+
+## 133. The Hindi review sheet's control could not run on the self-test's runner: openpyxl is not there — 25 November 2026
+
+**Found** by the full self-test on GitHub's runner, which runs on a pull request that changes its own
+workflow: Dependabot's bump of `actions/setup-node` (#189). 1 control of the set did not behave:
+`hi-review-sheet-refuses-a-lost-placeholder`, whose gate is `pnpm i18n:sheet:check`. It failed, as a
+control must, but without its own words, and the gate's last lines said why: `ModuleNotFoundError:
+No module named 'openpyxl'`. The PC has openpyxl 3.1.5; the runner's image does not.
+
+**Whose.** The instrument's. The control came with the Hindi edition (24 November, #200), was fired
+on the PC, and had never run anywhere else. The last scheduled run, on 24 November, began before
+it was merged; none has run since.
+
+**Fixed inline**, because a control that cannot run poisons the night's verdict:
+
+- the self-test's workflow sets up a Python of its own (`actions/setup-python`, pinned) and installs
+  the PC's openpyxl into it: a Python of its own, so the install goes into the Python the gate runs,
+  however the image's own is set up;
+- and, beside the step that requires the browser gates to pass unchanged, a step that requires the
+  sheet's gate to pass unchanged: so a runner without what a gate needs says so by name in a minute.
+
+**What is not held, and stays so.** The sheet's gate is in neither `pnpm verify` nor CI's pushes.
+What it holds is the review tool, which matters when the sheet is used; the catalogues' own
+wholeness and placeholders are held on every push by `i18n-hi.test.ts`. Once this is merged, the
+nightly self-test holds it green unchanged, and makes it fail by its control.

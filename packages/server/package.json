@@ -28,7 +28,7 @@
     "@immunity-wars/session-core": "workspace:*",
     "@types/ws": "8.18.2",
     "esbuild": "^0.28.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "comment:why-ws-is-pinned": "The first dependency of a process that LISTENS (docs/SECURITY_NOTES.md). Pinned exactly so that an upgrade is a decision with an audit beside it, never a side effect of an install. No dependencies of its own.",
   "comment:why-session-is-a-dev-dependency": "Only relay.test.ts imports it: the integration test plays RelaySession against this relay and holds it against LocalSession. The relay itself never runs client code."
