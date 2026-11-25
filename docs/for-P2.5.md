@@ -37,7 +37,7 @@ An entry is one line: what was noticed, and where. No mockups, no rankings — P
   reading a label AND registering which tokens changed — and the tap makes the exact numbers
   low-stakes while reusing a surface that is already dead during bursts. Nothing re-run,
   confirmed: the P2.3 budget rows are all per-frame or per-tap, none depend on the
-  inter-frame delay, and `tools/perf/measure.ts` waits on DOM conditions with 30–120s
+  inter-frame delay, and `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) waits on DOM conditions with 30–120s
   timeouts. Built in `PlayScreen.tsx` + `SpreadNarration.tsx`; the ruled numbers verified
   live (dice frame held ~1374ms, standard frames ~935/~869ms, a tap ended the final wait
   immediately).
@@ -1018,7 +1018,7 @@ action:** the bottom button is `play.beginCommand` — "Command your cells", the
 existing string — sending `beginCommand`; under allocation it is `planning.confirm` —
 "Confirm the plan" — sending `confirmAllocation`. The app shell hides its own Begin-command
 button while the screen shows (one button, not the same button twice); **the dev shell keeps
-every button**, because `tools/perf/measure.ts` drives it by button text. Never during a
+every button**, because `measure.ts` in `tools/perf/` drives it by button text. Never during a
 burst — the spread is watched on the board.
 
 ### Block b — the pathogen summary
@@ -1946,7 +1946,7 @@ build bundles every asset and is offline by construction; the web build is what 
 
 ## b. The full-UI per-redraw re-measure: a SECOND breach found and resolved; the command tap stops for a ruling
 
-`tools/perf/measure-full.ts` (`pnpm perf:full`) is P2.3's instrument against the full play
+`measure-full.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) (`pnpm perf:full`) is P2.3's instrument against the full play
 screen. The record is in [`P2_3_MEASUREMENT.md`](P2_3_MEASUREMENT.md), "Added 6 September
 2026". In one line each:
 

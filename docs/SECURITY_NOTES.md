@@ -92,7 +92,7 @@ from that URI; the process exits. **Cost of fixing:** a one-line `pnpm.overrides
 version exists**
 
 **Not reachable.** The vulnerable path runs when puppeteer *downloads and unpacks a browser*.
-`tools/perf/measure.ts` uses `puppeteer-core` with `executablePath` pointing at the system
+`measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*) uses `puppeteer-core` with `executablePath` pointing at the system
 Chrome and never calls the install API; no archive is ever extracted. There is nothing to
 upgrade to; the only removal would be dropping puppeteer, which is the perf instrument.
 

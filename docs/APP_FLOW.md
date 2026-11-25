@@ -121,7 +121,7 @@ builds a spinner for a network we do not use.
    merely log is a per-event decision made later, event by event. The card reveal is the
    queue's first client.
 6. **THE DEV SHELL SURVIVES, load-bearing.** The tail assertion, the IDB exercise, the skip
-   toggle and `tools/perf/measure.ts`'s coupling (button text + `data-cell`) all die silently
+   toggle and `measure.ts` in `tools/perf/` (*removed on 25 November 2026: it drove the screens before Clay*)'s coupling (button text + `data-cell`) all die silently
    if the real app replaces rather than joins it — instrumentation lost because the thing it
    hung on was replaced is exactly the shape this project keeps finding. **Play is a
    component both shells mount**: the app shell at `/` (index.html), the dev shell at
@@ -137,7 +137,7 @@ builds a spinner for a network we do not use.
    >
    > ✅ *Ruled 13 September 2026 ([`for-P2.7.md`](for-P2.7.md) §12, ruling 6): **the dev shell
    > follows the app.** Its Draw button is gone; Begin command and End command (spread) keep their
-   > text. `tools/perf/measure.ts` and `measure-full.ts` wait for the app's draw and dismiss the
+   > text. `measure.ts` in `tools/perf/` and `measure-full.ts` wait for the app's draw and dismiss the
    > reveal by its button instead of pressing Draw, and were re-run; the coupling changed loudly,
    > with its numbers, which is what this ruling exists to guarantee.*
 7. **Result is a screen, not a dialog** — it ends the session cleanly before navigation.
