@@ -3133,6 +3133,67 @@ of the audit's own, each firing or passing as it must.
 **Unruled, and his to overrule:** the state words on the chapters; chapter 7's shorter name; that
 the delete row is hidden rather than drawn flat; *What happened* as a line and not a button.
 
+### Piece 4: the small things
+
+| Where | Was | Is |
+|---|---|---|
+| **The menu's Quit** | A press asked *Quit?* under a note that the game is saved: a confirm that protected nothing | The row says *Your game is saved* under its name, and a press quits. In a game together *Back to the title* says *Your seats wait for you* and goes at once. *Leave the game* still asks first: it is the one that cannot be undone |
+| **The spread's button** | Coral, the colour of the one step a player must take, saying *Tap to continue* | A resting button, *Tap to skip ahead*. The spread moves on by itself, and a tap skipped a beat a newcomer was meant to watch |
+| **A tapped step** | A row for every invader: six Tuberculosis after division were six identical rows, 468 px in a 218 px middle | One row for those alike in everything the row says and offers, with their number (×6). Two that differ in anything, a coat, a wound, a stage, what is offered against them, stay two rows |
+| **Between chapters** | Two cards, each wanting a tap: the last chapter is done; what the next is about | One card that says both, and *Next chapter* goes to the next chapter's first step. A chapter opened from the chapters screen still begins with its own card |
+
+**What it does to the lesson's count.** A chapter's opening card is met only from the chapters
+screen now, so it is no longer a step: counted, a chapter would be *Step 1 of 13* from the chapters
+and *Step 2 of 13* after *Next chapter*. The lesson is **76 cards, by chapter 16, 12, 7, 15, 5, 11
+and 10**, where it was 82 (§29). The card that says a chapter is done shows what the next one
+talks about (Hepatitis B and C; Candida; Botulism and Snake venom), as the opening card did.
+
+**The sentences.** Four left both catalogues (the two confirms' notes and buttons) and two came,
+each in English and Hindi: *Your game is saved* (आपका खेल सहेजा हुआ है) and *Your seats wait for
+you* (आपकी सीटें आपका इंतज़ार करती हैं). *Tap to continue* is *Tap to skip ahead* (आगे कूदने के लिए
+टैप करें). The lesson's own sentences are his of 17 October and are not changed: the card between
+chapters says two of them, one under the other.
+
+| Seen | Found |
+|---|---|
+| `pnpm guide:walk --build`, English and then Hindi, at 360 by 641 | 76 beats of 76 each, every card counted (to Step 16 of 16, 12 of 12, 7 of 7, 15 of 15, 5 of 5, 11 of 11 and 10 of 10); each card that says a chapter is done says what the next is about, and no other card says a second sentence; **every card is read whole, none scrolls inside itself**; 53 cards talk about something, each found on the page; handed over at turn 8 of 15; no error |
+| The built app in a browser on the PC, at 360 by 697 | The menu: Resume, How to play, Settings, and *Quit to title* with *Your game is saved* under it, 55 px tall. A press: the title at once, and Continue brought the game back. The spread's button: cream, *Tap to skip ahead*. Chapter 1's end: both sentences, *Step 16 of 16*, Hepatitis B and C lit, the card 295 px and wholly on the screen; *Next chapter* went to the Helper T-Cell's step, *Step 1 of 12* |
+| The Gate 1 audit, alone, on this build (25 November, headless Chrome on the PC) | 69 screens in each of the four passes (71 in one), the menu and the spread's frame among them; every check at zero over 902 controls and 2,038 text runs; 35 close paths, none wrong; the play area one height on 33 screens; no scroll at rest on 19; the seven named screens each 0 px over; offline met, with no request failed; 50 controls of the audit's own. Not reached: playing together, which this run did not ask for. Not among its screens: the card between chapters, which the walk holds at 100% text and nothing holds at 200% |
+| `pnpm update:check`, which pressed the confirm that is gone | Passed, with the one press: in a game the older build was kept with the newer one waiting, and Quit took the newer one on the title in 1.3 s; in a game alone the menu said a newer version was ready, and its Update now brought it |
+
+**Found on the way, in the instruments, and fixed here.** The audit and the update check each
+pressed *Quit* and then its confirm, and the audit knew the menu by the words on its Quit button,
+which now has two lines. Both press the row by its hook and expect the title; the audit's screen
+*pause menu, back to the title confirm* is gone with the confirm.
+
+**Held.** The menu's test presses each row through a stand-in for the kit's button, since the
+package has no page to press on. Controls, each fired: `pause-quit-asks-nothing`,
+`spread-button-is-quiet`, `inspect-sheet-gathers-what-is-alike` and
+`inspect-sheet-keeps-apart-what-differs` (both halves of the grouping), `guide-one-card-between-chapters`,
+`guide-chapter-end-says-the-next`, `guide-opening-card-is-not-a-step`; and on the built app, by the
+walk, `guide-walk-chapter-end-says-the-next` and `guide-walk-card-is-read-whole`.
+
+**Not seen:** a step with six alike in a real game, which needs the dice; the grouping is held by
+its test on the sheet's own markup. A game played together, where *Back to the title* goes at
+once: the audit's walk of it was not run. **Not played on a phone.**
+
+**Unruled, and his to overrule:** the two notes' words; *Tap to skip ahead*; that the note stands
+under the name on the same button; that a chapter's opening card is not counted.
+
+### Piece 3 is not built
+
+Ruled with the others (*"3. Agree"*): planning folded into the cards' button alone, with the body
+under a tab, and the goal on turn 1. Reading the code before building it found it larger than it
+was put to him as, so it is put to him again and not built:
+
+- **The Body tile is not the body.** It opens the panel of antivenom and vaccines. The figure
+  planning draws would need a view of its own.
+- **Seven cards leave the lesson:** each turn's *plan* card lights the body in planning.
+- **The audit holds the play area to one height across four stages,** planning among them, and
+  walks four planning screens.
+
+Recommended: after the interview, as its own pull request, with the figure under a new tab.
+
 ## 34. Ruled 25 November 2026: the Hindi face is bundled, the Hindi stands, and accessibility
 
 Three things were open when piece 2 went up, each put with a recommendation. He answered:

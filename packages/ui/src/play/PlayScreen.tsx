@@ -1711,6 +1711,7 @@ export function PlayScreen({
         <Spotlight
           beatId={beat.id}
           text={t(beat.sayKey)}
+          also={beat.alsoKey !== null ? t(beat.alsoKey) : null}
           stops={beat.stops}
           thens={beat.then.map((x) =>
             x === null

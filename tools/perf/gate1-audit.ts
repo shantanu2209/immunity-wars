@@ -470,7 +470,7 @@ const WHERE = `
   if (q('[data-screen=library]')) return 'library index';
   if (q('[data-screen=about]')) return 'about';
   if (q('[data-inspect-sheet]')) return 'inspect sheet';
-  if (button('Quit to title') || button('Leave the game')) return 'pause menu';
+  if (q('[data-pause=quit]') || button('Leave the game')) return 'pause menu';
   // PLAYING TOGETHER (P3.7): the way in and the lobby.
   if (q('[data-screen=lobby]')) return 'lobby';
   if (q('[data-screen=together]')) return 'together';
@@ -1768,9 +1768,8 @@ async function walk(
   // resumes the game for the walk to the Result.
   await clickSel(page, '[data-menu]');
   await sleep(200);
-  await click(page, 'Quit to title');
-  await sleep(200);
-  await click(page, 'Quit');
+  // Quit asks nothing since Gate 2's polish (piece 4): one press, and the title.
+  await clickSel(page, '[data-pause="quit"]');
   await sleep(400);
   if (await click(page, 'Settings')) {
     await sleep(200);
@@ -2140,7 +2139,6 @@ async function walkTogether(
     'table, captain',
     'pause menu, together',
     'pause menu, leave confirm',
-    'pause menu, back to the title confirm',
     'play, connection lost',
     'title, a room to rejoin',
     'together, rejoin',
@@ -2325,10 +2323,8 @@ async function walkTogether(
     await until(page, `!!document.querySelector('[data-pause="leave-confirm"]')`);
     await at(page, 'pause menu, leave confirm');
     await click(page, 'Stay');
-    await clickSel(page, '[data-pause="quit"]');
-    await until(page, `!!document.querySelector('[data-pause="quit-confirm"]')`);
-    await at(page, 'pause menu, back to the title confirm');
-    await click(page, 'Stay');
+    // Back to the title acts at once since Gate 2's polish (piece 4): it is not pressed here, where
+    // the walk goes on in the room.
     await click(page, 'Resume');
     // This device's connection drops: the sheet, at once. The captaincy passes to the helper.
     await page.evaluate(`window.__sockets.at(-1).close()`);

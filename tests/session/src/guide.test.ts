@@ -40,6 +40,7 @@ import {
   MOVE_LIKE,
   afterAccepted,
   afterTold,
+  chapterOf,
   chapterStart,
   guideBeat,
   holdsTheDraw,
@@ -100,8 +101,15 @@ async function walk(
       const beat = guideBeat(LESSON, pos, stage, session.getView());
       expect(beat?.tell).toBe(true);
       expect(beat?.chapterEnd).toBe(pos.at === 'done');
+      // The card that says a chapter is done says what the next is about, and no other card does.
+      const next = LESSON.chapters[chapterOf(LESSON, pos)]?.id ?? '';
+      expect(
+        beat?.alsoKey ?? null,
+        `A CHAPTER'S END DOES NOT SAY WHAT THE NEXT IS ABOUT: ${beat?.id ?? ''}`,
+      ).toBe(pos.at === 'done' ? `guide.chapter.${next}.intro` : null);
       beats.push(beat?.id ?? '');
-      if (pos.at === 'intro') at.set(beat?.id ?? '', JSON.stringify(session.getView().game));
+      // The game as the chapter begins, by the chapter: it is the same game at either of its cards.
+      at.set(next, JSON.stringify(session.getView().game));
       pos = afterTold(LESSON, pos);
     }
   };
@@ -121,6 +129,7 @@ async function walk(
       cards('command');
       const beat = guideBeat(LESSON, pos, 'command', session.getView());
       expect(beat?.id).toBe(step.id);
+      expect(beat?.alsoKey ?? null, `${step.id} says a second sentence`).toBeNull();
       beats.push(beat?.id ?? '');
       shown('command', step.id);
       shows.push(...shownNames(LESSON, pos, 'command'));
@@ -155,9 +164,12 @@ async function walk(
 }
 
 const STEPS = LESSON.turns.flatMap((t) => t.steps.map((s) => s.id));
-const CHAPTER_CARDS = LESSON.chapters.flatMap((ch, c) => [
-  ...(c > 0 ? [`chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`, `chapter.${ch.id}.intro`] : []),
-]);
+// ONE CARD BETWEEN CHAPTERS (Gate 2's polish, piece 4; `docs/LOOK_PLAN.md` §33): a player who goes
+// on meets the card that says the last is done, which carries what the next is about, and then the
+// next one's first step. Control: pnpm ci:selftest guide-one-card-between-chapters.
+const CHAPTER_CARDS = LESSON.chapters.flatMap((_, c) =>
+  c > 0 ? [`chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`] : [],
+);
 
 describe('the guide follows the lesson through the real engine', () => {
   it('is at each step in turn, moves on when the engine accepts it, and ends with the lesson', async () => {
@@ -167,16 +179,20 @@ describe('the guide follows the lesson through the real engine', () => {
     session.dispose();
   });
 
-  it('meets every chapter’s end and the next one’s start, once each, in order, where each begins', async () => {
+  it('meets every chapter’s end once, in order, and goes from it to the next one’s first step', async () => {
     const session = newLesson();
     const { beats } = await walk(session, GUIDE_START);
     expect(LESSON.chapters.length).toBeGreaterThanOrEqual(2);
-    expect(beats.filter((b) => b.startsWith('chapter.'))).toEqual(CHAPTER_CARDS);
     for (let c = 1; c < LESSON.chapters.length; c += 1) {
-      // The intro comes just before the step the chapter begins at.
-      const intro = beats.indexOf(`chapter.${LESSON.chapters[c]?.id ?? ''}.intro`);
-      expect(beats[intro + 1], LESSON.chapters[c]?.id).toBe(LESSON.chapters[c]?.from);
+      // The card that says the one before is done comes just before the step the chapter begins at.
+      const done = beats.indexOf(`chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`);
+      expect(done, LESSON.chapters[c]?.id).toBeGreaterThanOrEqual(0);
+      expect(
+        beats[done + 1],
+        `NEXT CHAPTER DOES NOT GO TO THE CHAPTER'S FIRST STEP: ${LESSON.chapters[c]?.id ?? ''}`,
+      ).toBe(LESSON.chapters[c]?.from);
     }
+    expect(beats.filter((b) => b.startsWith('chapter.'))).toEqual(CHAPTER_CARDS);
     session.dispose();
   });
 
@@ -197,7 +213,7 @@ describe('the guide follows the lesson through the real engine', () => {
       expect(got.why, 'THE LESSON COULD NOT BE PLAYED TO THE CHAPTER').toBe('');
       // The very game a player who never stopped has there: the same dice, the same actions.
       expect(
-        JSON.stringify(session.getView().game) === (await live).get(`chapter.${id}.intro`),
+        JSON.stringify(session.getView().game) === (await live).get(id),
         'A PLAYER COMING BACK IS NOT BROUGHT TO THE GAME THE CHAPTER BEGINS WITH',
       ).toBe(true);
       const { beats } = await walk(session, resumeAt(LESSON, c));
@@ -341,13 +357,20 @@ describe('every card says which step of its chapter it is (16 October 2026)', ()
     expect(stepCount(LESSON, 'no.such.beat')).toBeNull();
   });
 
-  it('a chapter’s card that says it is done is its last; the one about the next is the next’s first', () => {
+  it('a chapter’s card that says it is done is its last, the card after it is the next one’s first, and a chapter’s opening card is not a step', () => {
     for (let c = 1; c < LESSON.chapters.length; c += 1) {
       const done = `chapter.${LESSON.chapters[c - 1]?.id ?? ''}.done`;
       const intro = `chapter.${LESSON.chapters[c]?.id ?? ''}.intro`;
       const d = stepCount(LESSON, done);
       expect(d?.n, done).toBe(d?.of);
-      expect(stepCount(LESSON, intro)?.n, intro).toBe(1);
+      const after = all[all.findIndex((b) => b.id === done) + 1]?.id ?? '';
+      expect(stepCount(LESSON, after)?.n, `${after}, after ${done}`).toBe(1);
+      // Met only from the chapters screen, and not counted: so a chapter counts the same whichever
+      // way it is come to.
+      expect(
+        stepCount(LESSON, intro),
+        `A CHAPTER'S OPENING CARD IS COUNTED AS A STEP: ${intro}`,
+      ).toBeNull();
     }
     expect(stepCount(LESSON, all[0]?.id ?? '')?.n).toBe(1);
     const end = stepCount(LESSON, 'end');
@@ -393,6 +416,9 @@ describe('every beat of the lesson has its sentence, and every sentence its beat
     'guide.then.family',
     'guide.then.target',
     ...CHAPTER_CARDS.map((b) => `guide.${b}`),
+    // What a chapter is about: said on the card that says the one before is done, and on its own
+    // card when the chapter is opened from the chapters screen (Gate 2's polish, piece 4).
+    ...LESSON.chapters.slice(1).map((ch) => `guide.chapter.${ch.id}.intro`),
     ...LESSON.turns.flatMap((t, i) => [
       `guide.t${String(i + 1)}.cards`,
       `guide.t${String(i + 1)}.end`,
