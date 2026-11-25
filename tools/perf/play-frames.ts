@@ -52,6 +52,9 @@ interface Stats {
   worst: number;
   slow: number;
   verySlow: number;
+  refresh: number;
+  late: number;
+  lateTwice: number;
 }
 interface Named {
   ms: number;
@@ -93,7 +96,8 @@ function isReading(v: unknown): v is Reading {
 
 const line = (what: string, s: Stats): string =>
   `${what}: ${String(s.frames)} frames in ${String(s.seconds)} s; slow (20 ms or more) ${String(s.slow)}, ` +
-  `of them 41.7 ms or more ${String(s.verySlow)}; a frame's middle ${String(s.median)} ms, ` +
+  `of them 41.7 ms or more ${String(s.verySlow)}; late by a refresh or more at the screen's ${String(s.refresh)} ms ` +
+  `${String(s.late)}, by more than one ${String(s.lateTwice)}; a frame's middle ${String(s.median)} ms, ` +
   `95th of a hundred ${String(s.p95)}, 99th ${String(s.p99)}, worst ${String(s.worst)}`;
 
 let failed: string | null = null;

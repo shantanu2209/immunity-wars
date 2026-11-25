@@ -1481,6 +1481,18 @@ const CONTROLS: readonly Control[] = [
     expect: 'A CHAPTER CARD LETS THE NEXT TURN BE DRAWN',
   },
   {
+    id: 'meter-late-follows-the-refresh',
+    why: 'Stage L7 (ruled 25 November 2026; docs/TODO.md row 11): inside the Android app the S25 refreshes every 8.3 ms, and a frame one refresh late arrives at 16.7, under the fixed 20 ms line. The meter counts late frames against the screen’s own refresh. With the late line put back at the fixed 20 ms, the meter’s test must FAIL saying a frame one refresh late at 120 is not counted.',
+    file: 'packages/app/src/frameMeter.ts',
+    mutate: (t) =>
+      t.replace(
+        'late: deltas.filter((x) => x >= LATE_AT * refresh).length,',
+        'late: deltas.filter((x) => x >= SLOW_MS).length,',
+      ),
+    gate: 'pnpm --filter @immunity-wars/app exec vitest run src/frameMeter.test.ts',
+    expect: 'A FRAME ONE REFRESH LATE AT 120 IS NOT COUNTED',
+  },
+  {
     id: 'lesson-place-keeps-the-most',
     why: 'Step 3: playing the lesson again from Settings and stopping early does not take a player place back. With the place written as given, the place test must FAIL saying it was taken back.',
     file: 'packages/app/src/lessonPlace.ts',

@@ -130,7 +130,10 @@ Each with what it leads to and a recommendation.
    is and why it was locked, what has been measured and why the first reading in the app is not the
    last, what he does (the phone on the cable, left alone for a couple of minutes), and that a phone
    holding the Google Play version must have it removed first, which loses only that app's own saved
-   game. **Not yet ruled.**
+   game.
+   - **Ruled 25 November 2026:** *"Yes let's do it after my play test"*. The meter's fix is built the
+   same evening ([`LOOK_PLAN.md`](LOOK_PLAN.md) §40), so that the measurement waits on nothing but
+   the play test and the phone on the cable.
 2. **The two older measuring scripts** (`measure.ts` and `measure-full.ts` in `tools/perf/`), left
    for this stage to decide.
    - They drove the developer's page of the screens before Clay, and were never run against the new
