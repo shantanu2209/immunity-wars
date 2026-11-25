@@ -273,7 +273,6 @@ try {
       'in a game, the menu did not say a newer version is ready',
     );
     await click(game, '[data-pause="quit"]');
-    await click(game, '[data-pause="quit-confirm"]');
     const tookAfterGame = await poll(
       async () => (await running(game)).includes(newerMain),
       'back on the title after a game, the newer build was not taken',

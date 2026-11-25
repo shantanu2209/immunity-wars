@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.2). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.3). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -110,8 +110,9 @@ codebase and Capacitor stay; the engine, content, protocol, room and relay are n
 `packages/android` is Capacitor round the app's own build made for it (`vite build --mode android`:
 no service worker, no developer's page but the measuring page); id
 `com.kartikchaudhary.immunitywars`, name "Immunity Wars", no Android backup, all ruled. His review
-and his visual approval may be done on the Android app; **the public release still waits for
-Gate 2.** `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+and his visual approval may be done on the Android app. **The public release was made before
+Gate 2, by ruling** (20 October 2026; plan §31, brief v2.3): the game is on Google Play, version
+0.9, in every country Play offers; Gate 2 is still open. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
 repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
 120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected
@@ -144,6 +145,17 @@ release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), an
 T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
 the bands measured again and moved. **Deployed 2 October, 13:09 IST:** the relay and the app
 together, from `main` at `8c7f887` (plan §23).
+**The Hindi edition's screens are built, 24 November 2026** (plan §32, ruled for the SBI Youth
+Ideathon interview): the two catalogues, the names the content pack holds as data and a glossary,
+and the library's text, in `packages/content/src/i18n/hi/`, chosen from Settings; the engine still writes English and
+`packages/ui/src/engineText.ts` renders the Hindi for each line; reviewed through a sheet
+generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
+`pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
+§34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
+(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check and screen reader
+support are ruled and not built** (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
+pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
+it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

@@ -873,7 +873,10 @@ export function AdvanceButton({
   if (gone) return <></>;
   return (
     <KitButton
-      kind="main"
+      // THE SPREAD'S BUTTON IS QUIET (Gate 2's polish, piece 4; docs/LOOK_PLAN.md §33): the spread
+      // moves on by itself, and a tap only hurries it. Coral, it invited a newcomer to tap, and each
+      // tap skipped a beat they were meant to watch; a resting button sends the eye to the board.
+      kind={keyName === 'spread' ? 'rest' : 'main'}
       data-dock-next={keyName}
       data-waiting={waiting ? '1' : undefined}
       aria-hidden={hidden ? true : undefined}

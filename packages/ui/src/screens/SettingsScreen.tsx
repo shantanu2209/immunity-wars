@@ -28,6 +28,14 @@ import { useNavLayer } from '../nav/NavHost';
 import { BODY, CARD, DIALOG, GROUP, NOTE, PAGE, SCRIM, STACK, TITLE } from './chrome';
 
 /**
+ * ONE CARD (Gate 2's polish, piece 2, ruled 24 November 2026; docs/LOOK_PLAN.md §33). Three cards
+ * with a heading over each scrolled 155 px past a phone's screen. The groups are labels inside one
+ * card now, and the delete row is drawn only when there is a save to delete and it is not being
+ * played: a row that cannot act, with a line saying why, said nothing a player could use.
+ */
+const IN_CARD_GROUP: CSSProperties = { ...GROUP, margin: '8px 0 0' };
+
+/**
  * A row, on its group's card (stage L5): what it is on the left, its value or its choices on the
  * right, and the two on a line each when they do not fit one. Rows after the first are parted by
  * space, not by a rule: a hairline on cream would be one more colour to measure and says nothing.
@@ -38,8 +46,8 @@ const ROW: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: 8,
-  minHeight: 48,
-  padding: '6px 0',
+  minHeight: 44,
+  padding: '3px 0',
 };
 
 /** Why the delete row cannot act right now; null when it can. */
@@ -155,20 +163,19 @@ export function SettingsScreen({
     {
       labelKey: 'settings.groupProgress',
       rows: [
-        {
-          kind: 'action',
-          key: 'deleteSave',
-          labelKey: 'settings.deleteSave',
-          blockedKey:
-            deleteSaveBlock === 'inPlay'
-              ? 'settings.deleteSaveInPlay'
-              : deleteSaveBlock === 'none'
-                ? 'settings.deleteSaveNone'
-                : null,
-          confirmKey: 'settings.deleteSaveConfirm',
-          confirmYesKey: 'settings.deleteSaveDo',
-          onAct: onDeleteSave,
-        },
+        ...(deleteSaveBlock === null
+          ? [
+              {
+                kind: 'action' as const,
+                key: 'deleteSave',
+                labelKey: 'settings.deleteSave',
+                blockedKey: null,
+                confirmKey: 'settings.deleteSaveConfirm',
+                confirmYesKey: 'settings.deleteSaveDo',
+                onAct: onDeleteSave,
+              },
+            ]
+          : []),
         {
           kind: 'action',
           key: 'guide',
@@ -237,12 +244,14 @@ export function SettingsScreen({
   return (
     <div style={PAGE} data-screen="settings">
       <h1 style={TITLE}>{t('settings.title')}</h1>
-      {groups.map((g) => (
-        <section key={g.labelKey}>
-          <h2 style={GROUP}>{t(g.labelKey)}</h2>
-          <div style={{ ...CARD, marginTop: 6 }}>{g.rows.map(renderRow)}</div>
-        </section>
-      ))}
+      <div style={{ ...CARD, marginTop: 6, paddingTop: 2 }}>
+        {groups.map((g) => (
+          <section key={g.labelKey}>
+            <h2 style={IN_CARD_GROUP}>{t(g.labelKey)}</h2>
+            {g.rows.map(renderRow)}
+          </section>
+        ))}
+      </div>
       {confirming ? (
         <div style={SCRIM}>
           <div style={DIALOG}>

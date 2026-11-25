@@ -58,6 +58,12 @@ import { BoardPackS, GuidePackS, RulesPackS } from './schema.js';
 
 import engineI18nEnJson from './i18n/en/engine.json';
 import uiI18nEnJson from './i18n/en/ui.json';
+import glossaryI18nEnJson from './i18n/en/glossary.json';
+import engineI18nHiJson from './i18n/hi/engine.json';
+import glossaryI18nHiJson from './i18n/hi/glossary.json';
+import libraryI18nHiJson from './i18n/hi/library.json';
+import namesI18nHiJson from './i18n/hi/names.json';
+import uiI18nHiJson from './i18n/hi/ui.json';
 import boardJson from './rules/board.json';
 import deckJson from './rules/deck.json';
 import eventsJson from './rules/events.json';
@@ -369,4 +375,44 @@ export const UI_I18N_EN: Record<string, string> = buildUiCatalogue(
 export const ENGINE_I18N_EN: Record<string, string> = buildUiCatalogue(
   engineI18nEnJson as Record<string, unknown>,
   'i18n/en/engine.json',
+);
+
+/**
+ * THE HINDI EDITION (24 November 2026): the same two catalogues translated, keyed as the English
+ * ones are, plus the names the content pack holds as data (cells, kinds, organs, routes, classes,
+ * events, residents, tiers, the diseases) which the tables cannot carry twice, and a glossary of
+ * the terms a player meets that are not everyday words. `i18n-hi.test.ts` holds each Hindi
+ * file to its English: every key, every placeholder, no dash. The screens choose a locale
+ * through packages/ui's setLocale(); the engine still writes English, and engineText() maps
+ * each line back to its key and renders the Hindi for it.
+ */
+export const UI_I18N_HI: Record<string, string> = buildUiCatalogue(
+  uiI18nHiJson as Record<string, unknown>,
+  'i18n/hi/ui.json',
+);
+export const ENGINE_I18N_HI: Record<string, string> = buildUiCatalogue(
+  engineI18nHiJson as Record<string, unknown>,
+  'i18n/hi/engine.json',
+);
+export const NAMES_I18N_HI: Record<string, string> = buildUiCatalogue(
+  namesI18nHiJson as Record<string, unknown>,
+  'i18n/hi/names.json',
+);
+export const GLOSSARY_I18N_EN: Record<string, string> = buildUiCatalogue(
+  glossaryI18nEnJson as Record<string, unknown>,
+  'i18n/en/glossary.json',
+);
+export const GLOSSARY_I18N_HI: Record<string, string> = buildUiCatalogue(
+  glossaryI18nHiJson as Record<string, unknown>,
+  'i18n/hi/glossary.json',
+);
+/**
+ * The library's text in Hindi: each disease card's five sentences and its fact, the cell cards,
+ * the "why it works this way" essays, and the organ and class notes, keyed by table and row as
+ * tools/i18n/review_sheet.py keys them. The English stays in the tables (DZINFO, FACT, CELL_CARDS,
+ * WHY, ORGANS, FAMILIES); i18n-hi.test.ts requires a Hindi for every row of each.
+ */
+export const LIBRARY_I18N_HI: Record<string, string> = buildUiCatalogue(
+  libraryI18nHiJson as Record<string, unknown>,
+  'i18n/hi/library.json',
 );

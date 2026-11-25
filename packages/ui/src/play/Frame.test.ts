@@ -20,6 +20,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { t } from '../i18n';
+import { COLOUR } from '../kit/tokens';
 import { ApTerms } from '../panels/ApTerms';
 
 import { ActionsView, AdvanceButton, PlayCorners, SlotClose, TabRow, TopBar } from './Frame';
@@ -258,6 +259,28 @@ describe('the bottom row', () => {
       'data-dock-next="endTurn"',
     );
     expect(renderToStaticMarkup(createElement(AdvanceButton, { ...props, gone: true }))).toBe('');
+  });
+
+  // THE SPREAD'S BUTTON IS QUIET (Gate 2's polish, piece 4; docs/LOOK_PLAN.md §33). Coral is for the
+  // one step a player must take. The spread moves on by itself, and a tap on its button skips a
+  // beat a newcomer was meant to watch. Control: pnpm ci:selftest spread-button-is-quiet.
+  it('the stage’s button is coral for a step to take, and resting while the spread plays', () => {
+    const draw = (keyName: string): string =>
+      renderToStaticMarkup(
+        createElement(AdvanceButton, {
+          keyName,
+          label: 'x',
+          disabled: false,
+          hidden: false,
+          onPress: () => undefined,
+        }),
+      );
+    expect(draw('endTurn'), 'A STEP TO TAKE IS NOT DRAWN IN CORAL').toContain(COLOUR.coral);
+    expect(draw('beginCommand')).toContain(COLOUR.coral);
+    expect(draw('spread'), 'THE SPREAD’S BUTTON IS THE COLOUR OF A STEP TO TAKE').not.toContain(
+      COLOUR.coral,
+    );
+    expect(draw('spread')).toContain(COLOUR.creamSunk);
   });
 
   it('a view’s close is the one close, with its hook and its word', () => {

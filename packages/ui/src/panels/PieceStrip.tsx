@@ -1,21 +1,29 @@
 /**
  * THE PIECE STRIP (S25 item 1, ruled 4 September 2026) — every piece a player commands as a
- * 44px chip in one horizontally scrolling row: the seven cells, then the seven residents by
- * their real names. Tapping selects (tap again deselects), exactly as a board tap does; the
- * board tap keeps working. Spent and offline cells are dimmed with their return in the chip,
- * the selected chip is ringed. The strip exists so the SELECTED piece is never in doubt — the
- * ambiguity behind the S25's dimmed Neutrophil was not knowing which cell a tap acted for.
+ * 44px chip: the seven cells, then the seven residents behind a control. Tapping selects (tap
+ * again deselects), exactly as a board tap does; the board tap keeps working. Spent and offline
+ * cells are dimmed with their return on the chip, the selected chip is ringed. The strip exists so
+ * the SELECTED piece is never in doubt — the ambiguity behind the S25's dimmed Neutrophil was not
+ * knowing which cell a tap acted for.
  *
  * Dumb by design: the shell says which pieces exist and which is selected; names are content.
  *
  * DRAWN IN CLAY since stage L4 of the look (docs/LOOK_PLAN.md §14): each chip is the kit's button
  * with the piece's own picture on its base, and the selected one is pressed in and ringed.
+ *
+ * ONE ROW OF PIECES, NO NAMES (Gate 2's polish, piece 2, ruled 24 November 2026; §33). Seven chips
+ * with a name each were two columns of 44 px rows in a 162 px middle, and scrolled inside it. A
+ * chip is now the piece on its base, as the board draws it, and its name is on the selected piece's
+ * card the moment it is picked, as it is after a board tap; the name is still the chip's label for
+ * a reader that reads labels. A spent cell's return hangs on its chip as a number, as it does on
+ * the board.
  */
 import { useState, type CSSProperties, type ReactElement } from 'react';
 
 import type { Unavailable } from '../board/Board';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
+import { COLOUR, RADIUS, TOUCH } from '../kit/tokens';
 import { cellDisplayName, organDisplayName, residentDisplayName } from '../names';
 import { SAY, TONE, pieceArt } from './onCard';
 
@@ -26,20 +34,12 @@ export interface PieceChip {
   unavailable: Unavailable | null;
 }
 
-/**
- * A GRID, three per row, every chip the same width (S25 second pass, 5 September 2026: a
- * single scrolling line was poor). The chip's text is one line each, clipped with an ellipsis
- * rather than wrapped, so fourteen chips of unequal names keep fourteen equal boxes.
- */
 const CHIP: CSSProperties = {
-  minHeight: 44,
-  minWidth: 0,
-  padding: '3px 6px',
-  justifyContent: 'flex-start',
-  gap: 4,
-  fontSize: '0.75rem',
-  lineHeight: 1.15,
-  textAlign: 'left',
+  minHeight: TOUCH.min,
+  minWidth: TOUCH.min,
+  width: '100%',
+  padding: 4,
+  justifyContent: 'center',
 };
 /** The base and the piece, one over the other, filling the picture's square. */
 const PICTURE: CSSProperties = {
@@ -49,11 +49,21 @@ const PICTURE: CSSProperties = {
   width: '100%',
   height: '100%',
 };
-const CLIP: CSSProperties = {
-  display: 'block',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+/** The number on a chip's corner: the turns until a spent cell is back. */
+const BADGE: CSSProperties = {
+  position: 'absolute',
+  right: -4,
+  bottom: -4,
+  minWidth: 16,
+  height: 16,
+  padding: '0 3px',
+  borderRadius: RADIUS.pill,
+  background: COLOUR.ink,
+  color: COLOUR.cream,
+  fontSize: '0.6875rem',
+  fontWeight: 900,
+  lineHeight: '16px',
+  textAlign: 'center',
 };
 
 export function PieceStrip({
@@ -72,8 +82,8 @@ export function PieceStrip({
   selectedResident: string | null;
   /**
    * WHY a spent cell is back when it is back (6 September 2026), by cell key, localised by the
-   * shell from the engine's `regenBreakdown`: shown under the selected chip only, so the grid
-   * stays fourteen equal boxes and the explanation sits one tap from the number.
+   * shell from the engine's `regenBreakdown`: shown under the selected chip only, so the row stays
+   * seven equal boxes and the explanation sits one tap from the number.
    */
   why?: Readonly<Record<string, string>>;
   disabled?: boolean;
@@ -106,9 +116,11 @@ export function PieceStrip({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(7rem, 1fr))',
-          gap: '10px 6px',
-          paddingBottom: 6,
+          // Seven to a row at phone width, each a touch target; the residents, when shown, wrap
+          // to a second row of the same chips.
+          gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))',
+          gap: 2,
+          paddingBottom: 4,
         }}
       >
         {shown.map((p) => {
@@ -122,8 +134,9 @@ export function PieceStrip({
               data-piece={`${p.kind}:${p.key}`}
               data-selected={selected ? '1' : undefined}
               disabled={disabled}
-              // THE RING IS THE KIT'S, AND TAKES NO ROOM (FINDINGS #73): a wider border took 3px
-              // from the name, which then clipped at a 180px layout (200% page zoom).
+              aria-label={labelText(p, name)}
+              title={labelText(p, name)}
+              // THE RING IS THE KIT'S, AND TAKES NO ROOM (FINDINGS #73).
               selected={selected}
               onPress={() => {
                 if (selected) onDeselect();
@@ -145,10 +158,9 @@ export function PieceStrip({
               >
                 <img alt="" src={pieceArt('base')} style={PICTURE} />
                 <img alt="" src={art} style={PICTURE} />
-              </span>
-              <span style={{ minWidth: 0, flex: '1 1 auto' }}>
-                <span style={{ ...CLIP, fontWeight: 800 }}>{name}</span>
-                <span style={{ ...CLIP, fontWeight: 600, opacity: 0.8 }}>{badgeText(p)}</span>
+                {badgeNumber(p) !== null ? (
+                  <span style={{ ...BADGE, filter: 'none', opacity: 1 }}>{badgeNumber(p)}</span>
+                ) : null}
               </span>
             </KitButton>
           );
@@ -178,16 +190,26 @@ export function PieceStrip({
   );
 }
 
-/** The chip's second line: a resident's organ; a cell's state and its return, or nothing. */
-function badgeText(p: PieceChip): string {
+/** The turns until a spent or offline cell is back, for the chip's corner; null when none. */
+function badgeNumber(p: PieceChip): string | null {
+  const u = p.unavailable;
+  if (p.kind !== 'cell' || !u) return null;
+  if (u.kind !== 'spent' && u.kind !== 'offline') return null;
+  return u.backIn !== null ? String(u.backIn) : null;
+}
+
+/** The chip's label: its name, and a resident's organ, a cell's state and its return. */
+function labelText(p: PieceChip, name: string): string {
   if (p.kind === 'resident') {
     const organ = organDisplayName(p.key);
-    return p.unavailable ? `${organ} ${t('inspect.sep')} ${t('inspect.infected')}` : organ;
+    const where = `${name} ${t('inspect.sep')} ${organ}`;
+    return p.unavailable ? `${where} ${t('inspect.sep')} ${t('inspect.infected')}` : where;
   }
   const u = p.unavailable;
-  if (!u) return '';
-  if (u.kind === 'hiv') return t('inspect.hiv');
-  if (u.kind === 'infected') return t('inspect.infected');
+  if (!u) return name;
+  if (u.kind === 'hiv') return `${name} ${t('inspect.sep')} ${t('inspect.hiv')}`;
+  if (u.kind === 'infected') return `${name} ${t('inspect.sep')} ${t('inspect.infected')}`;
   const what = t(u.kind === 'spent' ? 'inspect.spent' : 'inspect.offline');
-  return u.backIn !== null ? `${what} ${String(u.backIn)}` : what;
+  const state = u.backIn !== null ? `${what} ${String(u.backIn)}` : what;
+  return `${name} ${t('inspect.sep')} ${state}`;
 }
