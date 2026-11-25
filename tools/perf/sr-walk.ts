@@ -72,6 +72,9 @@ function refuse(reason: string): never {
 }
 const say = (key: string): string => (UI_I18N_EN as Record<string, string>)[key] ?? '';
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/** The engine's four emphasis tags taken out, exactly: no pattern for tags in general (CodeQL). */
+const untag = (text: string): string =>
+  ['<b>', '</b>', '<i>', '</i>'].reduce((t, tag) => t.split(tag).join(''), text);
 
 /** One thing in the tree, as a screen reader is told of it. */
 interface Told {
@@ -378,9 +381,9 @@ try {
     )) as boolean;
     if (!region) refuse('WHAT HAPPENS IS NOT SAID: the play screen has no region to say it in');
     const arrived =
-      ((ENGINE_I18N_EN as Record<string, string>)['actions.infectionEnteredViaThe'] ?? '')
-        .replace(/<[^>]*>/g, '')
-        .split('{')[0] ?? '';
+      untag(
+        (ENGINE_I18N_EN as Record<string, string>)['actions.infectionEnteredViaThe'] ?? '',
+      ).split('{')[0] ?? '';
     const opening = await until(
       'WHAT AN ACTION DID IS NOT SAID: nothing was said as the game opened, where its arrival should be',
       async () => {
@@ -499,9 +502,10 @@ try {
           `(document.querySelector('[data-announce]')?.textContent ?? '')`,
         )) as string
       ).trim();
-    const produced =
-      (ENGINE_I18N_EN as Record<string, string>)['actions.bCellProducedAntibod'] ?? '';
-    const madePrefix = produced.replace(/<[^>]*>/g, '').split('{')[0] ?? '';
+    const produced = untag(
+      (ENGINE_I18N_EN as Record<string, string>)['actions.bCellProducedAntibod'] ?? '',
+    );
+    const madePrefix = produced.split('{')[0] ?? '';
     const tile = button(await told(cdp), (n) => n === say('antibody.title'));
     if (!tile) refuse(`no "${say('antibody.title')}" tile in the tree`);
     await press(cdp, tile);
