@@ -193,7 +193,7 @@ export function TopBar({
         <span data-turn="" aria-hidden="true">
           {turnText}
         </span>
-        <span data-turn-spoken="" style={SPOKEN_ONLY}>
+        <span data-turn-spoken="" data-spoken-only="" style={SPOKEN_ONLY}>
           {turnSpoken}
         </span>
       </span>

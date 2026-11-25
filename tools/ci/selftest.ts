@@ -1830,6 +1830,30 @@ const CONTROLS: readonly Control[] = [
     expect: 'THE NEW LINES ARE NOT FOUND',
   },
   {
+    id: 'sr-walk-the-board-is-a-list',
+    why: 'Screen reader support, its third part (LOOK_PLAN §39): the board is pictures and a tap on it is read by where the finger lands, so a screen reader could not play on it. Beside it, not seen, is the same board as a list of places with what stands on each. With the places left out, the walk must FAIL saying the board is not a list.',
+    file: 'packages/ui/src/play/BoardList.tsx',
+    mutate: (t) =>
+      t.replace(
+        '{[...places.values()].map((p) => (',
+        '{[...places.values()].slice(0, 0).map((p) => (',
+      ),
+    gate: 'pnpm sr:walk --build',
+    expect: 'THE BOARD IS NOT A LIST',
+  },
+  {
+    id: 'sr-walk-a-cell-moves-by-the-list',
+    why: 'The same part: with a piece in hand, its moves glow on steps that are not buttons. The list makes each a button that moves there. With the moves left out, the walk must FAIL saying a cell’s moves are not buttons.',
+    file: 'packages/ui/src/play/BoardList.tsx',
+    mutate: (t) =>
+      t.replace(
+        "const moves = targets.filter((tg) => tg.kind === 'move' || tg.kind === 'hop');",
+        'const moves: BoardTarget[] = [];',
+      ),
+    gate: 'pnpm sr:walk --build',
+    expect: "A CELL'S MOVES ARE NOT BUTTONS",
+  },
+  {
     id: 'guide-walk-hindi-in-the-bundled-face',
     why: 'The Hindi edition’s own face is bundled (ruled 25 November 2026, LOOK_PLAN §34). A face that fails to load is an error nowhere: the words are drawn in whatever the machine has, and look right on any PC with a Devanagari font. The Hindi walk asks Chrome which fonts drew the title’s button. With the face declared under a name the kit does not ask for, the walk must FAIL saying Hindi is not drawn in the bundled face.',
     file: 'packages/app/index.html',

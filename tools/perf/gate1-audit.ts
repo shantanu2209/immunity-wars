@@ -202,6 +202,9 @@ const AUDITOR = `
     return parts.join('>');
   };
   const visible = (el) => {
+    // SEEN ONLY BY A SCREEN READER (its third part, docs/LOOK_PLAN.md §39): not touched, not read
+    // by an eye, so held to neither. A screen reader's touch is its own, anywhere on the screen.
+    if (el.closest('[data-spoken-only]')) return false;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const cs = getComputedStyle(el);
@@ -270,7 +273,7 @@ const SCALE_AUDITOR = `
 (() => {
   const out = { findings: [], runs: 0 };
   const inSvg = (el) => !!el.closest('svg');
-  const visible = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const visible = (el) => { if (el.closest('[data-spoken-only]')) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const els = [];
   const seen = new Set();
@@ -360,7 +363,7 @@ const OCCLUSION_AUDITOR = `
     }
     return false;
   };
-  const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const shown = (el) => { if (el.closest('[data-spoken-only]')) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   // A control that is see-through and has nothing in it hides nothing: what is under it is seen
   // through it. The guided game's light is one, laid over the control it lights (stage L6).
   const seeThrough = (el) => {
@@ -2686,6 +2689,21 @@ async function controls(page: Page): Promise<string[]> {
   const r = (await page.evaluate(AUDITOR)) as { findings: Planted };
   line('touch fires: a 20px button is flagged', has(r.findings, 'touch', 'planted small'));
   line('touch passes: a 44px button is NOT flagged', !has(r.findings, 'touch', 'planted sound'));
+  // Seen only by a screen reader: the same small button, marked so, is not a touch target.
+  await page.evaluate(`(() => {
+    const b = document.createElement('button');
+    b.textContent = 'planted spoken';
+    b.setAttribute('data-control', 'spoken');
+    b.setAttribute('data-spoken-only', '');
+    Object.assign(b.style, { width: '1px', height: '1px', overflow: 'hidden', position: 'absolute' });
+    document.body.prepend(b);
+  })()`);
+  const spokenOnly = (await page.evaluate(AUDITOR)) as { findings: Planted };
+  line(
+    'touch passes: a button seen only by a screen reader is NOT flagged',
+    !has(spokenOnly.findings, 'touch', 'planted spoken') &&
+      has(spokenOnly.findings, 'touch', 'planted small'),
+  );
   line(
     'contrast fires: #999 on white (2.85:1) is flagged',
     has(r.findings, 'contrast', 'planted faint'),
