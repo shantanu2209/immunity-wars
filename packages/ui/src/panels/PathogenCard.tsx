@@ -24,6 +24,7 @@
  */
 import {
   BEAT_BY_TYPE,
+  DECK_MASTER,
   DZINFO,
   DZSTATS,
   FACT,
@@ -32,7 +33,7 @@ import {
   ORGANS,
   TROPISM,
 } from '@immunity-wars/content';
-import type { CSSProperties, ReactElement } from 'react';
+import { useRef, type CSSProperties, type ReactElement } from 'react';
 
 import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
@@ -41,7 +42,17 @@ import { KitPiece } from '../kit/Piece';
 import { KitChip, KitMeter, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
-import { typeDisplayName } from '../names';
+import { modalProps, useModal } from '../nav/modal';
+import { antibodiesDo, counterSentence } from '../play/counters';
+import {
+  beatText,
+  diseaseDisplayName,
+  familyDisplayName,
+  libraryText,
+  organDisplayName,
+  tierDisplayName,
+  typeDisplayName,
+} from '../names';
 import { SAY, TONE } from './onCard';
 
 export interface PathogenCardSubject {
@@ -89,30 +100,44 @@ export function PathogenCard({
   const stats = (
     DZSTATS as Record<string, readonly [number, number, number, number, string] | undefined>
   )[disease];
-  const fact = (FACT as Record<string, string | undefined>)[disease];
+  const factEn = (FACT as Record<string, string | undefined>)[disease];
+  const fact = factEn ? libraryText(`fact.${disease}`, factEn) : undefined;
   const tropism = (TROPISM as Record<string, readonly string[] | 'any' | undefined>)[disease];
   const famKey = (FAMILY as Record<string, string | undefined>)[disease];
   const fam = famKey
     ? (FAMILIES as Record<string, { name?: string; bio?: string } | undefined>)[famKey]
     : undefined;
-  const beat = (BEAT_BY_TYPE as Record<string, string | undefined>)[type];
+  const beat = beatText(type) || undefined;
+  // WHAT ANTIBODIES DO TO IT, by its kind (../play/counters.ts; FINDINGS #129): the one line the
+  // new card's back said until Gate 2's polish (docs/LOOK_PLAN.md §33), above the paragraph it
+  // summarises. In the colour of what works when they work on it; plain when they cannot.
+  const variant = (DECK_MASTER as readonly { dz: string; variant?: boolean }[]).some(
+    (c) => c.dz === disease && c.variant === true,
+  );
+  const counter = famKey ? counterSentence(type, variant) : null;
+  const does = antibodiesDo(type, variant);
+  void BEAT_BY_TYPE;
   // THE ACRONYM IN BRACKETS after the full class name (ruled 6 September 2026): the card
   // teaches the link between "Enveloped virus" and the ENV the antibody panel's chips carry,
   // at the point of use, instead of a permanent legend. Both halves are content's.
-  const famLine = fam?.name ? `${fam.name} (${String(famKey)})` : null;
+  const famLine = fam?.name ? `${familyDisplayName(String(famKey))} (${String(famKey)})` : null;
   const famColour = famKey
     ? (FAMILIES as Record<string, { col?: string } | undefined>)[famKey]?.col
     : undefined;
   // The piece the board draws this disease with: its kind, in its class's colour.
   const piece = pieceFor(type, classOf(disease, false), false).piece;
-  const organName = (o: string): string =>
-    String((ORGANS as Record<string, { name?: string } | undefined>)[o]?.name ?? o);
+  const organName = organDisplayName;
+  void ORGANS;
+  // A dialog to a screen reader too, with what is behind it not read (`nav/modal.ts`).
+  const layer = useRef<HTMLDivElement | null>(null);
+  useModal(layer);
 
   return (
     <div
-      role="dialog"
-      aria-label={t('card.title')}
+      ref={layer}
+      {...modalProps(t('card.title'))}
       style={{
+        outline: 'none',
         // A FULL WINDOW (Shantanu, 20 September 2026): nothing else can be done while a card is
         // open, so nothing of the screen behind it shows. It scrolls, and keeps its last lines clear
         // of the floating close that closes it (for-P2.7.md §9, ruling 8).
@@ -139,13 +164,28 @@ export function PathogenCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <KitPiece name={piece} view="card" size={84} label="" style={{ flex: '0 0 auto' }} />
           <div style={{ flex: '1 1 9rem', minWidth: 0 }}>
-            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>{disease}</div>
+            <div style={{ ...TYPE.title, overflowWrap: 'anywhere' }}>
+              {diseaseDisplayName(disease)}
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
               <KitChip>{typeDisplayName(type)}</KitChip>
               {famLine !== null ? <KitChip dot={famColour}>{famLine}</KitChip> : null}
             </div>
           </div>
         </div>
+        {counter !== null ? (
+          <div
+            data-card-counter={does ?? ''}
+            style={{
+              marginTop: 8,
+              fontSize: '0.8125rem',
+              fontWeight: 800,
+              ...(does === 'neither' ? {} : { color: TONE.good }),
+            }}
+          >
+            {t(counter, { family: String(famKey) })}
+          </div>
+        ) : null}
         {subject.remembered ? (
           <div style={{ marginTop: 8, fontSize: '0.8125rem', color: TONE.good, fontWeight: 800 }}>
             {t('card.memory')}
@@ -160,7 +200,7 @@ export function PathogenCard({
         {fam?.bio ? (
           <div style={{ marginTop: 8 }}>
             <div style={LABEL}>{t('card.family')}</div>
-            <div>{fam.bio}</div>
+            <div>{libraryText(`family.${String(famKey)}.bio`, fam.bio)}</div>
           </div>
         ) : null}
         <div style={{ marginTop: 8 }}>
@@ -193,7 +233,7 @@ export function PathogenCard({
         {stats ? (
           <div style={{ marginTop: 10 }}>
             <div style={{ ...LABEL, marginBottom: 6 }}>
-              {t('card.tier')} {t('inspect.sep')} {stats[4]}
+              {t('card.tier')} {t('inspect.sep')} {tierDisplayName(stats[4])}
             </div>
             <div
               style={{
@@ -213,11 +253,11 @@ export function PathogenCard({
           <div style={{ marginTop: 10 }}>
             {(
               [
-                ['card.discovered', info.d],
-                ['card.causes', info.c],
-                ['card.found', info.w],
-                ['card.prevent', info.p],
-                ['card.treat', info.r],
+                ['card.discovered', info.d && libraryText(`library.${disease}.d`, info.d)],
+                ['card.causes', info.c && libraryText(`library.${disease}.c`, info.c)],
+                ['card.found', info.w && libraryText(`library.${disease}.w`, info.w)],
+                ['card.prevent', info.p && libraryText(`library.${disease}.p`, info.p)],
+                ['card.treat', info.r && libraryText(`library.${disease}.r`, info.r)],
               ] as const
             ).map(([key, text]) =>
               text ? (

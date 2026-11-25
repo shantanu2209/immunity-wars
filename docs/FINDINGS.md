@@ -6341,3 +6341,77 @@ check switched off.
   be the making of antibodies, and strays from there. It also says separately that any action
   during a told step parts the guide. The control fires again.
 - **The census:** in each of those nights' runs this was the only control that did not behave.
+
+## 132. Every screen on the stack reserved room for the floating close twice: 88 px of scroll on Settings, the chapters and How to play's index that nothing was under — 24 November 2026
+
+**Found** while making the screens of Gate 2's polish fit one screen ([`LOOK_PLAN.md`](LOOK_PLAN.md)
+§33, piece 2). The chapters screen was 805 px tall at 360 by 697, and its rows ended at 625: below
+them stood 88 px of the page's own bottom padding, then 88 px more of a spacer the navigation host
+puts after any page while the floating close shows. Both were added for the same reason, ruling 8
+of [`for-P2.7.md`](for-P2.7.md) §9: the last line must scroll clear of the floating close. The
+page's padding came with the Clay screens at stage L5; the host's spacer came with the play
+screen's panels at L4, where the game's page has no padding of its own. On every screen drawn from
+`screens/chrome.ts` the two stacked.
+
+**What it cost.** 88 px of every stacked screen's height, at every text size: the October survey's
+table of screens that scroll (§33) counted it in each row, and Settings' +155 at 697 was more than
+half this.
+
+**Fixed inline**, since piece 2 is the change that makes these screens fit: the page keeps a plain
+20 px at its foot and the host's spacer is the one reserve. The occlusion check, which is what
+found the need for a reserve in the first place, is the audit's; it ran clean on the build with
+this change.
+
+**What the audit could not see.** It holds the play screen's stages to no scroll at rest, and
+reports every other screen's findings at zero when nothing is clipped or covered: a screen that
+scrolls 88 px for no reason has no finding in it. Piece 2 adds the list of screens required to be
+one screen (`ONE_SCREEN` in the audit) so that this cannot come back unseen.
+
+## 133. The Hindi review sheet's control could not run on the self-test's runner: openpyxl is not there — 25 November 2026
+
+**Found** by the full self-test on GitHub's runner, which runs on a pull request that changes its own
+workflow: Dependabot's bump of `actions/setup-node` (#189). 1 control of the set did not behave:
+`hi-review-sheet-refuses-a-lost-placeholder`, whose gate is `pnpm i18n:sheet:check`. It failed, as a
+control must, but without its own words, and the gate's last lines said why: `ModuleNotFoundError:
+No module named 'openpyxl'`. The PC has openpyxl 3.1.5; the runner's image does not.
+
+**Whose.** The instrument's. The control came with the Hindi edition (24 November, #200), was fired
+on the PC, and had never run anywhere else. The last scheduled run, on 24 November, began before
+it was merged; none has run since.
+
+**Fixed inline**, because a control that cannot run poisons the night's verdict:
+
+- the self-test's workflow sets up a Python of its own (`actions/setup-python`, pinned) and installs
+  the PC's openpyxl into it: a Python of its own, so the install goes into the Python the gate runs,
+  however the image's own is set up;
+- and, beside the step that requires the browser gates to pass unchanged, a step that requires the
+  sheet's gate to pass unchanged: so a runner without what a gate needs says so by name in a minute.
+
+**What is not held, and stays so.** The sheet's gate is in neither `pnpm verify` nor CI's pushes.
+What it holds is the review tool, which matters when the sheet is used; the catalogues' own
+wholeness and placeholders are held on every push by `i18n-hi.test.ts`. Once this is merged, the
+nightly self-test holds it green unchanged, and makes it fail by its control.
+
+## 134. The screen reader walk knew a game's arrival only as "Infection: …", and a worm's is said in another sentence — 25 November 2026
+
+**Found** by the full self-test on GitHub's runner, on Dependabot's `actions/setup-node` bump
+(#189), its second run, the first with #133's Python in place. One control did not behave:
+`sr-walk-planning-is-folded-alone`. Its gate failed, as it must, but earlier than its own words, at
+the walk's check that a game which opens says its arrival first and nothing before it: *"the first
+thing said is "Hookworm entered via the Wound and is burrowing into the Bone Marrow. Coat it, t",
+where it should be the arrival ("Infection: …")"*.
+
+**Whose.** The walk's (screen reader support, part 2, [`LOOK_PLAN.md`](LOOK_PLAN.md) §38). It
+knew an arrival by the words it begins with, the engine's sentence for an infection. A worm's
+arrival is another of the engine's sentences, and says the same thing of a worm. The walk plays an
+unseeded game, so which arrives is the dice's: on the PC, in the battery's full self-test that day,
+every run of it that had to pass this check was dealt an infection; on the runner, this one was dealt Hookworm. The game said
+the right thing; the walk read it wrong.
+
+**Fixed inline:** the walk knows the arrival by the disease it names, read from the new cards in
+the accessibility tree, and requires the first thing said to name one of them. Its control,
+`sr-walk-nothing-is-said-as-a-game-opens`, fails as before, saying a game that opens is said to have
+done something; `sr-walk-planning-is-folded-alone` fails on its own words again.
+
+**Not seen:** the walk dealt a worm with the fix in. That it passes then is read from the runner's
+log, where the first thing said named Hookworm, which the new card is named for.

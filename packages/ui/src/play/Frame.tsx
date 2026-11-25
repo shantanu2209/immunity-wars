@@ -35,6 +35,7 @@ import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { kitAudio } from '../kit/sound';
 import { kitCardStyle } from '../kit/Surface';
+import { SPOKEN_ONLY } from '../kit/spoken';
 import { COLOUR, RADIUS, SHADOW, TOUCH, TYPE } from '../kit/tokens';
 import { actionDisplayName } from '../names';
 import { ChatIcon, TableIcon } from '../panels/BarIcons';
@@ -111,11 +112,14 @@ const PILL: CSSProperties = {
  */
 export function TopBar({
   turnText,
+  turnSpoken,
   banner,
   onBanner,
   menu,
 }: {
   turnText: string;
+  /** The turn in words, for a screen reader: "Turn 3 of 15", where the eye is shown "3/15". */
+  turnSpoken: string;
   banner: Banner | null;
   /** Opens every effect in force, in full, in the middle. */
   onBanner: () => void;
@@ -176,16 +180,22 @@ export function TopBar({
         ) : null}
       </span>
       <span
-        data-turn=""
         style={{
           ...PILL,
           fontSize: '0.9375rem',
           fontWeight: 900,
           flex: '0 0 auto',
           marginLeft: 'auto',
+          position: 'relative',
         }}
       >
-        {turnText}
+        {/* "3/15" for the eye, and the same in words for a screen reader (`kit/spoken.ts`). */}
+        <span data-turn="" aria-hidden="true">
+          {turnText}
+        </span>
+        <span data-turn-spoken="" data-spoken-only="" style={SPOKEN_ONLY}>
+          {turnSpoken}
+        </span>
       </span>
     </div>
   );
@@ -873,7 +883,10 @@ export function AdvanceButton({
   if (gone) return <></>;
   return (
     <KitButton
-      kind="main"
+      // THE SPREAD'S BUTTON IS QUIET (Gate 2's polish, piece 4; docs/LOOK_PLAN.md §33): the spread
+      // moves on by itself, and a tap only hurries it. Coral, it invited a newcomer to tap, and each
+      // tap skipped a beat they were meant to watch; a resting button sends the eye to the board.
+      kind={keyName === 'spread' ? 'rest' : 'main'}
       data-dock-next={keyName}
       data-waiting={waiting ? '1' : undefined}
       aria-hidden={hidden ? true : undefined}

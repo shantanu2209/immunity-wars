@@ -1,10 +1,55 @@
 # The Immunity Wars — Phase 2 Brief
 
-**Version:** 2.2 · 2 October 2026
+**Version:** 2.5 · 25 November 2026
 **Owner:** Shantanu (build direction) / Kartik (design)
 **Status:** **RESUMED 1 October 2026, as "the look".** Paused on 20 September
 ([`PHASE2_PAUSE.md`](PHASE2_PAUSE.md)); what follows the v2.0 section below is the brief as it stood
 at v1.7, kept as the record of what Phase 2 built.
+
+## What v2.5 records
+
+**Gate 2 is given** (Shantanu, 25 November 2026; [`LOOK_PLAN.md`](LOOK_PLAN.md) §37). Asked whether
+his *"consider it approved"* meant Gate 2 itself or only that the polish could ship without his
+playing it first, he answered:
+
+> *"No the approval is for everything gate 2 related. I will play and test out on the live deplyed app itself. maybe we hold off google play store deployment for now and only do the web one. We can play test and if there are no more changes we can do the deplyement on the google play store then (in case we do see more changes those can also be done before moving to the play store)."*
+
+- **That is the separate, stated act §1 asks for,** and it is recorded as Gate 2's approval.
+- **It was given before he had played the last of the polish,** which he plays on the live web app.
+  What that play finds is made before anything more goes to Google Play.
+- **What it does not do.** It does not close Phase 2 by itself: §8's definition of done asks for a
+  closeout in the same discipline, and Gate 1 still has its one human-tested item deferred, not met.
+  The closeout is put to him as its own piece of work.
+
+## What v2.4 records
+
+v2.4 brings one thing back into scope, by ruling (Shantanu, 25 November 2026;
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §34 and §36): *"yes do the check and the screen reader"*.
+
+- **Screen reader support is in scope.** §1 left it out on purpose, and wrote down what would
+  bring it back: the app offered somewhere that requires it, *"or anyone asks for it"*. He asked,
+  on 24 November, what could be done for players who cannot see.
+- **What §1 said against it still governs how it is claimed.** *"It is not a target this team can
+  honestly verify today."* What a machine can verify is built and held: the names and the layers a
+  screen reader is told of, read from Chrome's own accessibility tree. What only a person can
+  verify has not been done: nobody who uses TalkBack or VoiceOver has played. **So it is not an
+  item of Gate 1, and the game is not said to support blind players.**
+- **It is three parts** (the plan's §36), and the first is built.
+- **Gate 2 is still the gate this phase ends on.**
+
+## What v2.3 records
+
+v2.3 changes the order of one thing again, by ruling (Shantanu, 18 and 20 October 2026;
+[`LOOK_PLAN.md`](LOOK_PLAN.md) §31): *"Yes I would apply the latest build everywhere"*, and, when
+Google granted production access, *"let's make the app live"*.
+
+- **The game is released on Google Play before Gate 2.** v2.2 kept the public release for after
+  his visual approval. It was made on 20 October 2026: version 0.9, in every country Play offers.
+- **Gate 2 is not met,** and is still the gate this phase ends on. His approval of the whole look
+  has not been given, and nothing here claims it has. What changes is that the screens reach
+  players through store updates while it is open.
+- **Store updates follow the closed test first.** The closed track stays, so that a build can be
+  played on his phone before it reaches everyone.
 
 ## What v2.2 records
 
@@ -15,7 +60,8 @@ v2.2 changes the order of one thing, by ruling (Shantanu, 2 October 2026;
   this phase ends. The app is one codebase, and the Android app is that codebase inside a shell, so
   a change to a screen costs the same before the shell exists and after it.
 - **What still waits for Gate 2 is the public release:** the store's listing, its screenshots and
-  the release itself.
+  the release itself. ⚠️ *Superseded in v2.3:* the public release was made on 20 October 2026,
+  before Gate 2, by ruling.
 - **His review and his visual approval may be done on the Android app,** which is the thing that
   ships. The web version stays live, and the automated checks go on being run against it.
 - **Locked decision #1** is confirmed by a measurement taken inside the shell, as the plan's last
@@ -261,6 +307,9 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 >   > with a real consumer, which is the condition this project applies to every deferred seam
 >   > ([`SEAM_DECISIONS.md`](SEAM_DECISIONS.md) §4).
 >
+>   ⚠️ *Brought back in v2.4, 25 November 2026:* he asked. See "What v2.4 records": in scope, not
+>   an item of this gate, and not claimed until a person who uses a screen reader has played.
+>
 > ⚠️ **One correction to the ruling's own premise, stated rather than smoothed over.** The ruling
 > reads "contrast IN Gate 1, since the art pipeline already has a measured target." **There is no
 > measured contrast target anywhere in this repository.** `tools/art-pipeline/` contains only a
@@ -270,6 +319,8 @@ reach the same answer. Most are machine-checkable; one is not, and is marked as 
 > strict. This changes nothing about the ruling; it changes what Gate 1 is allowed to lean on.
 
 ### Gate 2 — Visual approval, given explicitly by Shantanu
+
+> ✅ **Given 25 November 2026** ("What v2.5 records"; [`LOOK_PLAN.md`](LOOK_PLAN.md) §37).
 
 Not implied by Gate 1. Not implied by a review going well. **A separate, stated act:**
 *"the visual design is approved."*
@@ -778,7 +829,8 @@ started in this phase, by ruling; the store work stays Phase 4's.
 **No competent reference bot** — Phase 3, with the seat-filling AI; see §6. It is an engine
 change and it breaks the corpus, which is not a thing to do during a rewrite.
 No AI tutor — deferred, tiered behind a `HelpProvider` that is not being built.
-No screen-reader support — deferred with a reinstate condition, §1.
+No screen-reader support — deferred with a reinstate condition, §1. ⚠️ *v2.4, 25 November 2026:* brought back
+into scope, by ruling.
 No engine rule changes. Kartik's six open design questions are a separate conversation and
 land as deliberate, isolated changes measured against the corpus, not as part of the rewrite.
 
@@ -787,7 +839,8 @@ land as deliberate, isolated changes measured against the corpus, not as part of
 ## 8. Definition of done
 
 - [ ] Gate 1 — every capability item verified, including contrast and 200% text scaling
-- [ ] Gate 2 — visual approval, explicitly stated by Shantanu
+- [x] Gate 2 — visual approval, explicitly stated by Shantanu. ✅ *Given 25 November 2026, in his
+      words: "the approval is for everything gate 2 related" ("What v2.5 records")*
 - [ ] Performance budget met **on real low-end hardware**, every number carrying the device it was
       measured on — **or** the shortfall stated plainly, in which case the closeout says in those
       words that **locked decision #1 goes unresolved into Phase 4**

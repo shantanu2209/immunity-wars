@@ -1,0 +1,631 @@
+/**
+ * THE SCREEN READER'S WALK (screen reader support, ruled 25 November 2026; docs/LOOK_PLAN.md §34
+ * and §36).
+ *
+ *   pnpm sr:walk            against http://localhost:4173 (a preview of the build)
+ *   pnpm sr:walk --build    build the app into a temporary folder, serve it, walk it:
+ *                           what the self-test's controls run
+ *
+ * A player who cannot see the screen is read it by TalkBack or VoiceOver. What they are read is
+ * not the picture: it is the browser's ACCESSIBILITY TREE, the list of things on the page with a
+ * role and a name each. This walk opens the built app and goes through it by that tree alone. It
+ * finds each thing by the role and the name Chrome gives it, and presses it as a screen reader
+ * does, by the element and not by a place on the screen.
+ *
+ * WHAT IT HOLDS, so far (the first of the three parts §36 lists):
+ *
+ *  - the page says its language, which is how a screen reader picks its voice;
+ *  - A LAYER THAT COVERS THE SCREEN IS ALL THERE IS: with a pathogen's card, the game's menu or the
+ *    messages open (and the opening dialog until Gate 2's polish, piece 3, put the goal on turn 1), the tree holds a dialog with a name, focus is in it,
+ *    and nothing behind it is read: no button, no picture, no word. The one close that floats over
+ *    every layer is kept, and is pressed here to close the card and the messages. When the layer
+ *    goes, what was behind it is read again;
+ *  - the turn is said in words ("Turn 1 of 15"), and its figure ("1/15") is not read;
+ *  - the goal is read on turn 1's card;
+ *  - alone, the new cards' button goes straight to the command stage, and the Body tile draws the
+ *    body, its organs read by name (Gate 2's polish, piece 3);
+ *  - WHAT HAPPENS IS SAID (its second part): as a game opens, its arrival first and nothing that
+ *    was in the log before; what Produce did, in the log's words, once it is done; and each beat of
+ *    the spread, word for word, as it is shown;
+ *  - THE BOARD AS A LIST (its third part): its places read with what stands there, and a cell moved
+ *    by the list alone, to the step its button named;
+ *  - a new card is named by what it shows: its disease, its class by its name, and its way in.
+ *
+ * WHAT IT DOES NOT HOLD: that the names are good ones, that things are read in a sensible order,
+ * or how any of it sounds. Those need a person with TalkBack, and nobody has done that yet. It is
+ * Chrome's tree on a PC, not Android's screen reader; and it does not play a turn, which waits for
+ * the board to be offered as a list.
+ *
+ * Controls: pnpm ci:selftest sr-walk-a-layer-hides-what-is-behind, sr-walk-focus-goes-to-the-layer,
+ * sr-walk-the-turn-is-said-in-words, sr-walk-a-new-card-says-what-it-shows,
+ * sr-walk-the-goal-is-on-turn-1, sr-walk-planning-is-folded-alone, sr-walk-the-body-tile-draws-the-body,
+ * sr-walk-what-an-action-did-is-said, sr-walk-the-spread-is-said, sr-walk-nothing-is-said-as-a-game-opens,
+ * sr-walk-the-board-is-a-list, sr-walk-a-cell-moves-by-the-list.
+ */
+import { execSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { createServer, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { dirname, extname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { CNAME, ENGINE_I18N_EN, FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
+import puppeteer, { type CDPSession, type Page } from 'puppeteer-core';
+
+const CHROME =
+  process.env['CHROME_PATH'] ?? 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe';
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2',
+  '.ico': 'image/x-icon',
+};
+
+class Refusal extends Error {}
+function refuse(reason: string): never {
+  throw new Refusal(reason);
+}
+const say = (key: string): string => (UI_I18N_EN as Record<string, string>)[key] ?? '';
+const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/** The engine's four emphasis tags taken out, exactly: no pattern for tags in general (CodeQL). */
+const untag = (text: string): string =>
+  ['<b>', '</b>', '<i>', '</i>'].reduce((t, tag) => t.split(tag).join(''), text);
+
+/** One thing in the tree, as a screen reader is told of it. */
+interface Told {
+  id: string;
+  role: string;
+  name: string;
+  /** The element it is, by the browser's own number: how it is pressed. */
+  backend: number | null;
+  /** True of a dialog that says nothing else is to be read while it is up. */
+  modal: boolean;
+  parent: string | null;
+}
+
+/** What is read: these roles and the words on the page. Everything else is structure. */
+const READ = new Set([
+  'button',
+  'link',
+  'textbox',
+  'combobox',
+  'checkbox',
+  'radio',
+  'switch',
+  'slider',
+  'tab',
+  'image',
+  'heading',
+  'StaticText',
+]);
+
+async function told(cdp: CDPSession): Promise<Map<string, Told>> {
+  const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+  const out = new Map<string, Told>();
+  const parentOf = new Map<string, string>();
+  for (const n of nodes) for (const child of n.childIds ?? []) parentOf.set(child, n.nodeId);
+  for (const n of nodes) {
+    if (n.ignored) continue;
+    out.set(n.nodeId, {
+      id: n.nodeId,
+      role: String((n.role?.value as string | undefined) ?? ''),
+      name: String((n.name?.value as string | undefined) ?? '').trim(),
+      backend: n.backendDOMNodeId ?? null,
+      modal: (n.properties ?? []).some((p) => p.name === 'modal' && p.value.value === true),
+      parent: parentOf.get(n.nodeId) ?? null,
+    });
+  }
+  // A thing's parent may be a node the tree ignores: go up to the nearest one that is told.
+  const all = new Map(nodes.map((n) => [n.nodeId, n]));
+  for (const t of out.values()) {
+    let p = t.parent;
+    while (p !== null && !out.has(p) && all.has(p)) p = parentOf.get(p) ?? null;
+    t.parent = p !== null && out.has(p) ? p : null;
+  }
+  return out;
+}
+
+const under = (tree: Map<string, Told>, node: Told, tops: Set<string>): boolean => {
+  let at: Told | undefined = node;
+  while (at) {
+    if (tops.has(at.id)) return true;
+    at = at.parent !== null ? tree.get(at.parent) : undefined;
+  }
+  return false;
+};
+
+async function has(cdp: CDPSession, node: Told, attribute: string): Promise<boolean> {
+  if (node.backend === null) return false;
+  const d = await cdp.send('DOM.describeNode', { backendNodeId: node.backend }).catch(() => null);
+  return (d?.node.attributes ?? []).some((a, i) => i % 2 === 0 && a === attribute);
+}
+
+/** Pressed as a screen reader presses: the element itself, not a place on the screen. */
+async function press(cdp: CDPSession, node: Told): Promise<void> {
+  if (node.backend === null) refuse(`"${node.name}" is in the tree and is no element to press`);
+  const { object } = await cdp.send('DOM.resolveNode', { backendNodeId: node.backend });
+  if (object.objectId === undefined) refuse(`"${node.name}" could not be reached to press`);
+  await cdp.send('Runtime.callFunctionOn', {
+    objectId: object.objectId,
+    functionDeclaration: 'function () { this.click(); }',
+  });
+}
+
+async function until<T>(what: string, look: () => Promise<T | null>): Promise<T> {
+  for (let i = 0; i < 40; i += 1) {
+    const got = await look();
+    if (got !== null) return got;
+    await wait(150);
+  }
+  return refuse(what);
+}
+
+const button = (tree: Map<string, Told>, name: (n: string) => boolean): Told | null =>
+  [...tree.values()].find((t) => t.role === 'button' && name(t.name)) ?? null;
+
+/**
+ * A layer is up and is all there is: a dialog of this name that says it is modal, focus in it, and
+ * nothing read that is not in it or kept beside it. Returns what was read, for the walk's line.
+ *
+ * THE TREE IS GIVEN A MOMENT TO SETTLE. Chrome brings its accessibility tree up to date a little
+ * after the page changes, and a screen reader is told of the change then. Read in the instant a
+ * dialog appeared, the tree still held everything behind it, on one build and not on another, by
+ * how fast each was served. So it is read again for up to two seconds, and what is refused is what
+ * is still wrong at the end of them.
+ */
+async function layerIsAll(
+  page: Page,
+  cdp: CDPSession,
+  name: string | null,
+): Promise<{ name: string; inside: number; kept: string[] }> {
+  await until(`no dialog ${name ?? ''} came up in the tree`, async () => {
+    const t = await told(cdp);
+    return [...t.values()].some((n) => n.role === 'dialog' && (name === null || n.name === name))
+      ? true
+      : null;
+  });
+  let wrong = '';
+  for (let look = 0; look < 14; look += 1) {
+    const tree = await told(cdp);
+    const dialog = [...tree.values()].find(
+      (n) => n.role === 'dialog' && (name === null || n.name === name),
+    );
+    if (!dialog) {
+      wrong = `the dialog ${name ?? ''} came up and went`;
+      await wait(150);
+      continue;
+    }
+    if (dialog.name === '')
+      refuse('A LAYER HAS NO NAME: a screen reader says "dialog" and no more');
+    if (!dialog.modal)
+      refuse(`A LAYER DOES NOT SAY IT IS ALL THERE IS: the dialog "${dialog.name}" is not modal`);
+    const tops = new Set([dialog.id]);
+    const kept: string[] = [];
+    const behind: string[] = [];
+    for (const node of tree.values()) {
+      if (!READ.has(node.role) || under(tree, node, tops)) continue;
+      // The one close that floats over every layer, and what is written on it.
+      let keeper: Told | undefined = node;
+      let isKept = false;
+      while (keeper && !isKept) {
+        isKept = await has(cdp, keeper, 'data-modal-keep');
+        keeper = keeper.parent !== null ? tree.get(keeper.parent) : undefined;
+      }
+      if (isKept) {
+        if (node.role === 'button') kept.push(node.name);
+        continue;
+      }
+      behind.push(`${node.role} "${node.name.slice(0, 40)}"`);
+    }
+    const focus = (await page.evaluate(`(() => {
+      const a = document.activeElement;
+      const d = a && a.closest ? a.closest('[role="dialog"]') : null;
+      return d ? d.getAttribute('aria-label') : null;
+    })()`)) as string | null;
+    const inside = [...tree.values()].filter(
+      (n) => READ.has(n.role) && n.id !== dialog.id && under(tree, n, tops),
+    ).length;
+    if (behind.length > 0)
+      wrong = `WHAT IS BEHIND A LAYER IS READ: with "${dialog.name}" open, a screen reader is still told of ${String(behind.length)} thing(s) behind it: ${behind.slice(0, 4).join(', ')}`;
+    else if (focus !== dialog.name)
+      wrong = `FOCUS IS NOT IN THE LAYER: with "${dialog.name}" open, focus is ${focus === null ? 'outside any dialog' : `in "${focus}"`}, so a screen reader does not announce it`;
+    else if (inside === 0) wrong = `the dialog "${dialog.name}" holds nothing that is read`;
+    else return { name: dialog.name, inside, kept };
+    await wait(150);
+  }
+  return refuse(wrong);
+}
+
+/** The layer is gone, and what was behind it is read again. */
+async function layerIsGone(cdp: CDPSession, was: string): Promise<void> {
+  await until(
+    `"${was}" was closed and is still in the tree, or the game is not read again`,
+    async () => {
+      const t = await told(cdp);
+      const still = [...t.values()].some((n) => n.role === 'dialog');
+      const menu = button(t, (n) => n === say('play.pause'));
+      return !still && menu ? true : null;
+    },
+  );
+}
+
+function filesOf(dir: string): Map<string, string> {
+  const files = new Map<string, string>();
+  for (const rel of readdirSync(dir, { recursive: true, encoding: 'utf8' })) {
+    const file = join(dir, rel);
+    if (statSync(file).isFile()) files.set(`/${rel.split(sep).join('/')}`, file);
+  }
+  return files;
+}
+
+let temporary: string | null = null;
+let server: Server | null = null;
+try {
+  let url = process.argv[2] ?? 'http://localhost:4173/';
+  if (process.argv[2] === '--build') {
+    const dir = mkdtempSync(join(tmpdir(), 'iw-sr-'));
+    temporary = dir;
+    const env = { ...process.env };
+    delete env['VITE_RELAY_URL'];
+    execSync(`pnpm exec vite build --logLevel error --emptyOutDir --outDir "${dir}"`, {
+      cwd: join(REPO, 'packages', 'app'),
+      stdio: 'pipe',
+      env,
+    });
+    if (!existsSync(join(dir, 'index.html'))) refuse(`the build made no index.html in ${dir}`);
+    const files = filesOf(dir);
+    server = createServer((req, res) => {
+      const path = (req.url ?? '/').split('?')[0] ?? '/';
+      const file = files.get(path === '/' ? '/index.html' : path);
+      if (file === undefined) {
+        res.writeHead(404).end();
+        return;
+      }
+      res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
+      res.end(readFileSync(file));
+    });
+    const s = server;
+    await new Promise<void>((done) => s.listen(0, '127.0.0.1', done));
+    url = `http://127.0.0.1:${String((server.address() as AddressInfo).port)}/`;
+  }
+
+  const browser = await puppeteer.launch({ executablePath: CHROME, headless: true });
+  const errors: string[] = [];
+  try {
+    const context = await browser.createBrowserContext();
+    const page = await context.newPage();
+    page.on('pageerror', (e) => errors.push(e instanceof Error ? e.message : String(e)));
+    await page.setViewport({
+      width: 360,
+      height: 697,
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+    });
+    // EVERYTHING SAID, from the page's first moment (part 2, §38): the region is watched as the
+    // page is built, so that what is said as a game opens is heard, and not only what is left.
+    // As text, not a function: the TypeScript runner wraps a named function in a helper the page
+    // does not have, and the script then stops at its first one.
+    await page.evaluateOnNewDocument(`(() => {
+      window.__said = [];
+      window.__shown = [];
+      const note = () => {
+        const said = (document.querySelector('[data-announce]')?.textContent ?? '').trim();
+        if (said !== '' && window.__said[window.__said.length - 1] !== said) window.__said.push(said);
+        const h = document.querySelector('[data-middle-view="spread"] span');
+        const shown = h ? (h.textContent ?? '').trim() : '';
+        if (shown !== '' && window.__shown[window.__shown.length - 1] !== shown) window.__shown.push(shown);
+      };
+      // Looked at every 50 ms from the page's first moment: a beat of the spread is shown for 900.
+      setInterval(note, 50);
+    })()`);
+    await page.goto(url, { waitUntil: 'load' });
+    const cdp = await page.createCDPSession();
+    await cdp.send('DOM.enable');
+    await cdp.send('Accessibility.enable');
+
+    // THE TITLE, and the page's language.
+    const newGame = await until('the title’s New game is not in the tree', async () =>
+      button(await told(cdp), (n) => n === say('title.newGame')),
+    );
+    const lang = (await page.evaluate(`document.documentElement.lang`)) as string;
+    if (lang !== 'en')
+      refuse(`THE PAGE DOES NOT SAY ITS LANGUAGE: it says "${lang}", and the game is in English`);
+    console.log(`SR WALK: the page says its language (${lang})`);
+
+    // A NEW GAME ON EASY. No dialog stands before it since Gate 2's polish (piece 3, LOOK_PLAN
+    // §37): the goal is said on turn 1's card, and is held below to be read there.
+    await press(cdp, newGame);
+    const easy = await until('the difficulty screen’s Easy is not in the tree', async () =>
+      button(await told(cdp), (n) => n.startsWith(say('difficulty.training'))),
+    );
+    await press(cdp, easy);
+    const layers: string[] = [];
+
+    // THE TURN, in words.
+    const turn = say('play.turnOf').replace('{n}', '1').replace('{max}', '15');
+    // Read once turn 1's cards are drawn: a new game's first view is the turn before its draw.
+    const via0 = say('arrivals.via').replace('{place}', '');
+    const words = await until('the new cards did not come', async () => {
+      const t = await told(cdp);
+      return [...t.values()].some((n) => n.role === 'button' && n.name.includes(via0))
+        ? [...t.values()].filter((n) => n.role === 'StaticText').map((n) => n.name)
+        : null;
+    });
+    if (!words.includes(turn) || words.includes('1/15'))
+      refuse(
+        `THE TURN IS NOT SAID IN WORDS: a screen reader should be told "${turn}"${words.includes('1/15') ? ', and is told "1/15"' : ', and is not'}`,
+      );
+    console.log(`SR WALK: the turn is said in words ("${turn}"), and its figure is not read`);
+
+    // THE GOAL, read on turn 1's card where the dialog that said it was.
+    const goalWords = say('goal.win');
+    // The heading is drawn in capitals, and Chrome reads it as drawn: matched without regard to case.
+    const heard = new Set(words.map((w) => w.toLowerCase()));
+    if (!heard.has(say('goal.title').toLowerCase()) || !heard.has(goalWords.toLowerCase()))
+      refuse(
+        `THE GOAL IS NOT READ ON TURN 1: a screen reader should be told "${say('goal.title')}" and "${goalWords}"`,
+      );
+    console.log(`SR WALK: the goal is read on turn 1's card ("${say('goal.title')}")`);
+
+    // AS A GAME OPENS, ITS ARRIVALS ARE SAID AND NOTHING BEFORE THEM (screen reader support, part
+    // 2; LOOK_PLAN §38): what was in the log when the screen opened was not just done, and is not
+    // said; the turn's draw, which the app makes at once, is what a sighted player sees arrive.
+    const region = (await page.evaluate(
+      `document.querySelector('[data-announce]') !== null`,
+    )) as boolean;
+    if (!region) refuse('WHAT HAPPENS IS NOT SAID: the play screen has no region to say it in');
+    // The arrival is known by the disease it names, not by the words it begins with: the engine
+    // says a worm's arrival in its own sentence, and an infection's in another (docs/FINDINGS.md
+    // #134: this read "Infection: …" alone, and a worm dealt on the runner failed it).
+    const via = say('arrivals.via').replace('{place}', '');
+    const arrivals = await until('no new card is a button in the tree', async () => {
+      const names = [...(await told(cdp)).values()]
+        .filter((n) => n.role === 'button' && n.name.includes(via))
+        .map((n) => n.name.split(',')[0]?.trim() ?? '')
+        .filter((n) => n !== '');
+      return names.length > 0 ? names : null;
+    });
+    const opening = await until(
+      'WHAT AN ACTION DID IS NOT SAID: nothing was said as the game opened, where its arrival should be',
+      async () => {
+        const said = (await page.evaluate(`window.__said`)) as string[];
+        return said.length > 0 ? said : null;
+      },
+    );
+    if (!arrivals.some((name) => (opening[0] ?? '').includes(name)))
+      refuse(
+        `A GAME THAT OPENS IS SAID TO HAVE DONE SOMETHING: the first thing said is "${(opening[0] ?? '').slice(0, 80)}", where it should be the arrival of ${arrivals.join(' or ')}`,
+      );
+    console.log(
+      `SR WALK: as the game opens, its arrival is said first ("${(opening[0] ?? '').slice(0, 60)}")`,
+    );
+
+    // A NEW CARD, named by what it shows.
+    const classes = Object.values(FAMILIES as Record<string, { name?: string }>).flatMap((f) =>
+      f.name ? [f.name] : [],
+    );
+    const card = await until('no new card is a button in the tree', async () =>
+      button(await told(cdp), (n) => n.includes(via)),
+    );
+    const cls = classes.find((c) => card.name.includes(c));
+    if (cls === undefined)
+      refuse(
+        `A NEW CARD DOES NOT SAY WHAT IT SHOWS: it is named "${card.name}", with no class by its name`,
+      );
+    console.log(`SR WALK: a new card is named by what it shows ("${card.name}")`);
+
+    // ITS CARD: the second layer, closed by the close that floats over it.
+    const close = async (was: string): Promise<void> => {
+      const x = button(await told(cdp), (n) => n === say('nav.close') || n === say('nav.back'));
+      if (!x) refuse(`with "${was}" open, no close is in the tree: there is no way out of it`);
+      await press(cdp, x);
+      await layerIsGone(cdp, was);
+    };
+    await press(cdp, card);
+    const pathogen = await layerIsAll(page, cdp, say('card.title'));
+    if (pathogen.kept.length === 0)
+      refuse(`with "${pathogen.name}" open, the close that floats over it is not read`);
+    layers.push(`"${pathogen.name}" (${String(pathogen.inside)}, and its close kept)`);
+    await close(pathogen.name);
+
+    // ALONE, THE CARDS' BUTTON BEGINS THE COMMAND STAGE (Gate 2's polish, piece 3, LOOK_PLAN §37):
+    // planning was one more stop between the new cards and the board on every turn.
+    const begin = button(await told(cdp), (n) => n === say('play.beginCommand'));
+    if (!begin)
+      refuse(
+        `PLANNING IS NOT FOLDED AWAY: the new cards' button is not "${say('play.beginCommand')}"`,
+      );
+    // A step's button that has just come back counts no tap for half a second (FINDINGS #90), as
+    // the lesson's walk waits: a person's pause.
+    await wait(700);
+    await press(cdp, begin);
+    await until(
+      `PLANNING IS NOT FOLDED AWAY: "${say('play.beginCommand')}" did not bring the command stage`,
+      async () => (button(await told(cdp), (n) => n === say('play.endCommand')) ? true : null),
+    );
+    console.log(
+      `SR WALK: alone, the new cards' "${say('play.beginCommand')}" goes straight to the command stage`,
+    );
+
+    // THE BODY TILE DRAWS THE BODY: the figure planning had, its places read by their names.
+    const organNames = new Set(
+      Object.values(ORGANS as Record<string, { name?: string }>).flatMap((o) =>
+        o.name ? [o.name] : [],
+      ),
+    );
+    const bodyTile = button(await told(cdp), (n) => n === say('body.title'));
+    if (!bodyTile) refuse(`no "${say('body.title')}" tile in the tree`);
+    await press(cdp, bodyTile);
+    const places = await until(
+      `THE BODY TILE DOES NOT DRAW THE BODY: with "${say('body.title')}" open, no place of the figure is read`,
+      async () => {
+        const n = [...(await told(cdp)).values()].filter(
+          (x) => x.role === 'group' && organNames.has(x.name),
+        ).length;
+        return n > 0 ? n : null;
+      },
+    );
+    console.log(
+      `SR WALK: "${say('body.title')}" draws the body, ${String(places)} of its organs read by name`,
+    );
+    const shut = button(await told(cdp), (n) => n === say('body.title'));
+    if (shut) await press(cdp, shut);
+    await wait(400);
+
+    // THE BOARD AS A LIST (its third part, LOOK_PLAN §39): its places, each saying what stands
+    // there; and a cell moved through it, by the tree alone, as a screen reader would.
+    const disease = card.name.split(',')[0]?.trim() ?? '';
+    const listed = (tree: Map<string, Told>): Told[] =>
+      [...tree.values()].filter((n) => n.role === 'button' && n.name.includes(': '));
+    const boardPlaces = await until(
+      `THE BOARD IS NOT A LIST: no place on it is read with what stands there ("${disease}" among them)`,
+      async () => {
+        const found = listed(await told(cdp));
+        return found.some((n) => n.name.includes(disease)) ? found : null;
+      },
+    );
+    console.log(
+      `SR WALK: the board is a list of ${String(boardPlaces.length)} places, each with what stands there ("${boardPlaces.find((n) => n.name.includes(disease))?.name.slice(0, 60) ?? ''}")`,
+    );
+    const monocyte = String((CNAME as Record<string, string>)['macrophage'] ?? 'Monocyte');
+    const placeOf = async (): Promise<string> =>
+      listed(await told(cdp))
+        .find((n) => n.name.split(': ')[1]?.split(', ').includes(monocyte))
+        ?.name.split(': ')[0] ?? '';
+    const from = await placeOf();
+    const cellsTile = button(await told(cdp), (n) => n === say('tabs.cells'));
+    if (!cellsTile) refuse(`no "${say('tabs.cells')}" tile in the tree`);
+    await press(cdp, cellsTile);
+    const chip = await until(`no ${monocyte} to take in hand in the Cells view`, async () =>
+      button(await told(cdp), (n) => n === monocyte),
+    );
+    await press(cdp, chip);
+    const moveTo = say('board.moveTo').split('{')[0] ?? '';
+    const move = await until(
+      `A CELL'S MOVES ARE NOT BUTTONS: with the ${monocyte} in hand, nothing in the tree says "${moveTo}…"`,
+      async () => button(await told(cdp), (n) => n.startsWith(moveTo)),
+    );
+    const goingTo = move.name.slice(moveTo.length);
+    await press(cdp, move);
+    const to = await until(
+      `A CELL'S MOVES ARE NOT BUTTONS: "${move.name}" was pressed and the ${monocyte} did not go there`,
+      async () => {
+        const now = await placeOf();
+        return now !== '' && now !== from ? now : null;
+      },
+    );
+    if (to !== goingTo)
+      refuse(`A CELL'S MOVES ARE NOT BUTTONS: "${move.name}" took the ${monocyte} to ${to}`);
+    console.log(`SR WALK: the ${monocyte} moved by the list alone, from ${from} to ${to}`);
+    const shutCells = button(await told(cdp), (n) => n === say('nav.close'));
+    if (shutCells) await press(cdp, shutCells);
+    await wait(700);
+
+    // THE MENU: the third.
+    const menu = button(await told(cdp), (n) => n === say('play.pause'));
+    if (!menu) refuse('the game’s menu button is not in the tree');
+    await press(cdp, menu);
+    const paused = await layerIsAll(page, cdp, say('play.pause'));
+    const resume = button(await told(cdp), (n) => n === say('pause.resume'));
+    if (!resume) refuse('the menu has no Resume in the tree');
+    await press(cdp, resume);
+    await layerIsGone(cdp, paused.name);
+    layers.push(`"${paused.name}" (${String(paused.inside)})`);
+
+    // THE MESSAGES: the fourth.
+    const chat = button(await told(cdp), (n) => n === say('chat.open'));
+    if (!chat) refuse('the messages’ button is not in the tree');
+    await press(cdp, chat);
+    const messages = await layerIsAll(page, cdp, null);
+    layers.push(`"${messages.name}" (${String(messages.inside)})`);
+    await close(messages.name);
+
+    console.log(
+      `SR WALK: ${String(layers.length)} layers, each a named dialog with focus in it and nothing behind it read: ${layers.join('; ')}`,
+    );
+
+    // WHAT AN ACTION DID IS SAID (part 2, §38): antibodies made, through the tree alone.
+    const nowSaid = async (): Promise<string> =>
+      (
+        (await page.evaluate(
+          `(document.querySelector('[data-announce]')?.textContent ?? '')`,
+        )) as string
+      ).trim();
+    const produced = untag(
+      (ENGINE_I18N_EN as Record<string, string>)['actions.bCellProducedAntibod'] ?? '',
+    );
+    const madePrefix = produced.split('{')[0] ?? '';
+    const tile = button(await told(cdp), (n) => n === say('antibody.title'));
+    if (!tile) refuse(`no "${say('antibody.title')}" tile in the tree`);
+    await press(cdp, tile);
+    const exb = (FAMILIES as Record<string, { name?: string }>)['EXB']?.name ?? '';
+    const family = await until(`no ${exb} button in the Antibodies view`, async () =>
+      button(await told(cdp), (n) => n.startsWith(exb)),
+    );
+    await press(cdp, family);
+    const produce = await until(
+      'no Produce that can be pressed in the Antibodies view',
+      async () => {
+        const t = await told(cdp);
+        const b = button(t, (n) => n === say('antibody.produce'));
+        return b !== null && !(await has(cdp, b, 'disabled')) ? b : null;
+      },
+    );
+    await press(cdp, produce);
+    const made = await until(
+      `WHAT AN ACTION DID IS NOT SAID: after Produce, a screen reader should be told "${madePrefix}…"`,
+      async () => {
+        const w = await nowSaid();
+        return w.startsWith(madePrefix) ? w : null;
+      },
+    );
+    console.log(`SR WALK: what Produce did is said ("${made.slice(0, 70)}")`);
+    const closeView = button(await told(cdp), (n) => n === say('nav.close'));
+    if (closeView) await press(cdp, closeView);
+    await wait(700);
+
+    // EACH BEAT OF THE SPREAD IS SAID AS IT IS SHOWN: what the eye reads above the board, word for
+    // word, recorded in the page as it changes.
+    await page.evaluate(`(() => { window.__said = []; window.__shown = []; })()`);
+    const endTurn = await until('no End turn that can be pressed', async () => {
+      const b = button(await told(cdp), (n) => n === say('play.endCommand'));
+      return b !== null && !(await has(cdp, b, 'disabled')) ? b : null;
+    });
+    await press(cdp, endTurn);
+    await until('the spread did not end with the next turn’s cards', async () =>
+      button(await told(cdp), (n) => n.includes(via)),
+    );
+    const { said, shown } = (await page.evaluate(
+      `({ said: window.__said, shown: window.__shown })`,
+    )) as { said: string[]; shown: string[] };
+    if (shown.length === 0) refuse('the spread showed no beat to say');
+    const unsaid = shown.filter((h) => !said.includes(h));
+    if (unsaid.length > 0)
+      refuse(
+        `THE SPREAD IS NOT SAID: ${String(unsaid.length)} of its ${String(shown.length)} beats shown were not said, the first "${unsaid[0] ?? ''}"`,
+      );
+    console.log(
+      `SR WALK: each of the spread's ${String(shown.length)} beats is said as it is shown (${shown.slice(0, 3).join(', ')}${shown.length > 3 ? ', …' : ''})`,
+    );
+    if (errors.length > 0) refuse(`an uncaught error on the page: ${errors[0] ?? ''}`);
+    console.log('SR WALK: every layer closed back to the game, which is read again; no error');
+  } finally {
+    void browser.close();
+  }
+} catch (e) {
+  console.error(`SR WALK: DID NOT PASS: ${e instanceof Error ? e.message : String(e)}`);
+  process.exitCode = 1;
+} finally {
+  server?.close();
+  if (temporary) rmSync(temporary, { recursive: true, force: true });
+  setTimeout(() => process.exit(process.exitCode ?? 0), 800);
+}

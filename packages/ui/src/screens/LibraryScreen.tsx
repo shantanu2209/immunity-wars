@@ -47,7 +47,7 @@ import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
 import { KitButton } from '../kit/Button';
 import { COLOUR, RADIUS, SHADOW, TOUCH, TYPE } from '../kit/tokens';
-import { typeDisplayName } from '../names';
+import { diseaseDisplayName, libraryText, typeDisplayName } from '../names';
 import { PathogenCard } from '../panels/PathogenCard';
 
 import { BODY as P, CARD, FIELD, ITEM, LEAD, PAGE, ROW as ROW_BTN, SECTION, TITLE } from './chrome';
@@ -263,7 +263,7 @@ export function LibraryScreen({
             data-library-why={w.key}
           >
             <h2 style={SECTION}>{t(`library.why.${w.key}.title`)}</h2>
-            <p style={P}>{w.text}</p>
+            <p style={P}>{libraryText(`why.${w.key}`, w.text)}</p>
             <KitButton
               style={{
                 ...ROW_BTN,
@@ -287,7 +287,13 @@ export function LibraryScreen({
   const filtered = groups
     .map((g) => ({
       type: g.type,
-      entries: q ? g.entries.filter((e) => e.disease.toLowerCase().includes(q)) : g.entries,
+      entries: q
+        ? g.entries.filter(
+            (e) =>
+              e.disease.toLowerCase().includes(q) ||
+              diseaseDisplayName(e.disease).toLowerCase().includes(q),
+          )
+        : g.entries,
     }))
     .filter((g) => g.entries.length > 0);
   const total = groups.reduce((n, g) => n + g.entries.length, 0);
@@ -352,7 +358,7 @@ export function LibraryScreen({
                   stage L5: the picture a player has seen on the board. */}
               <RowArt disease={e.disease} type={e.type} />
               <span style={{ flex: '1 1 4rem', minWidth: 0, overflowWrap: 'anywhere' }}>
-                {e.disease}
+                {diseaseDisplayName(e.disease)}
               </span>
               {classBadge(e.disease)}
             </KitButton>

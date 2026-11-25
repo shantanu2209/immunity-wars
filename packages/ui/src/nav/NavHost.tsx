@@ -298,7 +298,7 @@ export function FloatingClose({
   onClose: () => void;
 }): ReactElement {
   return (
-    <button style={FLOAT} onClick={onClose} data-nav-close={label}>
+    <button style={FLOAT} onClick={onClose} data-nav-close={label} data-modal-keep="">
       {t(label === 'back' ? 'nav.back' : 'nav.close')}
     </button>
   );

@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.2). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.5). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -98,7 +98,8 @@ image model through Codex, not made here (`docs/ASSETS.md`), written to every fi
 store and the web app ask for by `pnpm art:icon` (`tools/art-pipeline/icon.ts`).
 What the kit is:
 the 24 Clay pieces are built by `tools/art-pipeline/clay/pieces.py` and gated at 3:1 against the
-lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the kit's colours, type
+lit board by `pnpm art:clay`, with `pnpm art:clay:check` in `pnpm verify`; the same check holds two classes
+drawn in one shape apart to simulated colour blindness (`clay/vision.ts`, plan §35); the kit's colours, type
 and components are in `packages/ui/src/kit/` (entry `@immunity-wars/ui/kit`; the play screen is
 drawn from it, and the kit page, `/kit.html`, shows it), held to the contrast bounds by the kit's
 own test; the Clay art is served from `packages/app/public/art/clay/`, and a phone stores what the
@@ -110,8 +111,12 @@ codebase and Capacitor stay; the engine, content, protocol, room and relay are n
 `packages/android` is Capacitor round the app's own build made for it (`vite build --mode android`:
 no service worker, no developer's page but the measuring page); id
 `com.kartikchaudhary.immunitywars`, name "Immunity Wars", no Android backup, all ruled. His review
-and his visual approval may be done on the Android app; **the public release still waits for
-Gate 2.** `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+and his visual approval may be done on the Android app. **The public release was made before
+Gate 2, by ruling** (20 October 2026; plan §31, brief v2.3): the game is on Google Play, version
+0.9, in every country Play offers. **Gate 2 was given on 25 November 2026** (brief v2.5, plan §37):
+*"the approval is for everything gate 2 related"*, before he had played the last of the polish, which
+he plays on the live web app; **the next store build is held until then**, and Phase 2's closeout is
+its own piece of work. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
 repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
 120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected
@@ -144,6 +149,21 @@ release their toxins, where they were toxin cards (`docs/DEVIATIONS.md` #15), an
 T-Cell's refusal says a hidden pathogen (#16); the deck plays differently, so **rules 4.2.0**, with
 the bands measured again and moved. **Deployed 2 October, 13:09 IST:** the relay and the app
 together, from `main` at `8c7f887` (plan §23).
+**The Hindi edition's screens are built, 24 November 2026** (plan §32, ruled for the SBI Youth
+Ideathon interview): the two catalogues, the names the content pack holds as data and a glossary,
+and the library's text, in `packages/content/src/i18n/hi/`, chosen from Settings; the engine still writes English and
+`packages/ui/src/engineText.ts` renders the Hindi for each line; reviewed through a sheet
+generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18n:apply`, held by
+`pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
+§34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
+(OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check is built** (plan §35), and **screen
+reader support is brought into scope** (brief v2.4): its three parts are built (plan §36, §38, §39;
+`pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
+to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
+pieces** (plan §33 and §37), and all four are built: alone a turn goes from its cards straight to
+the board, the body seen from outside is the Body tile's, and a new game opens on its cards with
+the goal beside them. The lesson is 69 cards. **Claude merges any pull request that is safe and
+ready, Dependabot's too** (his standing rule, 25 November); deploying is still his word.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with
@@ -424,7 +444,10 @@ contract Task B was measured against.
   1 October 2026:* one low advisory, `serialize-javascript` through the service worker's build
   tools, in no process that listens, seen while the look prototype's libraries were installed and
   not caused by them; recorded in `docs/SECURITY_NOTES.md`, and **cleared on 2 October 2026** by a
-  pin, on his word, so `pnpm audit` is clean again. **The old acceptance sentence — "this
+  pin, on his word, so `pnpm audit` is clean again. *It is not clean since 25 November 2026:* two moderate
+  advisories, `glob` 11 and `minimatch` 10, both under `workbox-build` at build time, are accepted
+  because its latest release still asks for `glob` 11; seven others were cleared that day
+  (`docs/SECURITY_NOTES.md`). **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on
