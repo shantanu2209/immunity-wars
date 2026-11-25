@@ -23,6 +23,6 @@
     "@immunity-wars/ui": "workspace:*"
   },
   "devDependencies": {
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   }
 }
