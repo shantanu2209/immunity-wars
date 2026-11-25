@@ -439,7 +439,10 @@ contract Task B was measured against.
   1 October 2026:* one low advisory, `serialize-javascript` through the service worker's build
   tools, in no process that listens, seen while the look prototype's libraries were installed and
   not caused by them; recorded in `docs/SECURITY_NOTES.md`, and **cleared on 2 October 2026** by a
-  pin, on his word, so `pnpm audit` is clean again. **The old acceptance sentence — "this
+  pin, on his word, so `pnpm audit` is clean again. *It is not clean since 25 November 2026:* two moderate
+  advisories, `glob` 11 and `minimatch` 10, both under `workbox-build` at build time, are accepted
+  because its latest release still asks for `glob` 11; seven others were cleared that day
+  (`docs/SECURITY_NOTES.md`). **The old acceptance sentence — "this
   repository never starts a long-running server" — is FALSE** since the Vite dev server (P2.2)
   and `vite preview --host` (the S25 checks); the property that replaces it is *no open advisory
   is in a process that listens; every open advisory is in a one-shot tool the maintainer runs on

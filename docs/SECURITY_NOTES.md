@@ -633,3 +633,38 @@ place of #173); puppeteer-core (#172), sharp (#164) and ws (#166). On the PC, 17
   pass on it; it is not deployed until the relay is.
 
 > ### The property, re-read 17 October 2026: no open advisory is in a process that listens, because no advisory is open.
+
+## Added 25 November 2026 — nine alerts no Dependabot update covered: seven cleared, two accepted
+
+**What was open,** read from GitHub's own list after the day's Dependabot merges (all of them, on
+his standing word that safe and ready pull requests are merged): one high alert, zod's, was cleared
+by Dependabot's #194 that morning. Nine stayed open, none of them high:
+
+| Alerts | Package | Severity | Reached through | Done |
+|---|---|---|---|---|
+| 35 to 38 | `fast-uri` 3.1.8 | 2 moderate, 2 low | `vite-plugin-pwa` > `workbox-build` > `ajv`, at build time; and `dependency-cruiser` > `ajv`, validating our own config | The existing override raised to 3.1.9, inside `ajv`'s 3.x range |
+| 41 | `serialize-javascript` 7.1.2 | low | `workbox-build` > `@rollup/plugin-terser`, minifying the service worker at build time | The existing override raised to 7.1.3 and over, inside the plugin's ^7.0.3 range (7.1.4 resolved) |
+| 33, 34 | `@vitest/mocker` 4.1.11 | 2 moderate | The test runner | `vitest` and `@vitest/coverage-v8` to 4.1.12, inside every package's ^4.1.11 range |
+| 42, 43, by the Capacitor CLI's path | `glob` 13, `minimatch` 10 | 2 moderate | `@capacitor/cli` > `rimraf` 6.1.3, removing the Android project's build folders | An override, `rimraf` to 6.1.4, which asks for `glob` ^14.0.3 and is inside the CLI's ^6.0.1 range |
+| 42, 43, by the service worker's path | `glob` 11.1.0, `minimatch` 10.2.6 | 2 moderate | `vite-plugin-pwa` > `workbox-build` 7.4.1 > `glob` ^11, globbing our own build output when the app is built | **Accepted.** `workbox-build`'s latest release still asks for `glob` ^11; the fixes are in `glob` 14 and `minimatch` 11, majors it does not allow, and forcing them would change how the service worker's list of files is made |
+
+`typescript-eslint` went to 8.74.0 with them, which asks for `minimatch` ^11 where 8.73 asked
+for 10; the lint that reads every file is what holds it.
+
+**Why the two accepted do not reach anything here.** `glob`'s alert is an AbortSignal's
+cancellation being bypassed, and `workbox-build` hands it no signal. `minimatch`'s is a crafted
+pattern taking long to match, and the patterns are ours, in the build's own config. Both run once,
+when the maintainer builds the app, over files the build itself wrote. **Neither is in a process
+that listens:** not the relay, and not the app, which ships none of it. Drop the acceptance when
+`workbox-build` asks for a patched `glob`.
+
+| Checked | Found |
+|---|---|
+| `pnpm audit`, before | 7 vulnerabilities, 3 low and 4 moderate |
+| `pnpm audit`, after | 2 moderate: `glob` 11.1.0 and `minimatch` 10.2.6, both by `workbox-build` alone |
+| The lockfile | `fast-uri` 3.1.9; `serialize-javascript` 7.1.4; `@vitest/mocker` 4.1.12; `rimraf` 6.1.4 with `glob` 14.0.6 |
+
+**The toolchain battery** (`CLAUDE.md`, "Known issues") is owed by the runner's move and is run
+before this merges, on the PC; its result is in this pull request's description.
+
+> ### The property, re-read 25 November 2026: no open advisory is in a process that listens. Two are open, both in the one-shot build, both accepted above.
