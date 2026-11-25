@@ -323,6 +323,9 @@ const LAYOUT_AUDITOR = `
   }
   for (const el of document.querySelectorAll('button, a[href], input, select, [role=button]')) {
     if (inSvg(el)) continue;
+    // Seen only by a screen reader (docs/LOOK_PLAN.md §39): its box is clipped to nothing, and
+    // what is inside it runs on unclipped in its own rectangles. Not a control the eye can miss.
+    if (el.closest('[data-spoken-only]')) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
     if (r.right > w + 1 || r.left < -1)
@@ -2840,6 +2843,23 @@ async function controls(page: Page): Promise<string[]> {
     'zoom layout fires: a scrolling box whose line runs off its side is flagged',
     has(z2.findings, 'layout', 'planted spill over the side', 'scrolls sideways'),
   );
+  // Seen only by a screen reader: the same control past the edge, marked so, is not flagged,
+  // while the one beside it still is.
+  await page.evaluate(`(() => {
+    const b = document.createElement('button');
+    b.textContent = 'planted spoken past the edge';
+    b.id = 'planted-spoken-out';
+    b.setAttribute('data-spoken-only', '');
+    Object.assign(b.style, { position: 'fixed', left: '300px', top: '0', width: '60px', height: '44px' });
+    document.body.prepend(b);
+  })()`);
+  const z3 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'zoom layout passes: a control past the edge seen only by a screen reader is NOT flagged',
+    !has(z3.findings, 'layout', 'planted spoken past the edge', 'control outside') &&
+      has(z3.findings, 'layout', 'planted out', 'control outside'),
+  );
+  await page.evaluate(`document.getElementById('planted-spoken-out')?.remove()`);
   await unplant();
   await page.setViewport({ width: 360, height: 780 });
 

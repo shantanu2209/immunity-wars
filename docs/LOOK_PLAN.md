@@ -3353,8 +3353,8 @@ readers out until someone asked, and is v2.4 now. It is three parts, each its ow
 | Part | What | State |
 |---|---|---|
 | 1 | **What is there is said rightly:** every control, picture and dialog has a name, and a layer that covers the screen is all there is to a screen reader too | Built, below |
-| 2 | **What happens is said:** each beat of the spread, the log's new lines, a refusal, whose step it is | Not started |
-| 3 | **The board as a list by place,** with a cell's destinations as buttons, so that a turn can be played without the picture | Not started |
+| 2 | **What happens is said:** each beat of the spread, the log's new lines, a refusal, whose step it is | Built, §38 |
+| 3 | **The board as a list by place,** with a cell's destinations as buttons, so that a turn can be played without the picture | Built, §39 |
 
 ### Where a screen reader's words come from, and how they are read here
 
@@ -3582,3 +3582,77 @@ how fast is the reader's own setting. **Not held:** that the words are said in a
 when several things happen at once, or that the spread's pace leaves time to hear each beat; a
 screen reader user can tap the spread on, as anyone can. **The board as a list,** without which a
 turn cannot yet be played without seeing it, is the third part, not started.
+
+### Deployed, 25 November 2026, 15:07 IST: the Hindi edition, Gate 2's four pieces, the screen reader's two parts
+
+On his word (*"proceed accordingly"* to the recommendation to deploy the app and the relay together
+once the merges were done, and *"only do the web one"*): the relay and then the app, from `main` at
+`54c313a`. The relay went because of zod's fix (Dependabot's #194): it checks every message from
+phones with zod.
+
+| | Version | Read back |
+|---|---|---|
+| The relay | `20261125-150658-54c313a` | Its 41 tests passed. Nobody was connected, so it was restarted; it answers through the server |
+| The app | `20261125-150720-54c313a` | The start check passed before anything was copied; the privacy page names its contact, carried over from the live page; the server serves this build |
+
+| Checked on the live app, from the PC, in a headless phone-sized browser | Found |
+|---|---|
+| `pnpm guide:walk`, the lesson pressed through only what is lit | 69 beats of 69, handed over at turn 8 of 15, no error |
+| The same in Hindi | Drawn in the bundled Noto Sans Devanagari, 69 beats of 69 |
+| `pnpm sr:walk`, by the accessibility tree alone | Every check of the walk passed: the goal on turn 1, straight to the board alone, the Body tile's figure, three layers each a named dialog, what Produce did and each beat of the spread said |
+
+- **Not deployed: Google Play,** held by his word until he has played the web version (`TODO.md`
+  row 18).
+- **A phone that has the app** takes this version on its title, the next time it is opened there.
+
+## 39. Built 25 November 2026: screen reader support, its third part: the board as a list
+
+The last of the three parts §36 lists. The board is pictures, and a tap on it is read by where the
+finger lands, so a screen reader could name what was on it and could not play on it: no place on it
+could be pressed, and a cell's moves glowed on steps that are not buttons.
+
+**Beside the board, and not seen, the same board is a list** (`packages/ui/src/play/BoardList.tsx`):
+
+| Part | What a screen reader is told, and what a press does |
+|---|---|
+| **What stands on the board** | A button for each place with something on it: *Nose lane, step 5: Influenza*. Pressed, it opens that step's sheet, as a tap on the step does; the sheet's rows are the pathogens' cards and the cells to take in hand |
+| **Where it can go** | While a piece is in hand, a button for each step it may move to, or hop to along the lymph: *Move to Nose lane, step 1*. Pressed, it moves there, as a tap on the glowing step does |
+
+- **Every press goes through the board's own tap path,** so what the list may do is exactly what a
+  finger may. An attack was already a row of the piece's own card, named with its target.
+- **Five sentences, in both catalogues:** the two groups' names, a place with what stands there, a
+  move, a hop along the lymph.
+- **Not seen, so not measured as seen.** The list, the spoken turn and the region that says what
+  happens carry `data-spoken-only`, and the Gate 1 audit's checks of touch, contrast, text, layout
+  and covering skip it: a screen reader's touch is its own, anywhere on the screen. Two controls of
+  the audit's own hold that such a button is not flagged, for its size and past the screen's edge,
+  while an ordinary one beside it still is; each was made to fail by taking its skip out.
+
+**Held by `pnpm sr:walk`,** which now plays a move by the tree alone:
+
+| Held | Found |
+|---|---|
+| The board as a list | 9 places, each with what stands there: *Nose lane, step 5: Influenza* |
+| A cell moved by it | The Cells tile, the Monocyte taken in hand, *Move to Nose lane, step 1* pressed: the Monocyte went from the bloodstream to the step the button named |
+
+- **Controls, each fired:** `sr-walk-the-board-is-a-list` (the places left out: the walk fails
+  saying the board is not a list) and `sr-walk-a-cell-moves-by-the-list` (the moves left out: it
+  fails saying a cell's moves are not buttons).
+
+| Seen besides | Found |
+|---|---|
+| `pnpm guide:walk --build` | 69 beats of 69, no error |
+| The Gate 1 audit, alone, on this build | 63 screens in each of the four passes (65 in one); every check at zero over 873 controls and 2,027 text runs, the name check over 1,334; 33 close paths, none wrong; the play area one height; the seven named screens each one screen; offline met; 62 controls of the audit's own, each as it must be. Not reached: a row's several targets in one pass, by the dice, and its way back with it; playing together, which this run did not ask for |
+
+**The audit's first run on this build found a fault in the audit.** The list's box is clipped to
+nothing, and the buttons in it run on in their own rectangles, past the screen's edge. Its 200%
+layout check had not been taught what the touch and contrast checks had, and counted them as
+controls outside the screen: 217 to 242 in each of the three passes at 200%. Nothing could be seen
+or scrolled to there, and no page grew wider. It skips them now, with the control above, and the
+run in the table is the second.
+
+**With this, a game can be played by a screen reader in Chrome's tree on a PC:** the cards, the
+board, a cell taken in hand and moved, an action on the card, End turn, and what happened said.
+**What it still is not.** Nobody who uses TalkBack has played it; how it sounds, how long a turn
+takes by ear, and whether the order of things makes sense are a person's to find. The guided lesson
+is not led by ear: its light dims for the eye. **So it is still not said to support blind players.**

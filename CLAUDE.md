@@ -157,7 +157,7 @@ generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18
 `pnpm i18n:sheet:check`). **He ruled the strings to stand on 25 November** (*"Strings re fine"*; plan
 §34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
 (OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check is built** (plan §35), and **screen
-reader support is brought into scope** (brief v2.4): the first of its three parts is built (plan §36;
+reader support is brought into scope** (brief v2.4): its three parts are built (plan §36, §38, §39;
 `pnpm sr:walk` walks the built app by Chrome's accessibility tree alone), and the game is **not** said
 to support blind players until someone who uses a screen reader has played it (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
 pieces** (plan §33 and §37), and all four are built: alone a turn goes from its cards straight to
