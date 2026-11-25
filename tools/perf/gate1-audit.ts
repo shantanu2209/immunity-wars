@@ -202,6 +202,9 @@ const AUDITOR = `
     return parts.join('>');
   };
   const visible = (el) => {
+    // SEEN ONLY BY A SCREEN READER (its third part, docs/LOOK_PLAN.md §39): not touched, not read
+    // by an eye, so held to neither. A screen reader's touch is its own, anywhere on the screen.
+    if (el.closest('[data-spoken-only]')) return false;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return false;
     const cs = getComputedStyle(el);
@@ -270,7 +273,7 @@ const SCALE_AUDITOR = `
 (() => {
   const out = { findings: [], runs: 0 };
   const inSvg = (el) => !!el.closest('svg');
-  const visible = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const visible = (el) => { if (el.closest('[data-spoken-only]')) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const els = [];
   const seen = new Set();
@@ -320,6 +323,9 @@ const LAYOUT_AUDITOR = `
   }
   for (const el of document.querySelectorAll('button, a[href], input, select, [role=button]')) {
     if (inSvg(el)) continue;
+    // Seen only by a screen reader (docs/LOOK_PLAN.md §39): its box is clipped to nothing, and
+    // what is inside it runs on unclipped in its own rectangles. Not a control the eye can miss.
+    if (el.closest('[data-spoken-only]')) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 && r.height === 0) continue;
     if (r.right > w + 1 || r.left < -1)
@@ -360,7 +366,7 @@ const OCCLUSION_AUDITOR = `
     }
     return false;
   };
-  const shown = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const shown = (el) => { if (el.closest('[data-spoken-only]')) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
   // A control that is see-through and has nothing in it hides nothing: what is under it is seen
   // through it. The guided game's light is one, laid over the control it lights (stage L6).
   const seeThrough = (el) => {
@@ -2686,6 +2692,21 @@ async function controls(page: Page): Promise<string[]> {
   const r = (await page.evaluate(AUDITOR)) as { findings: Planted };
   line('touch fires: a 20px button is flagged', has(r.findings, 'touch', 'planted small'));
   line('touch passes: a 44px button is NOT flagged', !has(r.findings, 'touch', 'planted sound'));
+  // Seen only by a screen reader: the same small button, marked so, is not a touch target.
+  await page.evaluate(`(() => {
+    const b = document.createElement('button');
+    b.textContent = 'planted spoken';
+    b.setAttribute('data-control', 'spoken');
+    b.setAttribute('data-spoken-only', '');
+    Object.assign(b.style, { width: '1px', height: '1px', overflow: 'hidden', position: 'absolute' });
+    document.body.prepend(b);
+  })()`);
+  const spokenOnly = (await page.evaluate(AUDITOR)) as { findings: Planted };
+  line(
+    'touch passes: a button seen only by a screen reader is NOT flagged',
+    !has(spokenOnly.findings, 'touch', 'planted spoken') &&
+      has(spokenOnly.findings, 'touch', 'planted small'),
+  );
   line(
     'contrast fires: #999 on white (2.85:1) is flagged',
     has(r.findings, 'contrast', 'planted faint'),
@@ -2822,6 +2843,23 @@ async function controls(page: Page): Promise<string[]> {
     'zoom layout fires: a scrolling box whose line runs off its side is flagged',
     has(z2.findings, 'layout', 'planted spill over the side', 'scrolls sideways'),
   );
+  // Seen only by a screen reader: the same control past the edge, marked so, is not flagged,
+  // while the one beside it still is.
+  await page.evaluate(`(() => {
+    const b = document.createElement('button');
+    b.textContent = 'planted spoken past the edge';
+    b.id = 'planted-spoken-out';
+    b.setAttribute('data-spoken-only', '');
+    Object.assign(b.style, { position: 'fixed', left: '300px', top: '0', width: '60px', height: '44px' });
+    document.body.prepend(b);
+  })()`);
+  const z3 = (await page.evaluate(LAYOUT_AUDITOR)) as { findings: Planted };
+  line(
+    'zoom layout passes: a control past the edge seen only by a screen reader is NOT flagged',
+    !has(z3.findings, 'layout', 'planted spoken past the edge', 'control outside') &&
+      has(z3.findings, 'layout', 'planted out', 'control outside'),
+  );
+  await page.evaluate(`document.getElementById('planted-spoken-out')?.remove()`);
   await unplant();
   await page.setViewport({ width: 360, height: 780 });
 

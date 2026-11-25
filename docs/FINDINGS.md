@@ -6391,3 +6391,27 @@ it was merged; none has run since.
 What it holds is the review tool, which matters when the sheet is used; the catalogues' own
 wholeness and placeholders are held on every push by `i18n-hi.test.ts`. Once this is merged, the
 nightly self-test holds it green unchanged, and makes it fail by its control.
+
+## 134. The screen reader walk knew a game's arrival only as "Infection: …", and a worm's is said in another sentence — 25 November 2026
+
+**Found** by the full self-test on GitHub's runner, on Dependabot's `actions/setup-node` bump
+(#189), its second run, the first with #133's Python in place. One control did not behave:
+`sr-walk-planning-is-folded-alone`. Its gate failed, as it must, but earlier than its own words, at
+the walk's check that a game which opens says its arrival first and nothing before it: *"the first
+thing said is "Hookworm entered via the Wound and is burrowing into the Bone Marrow. Coat it, t",
+where it should be the arrival ("Infection: …")"*.
+
+**Whose.** The walk's (screen reader support, part 2, [`LOOK_PLAN.md`](LOOK_PLAN.md) §38). It
+knew an arrival by the words it begins with, the engine's sentence for an infection. A worm's
+arrival is another of the engine's sentences, and says the same thing of a worm. The walk plays an
+unseeded game, so which arrives is the dice's: on the PC, in the battery's full self-test that day,
+every run of it that had to pass this check was dealt an infection; on the runner, this one was dealt Hookworm. The game said
+the right thing; the walk read it wrong.
+
+**Fixed inline:** the walk knows the arrival by the disease it names, read from the new cards in
+the accessibility tree, and requires the first thing said to name one of them. Its control,
+`sr-walk-nothing-is-said-as-a-game-opens`, fails as before, saying a game that opens is said to have
+done something; `sr-walk-planning-is-folded-alone` fails on its own words again.
+
+**Not seen:** the walk dealt a worm with the fix in. That it passes then is read from the runner's
+log, where the first thing said named Hookworm, which the new card is named for.
