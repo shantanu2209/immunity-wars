@@ -257,6 +257,39 @@ try {
       .catch(() => false);
     if (!offered)
       refuse('the title of a phone that has never played does not offer the guided game');
+    if (LANG === 'hi') {
+      // HINDI IS DRAWN IN THE FACE THE APP BRINGS (ruled bundled, 25 November 2026; LOOK_PLAN §34).
+      // A face that fails to load is not an error anywhere: the words are drawn in whatever the
+      // machine has, and look right on a PC that has a Devanagari font. So Chrome is asked which
+      // fonts drew the title's button, and every one must be a face the page loaded itself.
+      // Control: pnpm ci:selftest guide-walk-hindi-in-the-bundled-face.
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+      });
+      const cdp = await page.createCDPSession();
+      await cdp.send('DOM.enable');
+      await cdp.send('CSS.enable');
+      const { root } = await cdp.send('DOM.getDocument');
+      const { nodeId } = await cdp.send('DOM.querySelector', {
+        nodeId: root.nodeId,
+        selector: '[data-title="learn"]',
+      });
+      const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+      await cdp.detach();
+      const drew = fonts.map(
+        (f) => `${f.familyName}${f.isCustomFont ? '' : ' (the machine’s own)'}`,
+      );
+      const bundled = fonts.find(
+        (f) => f.isCustomFont && /Noto Sans Devanagari/.test(f.familyName),
+      );
+      if (!bundled || fonts.some((f) => !f.isCustomFont))
+        refuse(
+          `HINDI IS NOT DRAWN IN THE BUNDLED FACE: the title’s button was drawn in ${drew.join(', ') || 'no font at all'}`,
+        );
+      console.log(
+        `GUIDE WALK: Hindi is drawn in the face the app brings: ${drew.join(', ')}; ${String(bundled.glyphCount)} glyphs of the title’s button in ${bundled.familyName}`,
+      );
+    }
     await page.evaluate(click('[data-title="learn"]'));
     await page
       .waitForFunction(() => document.querySelector('[data-screen="chapters"]') !== null, {
