@@ -24,6 +24,9 @@
  *  - the goal is read on turn 1's card;
  *  - alone, the new cards' button goes straight to the command stage, and the Body tile draws the
  *    body, its organs read by name (Gate 2's polish, piece 3);
+ *  - WHAT HAPPENS IS SAID (its second part): as a game opens, its arrival first and nothing that
+ *    was in the log before; what Produce did, in the log's words, once it is done; and each beat of
+ *    the spread, word for word, as it is shown;
  *  - a new card is named by what it shows: its disease, its class by its name, and its way in.
  *
  * WHAT IT DOES NOT HOLD: that the names are good ones, that things are read in a sensible order,
@@ -33,7 +36,8 @@
  *
  * Controls: pnpm ci:selftest sr-walk-a-layer-hides-what-is-behind, sr-walk-focus-goes-to-the-layer,
  * sr-walk-the-turn-is-said-in-words, sr-walk-a-new-card-says-what-it-shows,
- * sr-walk-the-goal-is-on-turn-1, sr-walk-planning-is-folded-alone, sr-walk-the-body-tile-draws-the-body.
+ * sr-walk-the-goal-is-on-turn-1, sr-walk-planning-is-folded-alone, sr-walk-the-body-tile-draws-the-body,
+ * sr-walk-what-an-action-did-is-said, sr-walk-the-spread-is-said, sr-walk-nothing-is-said-as-a-game-opens.
  */
 import { execSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
@@ -43,7 +47,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
+import { ENGINE_I18N_EN, FAMILIES, ORGANS, UI_I18N_EN } from '@immunity-wars/content';
 import puppeteer, { type CDPSession, type Page } from 'puppeteer-core';
 
 const CHROME =
@@ -300,6 +304,23 @@ try {
       isMobile: true,
       hasTouch: true,
     });
+    // EVERYTHING SAID, from the page's first moment (part 2, §38): the region is watched as the
+    // page is built, so that what is said as a game opens is heard, and not only what is left.
+    // As text, not a function: the TypeScript runner wraps a named function in a helper the page
+    // does not have, and the script then stops at its first one.
+    await page.evaluateOnNewDocument(`(() => {
+      window.__said = [];
+      window.__shown = [];
+      const note = () => {
+        const said = (document.querySelector('[data-announce]')?.textContent ?? '').trim();
+        if (said !== '' && window.__said[window.__said.length - 1] !== said) window.__said.push(said);
+        const h = document.querySelector('[data-middle-view="spread"] span');
+        const shown = h ? (h.textContent ?? '').trim() : '';
+        if (shown !== '' && window.__shown[window.__shown.length - 1] !== shown) window.__shown.push(shown);
+      };
+      // Looked at every 50 ms from the page's first moment: a beat of the spread is shown for 900.
+      setInterval(note, 50);
+    })()`);
     await page.goto(url, { waitUntil: 'load' });
     const cdp = await page.createCDPSession();
     await cdp.send('DOM.enable');
@@ -348,6 +369,32 @@ try {
         `THE GOAL IS NOT READ ON TURN 1: a screen reader should be told "${say('goal.title')}" and "${goalWords}"`,
       );
     console.log(`SR WALK: the goal is read on turn 1's card ("${say('goal.title')}")`);
+
+    // AS A GAME OPENS, ITS ARRIVALS ARE SAID AND NOTHING BEFORE THEM (screen reader support, part
+    // 2; LOOK_PLAN §38): what was in the log when the screen opened was not just done, and is not
+    // said; the turn's draw, which the app makes at once, is what a sighted player sees arrive.
+    const region = (await page.evaluate(
+      `document.querySelector('[data-announce]') !== null`,
+    )) as boolean;
+    if (!region) refuse('WHAT HAPPENS IS NOT SAID: the play screen has no region to say it in');
+    const arrived =
+      ((ENGINE_I18N_EN as Record<string, string>)['actions.infectionEnteredViaThe'] ?? '')
+        .replace(/<[^>]*>/g, '')
+        .split('{')[0] ?? '';
+    const opening = await until(
+      'WHAT AN ACTION DID IS NOT SAID: nothing was said as the game opened, where its arrival should be',
+      async () => {
+        const said = (await page.evaluate(`window.__said`)) as string[];
+        return said.length > 0 ? said : null;
+      },
+    );
+    if (!(opening[0] ?? '').startsWith(arrived))
+      refuse(
+        `A GAME THAT OPENS IS SAID TO HAVE DONE SOMETHING: the first thing said is "${(opening[0] ?? '').slice(0, 80)}", where it should be the arrival ("${arrived}…")`,
+      );
+    console.log(
+      `SR WALK: as the game opens, its arrival is said first ("${(opening[0] ?? '').slice(0, 60)}")`,
+    );
 
     // A NEW CARD, named by what it shows.
     const via = say('arrivals.via').replace('{place}', '');
@@ -443,6 +490,69 @@ try {
 
     console.log(
       `SR WALK: ${String(layers.length)} layers, each a named dialog with focus in it and nothing behind it read: ${layers.join('; ')}`,
+    );
+
+    // WHAT AN ACTION DID IS SAID (part 2, §38): antibodies made, through the tree alone.
+    const nowSaid = async (): Promise<string> =>
+      (
+        (await page.evaluate(
+          `(document.querySelector('[data-announce]')?.textContent ?? '')`,
+        )) as string
+      ).trim();
+    const produced =
+      (ENGINE_I18N_EN as Record<string, string>)['actions.bCellProducedAntibod'] ?? '';
+    const madePrefix = produced.replace(/<[^>]*>/g, '').split('{')[0] ?? '';
+    const tile = button(await told(cdp), (n) => n === say('antibody.title'));
+    if (!tile) refuse(`no "${say('antibody.title')}" tile in the tree`);
+    await press(cdp, tile);
+    const exb = (FAMILIES as Record<string, { name?: string }>)['EXB']?.name ?? '';
+    const family = await until(`no ${exb} button in the Antibodies view`, async () =>
+      button(await told(cdp), (n) => n.startsWith(exb)),
+    );
+    await press(cdp, family);
+    const produce = await until(
+      'no Produce that can be pressed in the Antibodies view',
+      async () => {
+        const t = await told(cdp);
+        const b = button(t, (n) => n === say('antibody.produce'));
+        return b !== null && !(await has(cdp, b, 'disabled')) ? b : null;
+      },
+    );
+    await press(cdp, produce);
+    const made = await until(
+      `WHAT AN ACTION DID IS NOT SAID: after Produce, a screen reader should be told "${madePrefix}…"`,
+      async () => {
+        const w = await nowSaid();
+        return w.startsWith(madePrefix) ? w : null;
+      },
+    );
+    console.log(`SR WALK: what Produce did is said ("${made.slice(0, 70)}")`);
+    const closeView = button(await told(cdp), (n) => n === say('nav.close'));
+    if (closeView) await press(cdp, closeView);
+    await wait(700);
+
+    // EACH BEAT OF THE SPREAD IS SAID AS IT IS SHOWN: what the eye reads above the board, word for
+    // word, recorded in the page as it changes.
+    await page.evaluate(`(() => { window.__said = []; window.__shown = []; })()`);
+    const endTurn = await until('no End turn that can be pressed', async () => {
+      const b = button(await told(cdp), (n) => n === say('play.endCommand'));
+      return b !== null && !(await has(cdp, b, 'disabled')) ? b : null;
+    });
+    await press(cdp, endTurn);
+    await until('the spread did not end with the next turn’s cards', async () =>
+      button(await told(cdp), (n) => n.includes(via)),
+    );
+    const { said, shown } = (await page.evaluate(
+      `({ said: window.__said, shown: window.__shown })`,
+    )) as { said: string[]; shown: string[] };
+    if (shown.length === 0) refuse('the spread showed no beat to say');
+    const unsaid = shown.filter((h) => !said.includes(h));
+    if (unsaid.length > 0)
+      refuse(
+        `THE SPREAD IS NOT SAID: ${String(unsaid.length)} of its ${String(shown.length)} beats shown were not said, the first "${unsaid[0] ?? ''}"`,
+      );
+    console.log(
+      `SR WALK: each of the spread's ${String(shown.length)} beats is said as it is shown (${shown.slice(0, 3).join(', ')}${shown.length > 3 ? ', …' : ''})`,
     );
     if (errors.length > 0) refuse(`an uncaught error on the page: ${errors[0] ?? ''}`);
     console.log('SR WALK: every layer closed back to the game, which is read again; no error');

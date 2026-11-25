@@ -107,6 +107,7 @@ import {
 import { Spotlight } from '../guide/Spotlight';
 import { TableMessages, sayText, type TableLine } from '../panels/TableMessages';
 import { refusalText } from '../together/model';
+import { Announcer } from './Announcer';
 import { createFrameStore, useFrame, type FrameStore } from './frameStore';
 import { ViewQueue, type QueuedFrame } from './viewQueue';
 import {
@@ -1585,6 +1586,8 @@ export function PlayScreen({
           }
         />
         {toastText !== null ? <Toast text={toastText} /> : null}
+        {/* WHAT HAPPENS IS SAID, to a screen reader (its second part, §38). */}
+        <Announcer store={frameStore} game={game} playing={playing} />
       </PlayArea>
       <div
         data-middle=""

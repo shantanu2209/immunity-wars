@@ -16,7 +16,7 @@ Being rebuilt as a mobile-responsive web app, packaged to Android and iOS via Ca
 
 **Current phase: Phase 2** — the app people see, **RESUMED 1 October 2026 as "the look"**: the screens
 are replaced so the game looks like the best modern mobile games, before Phase 4.
-Spec: @docs/PHASE2_BRIEF.md (v2.4). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
+Spec: @docs/PHASE2_BRIEF.md (v2.5). **The plan its stages follow is @docs/LOOK_PLAN.md**, ruled by
 Shantanu the same day: style frames first and nothing built before he picks one; then a measured
 prototype, the kit, the play screen, the other screens, the guided game and the rename of Training
 to Easy, and Gate 2. **Stage L1 is done: he picked the Clay direction on 1 October** (pieces and
@@ -113,7 +113,10 @@ no service worker, no developer's page but the measuring page); id
 `com.kartikchaudhary.immunitywars`, name "Immunity Wars", no Android backup, all ruled. His review
 and his visual approval may be done on the Android app. **The public release was made before
 Gate 2, by ruling** (20 October 2026; plan §31, brief v2.3): the game is on Google Play, version
-0.9, in every country Play offers; Gate 2 is still open. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
+0.9, in every country Play offers. **Gate 2 was given on 25 November 2026** (brief v2.5, plan §37):
+*"the approval is for everything gate 2 related"*, before he had played the last of the polish, which
+he plays on the live web app; **the next store build is held until then**, and Phase 2's closeout is
+its own piece of work. `pnpm android:apk --install` builds it and puts it on a connected phone, and needs a
 Java 21 (`JAVA_HOME`) and the Android SDK (`ANDROID_HOME`); no machine's path is written in the
 repository. **It runs on his S25** (2 October): it starts, plays, reaches the relay, and is drawn at
 120 frames a second inside the shell, a first reading. `pnpm android:check` holds, on a connected
