@@ -30,7 +30,12 @@ import { classOf, pieceFor } from '../board/clay';
 import type { RevealArrival, RevealCrisis } from '../dialogs/RevealBody';
 import { t } from '../i18n';
 import { play } from '../kit/motion';
-import { diseaseDisplayName, localiseEnglishNames, routeDisplayName } from '../names';
+import {
+  diseaseDisplayName,
+  familyDisplayName,
+  localiseEnglishNames,
+  routeDisplayName,
+} from '../names';
 import { kitCardStyle } from '../kit/Surface';
 import { COLOUR, RADIUS, TOUCH, TYPE } from '../kit/tokens';
 import { RichText } from '../panels/LogPanel';
@@ -180,7 +185,17 @@ function ArrivalCard({
       type="button"
       data-arrival={arrival.disease}
       data-arrival-card={arrival.disease}
-      aria-label={t('card.about', { name: diseaseDisplayName(arrival.disease) })}
+      // NAMED BY WHAT IT SHOWS (screen reader support, §36). A label of "About Nipah" replaced
+      // everything on the card for a screen reader, which was then told neither its class nor
+      // where it came in. The class is said by its name, where the eye is shown its code.
+      aria-label={[
+        name,
+        family !== '' ? familyDisplayName(family) : '',
+        arrival.lane !== null ? t('arrivals.via', { place: routeDisplayName(arrival.lane) }) : '',
+        arrival.remembered ? t('arrivals.remembered') : '',
+      ]
+        .filter((part) => part !== '')
+        .join(', ')}
       style={{ ...CARD, cursor: 'pointer' }}
       onClick={() => onCard(arrival)}
     >

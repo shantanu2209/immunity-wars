@@ -8,13 +8,14 @@
  * and when it is back — the same line the piece strip and the inspect sheet show.
  */
 import { CELL_CARDS, NK_HITS, SPEED, UM } from '@immunity-wars/content';
-import type { CSSProperties, ReactElement } from 'react';
+import { useRef, type CSSProperties, type ReactElement } from 'react';
 
 import { t } from '../i18n';
 import { KitPiece } from '../kit/Piece';
 import { KitChip, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
+import { modalProps, useModal } from '../nav/modal';
 import { cellDisplayName, cellRoleText, libraryText } from '../names';
 import { SAY, TONE } from './onCard';
 
@@ -49,12 +50,16 @@ export function CellCard({ subject }: { subject: CellCardSubject }): ReactElemen
     ['cellCard.deficiency', local('deficiency', card.deficiency)],
   ] as const;
   const filled = fields.some(([, text]) => text) || Boolean(card.fact);
+  // A dialog to a screen reader too, with what is behind it not read (`nav/modal.ts`).
+  const layer = useRef<HTMLDivElement | null>(null);
+  useModal(layer);
 
   return (
     <div
-      role="dialog"
-      aria-label={t('cellCard.title')}
+      ref={layer}
+      {...modalProps(t('cellCard.title'))}
       style={{
+        outline: 'none',
         // A FULL WINDOW, as the pathogen card is (Shantanu, 20 September 2026).
         position: 'fixed',
         inset: 0,

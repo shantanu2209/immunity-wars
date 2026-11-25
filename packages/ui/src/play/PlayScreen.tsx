@@ -50,7 +50,7 @@ import {
 } from './offered';
 import { shouldDraw } from './autoDraw';
 import { EffectsStrip } from '../panels/EffectsStrip';
-import { apTermLines, effectBanner, effectChips, logLinesOf, turnShort } from './effects';
+import { apTermLines, effectBanner, effectChips, logLinesOf, turnLine, turnShort } from './effects';
 import { PieceStrip, type PieceChip } from '../panels/PieceStrip';
 import { buildNodeModel } from '../board/Board';
 import { BodyPanel, type BodyPanelData } from '../panels/BodyPanel';
@@ -1461,6 +1461,7 @@ export function PlayScreen({
       <style>{FLIGHT_CSS}</style>
       <TopBar
         turnText={turnShort(game)}
+        turnSpoken={turnLine(game)}
         banner={effectBanner(chips)}
         onBanner={() => {
           closeMiddle();

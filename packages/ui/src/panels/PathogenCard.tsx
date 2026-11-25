@@ -33,7 +33,7 @@ import {
   ORGANS,
   TROPISM,
 } from '@immunity-wars/content';
-import type { CSSProperties, ReactElement } from 'react';
+import { useRef, type CSSProperties, type ReactElement } from 'react';
 
 import { classOf, pieceFor } from '../board/clay';
 import { t } from '../i18n';
@@ -42,6 +42,7 @@ import { KitPiece } from '../kit/Piece';
 import { KitChip, KitMeter, kitCardStyle } from '../kit/Surface';
 import { COLOUR, TYPE } from '../kit/tokens';
 import { FLOAT_RESERVE } from '../nav/NavHost';
+import { modalProps, useModal } from '../nav/modal';
 import { antibodiesDo, counterSentence } from '../play/counters';
 import {
   beatText,
@@ -127,12 +128,16 @@ export function PathogenCard({
   const piece = pieceFor(type, classOf(disease, false), false).piece;
   const organName = organDisplayName;
   void ORGANS;
+  // A dialog to a screen reader too, with what is behind it not read (`nav/modal.ts`).
+  const layer = useRef<HTMLDivElement | null>(null);
+  useModal(layer);
 
   return (
     <div
-      role="dialog"
-      aria-label={t('card.title')}
+      ref={layer}
+      {...modalProps(t('card.title'))}
       style={{
+        outline: 'none',
         // A FULL WINDOW (Shantanu, 20 September 2026): nothing else can be done while a card is
         // open, so nothing of the screen behind it shows. It scrolls, and keeps its last lines clear
         // of the floating close that closes it (for-P2.7.md §9, ruling 8).
