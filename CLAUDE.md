@@ -154,7 +154,8 @@ generated from the catalogues and read back by key (`pnpm i18n:sheet`, `pnpm i18
 §34); whether each was read is not recorded. By the same ruling its own face, Noto Sans Devanagari
 (OFL, not made here, `docs/ASSETS.md`), is bundled, and **a colour-blindness check and screen reader
 support are ruled and not built** (`docs/TODO.md` row 17). **Gate 2's polish is ruled as four
-pieces** (plan §33): the first two are built.
+pieces** (plan §33): pieces 1, 2 and 4 are built, and piece 3 is put to him again, larger than
+it was ruled as. The lesson is 76 cards since piece 4, a chapter's opening card no longer a step.
 **The guided game was deployed on 2 October at 10:14 IST,** the app alone, from `main` at `3dc62e4`
 (plan §20); the lesson was walked on the live app, 69 beats of 69.
 **Deployed 2 October, 06:08 IST:** the relay and the app together, from `main` at `98382f2`, with

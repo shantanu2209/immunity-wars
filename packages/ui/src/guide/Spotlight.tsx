@@ -155,6 +155,7 @@ function press(el: HTMLElement): void {
 export function Spotlight({
   beatId,
   text,
+  also = null,
   stops,
   thens = [],
   shows = [],
@@ -169,6 +170,8 @@ export function Spotlight({
   /** The beat's id, on the page for a walk to read. */
   beatId: string;
   text: string;
+  /** A second sentence under the first: at a chapter's end, what the next chapter is about. */
+  also?: string | null;
   stops: readonly string[];
   /**
    * Beside each stop, the few words said when it is lit after another of the same beat was (step
@@ -499,6 +502,11 @@ export function Spotlight({
         <p data-guide-text="" style={{ ...TYPE.body, margin: 0, color: COLOUR.ink }}>
           {said}
         </p>
+        {also !== null ? (
+          <p data-guide-also="" style={{ ...TYPE.body, margin: 0, color: COLOUR.ink }}>
+            {also}
+          </p>
+        ) : null}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <span
             data-guide-count=""
