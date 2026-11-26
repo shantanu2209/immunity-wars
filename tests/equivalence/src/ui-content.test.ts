@@ -85,6 +85,15 @@ const PROSE_TABLES = new Set(['FACT', 'DZINFO', 'BEAT_BY_TYPE']);
  *   helps. Diphtheria is a bacterium that releases its toxin since queue Q15 (the same day,
  *   docs/DEVIATIONS.md #15), and the card says so.
  *
+ * - THE MEDICAL STUDENTS' CORRECTIONS, relayed from Shantanu on 26 November 2026 and checked against
+ *   their sources (docs/LOOK_PLAN.md §41): Rabies `.p` and `.r`, washing for 15 minutes and the
+ *   vaccine by the kind of exposure (WHO's three categories); Human papillomavirus `.p` and `.r`,
+ *   which called it the first vaccine to prevent a cancer, where the Hepatitis B card rightly says
+ *   that was Hepatitis B's; Brucellosis `.d`, where Bruce found the bacterium in soldiers in 1887
+ *   and goat's milk was shown to be the source by Zammit in 1905; Tuberculosis `.c`, fever with the
+ *   other three of India's NTEP symptoms; Hand-foot-and-mouth `.w`, most common under 5; and
+ *   Diphtheria `.c`, whose membrane covers the throat.
+ *
  * AND A RECORD ADDED BY RULING, which legacy does not have at all: `Anthrax toxin`, which the
  * Anthrax bacterium releases since the same change. It is taken out before its table is compared,
  * and required to be in the pack and absent from legacy.
@@ -102,13 +111,63 @@ const RULED_VALUES: readonly {
     legacy:
       'A grey membrane chokes the throat, and its TOXIN attacks the heart. The toxin is pre-formed — it poisons you directly.',
     ruled:
-      'A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart.',
+      'A grey membrane covers the throat. Left alone, the bacteria release a TOXIN that attacks the heart.',
   },
   {
     table: 'DZINFO',
     path: ['Diphtheria', 'r'],
     legacy: 'ANTITOXIN — antibodies. No cell can eat a toxin.',
     ruled: 'Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Rabies', 'p'],
+    legacy: 'Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY.',
+    ruled:
+      'Vaccinate dogs. Wash any bite or scratch with soap and running water for 15 minutes, then see a doctor at once.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Rabies', 'r'],
+    legacy: 'Post-exposure vaccine works BEFORE symptoms start. After that, nothing does.',
+    ruled:
+      'The doctor decides by the kind of exposure. A lick on unbroken skin needs no vaccine. A graze that does not bleed needs the vaccine. A bite or scratch that bleeds needs the vaccine and immunoglobulin. It works only BEFORE symptoms start.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Human papillomavirus', 'p'],
+    legacy:
+      'The HPV VACCINE — the first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure.',
+    ruled:
+      'The HPV VACCINE protects against the types that cause most cervical cancer. India began rolling it out nationally; it works best given before exposure.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Human papillomavirus', 'r'],
+    legacy:
+      'No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts.',
+    ruled:
+      'No antiviral. Screening catches early changes. Like the Hepatitis B vaccine before it, this vaccine stops a cancer before it starts.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Brucellosis', 'd'],
+    legacy: "Traced to goat's milk by David Bruce, 1887.",
+    ruled:
+      "Found by David Bruce in 1887, in soldiers with Malta fever. Goat's milk was shown to be the source in 1905, by Themistocles Zammit.",
+  },
+  {
+    table: 'DZINFO',
+    path: ['Tuberculosis', 'c'],
+    legacy: 'Chronic cough, weight loss, night sweats. Can lie dormant for YEARS.',
+    ruled:
+      'Cough for two weeks or more, fever, weight loss, night sweats. Can lie dormant for YEARS.',
+  },
+  {
+    table: 'DZINFO',
+    path: ['Hand-foot-and-mouth', 'w'],
+    legacy: 'Worldwide; common in schools.',
+    ruled: 'Worldwide; most common in children under 5, and spreads fast in playschools.',
   },
 ];
 const RULED_ADDED: readonly { table: string; key: string }[] = [

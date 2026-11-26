@@ -16,8 +16,8 @@
     },
     "bcell": {
       "role": "The antibody factory. It produces antibodies of one class at a time; the antibodies then coat or neutralise pathogens of that class wherever they are.",
-      "home": "Made in the marrow (the B). In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action.",
-      "bestAgainst": "Anything with an antigen class. Its antibodies tag bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it.",
+      "home": "Made in the bone marrow. The B stands for the bursa of Fabricius, the organ in birds where B-cells were first found; the bone marrow happens to start with B too. In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action.",
+      "bestAgainst": "Anything with an antigen class. Its antibodies coat bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it.",
       "deficiency": "No B-cells means no antibodies: bacteria and toxins outside cells run unchecked, and there is nothing for a vaccine to build on. The human version is X-linked agammaglobulinaemia.",
       "fact": "Your body already carries B-cells for antigens it has never met. Finding the one that fits a new pathogen, clonal selection, is why a first response takes days, and why the second time is fast."
     },

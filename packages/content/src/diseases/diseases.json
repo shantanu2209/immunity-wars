@@ -98,7 +98,7 @@
     "Hand-foot-and-mouth": {
       "d": "Coxsackievirus, 1950s.",
       "c": "Blisters on hands, feet and mouth; usually mild in children.",
-      "w": "Worldwide; common in schools.",
+      "w": "Worldwide; most common in children under 5, and spreads fast in playschools.",
       "p": "Handwashing.",
       "r": "Self-limiting."
     },
@@ -125,7 +125,7 @@
     },
     "Tuberculosis": {
       "d": "Bacterium found by Robert Koch, 1882.",
-      "c": "Chronic cough, weight loss, night sweats. Can lie dormant for YEARS.",
+      "c": "Cough for two weeks or more, fever, weight loss, night sweats. Can lie dormant for YEARS.",
       "w": "Worldwide. India carries the largest burden of any country.",
       "p": "BCG vaccine; treating active cases; ventilation.",
       "r": "6+ months of combination antibiotics. Not finishing the course breeds resistance."
@@ -174,7 +174,7 @@
     },
     "Diphtheria": {
       "d": "Antitoxin by von Behring, 1890. Winning the FIRST Nobel Prize in Medicine.",
-      "c": "A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart.",
+      "c": "A grey membrane covers the throat. Left alone, the bacteria release a TOXIN that attacks the heart.",
       "w": "Worldwide where vaccination lapses; outbreaks still occur in India.",
       "p": "DPT vaccine.",
       "r": "Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it."
@@ -253,8 +253,8 @@
       "d": "Vaccine by Louis Pasteur, 1885.",
       "c": "Creeps up your NERVES to the brain, where antibodies cannot follow. Almost 100% fatal once symptoms begin.",
       "w": "Worldwide; dogs are the main source in India.",
-      "p": "Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY.",
-      "r": "Post-exposure vaccine works BEFORE symptoms start. After that, nothing does."
+      "p": "Vaccinate dogs. Wash any bite or scratch with soap and running water for 15 minutes, then see a doctor at once.",
+      "r": "The doctor decides by the kind of exposure. A lick on unbroken skin needs no vaccine. A graze that does not bleed needs the vaccine. A bite or scratch that bleeds needs the vaccine and immunoglobulin. It works only BEFORE symptoms start."
     },
     "HIV": {
       "d": "Identified 1983 by Montagnier and Barré-Sinoussi (Nobel Prize).",
@@ -404,7 +404,7 @@
       "r": "Penicillin. Still completely effective after 80 years."
     },
     "Brucellosis": {
-      "d": "Traced to goat's milk by David Bruce, 1887.",
+      "d": "Found by David Bruce in 1887, in soldiers with Malta fever. Goat's milk was shown to be the source in 1905, by Themistocles Zammit.",
       "c": "Undulating fever; settles in the spleen, liver and bones.",
       "w": "Worldwide, from unpasteurised milk and infected livestock.",
       "p": "Pasteurise milk; vaccinate animals.",
@@ -421,8 +421,8 @@
       "d": "Link to cervical cancer proven by Harald zur Hausen (Nobel Prize, 2008).",
       "c": "Hides inside cells for years and can turn them cancerous. It causes almost ALL cervical cancer.",
       "w": "Worldwide; most adults meet it at some point.",
-      "p": "The HPV VACCINE. The first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure.",
-      "r": "No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts."
+      "p": "The HPV VACCINE protects against the types that cause most cervical cancer. India began rolling it out nationally; it works best given before exposure.",
+      "r": "No antiviral. Screening catches early changes. Like the Hepatitis B vaccine before it, this vaccine stops a cancer before it starts."
     },
     "Ebola": {
       "d": "First outbreak near the Ebola River, 1976.",
