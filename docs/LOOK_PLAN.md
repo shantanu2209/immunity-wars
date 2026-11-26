@@ -3774,3 +3774,33 @@ with what each choice leads to.
 **Not checked here, and kept as it was:** the Human papillomavirus card's *"India began rolling it
 out nationally"*, which was not among the corrections.
 
+### Ruled the same day: deployed; transfusion malaria left for now
+
+Put to him with what each choice leads to and a recommendation each, he answered *"deploy"*, and on
+transfusion malaria *"yes leave for now"*.
+
+| What was put | Ruled | What follows |
+|---|---|---|
+| Deploy the web app with the corrected cards, the app alone | **Deploy** | Below |
+| Transfusion malaria: (A) the game and the card both changed, a rule change, rules 4.3.0, the relay and the app together, which leaves the Google Play app unable to play together until its next build; (B) the card alone, which would say one thing while the board does another; (C) both left as they are, then A with the next store build. C, then A, was recommended | **Leave it for now,** as recommended | Both stay as they are. The fix is a rule change made with the next store build, so that the web app, the relay and the Android app move to the new rules together ([`TODO.md`](TODO.md) row 19) |
+
+### Deployed, 26 November 2026, 23:13 IST: the medical students' corrections
+
+On his word: the app alone, from `main` at `c08286f`, as version `20261126-231333-c08286f`. The
+relay was not touched: nothing in it, the protocol or the rules changed.
+
+| Checked on the live app, from the PC | Found |
+|---|---|
+| The deploy script's own checks | The build starts with no error; the privacy page names its contact, carried over from the live page; the server serves this build |
+| The live build's text | Each corrected sentence, in English and in Hindi, is in it once; none of the sentences they replaced is, the Hindi card's brown membrane among them |
+| `pnpm sr:walk`, by the accessibility tree alone | Every check passed: 9 places on the board as a list, a cell moved by it, 3 layers each a named dialog, what Produce did and each beat of the spread said |
+| `pnpm guide:walk` | 69 beats of 69 in order, handed over at turn 8 of 15, no error |
+
+- **The Android app on Google Play still shows the old sentences.** It takes them with the next
+  store build, held until his play test ([`TODO.md`](TODO.md) row 18).
+
+**Play Console, read the same evening from his own Chrome, nothing changed:** production 0.9,
+code 2, released 20 October 2026 in all 178 countries and regions; 22 installs of that release,
+95.7% of the install base; 18 device acquisitions in the last 28 days; no ratings and no reviews.
+The public store page says 10+ downloads.
+
