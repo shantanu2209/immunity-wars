@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-02",
+  "generated": "2026-11-26",
   "pack": {
     "packId": "immunity-wars-core",
     "packVersion": "1.5.0",
@@ -376,7 +376,7 @@
           "id": "DISEASE/Hand-foot-and-mouth/Found",
           "subject": "Hand-foot-and-mouth",
           "label": "Found",
-          "text": "Worldwide; common in schools."
+          "text": "Worldwide; most common in children under 5, and spreads fast in playschools."
         },
         {
           "id": "DISEASE/Hand-foot-and-mouth/Prevent",
@@ -526,7 +526,7 @@
           "id": "DISEASE/Tuberculosis/Causes",
           "subject": "Tuberculosis",
           "label": "Causes",
-          "text": "Chronic cough, weight loss, night sweats. Can lie dormant for YEARS."
+          "text": "Cough for two weeks or more, fever, weight loss, night sweats. Can lie dormant for YEARS."
         },
         {
           "id": "DISEASE/Tuberculosis/Found",
@@ -790,7 +790,7 @@
           "id": "DISEASE/Diphtheria/Causes",
           "subject": "Diphtheria",
           "label": "Causes",
-          "text": "A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart."
+          "text": "A grey membrane covers the throat. Left alone, the bacteria release a TOXIN that attacks the heart."
         },
         {
           "id": "DISEASE/Diphtheria/Found",
@@ -1222,13 +1222,13 @@
           "id": "DISEASE/Rabies/Prevent",
           "subject": "Rabies",
           "label": "Prevent",
-          "text": "Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY."
+          "text": "Vaccinate dogs. Wash any bite or scratch with soap and running water for 15 minutes, then see a doctor at once."
         },
         {
           "id": "DISEASE/Rabies/Treat",
           "subject": "Rabies",
           "label": "Treat",
-          "text": "Post-exposure vaccine works BEFORE symptoms start. After that, nothing does."
+          "text": "The doctor decides by the kind of exposure. A lick on unbroken skin needs no vaccine. A graze that does not bleed needs the vaccine. A bite or scratch that bleeds needs the vaccine and immunoglobulin. It works only BEFORE symptoms start."
         },
         {
           "id": "DISEASE/Rabies/Fact",
@@ -2044,7 +2044,7 @@
           "id": "DISEASE/Brucellosis/Discovered",
           "subject": "Brucellosis",
           "label": "Discovered",
-          "text": "Traced to goat's milk by David Bruce, 1887."
+          "text": "Found by David Bruce in 1887, in soldiers with Malta fever. Goat's milk was shown to be the source in 1905, by Themistocles Zammit."
         },
         {
           "id": "DISEASE/Brucellosis/Causes",
@@ -2140,13 +2140,13 @@
           "id": "DISEASE/Human papillomavirus/Prevent",
           "subject": "Human papillomavirus",
           "label": "Prevent",
-          "text": "The HPV VACCINE. The first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure."
+          "text": "The HPV VACCINE protects against the types that cause most cervical cancer. India began rolling it out nationally; it works best given before exposure."
         },
         {
           "id": "DISEASE/Human papillomavirus/Treat",
           "subject": "Human papillomavirus",
           "label": "Treat",
-          "text": "No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts."
+          "text": "No antiviral. Screening catches early changes. Like the Hepatitis B vaccine before it, this vaccine stops a cancer before it starts."
         },
         {
           "id": "DISEASE/Human papillomavirus/CanInfect",
@@ -4320,13 +4320,13 @@
           "id": "CELL/bcell/home",
           "subject": "B-Cell",
           "label": "Where it comes from",
-          "text": "Made in the marrow (the B). In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action."
+          "text": "Made in the bone marrow. The B stands for the bursa of Fabricius, the organ in birds where B-cells were first found; the bone marrow happens to start with B too. In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action."
         },
         {
           "id": "CELL/bcell/bestAgainst",
           "subject": "B-Cell",
           "label": "What it is best against",
-          "text": "Anything with an antigen class. Its antibodies tag bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it."
+          "text": "Anything with an antigen class. Its antibodies coat bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it."
         },
         {
           "id": "CELL/bcell/deficiency",

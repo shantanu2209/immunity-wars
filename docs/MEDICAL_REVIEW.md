@@ -6,7 +6,7 @@ and verdicts belong in [`MEDICAL_REVIEW_GUIDE.md`](MEDICAL_REVIEW_GUIDE.md)**, w
 by hand and which the generator never touches. What a reviewer receives is the .docx built from
 this same data.
 
-Generated 2026-10-02 from `packages/content/src` — pack `immunity-wars-core`, content `1.5.0`, rules `4.2.0`.
+Generated 2026-11-26 from `packages/content/src` — pack `immunity-wars-core`, content `1.5.0`, rules `4.2.0`.
 
 **810 claims.** Game mechanics are deliberately excluded: how a disease behaves on
 the board, how many hits it takes, its antigen class, its entry route and the four stat bars are
@@ -134,7 +134,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 |---|---|---|
 | `DISEASE/Hand-foot-and-mouth/Discovered` | Discovered | Coxsackievirus, 1950s. |
 | `DISEASE/Hand-foot-and-mouth/Causes` | Causes | Blisters on hands, feet and mouth; usually mild in children. |
-| `DISEASE/Hand-foot-and-mouth/Found` | Found | Worldwide; common in schools. |
+| `DISEASE/Hand-foot-and-mouth/Found` | Found | Worldwide; most common in children under 5, and spreads fast in playschools. |
 | `DISEASE/Hand-foot-and-mouth/Prevent` | Prevent | Handwashing. |
 | `DISEASE/Hand-foot-and-mouth/Treat` | Treat | Self-limiting. |
 | `DISEASE/Hand-foot-and-mouth/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Lungs, Heart. |
@@ -179,7 +179,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | Claim id | Field | What the app says |
 |---|---|---|
 | `DISEASE/Tuberculosis/Discovered` | Discovered | Bacterium found by Robert Koch, 1882. |
-| `DISEASE/Tuberculosis/Causes` | Causes | Chronic cough, weight loss, night sweats. Can lie dormant for YEARS. |
+| `DISEASE/Tuberculosis/Causes` | Causes | Cough for two weeks or more, fever, weight loss, night sweats. Can lie dormant for YEARS. |
 | `DISEASE/Tuberculosis/Found` | Found | Worldwide. India carries the largest burden of any country. |
 | `DISEASE/Tuberculosis/Prevent` | Prevent | BCG vaccine; treating active cases; ventilation. |
 | `DISEASE/Tuberculosis/Treat` | Treat | 6+ months of combination antibiotics. Not finishing the course breeds resistance. |
@@ -258,7 +258,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | Claim id | Field | What the app says |
 |---|---|---|
 | `DISEASE/Diphtheria/Discovered` | Discovered | Antitoxin by von Behring, 1890. Winning the FIRST Nobel Prize in Medicine. |
-| `DISEASE/Diphtheria/Causes` | Causes | A grey membrane chokes the throat. Left alone, the bacteria release a TOXIN that attacks the heart. |
+| `DISEASE/Diphtheria/Causes` | Causes | A grey membrane covers the throat. Left alone, the bacteria release a TOXIN that attacks the heart. |
 | `DISEASE/Diphtheria/Found` | Found | Worldwide where vaccination lapses; outbreaks still occur in India. |
 | `DISEASE/Diphtheria/Prevent` | Prevent | DPT vaccine. |
 | `DISEASE/Diphtheria/Treat` | Treat | Coat and engulf the bacteria early. Once the toxin is out, only ANTITOXIN stops it. |
@@ -385,8 +385,8 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Rabies/Discovered` | Discovered | Vaccine by Louis Pasteur, 1885. |
 | `DISEASE/Rabies/Causes` | Causes | Creeps up your NERVES to the brain, where antibodies cannot follow. Almost 100% fatal once symptoms begin. |
 | `DISEASE/Rabies/Found` | Found | Worldwide; dogs are the main source in India. |
-| `DISEASE/Rabies/Prevent` | Prevent | Vaccinate dogs. After a bite: wash it, and get the vaccine IMMEDIATELY. |
-| `DISEASE/Rabies/Treat` | Treat | Post-exposure vaccine works BEFORE symptoms start. After that, nothing does. |
+| `DISEASE/Rabies/Prevent` | Prevent | Vaccinate dogs. Wash any bite or scratch with soap and running water for 15 minutes, then see a doctor at once. |
+| `DISEASE/Rabies/Treat` | Treat | The doctor decides by the kind of exposure. A lick on unbroken skin needs no vaccine. A graze that does not bleed needs the vaccine. A bite or scratch that bleeds needs the vaccine and immunoglobulin. It works only BEFORE symptoms start. |
 | `DISEASE/Rabies/Fact` | Card fact | Creeps inside nerves where antibodies can't follow. |
 | `DISEASE/Rabies/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Brain. |
 
@@ -632,7 +632,7 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 
 | Claim id | Field | What the app says |
 |---|---|---|
-| `DISEASE/Brucellosis/Discovered` | Discovered | Traced to goat's milk by David Bruce, 1887. |
+| `DISEASE/Brucellosis/Discovered` | Discovered | Found by David Bruce in 1887, in soldiers with Malta fever. Goat's milk was shown to be the source in 1905, by Themistocles Zammit. |
 | `DISEASE/Brucellosis/Causes` | Causes | Undulating fever; settles in the spleen, liver and bones. |
 | `DISEASE/Brucellosis/Found` | Found | Worldwide, from unpasteurised milk and infected livestock. |
 | `DISEASE/Brucellosis/Prevent` | Prevent | Pasteurise milk; vaccinate animals. |
@@ -658,8 +658,8 @@ Every word of text the app shows on a disease card. **The two fields to check fi
 | `DISEASE/Human papillomavirus/Discovered` | Discovered | Link to cervical cancer proven by Harald zur Hausen (Nobel Prize, 2008). |
 | `DISEASE/Human papillomavirus/Causes` | Causes | Hides inside cells for years and can turn them cancerous. It causes almost ALL cervical cancer. |
 | `DISEASE/Human papillomavirus/Found` | Found | Worldwide; most adults meet it at some point. |
-| `DISEASE/Human papillomavirus/Prevent` | Prevent | The HPV VACCINE. The first vaccine that prevents a cancer. India began rolling it out nationally; it works best given before exposure. |
-| `DISEASE/Human papillomavirus/Treat` | Treat | No antiviral. Screening catches early changes. This is the clearest case in the whole deck of a vaccine stopping a cancer before it starts. |
+| `DISEASE/Human papillomavirus/Prevent` | Prevent | The HPV VACCINE protects against the types that cause most cervical cancer. India began rolling it out nationally; it works best given before exposure. |
+| `DISEASE/Human papillomavirus/Treat` | Treat | No antiviral. Screening catches early changes. Like the Hepatitis B vaccine before it, this vaccine stops a cancer before it starts. |
 | `DISEASE/Human papillomavirus/CanInfect` | Can infect (game simplification) | In the game, this disease can damage only: Liver. |
 
 ### Ebola
@@ -1344,8 +1344,8 @@ Seven cells a player commands, each with a card, and seven resident macrophages 
 |---|---|---|
 | `CELL/bcell/Name` | The name we use | The app calls this piece the B-Cell, for the real-world bcell. |
 | `CELL/bcell/role` | What it does | The antibody factory. It produces antibodies of one class at a time; the antibodies then coat or neutralise pathogens of that class wherever they are. |
-| `CELL/bcell/home` | Where it comes from | Made in the marrow (the B). In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action. |
-| `CELL/bcell/bestAgainst` | What it is best against | Anything with an antigen class. Its antibodies tag bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it. |
+| `CELL/bcell/home` | Where it comes from | Made in the bone marrow. The B stands for the bursa of Fabricius, the organ in birds where B-cells were first found; the bone marrow happens to start with B too. In the game it starts in the Bloodstream and produces from wherever it stands, best beside a primed Helper T-Cell, which adds one antibody per action. |
+| `CELL/bcell/bestAgainst` | What it is best against | Anything with an antigen class. Its antibodies coat bacteria, worms and parasites so other cells can attack them, and neutralise viruses and toxins outright. A novel antigen is out of reach until clonal selection finds the one clone that fits it. |
 | `CELL/bcell/deficiency` | What happens without it | No B-cells means no antibodies: bacteria and toxins outside cells run unchecked, and there is nothing for a vaccine to build on. The human version is X-linked agammaglobulinaemia. |
 | `CELL/bcell/fact` | Card fact | Your body already carries B-cells for antigens it has never met. Finding the one that fits a new pathogen, clonal selection, is why a first response takes days, and why the second time is fast. |
 | `CELL/bcell/hint` | In How to play | Never moves. Produce antibodies of one antigen class. |

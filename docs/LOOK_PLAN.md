@@ -3733,3 +3733,44 @@ reading of 2 October could not say how many there were (§26).
 **What is left for the measurement:** his play test, then the S25 on the cable, the app built and
 installed, and `pnpm android:check --measure`, which opens the measuring page inside the app and
 reads its card. If the phone holds the Google Play version, it is removed first.
+
+## 41. 26 November 2026: the medical students' corrections to the disease cards
+
+Three medical students read the cards in September and October. Their corrections were relayed from
+Shantanu on 26 November, by another Claude session working with him on Kartik's competitions, for
+the SBI Youth Ideathon interview on 27 November. None was in. Each was read against the card as it
+stands, in English and in Hindi, and against its source before it was written.
+
+| Card | Was | Is | Checked against |
+|---|---|---|---|
+| Rabies, prevention | Wash a bite, and get the vaccine | Wash any bite or scratch with soap and running water for 15 minutes, then see a doctor at once | WHO's guidance, and India's: 15 minutes |
+| Rabies, treatment | The vaccine works before symptoms | The doctor decides by the kind of exposure: a lick on unbroken skin needs no vaccine, a graze that does not bleed needs the vaccine, a bite or scratch that bleeds needs the vaccine and immunoglobulin. Only before symptoms | WHO's three categories of exposure |
+| Human papillomavirus, prevention | "The first vaccine that prevents a cancer" | Protects against the types that cause most cervical cancer | The Hepatitis B card says, rightly, that Hepatitis B's was the first (1981; HPV's, 2006). "Almost all", which was suggested, is not true of the vaccine: it covers the types behind about 70 to 90% |
+| Human papillomavirus, treatment | "The clearest case in the whole deck" | Like the Hepatitis B vaccine before it, it stops a cancer before it starts | As above |
+| Brucellosis, discovery | Traced to goat's milk by Bruce, 1887 | Bruce found it in 1887, in soldiers with Malta fever; goat's milk shown to be the source in 1905, by Themistocles Zammit | The history of the Mediterranean Fever Commission |
+| Tuberculosis, what it does | Chronic cough, weight loss, night sweats | Cough for two weeks or more, fever, weight loss, night sweats | India's NTEP: the four symptoms of presumptive TB |
+| Hand, foot and mouth, where | Common in schools | Most common in children under 5, and spreads fast in playschools | |
+| Diphtheria, what it does | A grey membrane chokes the throat | Covers the throat | |
+| The B-Cell's card, where it is made | "Made in the marrow (the B)" | Made in the bone marrow; the B stands for the bursa of Fabricius, the organ in birds where B-cells were first found, and the marrow happens to start with B too | The students' point, and the history of the name |
+
+**Two more, found on the way and made to match what is ruled:**
+
+- **The B-Cell's card said its antibodies *tag* bacteria.** Coat is the word everywhere a player
+  reads it (§20). It says coat, in English, and in Hindi, where it said they mark them.
+- **The Hindi Diphtheria card called the grey membrane brown** (भूरी). It says grey (धूसर).
+
+**Held:** each English change is a ruled value in `tests/equivalence/src/ui-content.test.ts`, so the
+rest of each card is still held to the original; the Hindi library is held whole against the
+English; the medical review is regenerated.
+
+**Not made: transfusion malaria.** The card says it goes straight to the liver, and the students
+say it skips the liver: parasites in transfused blood go straight into the red blood cells, so
+there is no liver stage and no relapse. They are right. **But the game plays it the card's way:**
+it is a malaria card whose target is the liver, so it hides in the liver for its turns, bursts into
+the blood, and makes the later malaria relapse possible. Changing the card alone would make it say
+one thing while the board does another; changing what it does is a rule change. Put to Shantanu
+with what each choice leads to.
+
+**Not checked here, and kept as it was:** the Human papillomavirus card's *"India began rolling it
+out nationally"*, which was not among the corrections.
+
